@@ -1,4 +1,4 @@
-import { sceneDocumentation, sceneSummary } from '../scene-2d/docs'
+import { sceneDocumentation, advancedSceneSummary as sceneSummary } from '../scene-2d/docs'
 
 const sceneReference = sceneDocumentation('SZGameKit')
 export const gameKitPromptContext = `Extensão: Jogo 2D Avançado (id: game-2d-advanced)

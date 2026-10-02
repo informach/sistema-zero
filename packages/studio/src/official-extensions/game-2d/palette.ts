@@ -74,6 +74,7 @@ export const GAME_TWO_D_PALETTE = [
       {
         name: 'Animação',
         types: [
+          ...sceneTypes('g2d', 'animation'),
           'sz_g2d_load_spritesheet',
           'sz_g2d_animate_sprite',
           'sz_g2d_animate_once',
@@ -447,8 +448,8 @@ export const GAME_TWO_D_PALETTE = [
   {
     name: 'Camadas e perspectiva',
     sections: [
-      { name: 'Camadas de cenário', types: sceneTypes('g2d', 'layers') },
-      { name: 'Pista em perspectiva', types: sceneTypes('g2d', 'track') },
+      { name: 'Começar com cenários e pista', types: sceneTypes('g2d', 'begin') },
+      { name: 'Mais controles', types: sceneTypes('g2d', 'more') },
     ],
   },
   {

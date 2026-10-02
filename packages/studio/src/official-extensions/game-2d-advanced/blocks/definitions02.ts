@@ -3,6 +3,38 @@ import { GAME_KIT_COLOUR as C } from './shared'
 
 export const gameKitBlockDefinitions02: BlockDefinition[] = [
   {
+    type: 'sz_gk_set_health',
+    placement: 'command',
+    message0: 'Dar %2 vidas a %1',
+    args0: [
+      { type: 'field_name_picker', name: 'WHO', text: 'heroi', kind: 'character' },
+      { type: 'input_value', name: 'LIVES', check: 'JSValue' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    inputsInline: true,
+    colour: C,
+    tooltip:
+      'Define a vida atual e a vida cheia de qualquer personagem. Não muda telas nem controles.',
+  },
+  {
+    type: 'sz_gk_draw_counter',
+    placement: 'command',
+    message0: 'Mostrar no placar %1 %2 em x %3 y %4',
+    args0: [
+      { type: 'input_value', name: 'LABEL', check: 'JSValue' },
+      { type: 'input_value', name: 'VALUE', check: 'JSValue' },
+      { type: 'input_value', name: 'X', check: 'JSValue' },
+      { type: 'input_value', name: 'Y', check: 'JSValue' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    inputsInline: true,
+    colour: C,
+    tooltip:
+      'Mostra texto e um valor com a fonte do jogo e fundo legível. Use em Desenhar por cima (HUD), em qualquer tipo de jogo. Valor vazio mostra só o texto.',
+  },
+  {
     type: 'sz_gk_play_anim',
     placement: 'command',
     message0: 'Tocar em %1 a animação %2 dos quadros %3 a %4 (%5 por segundo)',

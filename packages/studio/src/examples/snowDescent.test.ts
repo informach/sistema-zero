@@ -1,11 +1,14 @@
 import { beforeAll, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import * as Blockly from 'blockly/core'
+import { resolveBlockLevel } from '../blockly/blockLevels'
 import { registerExtensionBlocks } from '../blockly/blocks'
 import { buildIRFromWorkspace } from '../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../blockly/workspaceState'
+import { levelRank } from '../core/levels'
 import { compileStatements } from '../generators/js'
-import { behaviorStatements, normalizeSZIR, SZIRV2Schema } from '../ir'
+import { behaviorStatements, type JSStatement, normalizeSZIR, SZIRV2Schema } from '../ir'
 import { stripIds } from '../official-extensions/game-2d/__gen_dinoCorredor'
 import { gameTwoDBlocks } from '../official-extensions/game-2d/blocks'
 import { snowDescentExample } from '../official-extensions/game-2d/examples/snowDescent'
@@ -21,6 +24,42 @@ beforeAll(() => {
   registerExtensionBlocks(gameTwoDBlocks)
   registerExtensionBlocks(gameKitBlocks)
 })
+
+test('the documented first activity is 18 native commands/events with no data objects or functions', () => {
+  const guide = readFileSync(
+    new URL('../../docs/jogo-2d-cenarios-e-neve.md', import.meta.url),
+    'utf8',
+  )
+  const source = guide.match(/```javascript\r?\n([\s\S]*?)\r?\n```/)?.[1]
+  expect(source).toBeDefined()
+  const ir = SZIRV2Schema.parse(
+    normalizeSZIR({
+      html: [],
+      css: [],
+      js: parseJS(source!),
+      extensions: [{ extensionId: 'game-2d' }],
+    }),
+  )
+  const statements = behaviorStatements(ir)
+  const count = (body: JSStatement[]): number =>
+    body.reduce(
+      (n, statement) => n + 1 + (statement.type === 'g2d:sceneEvent' ? count(statement.body) : 0),
+      0,
+    )
+  expect(count(statements)).toBe(18)
+  expect(JSON.stringify(ir)).not.toMatch(
+    /"type":"(?:rawJS|object|array|funcDecl|forCount|animationLoop)"/,
+  )
+  const workspace = new Blockly.Workspace()
+  try {
+    Blockly.serialization.workspaces.load(buildWorkspaceStateFromIR(ir), workspace)
+    expect(compileStatements(behaviorStatements(buildIRFromWorkspace(workspace)), 0)).toBe(
+      compileStatements(statements, 0),
+    )
+  } finally {
+    workspace.dispose()
+  }
+})
 for (const example of [snowDescentCanvasExample, snowDescentExample, snowDescentAdvancedExample]) {
   test(`${example.name}: saves, reopens in blocks and preserves the entire game`, () => {
     expect(SZIRV2Schema.safeParse(example.ir).success).toBe(true)
@@ -30,6 +69,14 @@ for (const example of [snowDescentCanvasExample, snowDescentExample, snowDescent
     const workspace = new Blockly.Workspace()
     try {
       Blockly.serialization.workspaces.load(buildWorkspaceStateFromIR(example.ir), workspace)
+      if (example !== snowDescentCanvasExample) {
+        const level = example === snowDescentExample ? 'iniciante-2d' : 'intermediario-2d'
+        for (const block of workspace.getAllBlocks(false)) {
+          expect(levelRank(resolveBlockLevel(block.type)), block.type).toBeLessThanOrEqual(
+            levelRank(level),
+          )
+        }
+      }
       const state = Blockly.serialization.workspaces.save(workspace)
       workspace.clear()
       Blockly.serialization.workspaces.load(state, workspace)
@@ -65,7 +112,7 @@ for (const [variant, example] of [
   })
 }
 test('the drift check bites: a source changed by one number no longer matches', () => {
-  const changed = snowDescentSource('g2d').replace('progresso >= 6600', 'progresso >= 6601')
+  const changed = snowDescentSource('g2d').replace('320, 6600', '320, 6601')
   expect(changed).not.toBe(snowDescentSource('g2d'))
   expect(compiledFromSource('g2d', changed)).not.toBe(
     compileStatements(behaviorStatements(snowDescentExample.ir), 0),

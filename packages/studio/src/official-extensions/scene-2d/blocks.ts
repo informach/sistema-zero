@@ -1,20 +1,18 @@
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import {
-  SCENE_METHODS,
   SCENE_NAME_DEFAULTS,
   SCENE_NAME_KINDS,
   type SceneNameKind,
   type SceneTarget,
   sceneBlockType,
   sceneLiteralShadow,
+  sceneMethods,
   sceneNameBlockType,
 } from './catalog'
 
 const NAME_TOOLTIPS: Readonly<Record<SceneNameKind, string>> = {
   layer: 'O nome de uma camada. Toque para escolher uma das que você já criou.',
   track: 'O nome de uma pista. Toque para escolher uma das que você já criou.',
-  object:
-    'O nome de um objeto da pista. Toque para escolher um dos que você já criou; um nome montado num laço pode ser encaixado por cima.',
 }
 
 const colourOf = (target: SceneTarget) => (target === 'g2d' ? '#ec4899' : '#14b8a6')
@@ -47,19 +45,48 @@ export function sceneBlocks(target: SceneTarget): BlockDefinition[] {
 }
 
 function sceneCommandBlocks(target: SceneTarget): BlockDefinition[] {
-  return SCENE_METHODS.map((entry) => ({
+  return sceneMethods(target).map((entry) => ({
     type: sceneBlockType(target, entry),
     message0: entry.message,
-    args0: entry.args.map((arg) =>
-      arg.field === 'image'
-        ? { type: 'field_asset_picker', name: arg.name, text: arg.value, kind: 'image' }
-        : arg.field === 'select'
-          ? { type: 'field_dropdown', name: arg.name, options: arg.options }
-          : { type: 'input_value', name: arg.name, check: 'JSValue' },
-    ),
+    args0: [
+      ...entry.args.map((arg) =>
+        arg.field === 'image'
+          ? { type: 'field_asset_picker', name: arg.name, text: arg.value, kind: 'image' }
+          : arg.field === 'mold'
+            ? { type: 'field_name_picker', name: arg.name, text: arg.value, kind: 'mold' }
+            : arg.field === 'sprite'
+              ? target === 'g2d'
+                ? { type: 'field_sprite_picker', name: arg.name, text: arg.value }
+                : { type: 'field_name_picker', name: arg.name, text: arg.value, kind: 'character' }
+              : arg.field === 'animation'
+                ? { type: 'field_named_animation_picker', name: arg.name, text: arg.value }
+                : arg.field === 'select'
+                  ? { type: 'field_dropdown', name: arg.name, options: arg.options }
+                  : { type: 'input_value', name: arg.name, check: 'JSValue' },
+      ),
+      ...(entry.parameter ? [{ type: 'field_input', name: 'PARAM', text: entry.parameter }] : []),
+    ],
     ...(entry.value
       ? { output: 'JSValue' }
-      : { placement: 'command' as const, previousStatement: 'JSStmt', nextStatement: 'JSStmt' }),
+      : {
+          placement:
+            entry.method === 'collectTrackItem'
+              ? { root: [], nested: ['track-encounter'] as const, role: 'command' as const }
+              : entry.event
+                ? ('event' as const)
+                : (entry.placement ?? 'command'),
+          previousStatement: 'JSStmt',
+          nextStatement: 'JSStmt',
+        }),
+    ...(entry.event || entry.each
+      ? { message1: 'fazer %1', args1: [{ type: 'input_statement', name: 'BODY' }] }
+      : {}),
+    ...(entry.each ? { bodyExecution: 'sync-callback' as const } : {}),
+    ...(['onTrackEncounter', 'onTrackSpriteEncounter', 'onTrackMoldEncounter'].includes(
+      entry.method,
+    )
+      ? { bodyContext: 'track-encounter' as const }
+      : {}),
     inputsInline: true,
     colour: colourOf(target),
     tooltip: entry.tooltip,
@@ -68,7 +95,7 @@ function sceneCommandBlocks(target: SceneTarget): BlockDefinition[] {
 
 export function sceneShadows(target: SceneTarget): Record<string, Record<string, unknown>> {
   return Object.fromEntries(
-    SCENE_METHODS.map((entry) => [
+    sceneMethods(target).map((entry) => [
       sceneBlockType(target, entry),
       Object.fromEntries(
         entry.args

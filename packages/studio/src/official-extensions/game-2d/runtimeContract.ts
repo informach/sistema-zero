@@ -1,4 +1,4 @@
-import { SCENE_API_KEYS, type SceneTwoDApi } from '../scene-2d/contract'
+import { BASIC_SPRITE_SCENE_API_KEYS, type BasicSpriteSceneApi } from '../scene-2d/spriteContract'
 import type { GameTwoDTileContactSide, GameTwoDVectorTileRole } from './classicContracts'
 
 export type { GameTwoDTileContactSide, GameTwoDVectorTileRole } from './classicContracts'
@@ -29,6 +29,8 @@ export interface GameTwoDSpriteSheet {
   image: GameTwoDImageHandle | null
   frameW: number
   frameH: number
+  /** The image name; the animation inherits the drawing's box and is reused by name. */
+  assetName?: string
 }
 
 export type GameTwoDAction =
@@ -127,6 +129,7 @@ export interface GameTwoDSprite {
   vy: number
   image: GameTwoDImageHandle | null
   anim: GameTwoDAnimation | null
+  animStates?: Record<string, { sheet: GameTwoDSpriteSheet; from: number; to: number; fps: number }>
   _animState?: string | null
   skin?: GameTwoDSpriteSkin
   textAppearance?: GameTwoDTextAppearance
@@ -141,6 +144,7 @@ export interface GameTwoDSprite {
   hpMax?: number
   dmg?: number
   onGround?: boolean
+  _sceneForward?: boolean
   blinkFrames?: number
   _cooldowns?: Record<string, number>
   /** Dial da colisão perdoadora: fator da hitbox (1 = tamanho cheio). */
@@ -904,7 +908,7 @@ export interface GameTwoDArcadeApi {
 }
 
 export interface GameTwoDRuntimeApi
-  extends SceneTwoDApi,
+  extends BasicSpriteSceneApi,
     GameTwoDLifecycleApi,
     GameTwoDStageApi,
     GameTwoDSpriteApi,
@@ -918,7 +922,7 @@ export interface GameTwoDRuntimeApi
 
 /** Inventário exato da API pública injetada em `window.SZGame2D`. */
 export const GAME_TWO_D_API_KEYS = [
-  ...SCENE_API_KEYS,
+  ...BASIC_SPRITE_SCENE_API_KEYS,
   'createSprite',
   'drawSprite',
   'clear',
@@ -1227,7 +1231,7 @@ export const GAME_TWO_D_API_CONTRACT_COVERAGE: Record<
 > = {}
 
 const GAME_TWO_D_API_EXPRESSION_OVERRIDES: Partial<Record<GameTwoDApiKey, string>> = {
-  ...Object.fromEntries(SCENE_API_KEYS.map((key) => [key, `_scene2d.${key}`])),
+  ...Object.fromEntries(BASIC_SPRITE_SCENE_API_KEYS.map((key) => [key, `_spriteScene.${key}`])),
   drawSprite: '_camWrap(drawSprite)',
   drawParticles: '_camWrap(drawParticles)',
   drawTileMap: '_camWrap(drawTileMap)',

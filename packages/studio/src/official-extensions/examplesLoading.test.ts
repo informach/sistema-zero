@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { loadExtensionExamples } from '#extensions'
 import { OFFICIAL_CATALOG } from './index'
 
+// 02/10: the two snow examples use animated sprites and the new automatic scene blocks.
 const goldenCatalogs = {
   'game-2d': {
     // ⚠️ 33 até 13/09/2026: a fatia de SPRITES DE TEXTO somou "Chuva de números" e "Quiz de
@@ -67,7 +68,7 @@ const goldenCatalogs = {
     // pergunta só (os motores já ignoram maiúsculas; a fonte perguntava "p" e "P"
     // e a criança via dois blocos idênticos lado a lado), e o brilho da batida
     // passou a apagar também nas telas de pausa e de fim.
-    sha256: '74d4bf61410fc0b02cb83b86e68c15cab7e55410f709042ff37084cf55875a5e',
+    sha256: 'b99ca30043c1e8631cea8a7bc8574c7aaa6149a272090d50d58f555a1437bd39',
   },
   'game-2d-advanced': {
     // 01/10: Descida da Neve entra no FIM da vitrine ("Meu primeiro jogo" continua
@@ -85,7 +86,8 @@ const goldenCatalogs = {
     // poço largo eram intransponíveis. Mexe em toda fase, logo mexe no hash.
     // ⚠️ Ainda em 15/08: as fases aquáticas ganharam piscinas de quatro células,
     // alinhadas ao piso das margens, em vez de uma película no fundo do palco.
-    sha256: '81d2fb02edc88ba8ef480a0d75d9de1885218ff6644e840fea56dad2af3210b6',
+    // 02/10 revisão: neve intermediária com movimento, controles, vida, HUD e telas nativas separados.
+    sha256: 'f9f220d10a203c12d0d6df0b4634007f40e3621891c6315f66a37831d0d27841',
   },
   'game-3d': {
     count: 19,

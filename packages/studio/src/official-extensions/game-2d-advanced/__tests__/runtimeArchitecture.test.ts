@@ -83,6 +83,7 @@ describe('gameKitRuntime — arquitetura dos domínios', () => {
       'project-resources',
       'rpg',
       'scene-2d',
+      'sprite-scene',
       'stage-backdrop',
       'tower-defense',
     ])

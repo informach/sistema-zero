@@ -6,8 +6,8 @@ import type { ExtensionExample } from '../../../extensions/types'
 export const snowDescentExample: ExtensionExample = {
   name: 'Descida da Neve (Jogo 2D)',
   experience: 'game',
-  description: `Camadas transparentes e pista em perspectiva com os blocos do Jogo 2D. ${SNOW_DESCRIPTION}`,
-  difficulty: 'intermediate',
+  description: `Sprites animados, controles prontos e encontros na pista, sem funções nem listas. ${SNOW_DESCRIPTION}`,
+  difficulty: 'beginner',
   concepts: ['perspectiva', 'camadas', 'transparência', 'esqui', 'profundidade'],
   genre: 'corrida',
   ir: SNOW_IR,

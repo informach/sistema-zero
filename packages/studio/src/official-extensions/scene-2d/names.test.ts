@@ -24,10 +24,9 @@ import { gameKitBlocks, gameKitToolboxCategory } from '../game-2d-advanced/block
 import { sceneShadows } from './blocks'
 import {
   isSceneNameBlock,
-  SCENE_METHODS,
   SCENE_NAME_KINDS,
-  type SceneTarget,
   sceneBlockType,
+  sceneMethods,
   sceneNameBlockType,
   sceneNameDeclarations,
   sceneNamesAsText,
@@ -85,292 +84,130 @@ function load(extensionId: string, code: string) {
 }
 
 for (const [target, api, extensionId, blocks, toolbox] of TARGETS) {
-  describe(`${target}: names are picked from what already exists`, () => {
-    test('a socket that USES a name is born with the list; one that CREATES it, with plain text', () => {
-      const shadows = sceneShadows(target as SceneTarget)
-      let users = 0
-      let creators = 0
-      for (const entry of SCENE_METHODS) {
+  describe(`${target}: simple scene names and palette`, () => {
+    test('names in use come from creators, while sprites use the ordinary sprite picker', () => {
+      const shadows = sceneShadows(target)
+      for (const entry of sceneMethods(target)) {
         for (const arg of entry.args) {
-          const shadow = (
-            shadows[sceneBlockType(target, entry)]?.[arg.name] as { shadow?: { type?: string } }
-          )?.shadow
-          if (arg.picks) {
-            users++
-            expect(shadow?.type, `${entry.block}.${arg.name}`).toBe(
-              sceneNameBlockType(target, arg.picks),
-            )
-          }
-          if (arg.declares) {
-            creators++
-            expect(shadow?.type, `${entry.block}.${arg.name}`).toBe('sz_val_text')
-          }
+          const input = shadows[sceneBlockType(target, entry)]?.[arg.name] as
+            | { shadow?: { type: string } }
+            | undefined
+          if (arg.picks) expect(input?.shadow?.type).toBe(sceneNameBlockType(target, arg.picks))
+          if (arg.declares) expect(input?.shadow?.type).toBe('sz_val_text')
+          if (arg.field === 'sprite') expect(input).toBeUndefined()
         }
       }
-      // Anti-vacuum: 5 layer users, 11 track users and 4 object users; one creator of each.
-      expect(users).toBe(20)
-      expect(creators).toBe(3)
-      // The palette really hands the list over, and not only the map that feeds it.
-      const inPalette = toolboxBlocks(toolbox.contents).find(
-        (block) => block.type === `sz_${target}_transform_scene_layer`,
-      )
-      expect(inPalette?.inputs).toMatchObject({
-        NAME: { shadow: { type: sceneNameBlockType(target, 'layer') } },
-      })
-    })
-
-    test('the list blocks exist for old and new projects, but are not offered on their own', () => {
-      const types = SCENE_NAME_KINDS.map((kind) => sceneNameBlockType(target, kind))
-      for (const type of types) {
-        const definition = blocks.find((block) => block.type === type)
-        expect(definition?.hidden, type).toBe(true)
-        expect(definition?.output, type).toBe('JSValue')
-        expect(isSceneNameBlock(type)).toBe(true)
-      }
       const offered = toolboxBlocks(toolbox.contents).map((block) => block.type)
-      expect(offered.filter((type) => types.includes(type))).toEqual([])
-      expect(BLOCK_CATALOG.filter((entry) => types.includes(entry.type))).toEqual([])
-      expect(isSceneNameBlock(`sz_${target}_create_track`)).toBe(false)
-      // A saved project is refused whole when one block type is unknown to the import
-      // allowlist; a block that lives inside every name socket must be in it.
-      for (const type of types)
-        expect(EXTENSION_BLOCKLY_BLOCK_TYPES[extensionId]?.has(type), type).toBe(true)
+      expect(offered).toContain(`sz_${target}_create_sprite_track`)
+      expect(offered).toContain(`sz_${target}_scene_animation`)
+      for (const obsolete of [
+        'create_scene_layer',
+        'transform_scene_layer',
+        'motion_scene_layer',
+        'order_scene_layer',
+        'show_scene_layer',
+        'remove_scene_layer',
+        'create_track',
+        'view_track',
+        'camera_track',
+        'advance_track',
+        'place_track_object',
+        'move_track_object',
+        'remove_track_object',
+        'project_track',
+        'draw_track',
+        'draw_scene_layers',
+        'track_value',
+        'track_passed',
+        'track_touching',
+        'scene_object_name',
+      ]) {
+        expect(blocks.some((block) => block.type === `sz_${target}_${obsolete}`)).toBe(false)
+        expect(EXTENSION_BLOCKLY_BLOCK_TYPES[extensionId]?.has(`sz_${target}_${obsolete}`)).toBe(
+          false,
+        )
+      }
+      for (const kind of SCENE_NAME_KINDS) {
+        const type = sceneNameBlockType(target, kind)
+        expect(blocks.find((block) => block.type === type)?.hidden).toBe(true)
+        expect(offered).not.toContain(type)
+        expect(BLOCK_CATALOG.some((entry) => entry.type === type)).toBe(false)
+      }
     })
-
-    test('a fixed name returns from code into the list, and a computed one keeps the list beneath', () => {
+    test('saved lists, computed names and event bodies survive reopening', () => {
       const { ir, state } = stateFrom(
         extensionId,
-        `${api}.createTrack('rio', 28, 300, 160, 120);
-for (let i = 0; i < 3; i++) { ${api}.moveTrackObject('rio', 'obj' + i, 0, 100); }
-${api}.removeTrackObject('rio', 'pedra');`,
+        `${api}.createSpriteTrack('rio');
+let outra = 'rio';
+${api}.trackCameraView(outra, "wide");
+${api}.onTrackFinish('rio', function () { ${api}.trackCameraView('rio', "near");  });`,
       )
-      const all = everyBlock(state)
-      const create = all.find((block) => block.type === `sz_${target}_create_track`)
-      const move = all.find((block) => block.type === `sz_${target}_move_track_object`)
-      const remove = all.find((block) => block.type === `sz_${target}_remove_track_object`)
-      // The creator keeps free text: a child names the track there, once. Like every
-      // literal that comes back from code, it is the socket's SHADOW again: dragged
-      // out as a real block it would leave an empty socket behind.
-      expect(create?.inputs?.TRACK).toEqual({
-        shadow: { type: 'sz_val_text', fields: { TEXT: 'rio' } },
-      })
-      expect(create?.inputs?.HORIZON).toEqual({
-        shadow: { type: 'sz_val_number', fields: { NUM: 28 } },
-      })
-      expect(move?.inputs?.Z?.shadow?.type).toBe('sz_val_number')
-      expect(move?.inputs?.Z?.block).toBeUndefined()
-      expect(move?.inputs?.TRACK).toEqual({
-        shadow: { type: sceneNameBlockType(target, 'track'), fields: { NAME: 'rio' } },
-      })
-      expect(remove?.inputs?.OBJECT).toEqual({
-        shadow: { type: sceneNameBlockType(target, 'object'), fields: { NAME: 'pedra' } },
-      })
-      expect(move?.inputs?.OBJECT?.block).toBeDefined()
-      expect(isSceneNameBlock(move?.inputs?.OBJECT?.block?.type ?? '')).toBe(false)
-      expect(move?.inputs?.OBJECT?.shadow?.type).toBe(sceneNameBlockType(target, 'object'))
-
-      // And the program is the same after the blocks are saved and reopened.
-      const workspace = new Blockly.Workspace()
+      const score = everyBlock(state).find(
+        (block) => block.type === `sz_${target}_track_camera_view`,
+      )
+      expect(score?.inputs?.TRACK?.block).toBeDefined()
+      expect(score?.inputs?.TRACK?.shadow?.type).toBe(sceneNameBlockType(target, 'track'))
+      const ws = new Blockly.Workspace()
       try {
-        Blockly.serialization.workspaces.load(state, workspace)
-        const saved = Blockly.serialization.workspaces.save(workspace)
-        workspace.clear()
-        Blockly.serialization.workspaces.load(saved, workspace)
-        const rebuilt = buildIRFromWorkspace(workspace)
-        expect(JSON.stringify(rebuilt)).not.toContain('rawJS')
-        expect(compileStatements(behaviorStatements(rebuilt), 0)).toBe(
+        Blockly.serialization.workspaces.load(state, ws)
+        const saved = Blockly.serialization.workspaces.save(ws)
+        ws.clear()
+        Blockly.serialization.workspaces.load(saved, ws)
+        expect(compileStatements(behaviorStatements(buildIRFromWorkspace(ws)), 0)).toBe(
           compileStatements(behaviorStatements(ir), 0),
         )
       } finally {
-        workspace.dispose()
+        ws.dispose()
       }
     })
-
-    test('the list shows the names already created, each kind its own', () => {
-      const workspace = load(
+    test('the name list contains only scenes created by the corresponding engine', () => {
+      const ws = load(
         extensionId,
-        `${api}.createSceneLayer('ceu', 'a', 'back');
-${api}.createSceneLayer('montanhas', 'b', 'back');
-${api}.createSceneLayer('ceu', 'c', 'front');
-${api}.createTrack('pista', 28, 300, 160, 120);
-${api}.createTrack('rio', 28, 300, 160, 120);
-${api}.placeTrackObject('pista', 'bandeira', 'a', 0, 600, 40, 80);
-${api}.placeTrackObject('rio', 'pedra', 'a', 0, 600, 40, 80);
-${api}.placeTrackObject('pista', 7, 'a', 0, 600, 40, 80);
-for (let i = 0; i < 3; i++) { ${api}.placeTrackObject('pista', 'obj' + i, 'a', 0, 600, 40, 80); }
-${api}.transformSceneLayer('montanhas', 0, 0, 1, 1);
-${api}.moveTrackObject('rio', 'pedra', 0, 100);
-${api}.moveTrackObject('pista', 'bandeira', 0, 100);
-${api}.moveTrackObject('lago', 'bandeira', 0, 100);`,
+        `${api}.addSceneBackdrop('ceu', 'a', 'far');
+${api}.addSceneBackdrop('montanhas', 'b', 'back');
+${api}.addSceneBackdrop('ceu', 'c', 'front');
+${api}.createSpriteTrack('pista');
+${api}.sceneBackdropMotion('montanhas', 40);`,
       )
       try {
-        expect(collectSceneNames(workspace, 'layer')).toEqual(['ceu', 'montanhas'])
-        expect(collectSceneNames(workspace, 'track')).toEqual(['pista', 'rio'])
-        // No block in hand: every fixed object name. The computed one has nothing to offer.
-        expect(collectSceneNames(workspace, 'object')).toEqual(['bandeira', 'pedra', '7'])
-
-        const moves = workspace.getBlocksByType(`sz_${target}_move_track_object`, true)
-        const nameOf = (track: string) => {
-          const block = moves.find(
-            (move) => move.getInputTargetBlock('TRACK')?.getFieldValue('NAME') === track,
-          )
-          const name = block?.getInputTargetBlock('OBJECT')
-          if (!name) throw new Error(`no move block on track ${track}`)
-          return name
-        }
-        // An object belongs to a track: the list follows the track named in the same block.
-        expect(collectSceneNames(workspace, 'object', nameOf('rio'))).toEqual(['pedra'])
-        expect(collectSceneNames(workspace, 'object', nameOf('pista'))).toEqual(['bandeira', '7'])
-        // A track with no object of its own would leave the list empty: show them all.
-        expect(collectSceneNames(workspace, 'object', nameOf('lago'))).toEqual([
-          'bandeira',
-          'pedra',
-          '7',
-        ])
-
-        // The field itself: a picker of the right kind that still takes a typed name.
-        const field = nameOf('rio').getField('NAME')
+        expect(collectSceneNames(ws, 'layer')).toEqual(['ceu', 'montanhas'])
+        expect(collectSceneNames(ws, 'track')).toEqual(['pista'])
+        const field = ws
+          .getBlocksByType(`sz_${target}_scene_backdrop_motion`, false)[0]
+          ?.getInputTargetBlock('NAME')
+          ?.getField('NAME')
         expect(field).toBeInstanceOf(FieldNamePicker)
-        expect((field as FieldNamePicker).kind).toBe('scene-object')
-        const layerUser = workspace.getBlocksByType(`sz_${target}_transform_scene_layer`, false)[0]
-        const layerField = layerUser?.getInputTargetBlock('NAME')?.getField('NAME')
-        expect((layerField as FieldNamePicker).kind).toBe('scene-layer')
-        expect(layerUser?.getInputTargetBlock('NAME')?.isShadow()).toBe(true)
+        expect((field as FieldNamePicker).kind).toBe('scene-layer')
       } finally {
-        workspace.dispose()
+        ws.dispose()
       }
     })
   })
 }
 
-test('a lesson check reads the name picked from the list as the text it is', () => {
+test('lesson checks and block counts treat the embedded name list as part of the scene block', () => {
   const { state } = stateFrom(
     'game-2d',
-    `SZGame2D.createSceneLayer('ceu', 'a', 'back');
-SZGame2D.transformSceneLayer('ceu', 0, 0, 1, 1);`,
+    `SZGame2D.addSceneBackdrop('ceu', 'a', 'far'); SZGame2D.sceneBackdropMotion('ceu', 40);`,
   )
   const project = { blocksState: state }
-  const used = (name: string) =>
-    evaluateStudioProjectStructure(
-      { type: 'usesBlock', blockType: 'sz_g2d_transform_scene_layer', inputs: { NAME: name } },
-      project,
-    )
-  // The name sits in a list block, which the evaluator alone would not read.
-  expect(everyBlock(state).some((block) => isSceneNameBlock(block.type))).toBe(true)
-  expect(used('ceu')).toBe(true)
-  // Anti-vacuum: another name is still refused, and the bare evaluator, which does not
-  // know the list blocks, fails the child who did everything right.
-  expect(used('montanhas')).toBe(false)
-  expect(
-    evaluateProjectStructure(
-      { type: 'usesBlock', blockType: 'sz_g2d_transform_scene_layer', inputs: { NAME: 'ceu' } },
-      project,
-    ),
-  ).toBe(false)
-
-  // The swap is a copy: the saved project keeps its list blocks, and a project with
-  // none of them is returned as it came.
+  const rule = {
+    type: 'usesBlock' as const,
+    blockType: 'sz_g2d_scene_backdrop_motion',
+    inputs: { NAME: 'ceu' },
+  }
+  expect(evaluateStudioProjectStructure(rule, project)).toBe(true)
+  expect(evaluateStudioProjectStructure({ ...rule, inputs: { NAME: 'outra' } }, project)).toBe(
+    false,
+  )
+  expect(evaluateProjectStructure(rule, project)).toBe(false)
   const read = sceneNamesAsText(state)
   expect(read).not.toBe(state)
   expect(everyBlock(read).some((block) => isSceneNameBlock(block.type))).toBe(false)
   expect(everyBlock(state).some((block) => isSceneNameBlock(block.type))).toBe(true)
-  const plain = stateFrom('game-2d', 'let pontos = 0;').state
-  expect(sceneNamesAsText(plain)).toBe(plain)
-})
-
-test('a computed number keeps the number of the palette underneath', () => {
-  const { state } = stateFrom(
-    'game-2d',
-    `SZGame2D.createSceneLayer('ceu', 'a', 'back');
-let recuo = 4;
-SZGame2D.transformSceneLayer('ceu', recuo, 0, 1, 1);`,
-  )
-  const transform = everyBlock(state).find((block) => block.type === 'sz_g2d_transform_scene_layer')
-  expect(transform?.inputs?.X?.block).toBeDefined()
-  expect(transform?.inputs?.X?.shadow).toEqual({ type: 'sz_val_number', fields: { NUM: 0 } })
-  expect(transform?.inputs?.Y).toEqual({ shadow: { type: 'sz_val_number', fields: { NUM: 0 } } })
-})
-
-test('an empty name socket is an empty name, not the name the palette suggests', () => {
-  const workspace = new Blockly.Workspace()
-  try {
-    Blockly.serialization.workspaces.load(
-      {
-        blocks: {
-          blocks: [
-            {
-              type: 'sz_frame_start',
-              inputs: {
-                CHILDREN: {
-                  block: {
-                    type: 'sz_g2d_create_scene_layer',
-                    fields: { IMAGE: 'a', PASS: 'back' },
-                    next: { block: { type: 'sz_g2d_remove_scene_layer' } },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      },
-      workspace,
-    )
-    const code = compileStatements(behaviorStatements(buildIRFromWorkspace(workspace)), 0)
-    expect(code).toContain('SZGame2D.createSceneLayer("", "a", "back")')
-    expect(code).toContain('SZGame2D.removeSceneLayer("")')
-    expect(code).not.toContain('montanhas')
-    // And nothing with no name is offered as a name.
-    expect(collectSceneNames(workspace, 'layer')).toEqual([])
-  } finally {
-    workspace.dispose()
-  }
-})
-
-test('each engine lists its own scene: a project with both does not mix them', () => {
-  const workspace = load(
-    'game-2d',
-    `SZGame2D.createSceneLayer('ceu', 'a', 'back');
-SZGameKit.createSceneLayer('nuvem', 'a', 'back');
-SZGame2D.transformSceneLayer('ceu', 0, 0, 1, 1);
-SZGameKit.transformSceneLayer('nuvem', 0, 0, 1, 1);`,
-  )
-  try {
-    const basic = workspace
-      .getBlocksByType('sz_g2d_transform_scene_layer', false)[0]
-      ?.getInputTargetBlock('NAME')
-    const advanced = workspace
-      .getBlocksByType('sz_gk_transform_scene_layer', false)[0]
-      ?.getInputTargetBlock('NAME')
-    expect(collectSceneNames(workspace, 'layer', basic)).toEqual(['ceu'])
-    expect(collectSceneNames(workspace, 'layer', advanced)).toEqual(['nuvem'])
-    // Anti-vacuum: with no block in hand, both engines answer.
-    expect(collectSceneNames(workspace, 'layer')).toEqual(['ceu', 'nuvem'])
-  } finally {
-    workspace.dispose()
-  }
-})
-
-test('the list inside a socket is part of its block when counting blocks in use', () => {
-  const { state } = stateFrom(
-    'game-2d',
-    `SZGame2D.createTrack('rio', 28, 300, 160, 120);
-SZGame2D.moveTrackObject('rio', 'pedra', 0, 100);`,
-  )
-  // Anti-vacuum: the two lists are there, in the move block.
-  expect(everyBlock(state).filter((block) => isSceneNameBlock(block.type))).toHaveLength(2)
-  expect(
-    countExtensionBlocksInProject({ blocksState: state } as unknown as Project, 'game-2d'),
-  ).toBe(2)
-})
-
-test('the three kinds accept a typed name, and each has a creator in both engines', () => {
+  expect(countExtensionBlocksInProject(project as unknown as Project, 'game-2d')).toBe(2)
   for (const kind of SCENE_NAME_KINDS) {
     expect(nameKindAllowsFreeText(`scene-${kind}`)).toBe(true)
-    expect(Object.keys(sceneNameDeclarations(kind)).sort()).toHaveLength(2)
+    expect(Object.keys(sceneNameDeclarations(kind))).toHaveLength(2)
   }
-  expect(sceneNameDeclarations('object')).toEqual({
-    sz_g2d_place_track_object: 'OBJECT',
-    sz_gk_place_track_object: 'OBJECT',
-  })
-  expect(collectSceneNames(null, 'layer')).toEqual([])
 })

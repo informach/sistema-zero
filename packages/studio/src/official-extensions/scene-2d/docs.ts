@@ -1,90 +1,96 @@
-import { SCENE_METHODS } from './catalog'
+import { sceneMethods } from './catalog'
 
-/** Permanent tutor summary: every character counts against the 6k budget of each engine. */
-export const sceneSummary = `
-CAMADAS E PERSPECTIVA: createSceneLayer compõe imagens com alfa; cenário fixo continua único.
-Crie camadas e pista em Ao iniciar, nunca no laço. A cada quadro desenhe, nessa ordem,
-drawSceneLayers('back'), drawTrack e drawSceneLayers('front').
-createTrack projeta X/Z; cameraTrack teleporta; advanceTrack registra encontros.
-Consulte trackTouching/trackPassed após avançar. Use velocidade/60 no básico e velocidade*dt no Avançado.
+export const basicSceneSummary = `
+CENÁRIOS E PISTA: addSceneBackdrop compõe fundos/frente automaticamente. createSpriteTrack cria a pista;
+trackPlayer usa sprite normal; trackControls dá setas/toque; trackTravel avança. putTrackSprite coloca,
+repeatTrackSprite faz cópias. onTrackEncounter detecta encontros, collectTrackItem recolhe uma cópia.
+trackHud/sceneGameScreens dão placar/telas. sceneAnimation usa nomes do Pinta. Sem dt, objetos de dados
+ou funções como pré-requisito. Preparação em Ao iniciar, encontros em Eventos.
+`
+export const advancedSceneSummary = `
+CENÁRIOS E PISTA: addSceneBackdrop compõe camadas. createSpriteTrack cria a perspectiva.
+trackFollow escolhe quem a câmera acompanha sem alterar vida; trackSpeed define avanço;
+trackInput escolhe controles; trackLimit ajusta limites; trackFinishLine define chegada.
+putTrackSprite/repeatTrackSprite funcionam também durante a partida, com sprites de moldes.
+onTrackSpriteEncounter entrega o personagem encontrado; forEachTrackSprite visita as cópias vivas.
+onTrackMoldEncounter registra encontros de um molde, incluindo novas ondas e suas cópias.
+sceneAnimation usa nomes do Pinta. Combine setHealth/hurt/healthOf, setScreenText/setState,
+drawCounter/drawBar e os eventos existentes. Sem funções próprias, objetos de dados ou dt.
+Movimento funciona sem jogador. A pista não escolhe placar, vitória, derrota ou telas.
 `
 
-const EXAMPLE_NAME = {
-  SZGame2D: 'Descida da Neve (Jogo 2D)',
-  SZGameKit: 'Descida da Neve (Jogo 2D Avançado)',
-} as const
-
-/**
- * The shared manual section. `examples` adds the pointer to the gallery: the student
- * manual cites examples, the tutor context never does.
- */
 export function sceneDocumentation(api: 'SZGame2D' | 'SZGameKit', examples = false): string {
+  const basic = api === 'SZGame2D'
   return `
-### Camadas transparentes e pista em perspectiva
+### Cenários e pista com sprites
 
-Uma área vazia no Pinta já é transparente. No editor vetorial, **Visualizar fundo**
-permite enxergar o quadriculado ou simular papel branco/escuro. Essa escolha não entra
-na imagem exportada. Pintar de branco cria branco opaco; JPEG e imagens achatadas
-com fundo branco não ganham transparência automaticamente.
+Em **Ao iniciar**, adicione os cenários e escolha se ficam bem ao fundo, atrás dos personagens
+ou na frente. Partes vazias do Pinta são transparentes; pintar de branco cobre o que está atrás.
+Cada cenário tem seu nome. Nos outros blocos, escolha esse nome na lista.
 
-Para compor um cenário, crie camadas com nomes diferentes. Use imagens com o mesmo
-tamanho de tela para alinhar céu, montanhas e chão: as camadas usam o tamanho original,
-sem o corte automático do cenário único. Escala, posição, opacidade, ordem, repetição
-e movimento pertencem a cada camada. Os planos **fundo** e **frente** permitem colocar
-personagens entre elas. Tela fica parada; mundo segue a câmera; paralaxe segue uma fração.
-Uma faixa de montanhas pode se repetir só para os lados: as cópias se emendam sem
-empilhar. Repetir para todos os lados cobre a tela inteira.
-
-A pista usa X lateral e Z de distância. O personagem continua sendo uma imagem 2D.
-Escala = foco / distância até a câmera; o pé do objeto fica no chão. Isso revela
-objetos novos ao avançar, como na descida de esqui. O incremento atual é uma pista
-plana; não inclui curvas, relevo ou malha 3D. Para deslocar a câmera para os lados
-durante a partida, use **Câmera da pista** com a distância atual: manter a mesma
-distância não apaga o passo do último Avançar.
-
-**Criar camada** e **Criar pista** são preparação: ficam em **⚙️ Ao iniciar** ou em
-uma função chamada só para recomeçar. Dentro do laço, a pista recomeçaria vazia a
-cada quadro, e o Console avisa. No laço, desenhe nesta ordem:
-
-\`\`\`js
-${api}.drawSceneLayers('back');
-${api}.drawTrack('pista');
-${api}.drawSceneLayers('front');
-\`\`\`
-
-O desenho do fundo limpa o quadro anterior e repinta o cenário fixo, se existir.
-O desenho da frente preserva o mundo. Os helpers entram em coordenadas lógicas da
-tela e restauram a transformação do contexto; não aplique outra câmera aos valores projetados.
-
-Os encontros com objetos comparam distância percorrida e largura no mundo. Assim,
-um passo grande não atravessa uma bandeira sem detectá-la. Consulte os encontros
-depois de **Avançar** e remova os objetos tratados. Teleportar a câmera para outra
-distância não dispara encontros. Os encontros acompanham o avanço da câmera: um objeto
-que você move sozinho na direção do jogador pode cruzar sem ser percebido, e aí vale
-comparar as distâncias com os blocos de valor. A visibilidade é 1 ou 0; coordenadas fora de perto/longe retornam 0.
-Projetar o ponto ou aumentar uma imagem não altera a caixa de colisão de um sprite existente.
-O nome de um objeto pode ser um texto ou um número, como o contador de um laço.
-
-Você dá o nome uma vez, no bloco que cria a camada, a pista ou o objeto. Nos blocos
-que usam esse nome, toque nele para abrir a lista do que já foi criado e escolher. A
-lista de objetos mostra os da pista que está no mesmo bloco. Um nome montado num laço
-(por exemplo, juntando "obj" com o contador) não aparece na lista: encaixe o mesmo
-bloco de texto por cima.
-
-Limites: 64 camadas, 16 pistas, 2048 objetos por pista e 4096 cópias por desenho de
-uma camada repetida. Entradas numéricas inválidas são ignoradas, com aviso no Console;
-a opacidade fora de 0 a 1 é ajustada para o limite mais próximo.
-Reiniciar o jogo limpa as camadas e as pistas, e o seu **⚙️ Ao iniciar** monta tudo de novo.
-Criar uma pista com o mesmo nome reinicia seus objetos.
-
-${SCENE_METHODS.map((entry) => `- **${entry.message.replace(/%\d+/g, '…').replace(/…( …)+/g, '…')}**: \`${api}.${entry.method}(${entry.args.map((arg) => arg.name.toLowerCase()).join(', ')})\`. ${entry.tooltip}`).join('\n')}
+Crie uma pista para o fundo e use sprites normais. Eles conservam imagem, animação, tamanho,
+transparência e efeitos. O motor calcula tempo, câmera, perspectiva e ordem de desenho.
 ${
-  examples
-    ? `
-Veja o exemplo **"${EXAMPLE_NAME[api]}"**: 12 estrelas, três vidas e uma pista inteira
-montada com estes blocos. O exemplo **"Descida da Neve (Canvas)"**, em Exemplos
-clássicos, faz a mesma descida com a matemática à mostra, sem extensão.
-`
-    : ''
-}`.trim()
+  basic
+    ? `Escolha o jogador com suas vidas em **Na pista … usar … como jogador**, habilite as setas e o
+toque em **Na pista … usar setas e toque** e escolha o ritmo de **Percorrer pista**. Movimento e
+espaço lateral têm escolhas prontas, sem calibrar números. Para começar,
+**Na pista … colocar … … a … passos** escolhe centro, esquerda ou direita pela lista.`
+    : `Combine
+**Na pista … acompanhar …**, **Velocidade de avanço da pista**, **Na pista … controlar pelos** e
+**Limitar a lateral da pista**. Cada bloco cuida de uma ação. A velocidade funciona também sem
+personagem acompanhado. Vida e dano usam **Dar … vidas a …** e **Machucar … tirando … de vida**,
+como nos outros jogos da extensão.`
+}
+
+Coloque outros sprites pela lateral e pela distância: lateral 0 é centro, negativa é esquerda,
+positiva é direita. Distância é o número de passos desde o começo. **Na pista … repetir** distribui cópias
+em linha ou em um padrão; a quantidade inclui o primeiro sprite. Não precisa criar listas nem
+objetos de dados. O tamanho do sprite continua em unidades da pista: o motor só muda como aparece.
+
+Posicionar e repetir também funcionam durante a partida, em eventos de tempo ou encontro.
+Em **Eventos**, use ${basic ? '**Quando o jogador da pista … encontrar …**' : '**Quando o personagem da pista … encontrar …**'} para somar pontos ou tirar vida.
+**Recolher o sprite encontrado** remove só aquela cópia. Os encontros consideram as posições
+na pista, inclusive quando outro sprite vem em direção ao jogador. Não use sobreposição de
+retângulos da tela como encontro na pista.
+
+No grupo **Animação**, use **Animar … com desenho … animação …** com o nome criado no Pinta.
+A extensão encontra os quadros e a velocidade. Funciona dentro e fora da pista.
+Pedir a mesma animação a cada quadro mantém sua reprodução, sem voltar ao começo.
+
+${
+  basic
+    ? `**Mostrar vidas e placar** inclui pausa por botão ou P e recomeço por R, mesmo sem telas prontas.
+**Usar telas prontas** acrescenta início e resultados: Enter ou toque começa,
+P pausa, R reinicia. Reiniciar reconstrói o projeto a partir de Ao iniciar. A partida para ao
+terminar a pista ou perder todas as vidas. Eventos comuns de quadro e encontros também esperam
+o início e param nas telas finais.`
+    : `O evento de encontro dá um nome à instância encontrada, para
+animá-la ou mudar sua aparência. **Para cada … vivo de … na pista** também funciona depois de recolher
+o original. Cópias de moldes participam dos blocos normais de personagens vivos e recolhimento.
+Para ondas criadas durante a partida, use **Quando o personagem da pista … encontrar alguém do molde** em **Eventos**:
+escolha a pista e o molde na lista e use o nome do encontrado nas ações do corpo. A regra vale
+para cada nova instância e suas cópias. O evento por personagem continua restrito àquela família.
+**Recolher do molde … quem saiu … px da tela** respeita a perspectiva e espera os personagens que
+ainda vão chegar. **Desenhar a barra de vida de** acompanha a posição e o tamanho projetados
+automaticamente. **Chegada da pista … em … passos** marca o fim; quando o jogador chega, o evento
+**Quando chegar ao fim da pista** é chamado e nele você escolhe a regra e o estado do jogo. As telas
+são as nativas: personalize título, texto e botão com **Na tela pronta …, escrever título**. Monte o
+placar com **Mostrar no placar** e **Desenhar uma barra de**, dentro de **Desenhar por cima (HUD)**.
+Esses blocos servem também para plataforma, nave e outros jogos.`
+}
+
+Os cenários cobrem a tela sem deformar; em Mais controles é possível mostrar a imagem inteira
+ou repeti-la. O jogo compõe fundo, mundo, frente e placar automaticamente. Não é necessário
+desenhar a pista a cada quadro. O bloco comum **Limpar a tela** preserva os cenários automáticos
+no básico. A pista é plana, sem curvas ou relevo 3D.
+
+${sceneMethods(api === 'SZGame2D' ? 'g2d' : 'gk')
+  .map(
+    (entry) =>
+      `- **${entry.message.replace(/%\d+/g, '…')}**: \`${api}.${entry.method}\`. ${entry.tooltip}`,
+  )
+  .join('\n')}
+${examples ? `Abra **Descida da Neve (${basic ? 'Jogo 2D' : 'Jogo 2D Avançado'})**. O básico ensina controles, sprites e coleta. O intermediário combina controles, vida, encontros, placar e telas; exige seis estrelas na chegada. **Descida da Neve (Canvas)** deixa as contas e funções à mostra, sem extensão.` : ''}
+`.trim()
 }

@@ -474,6 +474,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
     }
     // Guardado: sem cenário, o quadro é byte-idêntico ao de antes deste bloco.
     if (_backdropName) _paintBackdrop(c, _backdropName);
+    if (_spriteScene && _spriteScene.active()) _spriteScene.draw('back');
   }
   /** O palco responsivo ocupa a viewport; o tremor não deve ampliar a área rolável. */
   function _lockStageViewportOverflow() {

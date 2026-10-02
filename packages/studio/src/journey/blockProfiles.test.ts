@@ -3,7 +3,7 @@ import { BLOCK_CATALOG } from '../blockly/blockCatalog'
 import { ESSENTIAL_2D_ALLOW_BLOCKS, ESSENTIAL_2D_BLOCK_TYPES } from './blockProfiles'
 
 describe('perfil Jogo 2D Essencial', () => {
-  test('contém os 61 tipos da referência (com o Kit espaço COMPLETO), sem duplicatas', () => {
+  test('contém os 82 tipos da referência (com o Kit espaço COMPLETO), sem duplicatas', () => {
     // 48 até 13/09/2026; os dez blocos de SPRITE DE TEXTO (criar, escrever, estilo, caixa,
     // dado do sprite e os dois cliques) entraram no perfil junto com a fatia de text-sprites.
     // 57 → 58 em 14/09: o fundo de IMAGEM do sprite de texto (placa, botão, balão). Ele
@@ -16,8 +16,9 @@ describe('perfil Jogo 2D Essencial', () => {
     // 60 → 61: "Multiplicar o tamanho do texto", irmão do "Multiplicar o tamanho
     // do sprite". Ele existe porque o tamanho da letra é ABSOLUTO e não há bloco
     // que o leia: sem ele, "dobre a placa e a letra junto" não era expressável.
-    expect(ESSENTIAL_2D_BLOCK_TYPES).toHaveLength(61)
-    expect(new Set(ESSENTIAL_2D_BLOCK_TYPES).size).toBe(61)
+    // 02/10: sprites comuns, descrição acessível e os 17 blocos de entrada da cena automática.
+    expect(ESSENTIAL_2D_BLOCK_TYPES).toHaveLength(82)
+    expect(new Set(ESSENTIAL_2D_BLOCK_TYPES).size).toBe(82)
   })
 
   test('o 🚀 Kit espaço entra INTEIRO (variações do jogo de nave do Faísca)', () => {

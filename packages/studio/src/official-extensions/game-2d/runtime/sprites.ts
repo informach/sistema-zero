@@ -240,6 +240,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * @param {import('./runtimeContract').GameTwoDSprite} sprite */
   function destroySprite(sprite) {
     if (!sprite || typeof sprite !== 'object' || _isDestroyedSprite(sprite)) return;
+    _spriteScene.release(sprite);
     _destroyedSprites.add(sprite);
     var owners = _spriteGroupOwners.get(sprite);
     if (owners) Array.from(owners).forEach(function (group) {
@@ -531,7 +532,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     if (s.onGround === false) {
       return _isJumpingForGravity(s.vy, world.gravity) ? 'pulando' : 'caindo';
     }
-    if (Math.abs(s.vx || 0) > 0.01) return 'andando';
+    if (Math.abs(s.vx || 0) > 0.01 || s._sceneForward) return 'andando';
     if (Math.abs(s.vy || 0) > 0.01) return 'vertical';
     return 'parado';
   }
@@ -617,6 +618,7 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   // Wrapper público: aplica o "piscar" (invencibilidade) e delega o desenho real.
   function drawSprite(ctx, sprite) {
     if (!ctx || !sprite || _isDestroyedSprite(sprite)) return;
+    if (_spriteScene && _spriteScene.owns(sprite) && !_spriteScenePainting) return;
     _layoutSpriteText(sprite);
     sprite._paintEpoch = _spritePaintEpoch;
     sprite._paintOrder = ++_spritePaintOrder;

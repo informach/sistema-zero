@@ -72,10 +72,15 @@ function fragmentosDoRuntime(): Array<{ file: string; declaration: string }> {
       .map((nome) => `runtime/${nome}`),
     '../runtimeDomains.ts',
     '../scene-2d/runtime.ts',
+    '../scene-2d/spriteHosts.ts',
+    '../scene-2d/spriteRuntime.ts',
   ]
   return arquivos.flatMap((file) => {
     const src = readFileSync(join(DIR, file), 'utf8')
-    const decls = [...src.matchAll(/^export const (\w+)\s*=/gm)].map((m) => `${m[1]} =`)
+    // Exportadas e também os literais privados (os fragmentos do spriteHosts.ts).
+    const decls = [...src.matchAll(/^(?:export const (\w+)\s*=|const (\w+)\s*=\s*`)/gm)].map(
+      (m) => `${m[1] ?? m[2]} =`,
+    )
     if (decls.length === 0) throw new Error(`${file}: nenhuma constante exportada`)
     return decls.map((declaration) => ({ file, declaration }))
   })
@@ -103,6 +108,7 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
         'gameKitRuntime =',
         new Set([
           'advancedSceneAdapter',
+          'advancedSpriteSceneAdapter',
           'sceneApiEntries',
           'gameKitAudioRuntime',
           'gameKitAnimationRuntime',
@@ -111,6 +117,7 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
           'gameKitMonsterBattleRuntime',
           'gameKitOverlapIndexRuntime',
           'gameKitPlatformerRuntime',
+          'gameKitPoolsRuntime',
           'gameKitRpgBattleRuntime',
           'gameKitRpgNavigationRuntime',
           'gameKitShellRuntime',

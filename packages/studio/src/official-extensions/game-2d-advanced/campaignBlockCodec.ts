@@ -58,7 +58,7 @@ export function campaignStatementBlockToIR(
 ): JSStatement | typeof CAMPAIGN_BLOCK_UNHANDLED {
   // Este é o único despachante da gk que o `buildIR` chama, e aquela fachada está
   // no teto de linhas — então os codecs novos da extensão entram por aqui.
-  const scene = sceneBlockStatement(block, context)
+  const scene = sceneBlockStatement(block, context, context.statements)
   if (scene) return scene
   const font = gameKitUiFontBlockToIR(block, context.field)
   if (font) return font
@@ -66,6 +66,16 @@ export function campaignStatementBlockToIR(
   const number = (name: string, fallback: number) =>
     context.expression(block, name, { type: 'num', value: fallback })
   switch (block.type) {
+    case 'sz_gk_draw_counter':
+      return {
+        type: 'gk:drawCounter',
+        label: context.expression(block, 'LABEL', { type: 'str', value: 'Pontos' }),
+        value: context.expression(block, 'VALUE', { type: 'num', value: 0 }),
+        x: number('X', 24),
+        y: number('Y', 24),
+      }
+    case 'sz_gk_set_health':
+      return { type: 'gk:setHealth', charVar: f('WHO'), lives: number('LIVES', 3) }
     case 'sz_gk_fixed_setup':
       return { type: 'gk:fixedSetup', seed: number('SEED', 2026) }
     case 'sz_gk_on_fixed_update':

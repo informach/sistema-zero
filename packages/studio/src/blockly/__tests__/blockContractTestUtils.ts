@@ -35,9 +35,15 @@ export function attachBlockInContractContext(options: AttachOptions): Blockly.Bl
     expressionHost,
     expressionInput,
     loopHost,
-    eventHost = 'sz_js_on_click',
+    eventHost: configuredEventHost = 'sz_js_on_click',
     eventInput = 'DO',
   } = options
+  const eventHost =
+    type === 'sz_g2d_collect_track_item'
+      ? 'sz_g2d_on_track_encounter'
+      : type === 'sz_gk_collect_track_item'
+        ? 'sz_gk_on_track_sprite_encounter'
+        : configuredEventHost
   const statementType = kind === 'expr' ? expressionHost : type
   const contract = requireBlockContract(statementType)
   const root = contract.placement?.root[0]
@@ -60,9 +66,12 @@ export function attachBlockInContractContext(options: AttachOptions): Blockly.Bl
     const specializedContext = contract.placement?.nested.find((context) =>
       blockTypeProvidingBodyContext(context),
     )
-    const hostType = specializedContext
-      ? blockTypeProvidingBodyContext(specializedContext)
-      : undefined
+    const hostType =
+      specializedContext === 'track-encounter'
+        ? eventHost
+        : specializedContext
+          ? blockTypeProvidingBodyContext(specializedContext)
+          : undefined
     const hostContract = hostType ? requireBlockContract(hostType) : undefined
     const hostRoot = hostContract?.placement?.root[0]
     if (!hostType || !hostRoot) {

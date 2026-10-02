@@ -17,6 +17,14 @@ const SCENE_CONTRACT_FILE = 'sceneContract.ts'
 const SCENE_CONTRACT = readFileSync(join(import.meta.dir, '../../scene-2d/contract.ts'), 'utf8')
 // O anfitrião da cena (tipos do navegador) mora num arquivo próprio para o contrato
 // público continuar carregável por pacotes de servidor, que compilam sem a lib DOM.
+const SPRITE_CONTRACT = readFileSync(
+  join(import.meta.dir, '../../scene-2d/spriteContract.ts'),
+  'utf8',
+)
+const SPRITE_HOST = readFileSync(
+  join(import.meta.dir, '../../scene-2d/spriteHostContract.ts'),
+  'utf8',
+)
 const SCENE_HOST_FILE = 'sceneHost.ts'
 const SCENE_HOST = readFileSync(join(import.meta.dir, '../../scene-2d/host.ts'), 'utf8')
 const RUNTIME_CONTRACT = readFileSync(join(import.meta.dir, '../runtimeContract.ts'), 'utf8')
@@ -45,7 +53,7 @@ interface Window {
   __SZGAME_SOUNDS?: Record<string, string>
   __SZGAME_ASSET_META?: Record<
     string,
-    { tilemap?: GameKitTilemapMetadata; tileset?: GameKitTilemapMetadata }
+    { tilemap?: GameKitTilemapMetadata; tileset?: GameKitTilemapMetadata; sprite?: { frameW: number; frameH: number; animations: { name: string; from: number; to: number; fps: number; loop: boolean }[] } }
   >
   __SZSTUDIO_RUNTIME_INSPECTORS?: Record<string, () => unknown>
   webkitAudioContext?: typeof AudioContext
@@ -91,10 +99,24 @@ function publicRuntimeSignatures(source: string): Map<string, string[]> {
     ts.ScriptKind.JS,
   )
   const declarations = new Map<string, ts.FunctionDeclaration>()
+  const sceneMethods = new Map<string, ts.FunctionExpression>()
   let apiObject: ts.ObjectLiteralExpression | undefined
 
   const visit = (node: ts.Node) => {
     if (ts.isFunctionDeclaration(node) && node.name) declarations.set(node.name.text, node)
+    if (ts.isFunctionDeclaration(node) && node.name?.text === 'createSpriteScene') {
+      const sceneVisit = (child: ts.Node) => {
+        if (
+          ts.isPropertyAssignment(child) &&
+          ts.isIdentifier(child.name) &&
+          ts.isFunctionExpression(child.initializer)
+        ) {
+          sceneMethods.set(child.name.text, child.initializer)
+        }
+        ts.forEachChild(child, sceneVisit)
+      }
+      sceneVisit(node)
+    }
     if (
       ts.isVariableDeclaration(node) &&
       node.name.getText() === 'api' &&
@@ -119,6 +141,12 @@ function publicRuntimeSignatures(source: string): Map<string, string[]> {
       signatures.set(property.name.text, parameterNames(implementation.parameters))
     } else if (ts.isIdentifier(implementation)) {
       const declaration = declarations.get(implementation.text)
+      if (declaration) signatures.set(property.name.text, parameterNames(declaration.parameters))
+    } else if (
+      ts.isPropertyAccessExpression(implementation) &&
+      implementation.expression.getText() === '_spriteScene'
+    ) {
+      const declaration = sceneMethods.get(implementation.name.text)
       if (declaration) signatures.set(property.name.text, parameterNames(declaration.parameters))
     }
   }
@@ -213,7 +241,12 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // +1, `remember(kind, name)` 2 e `picture(name)` 1. No anfitrião (3): a nitidez por
   // imagem (`smoothing(ctx, img, width)`). Aqui não há `late`: o motor sempre tem laço.
   // 1244 → 1243: `finite` passou a entregar `Number.isFinite` direto ao `every`.
-  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1243)
+  // 02/10: scene controller, typed engine adapters and shared HUD replace the manual object renderer.
+  // 02/10 revisão: operações separadas, famílias persistentes, cópias nativas e isolamento de eventos.
+  // Este contador inclui parâmetros com tipagem contextual do adaptador; o teste semântico acima cobre todos.
+  // +14: projection/decorations, mold event/host, pause host and family cleanup.
+  // +2 (full review 02/10): as duas varreduras novas das pistas, compartilhadas com o básico.
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1377)
 })
 
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {
@@ -227,6 +260,16 @@ test('a guarda de assinatura detecta uma troca de parâmetros', () => {
   )
   expect(runtimeSignatureMismatches(swapped)).toContain(
     'moveWithKeys: runtime (dt, c) ≠ contrato (c, dt)',
+  )
+})
+
+test('a guarda de assinatura também alcança eventos delegados ao controlador de pista', () => {
+  const swapped = gameKitRuntime.replace(
+    'onTrackMoldEncounter: function (name, mold, fn)',
+    'onTrackMoldEncounter: function (mold, name, fn)',
+  )
+  expect(runtimeSignatureMismatches(swapped)).toContain(
+    'onTrackMoldEncounter: runtime (mold, name, fn) ≠ contrato (name, mold, fn)',
   )
 })
 
@@ -248,6 +291,8 @@ test('o runtime injetado passa pela análise semântica do TypeScript', () => {
     [CAMPAIGN_VOCABULARY_FILE, { source: CAMPAIGN_VOCABULARY, kind: ts.ScriptKind.TS }],
     [SCENE_CONTRACT_FILE, { source: SCENE_CONTRACT, kind: ts.ScriptKind.TS }],
     [SCENE_HOST_FILE, { source: SCENE_HOST, kind: ts.ScriptKind.TS }],
+    ['spriteContract.ts', { source: SPRITE_CONTRACT, kind: ts.ScriptKind.TS }],
+    ['spriteHostContract.ts', { source: SPRITE_HOST, kind: ts.ScriptKind.TS }],
     [HOST_CONTRACT_FILE, { source: HOST_CONTRACT, kind: ts.ScriptKind.TS }],
   ])
   // O contrato importa `./campaignVocabulary`, e o `./` faz o TypeScript pedir um
@@ -266,14 +311,23 @@ test('o runtime injetado passa pela análise semântica do TypeScript', () => {
     ...defaultHost,
     resolveModuleNames: (names, containingFile) =>
       names.map((name) =>
-        name === '../scene-2d/contract'
-          ? { resolvedFileName: SCENE_CONTRACT_FILE, extension: ts.Extension.Ts }
-          : name === '../scene-2d/host'
-            ? { resolvedFileName: SCENE_HOST_FILE, extension: ts.Extension.Ts }
-            : ts.resolveModuleName(name, containingFile, options, {
-                ...defaultHost,
-                fileExists: (file) => Boolean(virtualSource(file)) || defaultHost.fileExists(file),
-              }).resolvedModule,
+        name === './runtimeContract'
+          ? { resolvedFileName: RUNTIME_CONTRACT_FILE, extension: ts.Extension.Ts }
+          : name.endsWith('/spriteContract')
+            ? { resolvedFileName: 'spriteContract.ts', extension: ts.Extension.Ts }
+            : name.endsWith('/spriteHostContract')
+              ? { resolvedFileName: 'spriteHostContract.ts', extension: ts.Extension.Ts }
+              : name === './contract'
+                ? { resolvedFileName: SCENE_CONTRACT_FILE, extension: ts.Extension.Ts }
+                : name === '../scene-2d/contract'
+                  ? { resolvedFileName: SCENE_CONTRACT_FILE, extension: ts.Extension.Ts }
+                  : name === '../scene-2d/host'
+                    ? { resolvedFileName: SCENE_HOST_FILE, extension: ts.Extension.Ts }
+                    : ts.resolveModuleName(name, containingFile, options, {
+                        ...defaultHost,
+                        fileExists: (file) =>
+                          Boolean(virtualSource(file)) || defaultHost.fileExists(file),
+                      }).resolvedModule,
       ),
     fileExists: (fileName) => Boolean(virtualSource(fileName)) || defaultHost.fileExists(fileName),
     readFile: (fileName) => virtualSource(fileName)?.source ?? defaultHost.readFile(fileName),

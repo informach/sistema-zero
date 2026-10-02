@@ -1,6 +1,7 @@
 import type { BlockLevel } from '../core/levels'
 import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
 import { ESSENTIAL_2D_BLOCK_TYPES } from '../journey/blockProfiles'
+import { isSceneNameBlock } from '../official-extensions/scene-2d/catalog'
 import { resolveProgrammingBlockLevel } from './programmingContract'
 
 /**
@@ -240,7 +241,7 @@ const ESSENTIAL_2D_TYPES = new Set<string>(ESSENTIAL_2D_BLOCK_TYPES)
 export function resolveBlockLevel(type: string): BlockLevel {
   // O Construtor recebe o perfil Essencial; o Inventor abre o Jogo 2D completo.
   if (type.startsWith('sz_g2d_')) {
-    return ESSENTIAL_2D_TYPES.has(type) ? 'iniciante-2d' : 'iniciante-3d'
+    return ESSENTIAL_2D_TYPES.has(type) || isSceneNameBlock(type) ? 'iniciante-2d' : 'iniciante-3d'
   }
   if (type.startsWith('sz_g3d_')) return G3D_FLOOR
   const programmingLevel = resolveProgrammingBlockLevel(type)

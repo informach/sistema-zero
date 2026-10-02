@@ -16,7 +16,7 @@ const COLOUR_BY_TYPE = new Map<string, string>(
   ),
 )
 // A lista de nomes vive DENTRO dos blocos de camada e de pista: sai no tom deles.
-const SCENE_COLOUR = COLOUR_BY_TYPE.get(sceneTypes('g2d', 'layers')[0] ?? '')
+const SCENE_COLOUR = COLOUR_BY_TYPE.get(sceneTypes('g2d', 'begin')[0] ?? '')
 const ORDER_BY_TYPE = new Map([...COLOUR_BY_TYPE.keys()].map((type, index) => [type, index]))
 export const gameTwoDBlocks = canonicalGameTwoDBlocks
   .map((block) => ({

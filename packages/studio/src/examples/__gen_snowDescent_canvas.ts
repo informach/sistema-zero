@@ -4683,8 +4683,8 @@ export const SNOW_IR = {
       },
       {
         type: 'funcDecl',
-        name: 'atualizar',
-        params: ['dt'],
+        name: 'controlar',
+        params: [],
         body: [
           {
             type: 'var',
@@ -5037,6 +5037,27 @@ export const SNOW_IR = {
               type: 'var',
               name: 'reinicio',
             },
+          },
+        ],
+      },
+      {
+        type: 'funcDecl',
+        name: 'atualizar',
+        params: ['dt'],
+        body: [
+          {
+            type: 'callFunction',
+            name: 'controlar',
+            args: [],
+          },
+          {
+            type: 'var',
+            name: 'tocando',
+            value: {
+              type: 'inputPointer',
+              axis: 'down',
+            },
+            kind: 'const',
           },
           {
             type: 'assign',
@@ -5630,6 +5651,396 @@ export const SNOW_IR = {
       },
       {
         type: 'funcDecl',
+        name: 'desenharItem',
+        params: ['item'],
+        body: [
+          {
+            type: 'var',
+            name: 'distancia',
+            value: {
+              type: 'binop',
+              op: '+',
+              left: {
+                type: 'binop',
+                op: '-',
+                left: {
+                  type: 'memberGet',
+                  object: {
+                    type: 'var',
+                    name: 'item',
+                  },
+                  name: 'z',
+                },
+                right: {
+                  type: 'var',
+                  name: 'progresso',
+                },
+              },
+              right: {
+                type: 'num',
+                value: 120,
+              },
+            },
+            kind: 'const',
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'logical',
+              op: '&&',
+              left: {
+                type: 'binop',
+                op: '>=',
+                left: {
+                  type: 'var',
+                  name: 'distancia',
+                },
+                right: {
+                  type: 'num',
+                  value: 20,
+                },
+              },
+              right: {
+                type: 'binop',
+                op: '<=',
+                left: {
+                  type: 'var',
+                  name: 'distancia',
+                },
+                right: {
+                  type: 'num',
+                  value: 2600,
+                },
+              },
+            },
+            then: [
+              {
+                type: 'var',
+                name: 'escala',
+                value: {
+                  type: 'binop',
+                  op: '/',
+                  left: {
+                    type: 'num',
+                    value: 300,
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'distancia',
+                  },
+                },
+                kind: 'const',
+              },
+              {
+                type: 'var',
+                name: 'largura',
+                value: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'memberGet',
+                    object: {
+                      type: 'var',
+                      name: 'item',
+                    },
+                    name: 'w',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'escala',
+                  },
+                },
+                kind: 'const',
+              },
+              {
+                type: 'var',
+                name: 'altura',
+                value: {
+                  type: 'binop',
+                  op: '*',
+                  left: {
+                    type: 'memberGet',
+                    object: {
+                      type: 'var',
+                      name: 'item',
+                    },
+                    name: 'h',
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'escala',
+                  },
+                },
+                kind: 'const',
+              },
+              {
+                type: 'var',
+                name: 'telaX',
+                value: {
+                  type: 'binop',
+                  op: '-',
+                  left: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'num',
+                      value: 320,
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'memberGet',
+                          object: {
+                            type: 'var',
+                            name: 'item',
+                          },
+                          name: 'x',
+                        },
+                        right: {
+                          type: 'binop',
+                          op: '*',
+                          left: {
+                            type: 'var',
+                            name: 'jogadorX',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 0.2,
+                          },
+                        },
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'escala',
+                      },
+                    },
+                  },
+                  right: {
+                    type: 'binop',
+                    op: '/',
+                    left: {
+                      type: 'var',
+                      name: 'largura',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 2,
+                    },
+                  },
+                },
+                kind: 'const',
+              },
+              {
+                type: 'var',
+                name: 'telaY',
+                value: {
+                  type: 'binop',
+                  op: '-',
+                  left: {
+                    type: 'binop',
+                    op: '+',
+                    left: {
+                      type: 'num',
+                      value: 201.6,
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '*',
+                      left: {
+                        type: 'num',
+                        value: 160,
+                      },
+                      right: {
+                        type: 'var',
+                        name: 'escala',
+                      },
+                    },
+                  },
+                  right: {
+                    type: 'var',
+                    name: 'altura',
+                  },
+                },
+                kind: 'const',
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'memberGet',
+                    object: {
+                      type: 'var',
+                      name: 'item',
+                    },
+                    name: 'kind',
+                  },
+                  right: {
+                    type: 'str',
+                    value: 'star',
+                  },
+                },
+                then: [
+                  {
+                    type: 'canvasDrawImage',
+                    ctxVar: 'ctx',
+                    src: 'neve-estrela',
+                    x: {
+                      type: 'var',
+                      name: 'telaX',
+                    },
+                    y: {
+                      type: 'var',
+                      name: 'telaY',
+                    },
+                    w: {
+                      type: 'var',
+                      name: 'largura',
+                    },
+                    h: {
+                      type: 'var',
+                      name: 'altura',
+                    },
+                  },
+                ],
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'memberGet',
+                    object: {
+                      type: 'var',
+                      name: 'item',
+                    },
+                    name: 'kind',
+                  },
+                  right: {
+                    type: 'str',
+                    value: 'flag',
+                  },
+                },
+                then: [
+                  {
+                    type: 'canvasDrawImage',
+                    ctxVar: 'ctx',
+                    src: 'neve-bandeira',
+                    x: {
+                      type: 'var',
+                      name: 'telaX',
+                    },
+                    y: {
+                      type: 'var',
+                      name: 'telaY',
+                    },
+                    w: {
+                      type: 'var',
+                      name: 'largura',
+                    },
+                    h: {
+                      type: 'var',
+                      name: 'altura',
+                    },
+                  },
+                ],
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'memberGet',
+                    object: {
+                      type: 'var',
+                      name: 'item',
+                    },
+                    name: 'kind',
+                  },
+                  right: {
+                    type: 'str',
+                    value: 'pine',
+                  },
+                },
+                then: [
+                  {
+                    type: 'canvasDrawImage',
+                    ctxVar: 'ctx',
+                    src: 'neve-pinheiro',
+                    x: {
+                      type: 'var',
+                      name: 'telaX',
+                    },
+                    y: {
+                      type: 'var',
+                      name: 'telaY',
+                    },
+                    w: {
+                      type: 'var',
+                      name: 'largura',
+                    },
+                    h: {
+                      type: 'var',
+                      name: 'altura',
+                    },
+                  },
+                ],
+              },
+              {
+                type: 'if',
+                cond: {
+                  type: 'binop',
+                  op: '===',
+                  left: {
+                    type: 'memberGet',
+                    object: {
+                      type: 'var',
+                      name: 'item',
+                    },
+                    name: 'kind',
+                  },
+                  right: {
+                    type: 'str',
+                    value: 'ice',
+                  },
+                },
+                then: [
+                  {
+                    type: 'canvasDrawImage',
+                    ctxVar: 'ctx',
+                    src: 'neve-gelo',
+                    x: {
+                      type: 'var',
+                      name: 'telaX',
+                    },
+                    y: {
+                      type: 'var',
+                      name: 'telaY',
+                    },
+                    w: {
+                      type: 'var',
+                      name: 'largura',
+                    },
+                    h: {
+                      type: 'var',
+                      name: 'altura',
+                    },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        type: 'funcDecl',
         name: 'desenhar',
         params: ['ctx'],
         body: [
@@ -5801,385 +6212,12 @@ export const SNOW_IR = {
                 },
                 then: [
                   {
-                    type: 'var',
-                    name: 'distancia',
-                    value: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'binop',
-                        op: '-',
-                        left: {
-                          type: 'memberGet',
-                          object: {
-                            type: 'var',
-                            name: 'item',
-                          },
-                          name: 'z',
-                        },
-                        right: {
-                          type: 'var',
-                          name: 'progresso',
-                        },
-                      },
-                      right: {
-                        type: 'num',
-                        value: 120,
-                      },
-                    },
-                    kind: 'const',
-                  },
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'logical',
-                      op: '&&',
-                      left: {
-                        type: 'binop',
-                        op: '>=',
-                        left: {
-                          type: 'var',
-                          name: 'distancia',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 20,
-                        },
-                      },
-                      right: {
-                        type: 'binop',
-                        op: '<=',
-                        left: {
-                          type: 'var',
-                          name: 'distancia',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 2600,
-                        },
-                      },
-                    },
-                    then: [
+                    type: 'callFunction',
+                    name: 'desenharItem',
+                    args: [
                       {
                         type: 'var',
-                        name: 'escala',
-                        value: {
-                          type: 'binop',
-                          op: '/',
-                          left: {
-                            type: 'num',
-                            value: 300,
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'distancia',
-                          },
-                        },
-                        kind: 'const',
-                      },
-                      {
-                        type: 'var',
-                        name: 'largura',
-                        value: {
-                          type: 'binop',
-                          op: '*',
-                          left: {
-                            type: 'memberGet',
-                            object: {
-                              type: 'var',
-                              name: 'item',
-                            },
-                            name: 'w',
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'escala',
-                          },
-                        },
-                        kind: 'const',
-                      },
-                      {
-                        type: 'var',
-                        name: 'altura',
-                        value: {
-                          type: 'binop',
-                          op: '*',
-                          left: {
-                            type: 'memberGet',
-                            object: {
-                              type: 'var',
-                              name: 'item',
-                            },
-                            name: 'h',
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'escala',
-                          },
-                        },
-                        kind: 'const',
-                      },
-                      {
-                        type: 'var',
-                        name: 'telaX',
-                        value: {
-                          type: 'binop',
-                          op: '-',
-                          left: {
-                            type: 'binop',
-                            op: '+',
-                            left: {
-                              type: 'num',
-                              value: 320,
-                            },
-                            right: {
-                              type: 'binop',
-                              op: '*',
-                              left: {
-                                type: 'binop',
-                                op: '-',
-                                left: {
-                                  type: 'memberGet',
-                                  object: {
-                                    type: 'var',
-                                    name: 'item',
-                                  },
-                                  name: 'x',
-                                },
-                                right: {
-                                  type: 'binop',
-                                  op: '*',
-                                  left: {
-                                    type: 'var',
-                                    name: 'jogadorX',
-                                  },
-                                  right: {
-                                    type: 'num',
-                                    value: 0.2,
-                                  },
-                                },
-                              },
-                              right: {
-                                type: 'var',
-                                name: 'escala',
-                              },
-                            },
-                          },
-                          right: {
-                            type: 'binop',
-                            op: '/',
-                            left: {
-                              type: 'var',
-                              name: 'largura',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 2,
-                            },
-                          },
-                        },
-                        kind: 'const',
-                      },
-                      {
-                        type: 'var',
-                        name: 'telaY',
-                        value: {
-                          type: 'binop',
-                          op: '-',
-                          left: {
-                            type: 'binop',
-                            op: '+',
-                            left: {
-                              type: 'num',
-                              value: 201.6,
-                            },
-                            right: {
-                              type: 'binop',
-                              op: '*',
-                              left: {
-                                type: 'num',
-                                value: 160,
-                              },
-                              right: {
-                                type: 'var',
-                                name: 'escala',
-                              },
-                            },
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'altura',
-                          },
-                        },
-                        kind: 'const',
-                      },
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'binop',
-                          op: '===',
-                          left: {
-                            type: 'memberGet',
-                            object: {
-                              type: 'var',
-                              name: 'item',
-                            },
-                            name: 'kind',
-                          },
-                          right: {
-                            type: 'str',
-                            value: 'star',
-                          },
-                        },
-                        then: [
-                          {
-                            type: 'canvasDrawImage',
-                            ctxVar: 'ctx',
-                            src: 'neve-estrela',
-                            x: {
-                              type: 'var',
-                              name: 'telaX',
-                            },
-                            y: {
-                              type: 'var',
-                              name: 'telaY',
-                            },
-                            w: {
-                              type: 'var',
-                              name: 'largura',
-                            },
-                            h: {
-                              type: 'var',
-                              name: 'altura',
-                            },
-                          },
-                        ],
-                      },
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'binop',
-                          op: '===',
-                          left: {
-                            type: 'memberGet',
-                            object: {
-                              type: 'var',
-                              name: 'item',
-                            },
-                            name: 'kind',
-                          },
-                          right: {
-                            type: 'str',
-                            value: 'flag',
-                          },
-                        },
-                        then: [
-                          {
-                            type: 'canvasDrawImage',
-                            ctxVar: 'ctx',
-                            src: 'neve-bandeira',
-                            x: {
-                              type: 'var',
-                              name: 'telaX',
-                            },
-                            y: {
-                              type: 'var',
-                              name: 'telaY',
-                            },
-                            w: {
-                              type: 'var',
-                              name: 'largura',
-                            },
-                            h: {
-                              type: 'var',
-                              name: 'altura',
-                            },
-                          },
-                        ],
-                      },
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'binop',
-                          op: '===',
-                          left: {
-                            type: 'memberGet',
-                            object: {
-                              type: 'var',
-                              name: 'item',
-                            },
-                            name: 'kind',
-                          },
-                          right: {
-                            type: 'str',
-                            value: 'pine',
-                          },
-                        },
-                        then: [
-                          {
-                            type: 'canvasDrawImage',
-                            ctxVar: 'ctx',
-                            src: 'neve-pinheiro',
-                            x: {
-                              type: 'var',
-                              name: 'telaX',
-                            },
-                            y: {
-                              type: 'var',
-                              name: 'telaY',
-                            },
-                            w: {
-                              type: 'var',
-                              name: 'largura',
-                            },
-                            h: {
-                              type: 'var',
-                              name: 'altura',
-                            },
-                          },
-                        ],
-                      },
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'binop',
-                          op: '===',
-                          left: {
-                            type: 'memberGet',
-                            object: {
-                              type: 'var',
-                              name: 'item',
-                            },
-                            name: 'kind',
-                          },
-                          right: {
-                            type: 'str',
-                            value: 'ice',
-                          },
-                        },
-                        then: [
-                          {
-                            type: 'canvasDrawImage',
-                            ctxVar: 'ctx',
-                            src: 'neve-gelo',
-                            x: {
-                              type: 'var',
-                              name: 'telaX',
-                            },
-                            y: {
-                              type: 'var',
-                              name: 'telaY',
-                            },
-                            w: {
-                              type: 'var',
-                              name: 'largura',
-                            },
-                            h: {
-                              type: 'var',
-                              name: 'altura',
-                            },
-                          },
-                        ],
+                        name: 'item',
                       },
                     ],
                   },

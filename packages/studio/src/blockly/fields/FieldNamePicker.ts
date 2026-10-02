@@ -160,7 +160,6 @@ export type NameKind =
   | 'w3dachieve'
   | 'scene-layer'
   | 'scene-track'
-  | 'scene-object'
 
 const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'variable',
@@ -215,7 +214,6 @@ export function nameKindAllowsFreeText(kind: NameKind): boolean {
 const NAME_KINDS: readonly NameKind[] = [
   'scene-layer',
   'scene-track',
-  'scene-object',
   'path',
   'w3dpoint',
   'w3dnpc',
@@ -602,6 +600,9 @@ function collectPaths(workspace: Blockly.Workspace | null | undefined): string[]
 }
 
 const CHARACTER_LOOP_BINDERS: Record<string, string[]> = {
+  sz_gk_on_track_sprite_encounter: ['PARAM'],
+  sz_gk_on_track_mold_encounter: ['PARAM'],
+  sz_gk_for_each_track_sprite: ['PARAM'],
   sz_gk_for_each_active: ['ITEM'],
   sz_gk_overlap_groups: ['A_NAME', 'B_NAME'],
 }
@@ -1050,20 +1051,15 @@ interface KindUI {
 const KIND_UI: Record<NameKind, KindUI> = {
   'scene-layer': {
     icon: '🏔️',
-    placeholder: 'nome da camada',
-    empty: 'Nenhuma camada ainda. Crie uma com "Criar camada".',
+    placeholder: 'nome do cenário',
+    empty: 'Nenhum cenário ainda. Crie um com "Adicionar cenário".',
   },
   'scene-track': {
     icon: '⛷️',
     placeholder: 'nome da pista',
     empty: 'Nenhuma pista ainda. Crie uma com "Criar pista".',
   },
-  'scene-object': {
-    icon: '🚩',
-    placeholder: 'nome do objeto',
-    empty:
-      'Nenhum objeto com nome fixo ainda. Crie um com "Na pista … objeto". Um nome montado num laço não aparece na lista: encaixe o mesmo bloco de texto aqui.',
-  },
+
   path: {
     icon: '🛤️',
     placeholder: 'nome do caminho',
@@ -2199,9 +2195,6 @@ function fixedSocketName(block: Blockly.Block | null | undefined, input: string)
  * criador precisa aceitar um valor. A lista oferece os nomes FIXOS; o campo continua
  * aceitando texto digitado.
  *
- * O objeto pertence a uma pista: quando o bloco que usa o nome aponta uma pista fixa,
- * a lista mostra só os objetos dela (e os de pista calculada, que não dá para saber).
- * Sem nenhum candidato nesse recorte, mostra todos, que é melhor que uma lista vazia.
  */
 export function collectSceneNames(
   workspace: Blockly.Workspace | null | undefined,
@@ -2215,20 +2208,15 @@ export function collectSceneNames(
     kind,
     nameBlock ? sceneTargetOf(nameBlock.type) : undefined,
   )
-  const wantedTrack = kind === 'object' ? fixedSocketName(nameBlock?.getParent(), 'TRACK') : ''
   const all: string[] = []
-  const ofTrack: string[] = []
   for (const block of workspace.getAllBlocks(false)) {
     const socket = registry[block.type]
     if (!socket) continue
     const name = fixedSocketName(block, socket)
     if (!name) continue
     if (!all.includes(name)) all.push(name)
-    if (!wantedTrack) continue
-    const track = fixedSocketName(block, 'TRACK')
-    if ((!track || track === wantedTrack) && !ofTrack.includes(name)) ofTrack.push(name)
   }
-  return ofTrack.length > 0 ? ofTrack : all
+  return all
 }
 
 /** Um scanner por tipo simples sobre o workspace (o pop-up abre no clique — O(N) basta). */
@@ -2307,8 +2295,6 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
         return collectSceneNames(ws, 'layer', block)
       case 'scene-track':
         return collectSceneNames(ws, 'track', block)
-      case 'scene-object':
-        return collectSceneNames(ws, 'object', block)
       case 'variable':
         return collectReadableVariables(block)
       case 'mutable-variable':

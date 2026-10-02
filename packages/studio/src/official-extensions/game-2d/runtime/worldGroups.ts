@@ -439,7 +439,10 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
       // Velocidade ausente conta como PARADO e segue sendo descartada — é o caso
       // do sprite que a câmera deixou para trás.
       var vx = _finiteNumber(s.vx, 0), vy = _finiteNumber(s.vy, 0);
-      if (
+      // Sprite de pista: x/y são posição na pista (y = distância), não na tela. Quem
+      // decide se saiu é a projeção da cena, como no Avançado.
+      var onTrack = _spriteScene && _spriteScene.owns(s);
+      if (onTrack ? _spriteScene.offscreen(s, m) :
         (s.x + s.w < visible.left - m && vx <= 0) ||
         (s.x > visible.right + m && vx >= 0) ||
         (s.y + s.h < visible.top - m && vy <= 0) ||

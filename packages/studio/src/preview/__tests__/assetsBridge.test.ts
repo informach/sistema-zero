@@ -384,3 +384,19 @@ describe('buildAssetsRuntime — __SZGAME_SOUNDS (áudio importado)', () => {
     expect(seededSounds(runtime).moeda).toBe(MP3)
   })
 })
+
+it('keeps named Pinta animations through the actual preview bridge, discarding invalid metadata', () => {
+  const sprite = {
+    frameW: 52,
+    frameH: 84,
+    animations: [{ name: 'deslizar', from: 0, to: 1, fps: 6, loop: true }],
+  }
+  const runtime = buildAssetsRuntime(
+    { skier: PNG, broken: PNG },
+    { skier: { sprite }, broken: { sprite: { ...sprite, frameW: -1 } } },
+  )
+  const win: { __SZGAME_ASSET_META?: Record<string, unknown> } = {}
+  new Function('window', runtime)(win)
+  expect(win.__SZGAME_ASSET_META?.skier).toEqual({ sprite })
+  expect(win.__SZGAME_ASSET_META?.broken).toBeUndefined()
+})

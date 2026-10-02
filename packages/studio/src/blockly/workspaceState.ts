@@ -675,7 +675,8 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
 }
 
 function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null {
-  if (isSceneStatement(stmt)) return sceneToBlock(stmt, exprToValueBlock) ?? rawJSBlock(stmt)
+  if (isSceneStatement(stmt))
+    return sceneToBlock(stmt, exprToValueBlock, statementsToBlocks) ?? rawJSBlock(stmt)
   const canvasBlock = canvasStatementIRToBlock(stmt, {
     block,
     expressionToBlock: exprToValueBlock,
@@ -3894,6 +3895,21 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
               W: w,
               H: h,
             })
+      }
+      case 'gk:drawCounter': {
+        const values = valueSocketsOf([
+          ['LABEL', stmt.label],
+          ['VALUE', stmt.value],
+          ['X', stmt.x],
+          ['Y', stmt.y],
+        ])
+        return values ? block('sz_gk_draw_counter', {}, {}, stmt.__id, values) : rawJSBlock(stmt)
+      }
+      case 'gk:setHealth': {
+        const lives = exprToValueBlock(stmt.lives)
+        return lives
+          ? block('sz_gk_set_health', { WHO: stmt.charVar }, {}, stmt.__id, { LIVES: lives })
+          : rawJSBlock(stmt)
       }
       case 'gk:rpgMoveGrid': {
         const cell = exprToValueBlock(valueToExpr(stmt.cell))

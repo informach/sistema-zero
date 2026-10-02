@@ -22,4563 +22,11 @@ export const SNOW_IR = {
       {
         type: 'gk:setStageDescription',
         description:
-          'Desça a montanha, pegue estrelas e desvie das bandeiras. Setas ou A/D para virar; arraste na neve no celular. Enter ou toque começa. P ou o botão no canto pausa. Chegue ao fim com pelo menos uma das três vidas. R reinicia.',
-      },
-      {
-        type: 'gk:setState',
-        name: 'jogando',
-      },
-      {
-        type: 'var',
-        name: 'trechos',
-        value: {
-          type: 'array',
-          items: [
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 280,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 340,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 460,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 520,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 600,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 640,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 700,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 820,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 840,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 880,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -40,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 930,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1000,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1060,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1080,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1180,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1240,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 70,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1320,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1360,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1410,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1420,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1540,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1560,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1600,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1720,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1780,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1800,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 40,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1890,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1900,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 1960,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2040,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2080,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2140,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2260,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 70,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2280,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2320,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2370,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2440,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2500,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2520,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2620,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2680,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2760,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2800,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -40,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2850,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2860,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 2980,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3000,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3040,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3160,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3220,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 70,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3240,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3330,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3340,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3400,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3480,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3520,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3580,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3700,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3720,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3760,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 40,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3810,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3880,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3940,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 3960,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4060,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4120,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 70,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4200,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4240,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4290,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4300,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4420,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4440,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4480,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4600,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4660,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4680,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -40,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4770,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4780,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4840,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4920,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 4960,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5020,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5140,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 70,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5160,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5200,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5250,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5320,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5380,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5400,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5500,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5560,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -80,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5640,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5680,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 40,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5730,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5740,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5860,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'star',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5880,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 22,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 5920,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6040,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              type: 'array',
-              items: [
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6100,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'flag',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 70,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6120,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 28,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 60,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'ice',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6210,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 150,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 32,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6220,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 210,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6280,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6400,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 240,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6460,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: -270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6580,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'objectLiteral',
-                  entries: [
-                    {
-                      key: 'kind',
-                      value: {
-                        type: 'str',
-                        value: 'pine',
-                      },
-                    },
-                    {
-                      key: 'x',
-                      value: {
-                        type: 'num',
-                        value: 270,
-                      },
-                    },
-                    {
-                      key: 'z',
-                      value: {
-                        type: 'num',
-                        value: 6640,
-                      },
-                    },
-                    {
-                      key: 'w',
-                      value: {
-                        type: 'num',
-                        value: 90,
-                      },
-                    },
-                    {
-                      key: 'h',
-                      value: {
-                        type: 'num',
-                        value: 135,
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        kind: 'const',
-      },
-      {
-        type: 'var',
-        name: 'percurso',
-        value: {
-          type: 'array',
-          items: [],
-        },
-        kind: 'const',
-      },
-      {
-        type: 'forRange',
-        varName: 'trecho',
-        from: {
-          type: 'num',
-          value: 0,
-        },
-        to: {
-          type: 'arrayLength',
-          arrayVar: 'trechos',
-        },
-        step: {
-          type: 'num',
-          value: 1,
-        },
-        body: [
-          {
-            type: 'var',
-            name: 'objetos',
-            value: {
-              type: 'index',
-              arrayVar: 'trechos',
-              index: {
-                type: 'var',
-                name: 'trecho',
-              },
-            },
-            kind: 'const',
-          },
-          {
-            type: 'forRange',
-            varName: 'indice',
-            from: {
-              type: 'num',
-              value: 0,
-            },
-            to: {
-              type: 'arrayLength',
-              arrayVar: 'objetos',
-            },
-            step: {
-              type: 'num',
-              value: 1,
-            },
-            body: [
-              {
-                type: 'arrayPush',
-                arrayVar: 'percurso',
-                value: {
-                  type: 'index',
-                  arrayVar: 'objetos',
-                  index: {
-                    type: 'var',
-                    name: 'indice',
-                  },
-                },
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'var',
-        name: 'tratados',
-        value: {
-          type: 'array',
-          items: [],
-        },
-      },
-      {
-        type: 'var',
-        name: 'estado',
-        value: {
-          type: 'str',
-          value: 'inicio',
-        },
-      },
-      {
-        type: 'var',
-        name: 'jogadorX',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'var',
-        name: 'progresso',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'var',
-        name: 'anterior',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'var',
-        name: 'vidas',
-        value: {
-          type: 'num',
-          value: 3,
-        },
-      },
-      {
-        type: 'var',
-        name: 'estrelas',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'var',
-        name: 'brilho',
-        value: {
-          type: 'num',
-          value: 0,
-        },
-      },
-      {
-        type: 'var',
-        name: 'apertadoAntes',
-        value: {
-          type: 'bool',
-          value: false,
-        },
-      },
-      {
-        type: 'var',
-        name: 'pausaAntes',
-        value: {
-          type: 'bool',
-          value: false,
-        },
-      },
-      {
-        type: 'var',
-        name: 'reinicioAntes',
-        value: {
-          type: 'bool',
-          value: false,
-        },
+          'Monte a descida com controles, movimento, vidas, placar e telas personalizáveis. Clique em Descer a montanha para começar. Setas/A-D ou arraste na neve para virar. P ou Pausar abre a pausa; Continuar retoma. Chegue com pelo menos seis estrelas e uma vida. O botão da tela final recomeça.',
       },
       {
         type: 'gk:sceneCommand',
-        method: 'createSceneLayer',
+        method: 'addSceneBackdrop',
         args: [
           {
             type: 'str',
@@ -4590,13 +38,13 @@ export const SNOW_IR = {
           },
           {
             type: 'str',
-            value: 'back',
+            value: 'far',
           },
         ],
       },
       {
         type: 'gk:sceneCommand',
-        method: 'createSceneLayer',
+        method: 'addSceneBackdrop',
         args: [
           {
             type: 'str',
@@ -4614,7 +62,7 @@ export const SNOW_IR = {
       },
       {
         type: 'gk:sceneCommand',
-        method: 'orderSceneLayer',
+        method: 'sceneBackdropMotion',
         args: [
           {
             type: 'str',
@@ -4622,13 +70,13 @@ export const SNOW_IR = {
           },
           {
             type: 'num',
-            value: 1,
+            value: 40,
           },
         ],
       },
       {
         type: 'gk:sceneCommand',
-        method: 'createSceneLayer',
+        method: 'addSceneBackdrop',
         args: [
           {
             type: 'str',
@@ -4646,21 +94,7 @@ export const SNOW_IR = {
       },
       {
         type: 'gk:sceneCommand',
-        method: 'orderSceneLayer',
-        args: [
-          {
-            type: 'str',
-            value: 'chao',
-          },
-          {
-            type: 'num',
-            value: 2,
-          },
-        ],
-      },
-      {
-        type: 'gk:sceneCommand',
-        method: 'createSceneLayer',
+        method: 'addSceneBackdrop',
         args: [
           {
             type: 'str',
@@ -4677,1641 +111,892 @@ export const SNOW_IR = {
         ],
       },
       {
-        type: 'funcDecl',
-        name: 'preparar',
-        params: [],
+        type: 'gk:sceneCommand',
+        method: 'createSpriteTrack',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+        ],
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'jogador',
+        image: 'neve-esquiador',
+        w: {
+          type: 'num',
+          value: 26,
+        },
+        h: {
+          type: 'num',
+          value: 42,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ffffff',
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'sceneAnimation',
+        args: [
+          {
+            type: 'var',
+            name: 'jogador',
+          },
+          {
+            type: 'str',
+            value: 'neve-esquiador-animado',
+          },
+          {
+            type: 'str',
+            value: 'deslizar',
+          },
+          {
+            type: 'bool',
+            value: false,
+          },
+        ],
+      },
+      {
+        type: 'gk:setHealth',
+        charVar: 'jogador',
+        lives: {
+          type: 'num',
+          value: 3,
+        },
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'trackFollow',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'jogador',
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'trackInput',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'str',
+            value: 'both',
+          },
+          {
+            type: 'num',
+            value: 140,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'trackLimit',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'num',
+            value: 120,
+          },
+          {
+            type: 'num',
+            value: 120,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'trackSpeed',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'num',
+            value: 320,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'trackFinishLine',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'num',
+            value: 6600,
+          },
+        ],
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'estrela',
+        image: 'neve-estrela',
+        w: {
+          type: 'num',
+          value: 22,
+        },
+        h: {
+          type: 'num',
+          value: 22,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ffffff',
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'putTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'estrela',
+          },
+          {
+            type: 'num',
+            value: -80,
+          },
+          {
+            type: 'num',
+            value: 600,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'repeatTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'estrela',
+          },
+          {
+            type: 'num',
+            value: 12,
+          },
+          {
+            type: 'num',
+            value: 480,
+          },
+          {
+            type: 'str',
+            value: 'weave',
+          },
+        ],
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'bandeira',
+        image: 'neve-bandeira',
+        w: {
+          type: 'num',
+          value: 28,
+        },
+        h: {
+          type: 'num',
+          value: 60,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ffffff',
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'putTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'bandeira',
+          },
+          {
+            type: 'num',
+            value: 80,
+          },
+          {
+            type: 'num',
+            value: 840,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'repeatTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'bandeira',
+          },
+          {
+            type: 'num',
+            value: 6,
+          },
+          {
+            type: 'num',
+            value: 960,
+          },
+          {
+            type: 'str',
+            value: 'alternate',
+          },
+        ],
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'bandeiraDireita',
+        image: 'neve-bandeira',
+        w: {
+          type: 'num',
+          value: 28,
+        },
+        h: {
+          type: 'num',
+          value: 60,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ffffff',
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'putTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'bandeiraDireita',
+          },
+          {
+            type: 'num',
+            value: 70,
+          },
+          {
+            type: 'num',
+            value: 1320,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'repeatTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'bandeiraDireita',
+          },
+          {
+            type: 'num',
+            value: 6,
+          },
+          {
+            type: 'num',
+            value: 960,
+          },
+          {
+            type: 'str',
+            value: 'line',
+          },
+        ],
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'gelo',
+        image: 'neve-gelo',
+        w: {
+          type: 'num',
+          value: 150,
+        },
+        h: {
+          type: 'num',
+          value: 32,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ffffff',
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'putTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'gelo',
+          },
+          {
+            type: 'num',
+            value: -40,
+          },
+          {
+            type: 'num',
+            value: 930,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'repeatTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'gelo',
+          },
+          {
+            type: 'num',
+            value: 12,
+          },
+          {
+            type: 'num',
+            value: 480,
+          },
+          {
+            type: 'str',
+            value: 'weave',
+          },
+        ],
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'pinheiroEsquerda',
+        image: 'neve-pinheiro',
+        w: {
+          type: 'num',
+          value: 90,
+        },
+        h: {
+          type: 'num',
+          value: 135,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ffffff',
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'putTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'pinheiroEsquerda',
+          },
+          {
+            type: 'num',
+            value: -210,
+          },
+          {
+            type: 'num',
+            value: 280,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'repeatTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'pinheiroEsquerda',
+          },
+          {
+            type: 'num',
+            value: 36,
+          },
+          {
+            type: 'num',
+            value: 180,
+          },
+          {
+            type: 'str',
+            value: 'steps-left',
+          },
+        ],
+      },
+      {
+        type: 'gk:createCharacter',
+        varName: 'pinheiroDireita',
+        image: 'neve-pinheiro',
+        w: {
+          type: 'num',
+          value: 90,
+        },
+        h: {
+          type: 'num',
+          value: 135,
+        },
+        speed: {
+          type: 'num',
+          value: 0,
+        },
+        color: '#ffffff',
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'putTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'pinheiroDireita',
+          },
+          {
+            type: 'num',
+            value: 210,
+          },
+          {
+            type: 'num',
+            value: 340,
+          },
+        ],
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'repeatTrackSprite',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'pinheiroDireita',
+          },
+          {
+            type: 'num',
+            value: 36,
+          },
+          {
+            type: 'num',
+            value: 180,
+          },
+          {
+            type: 'str',
+            value: 'steps-right',
+          },
+        ],
+      },
+      {
+        type: 'var',
+        name: 'estrelas',
+        value: {
+          type: 'num',
+          value: 0,
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'menu',
+        title: {
+          type: 'str',
+          value: 'DESCIDA DA NEVE',
+        },
+        text: {
+          type: 'str',
+          value: 'Pegue seis estrelas e desvie das bandeiras. Use setas ou arraste na pista.',
+        },
+        button: {
+          type: 'str',
+          value: 'Descer a montanha',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'pausa',
+        title: {
+          type: 'str',
+          value: 'DESCANSO NA MONTANHA',
+        },
+        text: {
+          type: 'str',
+          value: 'Vamos continuar a descida?',
+        },
+        button: {
+          type: 'str',
+          value: 'Continuar',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'vitoria',
+        title: {
+          type: 'str',
+          value: 'VOCÊ CHEGOU!',
+        },
+        text: {
+          type: 'str',
+          value: 'Você chegou com pelo menos seis estrelas.',
+        },
+        button: {
+          type: 'str',
+          value: 'Descer de novo',
+        },
+      },
+      {
+        type: 'gk:setScreenText',
+        screen: 'fim',
+        title: {
+          type: 'str',
+          value: 'VAMOS TENTAR DE NOVO?',
+        },
+        text: {
+          type: 'str',
+          value: 'Pegue seis estrelas e cuide das três vidas.',
+        },
+        button: {
+          type: 'str',
+          value: 'Tentar de novo',
+        },
+      },
+      {
+        type: 'gk:setPauseKey',
+        key: 'p',
+      },
+      {
+        type: 'gk:sceneCommand',
+        method: 'trackCameraView',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'str',
+            value: 'near',
+          },
+        ],
+      },
+    ],
+    events: [
+      {
+        type: 'gk:sceneEvent',
+        method: 'onTrackSpriteEncounter',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'estrela',
+          },
+        ],
         body: [
           {
-            type: 'assign',
-            name: 'jogadorX',
-            value: {
-              type: 'num',
-              value: 0,
-            },
-          },
-          {
-            type: 'assign',
-            name: 'progresso',
-            value: {
-              type: 'num',
-              value: 0,
-            },
-          },
-          {
-            type: 'assign',
-            name: 'anterior',
-            value: {
-              type: 'num',
-              value: 0,
-            },
-          },
-          {
-            type: 'assign',
-            name: 'vidas',
-            value: {
-              type: 'num',
-              value: 3,
-            },
+            type: 'gk:sceneCommand',
+            method: 'collectTrackItem',
+            args: [],
           },
           {
             type: 'assign',
             name: 'estrelas',
             value: {
-              type: 'num',
-              value: 0,
-            },
-          },
-          {
-            type: 'assign',
-            name: 'brilho',
-            value: {
-              type: 'num',
-              value: 0,
-            },
-          },
-          {
-            type: 'assign',
-            name: 'tratados',
-            value: {
-              type: 'array',
-              items: [],
-            },
-          },
-          {
-            type: 'forRange',
-            varName: 'i',
-            from: {
-              type: 'num',
-              value: 0,
-            },
-            to: {
-              type: 'arrayLength',
-              arrayVar: 'percurso',
-            },
-            step: {
-              type: 'num',
-              value: 1,
-            },
-            body: [
-              {
-                type: 'arrayPush',
-                arrayVar: 'tratados',
-                value: {
-                  type: 'bool',
-                  value: false,
-                },
-              },
-            ],
-          },
-          {
-            type: 'gk:sceneCommand',
-            method: 'createTrack',
-            args: [
-              {
-                type: 'str',
-                value: 'pista',
-              },
-              {
-                type: 'num',
-                value: 28,
-              },
-              {
-                type: 'num',
-                value: 300,
-              },
-              {
-                type: 'num',
-                value: 160,
-              },
-              {
-                type: 'num',
-                value: 120,
-              },
-            ],
-          },
-          {
-            type: 'gk:sceneCommand',
-            method: 'viewTrack',
-            args: [
-              {
-                type: 'str',
-                value: 'pista',
-              },
-              {
-                type: 'num',
-                value: 20,
-              },
-              {
-                type: 'num',
-                value: 2600,
-              },
-            ],
-          },
-          {
-            type: 'gk:sceneCommand',
-            method: 'placeTrackObject',
-            args: [
-              {
-                type: 'str',
-                value: 'pista',
-              },
-              {
-                type: 'str',
-                value: 'jogador',
-              },
-              {
-                type: 'str',
-                value: 'neve-esquiador',
-              },
-              {
-                type: 'num',
-                value: 0,
-              },
-              {
-                type: 'num',
-                value: 0,
-              },
-              {
-                type: 'num',
-                value: 26,
-              },
-              {
-                type: 'num',
-                value: 42,
-              },
-            ],
-          },
-          {
-            type: 'forRange',
-            varName: 'i',
-            from: {
-              type: 'num',
-              value: 0,
-            },
-            to: {
-              type: 'arrayLength',
-              arrayVar: 'percurso',
-            },
-            step: {
-              type: 'num',
-              value: 1,
-            },
-            body: [
-              {
+              type: 'binop',
+              op: '+',
+              left: {
                 type: 'var',
-                name: 'item',
-                value: {
-                  type: 'index',
-                  arrayVar: 'percurso',
-                  index: {
-                    type: 'var',
-                    name: 'i',
-                  },
-                },
-                kind: 'const',
+                name: 'estrelas',
               },
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'memberGet',
-                    object: {
-                      type: 'var',
-                      name: 'item',
-                    },
-                    name: 'kind',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'star',
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:sceneCommand',
-                    method: 'placeTrackObject',
-                    args: [
-                      {
-                        type: 'str',
-                        value: 'pista',
-                      },
-                      {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'str',
-                          value: 'obj',
-                        },
-                        right: {
-                          type: 'var',
-                          name: 'i',
-                        },
-                      },
-                      {
-                        type: 'str',
-                        value: 'neve-estrela',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'x',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'z',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'w',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'h',
-                      },
-                    ],
-                  },
-                ],
+              right: {
+                type: 'num',
+                value: 1,
               },
+            },
+          },
+        ],
+        parameter: 'encontrado',
+      },
+      {
+        type: 'gk:sceneEvent',
+        method: 'onTrackSpriteEncounter',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'bandeira',
+          },
+        ],
+        body: [
+          {
+            type: 'gk:hurt',
+            charVar: 'jogador',
+            amount: {
+              type: 'num',
+              value: 1,
+            },
+            iframes: {
+              type: 'num',
+              value: 0.35,
+            },
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:isDead',
+              charVar: 'jogador',
+            },
+            then: [
               {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'memberGet',
-                    object: {
-                      type: 'var',
-                      name: 'item',
-                    },
-                    name: 'kind',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'flag',
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:sceneCommand',
-                    method: 'placeTrackObject',
-                    args: [
-                      {
-                        type: 'str',
-                        value: 'pista',
-                      },
-                      {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'str',
-                          value: 'obj',
-                        },
-                        right: {
-                          type: 'var',
-                          name: 'i',
-                        },
-                      },
-                      {
-                        type: 'str',
-                        value: 'neve-bandeira',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'x',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'z',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'w',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'h',
-                      },
-                    ],
-                  },
-                ],
+                type: 'gk:setState',
+                name: 'fim',
               },
+            ],
+          },
+        ],
+        parameter: 'encontrado',
+      },
+      {
+        type: 'gk:sceneEvent',
+        method: 'onTrackSpriteEncounter',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+          {
+            type: 'var',
+            name: 'bandeiraDireita',
+          },
+        ],
+        body: [
+          {
+            type: 'gk:hurt',
+            charVar: 'jogador',
+            amount: {
+              type: 'num',
+              value: 1,
+            },
+            iframes: {
+              type: 'num',
+              value: 0.35,
+            },
+          },
+          {
+            type: 'if',
+            cond: {
+              type: 'gk:isDead',
+              charVar: 'jogador',
+            },
+            then: [
               {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'memberGet',
-                    object: {
-                      type: 'var',
-                      name: 'item',
-                    },
-                    name: 'kind',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'pine',
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:sceneCommand',
-                    method: 'placeTrackObject',
-                    args: [
-                      {
-                        type: 'str',
-                        value: 'pista',
-                      },
-                      {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'str',
-                          value: 'obj',
-                        },
-                        right: {
-                          type: 'var',
-                          name: 'i',
-                        },
-                      },
-                      {
-                        type: 'str',
-                        value: 'neve-pinheiro',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'x',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'z',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'w',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'h',
-                      },
-                    ],
-                  },
-                ],
+                type: 'gk:setState',
+                name: 'fim',
               },
+            ],
+          },
+        ],
+        parameter: 'encontrado',
+      },
+      {
+        type: 'gk:sceneEvent',
+        method: 'onTrackFinish',
+        args: [
+          {
+            type: 'str',
+            value: 'pista',
+          },
+        ],
+        body: [
+          {
+            type: 'if',
+            cond: {
+              type: 'binop',
+              op: '>=',
+              left: {
+                type: 'var',
+                name: 'estrelas',
+              },
+              right: {
+                type: 'num',
+                value: 6,
+              },
+            },
+            then: [
               {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'memberGet',
-                    object: {
-                      type: 'var',
-                      name: 'item',
-                    },
-                    name: 'kind',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'ice',
-                  },
-                },
-                then: [
-                  {
-                    type: 'gk:sceneCommand',
-                    method: 'placeTrackObject',
-                    args: [
-                      {
-                        type: 'str',
-                        value: 'pista',
-                      },
-                      {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'str',
-                          value: 'obj',
-                        },
-                        right: {
-                          type: 'var',
-                          name: 'i',
-                        },
-                      },
-                      {
-                        type: 'str',
-                        value: 'neve-gelo',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'x',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'z',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'w',
-                      },
-                      {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'item',
-                        },
-                        name: 'h',
-                      },
-                    ],
-                  },
-                ],
+                type: 'gk:setState',
+                name: 'vitoria',
+              },
+            ],
+            else: [
+              {
+                type: 'gk:setState',
+                name: 'fim',
               },
             ],
           },
         ],
       },
       {
-        type: 'funcDecl',
-        name: 'atualizar',
-        params: ['dt'],
+        type: 'gk:onGameClick',
+        xName: 'x',
+        yName: 'y',
         body: [
           {
-            type: 'var',
-            name: 'tocando',
-            value: {
-              type: 'gk:mouseDown',
-            },
-            kind: 'const',
-          },
-          {
-            type: 'var',
-            name: 'inicio',
-            value: {
+            type: 'if',
+            cond: {
               type: 'logical',
-              op: '||',
+              op: '&&',
               left: {
-                type: 'gk:keyDown',
-                key: 'Enter',
-              },
-              right: {
                 type: 'logical',
                 op: '&&',
                 left: {
-                  type: 'var',
-                  name: 'tocando',
-                },
-                right: {
-                  type: 'binop',
-                  op: '>=',
-                  left: {
-                    type: 'gk:mouseScreenY',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 90,
-                  },
-                },
-              },
-            },
-            kind: 'const',
-          },
-          {
-            type: 'var',
-            name: 'pausa',
-            value: {
-              type: 'logical',
-              op: '||',
-              left: {
-                type: 'gk:keyDown',
-                key: 'p',
-              },
-              right: {
-                type: 'logical',
-                op: '&&',
-                left: {
-                  type: 'logical',
-                  op: '&&',
-                  left: {
-                    type: 'var',
-                    name: 'tocando',
-                  },
-                  right: {
-                    type: 'binop',
-                    op: '>',
-                    left: {
-                      type: 'gk:mouseScreenX',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 520,
-                    },
-                  },
-                },
-                right: {
-                  type: 'binop',
-                  op: '<',
-                  left: {
-                    type: 'gk:mouseScreenY',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 90,
-                  },
-                },
-              },
-            },
-            kind: 'const',
-          },
-          {
-            type: 'var',
-            name: 'reinicio',
-            value: {
-              type: 'gk:keyDown',
-              key: 'r',
-            },
-            kind: 'const',
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logical',
-              op: '&&',
-              left: {
-                type: 'var',
-                name: 'reinicio',
-              },
-              right: {
-                type: 'logicalNot',
-                value: {
-                  type: 'var',
-                  name: 'reinicioAntes',
-                },
-              },
-            },
-            then: [
-              {
-                type: 'callFunction',
-                name: 'preparar',
-                args: [],
-              },
-              {
-                type: 'assign',
-                name: 'estado',
-                value: {
-                  type: 'str',
-                  value: 'jogando',
-                },
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logical',
-              op: '&&',
-              left: {
-                type: 'var',
-                name: 'inicio',
-              },
-              right: {
-                type: 'logicalNot',
-                value: {
-                  type: 'var',
-                  name: 'apertadoAntes',
-                },
-              },
-            },
-            then: [
-              {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '||',
-                  left: {
-                    type: 'logical',
-                    op: '||',
-                    left: {
-                      type: 'binop',
-                      op: '===',
-                      left: {
-                        type: 'var',
-                        name: 'estado',
-                      },
-                      right: {
-                        type: 'str',
-                        value: 'inicio',
-                      },
-                    },
-                    right: {
-                      type: 'binop',
-                      op: '===',
-                      left: {
-                        type: 'var',
-                        name: 'estado',
-                      },
-                      right: {
-                        type: 'str',
-                        value: 'venceu',
-                      },
-                    },
-                  },
-                  right: {
-                    type: 'binop',
-                    op: '===',
-                    left: {
-                      type: 'var',
-                      name: 'estado',
-                    },
-                    right: {
-                      type: 'str',
-                      value: 'perdeu',
-                    },
-                  },
-                },
-                then: [
-                  {
-                    type: 'callFunction',
-                    name: 'preparar',
-                    args: [],
-                  },
-                  {
-                    type: 'assign',
-                    name: 'estado',
-                    value: {
-                      type: 'str',
-                      value: 'jogando',
-                    },
-                  },
-                ],
-                elseif: [
-                  {
-                    cond: {
-                      type: 'binop',
-                      op: '===',
-                      left: {
-                        type: 'var',
-                        name: 'estado',
-                      },
-                      right: {
-                        type: 'str',
-                        value: 'pausa',
-                      },
-                    },
-                    then: [
-                      {
-                        type: 'assign',
-                        name: 'estado',
-                        value: {
-                          type: 'str',
-                          value: 'jogando',
-                        },
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'logical',
-              op: '&&',
-              left: {
-                type: 'var',
-                name: 'pausa',
-              },
-              right: {
-                type: 'logicalNot',
-                value: {
-                  type: 'var',
-                  name: 'pausaAntes',
-                },
-              },
-            },
-            then: [
-              {
-                type: 'if',
-                cond: {
                   type: 'binop',
                   op: '===',
                   left: {
-                    type: 'var',
-                    name: 'estado',
+                    type: 'gk:gameState',
                   },
                   right: {
                     type: 'str',
                     value: 'jogando',
                   },
                 },
-                then: [
-                  {
-                    type: 'assign',
-                    name: 'estado',
-                    value: {
-                      type: 'str',
-                      value: 'pausa',
-                    },
-                  },
-                ],
-                elseif: [
-                  {
-                    cond: {
-                      type: 'binop',
-                      op: '===',
-                      left: {
-                        type: 'var',
-                        name: 'estado',
-                      },
-                      right: {
-                        type: 'str',
-                        value: 'pausa',
-                      },
-                    },
-                    then: [
-                      {
-                        type: 'assign',
-                        name: 'estado',
-                        value: {
-                          type: 'str',
-                          value: 'jogando',
-                        },
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            type: 'assign',
-            name: 'apertadoAntes',
-            value: {
-              type: 'var',
-              name: 'inicio',
-            },
-          },
-          {
-            type: 'assign',
-            name: 'pausaAntes',
-            value: {
-              type: 'var',
-              name: 'pausa',
-            },
-          },
-          {
-            type: 'assign',
-            name: 'reinicioAntes',
-            value: {
-              type: 'var',
-              name: 'reinicio',
-            },
-          },
-          {
-            type: 'assign',
-            name: 'brilho',
-            value: {
-              type: 'mathBinary',
-              fn: 'max',
-              a: {
-                type: 'num',
-                value: 0,
-              },
-              b: {
-                type: 'binop',
-                op: '-',
-                left: {
-                  type: 'var',
-                  name: 'brilho',
-                },
                 right: {
-                  type: 'var',
-                  name: 'dt',
+                  type: 'binop',
+                  op: '>',
+                  left: {
+                    type: 'var',
+                    name: 'x',
+                  },
+                  right: {
+                    type: 'binop',
+                    op: '-',
+                    left: {
+                      type: 'gk:gameWidth',
+                    },
+                    right: {
+                      type: 'num',
+                      value: 120,
+                    },
+                  },
                 },
-              },
-            },
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '===',
-              left: {
-                type: 'var',
-                name: 'estado',
               },
               right: {
-                type: 'str',
-                value: 'jogando',
+                type: 'binop',
+                op: '<',
+                left: {
+                  type: 'var',
+                  name: 'y',
+                },
+                right: {
+                  type: 'num',
+                  value: 90,
+                },
               },
             },
             then: [
               {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '||',
-                  left: {
-                    type: 'gk:keyDown',
-                    key: 'ArrowLeft',
-                  },
-                  right: {
-                    type: 'gk:keyDown',
-                    key: 'a',
-                  },
-                },
-                then: [
-                  {
-                    type: 'assign',
-                    name: 'jogadorX',
-                    value: {
-                      type: 'binop',
-                      op: '-',
-                      left: {
-                        type: 'var',
-                        name: 'jogadorX',
-                      },
-                      right: {
-                        type: 'binop',
-                        op: '*',
-                        left: {
-                          type: 'num',
-                          value: 140,
-                        },
-                        right: {
-                          type: 'var',
-                          name: 'dt',
-                        },
-                      },
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '||',
-                  left: {
-                    type: 'gk:keyDown',
-                    key: 'ArrowRight',
-                  },
-                  right: {
-                    type: 'gk:keyDown',
-                    key: 'd',
-                  },
-                },
-                then: [
-                  {
-                    type: 'assign',
-                    name: 'jogadorX',
-                    value: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'var',
-                        name: 'jogadorX',
-                      },
-                      right: {
-                        type: 'binop',
-                        op: '*',
-                        left: {
-                          type: 'num',
-                          value: 140,
-                        },
-                        right: {
-                          type: 'var',
-                          name: 'dt',
-                        },
-                      },
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '&&',
-                  left: {
-                    type: 'var',
-                    name: 'tocando',
-                  },
-                  right: {
-                    type: 'binop',
-                    op: '>=',
-                    left: {
-                      type: 'gk:mouseScreenY',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 90,
-                    },
-                  },
-                },
-                then: [
-                  {
-                    type: 'assign',
-                    name: 'jogadorX',
-                    value: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'var',
-                        name: 'jogadorX',
-                      },
-                      right: {
-                        type: 'mathBinary',
-                        fn: 'max',
-                        a: {
-                          type: 'binop',
-                          op: '*',
-                          left: {
-                            type: 'num',
-                            value: -140,
-                          },
-                          right: {
-                            type: 'var',
-                            name: 'dt',
-                          },
-                        },
-                        b: {
-                          type: 'mathBinary',
-                          fn: 'min',
-                          a: {
-                            type: 'binop',
-                            op: '*',
-                            left: {
-                              type: 'num',
-                              value: 140,
-                            },
-                            right: {
-                              type: 'var',
-                              name: 'dt',
-                            },
-                          },
-                          b: {
-                            type: 'binop',
-                            op: '-',
-                            left: {
-                              type: 'binop',
-                              op: '/',
-                              left: {
-                                type: 'binop',
-                                op: '-',
-                                left: {
-                                  type: 'gk:mouseScreenX',
-                                },
-                                right: {
-                                  type: 'num',
-                                  value: 320,
-                                },
-                              },
-                              right: {
-                                type: 'num',
-                                value: 2,
-                              },
-                            },
-                            right: {
-                              type: 'var',
-                              name: 'jogadorX',
-                            },
-                          },
-                        },
-                      },
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'assign',
-                name: 'jogadorX',
-                value: {
-                  type: 'mathBinary',
-                  fn: 'max',
-                  a: {
-                    type: 'num',
-                    value: -120,
-                  },
-                  b: {
-                    type: 'mathBinary',
-                    fn: 'min',
-                    a: {
-                      type: 'num',
-                      value: 120,
-                    },
-                    b: {
-                      type: 'var',
-                      name: 'jogadorX',
-                    },
-                  },
-                },
-              },
-              {
-                type: 'assign',
-                name: 'anterior',
-                value: {
-                  type: 'var',
-                  name: 'progresso',
-                },
-              },
-              {
-                type: 'gk:sceneCommand',
-                method: 'cameraTrack',
-                args: [
-                  {
-                    type: 'str',
-                    value: 'pista',
-                  },
-                  {
-                    type: 'binop',
-                    op: '*',
-                    left: {
-                      type: 'var',
-                      name: 'jogadorX',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 0.2,
-                    },
-                  },
-                  {
-                    type: 'var',
-                    name: 'progresso',
-                  },
-                ],
-              },
-              {
-                type: 'gk:sceneCommand',
-                method: 'advanceTrack',
-                args: [
-                  {
-                    type: 'str',
-                    value: 'pista',
-                  },
-                  {
-                    type: 'binop',
-                    op: '*',
-                    left: {
-                      type: 'num',
-                      value: 320,
-                    },
-                    right: {
-                      type: 'var',
-                      name: 'dt',
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'assign',
-                name: 'progresso',
-                value: {
-                  type: 'gk:sceneValue',
-                  method: 'trackValue',
-                  args: [
-                    {
-                      type: 'str',
-                      value: 'pista',
-                    },
-                    {
-                      type: 'str',
-                      value: 'distance',
-                    },
-                  ],
-                },
-              },
-              {
-                type: 'gk:sceneCommand',
-                method: 'moveTrackObject',
-                args: [
-                  {
-                    type: 'str',
-                    value: 'pista',
-                  },
-                  {
-                    type: 'str',
-                    value: 'jogador',
-                  },
-                  {
-                    type: 'var',
-                    name: 'jogadorX',
-                  },
-                  {
-                    type: 'var',
-                    name: 'progresso',
-                  },
-                ],
-              },
-              {
-                type: 'forRange',
-                varName: 'i',
-                from: {
-                  type: 'num',
-                  value: 0,
-                },
-                to: {
-                  type: 'arrayLength',
-                  arrayVar: 'percurso',
-                },
-                step: {
-                  type: 'num',
-                  value: 1,
-                },
-                body: [
-                  {
-                    type: 'var',
-                    name: 'item',
-                    value: {
-                      type: 'index',
-                      arrayVar: 'percurso',
-                      index: {
-                        type: 'var',
-                        name: 'i',
-                      },
-                    },
-                    kind: 'const',
-                  },
-                  {
-                    type: 'if',
-                    cond: {
-                      type: 'logical',
-                      op: '&&',
-                      left: {
-                        type: 'logicalNot',
-                        value: {
-                          type: 'index',
-                          arrayVar: 'tratados',
-                          index: {
-                            type: 'var',
-                            name: 'i',
-                          },
-                        },
-                      },
-                      right: {
-                        type: 'gk:sceneValue',
-                        method: 'trackPassed',
-                        args: [
-                          {
-                            type: 'str',
-                            value: 'pista',
-                          },
-                          {
-                            type: 'binop',
-                            op: '+',
-                            left: {
-                              type: 'str',
-                              value: 'obj',
-                            },
-                            right: {
-                              type: 'var',
-                              name: 'i',
-                            },
-                          },
-                        ],
-                      },
-                    },
-                    then: [
-                      {
-                        type: 'if',
-                        cond: {
-                          type: 'gk:sceneValue',
-                          method: 'trackTouching',
-                          args: [
-                            {
-                              type: 'str',
-                              value: 'pista',
-                            },
-                            {
-                              type: 'binop',
-                              op: '+',
-                              left: {
-                                type: 'str',
-                                value: 'obj',
-                              },
-                              right: {
-                                type: 'var',
-                                name: 'i',
-                              },
-                            },
-                            {
-                              type: 'var',
-                              name: 'jogadorX',
-                            },
-                            {
-                              type: 'num',
-                              value: 26,
-                            },
-                          ],
-                        },
-                        then: [
-                          {
-                            type: 'if',
-                            cond: {
-                              type: 'binop',
-                              op: '===',
-                              left: {
-                                type: 'memberGet',
-                                object: {
-                                  type: 'var',
-                                  name: 'item',
-                                },
-                                name: 'kind',
-                              },
-                              right: {
-                                type: 'str',
-                                value: 'star',
-                              },
-                            },
-                            then: [
-                              {
-                                type: 'assign',
-                                name: 'estrelas',
-                                value: {
-                                  type: 'binop',
-                                  op: '+',
-                                  left: {
-                                    type: 'var',
-                                    name: 'estrelas',
-                                  },
-                                  right: {
-                                    type: 'num',
-                                    value: 1,
-                                  },
-                                },
-                              },
-                            ],
-                          },
-                          {
-                            type: 'if',
-                            cond: {
-                              type: 'binop',
-                              op: '===',
-                              left: {
-                                type: 'memberGet',
-                                object: {
-                                  type: 'var',
-                                  name: 'item',
-                                },
-                                name: 'kind',
-                              },
-                              right: {
-                                type: 'str',
-                                value: 'flag',
-                              },
-                            },
-                            then: [
-                              {
-                                type: 'assign',
-                                name: 'vidas',
-                                value: {
-                                  type: 'mathBinary',
-                                  fn: 'max',
-                                  a: {
-                                    type: 'num',
-                                    value: 0,
-                                  },
-                                  b: {
-                                    type: 'binop',
-                                    op: '-',
-                                    left: {
-                                      type: 'var',
-                                      name: 'vidas',
-                                    },
-                                    right: {
-                                      type: 'num',
-                                      value: 1,
-                                    },
-                                  },
-                                },
-                              },
-                              {
-                                type: 'assign',
-                                name: 'brilho',
-                                value: {
-                                  type: 'num',
-                                  value: 0.35,
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                      {
-                        type: 'indexSet',
-                        object: {
-                          type: 'var',
-                          name: 'tratados',
-                        },
-                        index: {
-                          type: 'var',
-                          name: 'i',
-                        },
-                        value: {
-                          type: 'bool',
-                          value: true,
-                        },
-                      },
-                      {
-                        type: 'gk:sceneCommand',
-                        method: 'removeTrackObject',
-                        args: [
-                          {
-                            type: 'str',
-                            value: 'pista',
-                          },
-                          {
-                            type: 'binop',
-                            op: '+',
-                            left: {
-                              type: 'str',
-                              value: 'obj',
-                            },
-                            right: {
-                              type: 'var',
-                              name: 'i',
-                            },
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '<=',
-                  left: {
-                    type: 'var',
-                    name: 'vidas',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 0,
-                  },
-                },
-                then: [
-                  {
-                    type: 'assign',
-                    name: 'estado',
-                    value: {
-                      type: 'str',
-                      value: 'perdeu',
-                    },
-                  },
-                ],
-                elseif: [
-                  {
-                    cond: {
-                      type: 'binop',
-                      op: '>=',
-                      left: {
-                        type: 'var',
-                        name: 'progresso',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 6600,
-                      },
-                    },
-                    then: [
-                      {
-                        type: 'assign',
-                        name: 'estado',
-                        value: {
-                          type: 'str',
-                          value: 'venceu',
-                        },
-                      },
-                    ],
-                  },
-                ],
+                type: 'gk:pause',
               },
             ],
           },
         ],
       },
-      {
-        type: 'callFunction',
-        name: 'preparar',
-        args: [],
-      },
     ],
-    events: [],
     loops: [
       {
-        type: 'gk:onDraw',
+        type: 'gk:onDrawHud',
         ctxName: 'ctx',
         body: [
           {
-            type: 'gk:sceneCommand',
-            method: 'transformSceneLayer',
-            args: [
-              {
-                type: 'str',
-                value: 'montanhas',
-              },
-              {
-                type: 'binop',
-                op: '-',
-                left: {
-                  type: 'num',
-                  value: -12.8,
-                },
-                right: {
-                  type: 'binop',
-                  op: '*',
-                  left: {
-                    type: 'var',
-                    name: 'jogadorX',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 0.08,
-                  },
-                },
-              },
-              {
-                type: 'num',
-                value: -10,
-              },
-              {
-                type: 'num',
-                value: 1.04,
-              },
-              {
-                type: 'num',
-                value: 1,
-              },
-            ],
-          },
-          {
-            type: 'gk:sceneCommand',
-            method: 'drawSceneLayers',
-            args: [
-              {
-                type: 'str',
-                value: 'back',
-              },
-            ],
-          },
-          {
-            type: 'gk:sceneCommand',
-            method: 'drawTrack',
-            args: [
-              {
-                type: 'str',
-                value: 'pista',
-              },
-            ],
-          },
-          {
-            type: 'gk:sceneCommand',
-            method: 'drawSceneLayers',
-            args: [
-              {
-                type: 'str',
-                value: 'front',
-              },
-            ],
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#123149',
+            type: 'gk:drawCounter',
+            label: {
+              type: 'str',
+              value: 'Vidas',
             },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
+            value: {
+              type: 'gk:healthOf',
+              charVar: 'jogador',
+            },
             x: {
               type: 'num',
-              value: 16,
+              value: 30,
             },
             y: {
               type: 'num',
-              value: 16,
-            },
-            w: {
-              type: 'num',
-              value: 608,
-            },
-            h: {
-              type: 'num',
-              value: 58,
+              value: 28,
             },
           },
           {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffffff',
+            type: 'gk:drawCounter',
+            label: {
+              type: 'str',
+              value: 'Estrelas',
             },
-          },
-          {
-            type: 'canvasFont',
-            ctxVar: 'ctx',
-            size: 20,
-            family: 'sans-serif',
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: {
+            value: {
               type: 'binop',
               op: '+',
               left: {
-                type: 'binop',
-                op: '+',
-                left: {
-                  type: 'binop',
-                  op: '+',
-                  left: {
-                    type: 'binop',
-                    op: '+',
-                    left: {
-                      type: 'str',
-                      value: 'VIDAS ',
-                    },
-                    right: {
-                      type: 'var',
-                      name: 'vidas',
-                    },
-                  },
-                  right: {
-                    type: 'str',
-                    value: '    ESTRELAS ',
-                  },
-                },
-                right: {
-                  type: 'var',
-                  name: 'estrelas',
-                },
+                type: 'var',
+                name: 'estrelas',
               },
               right: {
                 type: 'str',
@@ -6320,54 +1005,59 @@ export const SNOW_IR = {
             },
             x: {
               type: 'num',
-              value: 30,
+              value: 180,
             },
             y: {
               type: 'num',
-              value: 51,
+              value: 28,
             },
           },
           {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#ffffff',
-            },
-          },
-          {
-            type: 'canvasFont',
-            ctxVar: 'ctx',
-            size: 20,
-            family: 'sans-serif',
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: {
+            type: 'gk:drawCounter',
+            label: {
               type: 'str',
-              value: 'II  P',
+              value: 'Pausar',
+            },
+            value: {
+              type: 'str',
+              value: '',
             },
             x: {
-              type: 'num',
-              value: 550,
+              type: 'binop',
+              op: '-',
+              left: {
+                type: 'gk:gameWidth',
+              },
+              right: {
+                type: 'num',
+                value: 100,
+              },
             },
             y: {
               type: 'num',
-              value: 51,
+              value: 28,
             },
           },
           {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#82d1dc',
+            type: 'gk:drawBar',
+            current: {
+              type: 'gk:sceneValue',
+              method: 'trackPosition',
+              args: [
+                {
+                  type: 'str',
+                  value: 'pista',
+                },
+                {
+                  type: 'str',
+                  value: 'distance',
+                },
+              ],
             },
-          },
-          {
-            type: 'canvasFillRect',
-            ctxVar: 'ctx',
+            max: {
+              type: 'num',
+              value: 6600,
+            },
             x: {
               type: 'num',
               value: 24,
@@ -6378,529 +1068,20 @@ export const SNOW_IR = {
             },
             w: {
               type: 'binop',
-              op: '*',
+              op: '-',
               left: {
-                type: 'num',
-                value: 592,
+                type: 'gk:gameWidth',
               },
               right: {
-                type: 'mathBinary',
-                fn: 'min',
-                a: {
-                  type: 'num',
-                  value: 1,
-                },
-                b: {
-                  type: 'binop',
-                  op: '/',
-                  left: {
-                    type: 'var',
-                    name: 'progresso',
-                  },
-                  right: {
-                    type: 'num',
-                    value: 6600,
-                  },
-                },
+                type: 'num',
+                value: 48,
               },
             },
             h: {
               type: 'num',
               value: 5,
             },
-          },
-          {
-            type: 'canvasFillStyle',
-            ctxVar: 'ctx',
-            color: {
-              type: 'color',
-              value: '#24465e',
-            },
-          },
-          {
-            type: 'canvasFont',
-            ctxVar: 'ctx',
-            size: 16,
-            family: 'sans-serif',
-          },
-          {
-            type: 'canvasFillText',
-            ctxVar: 'ctx',
-            text: {
-              type: 'str',
-              value: 'SETAS / A D para virar  •  Arraste na neve',
-            },
-            x: {
-              type: 'num',
-              value: 146,
-            },
-            y: {
-              type: 'num',
-              value: 680,
-            },
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '>',
-              left: {
-                type: 'var',
-                name: 'brilho',
-              },
-              right: {
-                type: 'num',
-                value: 0,
-              },
-            },
-            then: [
-              {
-                type: 'canvasFillStyle',
-                ctxVar: 'ctx',
-                color: {
-                  type: 'color',
-                  value: '#ef6270',
-                },
-              },
-              {
-                type: 'canvasFillRect',
-                ctxVar: 'ctx',
-                x: {
-                  type: 'num',
-                  value: 0,
-                },
-                y: {
-                  type: 'num',
-                  value: 90,
-                },
-                w: {
-                  type: 'num',
-                  value: 640,
-                },
-                h: {
-                  type: 'num',
-                  value: 5,
-                },
-              },
-            ],
-          },
-          {
-            type: 'if',
-            cond: {
-              type: 'binop',
-              op: '!==',
-              left: {
-                type: 'var',
-                name: 'estado',
-              },
-              right: {
-                type: 'str',
-                value: 'jogando',
-              },
-            },
-            then: [
-              {
-                type: 'canvasFillStyle',
-                ctxVar: 'ctx',
-                color: {
-                  type: 'color',
-                  value: '#0d263c',
-                },
-              },
-              {
-                type: 'canvasFillRect',
-                ctxVar: 'ctx',
-                x: {
-                  type: 'num',
-                  value: 52,
-                },
-                y: {
-                  type: 'num',
-                  value: 238,
-                },
-                w: {
-                  type: 'num',
-                  value: 536,
-                },
-                h: {
-                  type: 'num',
-                  value: 222,
-                },
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'var',
-                    name: 'estado',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'inicio',
-                  },
-                },
-                then: [
-                  {
-                    type: 'canvasFillStyle',
-                    ctxVar: 'ctx',
-                    color: {
-                      type: 'color',
-                      value: '#fff0cb',
-                    },
-                  },
-                  {
-                    type: 'canvasFont',
-                    ctxVar: 'ctx',
-                    size: 32,
-                    family: 'sans-serif',
-                  },
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: {
-                      type: 'str',
-                      value: 'DESCIDA DA NEVE',
-                    },
-                    x: {
-                      type: 'num',
-                      value: 158,
-                    },
-                    y: {
-                      type: 'num',
-                      value: 290,
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'var',
-                    name: 'estado',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'pausa',
-                  },
-                },
-                then: [
-                  {
-                    type: 'canvasFillStyle',
-                    ctxVar: 'ctx',
-                    color: {
-                      type: 'color',
-                      value: '#fff0cb',
-                    },
-                  },
-                  {
-                    type: 'canvasFont',
-                    ctxVar: 'ctx',
-                    size: 32,
-                    family: 'sans-serif',
-                  },
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: {
-                      type: 'str',
-                      value: 'PAUSA NA MONTANHA',
-                    },
-                    x: {
-                      type: 'num',
-                      value: 126,
-                    },
-                    y: {
-                      type: 'num',
-                      value: 290,
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'var',
-                    name: 'estado',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'venceu',
-                  },
-                },
-                then: [
-                  {
-                    type: 'canvasFillStyle',
-                    ctxVar: 'ctx',
-                    color: {
-                      type: 'color',
-                      value: '#fff0cb',
-                    },
-                  },
-                  {
-                    type: 'canvasFont',
-                    ctxVar: 'ctx',
-                    size: 32,
-                    family: 'sans-serif',
-                  },
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: {
-                      type: 'str',
-                      value: 'CHEGOU AO VALE!',
-                    },
-                    x: {
-                      type: 'num',
-                      value: 153,
-                    },
-                    y: {
-                      type: 'num',
-                      value: 290,
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'binop',
-                  op: '===',
-                  left: {
-                    type: 'var',
-                    name: 'estado',
-                  },
-                  right: {
-                    type: 'str',
-                    value: 'perdeu',
-                  },
-                },
-                then: [
-                  {
-                    type: 'canvasFillStyle',
-                    ctxVar: 'ctx',
-                    color: {
-                      type: 'color',
-                      value: '#fff0cb',
-                    },
-                  },
-                  {
-                    type: 'canvasFont',
-                    ctxVar: 'ctx',
-                    size: 32,
-                    family: 'sans-serif',
-                  },
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: {
-                      type: 'str',
-                      value: 'VAMOS TENTAR DE NOVO?',
-                    },
-                    x: {
-                      type: 'num',
-                      value: 79,
-                    },
-                    y: {
-                      type: 'num',
-                      value: 290,
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'canvasFillStyle',
-                ctxVar: 'ctx',
-                color: {
-                  type: 'color',
-                  value: '#d9edf3',
-                },
-              },
-              {
-                type: 'canvasFont',
-                ctxVar: 'ctx',
-                size: 18,
-                family: 'sans-serif',
-              },
-              {
-                type: 'canvasFillText',
-                ctxVar: 'ctx',
-                text: {
-                  type: 'str',
-                  value: 'Pegue estrelas. Desvie das bandeiras.',
-                },
-                x: {
-                  type: 'num',
-                  value: 157,
-                },
-                y: {
-                  type: 'num',
-                  value: 331,
-                },
-              },
-              {
-                type: 'canvasFillStyle',
-                ctxVar: 'ctx',
-                color: {
-                  type: 'color',
-                  value: '#d9edf3',
-                },
-              },
-              {
-                type: 'canvasFont',
-                ctxVar: 'ctx',
-                size: 18,
-                family: 'sans-serif',
-              },
-              {
-                type: 'canvasFillText',
-                ctxVar: 'ctx',
-                text: {
-                  type: 'str',
-                  value: '3 vidas para atravessar a montanha.',
-                },
-                x: {
-                  type: 'num',
-                  value: 162,
-                },
-                y: {
-                  type: 'num',
-                  value: 362,
-                },
-              },
-              {
-                type: 'if',
-                cond: {
-                  type: 'logical',
-                  op: '||',
-                  left: {
-                    type: 'binop',
-                    op: '===',
-                    left: {
-                      type: 'var',
-                      name: 'estado',
-                    },
-                    right: {
-                      type: 'str',
-                      value: 'venceu',
-                    },
-                  },
-                  right: {
-                    type: 'binop',
-                    op: '===',
-                    left: {
-                      type: 'var',
-                      name: 'estado',
-                    },
-                    right: {
-                      type: 'str',
-                      value: 'perdeu',
-                    },
-                  },
-                },
-                then: [
-                  {
-                    type: 'canvasFillStyle',
-                    ctxVar: 'ctx',
-                    color: {
-                      type: 'color',
-                      value: '#d9edf3',
-                    },
-                  },
-                  {
-                    type: 'canvasFont',
-                    ctxVar: 'ctx',
-                    size: 18,
-                    family: 'sans-serif',
-                  },
-                  {
-                    type: 'canvasFillText',
-                    ctxVar: 'ctx',
-                    text: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'str',
-                          value: 'Você pegou ',
-                        },
-                        right: {
-                          type: 'var',
-                          name: 'estrelas',
-                        },
-                      },
-                      right: {
-                        type: 'str',
-                        value: ' de 12 estrelas.',
-                      },
-                    },
-                    x: {
-                      type: 'num',
-                      value: 189,
-                    },
-                    y: {
-                      type: 'num',
-                      value: 392,
-                    },
-                  },
-                ],
-              },
-              {
-                type: 'canvasFillStyle',
-                ctxVar: 'ctx',
-                color: {
-                  type: 'color',
-                  value: '#ffd18a',
-                },
-              },
-              {
-                type: 'canvasFont',
-                ctxVar: 'ctx',
-                size: 18,
-                family: 'sans-serif',
-              },
-              {
-                type: 'canvasFillText',
-                ctxVar: 'ctx',
-                text: {
-                  type: 'str',
-                  value: 'ENTER ou TOQUE para continuar',
-                },
-                x: {
-                  type: 'num',
-                  value: 169,
-                },
-                y: {
-                  type: 'num',
-                  value: 430,
-                },
-              },
-            ],
-          },
-        ],
-      },
-      {
-        type: 'gk:onUpdate',
-        dtName: 'dt',
-        body: [
-          {
-            type: 'callFunction',
-            name: 'atualizar',
-            args: [
-              {
-                type: 'var',
-                name: 'dt',
-              },
-            ],
+            color: '#82d1dc',
           },
         ],
       },

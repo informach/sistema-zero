@@ -98,7 +98,18 @@ function runtimeFragmentFiles(): string[] {
       .sort()
       .map((name) => `runtime/${name}`),
     '../scene-2d/runtime.ts',
+    '../scene-2d/spriteHosts.ts',
+    '../scene-2d/spriteRuntime.ts',
   ]
+}
+
+/**
+ * Onde a varredura começa: o primeiro literal do arquivo, exportado ou não (o
+ * spriteHosts.ts guarda dois fragmentos privados antes dos adaptadores).
+ */
+function firstTemplateConst(src: string, file: string): string {
+  const literal = src.match(/^(?:export )?const (\w+)\s*=\s*`/m)
+  return literal?.[1] ? `${literal[1]} =` : firstExportedConst(src, file)
 }
 
 /** O nome da constante exportada, para ancorar a varredura no ponto certo. */
@@ -111,7 +122,7 @@ function firstExportedConst(src: string, file: string): string {
 describe('Guarda dos template literals do Jogo 2D', () => {
   it('runtime composto: limites esperados e nenhuma interpolação acidental', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(composedTemplateHazards(src, 'gameTwoDRuntime =', 6).interpolations).toEqual([])
+    expect(composedTemplateHazards(src, 'gameTwoDRuntimeSource =', 6).interpolations).toEqual([])
 
     const domains = readFileSync(join(DIR, '../runtimeDomains.ts'), 'utf8')
     expect(composedTemplateHazards(domains, 'gameRuntimeDomains =', 2).interpolations).toEqual([])
@@ -124,7 +135,7 @@ describe('Guarda dos template literals do Jogo 2D', () => {
 
     for (const file of arquivos) {
       const fragment = readFileSync(join(DIR, file), 'utf8')
-      const declaration = firstExportedConst(fragment, file)
+      const declaration = firstTemplateConst(fragment, file)
       const { interpolations, boundaryCount } = composedTemplateHazards(fragment, declaration, null)
       // Barril (só concatena importados) tem 0 crases; fragmento tem o par que abre e
       // fecha o literal. ÍMPAR = crase CRUA no meio, que é exatamente o defeito.

@@ -235,6 +235,7 @@ export const gameKitShellRuntime = `
   /** Telas automáticas por estado (menu/pausado/fim/vitoria/carregando); resto esconde. */
   function applyStateScreens(name) {
     if (!shellReady) return;
+
     if (name === 'menu') showScreen('menu');
     else if (name === 'pausado') showScreen('pausa');
     else if (name === 'fim') showScreen('fim');
@@ -422,6 +423,7 @@ export const gameKitShellRuntime = `
       mouse.screenX = p.screenX;
       mouse.screenY = p.screenY;
       mouse.down = true;
+
       focusWithoutScrolling(canvasEl);
       // So um ponteiro de VERDADE pode ser capturado. Um evento montado por codigo
       // (o controle do player, um teste) nao tem ponteiro ativo, a captura lanca, e

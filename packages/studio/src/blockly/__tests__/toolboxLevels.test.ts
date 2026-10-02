@@ -179,6 +179,10 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
     for (const t of [
       'sz_frame_structure',
       'sz_g2d_create_ship',
+      'sz_g2d_create_sprite',
+      'sz_g2d_create_sprite_track',
+      'sz_g2d_on_track_encounter',
+      'sz_g2d_scene_animation',
       'sz_g2d_arrows_x',
       // HTML/CSS ESSENCIAL (26/07): montar uma telinha simples.
       'sz_html_h1',
@@ -215,7 +219,6 @@ describe('buildCoreToolbox — curadoria POR BLOCO por degrau', () => {
       'sz_val_object',
       'sz_math_arithmetic',
       'sz_js_function',
-      'sz_g2d_create_sprite', // Jogo 2D completo abre no Inventor
       'sz_g2d_top_down',
       'sz_g2d_sprite_vx',
       'sz_g2d_apply_velocity',

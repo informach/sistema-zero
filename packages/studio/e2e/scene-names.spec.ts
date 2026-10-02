@@ -18,7 +18,7 @@ interface PastedBlock {
 const text = (value: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: value } } })
 const number = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 /** O soquete de quem USA um nome: nasce com o bloco-lista, como na paleta. */
-const pick = (kind: 'layer' | 'track' | 'object', name: string) => ({
+const pick = (kind: 'layer' | 'track', name: string) => ({
   shadow: { type: `sz_g2d_scene_${kind}_name`, fields: { NAME: name } },
 })
 
@@ -29,36 +29,18 @@ function chain(blocks: PastedBlock[]): PastedBlock {
 }
 
 const layer = (name: string): PastedBlock => ({
-  type: 'sz_g2d_create_scene_layer',
-  fields: { IMAGE: '', PASS: 'back' },
+  type: 'sz_g2d_add_scene_backdrop',
+  fields: { IMAGE: '', PLANE: 'back' },
   inputs: { NAME: text(name) },
 })
 const track = (name: string): PastedBlock => ({
-  type: 'sz_g2d_create_track',
+  type: 'sz_g2d_create_sprite_track',
   inputs: {
     TRACK: text(name),
-    HORIZON: number(28),
-    FOCAL: number(300),
-    HEIGHT: number(160),
-    FOLLOW: number(120),
-  },
-})
-const object = (onTrack: string, name: string): PastedBlock => ({
-  type: 'sz_g2d_place_track_object',
-  fields: { IMAGE: '' },
-  inputs: {
-    TRACK: pick('track', onTrack),
-    OBJECT: text(name),
-    X: number(0),
-    Z: number(600),
-    WIDTH: number(40),
-    HEIGHT: number(80),
   },
 })
 
-test('camada, pista e objeto são escolhidos numa lista com os nomes já criados', async ({
-  page,
-}) => {
+test('cenário e pista são escolhidos numa lista com os nomes já criados', async ({ page }) => {
   await createProject(page)
   await pasteBlocklyBlocks(
     page,
@@ -71,25 +53,19 @@ test('camada, pista e objeto são escolhidos numa lista com os nomes já criados
             layer('montanhas'),
             track('pista'),
             track('rio'),
-            object('pista', 'bandeira'),
-            object('rio', 'pedra'),
             {
-              type: 'sz_g2d_transform_scene_layer',
+              type: 'sz_g2d_scene_backdrop_motion',
               inputs: {
                 NAME: pick('layer', 'montanhas'),
-                X: number(0),
-                Y: number(0),
-                SCALE: number(1),
-                OPACITY: number(1),
+                AMOUNT: number(40),
               },
             },
             {
-              type: 'sz_g2d_move_track_object',
+              type: 'sz_g2d_track_travel',
+              fields: { SPEED: '320' },
               inputs: {
                 TRACK: pick('track', 'rio'),
-                OBJECT: pick('object', 'bandeira'),
-                X: number(0),
-                Z: number(600),
+                FINISH: number(6600),
               },
             },
           ]),
@@ -102,8 +78,8 @@ test('camada, pista e objeto são escolhidos numa lista com os nomes já criados
   const options = page.locator('.sz-name-picker__option')
   // Cada linha é [ícone][nome]: o ícone é enfeite, o que se confere é o nome.
   const names = options.locator('span:nth-of-type(2)')
-  const transform = page.locator('.blocklyBlockCanvas .sz_g2d_transform_scene_layer').first()
-  const move = page.locator('.blocklyBlockCanvas .sz_g2d_move_track_object').first()
+  const transform = page.locator('.blocklyBlockCanvas .sz_g2d_scene_backdrop_motion').first()
+  const move = page.locator('.blocklyBlockCanvas .sz_g2d_track_travel').first()
 
   // Camada: a lista mostra as duas criadas, e escolher troca o nome no bloco.
   await transform.getByText('montanhas', { exact: true }).click()
@@ -112,21 +88,43 @@ test('camada, pista e objeto são escolhidos numa lista com os nomes já criados
   await expect(transform.getByText('ceu', { exact: true })).toBeVisible()
   await expect(transform.getByText('montanhas', { exact: true })).toHaveCount(0)
 
-  // Objeto: pertence a uma pista, então a lista segue a pista do MESMO bloco.
-  await move.getByText('bandeira', { exact: true }).click()
-  await expect(names).toHaveText(['pedra'])
-  await page.keyboard.press('Escape')
-
-  // Pista: trocar a pista do bloco troca os objetos oferecidos.
   await move.getByText('rio', { exact: true }).click()
   await expect(names).toHaveText(['pista', 'rio'])
   await options.filter({ hasText: 'pista' }).click()
-  await move.getByText('bandeira', { exact: true }).click()
-  await expect(names).toHaveText(['bandeira'])
+  await expect(move.getByText('pista', { exact: true })).toBeVisible()
+})
 
-  // E o nome continua podendo ser digitado, para o que ainda vai ser criado.
-  const input = page.locator('.sz-name-picker__input')
-  await input.fill('estrela')
-  await page.getByRole('button', { name: 'Usar nome do objeto' }).click()
-  await expect(move.getByText('estrela', { exact: true })).toBeVisible()
+test('encontro por molde oferece o personagem local nas ações do evento', async ({ page }) => {
+  await createProject(page)
+  await pasteBlocklyBlocks(
+    page,
+    {
+      type: 'sz_frame_events',
+      inputs: {
+        CHILDREN: {
+          block: {
+            type: 'sz_gk_on_track_mold_encounter',
+            fields: { MOLD: 'asteroide', PARAM: 'encontrado' },
+            inputs: {
+              TRACK: text('pista'),
+              BODY: {
+                block: {
+                  type: 'sz_gk_set_health',
+                  fields: { WHO: 'heroi' },
+                  inputs: { LIVES: number(2) },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    ['game-2d-advanced'],
+  )
+  const action = page.locator('.blocklyBlockCanvas .sz_gk_set_health').first()
+  await action.getByText('heroi', { exact: true }).click()
+  const found = page.locator('.sz-name-picker__option').filter({ hasText: 'encontrado' })
+  await expect(found).toBeVisible()
+  await found.click()
+  await expect(action.getByText('encontrado', { exact: true })).toBeVisible()
 })

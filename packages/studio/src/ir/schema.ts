@@ -79,9 +79,9 @@ import {
   isLegacyLoadEvent,
   isLifecycleRootAllowed,
   isLoopStatement,
+  isStartOnlyStatement,
   LEGACY_START_WRAPPER_TYPES,
   type LifecycleArea,
-  START_ONLY_STATEMENT_TYPES,
   validateLifecycleSemantics,
 } from './lifecycle'
 import { cssCommentRejectionReason, cssSelectorRejectionReason } from './outputSafety'
@@ -3514,6 +3514,14 @@ export type JSStatement =
     })
   // 📊 Barra genérica (vida grande/mana/progresso) — o HUD do P24 em canvas.
   | (JSStatementCommon & {
+      type: 'gk:drawCounter'
+      label: JSExpr
+      value: JSExpr
+      x: JSExpr
+      y: JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:setHealth'; charVar: string; lives: JSExpr })
+  | (JSStatementCommon & {
       type: 'gk:drawBar'
       current: number | JSExpr
       max: number | JSExpr
@@ -6205,7 +6213,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     ...gameTwoDActionStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
-    ...sceneStatementSchemas(JSExprSchema),
+    ...sceneStatementSchemas(JSExprSchema, JSStatementSchema),
     ...textSpriteStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...classicGameTwoDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
@@ -8046,6 +8054,20 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       w: z.union([JSExprSchema, z.number()]),
       h: z.union([JSExprSchema, z.number()]),
       color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawCounter'),
+      label: JSExprSchema,
+      value: JSExprSchema,
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setHealth'),
+      charVar: irText(),
+      lives: JSExprSchema,
       ...idField,
     }),
     z.object({
@@ -11391,7 +11413,7 @@ function validateLegacyLifecycle(
         path: [...path, index],
         message: `Mova ${statement.type} para fora do laço; este recurso ou configuração deve ser criado uma vez`,
       })
-    } else if (nested && START_ONLY_STATEMENT_TYPES.has(statement.type)) {
+    } else if (nested && isStartOnlyStatement(statement)) {
       ctx.addIssue({
         code: 'custom',
         path: [...path, index],
@@ -12204,6 +12226,8 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setAngle',
   'gk:onGameClick',
   'gk:drawBar',
+  'gk:drawCounter',
+  'gk:setHealth',
   'gk:rpgMoveGrid',
   'gk:rpgBlockCell',
   'gk:rpgCreateNpc',

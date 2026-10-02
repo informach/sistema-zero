@@ -1,5 +1,6 @@
 import { BEHAVIOR_AREA_LABELS, type BehaviorArea } from '../core/behaviorAreas'
 import { CONTINUOUS_EXTENSION_STATEMENT_TYPES } from '../official-extensions/continuousCommandContract'
+import { sceneMethod } from '../official-extensions/scene-2d/catalog'
 import { CANVAS3D_CONTINUOUS_STATEMENT_TYPES } from '../three/canvas3dContract'
 import {
   GAME3D_ACTION_CONTEXT_STATEMENT_TYPES,
@@ -405,7 +406,16 @@ export function isLegacyLoadEvent(statement: JSStatement): boolean {
   )
 }
 
+export function isStartOnlyStatement(statement: JSStatement): boolean {
+  return (
+    START_ONLY_STATEMENT_TYPES.has(statement.type) ||
+    ((statement.type === 'g2d:sceneCommand' || statement.type === 'gk:sceneCommand') &&
+      sceneMethod(statement.method)?.placement === 'start-only-command')
+  )
+}
+
 export function isEventStatement(statement: JSStatement): boolean {
+  if (statement.type === 'g2d:sceneEvent' || statement.type === 'gk:sceneEvent') return true
   if (statement.type === 'event') return !isLegacyLoadEvent(statement)
   if (
     LOOP_ROOT_TYPES.has(statement.type) ||
@@ -475,6 +485,7 @@ export interface LifecycleSemanticIssue {
 }
 
 interface SemanticContext {
+  trackEncounterBody?: boolean
   nested: boolean
   directEventContainer: boolean
   loopDepth: number
@@ -715,6 +726,12 @@ function childContext(
     continuousBody:
       (resetsActivation ? false : context.continuousBody) || isLoopStatement(statement),
     eventBody: context.eventBody || isEventStatement(statement),
+    trackEncounterBody:
+      (resetsActivation ? false : context.trackEncounterBody) ||
+      ((statement.type === 'g2d:sceneEvent' || statement.type === 'gk:sceneEvent') &&
+        (statement.method === 'onTrackEncounter' ||
+          statement.method === 'onTrackSpriteEncounter' ||
+          statement.method === 'onTrackMoldEncounter')),
     activeEventObjectBody:
       providesEventObject || (resetsActivation ? false : context.activeEventObjectBody),
     userGestureBody:
@@ -809,7 +826,14 @@ function visitStatement(
   if (context.nested && nestedLifecycleRoot) {
     issue(issues, path, `A raiz “${statement.type}” deve ficar diretamente na sua Área do projeto`)
   }
-  if (context.nested && START_ONLY_STATEMENT_TYPES.has(statement.type)) {
+  const scene =
+    statement.type === 'g2d:sceneCommand' || statement.type === 'gk:sceneCommand'
+      ? sceneMethod(statement.method)
+      : undefined
+  if (scene?.method === 'collectTrackItem' && !context.trackEncounterBody) {
+    issue(issues, path, 'Recolher o sprite encontrado deve ficar dentro de um encontro na pista')
+  }
+  if (context.nested && isStartOnlyStatement(statement)) {
     // A área correta depende do tipo: molde vai para 🧩 Meus moldes, preparação
     // de partida continua em ⚙️ Ao iniciar. Nomear a área errada aqui mandaria a
     // criança para um lugar onde o bloco nem encaixa.

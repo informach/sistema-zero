@@ -28,6 +28,7 @@ describe('gk — limites arquiteturais dos catálogos e do runtime', () => {
     expect(runtimeModules).toContain('campaignInput.ts')
     expect(runtimeModules).toContain('campaignPersistence.ts')
     expect(runtimeModules).toContain('platformer.ts')
+    expect(runtimeModules).toContain('pools.ts')
     expect(runtimeModules).toContain('shell.ts')
     expect(runtimeModules).toContain('visualEffects.ts')
     // Catálogos de LÓGICA (blocos/runtime) ficam pequenos p/ revisão isolada.

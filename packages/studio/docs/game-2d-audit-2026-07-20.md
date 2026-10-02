@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 307 definições de bloco
-(304 visíveis e 3 ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 309 definições de bloco
+(307 visíveis e 2 ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **1.3.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **2.0.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -160,8 +160,8 @@ dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
 ## Escopo revisado
 
 - 170 arquivos próprios da extensão;
-- 307 definições de blocos (3 ocultas, que vivem dentro dos soquetes de nome) e 15 famílias com subseções;
-- 312 métodos e valores públicos em `window.SZGame2D`;
+- 309 definições de blocos (2 ocultas, que vivem dentro dos soquetes de nome) e 15 famílias com subseções;
+- 315 métodos e valores públicos em `window.SZGame2D`;
 - 25 módulos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;

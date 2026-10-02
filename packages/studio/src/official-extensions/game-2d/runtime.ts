@@ -1,6 +1,8 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { gameRuntimeDomains } from '../runtimeDomains'
+import { compactOfficialRuntimeSource } from '../runtimeSource'
 import { basicSceneAdapter } from '../scene-2d/runtime'
+import { basicSpriteSceneAdapter } from '../scene-2d/spriteHosts'
 import { gameTwoDArcadeKitsRuntime } from './runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from './runtime/audio'
 import { gameTwoDCasualKitsRuntime } from './runtime/casualKits'
@@ -23,7 +25,7 @@ import { buildGameTwoDRuntimeApiSource } from './runtimeContract'
  * `SZGame2D.createSprite(...)` no script.js e seguir o link mental até esta
  * função.
  */
-export const gameTwoDRuntime =
+export const gameTwoDRuntimeSource =
   buildProjectRunContextRuntime() +
   '\n' +
   `(function () {
@@ -115,6 +117,9 @@ export const gameTwoDRuntime =
   gameTwoDUtilitiesRuntime +
   gameTwoDClassicPlatformerRuntime +
   basicSceneAdapter +
+  basicSpriteSceneAdapter +
   buildGameTwoDRuntimeApiSource() +
   `
 })();`
+
+export const gameTwoDRuntime = compactOfficialRuntimeSource(gameTwoDRuntimeSource)

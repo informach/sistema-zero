@@ -134,11 +134,38 @@ export function gameKitCampaignCallToIR(
 ): JSStatement | null | typeof CAMPAIGN_CALL_UNHANDLED {
   // Mesmo motivo do irmão em `campaignBlockCodec`: é por este despachante que a
   // extensão alcança o `parsers/js.ts` sem fazer aquela fachada crescer.
-  const scene = sceneCallStatement('gk', method, args, context.toExpr, context.isSimpleValue)
+  const scene = sceneCallStatement(
+    'gk',
+    method,
+    args,
+    context.toExpr,
+    context.isSimpleValue,
+    context.bodyOfFunction,
+  )
   if (scene) return scene
   const font = gameKitUiFontCallToIR(method, args)
   if (font) return font
   switch (method) {
+    case 'setHealth': {
+      const charVar = context.identifierName(args[0]),
+        lives = context.toExpr(args[1])
+      return args.length === 2 && charVar && context.isSimpleValue(lives)
+        ? { type: 'gk:setHealth', charVar, lives }
+        : null
+    }
+    case 'drawCounter': {
+      if (args.length !== 4) return null
+      const label = context.toExpr(args[0]),
+        value = context.toExpr(args[1]),
+        x = context.toExpr(args[2]),
+        y = context.toExpr(args[3])
+      return context.isSimpleValue(label) &&
+        context.isSimpleValue(value) &&
+        context.isSimpleValue(x) &&
+        context.isSimpleValue(y)
+        ? { type: 'gk:drawCounter', label, value, x, y }
+        : null
+    }
     case 'enableFixedSimulation': {
       if (args[0]?.type !== 'ObjectExpression') return null
       const options = objectPropertyNodes(args[0], ['hz', 'seed', 'maxCatchUpSteps'])

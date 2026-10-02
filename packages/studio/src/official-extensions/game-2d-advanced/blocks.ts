@@ -241,6 +241,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     name: '📽️ Animação',
     colour: C,
     types: [
+      ...sceneTypes('gk', 'animation'),
       'sz_gk_play_anim',
       'sz_gk_play_anim_once',
       'sz_gk_anim_ended',
@@ -300,8 +301,8 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
   },
   // Junto de Mundo & profundidade, e não no topo: camadas e pista são jeitos de
   // montar o cenário, e a primeira gaveta é a que a criança abre para começar.
-  { name: '🏔️ Camadas de cenário', colour: C, types: sceneTypes('gk', 'layers') },
-  { name: '⛷️ Pista em perspectiva', colour: C, types: sceneTypes('gk', 'track') },
+  { name: '⛷️ Começar com cenários e pista', colour: C, types: sceneTypes('gk', 'begin') },
+  { name: '🎛️ Mais controles da pista', colour: C, types: sceneTypes('gk', 'more') },
   {
     // 🛤️ R25 — caminho é polilinha nomeada (irmão da 🧭 Região, que é retângulo
     // nomeado). GERAL: serve TD, corrida, patrulha e cutscene em trilho. R29: desceu
@@ -392,6 +393,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
     colour: C,
     types: [
       'sz_gk_hurt',
+      'sz_gk_set_health',
       'sz_gk_knockback',
       'sz_gk_draw_health_bar',
       'sz_gk_touching_circle',
@@ -427,6 +429,7 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_mission_kill',
       'sz_gk_draw_timer',
       'sz_gk_draw_bar',
+      'sz_gk_draw_counter',
       'sz_gk_draw_hearts',
       'sz_gk_float_text',
       'sz_gk_time_survived',
@@ -926,6 +929,13 @@ export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_gk_camera_follow: { W: numShadow(1920), H: numShadow(1080) },
   sz_gk_launch_towards: { V: numShadow(400) },
   sz_gk_set_angle: { DEG: numShadow(0) },
+  sz_gk_draw_counter: {
+    LABEL: txtShadow('Pontos'),
+    VALUE: numShadow(0),
+    X: numShadow(24),
+    Y: numShadow(24),
+  },
+  sz_gk_set_health: { LIVES: numShadow(3) },
   sz_gk_draw_bar: {
     CUR: numShadow(50),
     MAX: numShadow(100),

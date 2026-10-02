@@ -236,8 +236,8 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    // 304 → 307: os três blocos-lista de nome (camada, pista e objeto), ocultos na paleta.
-    expect(gameTwoDBlocks.length).toBe(307)
+    // 02/10: substituição dos 19 controles manuais e posição por lado para a primeira atividade.
+    expect(gameTwoDBlocks.length).toBe(309)
   })
 
   it('o bloco de virar oferece as quatro direções cardeais', () => {

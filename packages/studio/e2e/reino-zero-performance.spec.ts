@@ -13,7 +13,9 @@ function reinoZeroCard(page: Page) {
     .first()
 }
 
-test('Reino Zero abre, programa e joga dentro dos orçamentos de desempenho', async ({ page }) => {
+test('Reino Zero abre, programa e joga dentro dos orçamentos de desempenho', async ({
+  page,
+}, testInfo) => {
   await page.addInitScript(() => {
     window.__reinoZeroLongTasks = []
     if (!('PerformanceObserver' in window)) return
@@ -58,6 +60,7 @@ test('Reino Zero abre, programa e joga dentro dos orçamentos de desempenho', as
   }, openedAt)
 
   const evidence = JSON.stringify(metrics)
+  await testInfo.attach('preview-metrics', { body: evidence, contentType: 'application/json' })
   expect(metrics.blocks, evidence).toBeLessThanOrEqual(1600)
   expect(metrics.blocklyDomNodes, evidence).toBeLessThanOrEqual(20_000)
   // O runtime didático completo já ocupa a maior parte do srcdoc; este teto trava

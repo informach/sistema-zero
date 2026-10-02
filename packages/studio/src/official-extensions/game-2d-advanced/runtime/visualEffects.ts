@@ -3,6 +3,25 @@
  * O fragmento roda dentro do IIFE principal e compartilha seu estado interno.
  */
 export const gameKitVisualEffectsRuntime = `
+  function drawHealthBar(who, max) {
+    if (!ctx2d || !who || typeof who !== 'object') return;
+    // 0 (ou vazio) = automático: usa a vida cheia do próprio personagem/molde
+    // (P24 usa data.health — assim a barra do molde de vida 20 mostra 20/20).
+    var full = num(max, 0);
+    if (full <= 0) full = num(who.maxHealth, 100);
+    if (full <= 0) return;
+    var pct = Math.max(0, Math.min(1, num(who.health, full) / full));
+    if (_spriteScene.decorate(who, function (box) {
+      var scale = box.w / who.w, y = box.y - 8 * scale;
+      ctx2d.fillStyle = 'rgba(0,0,0,0.6)'; ctx2d.fillRect(box.x, y, box.w, 4 * scale);
+      ctx2d.fillStyle = '#ff5f6d'; ctx2d.fillRect(box.x, y, box.w * pct, 4 * scale);
+    })) return;
+    var x = num(who.x, 0), y = num(who.y, 0) - 8, w = num(who.w, 0);
+    ctx2d.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx2d.fillRect(x, y, w, 4);
+    ctx2d.fillStyle = '#ff5f6d';
+    ctx2d.fillRect(x, y, Math.ceil(w * pct), 4);
+  }
   // ---- ❤️ HUD de corações ----
   function heartPath(cx, cy, s) {
     ctx2d.beginPath();
@@ -318,6 +337,18 @@ export const gameKitVisualEffectsRuntime = `
   }
 
   // ---- 🖥️ HUD & Missão ----
+  function drawCounter(label, value, x, y) {
+    if (!ctx2d) return;
+    var caption = text(label, '') + (value === '' ? '' : ' ' + String(value));
+    var bx = num(x, 24), by = num(y, 24);
+    ctx2d.save();
+    try {
+      ctx2d.font = '20px ' + _szGameUIFont; ctx2d.textAlign = 'left'; ctx2d.textBaseline = 'top';
+      var width = ctx2d.measureText(caption).width;
+      ctx2d.fillStyle = 'rgba(0,0,0,0.75)'; ctx2d.fillRect(bx - 8, by - 6, width + 16, 34);
+      ctx2d.fillStyle = '#ffffff'; ctx2d.fillText(caption, bx, by);
+    } finally { ctx2d.restore(); }
+  }
   function drawBar(current, max, x, y, w, h, color) {
     if (!ctx2d) return;
     var m = num(max, 100);

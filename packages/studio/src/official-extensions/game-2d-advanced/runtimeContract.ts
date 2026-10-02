@@ -1,6 +1,9 @@
 export * from './campaignVocabulary'
 
-import { SCENE_API_KEYS, type SceneTwoDApi } from '../scene-2d/contract'
+import {
+  ADVANCED_SPRITE_SCENE_API_KEYS,
+  type AdvancedSpriteSceneApi,
+} from '../scene-2d/spriteContract'
 
 import type {
   GameKitAction,
@@ -161,7 +164,7 @@ export interface GameKitCampaignSaveInfo {
  * mas não nesta lista usada para auditar a montagem pública do runtime.
  */
 export const GAME_KIT_ENUMERABLE_API_KEYS = [
-  ...SCENE_API_KEYS,
+  ...ADVANCED_SPRITE_SCENE_API_KEYS,
   'setup',
   'setupFull',
   'setStageDescription',
@@ -254,6 +257,8 @@ export const GAME_KIT_ENUMERABLE_API_KEYS = [
   'mouseDown',
   'onGameClick',
   'drawBar',
+  'drawCounter',
+  'setHealth',
   'rpgMoveGrid',
   'rpgBlockCell',
   'rpgCell',
@@ -552,7 +557,10 @@ export type GameKitEnumerableApiKey = (typeof GAME_KIT_ENUMERABLE_API_KEYS)[numb
 type GameKitFallbackMethod = (...args: unknown[]) => unknown
 
 /** Assinaturas fortes das operações centrais e dos valores retornados pela API. */
-export interface GameKitKnownApi extends SceneTwoDApi {
+export interface GameKitKnownApi extends AdvancedSpriteSceneApi {
+  onTrackMoldEncounter(name: string, mold: string, fn: (encountered: GameKitEntity) => void): void
+  drawCounter(label: string, value: unknown, x: number, y: number): void
+  setHealth(who: GameKitEntity, lives: number): void
   runProject(fn: () => void): void
   setup(opts?: GameKitSetupOptions): void
   setupFull(opts?: Pick<GameKitSetupOptions, 'background' | 'accent'>): void

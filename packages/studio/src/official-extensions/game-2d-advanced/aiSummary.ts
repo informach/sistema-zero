@@ -1,4 +1,4 @@
-import { sceneSummary } from '../scene-2d/docs'
+import { advancedSceneSummary as sceneSummary } from '../scene-2d/docs'
 export const gameKitPromptSummary = `Jogo 2D Avançado expõe window.SZGameKit e usa blocos reais de motor 2D.
 
 ÁREAS: “🧩 Meus moldes” guarda o que só define uma receita (moldes, fichas, visuais,

@@ -101,8 +101,9 @@ const REQUIRED_TYPES = {
     'gk:setup',
     'gk:sceneCommand',
     'gk:sceneValue',
-    'gk:onUpdate',
-    'gk:onDraw',
+    'gk:sceneEvent',
+    'gk:createCharacter',
+    'if',
   ],
   'Meu primeiro jogo': [
     'gk:setup',

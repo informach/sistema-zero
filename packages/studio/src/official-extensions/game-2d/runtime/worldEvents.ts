@@ -12,6 +12,13 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
     // dispara no toque, então ignoramos as repetições (senão vira metralhadora).
     if (e.repeat) return;
     var generation = _driverGeneration;
+    if (_spriteScene) {
+      var sceneKey = _normalizeGameKey(e.key);
+      if (sceneKey === 'Enter') _spriteScene.input('start');
+      else if (sceneKey === 'p' || sceneKey === 'Escape') _spriteScene.input('pause');
+      else if (sceneKey === 'r') _spriteScene.input('restart');
+      if (_runGenerationChanged(generation)) return;
+    }
     var handlers = keyHandlerOrder.slice();
     for (var i = 0; i < handlers.length; i++) {
       var id = handlers[i];

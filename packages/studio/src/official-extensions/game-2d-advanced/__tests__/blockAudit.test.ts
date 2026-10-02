@@ -11,7 +11,7 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
-import { isSceneNameBlock } from '../../scene-2d/catalog'
+import { isSceneNameBlock, SCENE_METHODS, sceneBlockType } from '../../scene-2d/catalog'
 import { gameKitBlocks, gameKitToolboxCategory } from '../blocks'
 import { gameKitRuntime } from '../runtime'
 
@@ -56,6 +56,13 @@ function loadRuntimeKeys(): Set<string> {
 function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
+    const scene = SCENE_METHODS.find((entry) => sceneBlockType('gk', entry) === type)
+    if (scene?.args.some((arg) => arg.field === 'sprite') || scene?.method === 'collectTrackItem') {
+      const frame = ws.newBlock('sz_frame_start')
+      const sprite = ws.newBlock('sz_gk_create_character')
+      sprite.setFieldValue('jogador', 'NAME')
+      frame.getInput('CHILDREN')?.connection?.connect(sprite.previousConnection!)
+    }
     attachBlockInContractContext({
       workspace: ws,
       type,
@@ -94,8 +101,8 @@ beforeAll(() => {
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
-    // 383 → 386: os três blocos-lista de nome (camada, pista e objeto), ocultos na paleta.
-    expect(gameKitBlocks.length).toBe(386)
+    // Inclui os dois blocos-lista de nome (cenário e pista), ocultos na paleta.
+    expect(gameKitBlocks.length).toBe(388)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })

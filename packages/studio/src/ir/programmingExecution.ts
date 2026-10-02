@@ -103,6 +103,8 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     ...TEXT_SPRITE_EVENT_TYPES,
     'g2d:onPointer',
     'g2d:onKey',
+    'g2d:sceneEvent',
+    'gk:sceneEvent',
     'g2d:onActionPressed',
     'g2d:onAnyInput',
     'g2d:onOverlap',
@@ -196,6 +198,7 @@ const CALLBACK_BODY_EXECUTION: ReadonlyMap<string, CallbackBodyExecution> = new 
     'g3d:forEachHit',
     'g3d:pruneOffscreen',
     'gk:forEachActive',
+    'gk:sceneEach',
     'gk:overlapGroups',
     'gk:rpgCutscene',
     'gk:rpgMenu',
@@ -270,6 +273,9 @@ function localVariablesForChild(
 ): string[] {
   const first = path[0]
   switch (statement.type) {
+    case 'gk:sceneEvent':
+    case 'gk:sceneEach':
+      return first === 'body' && statement.parameter ? [statement.parameter] : []
     case 'event':
       return first === 'body' ? ['event'] : []
     case 'onClickAssign':

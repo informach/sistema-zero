@@ -97,3 +97,22 @@ for (let index = 0; index < 36; index++) {
   SNOW_COURSE.push({ kind: 'pine', x: 210 + (index % 3) * 30, z: 340 + index * 180, w: 90, h: 135 })
 }
 SNOW_COURSE.sort((a, b) => a.z - b.z)
+
+// Two frames of the original drawing: a slight sway while skiing. The named
+// animation follows the same metadata contract as a drawing saved in Pinta.
+const skier = SNOW_DESCENT_ASSETS.find((item) => item.name === 'neve-esquiador')!
+const drawing = atob(skier.dataUrl.split(',')[1]!)
+  .replace(/^<svg[^>]*>/, '')
+  .replace(/<\/svg>$/, '')
+const animatedSkier = asset(
+  'neve-esquiador-animado',
+  104,
+  84,
+  `<g>${drawing}</g><g transform="translate(52 0)"><g transform="rotate(2 26 60)">${drawing}</g></g>`,
+)
+animatedSkier.sprite = {
+  frameW: 52,
+  frameH: 84,
+  animations: [{ name: 'deslizar', from: 0, to: 1, fps: 6, loop: true }],
+}
+SNOW_DESCENT_ASSETS.push(animatedSkier)

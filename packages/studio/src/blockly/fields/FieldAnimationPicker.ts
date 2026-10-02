@@ -39,7 +39,9 @@ export function resolveAnimations(field: Blockly.Field): ProjectSpriteAnim[] {
   const ws = block?.workspace as (Blockly.Workspace & AssetAccessor) | undefined
   if (!block || !ws) return []
   let imageName: string | undefined
-  if (block.type === GK_PLAY_ANIM_TYPE) {
+  if (block.type === 'sz_g2d_scene_animation' || block.type === 'sz_gk_scene_animation') {
+    imageName = block.getFieldValue('IMAGE')
+  } else if (block.type === GK_PLAY_ANIM_TYPE) {
     // gk: CHAR → bloco "Usar a folha de quadros" do MESMO personagem → IMAGE.
     const charName = block.getFieldValue('CHAR')
     if (!charName) return []
@@ -274,8 +276,9 @@ export class FieldAnimationPicker extends Blockly.FieldTextInput {
 
     if (anims.length === 0) {
       const empty = document.createElement('div')
-      empty.textContent =
-        'Nenhuma animação nesta folha. Escreva os números dos quadros (do… ao…) nos soquetes.'
+      empty.textContent = this.isSerializable()
+        ? 'Escolha um desenho com animações ou crie uma animação no Pinta.'
+        : 'Nenhuma animação nesta folha. Escreva os números dos quadros (do… ao…) nos soquetes.'
       empty.style.cssText =
         'font-size:12px;color:var(--color-sz-fg-soft);padding:2px;line-height:1.4;'
       wrap.appendChild(empty)
@@ -294,7 +297,8 @@ export class FieldAnimationPicker extends Blockly.FieldTextInput {
         const meta = document.createElement('span')
         meta.textContent = `quadros ${anim.from}–${anim.to} · ${anim.fps} fps`
         meta.style.cssText = 'font-size:10px;color:var(--color-sz-fg-soft);'
-        btn.append(name, meta)
+        btn.append(name)
+        if (!this.isSerializable()) btn.append(meta)
         btn.addEventListener('click', () => {
           this.setValue(anim.name)
           fillFrames(this, anim)
@@ -310,11 +314,25 @@ export class FieldAnimationPicker extends Blockly.FieldTextInput {
   }
 }
 
+/** The new block stores the chosen name; the runtime reads the asset metadata. */
+export class FieldNamedAnimationPicker extends FieldAnimationPicker {
+  override SERIALIZABLE = true
+  override isSerializable(): boolean {
+    return true
+  }
+  static override fromJson(
+    options: Blockly.FieldTextInputFromJsonConfig,
+  ): FieldNamedAnimationPicker {
+    return new FieldNamedAnimationPicker(`${options.text ?? ''}`)
+  }
+}
+
 let registered = false
 
 /** Registra o campo customizado uma única vez (idempotente). */
 export function registerFieldAnimationPicker(): void {
   if (registered) return
   Blockly.fieldRegistry.register('field_animation_picker', FieldAnimationPicker)
+  Blockly.fieldRegistry.register('field_named_animation_picker', FieldNamedAnimationPicker)
   registered = true
 }

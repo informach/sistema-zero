@@ -1,4 +1,4 @@
-import { sceneDocumentation, sceneSummary } from '../scene-2d/docs'
+import { sceneDocumentation, basicSceneSummary as sceneSummary } from '../scene-2d/docs'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
 const sceneReference = sceneDocumentation('SZGame2D')

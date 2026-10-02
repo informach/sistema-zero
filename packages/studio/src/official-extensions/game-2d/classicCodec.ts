@@ -81,7 +81,9 @@ export function classicGameTwoDBlockToIR(
   seen: Set<string>,
   tools: BlockToIRTools,
 ): JSStatement | undefined {
-  const scene = sceneBlockStatement(block, tools)
+  const scene = sceneBlockStatement(block, tools, (block, name) =>
+    tools.statements(block, name, seen),
+  )
   if (scene) {
     seen.add('game-2d')
     return scene
@@ -710,7 +712,14 @@ export function classicGameTwoDCallToIR(
   args: Node[],
   tools: ParserTools,
 ): JSStatement | undefined {
-  const scene = sceneCallStatement('g2d', method, args, tools.expression, tools.simple)
+  const scene = sceneCallStatement(
+    'g2d',
+    method,
+    args,
+    tools.expression,
+    tools.simple,
+    tools.functionBody,
+  )
   if (scene) return scene
   const identifier = (index: number) => tools.identifier(args[index])
   const expression = (index: number) => tools.expression(args[index])

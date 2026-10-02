@@ -1,4 +1,4 @@
-import { sceneSummary } from '../scene-2d/docs'
+import { basicSceneSummary as sceneSummary } from '../scene-2d/docs'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
 export const gameTwoDPromptSummary =

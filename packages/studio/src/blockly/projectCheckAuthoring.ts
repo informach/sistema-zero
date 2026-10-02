@@ -24,10 +24,10 @@ const valueBlockTypes = new Set(
 )
 
 /**
- * O avaliador lê literais de texto e número. Os blocos-lista de nome (camada, pista e
- * objeto das extensões de jogo 2D) são texto para o programa, então entram na
- * conferência como o texto que guardam. Sem isso, uma regra "usou esta camada, com
- * este nome" reprovaria justamente quem escolheu o nome na lista.
+ * O avaliador lê literais de texto e número. Os blocos-lista de nome (cenário e pista
+ * das extensões de jogo 2D) são texto para o programa, então entram na conferência
+ * como o texto que guardam. Sem isso, uma regra "usou este cenário, com este nome"
+ * reprovaria justamente quem escolheu o nome na lista.
  */
 function readableProject(project: unknown): unknown {
   if (typeof project !== 'object' || project === null || !('blocksState' in project)) return project

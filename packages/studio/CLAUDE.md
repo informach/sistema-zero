@@ -1860,7 +1860,7 @@ inteira). `sz_w3d_totem_image`/`sz_g3k_part` (W/H em unidades de MUNDO) estão n
 `blockly/fields/__tests__/applySuggestedSize.test.ts` (mapa × sombras reais da toolbox; todo bloco
 com seletor de imagem + soquete de tamanho no mapa OU no opt-out). Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`1.3.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`2.0.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -4381,209 +4381,48 @@ Decisão dela, com minha recomendação: segurar até o uso real mostrar que a c
 frequência que justifique gastar 1 membro da união da IR e 14 pontos da cadeia de blocos. Enquanto
 isso, `setHitboxScale` é a válvula.
 
-## Camadas e pista em perspectiva (`scene-2d`, g2d 1.3.0 / gk 0.62.0, 01/10/2026)
+## Cenários e pista com sprites (g2d 2.0.0 / gk 0.63.0, 02/10/2026)
 
-Pedido dela: cenário com várias camadas transparentes e um jogo em que a montanha VEM na direção
-do jogador (descida de esqui). O módulo **`official-extensions/scene-2d/`** é compartilhado pelas
-duas extensões de jogo 2D: uma fábrica (`createScene2D(host)`, string injetada uma vez em cada
-motor) e um catálogo único que gera os 19 blocos, a IR, os codecs e a doc dos DOIS alvos.
+A API pública manual de camadas/perspectiva foi substituída, por decisão do usuário: staging,
+sem projetos de alunos. Não registrar blocos antigos ou criar categorias ocultas para eles.
+`scene-2d/catalog.ts` é o vocabulário público. `runtime.ts` contém apenas primitivas internas
+de projeção/composição; `spriteRuntime.ts` vincula sprites reais, controla movimento e encontros;
+`spriteHosts.ts` adapta os dois motores. A cena reutiliza os relógios dos motores.
 
-- **Camadas**: nome próprio (a mesma imagem serve a várias), posição, escala, opacidade, ordem,
-  plano (fundo ou frente), movimento (tela, mundo ou paralaxe) e repetição. O cenário único de
-  sempre não mudou.
-- **Pista**: X lateral e Z de distância; `escala = foco / (z do objeto − progresso + recuo)`, com o
-  pé do objeto no chão. Os encontros (`trackPassed`/`trackTouching`) comparam o INTERVALO percorrido
-  no último "Avançar", então um passo grande não atravessa uma bandeira. É pista plana: curva,
-  relevo e chão texturizado ficaram fora.
-- **Uma IR para os 19**: `g2d:sceneCommand`/`gk:sceneCommand` e `…:sceneValue`, discriminados por
-  `method` (a união da IR pagou 1 membro de cada lado, não 19). Os codecs entram pelos despachantes
-  das extensões (`classicCodec`, `campaignBlockCodec`/`campaignParserCodec`), sem engordar as fachadas.
-- **Três exemplos iguais** ("Descida da Neve": Canvas sem extensão, Jogo 2D e Avançado), gerados de
-  UMA fonte (`examples/snowDescentSource.ts`) por `bun run gen:snow-descent`; `check:snow-descent`
-  acusa divergência. Mexeu na fonte? Regere, rode `gen:server-examples` e atualize os dois hashes do
-  `examplesLoading.test.ts`.
-- **Bloco novo do núcleo**: `sz_input_pointer_down` ("mouse/dedo pressionado?", `__szInput.down`).
+Ao iniciar: cenários, pista, sprite jogador, controles, percurso e cópias. Eventos: encontros
+por sprite e chegada. `collectTrackItem` só cabe no corpo de um encontro; remove uma instância.
+Camadas e desenho são automáticos. No básico, controles, HUD e telas têm atalhos prontos.
+No Avançado, câmera, velocidade, entrada, limites e chegada são separados; vida, HUD e telas
+usam os blocos nativos. Colocar/repetir funciona durante a partida e cópias de moldes integram o pool. A projeção transforma o contexto Canvas;
+não sobrescreve a geometria do sprite. `sceneAnimation` resolve nomes do Pinta pelo manifesto
+normalizado de metadados, inclusive na ponte do preview. O seletor ANIM novo é serializável.
 
-### Full review do mesmo dia (segunda sessão): o que mudou e por quê
+Os três exemplos Descida da Neve têm fontes separadas para Canvas manual e extensões.
+O básico usa escolhas prontas, padrões e eventos sem objetos/listas/funções próprias; o
+intermediário combina controles, vida, encontros, HUD e telas, com seis estrelas na chegada. O percurso e a arte permanecem compartilhados.
+Gerar com `gen:snow-descent` e conferir com `check:snow-descent`. Guia: `docs/jogo-2d-cenarios-e-neve.md`.
 
-A sessão que escreveu o lote não conseguia ler o `parse5` no ambiente dela e fechou a revisão com a
-suíte vermelha por isso. Aqui a suíte rodou inteira, e os achados foram outros:
-
-1. ⭐⭐ **O typecheck do `members` quebrava.** `scene-2d/contract.ts` declarava o `SceneHost` com
-   `CanvasRenderingContext2D`/`HTMLImageElement`, e o `members` alcança esse arquivo pelo catálogo de
-   blocos (`server-project-checks` → `blockCatalog` → `scene-2d/blocks` → `catalog` → `contract`)
-   compilando SEM a lib DOM. O typecheck do studio sozinho não acusa: CI vermelho, staging sem
-   deploy. O anfitrião foi para **`scene-2d/host.ts`**; `contract.ts` ficou puro, e um teste lê os
-   quatro módulos que o servidor alcança e recusa tipo de navegador. ⚠️ Lição de portão: lote que
-   toca catálogo de bloco roda `bun run --filter '*' typecheck`, não só o do pacote.
-2. ⭐⭐ **"Repetir" era booleano e cobria a tela nos DOIS eixos.** O uso mais comum de paralaxe é uma
-   FAIXA (montanhas de 640×200): repetindo, ela se empilhava tela abaixo. Virou um modo
-   (`SceneRepeat`: não / para os lados / para cima e para baixo / todos os lados; o código à mão
-   ainda pode passar `true`). De quebra, a cópia já alinhada com a borda deixou de ganhar uma irmã
-   inteira fora da tela (uma camada de tela cheia pedia 4 `drawImage`, 3 invisíveis).
-3. ⭐ **"Criar pista" dentro do laço era silêncio.** A pista recomeçava vazia 60 vezes por segundo e
-   nada aparecia, sem erro. O encaixe `resource-creator` não serve aqui: o contrato casa bloco ↔
-   TIPO de statement e os 19 dividem um tipo só. A rede ficou no RUNTIME (`rebuilt`): 90 recriações
-   seguidas (eram 30 até a terceira revisão: uma tecla de recomeço segurada meio segundo já
-   disparava), cada uma a menos de 120 ms da anterior, avisam uma vez citando o bloco. Cobre blocos,
-   Ponte e modo Código, e um recomeço por tecla não dispara.
-4. **Nome numérico era recusado** (`placeTrackObject(pista, i, …)` com o contador do laço caía em
-   "objeto inválido"). `key()` aceita número finito e o trata como o texto equivalente.
-5. **Avisos sem conserto** ("Camada não encontrada: x") passaram a citar a FACE do bloco e o que
-   fazer, e um teste confere cada face citada contra o catálogo (o runtime é uma string: nada mais
-   verificava esses nomes).
-6. **Trabalho por quadro**: a lista de camadas de cada plano só é refeita quando o conjunto ou a
-   ordem muda, e a pista corta por distância ANTES de ordenar (um percurso de 400 objetos ordenava
-   os 400 para desenhar 11).
-7. **Editorial**: as camadas tinham entrado no TOPO de tudo: primeira família da paleta do Jogo 2D,
-   primeiras gavetas do Avançado (sem emoji), primeira seção dos dois manuais e abertura dos dois
-   contextos de IA (antes do próprio nome da extensão). Foram para junto dos cenários. O exemplo do
-   Avançado saiu da frente de "Meu primeiro jogo". O resumo permanente da IA citava os exemplos
-   (o Zappy não cita exemplo nem galeria); a menção ficou só no manual do aluno.
-8. **Face dos blocos**: uma opção compartilhada dava "Criar camada … no frente" e "Desenhar camadas
-   do frente"; cada bloco ganhou a preposição na própria opção (no fundo / na frente, do fundo / da
-   frente).
-9. **Exemplos**: as extensões perguntavam cada letra duas vezes (`keyDown("p") || keyDown("p")`,
-   dois blocos idênticos lado a lado; só o Canvas diferencia maiúsculas), e a faixa vermelha da
-   batida ficava acesa para sempre nas telas de pausa e de fim.
-10. **Versões**: 19 blocos novos sem subir o manifest. g2d 1.2.0 → **1.3.0**, gk 0.61.0 → **0.62.0**.
-11. ⭐⭐ **O e2e da galeria reprovava o exemplo do Avançado**, e ninguém tinha rodado: o
-    `pointerdown` do canvas da gk tenta capturar o ponteiro e AVISAVA quando a captura lançava. Um
-    evento montado por código (o arrasto do teste, o controle do player) não tem ponteiro ativo,
-    então a captura sempre lança, e a galeria não aceita aviso nenhum. Era o primeiro exemplo da gk
-    que se joga arrastando. Hoje só evento de verdade (`isTrusted`) tenta capturar; a falha real
-    continua avisando. Os outros motores sempre engoliram essa exceção em silêncio.
-
-⭐ **Conferência em navegador de verdade** (Chromium do Playwright, iframe com a sandbox do preview):
-as três versões abrem, descem, pausam, aceitam teclado e arrasto e chegam à tela de fim, com as
-camadas compondo por transparência e zero mensagem no console; e o e2e da galeria inteira (158
-cartões) mais o smoke e os blocos de Canvas passaram, 200 de 200. ⚠️ Armadilha de sonda: o
-`keyboard.press()` do Playwright solta a tecla no mesmo instante, e o Canvas e o Avançado leem a
-tecla por QUADRO; a sonda "apertava Enter" e o jogo não começava. Segure a tecla ~120 ms, como
-uma pessoa.
-
-**Fica de fora, registrado:** os objetos da pista somem ao passar pelo jogador nos três exemplos
-(o exemplo os remove), em vez de crescerem até sair da tela.
-
-### Escolher o nome numa lista: camada, pista e objeto (pedido dela, mesma noite)
-
-Os três nomes eram soquetes de texto digitado em TODO bloco. Ela pediu a lista do que já foi
-criado, como nos outros seletores do Estúdio. O obstáculo é que aqui o nome não pode virar CAMPO:
-o objeto de uma pista nasce num laço com o nome calculado (`"obj" + i`, é o que os três exemplos
-fazem), então o soquete precisa continuar aceitando um valor.
-
-⭐ **A saída é um bloco-lista dentro do soquete.** Cada extensão ganhou três blocos de VALOR
-ocultos (`sz_g2d_scene_layer_name`, `…_track_name`, `…_object_name`, e os irmãos `sz_gk_…`), cada
-um com um `field_name_picker` de um `kind` novo (`scene-layer`, `scene-track`, `scene-object`). O
-catálogo (`scene-2d/catalog.ts`) marca cada argumento de nome: `declares` no bloco que cria
-(Criar camada, Criar pista, Na pista … objeto), `picks` nos 20 soquetes que usam. Quem cria nasce
-com a sombra de texto de sempre (a criança nomeia ali, uma vez); quem usa nasce com o bloco-lista.
-Um texto juntado num laço continua encaixando por cima.
-
-- **Para o programa é texto puro.** Bloco → IR devolve `{ type: 'str' }`; a IR, o gerador e o
-  parser não mudaram uma linha, e a união da IR não pagou nada. IR → bloco (`sceneToBlock`): nome
-  fixo num soquete `picks` volta como SOMBRA do bloco-lista; nome calculado vira bloco real com a
-  lista por baixo, pronta para quando a criança tirar o bloco.
-- **A lista lê SOQUETES, não campos** (`collectSceneNames` no `FieldNamePicker.ts`): é o único
-  `kind` assim. Vale o texto fixo, um número (o runtime aceita) ou outro bloco-lista; nome
-  calculado não tem o que oferecer e fica de fora.
-- ⭐ **Objeto pertence a uma pista**: a lista mostra os objetos da pista que está no MESMO bloco
-  (mais os de pista calculada, que não dá para saber). Sem nenhum candidato nesse recorte, mostra
-  todos: lista vazia com objeto criado em outra pista pareceria defeito.
-- Os três `kind` aceitam texto digitado (não entram em `DECLARED_NAME_KINDS`): dá para apontar um
-  nome que ainda vai ser criado.
-- ⭐⭐ **As checagens de aula leem o nome escolhido** (`sceneNamesAsText`, aplicado nos dois
-  embrulhos de `projectCheckAuthoring.ts`): o avaliador do `core` só conhece literais de texto e
-  número, então uma regra "usou esta camada, com este nome" (`usesBlock` com `inputs`) REPROVARIA
-  justamente quem escolheu o nome na lista. O Estúdio entrega ao avaliador uma cópia do projeto com
-  cada bloco-lista lido como o texto que guarda. ⚠️ Foi feito no Estúdio e NÃO no `core` de
-  propósito: todos os chamadores passam por esses embrulhos, e mexer no `core` redeployaria a frota
-  inteira por causa de seis tipos de bloco. Sem bloco-lista no projeto, a mesma referência volta
-  (nenhuma cópia); a varredura usa pilha explícita.
-- ⚠️ **Bloco oculto de valor entra em três contas**: `gameTwoDBlocks.length` 304 → **307** e
-  `gameKitBlocks.length` 383 → **386** (com "304 visíveis e 3 ocultas" no relatório de auditoria);
-  as duas `blockAudit` tiram os blocos-lista do pipeline por bloco (`isSceneNameBlock`), porque
-  eles não geram nó `g2d:`/`gk:` nem chamam o runtime; e o `__gen_serverExamplesIndex.ts` passa a
-  listar os tipos nos exemplos que os usam (o Zappy ignora tipo fora do catálogo). A allowlist de
-  importação é derivada da lista de blocos da extensão, então eles já estão nela, e há teste.
-- Redes: `scene-2d/names.test.ts` (paleta, ocultos, Ponte, salvar e reabrir, lista por tipo e por
-  pista) e o e2e `e2e/scene-names.spec.ts` (Chromium: abre a lista, escolhe, a pista do bloco troca
-  os objetos oferecidos, e o nome digitado continua valendo). ⚠️ No e2e, a linha da lista é
-  `[ícone][nome]`: `toHaveText` no botão inteiro devolve "🏔️ceu".
-
-### Terceira revisão, antes do commit (01/10/2026, noite)
-
-Ela pediu um full review do que eu mesma tinha escrito nas duas rodadas acima, e depois o
-commit. Dois revisores independentes (um no motor, outro na lista de nomes), só leitura. Nenhum
-defeito grave no motor; o achado mais caro estava FORA do código:
-
-1. ⭐⭐ **O Members não era reconstruído quando só o Estúdio mudava.** Ele confere as atividades
-   das aulas no servidor com `@sistemazero/studio/server-project-checks` (catálogo de blocos +
-   avaliador), e o mapa de deploy de staging (`.github/workflows/ci.yml`) mandava
-   `packages/studio/*` só para os três apps. Um bloco novo era aceito na autoria (admin, já
-   novo) e recusado na correção (members, ainda velho), sem erro em lugar nenhum. A lacuna é
-   anterior a este lote e vale para TODO bloco novo. Hoje a linha do studio também faz
-   `add members`, com o teste `blockly/__tests__/serverChecksDeploy.test.ts` (molde do
-   `members-conformance` do Pinta). ⚠️ O `watchPatterns` de `.railway/services/members.json`
-   NÃO foi tocado de propósito: qualquer mudança em `.railway/` redeploya a frota inteira; ele
-   entra junto de um lote que já faça isso. ⚠️ Produção é manual (`Deploy produção` com a lista
-   de serviços): lote que mexe em bloco do Estúdio pede `members` na lista.
-2. ⭐⭐ **Literal voltava da Ponte como bloco REAL, não como sombra.** O `sceneToBlock` monta o
-   bloco na mão e não passa pelo `shouldEmitAsShadow`; os soquetes da cena também não estão em
-   `LEGACY_VALUE_FIELDS`. Depois de qualquer passada pela Ponte, e em TODO projeto criado dos
-   três exemplos, a criança arrastava o número para fora e sobrava um soquete vazio. Hoje o
-   literal do tipo do soquete volta como `{ shadow }` e um valor calculado leva por baixo a
-   sombra da paleta (`sceneLiteralShadow`, fonte única com a paleta).
-3. **Soquete de nome vazio criava o nome da PALETA** ("montanhas") em silêncio: o fallback do
-   codec era o valor de fábrica. Para nome (`declares`/`picks`) o fallback virou `''`, e o
-   runtime avisa.
-4. **"Câmera" depois de "Avançar" apagava os encontros** (`previous = z` mesmo sem mudar o z).
-   É a ordem natural de escrever, e os exemplos só funcionavam por chamarem na ordem inversa.
-   Mesma distância agora preserva o passo; distância diferente continua sendo teleporte.
-5. **Camadas do fundo no Avançado apagavam o mapa e a campanha**: lá o motor pinta mapa RPG e
-   fase ANTES dos ganchos de desenho, e o `clear` do adaptador limpava a tela inteira. Com mapa
-   desenhado ou campanha ativa, o passe do fundo não limpa e avisa uma vez.
-6. **Cena sem laço ficava em branco no Jogo 2D** (as imagens ainda estão carregando no "Ao
-   iniciar" e ninguém repintava). O motor guarda a sequência de desenhos desde o último passe
-   de fundo (duas listas planas, sem objeto por quadro) e o anfitrião a repete quando a imagem
-   chega, só se não houver laço (`host.late`). ⚠️ Repete a sequência INTEIRA, em ordem: repetir
-   só o passe que faltou deixaria o fundo (que limpa) rodar depois da frente.
-7. **Nitidez**: camadas e objetos chamavam `drawImage` cru. No Jogo 2D a pixel art ampliada
-   saía borrada (sprite e cenário passam por `_crispDraw`); no Avançado uma imagem grande
-   reduzida saía serrilhada. Gancho opcional `host.smoothing`, chamado dentro do save/restore da
-   própria cena. ⚠️ `_isVectorImage` lê o endereço INTEIRO da imagem (um data URL longo):
-   pergunta-se uma vez por imagem (`WeakMap`), não a cada desenho.
-8. **Menores, todos com teste**: nome com espaço em volta é o mesmo nome (a lista já aparava, o
-   programa não); opacidade fora de 0..1 é ajustada em vez de recusar a chamada inteira (um
-   fade que passa do fim por ponto flutuante travava x e y junto); número inválido avisa nos
-   cinco métodos que calavam; o aviso de criador no laço tem cota própria (64 nomes errados
-   esgotavam a cota e o aviso mais importante sumia); a lista de nomes é POR MOTOR (num projeto
-   com Jogo 2D e Avançado, cada bloco lista só a cena do motor dele); a contagem "N blocos em
-   uso" ao remover a extensão não conta mais as listas de dentro dos soquetes; valor de cena da
-   gk passa a ler os argumentos com o contexto do parser (o g2d e o caminho de comando já
-   liam); as montanhas dos três exemplos ganharam folga (escala 1,04) para a borda não aparecer
-   ao deslizar; a checagem de aula converte o projeto uma vez por projeto (`WeakMap`), não uma
-   vez por regra.
-
-9. ⭐⭐ **O primeiro push reprovou no CI por TAMANHO, e o deploy foi pulado.** O
-   `e2e/reino-zero-performance.spec.ts` trava o documento de preview do maior jogo em 790 000
-   bytes; o runtime do Jogo 2D vai inteiro para TODO documento, e o motor da cena (16,5 KB com
-   comentários) o levou a 793 616. O teto não subiu (o próprio teste diz que subir é decisão
-   dela): `scene-2d/runtime.ts` passou a entregar o código sem comentários e sem indentação
-   (`lean`), e o documento mede 789 943. **Sobram 57 bytes**: o próximo acréscimo ao runtime
-   do Jogo 2D bate no teto. ⚠️ Esse teste só roda no e2e do Chromium (terceira fatia do CI) e
-   eu não o tinha rodado localmente: lote que acrescenta runtime ao Jogo 2D roda
-   `bunx playwright test e2e/reino-zero-performance.spec.ts --project=chromium` antes do push.
-   ⚠️ As guardas de template dos dois motores leem `scene-2d/runtime.ts` de jeitos diferentes:
-   a da gk exige que cada literal feche numa linha só com a crase e que venha logo depois de
-   um `export const`. Por isso os três literais são exportados crus e o que os motores
-   injetam é derivado no fim do arquivo, exportado por lista (`export { … }`).
-
-**Fica de fora, registrado:** objeto que se move SOZINHO na direção do jogador pode cruzar sem
-encontro (o encontro compara o intervalo da CÂMERA; está dito no manual e na dica do "mover
-objeto"; consertar pede guardar o z anterior do objeto e desambiguar "movido antes ou depois de
-Avançar"); o teto de 4096 cópias de uma camada repetida não acompanha a resolução; o tremor da
-câmera do Avançado não chega às camadas; e os objetos somem ao passar pelo jogador nos exemplos.
+**Full review do mesmo dia (02/10/2026):**
+- ⭐ **Animação nomeada no básico reaproveita a folha** (`spriteHosts.ts`): o `setAnimation`
+  compara a folha por IDENTIDADE, e uma folha nova a cada chamada recomeçava a animação no
+  "a cada quadro" (o sprite parava no primeiro quadro). Teste no `snowDescentRuntime.test.ts`.
+- **Poda de grupo no básico pergunta à projeção** (`worldGroups.ts`): sprite de pista tem
+  `y` = distância, e o retângulo da tela apagava os itens à frente e chamava o `onLeave`.
+- **O placar só aparece com "Mostrar vidas e placar"** e o rodapé só nomeia os controles que
+  a pista tem (`drawHud` ganhou `hud` e `controls`). Telas prontas sozinhas não desenham
+  mais "VIDAS 0". Com placar, R recomeça (está na dica e no manual).
+- Recriar a pista solta os sprites da criança e destrói só as cópias; pedir a mesma vista a
+  cada quadro não reconstrói a pista (era aviso falso citando "Criar pista"); cada cópia do
+  Avançado ganha as próprias tabelas `_stateAnims`/`_stateLooks`/`_platFrames`.
+- ⭐ **O manual cita blocos pela face real** (`scene-2d/docs.test.ts`: todo negrito do
+  `sceneDocumentation` tem que casar com o `message0` de um bloco, `…` = soquete).
+- ⚠️ **O runtime do básico não pode ter template literal fora de comentário**: a
+  compactação apaga linhas e o teste de equivalência não reanalisa o miolo de um template
+  (`bundle.test.ts` agora trava). Folga atual: ~7 KB cru e ~2,3 KB gzip sob o teto.
+- ⚠️ Catálogo de bloco novo pede o typecheck de TODOS os pacotes (members lê o catálogo sem
+  DOM) e o e2e `reino-zero-performance.spec.ts` tem teto de 790.000 bytes no srcdoc.
+- Registrado e não mudado: encontro com o item exatamente na distância do jogador (Δz = 0)
+  não dispara; o Avançado só zera a cena no `resetProject`.
 
 ## Comandos
 

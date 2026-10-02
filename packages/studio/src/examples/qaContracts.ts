@@ -114,7 +114,7 @@ export const EXAMPLE_QA_CONTRACTS = [
     name: 'Descida da Neve (Jogo 2D)',
     experience: 'game',
     promise:
-      'Compor camadas transparentes e projetar a pista com blocos do Jogo 2D, no mesmo percurso da versão Canvas.',
+      'Usar sprites animados e uma pista automática, sem funções nem objetos de dados, no mesmo percurso da versão Canvas.',
     scenario:
       'Enter/toque inicia; setas/A-D e arrasto movem. P pausa. Coletar estrelas, evitar bandeiras, vencer ou perder e reiniciar com R.',
     interactions: ['start', 'arrows', 'drag'],
@@ -124,9 +124,9 @@ export const EXAMPLE_QA_CONTRACTS = [
     name: 'Descida da Neve (Jogo 2D Avançado)',
     experience: 'game',
     promise:
-      'Usar camadas e perspectiva no motor avançado, movendo pela pista com velocidade multiplicada por dt.',
+      'Combinar sprites animados, controles, movimento, vidas, placar e telas nativas; vencer com seis estrelas.',
     scenario:
-      'Enter/toque inicia; setas/A-D e arrasto movem. P pausa. Coletar estrelas, evitar bandeiras, vencer ou perder e reiniciar com R.',
+      'Descer a montanha inicia; setas/A-D e arrasto movem. P ou Pausar abre a pausa; Continuar retoma. A tela final oferece um botão para recomeçar.',
     interactions: ['start', 'arrows', 'drag'],
   },
   {

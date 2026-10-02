@@ -1,3 +1,5 @@
+import { sceneTypes } from '../official-extensions/scene-2d/catalog'
+
 /**
  * Perfil conquistado pelo Construtor após o curso-base do Iniciante 2D.
  * A lista espelha a referência oficial do Desafio do Primeiro Jogo e soma o
@@ -13,6 +15,13 @@ export const ESSENTIAL_2D_BLOCK_TYPES = [
   'sz_frame_events',
   'sz_frame_loops',
   'sz_g2d_setup_stage',
+  'sz_g2d_set_stage_description',
+  // The entry path uses ordinary sprites and automatic scenes, without manual projection.
+  'sz_g2d_create_sprite',
+  'sz_g2d_create_image_sprite',
+  ...sceneTypes('g2d', 'begin'),
+  ...sceneTypes('g2d', 'animation'),
+  'sz_g2d_put_track_sprite',
   'sz_g2d_create_text_sprite',
   'sz_g2d_spawn_text_in_group',
   'sz_g2d_set_sprite_text',

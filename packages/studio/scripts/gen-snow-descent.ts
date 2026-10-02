@@ -37,7 +37,7 @@ for (const variant of ['canvas', 'g2d', 'gk'] as const) {
             ]
           : [],
       css:
-        variant === 'gk'
+        variant !== 'canvas'
           ? []
           : [
               {

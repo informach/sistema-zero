@@ -62,6 +62,7 @@ describe('gameTwoDRuntime — arquitetura dos domínios', () => {
       'lifecycle',
       'physics',
       'scene-2d',
+      'sprite-scene',
       'sprites',
       'stage-accessibility',
       'stage-backdrop',
