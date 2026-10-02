@@ -1,6 +1,8 @@
 import type { BlockDefinition } from '../../blockly/blocks/types'
 import { categoryShades } from '../../blockly/colorShades'
 import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
+import { sceneBlocks, sceneShadows } from '../scene-2d/blocks'
+import { sceneTypes } from '../scene-2d/catalog'
 import { gameKitBlockDefinitions01 } from './blocks/definitions01'
 import { gameKitBlockDefinitions02 } from './blocks/definitions02'
 import { gameKitBlockDefinitions03 } from './blocks/definitions03'
@@ -14,6 +16,7 @@ import { gameKitBlockDefinitions07 } from './blocks/definitions07'
 import { GAME_KIT_COLOUR as C } from './blocks/shared'
 
 export const gameKitBlocks: BlockDefinition[] = [
+  ...sceneBlocks('gk'),
   ...gameKitBlockDefinitions01,
   ...gameKitBlockDefinitions02,
   ...gameKitBlockDefinitions03,
@@ -295,6 +298,10 @@ const SUBCATS: { name: string; colour: string; types: string[]; kit?: string }[]
       'sz_gk_create_empty_tilemap',
     ],
   },
+  // Junto de Mundo & profundidade, e não no topo: camadas e pista são jeitos de
+  // montar o cenário, e a primeira gaveta é a que a criança abre para começar.
+  { name: '🏔️ Camadas de cenário', colour: C, types: sceneTypes('gk', 'layers') },
+  { name: '⛷️ Pista em perspectiva', colour: C, types: sceneTypes('gk', 'track') },
   {
     // 🛤️ R25 — caminho é polilinha nomeada (irmão da 🧭 Região, que é retângulo
     // nomeado). GERAL: serve TD, corrida, patrulha e cutscene em trilho. R29: desceu
@@ -854,6 +861,7 @@ const leftover = gameKitBlocks
 const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { TEXT: text } } })
 const numShadow = (value: number) => ({ shadow: { type: 'sz_val_number', fields: { NUM: value } } })
 export const GK_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
+  ...sceneShadows('gk'),
   sz_gk_setup: { W: numShadow(1280), H: numShadow(720) },
   sz_gk_fixed_setup: { SEED: numShadow(2026) },
   sz_gk_define_campaign: {

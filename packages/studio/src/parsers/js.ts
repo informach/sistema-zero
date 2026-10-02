@@ -44,6 +44,7 @@ import {
   platformGameThreeDDeclarationToIR,
   platformGameThreeDExpressionToIR,
 } from '../official-extensions/game-3d/platformCodec'
+import { isSceneExpression } from '../official-extensions/scene-2d/ir'
 import { canvas3DSymbolKindsForClass } from '../three/canvas3dContract'
 import {
   canvas3DMacroFromPlaceholder,
@@ -5189,7 +5190,10 @@ function matchGameKitExpr(node: Node, ctx?: ParseCtx): JSExpr | null {
   const call = asSZGameKitCall(node)
   if (!call) return null
   const { method, args } = call
-  const campaignExpression = gameKitCampaignExpressionCallToIR(method, args)
+  const campaignExpression = gameKitCampaignExpressionCallToIR(method, args, {
+    toExpr: (value) => toExpr(value, ctx),
+    isSimpleValue,
+  })
   if (campaignExpression !== CAMPAIGN_EXPRESSION_CALL_UNHANDLED) return campaignExpression
   if (method === 'width' && args.length === 0) return { type: 'gk:gameWidth' }
   if (method === 'height' && args.length === 0) return { type: 'gk:gameHeight' }
@@ -12398,7 +12402,7 @@ function toExpr(node: Node | null | undefined, ctx?: ParseCtx): JSExpr | null {
         node.object?.type === 'Identifier' &&
         node.object.name === '__szInput' &&
         node.property?.type === 'Identifier' &&
-        (node.property.name === 'x' || node.property.name === 'y')
+        (node.property.name === 'x' || node.property.name === 'y' || node.property.name === 'down')
       ) {
         return { type: 'inputPointer', axis: node.property.name }
       }
@@ -12948,6 +12952,7 @@ function tryMatchHslTemplate(node: Babel.TemplateLiteral, ctx?: ParseCtx): JSExp
  */
 function isSimpleValue(expr: JSExpr | null): expr is JSExpr {
   if (!expr) return false
+  if (isSceneExpression(expr)) return expr.args.every(isSimpleValue)
   // Os reporters do lote de plataforma do Jogo 3D vivem no codec da extensão.
   if (PLATFORM_SIMPLE_VALUE_TYPES.has(expr.type)) return true
   const nativeRuntime = nativeRuntimeSimpleValue(expr, isSimpleValue)

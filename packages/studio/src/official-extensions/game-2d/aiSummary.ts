@@ -1,3 +1,4 @@
+import { sceneSummary } from '../scene-2d/docs'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
 export const gameTwoDPromptSummary =
@@ -72,4 +73,5 @@ Sprite sem vida inicializada não é tratado como morto.
 
 REGRAS: não misture com Jogo 2D Avançado. Não use bibliotecas externas nem JS cru
 quando houver bloco equivalente. A paleta completa permanece disponível; as aulas
-escolhem explicitamente quais blocos apresentar.`)
+escolhem explicitamente quais blocos apresentar.
+${sceneSummary}`)

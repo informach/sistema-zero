@@ -1,3 +1,6 @@
+import { sceneDocumentation } from '../scene-2d/docs'
+
+const sceneReference = sceneDocumentation('SZGameKit', true)
 export const gameKitDocs = `## Jogo 2D Avançado
 
 Esta extensão traz uma base reutilizável: o motor cuida de telas, estados,
@@ -304,6 +307,8 @@ Para o mundo ter cara de jogo de verdade (vale para QUALQUER jogo, não só RPG)
   você passar, TODOS os enxames vivos e os NPCs (se o jogo tiver o Kit RPG).
 - **Desenhar a sombra de …**. Uma sombrinha embaixo do personagem (ele gruda no
   chão em vez de flutuar). Use antes de desenhar o personagem.
+
+${sceneReference}
 
 ### ⚙️ Física
 

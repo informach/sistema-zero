@@ -1,5 +1,6 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { gameRuntimeDomains } from '../runtimeDomains'
+import { basicSceneAdapter } from '../scene-2d/runtime'
 import { gameTwoDArcadeKitsRuntime } from './runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from './runtime/audio'
 import { gameTwoDCasualKitsRuntime } from './runtime/casualKits'
@@ -113,6 +114,7 @@ export const gameTwoDRuntime =
   gameTwoDCasualKitsRuntime +
   gameTwoDUtilitiesRuntime +
   gameTwoDClassicPlatformerRuntime +
+  basicSceneAdapter +
   buildGameTwoDRuntimeApiSource() +
   `
 })();`

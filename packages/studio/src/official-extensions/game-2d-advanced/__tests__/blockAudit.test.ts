@@ -11,6 +11,7 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
+import { isSceneNameBlock } from '../../scene-2d/catalog'
 import { gameKitBlocks, gameKitToolboxCategory } from '../blocks'
 import { gameKitRuntime } from '../runtime'
 
@@ -32,6 +33,11 @@ const EXPR_HOST = 'sz_gk_place_character'
 
 const statementDefs = gameKitBlocks.filter((def) => !def.output)
 const exprDefs = gameKitBlocks.filter((def) => Boolean(def.output))
+// Os blocos-lista de nome (camada, pista, objeto) moram DENTRO de um soquete e, para
+// o programa, são texto puro: não geram nó `gk:` nem chamam o runtime. A cadeia
+// deles (paleta, Ponte, salvar e reabrir, lista de nomes) é provada em
+// `scene-2d/names.test.ts`.
+const pipelineExprDefs = exprDefs.filter((def) => !isSceneNameBlock(def.type))
 
 function loadRuntimeKeys(): Set<string> {
   const win = {
@@ -88,7 +94,8 @@ beforeAll(() => {
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
-    expect(gameKitBlocks.length).toBe(364)
+    // 383 → 386: os três blocos-lista de nome (camada, pista e objeto), ocultos na paleta.
+    expect(gameKitBlocks.length).toBe(386)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })
@@ -161,7 +168,7 @@ describe('Auditoria Jogo 2D Avançado — pipeline completo por bloco', () => {
     ...statementDefs
       .filter((definition) => inferBlockContract(definition).migration === 'keep')
       .map((d) => ({ type: d.type, kind: 'statement' as const })),
-    ...exprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
+    ...pipelineExprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
   ]
 
   for (const { type, kind } of cases) {

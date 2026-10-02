@@ -31,6 +31,7 @@ import {
   reinoZeroProExample,
   safariDeMonstrosProfissionalExample,
   saltoNaFlorestaExample,
+  snowDescentAdvancedExample,
   sobreviventeProfissionalExample,
   treinadorDeCriaturasExample,
   valeEnsolaradoExample,
@@ -76,4 +77,5 @@ export const gameKitExamples = [
   sobreviventeProfissionalExample,
   fazendaFelizProfissionalExample,
   heroiQueEvoluiProfissionalExample,
+  snowDescentAdvancedExample,
 ] as const

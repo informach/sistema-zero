@@ -342,7 +342,7 @@ export function canvasExpressionIRToBlock(
     case 'inputKeyPressed':
       return block('sz_input_key_pressed', { KEY: expr.key })
     case 'inputPointer':
-      return block(expr.axis === 'y' ? 'sz_input_pointer_y' : 'sz_input_pointer_x')
+      return block(`sz_input_pointer_${expr.axis}`)
     default:
       return undefined
   }

@@ -13,6 +13,12 @@ const HOST_CONTRACT_FILE = 'game-2d-advanced-runtime-host.d.ts'
 // e o teste reprova por falta de arquivo, não por defeito no runtime. Módulo novo
 // importado pelo contrato entra aqui também.
 const CAMPAIGN_VOCABULARY_FILE = 'campaignVocabulary.ts'
+const SCENE_CONTRACT_FILE = 'sceneContract.ts'
+const SCENE_CONTRACT = readFileSync(join(import.meta.dir, '../../scene-2d/contract.ts'), 'utf8')
+// O anfitrião da cena (tipos do navegador) mora num arquivo próprio para o contrato
+// público continuar carregável por pacotes de servidor, que compilam sem a lib DOM.
+const SCENE_HOST_FILE = 'sceneHost.ts'
+const SCENE_HOST = readFileSync(join(import.meta.dir, '../../scene-2d/host.ts'), 'utf8')
 const RUNTIME_CONTRACT = readFileSync(join(import.meta.dir, '../runtimeContract.ts'), 'utf8')
 const CAMPAIGN_VOCABULARY = readFileSync(join(import.meta.dir, '../campaignVocabulary.ts'), 'utf8')
 const HOST_CONTRACT = `
@@ -199,7 +205,14 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // `_overlapBoundsTouch(a, b)` 2; sem eles, 39×40 e 40×40 dão resultados
   // diferentes quando o callback move B.
   // 1149 → 1150: rpgCreateMap recebe o alcance explícito (com limites ou livre).
-  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1150)
+  // +84: shared scene factory and its host adapter. The public API and host
+  // callbacks have contextual types from SceneTwoDApi and SceneHost.
+  // 1234 → 1237: a cena ganhou o aviso de criador rodando no laço (`rebuilt(old,
+  // message)`, 2) e o modo de repetição da camada (`repeatMode(value)`, 1).
+  // 1237 → 1244: a terceira revisão da cena. Na fábrica (4): `warn(message, reserved)`
+  // +1, `remember(kind, name)` 2 e `picture(name)` 1. No anfitrião (3): a nitidez por
+  // imagem (`smoothing(ctx, img, width)`). Aqui não há `late`: o motor sempre tem laço.
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1244)
 })
 
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {
@@ -232,6 +245,8 @@ test('o runtime injetado passa pela análise semântica do TypeScript', () => {
     [RUNTIME_FILE, { source: gameKitRuntime, kind: ts.ScriptKind.JS }],
     [RUNTIME_CONTRACT_FILE, { source: RUNTIME_CONTRACT, kind: ts.ScriptKind.TS }],
     [CAMPAIGN_VOCABULARY_FILE, { source: CAMPAIGN_VOCABULARY, kind: ts.ScriptKind.TS }],
+    [SCENE_CONTRACT_FILE, { source: SCENE_CONTRACT, kind: ts.ScriptKind.TS }],
+    [SCENE_HOST_FILE, { source: SCENE_HOST, kind: ts.ScriptKind.TS }],
     [HOST_CONTRACT_FILE, { source: HOST_CONTRACT, kind: ts.ScriptKind.TS }],
   ])
   // O contrato importa `./campaignVocabulary`, e o `./` faz o TypeScript pedir um
@@ -248,6 +263,17 @@ test('o runtime injetado passa pela análise semântica do TypeScript', () => {
       : undefined)
   const host: ts.CompilerHost = {
     ...defaultHost,
+    resolveModuleNames: (names, containingFile) =>
+      names.map((name) =>
+        name === '../scene-2d/contract'
+          ? { resolvedFileName: SCENE_CONTRACT_FILE, extension: ts.Extension.Ts }
+          : name === '../scene-2d/host'
+            ? { resolvedFileName: SCENE_HOST_FILE, extension: ts.Extension.Ts }
+            : ts.resolveModuleName(name, containingFile, options, {
+                ...defaultHost,
+                fileExists: (file) => Boolean(virtualSource(file)) || defaultHost.fileExists(file),
+              }).resolvedModule,
+      ),
     fileExists: (fileName) => Boolean(virtualSource(fileName)) || defaultHost.fileExists(fileName),
     readFile: (fileName) => virtualSource(fileName)?.source ?? defaultHost.readFile(fileName),
     getSourceFile: (fileName, languageVersion, onError, shouldCreateNewSourceFile) => {

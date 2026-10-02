@@ -21,6 +21,8 @@ import {
   collectTextSpriteIdentifiers,
   textSpriteStatementToCode,
 } from '../official-extensions/game-2d/textCodec'
+import { sceneToCode } from '../official-extensions/scene-2d/codec'
+import { isSceneExpression, isSceneStatement } from '../official-extensions/scene-2d/ir'
 import { canvas3DAddonImport } from '../three/canvas3dAddons'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
@@ -765,6 +767,8 @@ function compileStatementCode(
   const base = mapContext?.startLine ?? 1
   const recAt = (line: number): ExprMapContext | undefined =>
     mapContext ? { map: mapContext.map, line, indent } : undefined
+  if (isSceneStatement(stmt))
+    return `${pad}${sceneToCode(stmt, (arg) => compileExpr(arg, 0, identifiers, recAt(base)))};`
   if (isCanvasStatement(stmt)) {
     const canvasCode = canvasStatementToCode(stmt, indent, identifiers, {
       mapContext,
@@ -4402,6 +4406,10 @@ function collectIdentifierNames(statements: JSStatement[]): Set<string> {
 }
 
 function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): void {
+  if (isSceneStatement(stmt)) {
+    for (const arg of stmt.args) collectExprIdentifiers(arg, names)
+    return
+  }
   if (stmt.type.startsWith('g2d:')) {
     gameTwoDStatementIdentifiers()
     return
@@ -8008,6 +8016,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
 }
 
 function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
+  if (isSceneExpression(expr)) {
+    for (const arg of expr.args) collectExprIdentifiers(arg, names)
+    return
+  }
   if (expr.type === 'g2d:spriteText' || expr.type === 'g2d:spriteData') {
     names.add(expr.spriteVar)
     if (expr.type === 'g2d:spriteData') collectExprIdentifiers(expr.fallback, names)

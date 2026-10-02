@@ -6,12 +6,12 @@ Os **15 achados** desta auditoria foram corrigidos: um P0, quatro P1, oito P2 e
 dois P3. Cinco correções eram de experiência pedagógica e visual; as outras dez
 tratavam comportamento do runtime, arquitetura, tipagem e documentação.
 
-A paleta permanece extensa por decisão de produto: são 285 definições de bloco
-(285 visíveis e 0 ocultas). A seleção do conteúdo apresentado continua
+A paleta permanece extensa por decisão de produto: são 307 definições de bloco
+(304 visíveis e 3 ocultas). A seleção do conteúdo apresentado continua
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-manifesto vigente está em **1.2.0** após os fechamentos subsequentes: grupos
+manifesto vigente está em **1.3.0** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -159,13 +159,13 @@ dano** (o gancho de fase: furioso na metade da vida) e os ajustes **vida** e
 
 ## Escopo revisado
 
-- 169 arquivos próprios da extensão;
-- 285 definições de blocos e 14 famílias com subseções;
-- 293 métodos e valores públicos em `window.SZGame2D`;
+- 170 arquivos próprios da extensão;
+- 307 definições de blocos (3 ocultas, que vivem dentro dos soquetes de nome) e 15 famílias com subseções;
+- 312 métodos e valores públicos em `window.SZGame2D`;
 - 25 módulos que compõem o runtime injetado;
 - definição → Blockly → IR → JavaScript → parser → workspace state;
 - manifesto, permissões, documentação do aluno e contexto da IA;
-- 35 exemplos, assets, classificação pedagógica e execução no Chromium;
+- 36 exemplos, assets e classificação pedagógica; a Descida da Neve foi verificada em runtime e rasterização nativa, sem Chromium disponível nesta sessão;
 - ciclo de vida, pausa, reinício, câmera, grupos, colisões, áudio, DPR,
   segurança, desempenho e tratamento de erros;
 - testes da extensão e integrações externas de Blockly/parser.
@@ -304,7 +304,7 @@ próximo do ponto médio. Tooltip e manual descrevem o mesmo contrato.
 
 A seção de Jogo 2D 0.23.0 em `CLAUDE.md` está identificada como registro
 histórico. Naquela rodada, a versão vigente passou a 0.37.1, e o limite de documentação é
-obtido do schema em `src/extensions/manifest.ts` (`MAX_DOCS_CHARS = 60_000`), sem
+obtido do schema em `src/extensions/manifest.ts` (atualmente `MAX_DOCS_CHARS = 70_000`), sem
 manter um segundo teto divergente no guia.
 
 ## Correções de experiência e pedagogia

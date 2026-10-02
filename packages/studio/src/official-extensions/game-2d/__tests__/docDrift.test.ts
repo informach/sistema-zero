@@ -236,7 +236,8 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(285)
+    // 304 → 307: os três blocos-lista de nome (camada, pista e objeto), ocultos na paleta.
+    expect(gameTwoDBlocks.length).toBe(307)
   })
 
   it('o bloco de virar oferece as quatro direções cardeais', () => {
@@ -803,6 +804,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'Tempo',
       'Sorteios',
       'Cenários',
+      'Camadas e perspectiva',
       'Inimigos',
       'Kits prontos',
     ])

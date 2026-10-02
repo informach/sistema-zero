@@ -1,4 +1,5 @@
 import type { BlockDefinition } from '../../blockly/blocks/types'
+import { sceneBlocks } from '../scene-2d/blocks'
 import { gameTwoDActionBlocks } from './blockCatalogActions'
 import { gameTwoDClassicBlocks } from './blockCatalogClassic'
 import { gameTwoDFundamentalBlocks } from './blockCatalogFundamentals'
@@ -9,6 +10,7 @@ import { gameTwoDTextBlocks } from './blockCatalogText'
 import { gameTwoDWorldBlocks } from './blockCatalogWorlds'
 
 export const gameTwoDBlocks: BlockDefinition[] = [
+  ...sceneBlocks('g2d'),
   ...gameTwoDActionBlocks,
   ...gameTwoDTextBlocks,
   ...gameTwoDClassicBlocks,

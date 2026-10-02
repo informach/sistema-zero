@@ -10,6 +10,7 @@ import {
 } from '@sistemazero/core/learning'
 import { isBlockTypeAllowed, MAX_BLOCK_LEVEL, normalizeBlockLevel } from '../core/levels'
 import { isHTMLBlockChildAllowed } from '../html/catalog'
+import { sceneNamesAsText } from '../official-extensions/scene-2d/catalog'
 import { SERVER_BLOCK_CATALOG, type ServerBlockCatalogEntry } from './blockCatalog'
 import { effectiveBodyExecution } from './blockContracts'
 import type { StatementContext } from './blocks/types'
@@ -22,14 +23,33 @@ const valueBlockTypes = new Set(
   ),
 )
 
+/**
+ * O avaliador lê literais de texto e número. Os blocos-lista de nome (camada, pista e
+ * objeto das extensões de jogo 2D) são texto para o programa, então entram na
+ * conferência como o texto que guardam. Sem isso, uma regra "usou esta camada, com
+ * este nome" reprovaria justamente quem escolheu o nome na lista.
+ */
+function readableProject(project: unknown): unknown {
+  if (typeof project !== 'object' || project === null || !('blocksState' in project)) return project
+  const known = readableProjects.get(project)
+  if (known) return known
+  const blocksState = sceneNamesAsText(project.blocksState)
+  const readable = blocksState === project.blocksState ? project : { ...project, blocksState }
+  readableProjects.set(project, readable)
+  return readable
+}
+// Uma aula confere o MESMO projeto contra várias regras: a varredura (e a cópia,
+// quando há bloco-lista) acontece uma vez por projeto, e não uma vez por regra.
+const readableProjects = new WeakMap<object, unknown>()
+
 export function evaluateStudioProjectStructure(rule: SectionStructureRule, project: unknown) {
-  return evaluateProjectStructure(rule, project, valueBlockTypes)
+  return evaluateProjectStructure(rule, readableProject(project), valueBlockTypes)
 }
 export function evaluateStudioSectionProject(
   checks: Parameters<typeof evaluateSectionProject>[0],
   project: unknown,
 ) {
-  return evaluateSectionProject(checks, project, valueBlockTypes)
+  return evaluateSectionProject(checks, readableProject(project), valueBlockTypes)
 }
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)

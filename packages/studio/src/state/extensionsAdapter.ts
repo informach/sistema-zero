@@ -10,6 +10,7 @@ import {
 } from '#ir'
 import { findExtension, OFFICIAL_CATALOG } from '#official-extensions'
 import { findExtensionConflict } from '../extensions/compatibility'
+import { isSceneNameBlock } from '../official-extensions/scene-2d/catalog'
 import { type ProjectStoreApi, useProjectStore } from './projectStore'
 
 export { findExtension, OFFICIAL_CATALOG }
@@ -64,7 +65,11 @@ export function removeExtension(extId: string, store: ProjectStoreApi = useProje
 export function countExtensionBlocksInProject(project: Project, extId: string): number {
   const ext = findExtension(extId)
   if (!ext) return 0
-  const blockTypes = new Set(ext.blockly.blocks.map((b) => b.type as string))
+  // A lista de nomes dentro de um soquete (camada, pista, objeto) faz parte do bloco
+  // que a contém: contada à parte, "Na pista … mover objeto" valeria por três.
+  const blockTypes = new Set(
+    ext.blockly.blocks.map((b) => b.type as string).filter((type) => !isSceneNameBlock(type)),
+  )
   const state = project.blocksState as { blocks?: { blocks?: unknown[] } } | null
   if (!state || typeof state !== 'object') return 0
   return countMatching(state.blocks?.blocks ?? [], blockTypes)

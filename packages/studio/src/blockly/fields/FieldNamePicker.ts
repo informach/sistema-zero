@@ -1,5 +1,11 @@
 import * as Blockly from 'blockly/core'
 import {
+  isSceneNameBlock,
+  type SceneNameKind,
+  sceneNameDeclarations,
+  sceneTargetOf,
+} from '../../official-extensions/scene-2d/catalog'
+import {
   CANVAS3D_BLOCK_DECLARATIONS_BY_KIND,
   CANVAS3D_FUNCTION_DECLARATION_FIELDS,
   CANVAS3D_OBJECT_BRANCH_BINDERS,
@@ -152,6 +158,9 @@ export type NameKind =
   | 'w3dnpc'
   | 'w3dquest'
   | 'w3dachieve'
+  | 'scene-layer'
+  | 'scene-track'
+  | 'scene-object'
 
 const DECLARED_NAME_KINDS: ReadonlySet<NameKind> = new Set([
   'variable',
@@ -204,6 +213,9 @@ export function nameKindAllowsFreeText(kind: NameKind): boolean {
 }
 
 const NAME_KINDS: readonly NameKind[] = [
+  'scene-layer',
+  'scene-track',
+  'scene-object',
   'path',
   'w3dpoint',
   'w3dnpc',
@@ -1036,6 +1048,22 @@ interface KindUI {
 }
 
 const KIND_UI: Record<NameKind, KindUI> = {
+  'scene-layer': {
+    icon: '🏔️',
+    placeholder: 'nome da camada',
+    empty: 'Nenhuma camada ainda. Crie uma com "Criar camada".',
+  },
+  'scene-track': {
+    icon: '⛷️',
+    placeholder: 'nome da pista',
+    empty: 'Nenhuma pista ainda. Crie uma com "Criar pista".',
+  },
+  'scene-object': {
+    icon: '🚩',
+    placeholder: 'nome do objeto',
+    empty:
+      'Nenhum objeto com nome fixo ainda. Crie um com "Na pista … objeto". Um nome montado num laço não aparece na lista: encaixe o mesmo bloco de texto aqui.',
+  },
   path: {
     icon: '🛤️',
     placeholder: 'nome do caminho',
@@ -2150,6 +2178,59 @@ export function collectPropertyNames(workspace: Blockly.Workspace | null | undef
   return ordered
 }
 
+/**
+ * O nome FIXO encaixado num soquete de nome: a sombra de texto, um número ou o próprio
+ * bloco-lista. Um nome calculado (texto juntado num laço) não tem valor a oferecer e
+ * devolve `''`.
+ */
+function fixedSocketName(block: Blockly.Block | null | undefined, input: string): string {
+  const child = block?.getInputTargetBlock(input)
+  if (!child) return ''
+  if (child.type === 'sz_val_text') return `${child.getFieldValue('TEXT') ?? ''}`.trim()
+  if (child.type === 'sz_val_number') return `${child.getFieldValue('NUM') ?? ''}`.trim()
+  if (isSceneNameBlock(child.type)) return `${child.getFieldValue('NAME') ?? ''}`.trim()
+  return ''
+}
+
+/**
+ * Camadas, pistas e objetos de pista (extensões de jogo 2D). ⚠️ Diferente dos demais
+ * `kind`, aqui o nome mora num SOQUETE de valor, e não num campo: o objeto de uma
+ * pista costuma nascer num laço com o nome calculado (`"obj" + i`), então o bloco
+ * criador precisa aceitar um valor. A lista oferece os nomes FIXOS; o campo continua
+ * aceitando texto digitado.
+ *
+ * O objeto pertence a uma pista: quando o bloco que usa o nome aponta uma pista fixa,
+ * a lista mostra só os objetos dela (e os de pista calculada, que não dá para saber).
+ * Sem nenhum candidato nesse recorte, mostra todos, que é melhor que uma lista vazia.
+ */
+export function collectSceneNames(
+  workspace: Blockly.Workspace | null | undefined,
+  kind: SceneNameKind,
+  nameBlock?: Blockly.Block | null,
+): string[] {
+  if (!workspace) return []
+  // Cada motor tem a própria cena: num projeto com os dois, a lista de um bloco do
+  // Jogo 2D não oferece o que foi criado no Avançado (lá esse nome não existe).
+  const registry = sceneNameDeclarations(
+    kind,
+    nameBlock ? sceneTargetOf(nameBlock.type) : undefined,
+  )
+  const wantedTrack = kind === 'object' ? fixedSocketName(nameBlock?.getParent(), 'TRACK') : ''
+  const all: string[] = []
+  const ofTrack: string[] = []
+  for (const block of workspace.getAllBlocks(false)) {
+    const socket = registry[block.type]
+    if (!socket) continue
+    const name = fixedSocketName(block, socket)
+    if (!name) continue
+    if (!all.includes(name)) all.push(name)
+    if (!wantedTrack) continue
+    const track = fixedSocketName(block, 'TRACK')
+    if ((!track || track === wantedTrack) && !ofTrack.includes(name)) ofTrack.push(name)
+  }
+  return ofTrack.length > 0 ? ofTrack : all
+}
+
 /** Um scanner por tipo simples sobre o workspace (o pop-up abre no clique — O(N) basta). */
 function workspaceScanner(ws: Blockly.Workspace | null | undefined): BlockScanner {
   return (type) => ws?.getBlocksByType(type, false) ?? []
@@ -2222,6 +2303,12 @@ export class FieldNamePicker extends Blockly.FieldTextInput {
     ws: Blockly.Workspace | null,
   ): string[] {
     switch (this.kind) {
+      case 'scene-layer':
+        return collectSceneNames(ws, 'layer', block)
+      case 'scene-track':
+        return collectSceneNames(ws, 'track', block)
+      case 'scene-object':
+        return collectSceneNames(ws, 'object', block)
       case 'variable':
         return collectReadableVariables(block)
       case 'mutable-variable':

@@ -141,7 +141,9 @@ const MAX_CATEGORY_CHARS = 60
 // E de novo (48k → 60k), no R30 (cartas + tabuleiro + chefes): ~35 blocos e um
 // Kit Cartas novos deixaram a doc do Jogo 2D Avançado em 47,9k/48k — sem folga
 // para explicar os gêneros novos. Sanidade, não UI.
-const MAX_DOCS_CHARS = 60_000
+// Camadas/perspectiva (01/10): o manual lazy do Jogo 2D mede 66.482 caracteres
+// com os 19 blocos novos. O resumo permanente da IA continua limitado a 6k.
+const MAX_DOCS_CHARS = 70_000
 // Teto de sanidade do manual completo de IA. Contextos pequenos podem viver em
 // `promptContext`; extensões grandes devem fornecer `promptSummary` para toda
 // chamada e `loadPromptContext` para carregar o manual em um chunk sob demanda.

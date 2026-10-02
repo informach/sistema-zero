@@ -71,6 +71,7 @@ function fragmentosDoRuntime(): Array<{ file: string; declaration: string }> {
       .sort()
       .map((nome) => `runtime/${nome}`),
     '../runtimeDomains.ts',
+    '../scene-2d/runtime.ts',
   ]
   return arquivos.flatMap((file) => {
     const src = readFileSync(join(DIR, file), 'utf8')
@@ -101,6 +102,8 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
         src,
         'gameKitRuntime =',
         new Set([
+          'advancedSceneAdapter',
+          'sceneApiEntries',
           'gameKitAudioRuntime',
           'gameKitAnimationRuntime',
           'gameKitCardsRuntime',
@@ -170,12 +173,18 @@ describe('Guarda dos template literals do gk (Jogo 2D Avançado)', () => {
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {
     const src = readFileSync(join(DIR, 'ai.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameKitPromptContext =')).toEqual([])
+    expect(
+      rawTemplateHazardsInside(
+        src,
+        'gameKitPromptContext =',
+        new Set(['sceneSummary', 'sceneReference']),
+      ),
+    ).toEqual([])
   })
 
   it('docs.ts: o markdown escapa crases e interpolações', () => {
     const src = readFileSync(join(DIR, 'docs.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameKitDocs =')).toEqual([])
+    expect(rawTemplateHazardsInside(src, 'gameKitDocs =', new Set(['sceneReference']))).toEqual([])
   })
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {

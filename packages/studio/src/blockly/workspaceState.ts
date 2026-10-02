@@ -31,6 +31,8 @@ import {
   textSpriteExpressionToBlock,
   textSpriteStatementToBlock,
 } from '../official-extensions/game-2d/textCodec'
+import { sceneToBlock } from '../official-extensions/scene-2d/codec'
+import { isSceneExpression, isSceneStatement } from '../official-extensions/scene-2d/ir'
 import type { Canvas3DSymbolKind } from '../three/canvas3dContract'
 import {
   FRAME_APPEARANCE,
@@ -673,6 +675,7 @@ function statementToBlock(stmt: JSStatement): SerializedBlocklyBlock | null {
 }
 
 function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null {
+  if (isSceneStatement(stmt)) return sceneToBlock(stmt, exprToValueBlock) ?? rawJSBlock(stmt)
   const canvasBlock = canvasStatementIRToBlock(stmt, {
     block,
     expressionToBlock: exprToValueBlock,
@@ -7113,6 +7116,7 @@ function exprToValueBlockInner(expr: JSExpr): SerializedBlocklyBlock | null {
   if (programmingBlock !== PROGRAMMING_IR_TO_BLOCK_UNHANDLED) return programmingBlock
   const action = gameTwoDActionExpressionToBlock(expr, block)
   if (action) return action
+  if (isSceneExpression(expr)) return sceneToBlock(expr, exprToValueBlock) ?? null
   const textBlock = textSpriteExpressionToBlock(expr, block, exprToValueBlock)
   if (textBlock) return textBlock
   const classicBlock = classicGameTwoDExpressionToBlock(expr, block, exprToValueBlock)

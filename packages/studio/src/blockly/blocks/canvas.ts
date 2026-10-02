@@ -877,6 +877,15 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     tooltip: 'Posição horizontal do mouse ou do dedo dentro da tela de desenho.',
   },
   {
+    type: 'sz_input_pointer_down',
+    message0: 'mouse/dedo pressionado?',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'Verdadeiro enquanto o botão do mouse ou o dedo está pressionado. Combine com x e y para arrastar. Soltar, cancelar o toque ou sair da janela libera o controle.',
+  },
+  {
     type: 'sz_input_pointer_y',
     message0: 'y do mouse/dedo',
     args0: [],
@@ -990,6 +999,7 @@ export const CANVAS_GROUPS: { name: string; colour: string; types: string[] }[] 
       'sz_input_key_pressed',
       'sz_input_pointer_x',
       'sz_input_pointer_y',
+      'sz_input_pointer_down',
     ],
   },
 ]

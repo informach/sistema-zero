@@ -1,5 +1,6 @@
 import type * as Babel from '@babel/types'
 import type { JSExpr, JSStatement } from '#ir'
+import { sceneCallExpression, sceneCallStatement } from '../scene-2d/codec'
 import { type GameKitCampaignStage, normalizeCampaignStage } from './campaignSchema'
 import { isGameKitAction, isGameKitCampaignEventField } from './runtimeContract'
 import { gameKitUiFontCallToIR } from './uiFontCodec'
@@ -101,7 +102,10 @@ function objectPropertyNodes(
 export function gameKitCampaignExpressionCallToIR(
   method: string,
   args: readonly Babel.Node[],
+  context: Pick<CampaignParserContext, 'toExpr' | 'isSimpleValue'>,
 ): JSExpr | null | typeof CAMPAIGN_EXPRESSION_CALL_UNHANDLED {
+  const scene = sceneCallExpression('gk', method, args, context.toExpr, context.isSimpleValue)
+  if (scene) return scene
   if (
     (method === 'actionDown' || method === 'actionPressed' || method === 'actionReleased') &&
     args.length === 1 &&
@@ -130,6 +134,8 @@ export function gameKitCampaignCallToIR(
 ): JSStatement | null | typeof CAMPAIGN_CALL_UNHANDLED {
   // Mesmo motivo do irmão em `campaignBlockCodec`: é por este despachante que a
   // extensão alcança o `parsers/js.ts` sem fazer aquela fachada crescer.
+  const scene = sceneCallStatement('gk', method, args, context.toExpr, context.isSimpleValue)
+  if (scene) return scene
   const font = gameKitUiFontCallToIR(method, args)
   if (font) return font
   switch (method) {

@@ -5,6 +5,12 @@ import { valueToExpr } from '#ir'
 import type { SerializedBlocklyBlock } from '../../codecs/types'
 import { GAME_UI_FONT_IDS } from '../gameUiFonts/catalog'
 import {
+  sceneBlockExpression,
+  sceneBlockStatement,
+  sceneCallExpression,
+  sceneCallStatement,
+} from '../scene-2d/codec'
+import {
   GAME_TWO_D_EDGE_PAIRS,
   GAME_TWO_D_TILE_CONTACT_FILTERS,
   GAME_TWO_D_VECTOR_TILE_ROLES,
@@ -37,6 +43,8 @@ export function classicGameTwoDBlockExpression(
   field: (block: Blockly.Block, name: string) => string,
   expression: (block: Blockly.Block, name: string, fallback: JSExpr) => JSExpr,
 ): JSExpr | undefined {
+  const scene = sceneBlockExpression(block, { field, expression })
+  if (scene) return scene
   if (block.type === 'sz_g2d_campaign_value') {
     return {
       type: 'g2d:campaignValue',
@@ -73,6 +81,11 @@ export function classicGameTwoDBlockToIR(
   seen: Set<string>,
   tools: BlockToIRTools,
 ): JSStatement | undefined {
+  const scene = sceneBlockStatement(block, tools)
+  if (scene) {
+    seen.add('game-2d')
+    return scene
+  }
   const f = (name: string) => tools.field(block, name)
   const expr = (name: string, value: number) =>
     tools.expression(block, name, { type: 'num', value })
@@ -697,6 +710,8 @@ export function classicGameTwoDCallToIR(
   args: Node[],
   tools: ParserTools,
 ): JSStatement | undefined {
+  const scene = sceneCallStatement('g2d', method, args, tools.expression, tools.simple)
+  if (scene) return scene
   const identifier = (index: number) => tools.identifier(args[index])
   const expression = (index: number) => tools.expression(args[index])
   switch (method) {
@@ -942,6 +957,8 @@ export function classicGameTwoDCallExpressionToIR(
   args: Node[],
   tools?: Pick<ParserTools, 'identifier' | 'expression' | 'simple'>,
 ): JSExpr | undefined {
+  const scene = tools && sceneCallExpression('g2d', method, args, tools.expression, tools.simple)
+  if (scene) return scene
   if (method === 'campaignValue' && tools) {
     const key = stringLiteral(args[0])
     const fallback = tools.expression(args[1])

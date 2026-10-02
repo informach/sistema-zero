@@ -1,5 +1,7 @@
 export * from './campaignVocabulary'
 
+import { SCENE_API_KEYS, type SceneTwoDApi } from '../scene-2d/contract'
+
 import type {
   GameKitAction,
   GameKitCampaignEntityKind,
@@ -159,6 +161,7 @@ export interface GameKitCampaignSaveInfo {
  * mas não nesta lista usada para auditar a montagem pública do runtime.
  */
 export const GAME_KIT_ENUMERABLE_API_KEYS = [
+  ...SCENE_API_KEYS,
   'setup',
   'setupFull',
   'setStageDescription',
@@ -549,7 +552,7 @@ export type GameKitEnumerableApiKey = (typeof GAME_KIT_ENUMERABLE_API_KEYS)[numb
 type GameKitFallbackMethod = (...args: unknown[]) => unknown
 
 /** Assinaturas fortes das operações centrais e dos valores retornados pela API. */
-export interface GameKitKnownApi {
+export interface GameKitKnownApi extends SceneTwoDApi {
   runProject(fn: () => void): void
   setup(opts?: GameKitSetupOptions): void
   setupFull(opts?: Pick<GameKitSetupOptions, 'background' | 'accent'>): void

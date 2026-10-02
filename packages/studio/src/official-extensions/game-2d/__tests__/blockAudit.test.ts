@@ -16,6 +16,7 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
+import { isSceneNameBlock } from '../../scene-2d/catalog'
 import { gameTwoDBlocks } from '../blocks'
 import { gameTwoDRuntime } from '../runtime'
 import { buildGameTwoDRuntimeApiSource, GAME_TWO_D_API_KEYS } from '../runtimeContract'
@@ -60,6 +61,11 @@ const FORWARD_ONLY: Record<string, string> = {
 
 const statementDefs = gameTwoDBlocks.filter((def) => !def.output)
 const exprDefs = gameTwoDBlocks.filter((def) => Boolean(def.output))
+// Os blocos-lista de nome (camada, pista, objeto) moram DENTRO de um soquete e, para
+// o programa, são texto puro: não geram nó `g2d:` nem chamam o runtime. A cadeia
+// deles (paleta, Ponte, salvar e reabrir, lista de nomes) é provada em
+// `scene-2d/names.test.ts`.
+const pipelineExprDefs = exprDefs.filter((def) => !isSceneNameBlock(def.type))
 
 function stripIds<T>(value: T): T {
   if (Array.isArray(value)) return value.map(stripIds) as unknown as T
@@ -251,7 +257,7 @@ describe('Auditoria Jogo 2D — pipeline completo por bloco', () => {
         (definition) => !definition.hidden && inferBlockContract(definition).migration === 'keep',
       )
       .map((d) => ({ type: d.type, kind: 'statement' as const })),
-    ...exprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
+    ...pipelineExprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
   ]
 
   for (const { type, kind } of cases) {

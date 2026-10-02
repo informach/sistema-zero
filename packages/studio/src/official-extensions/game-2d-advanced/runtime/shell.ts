@@ -423,7 +423,11 @@ export const gameKitShellRuntime = `
       mouse.screenY = p.screenY;
       mouse.down = true;
       focusWithoutScrolling(canvasEl);
-      if (ev.pointerId != null && typeof canvasEl.setPointerCapture === 'function') {
+      // So um ponteiro de VERDADE pode ser capturado. Um evento montado por codigo
+      // (o controle do player, um teste) nao tem ponteiro ativo, a captura lanca, e
+      // o aviso acusava um jogo que estava certo: o primeiro exemplo do motor que
+      // se joga arrastando (Descida da Neve) reprovava na galeria por isso.
+      if (ev.isTrusted !== false && ev.pointerId != null && typeof canvasEl.setPointerCapture === 'function') {
         try { canvasEl.setPointerCapture(ev.pointerId); } catch (captureError) { warnOnce('pointer-capture', 'não consegui capturar o ponteiro no canvas'); }
       }
       // ⚔️ Batalha em equipe: o clique é da BATALHA (painel de ação + escolher/

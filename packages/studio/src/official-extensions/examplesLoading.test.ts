@@ -10,7 +10,8 @@ const goldenCatalogs = {
     // números", os dois no TOPO da lista — então mudam a contagem E a ordem, e o hash muda por
     // causa das duas coisas. Conferido recalculando os cinco catálogos: os outros quatro
     // bateram com o golden que já estava aqui, o que prova que o cálculo é o mesmo do teste.
-    count: 35,
+    // 01/10: Descida da Neve entra no topo; o hash dos exemplos anteriores é idêntico.
+    count: 36,
     // ⚠️ Mudou em 09/08: os exemplos de plataforma passaram a usar os contratos
     // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados; Reino Zero
     // agora documenta a seleção de jogadores e preserva o sobrevivente após uma morte.
@@ -62,10 +63,16 @@ const goldenCatalogs = {
     // 22/09: no Reino Zero, "jornada" virou "volta" — a palavra passou a ser
     // do conceito de produto (Jornada do Criador), e duas coisas com o mesmo
     // nome na mesma tela do Estúdio confundem a criança.
-    sha256: 'b3ac17345c5a934fbad33bf441bf3705c2e57b6e81d2da998297b415795fb271',
+    // 01/10, full review das camadas: na Descida da Neve cada tecla virou uma
+    // pergunta só (os motores já ignoram maiúsculas; a fonte perguntava "p" e "P"
+    // e a criança via dois blocos idênticos lado a lado), e o brilho da batida
+    // passou a apagar também nas telas de pausa e de fim.
+    sha256: '74d4bf61410fc0b02cb83b86e68c15cab7e55410f709042ff37084cf55875a5e',
   },
   'game-2d-advanced': {
-    count: 37,
+    // 01/10: Descida da Neve entra no FIM da vitrine ("Meu primeiro jogo" continua
+    // abrindo); os demais exemplos permanecem idênticos.
+    count: 38,
     // Reino Zero Pro passou a carregar a campanha validada de 32 fases.
     // 14/08: as 32 grades deixaram de ser geradas por resto de divisão e viraram
     // plantas escritas à mão (`examples/reinoZeroProLevels.ts`), com o tema
@@ -78,7 +85,7 @@ const goldenCatalogs = {
     // poço largo eram intransponíveis. Mexe em toda fase, logo mexe no hash.
     // ⚠️ Ainda em 15/08: as fases aquáticas ganharam piscinas de quatro células,
     // alinhadas ao piso das margens, em vez de uma película no fundo do palco.
-    sha256: '82699b017326f980b02ddf6b27e2e4c0689498022cc646cadd4445594068def0',
+    sha256: '81d2fb02edc88ba8ef480a0d75d9de1885218ff6644e840fea56dad2af3210b6',
   },
   'game-3d': {
     count: 19,

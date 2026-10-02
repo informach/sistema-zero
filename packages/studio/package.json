@@ -44,6 +44,8 @@
     "typecheck": "NODE_OPTIONS=--max-old-space-size=8192 tsc --noEmit",
     "test": "bun test src",
     "gen:server-examples": "bun scripts/gen-server-examples.ts",
+    "gen:snow-descent": "bun scripts/gen-snow-descent.ts",
+    "check:snow-descent": "bun scripts/gen-snow-descent.ts --check",
     "gen:core-example-catalog": "bun scripts/gen-core-example-catalog.ts",
     "gen:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts",
     "check:reino-zero-ultra": "bun scripts/gen-reino-zero-ultra.ts --check",

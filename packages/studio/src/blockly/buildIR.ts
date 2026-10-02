@@ -357,7 +357,7 @@ function blockToExprInner(block: Blockly.Block): JSExpr | null {
     })
     if (programmingExpression !== PROGRAMMING_CODEC_UNHANDLED) return programmingExpression
   }
-  const campaignExpression = campaignExpressionBlockToIR(block, { field: f })
+  const campaignExpression = campaignExpressionBlockToIR(block, { field: f, expression: exprInput })
   if (campaignExpression !== CAMPAIGN_BLOCK_UNHANDLED) return campaignExpression
   switch (block.type) {
     case 'sz_g2d_key_down':

@@ -11,6 +11,9 @@ export { CORE_EXAMPLE_SUMMARIES } from './__gen_coreExampleCatalog'
 
 /** Carrega as IRs pesadas somente depois do clique no exemplo. */
 export async function loadCoreExample(name: string): Promise<CoreExample> {
+  if (name === 'Descida da Neve (Canvas)') {
+    return (await import('./snowDescentCanvasExample')).snowDescentCanvasExample
+  }
   if (name === 'Reino Zero Ultra (na mão)') {
     const { reinoZeroUltraExample } = await import('./reinoZeroUltraExample')
     return reinoZeroUltraExample

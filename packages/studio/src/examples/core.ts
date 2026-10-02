@@ -2,6 +2,7 @@ import type { ExampleExperience, ProjectAsset } from '#core'
 import { normalizeSZIR, type SZIR, type SZIRV2 } from '#ir'
 import type { BuildWorkspaceStateOptions } from '../blockly/workspaceState'
 import { reinoZeroUltraExample } from './reinoZeroUltraExample'
+import { snowDescentCanvasExample } from './snowDescentCanvasExample'
 
 /**
  * Exemplo CLÁSSICO (sem extensão): um projeto pronto montado SÓ com blocos
@@ -987,6 +988,7 @@ export const safariDeMonstrosNaMaoExample: CoreExample = {
   ir: normalizeSZIR(safariDeMonstrosNaMaoIr),
 }
 export const CORE_EXAMPLES: readonly CoreExample[] = [
+  snowDescentCanvasExample,
   reinoZeroUltraExample,
   gorilasNaMaoExample,
   treinadorDeCriaturasNaMaoExample,

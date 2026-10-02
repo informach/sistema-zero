@@ -1,6 +1,7 @@
 import type * as Blockly from 'blockly/core'
 import type { JSExpr, JSStatement } from '#ir'
 import { campaignStageOf } from '../../blockly/blocks/campaignStageMutator'
+import { sceneBlockExpression, sceneBlockStatement } from '../scene-2d/codec'
 import {
   type GameKitAction,
   type GameKitCampaignEventField,
@@ -27,8 +28,10 @@ function campaignEventField(value: string): GameKitCampaignEventField {
 
 export function campaignExpressionBlockToIR(
   block: Blockly.Block,
-  context: Pick<CampaignBlockCodecContext, 'field'>,
+  context: Pick<CampaignBlockCodecContext, 'field' | 'expression'>,
 ): JSExpr | typeof CAMPAIGN_BLOCK_UNHANDLED {
+  const scene = sceneBlockExpression(block, context)
+  if (scene) return scene
   const action = () => campaignAction(context.field(block, 'ACTION'))
   switch (block.type) {
     case 'sz_gk_action_down':
@@ -55,6 +58,8 @@ export function campaignStatementBlockToIR(
 ): JSStatement | typeof CAMPAIGN_BLOCK_UNHANDLED {
   // Este é o único despachante da gk que o `buildIR` chama, e aquela fachada está
   // no teto de linhas — então os codecs novos da extensão entram por aqui.
+  const scene = sceneBlockStatement(block, context)
+  if (scene) return scene
   const font = gameKitUiFontBlockToIR(block, context.field)
   if (font) return font
   const f = (name: string) => context.field(block, name)

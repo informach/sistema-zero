@@ -491,6 +491,8 @@ export function canvasExpressionBlockToIR(
       return { type: 'inputPointer', axis: 'x' }
     case 'sz_input_pointer_y':
       return { type: 'inputPointer', axis: 'y' }
+    case 'sz_input_pointer_down':
+      return { type: 'inputPointer', axis: 'down' }
     default:
       return null
   }

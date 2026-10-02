@@ -1,5 +1,7 @@
 import { buildProjectRunContextRuntime } from '#extensions'
 import { gameRuntimeDomains } from '../runtimeDomains'
+import { SCENE_API_KEYS } from '../scene-2d/contract'
+import { advancedSceneAdapter } from '../scene-2d/runtime'
 import { gameKitAnimationRuntime } from './runtime/animation'
 import { gameKitAudioRuntime } from './runtime/audio'
 import { gameKitCampaignRuntime } from './runtime/campaign'
@@ -12,6 +14,10 @@ import { gameKitRpgNavigationRuntime } from './runtime/rpgNavigation'
 import { gameKitShellRuntime } from './runtime/shell'
 import { towerDefenseRuntime } from './runtime/towerDefense'
 import { gameKitVisualEffectsRuntime } from './runtime/visualEffects'
+
+const sceneApiEntries = SCENE_API_KEYS.map(
+  (key) => `    ${key}: guard('${key}', _scene2d.${key}),`,
+).join('\n')
 
 /**
  * Runtime do "Jogo 2D Avançado" — injetado no <head> do iframe quando a
@@ -4741,8 +4747,10 @@ ${gameKitAudioRuntime}
     };
   }
 
+${advancedSceneAdapter}
   /** @type {GameKitRuntimeApi} */
   var api = {
+${sceneApiEntries}
     setup: guard('setup', function (opts) {
       var o = (opts && typeof opts === 'object') ? opts : {};
       if (started) {

@@ -97,8 +97,10 @@ describe('bundle inicial do Jogo 2D', () => {
 // São ~3,3 KB: o layout que deixa a imagem mandar na medida, o desenho da placa e
 // o agendador de redraw, que saiu do desenho e agora serve aos DOIS donos de
 // imagem (antes era um bloco copiado dentro de `_drawSpriteBody`).
-const RUNTIME_TETO_CRU = 501_000
-const RUNTIME_TETO_GZIP = 147_000
+// Camadas e perspectiva (01/10): 508.274 B crus / 149.547 B gzip.
+// Inclui a fábrica compartilhada e 19 métodos; mantém margem próxima de 2%.
+const RUNTIME_TETO_CRU = 519_000
+const RUNTIME_TETO_GZIP = 152_600
 
 /**
  * Os maiores fragmentos de `runtime/`, por tamanho de FONTE. Não é o tamanho do

@@ -1,3 +1,4 @@
+import { SCENE_API_KEYS, type SceneTwoDApi } from '../scene-2d/contract'
 import type { GameTwoDTileContactSide, GameTwoDVectorTileRole } from './classicContracts'
 
 export type { GameTwoDTileContactSide, GameTwoDVectorTileRole } from './classicContracts'
@@ -903,7 +904,8 @@ export interface GameTwoDArcadeApi {
 }
 
 export interface GameTwoDRuntimeApi
-  extends GameTwoDLifecycleApi,
+  extends SceneTwoDApi,
+    GameTwoDLifecycleApi,
     GameTwoDStageApi,
     GameTwoDSpriteApi,
     GameTwoDPhysicsApi,
@@ -916,6 +918,7 @@ export interface GameTwoDRuntimeApi
 
 /** Inventário exato da API pública injetada em `window.SZGame2D`. */
 export const GAME_TWO_D_API_KEYS = [
+  ...SCENE_API_KEYS,
   'createSprite',
   'drawSprite',
   'clear',
@@ -1224,6 +1227,7 @@ export const GAME_TWO_D_API_CONTRACT_COVERAGE: Record<
 > = {}
 
 const GAME_TWO_D_API_EXPRESSION_OVERRIDES: Partial<Record<GameTwoDApiKey, string>> = {
+  ...Object.fromEntries(SCENE_API_KEYS.map((key) => [key, `_scene2d.${key}`])),
   drawSprite: '_camWrap(drawSprite)',
   drawParticles: '_camWrap(drawParticles)',
   drawTileMap: '_camWrap(drawTileMap)',
