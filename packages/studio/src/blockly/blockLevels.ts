@@ -1,7 +1,6 @@
 import type { BlockLevel } from '../core/levels'
 import { HTML_ADVANCED_BLOCK_TYPES, HTML_INTERMEDIATE_BLOCK_TYPES } from '../html/catalog'
-import { ESSENTIAL_2D_BLOCK_TYPES } from '../journey/blockProfiles'
-import { isSceneNameBlock } from '../official-extensions/scene-2d/catalog'
+import { isSceneNameBlock, sceneTypes } from '../official-extensions/scene-2d/catalog'
 import { resolveProgrammingBlockLevel } from './programmingContract'
 
 /**
@@ -12,7 +11,7 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  * último" (decisão da usuária 26/07):** iniciante/intermediário criam com os KITS
  * (extensões facilitadoras) + um mínimo de web; o AVANÇADO faz tudo na unha, sem
  * kit (Canvas/HTML/CSS crus).
- * - **Iniciante 2D** = perfil **Jogo 2D Essencial** + kit essencial de lógica +
+ * - **Iniciante 2D** = os blocos do Jogo 2D de `INICIANTE_2D_G2D` + kit essencial de lógica +
  *   **HTML/CSS ESSENCIAL** (título/parágrafo/imagem/
  *   botão/link/lista/caixa + cor de fundo/texto, tamanho de fonte, padding/margem/
  *   borda — o mínimo pra montar uma telinha). As aulas filtram o subconjunto de
@@ -39,7 +38,7 @@ import { resolveProgrammingBlockLevel } from './programmingContract'
  *
  * ⚠️ Os frames (🗂️ Áreas do projeto) NÃO entram aqui — são sempre visíveis.
  * ⚠️ Adicionou um bloco? `sz_g2d_*` novo fica no iniciante-3d até entrar
- * explicitamente no perfil Essencial. Para o core,
+ * explicitamente em `INICIANTE_2D_G2D`. Para o core,
  * decida se entra nos conjuntos intermediário/avançado; senão os defaults por
  * prefixo decidem (canvas→av-2d, g3d→ini-3d, gk→int-2d, w3d→int-3d,
  * g3k→int-3d, t3d→av-3d, resto→ini-2d) — o teste de conformidade cobra.
@@ -231,7 +230,70 @@ const INTERMEDIARIO_3D: ReadonlySet<string> = new Set<string>()
 // de 1 linha p/ ajuste fino futuro.
 const G3D_FLOOR: BlockLevel = 'iniciante-3d'
 const W3D_LEVEL: BlockLevel = 'intermediario-3d'
-const ESSENTIAL_2D_TYPES = new Set<string>(ESSENTIAL_2D_BLOCK_TYPES)
+/**
+ * Os blocos do Jogo 2D do PRIMEIRO degrau (`iniciante-2d`); o resto do `sz_g2d_*` é
+ * `iniciante-3d`. É régua de NÍVEL, não de acesso: quem dá blocos à criança no Estúdio livre
+ * são os cursos concluídos. Até 02/10/2026 este conjunto vinha do "Kit essencial", que saiu.
+ * ⚠️ Mexer aqui muda o degrau do bloco nas aulas curadas por nível e no Zappy/Pensa da equipe.
+ */
+const INICIANTE_2D_G2D: ReadonlySet<string> = new Set<string>([
+  'sz_g2d_setup_stage',
+  'sz_g2d_set_stage_description',
+  'sz_g2d_create_sprite',
+  'sz_g2d_create_image_sprite',
+  'sz_g2d_put_track_sprite',
+  'sz_g2d_create_text_sprite',
+  'sz_g2d_spawn_text_in_group',
+  'sz_g2d_set_sprite_text',
+  'sz_g2d_sprite_text',
+  'sz_g2d_set_text_style',
+  'sz_g2d_scale_text_size',
+  'sz_g2d_set_text_box',
+  'sz_g2d_set_text_image',
+  'sz_g2d_set_size',
+  'sz_g2d_scale_sprite',
+  'sz_g2d_set_sprite_data',
+  'sz_g2d_sprite_data',
+  'sz_g2d_on_sprite_click',
+  'sz_g2d_on_group_click',
+  'sz_g2d_clear',
+  'sz_g2d_shake',
+  'sz_g2d_create_ship',
+  'sz_g2d_starfield',
+  'sz_g2d_spawn_asteroid',
+  'sz_g2d_spawn_asteroid_edge',
+  'sz_g2d_shoot_from',
+  'sz_g2d_explode',
+  'sz_g2d_play_fx',
+  'sz_g2d_arrows_x',
+  'sz_g2d_clamp_to_screen',
+  'sz_g2d_draw_sprite',
+  'sz_g2d_create_group',
+  'sz_g2d_spawn_bullet',
+  'sz_g2d_update_group',
+  'sz_g2d_draw_group',
+  'sz_g2d_prune_offscreen',
+  'sz_g2d_remove_from_group',
+  'sz_g2d_on_key',
+  'sz_g2d_on_group_overlap',
+  'sz_g2d_on_sprite_group_overlap',
+  'sz_g2d_update_each_frame',
+  'sz_g2d_every_frames',
+  'sz_g2d_random_x',
+  'sz_g2d_center_x',
+  'sz_g2d_sprite_y',
+  'sz_g2d_set_health',
+  'sz_g2d_damage_sprite',
+  'sz_g2d_health_depleted',
+  'sz_g2d_draw_sprite_health',
+  'sz_g2d_draw_score',
+  'sz_g2d_set_scene',
+  'sz_g2d_scene_is',
+  'sz_g2d_show_screen',
+  'sz_g2d_restart',
+  ...sceneTypes('g2d', 'begin'),
+  ...sceneTypes('g2d', 'animation'),
+])
 
 /**
  * Degrau de um bloco pelo `type`. Regras invariantes por prefixo vêm primeiro,
@@ -239,9 +301,8 @@ const ESSENTIAL_2D_TYPES = new Set<string>(ESSENTIAL_2D_BLOCK_TYPES)
  * (facilitadores + kit essencial de lógica) é iniciante-2d.
  */
 export function resolveBlockLevel(type: string): BlockLevel {
-  // O Construtor recebe o perfil Essencial; o Inventor abre o Jogo 2D completo.
   if (type.startsWith('sz_g2d_')) {
-    return ESSENTIAL_2D_TYPES.has(type) || isSceneNameBlock(type) ? 'iniciante-2d' : 'iniciante-3d'
+    return INICIANTE_2D_G2D.has(type) || isSceneNameBlock(type) ? 'iniciante-2d' : 'iniciante-3d'
   }
   if (type.startsWith('sz_g3d_')) return G3D_FLOOR
   const programmingLevel = resolveProgrammingBlockLevel(type)

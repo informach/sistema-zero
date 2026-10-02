@@ -215,11 +215,13 @@ function dimensionAllows(entry: ServerBlockCatalogEntry, dimension: '2d' | '3d')
 }
 
 export function availablePlannerCatalog(tier: StudioTier, dimension: '2d' | '3d') {
+  // Com a lista de blocos conquistados (criança), só ela vale, como na paleta: um bloco
+  // conquistado acima do nível do posto entra no plano. O corte por nível é só da equipe.
   const allowBlocks = tier.allowBlocks ? new Set(tier.allowBlocks) : null
   const blocks = SERVER_BLOCK_CATALOG.filter((entry) => {
     if (!tier.allowedModes.includes('blocks')) return false
-    if (!blockLevelAllowed(entry, tier) || !dimensionAllows(entry, dimension)) return false
-    if (allowBlocks && !allowBlocks.has(entry.type)) return false
+    if (!dimensionAllows(entry, dimension)) return false
+    if (allowBlocks ? !allowBlocks.has(entry.type) : !blockLevelAllowed(entry, tier)) return false
     return entry.extension === null || tier.allowedExtensions.includes(entry.extension)
   })
   const documents = SERVER_MECHANIC_DOCUMENTS.filter(

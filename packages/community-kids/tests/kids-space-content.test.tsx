@@ -99,7 +99,7 @@ function contentProps(): KidsSpaceContentProps {
       onReport: noop,
       authorLabel: () => 'Colega',
       onRemix: null,
-      remixLockFor: () => null,
+      remixLockFor: () => false,
       canReply: true,
     },
     composer: {
@@ -306,6 +306,28 @@ describe('KidsSpaceContent — comportamento do boundary de apresentação', () 
     fireEvent.click(screen.getByRole('button', { name: 'Fazer a minha versão' }))
 
     expect(onOpenThread).toHaveBeenCalledWith(showcase)
+    expect(onRemix).toHaveBeenCalledWith(showcase)
+  })
+
+  test('jogo com ferramenta ainda não conquistada: cadeado sem nível e o clique segue vivo', () => {
+    const props = contentProps()
+    const showcase = { ...thread, isShowcase: true, playId: 'play-1' }
+    const onRemix = mock(() => {})
+    render(
+      <KidsSpaceContent
+        {...props}
+        context={{ ...props.context, isWall: true }}
+        discussion={{ ...props.discussion, thread: showcase, onRemix, remixLockFor: () => true }}
+      />,
+    )
+
+    const botao = screen.getByRole('button', { name: 'Fazer a minha versão' })
+    // As ferramentas vêm dos cursos, não de um nível: o selo não promete "no nível X".
+    expect(botao.getAttribute('title')).toBe(
+      'Conclua mais cursos para ter as ferramentas deste jogo',
+    )
+    expect(screen.queryByText(/no nível/)).toBeNull()
+    fireEvent.click(botao)
     expect(onRemix).toHaveBeenCalledWith(showcase)
   })
 

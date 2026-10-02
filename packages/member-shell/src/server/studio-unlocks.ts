@@ -1,4 +1,5 @@
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
+import { resolveStudioTier, type StudioTier } from '../lib/studio-tier'
 
 /**
  * Deriva as EXTENSÕES a partir dos blocos conquistados.
@@ -27,6 +28,18 @@ export function extensionsForBlocks(blocks: readonly string[]): string[] {
     if (extension) extensions.add(extension)
   }
   return [...extensions]
+}
+
+/**
+ * O Estúdio livre de quem tem estes blocos conquistados. É a régua ÚNICA da paleta, do Zappy e
+ * do Pensa: os três precisam oferecer exatamente os mesmos blocos e extensões.
+ */
+export function earnedStudioTier(
+  levelSlug: string | undefined,
+  role: string | undefined,
+  blocks: readonly string[],
+): StudioTier {
+  return resolveStudioTier(levelSlug, role, { blocks, extensions: extensionsForBlocks(blocks) })
 }
 
 /** Uma "gaveta" da caixa de ferramentas, do jeito que a criança a vê na paleta. */

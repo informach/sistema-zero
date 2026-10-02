@@ -2,11 +2,12 @@ import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
-import { resolveStudioTier } from '../lib/studio-tier'
+import { isPrivilegedRole } from '../lib/studio-tier'
 import type { AiCreditsView } from '../lib/types'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
 import type { MembersClient } from '../server/clients'
 import type { SessionModule } from '../server/session'
+import { earnedStudioTier } from '../server/studio-unlocks'
 import { isStudioZappyAllowed, isStudioZappyAllowedForRequest } from '../server/zappy-access'
 import {
   answerPreparedStudioZappy,
@@ -232,11 +233,25 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const levelSlug = gamification.body?.level?.slug
       // Reusa o rank desta rota para não consultar o members duas vezes.
       if (!isStudioZappyAllowed(user, levelSlug)) return error('ZAPPY_NOT_ENABLED', 403)
-      const tier = resolveStudioTier(levelSlug ?? 'noob', user.role)
+      // O tutor oferece os MESMOS blocos que a paleta: os conquistados nos cursos (a equipe
+      // tem o passe livre e não precisa deles). Depois do `getGamification`, que já renovou a
+      // sessão, a leitura sem refresh basta. Falhou: indisponível, nunca "sem blocos".
+      let unlockedBlocks: readonly string[] = []
+      if (!isPrivilegedRole(user.role)) {
+        const unlocks = await members.getStudioUnlocksReadonly()
+        if (unlocks.status !== 200 || !unlocks.body) return error('ZAPPY_UNAVAILABLE', 503)
+        unlockedBlocks = unlocks.body.blocks
+      }
+      const tier = earnedStudioTier(levelSlug ?? 'noob', user.role, unlockedBlocks)
+      if (!tier.hasPalette) return error('ZAPPY_NOT_ENABLED', 403)
       const context = parsed.data.context as ZappyContextInput
       if (!tier.allowedModes.includes(context.mode)) return error('FORBIDDEN_MODE', 403)
       if (context.kind === 'pro' && !tier.pro) return error('FORBIDDEN_MODE', 403)
-      if (context.installedExtensions.some((id) => !tier.allowedExtensions.includes(id))) {
+      // O projeto Pro é liberado pelo nível (modo Código), não pelos blocos dos cursos.
+      if (
+        context.kind !== 'pro' &&
+        context.installedExtensions.some((id) => !tier.allowedExtensions.includes(id))
+      ) {
         return error('FORBIDDEN_EXTENSION', 403)
       }
 

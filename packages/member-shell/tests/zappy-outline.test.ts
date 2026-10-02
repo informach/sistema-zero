@@ -47,13 +47,13 @@ describe('esboço legível do projeto (buildProjectOutline)', () => {
     expect(outline).toContain('- Quando apertar a tecla')
   })
 
-  it('bloco acima do tier aparece com "(nível futuro)"', () => {
+  it('bloco fora do que ela tem aparece com "(ainda não liberado)"', () => {
     const outline = buildProjectOutline(
       [{ id: 'a', type: 'sz_g2d_create_sprite', topLevel: true }],
       CATALOG,
       { futureTypes: new Set(['sz_g2d_create_sprite']) },
     )
-    expect(outline).toContain('Criar sprite com imagem (nível futuro)')
+    expect(outline).toContain('Criar sprite com imagem (ainda não liberado)')
   })
 
   it('projeto grande é cortado com "… e mais N blocos"', () => {

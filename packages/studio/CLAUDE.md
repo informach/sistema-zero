@@ -1258,7 +1258,7 @@ Completo, ficou sem ⚡ Quando acontecer e sem 🔁 Enquanto estiver rodando, e 
 conseguia montar jogo nenhum. O detalhe que ela deu fechou o diagnóstico —
 *"quando criei apareceu, quando saí e voltei sumiu"*: ao criar, a extensão vinha
 junto; ao reabrir, a paleta era montada antes de a extensão hidratar. A lista do
-Kit essencial (`ESSENTIAL_2D_ALLOW_BLOCKS`) é quase toda de blocos do Jogo 2D,
+Kit essencial de então (hoje, a lista de blocos conquistados nos cursos) é quase toda de blocos do Jogo 2D,
 então sem a extensão carregada não sobrava evento nem laço para "provar" um
 direito que a criança tinha. Pelo universo, o direito vem do NÍVEL e da lista, e
 instalar ou remover extensão não mexe mais nas áreas. Regressão travada em
@@ -3421,8 +3421,8 @@ virou `toBe(0)`.
 ⚠️ **Todos são `placement: 'command'`, não `loop-command'`**: os irmãos (`bounce_edges`,
 `apply_velocity`, `arrows_x`) são `command`, e `loop-command` PROÍBE `event-body`. Gêmeos com
 encaixes diferentes é armadilha — a criança troca um pelo outro e o programa recusa sem dizer
-por quê. E **`blockLevels.ts` não muda**: o piso de `sz_g2d_*` é derivado de
-`ESSENTIAL_2D_BLOCK_TYPES`, então os cinco caem no Inventor sozinhos.
+por quê. E **`blockLevels.ts` não muda**: o piso de `sz_g2d_*` é a lista `INICIANTE_2D_G2D`
+(até 02/10/2026, o `ESSENTIAL_2D_BLOCK_TYPES`), então os cinco caem no iniciante-3d sozinhos.
 
 ### O Pong reescrito: 1036 → 733 linhas de IR
 

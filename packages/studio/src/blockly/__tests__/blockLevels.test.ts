@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'bun:test'
-import { ESSENTIAL_2D_BLOCK_TYPES } from '../../journey/blockProfiles'
 import { BLOCK_CATALOG } from '../blockCatalog'
 import { _LEVEL_SETS, resolveBlockLevel } from '../blockLevels'
 import { PROGRAMMING_VISIBLE_TYPES } from '../programmingContract'
@@ -85,17 +84,21 @@ describe('resolveBlockLevel — amostras representativas', () => {
     for (const type of game3dTypes) expect(resolveBlockLevel(type)).toBe('iniciante-3d')
   })
 
-  it('Jogo 2D Essencial fica no primeiro degrau e o restante abre no Inventor', () => {
+  it('o primeiro degrau do Jogo 2D tem os mesmos 71 blocos de quando vinha do Kit essencial', () => {
+    // O Kit essencial saiu em 02/10/2026 (a paleta do Estúdio livre vem dos cursos) e a régua
+    // de NÍVEL ficou com a lista dele. Um bloco a mais ou a menos aqui muda o degrau dele nas
+    // aulas curadas por nível: tem que ser decisão, não efeito colateral.
     const game2dTypes = [...KNOWN].filter((type) => type.startsWith('sz_g2d_'))
-    const essential = new Set(ESSENTIAL_2D_BLOCK_TYPES)
     expect(game2dTypes.length).toBeGreaterThan(180)
-    for (const type of game2dTypes) {
-      expect(resolveBlockLevel(type), type).toBe(
-        essential.has(type as (typeof ESSENTIAL_2D_BLOCK_TYPES)[number])
-          ? 'iniciante-2d'
-          : 'iniciante-3d',
-      )
+    const firstStep = game2dTypes.filter((type) => resolveBlockLevel(type) === 'iniciante-2d')
+    expect(firstStep).toHaveLength(71)
+    for (const type of ['sz_g2d_create_sprite', 'sz_g2d_on_key', 'sz_g2d_draw_score']) {
+      expect(firstStep).toContain(type)
     }
+    for (const type of game2dTypes.filter((type) => !firstStep.includes(type))) {
+      expect(resolveBlockLevel(type), type).toBe('iniciante-3d')
+    }
+    expect(resolveBlockLevel('sz_g2d_top_down')).toBe('iniciante-3d')
   })
 
   it('programação real guiada + SVG + kits prontos do Jogo 2D Avançado = intermediario-2d', () => {

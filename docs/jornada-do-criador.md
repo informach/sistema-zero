@@ -171,13 +171,16 @@ algo, garanta que cada um traga ao menos um bloco inédito.
    esse congelado.)
 2. **Acrescentar chega sozinho.** Um bloco novo no JSON aparece para quem já atende ao critério do
    curso, sem refazer nada.
-3. **Curso sem JSON não deixa ninguém sem nada.** Enquanto um degrau não estiver etiquetado, a
-   criança segue com a paleta do NÍVEL, como antes (fail-open do rollout). A EQUIPE ignora o
-   currículo e continua vendo o Estúdio inteiro.
+3. **Sem curso concluído, sem blocos (02/10/2026).** Não existe mais reserva: enquanto a criança
+   não conquistou nenhum bloco, o Estúdio livre mostra o recado "Termine o seu primeiro curso e
+   publique no Mural". O Zappy e o Pensa usam a MESMA lista (`earnedStudioTier`, no member-shell),
+   sem corte pelo nível do posto. A EQUIPE ignora o currículo e continua vendo o Estúdio inteiro.
 
-⚠️ **Primeira coisa a fazer no rollout:** etiquetar o curso-base do Iniciante 2D com os blocos que
-o Construtor já tem hoje (o conjunto "Jogo 2D Essencial", 47 blocos com o 🚀 Kit espaço inteiro).
-Sem isso, quem virar Construtor depois desse lote abre o Estúdio com menos ferramentas do que antes.
+⚠️ **Todo curso da Jornada precisa da lista cadastrada no admin.** Sem ela, quem conclui o curso
+não ganha bloco nenhum e o Estúdio livre continua trancado. Em produção todos os cursos têm a lista
+(conferido pela dona em 02/10/2026); em staging e no local nem sempre, e ali o Estúdio pode
+aparecer trancado. Até 02/10/2026 havia uma reserva (o "Kit essencial" do Construtor e a paleta do
+nível para os outros postos), que saiu por decisão dela.
 
 ### Runbook do degrau Primeiros Passos (uma única vez)
 
@@ -207,10 +210,10 @@ caixa de ferramentas (🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…).
 
 ## Matriz dos níveis
 
-⚠️ **O nível NÃO libera mais blocos.** Desde a reforma do currículo (08/2026) quem entrega
-ferramenta é o CURSO (ver "A paleta do Estúdio vem do CURRÍCULO" acima). O nível decide o **modo**
-do editor e quais **produtos** abrem. Os perfis de bloco por nível continuam existindo, mas só como
-**fail-open**, para quem ainda não tem nenhum curso qualificado.
+⚠️ **O nível NÃO libera blocos.** Quem entrega ferramenta é o CURSO (ver "A paleta do Estúdio vem
+do CURRÍCULO" acima). O nível decide o **modo** do editor e quais **produtos** abrem. O degrau de
+cada bloco (`blockLevels.ts`) segue existindo como régua de NÍVEL: ele vale nas aulas curadas por
+nível e para a equipe, nunca para a paleta do Estúdio livre.
 
 | Nível | Requisito acumulado | Etapa estudada | O que o posto abre |
 |---|---|---|---|
@@ -240,23 +243,14 @@ lugar para ser usado. Por isso a recompensa anunciada no Mapa da Jornada ao cheg
 produto próprio no catálogo (`molda`, componente do combo Comunidade dos Criadores) e a régua de
 acesso é `checkMoldaAccessReadonly()` no member-shell (posse do produto E o nível).
 
-O perfil **Jogo 2D Essencial** do Construtor (fonte:
-`packages/studio/src/journey/blockProfiles.ts`) traz os blocos da referência do Desafio
-do Primeiro Jogo mais o **🚀 Kit espaço completo** — inclusive "soltar um asteroide de
-uma borda" e "atirar do sprite para a frente", que não aparecem no jogo-base (decisão
-de 26/07/2026): com o kit inteiro a criança cria variações do jogo de nave ensinado no
-Faísca, não só a réplica. Hoje ele vale como o fail-open descrito acima.
+O antigo perfil **Jogo 2D Essencial** do Construtor (o "Kit essencial", em
+`packages/studio/src/journey/blockProfiles.ts`) saiu em 02/10/2026. A lista dos blocos do Jogo 2D
+dele virou a régua de nível `INICIANTE_2D_G2D` em `packages/studio/src/blockly/blockLevels.ts`, para
+nenhum bloco mudar de degrau.
 
-As extensões acumuladas por nível (também fail-open — com currículo, elas são DERIVADAS dos blocos
-conquistados por `extensionsForBlocks`) são:
-
-| Nível | Extensões permitidas |
-|---|---|
-| Faísca | nenhuma no Estúdio livre |
-| Construtor(a) e Inventor(a) | `game-2d` |
-| Explorador(a) | `game-2d`, `game-3d` |
-| Mestre dos Jogos | anteriores e `game-2d-advanced` |
-| Arquiteto(a) de Mundos, Gênio da Criação e Lenda | anteriores, `world-3d` **e `game-3d-advanced`** |
+As extensões do Estúdio livre são DERIVADAS dos blocos conquistados (`extensionsForBlocks`): um
+curso que libera blocos do Jogo 3D libera a extensão junto. A tabela de extensões por nível saiu
+com a reserva; a equipe tem todas.
 
 Os modos do editor liberam separado das extensões: **Blocos** desde o Construtor, a **Ponte**
 (código lado a lado) a partir do **Gênio da Criação**, e o **modo Pro** (Código puro) só na **Lenda**.

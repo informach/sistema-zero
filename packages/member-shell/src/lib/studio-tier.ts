@@ -1,12 +1,10 @@
 import {
-  CREATOR_JOURNEY_LEVELS,
   creatorJourneyLevel,
   type JourneyLevelSlug,
   type JourneyStudioBlockProfileId,
   type JourneyStudioRewardId,
 } from '@sistemazero/core/journey'
 import type { BlockLevel, IDEMode } from '@sistemazero/studio'
-import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio/journey'
 
 /** Capacidades do Estúdio Completo já conquistadas pelo aluno. */
 export interface StudioTier {
@@ -14,8 +12,15 @@ export interface StudioTier {
   rewardId: JourneyStudioRewardId
   blockProfileId: JourneyStudioBlockProfileId
   level: BlockLevel
+  /**
+   * Os blocos que a criança conquistou nos cursos: a paleta inteira dela. Ausente só para a
+   * EQUIPE, que vê tudo pelo `level`. ⚠️ Pode vir VAZIA, e o Estúdio lê lista vazia como
+   * "sem restrição": quem decide se o editor abre é o `hasPalette`.
+   */
   allowBlocks?: readonly string[]
   allowedExtensions: readonly string[]
+  /** Há bloco para a criança usar? Sem nenhum curso concluído, o Estúdio livre fica trancado. */
+  hasPalette: boolean
   initialExtensions: readonly string[]
   allowedModes: IDEMode[]
   allowLevelReveal: false
@@ -63,19 +68,14 @@ export function isPrivilegedRole(role: string | undefined): boolean {
   return !!role && PRIVILEGED_ROLES.has(role)
 }
 
-const EXTENSIONS_BY_PROFILE: Record<JourneyStudioBlockProfileId, readonly string[]> = {
-  'lesson-only': [],
-  '2d-essential': ['game-2d'],
-  'iniciante-2d': ['game-2d'],
-  'iniciante-3d': ['game-2d', 'game-3d'],
-  'intermediario-2d': ['game-2d', 'game-3d', 'game-2d-advanced'],
-  // Arquiteto (intermediario-3d): Mundo 3D + Jogo 3D Avançado (decisão 26/07 — o kit
-  // `game-3d-advanced` foi reclassificado p/ intermediario-3d no studio). `avancado-2d`
-  // (Gênio) o mantém por monotonicidade; `avancado-3d` (Lenda) já tinha.
-  'intermediario-3d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d', 'game-3d-advanced'],
-  'avancado-2d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d', 'game-3d-advanced'],
-  'avancado-3d': ['game-2d', 'game-3d', 'game-2d-advanced', 'world-3d', 'game-3d-advanced'],
-}
+/** O passe livre da EQUIPE: todas as extensões oficiais, para conferir o Estúdio inteiro. */
+const STAFF_EXTENSIONS: readonly string[] = [
+  'game-2d',
+  'game-3d',
+  'game-2d-advanced',
+  'world-3d',
+  'game-3d-advanced',
+]
 
 /**
  * Ferramentas que um jogo do Mural EXIGE p/ ser remixado: extensões instaladas +
@@ -129,23 +129,6 @@ export function remixRequirementFromSnapshot(snapshot: unknown): StudioRemixRequ
 }
 
 /**
- * PRIMEIRO nível da jornada cuja recompensa cobre as ferramentas do jogo (e já
- * libera o Estúdio livre) — o selo "remix a partir do nível X" do card do Mural.
- * `null` = nenhum nível cobre (extensão desconhecida/forjada no metadado) — a UI
- * cai num recado genérico; fail-closed cosmético, nunca destrava nada.
- */
-export function minJourneyLevelForRemix(req: StudioRemixRequirement): JourneyLevelSlug | null {
-  for (const level of CREATOR_JOURNEY_LEVELS) {
-    const reward = level.reward
-    if (!reward.freeStudio) continue
-    if (req.pro && !reward.pro) continue
-    const allowed = EXTENSIONS_BY_PROFILE[reward.blockProfileId] ?? []
-    if (req.extensions.every((id) => allowed.includes(id))) return level.slug
-  }
-  return null
-}
-
-/**
  * O que o CURRÍCULO já entregou: os blocos dos cursos que a criança concluiu E publicou
  * no Mural, com as extensões derivadas deles (`server/studio-unlocks.ts` — a derivação
  * mora lá porque importa o catálogo inteiro e este módulo roda no cliente).
@@ -159,12 +142,10 @@ export function resolveStudioTier(
   levelSlug: string | undefined,
   role: string | undefined,
   /**
-   * Paleta conquistada nos cursos. Quando presente e NÃO vazia, ela MANDA: a paleta do
-   * Estúdio livre passa a ser o currículo (`allowBlocks` já é soberano sobre o `level`
-   * dentro do editor), e não mais o conjunto fixo do degrau.
-   * ⚠️ **Fail-open deliberado:** vazia/ausente → cai no perfil do NÍVEL, o comportamento
-   * histórico. Sem isso, o dia em que este código sobe (com nenhum curso etiquetado
-   * ainda) a criança abriria o Estúdio com a caixa de blocos VAZIA.
+   * Os blocos conquistados nos cursos, com as extensões derivadas deles. ⭐ Decisão da dona
+   * (02/10/2026): eles são a paleta INTEIRA da criança. Não há reserva: sem curso concluído
+   * não há bloco, e o Estúdio livre mostra o recado de concluir um curso (`hasPalette`).
+   * Ausente vale como vazio; só quem lê `freeStudio`/`pro` pode chamar sem ele.
    */
   unlocks?: StudioCurriculumUnlocks,
 ): StudioTier {
@@ -174,25 +155,18 @@ export function resolveStudioTier(
   const pro = reward.pro
   // ⚠️ A EQUIPE ignora o currículo: o passe livre existe p/ testar o Estúdio inteiro, e
   // restringir staff ao que ela "concluiu" esconderia justamente o que ela vai conferir.
-  const curriculum = !privileged && unlocks && unlocks.blocks.length > 0 ? unlocks : null
+  const allowBlocks = privileged ? undefined : (unlocks?.blocks ?? [])
   return {
     freeStudio: reward.freeStudio,
     rewardId: reward.id,
     blockProfileId: reward.blockProfileId,
     level: reward.blockLevel,
-    ...(curriculum
-      ? { allowBlocks: curriculum.blocks }
-      : reward.blockProfileId === '2d-essential'
-        ? { allowBlocks: ESSENTIAL_2D_ALLOW_BLOCKS }
-        : {}),
-    allowedExtensions: curriculum
-      ? curriculum.extensions
-      : (EXTENSIONS_BY_PROFILE[reward.blockProfileId] ?? []),
-    // ⚠️ NENHUMA extensão vem instalada. A criança abre o painel de Extensões e
-    // instala a que quiser, entre as que a jornada dela já liberou
-    // (`allowedExtensions`); os blocos continuam filtrados pelo `level`, então
-    // instalar não adianta a paleta de um degrau acima. Decisão dela, 08/08:
-    // instalar é parte do aprendizado, e o projeto novo nasce limpo.
+    ...(allowBlocks ? { allowBlocks } : {}),
+    allowedExtensions: privileged ? STAFF_EXTENSIONS : (unlocks?.extensions ?? []),
+    hasPalette: !allowBlocks || allowBlocks.length > 0,
+    // ⚠️ NENHUMA extensão vem instalada. A criança abre o painel de Extensões e instala a
+    // que quiser, entre as que os cursos dela liberaram (`allowedExtensions`). Decisão
+    // dela, 08/08: instalar é parte do aprendizado, e o projeto novo nasce limpo.
     initialExtensions: [],
     allowedModes: [...reward.modes],
     allowLevelReveal: false,

@@ -1,7 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { ESSENTIAL_2D_ALLOW_BLOCKS } from '@sistemazero/studio'
 import {
-  minJourneyLevelForRemix,
   remixRequirementFromSnapshot,
   resolveStudioTier,
   studioTierCoversRemix,
@@ -15,12 +13,16 @@ describe('resolveStudioTier — ferramentas conquistadas', () => {
     expect(tier.pro).toBe(false)
   })
 
-  test('Construtor recebe somente o Jogo 2D Essencial', () => {
-    const tier = resolveStudioTier('coder', undefined)
+  test('Construtor abre o Estúdio livre só com o que os cursos deram', () => {
+    const tier = resolveStudioTier('coder', undefined, {
+      blocks: ['sz_g2d_setup_stage'],
+      extensions: ['game-2d'],
+    })
     expect(tier.freeStudio).toBe(true)
     expect(tier.level).toBe('iniciante-2d')
-    expect(tier.allowBlocks).toEqual(ESSENTIAL_2D_ALLOW_BLOCKS)
+    expect(tier.allowBlocks).toEqual(['sz_g2d_setup_stage'])
     expect(tier.allowedExtensions).toEqual(['game-2d'])
+    expect(tier.hasPalette).toBe(true)
     // ⚠️ Nada vem instalado: a criança instala o Jogo 2D pelo painel de
     // Extensões. `allowedExtensions` diz o que ela PODE instalar.
     expect(tier.initialExtensions).toEqual([])
@@ -74,10 +76,16 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
     expect(studioTierCoversRemix(tier, { pro: false, extensions: [] })).toBe(false)
   })
 
-  test('studioTierCoversRemix: extensão fora da allowlist do degrau → não cobre', () => {
-    const coder = resolveStudioTier('coder', undefined)
+  test('studioTierCoversRemix: extensão que os cursos não deram → não cobre', () => {
+    const coder = resolveStudioTier('coder', undefined, {
+      blocks: ['sz_g2d_setup_stage'],
+      extensions: ['game-2d'],
+    })
     expect(studioTierCoversRemix(coder, { pro: false, extensions: ['game-2d'] })).toBe(true)
     expect(studioTierCoversRemix(coder, { pro: false, extensions: ['world-3d'] })).toBe(false)
+    // Sem curso concluído não há extensão nenhuma, nem a do Jogo 2D.
+    const semCurso = resolveStudioTier('coder', undefined)
+    expect(studioTierCoversRemix(semCurso, { pro: false, extensions: ['game-2d'] })).toBe(false)
   })
 
   test('studioTierCoversRemix: jogo Pro exige a Lenda (ou equipe)', () => {
@@ -95,25 +103,6 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
     ).toBe(true)
   })
 
-  test('minJourneyLevelForRemix: primeiro nível com Estúdio livre que cobre as extensões', () => {
-    // Sem extensão → o primeiro nível com Estúdio livre (Construtor).
-    expect(minJourneyLevelForRemix({ pro: false, extensions: [] })).toBe('coder')
-    expect(minJourneyLevelForRemix({ pro: false, extensions: ['game-2d'] })).toBe('coder')
-    // 3D abre no Explorador de Mundos (perfil iniciante-3d).
-    expect(minJourneyLevelForRemix({ pro: false, extensions: ['game-3d'] })).toBe('explorer')
-    expect(minJourneyLevelForRemix({ pro: false, extensions: ['world-3d'] })).toBe('architect')
-    // Jogo 3D Avançado agora abre no Arquiteto (reclassificado; decisão 26/07).
-    expect(minJourneyLevelForRemix({ pro: false, extensions: ['game-3d-advanced'] })).toBe(
-      'architect',
-    )
-    // Pro é só da Lenda.
-    expect(minJourneyLevelForRemix({ pro: true, extensions: [] })).toBe('god')
-  })
-
-  test('minJourneyLevelForRemix: extensão desconhecida (metadado forjado) → null', () => {
-    expect(minJourneyLevelForRemix({ pro: false, extensions: ['hax-ext'] })).toBeNull()
-  })
-
   test('remixRequirementFromSnapshot: extrai kind + ids de extensão; lixo → vazio', () => {
     expect(
       remixRequirementFromSnapshot({
@@ -128,10 +117,9 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
 })
 
 /**
- * A paleta do Estúdio livre passou a vir do CURRÍCULO (08/2026): cada curso declara os
- * blocos que libera e o aluno tem a união dos que concluiu + publicou. O NÍVEL continua
- * decidindo o MODO (Estúdio livre, Ponte, Pro) e é o fail-open enquanto o catálogo não
- * está etiquetado.
+ * A paleta do Estúdio livre vem do CURRÍCULO: cada curso declara os blocos que libera e o
+ * aluno tem a união dos que concluiu + publicou. O NÍVEL continua decidindo o MODO (Estúdio
+ * livre, Ponte, Pro). Sem reserva desde 02/10/2026: sem curso, sem blocos.
  */
 describe('resolveStudioTier — paleta pelo currículo', () => {
   const unlocks = {
@@ -145,12 +133,18 @@ describe('resolveStudioTier — paleta pelo currículo', () => {
     expect(tier.allowedExtensions).toEqual(unlocks.extensions)
   })
 
-  test('⭐ fail-open: currículo vazio cai no perfil do NÍVEL (paleta nunca fica vazia)', () => {
-    const semNada = resolveStudioTier('coder', undefined, { blocks: [], extensions: [] })
-    expect(semNada.allowBlocks).toEqual(ESSENTIAL_2D_ALLOW_BLOCKS)
-    expect(semNada.allowedExtensions).toEqual(['game-2d'])
-    // Sem o argumento é o mesmo caminho (build antigo / página que não busca).
-    expect(resolveStudioTier('coder', undefined).allowBlocks).toEqual(ESSENTIAL_2D_ALLOW_BLOCKS)
+  test('⭐ sem curso concluído não há bloco nem extensão: o Estúdio livre fica trancado', () => {
+    for (const slug of ['coder', 'hacker', 'god'] as const) {
+      const semNada = resolveStudioTier(slug, undefined, { blocks: [], extensions: [] })
+      expect(semNada.allowBlocks).toEqual([])
+      expect(semNada.allowedExtensions).toEqual([])
+      expect(semNada.hasPalette).toBe(false)
+    }
+    // Sem o argumento é o mesmo (quem só lê `freeStudio`/`pro` chama assim).
+    const semArgumento = resolveStudioTier('coder', undefined)
+    expect(semArgumento.allowBlocks).toEqual([])
+    expect(semArgumento.hasPalette).toBe(false)
+    expect(semArgumento.freeStudio).toBe(true)
   })
 
   test('o NÍVEL segue decidindo o MODO, não a paleta', () => {
@@ -169,5 +163,8 @@ describe('resolveStudioTier — paleta pelo currículo', () => {
     expect(staff.pro).toBe(true)
     expect(staff.allowBlocks).toBeUndefined()
     expect(staff.allowedExtensions).toContain('game-3d-advanced')
+    expect(staff.hasPalette).toBe(true)
+    // Sem curso nenhum a equipe segue com tudo.
+    expect(resolveStudioTier('noob', 'admin', { blocks: [], extensions: [] }).hasPalette).toBe(true)
   })
 })

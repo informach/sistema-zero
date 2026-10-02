@@ -553,8 +553,8 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
 
     /**
      * Blocos que a criança conquistou nos cursos (paleta do Estúdio livre) —
-     * Server Component. Vazio = nenhum curso liberou nada ainda, e o
-     * `resolveStudioTier` cai no perfil do NÍVEL (fail-open do rollout).
+     * Server Component. Vazio = nenhum curso liberou nada ainda, e o Estúdio
+     * livre fica trancado (`StudioTier.hasPalette`).
      */
     getStudioUnlocksReadonly(): Promise<GatewayResponse<StudioUnlocksView>> {
       return studioUnlocksReadonlyCached()

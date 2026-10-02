@@ -1047,11 +1047,17 @@ e só cria (sem publicar). Ver members §Missões "Retenção pós-cursos" (migr
 A paleta do Estúdio livre deixou de ser fixa por NÍVEL: cada curso declara os blocos que libera e a
 criança tem a UNIÃO dos que **concluiu E publicou no Mural**. O nível segue decidindo o MODO
 (livre/Ponte/Pro). No kids isso aparece em três lugares:
-- **`/estudio`**: a página soma `getStudioUnlocksReadonly()` ao `Promise.all` e passa
-  `{blocks, extensions: extensionsForBlocks(blocks)}` ao `resolveStudioTier`. Best-effort — falhar
-  NÃO esvazia a caixa (o tier cai no perfil do nível).
+- **`/estudio`**: a página soma `getStudioUnlocksReadonly()` ao `Promise.all` e decide a porta
+  por **`studioGate`** (`src/server/studio-gate.ts`, sobre o `earnedStudioTier` do member-shell):
+  a lista não chegou → `KidsStudioUnavailable` ("tente de novo"); nível sem Estúdio livre OU
+  nenhum bloco conquistado → `KidsJourneyLockedStudio`; senão abre. ⭐ **Sem reserva desde
+  02/10/2026** (decisão da dona): o Kit essencial do Construtor e a paleta do nível para os outros
+  postos saíram, e sem curso concluído não há bloco. ⚠️ O editor nunca recebe a lista vazia (o
+  Estúdio a leria como "sem restrição"). Em produção todos os cursos têm a lista cadastrada; em
+  staging e no local, nem sempre, e ali o Estúdio pode aparecer trancado. Teste:
+  `tests/studio-gate.test.ts`.
 - **`/mural-dos-criadores`**: o mesmo, p/ o remix perguntar "o que você conquistou cobre este jogo?"
-  em vez de "seu nível cobre?".
+  em vez de "seu nível cobre?". Blocos indisponíveis ou nenhum bloco → sem remix naquela visita.
 - **`/perfil` → `my-tools.tsx` (`MyTools`)**: "Minhas ferramentas", as GAVETAS conquistadas
   (`drawersForBlocks` — 🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…). Gaveta é o que torna a recompensa
   legível p/ criança; lista de ids não é. Sem nenhuma, a seção some.
@@ -2405,12 +2411,13 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   vê o botão — importaria projeto que nem consegue abrir; rank indisponível também esconde,
   salvo equipe = Lenda) → fetch `/api/studio/play/:id` → **checagem de FERRAMENTAS**
   (`remixRequirementFromSnapshot` × `studioRemixCovered` do member-shell — jogo Pro sem ser
-  Lenda ou extensão fora da allowlist do degrau → `toast.info` gentil nomeando o nível via
-  `minJourneyLevelForRemix`+`levelInfo`, SEM importar) → `setStudioStorageNamespace(viewerId)` →
+  Lenda ou extensão que os cursos ainda não deram → `toast.info` gentil "Esse jogo usa ferramentas
+  que você ainda vai conquistar nos cursos", SEM importar) → `setStudioStorageNamespace(viewerId)` →
   `importProjectSnapshot(snapshot, {name: 'Remix de <título>'})` → toast + push `/estudio`.
   **Selo no card:** `thread.studioMeta` ({pro, extensions[]}, snapshot no publish — hub migr
-  `0007`) fora do degrau → botão vira cadeado tracejado "Fazer a minha versão · no nível X"
-  (`remixLockFor` no client → prop `remixLock` de ShowcaseCard/ThreadDetail/PlayLinkActions;
+  `0007`) com ferramenta não conquistada → botão vira cadeado tracejado "Fazer a minha versão",
+  SEM nível (02/10/2026: as ferramentas vêm dos cursos; `remixLockFor` devolve um booleano → prop
+  `remixLock` de ShowcaseCard/ThreadDetail/PlayLinkActions;
   clique continua vivo e mostra o recado). Post ANTIGO sem meta → botão normal, a checagem do
   clique segura. Jogo só com blocos avançados do NÚCLEO (sem extensão) abre e roda — a paleta
   curada é a pedagogia (aceito na v1).

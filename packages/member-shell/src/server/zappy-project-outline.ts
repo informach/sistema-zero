@@ -2,8 +2,8 @@
  * Esboço LEGÍVEL do projeto da criança para o prompt do tutor: árvore com os
  * RÓTULOS reais dos blocos (não os ids crus) + resumo por categoria. Regras de
  * segurança: tipo fora do catálogo NUNCA é ecoado (anti prompt-injection via
- * `context.blocks[].type`) — vira só um contador; bloco real acima do tier
- * aparece com "(nível futuro)" (o projeto é DELA), mas a recomendação de blocos
+ * `context.blocks[].type`) — vira só um contador; bloco real fora do que ela tem
+ * aparece com "(ainda não liberado)" (o projeto é DELA), mas a recomendação de blocos
  * novos continua tier-filtrada em outro lugar. Módulo puro e testável.
  */
 
@@ -55,7 +55,7 @@ export function buildProjectOutline(
     } else {
       categoryCounts.set(info.category, (categoryCounts.get(info.category) ?? 0) + 1)
       if (lines.length < maxLines) {
-        const suffix = futureTypes.has(block.type) ? ' (nível futuro)' : ''
+        const suffix = futureTypes.has(block.type) ? ' (ainda não liberado)' : ''
         lines.push(`${'  '.repeat(Math.min(depth, 8))}- ${info.label}${suffix}`)
       } else {
         truncated += 1
