@@ -2,7 +2,7 @@ import { KidsBackButton } from './back-button'
 
 /**
  * Destino da volta para a Área dos Pais a partir das superfícies da CONTA que vivem
- * fora do layout infantil (hoje só `/responsavel/ajuda`). `?manage=1` cai direto no
+ * fora do layout infantil (`/responsavel`, o acompanhamento, e `/responsavel/ajuda`). `?manage=1` cai direto no
  * modo "Gerenciar perfis", onde vive o card "Abrir atendimento"; se o portão parental
  * (15 min) tiver vencido, a página degrada para a grade com o modal de senha, nunca um
  * beco. É o MESMO destino que o portal usa no aviso de portão expirado (uma fonte).

@@ -109,10 +109,6 @@ function BlockScope({
     videoWatchedFraction(saved?.answers ?? {}) >= VIDEO_WATCH_THRESHOLD,
   )
   const [saveError, setSaveError] = useState(false)
-  const [watchSaved, setWatchSaved] = useState(confirmedWatched.current)
-  const [watchedPercent, setWatchedPercent] = useState(
-    Math.floor(videoWatchedFraction(saved?.answers ?? {}) * 100),
-  )
   const required = parent?.videoWatchRequiredBlockIds?.includes(block.id) ?? false
   const savedAt = useRef(0)
   const queue = useRef<Promise<void>>(Promise.resolve())
@@ -161,7 +157,6 @@ function BlockScope({
           const reached = videoWatchedFraction(value.answers) >= VIDEO_WATCH_THRESHOLD
           if (required && reached && !confirmedWatched.current) refresh.current?.()
           confirmedWatched.current = reached
-          setWatchSaved(reached)
         } catch {
           savedSeconds.current = -1
           setSaveError(true)
@@ -226,7 +221,6 @@ function BlockScope({
             value,
           )
           const fraction = videoWatchedFraction(videoCoverageAnswers(coverage.current))
-          setWatchedPercent(Math.floor(fraction * 100))
           if (
             (before < VIDEO_WATCH_THRESHOLD && fraction >= VIDEO_WATCH_THRESHOLD) ||
             Date.now() - savedAt.current >= 10000
@@ -236,15 +230,10 @@ function BlockScope({
       }}
     >
       {children}
-      {required && (
-        <p className="text-sm text-muted-foreground">
-          {watchSaved
-            ? 'Vídeo assistido. Você pode continuar!'
-            : watchedPercent >= 90
-              ? 'Salvando seu progresso…'
-              : `${watchedPercent}% assistido · veja 90% para continuar`}
-        </p>
-      )}
+      {/* O que falta para seguir (inclusive o vídeo) mora na faixa do rodapé da aula, na voz
+          da criança. A linha "N% assistido · veja 90% para continuar" que ficava aqui repetia a
+          faixa sem formatação e saiu a pedido dela (02/10/2026). O aviso de falha fica: ele
+          pede uma ação que só existe aqui. */}
       {saveError && block.kind === 'video' && (
         <p role="alert" className="text-sm">
           Não foi possível salvar seu progresso.{' '}

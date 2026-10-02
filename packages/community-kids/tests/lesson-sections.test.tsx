@@ -129,7 +129,7 @@ describe('aula por seções', () => {
   test.each([
     false,
     true,
-  ])('vídeo legado só pede 90% se a aula ainda não foi concluída: %s', (completed) => {
+  ])('o vídeo não repete embaixo dele o que falta (isso é da faixa do rodapé): %s', (completed) => {
     globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
       preconnect: () => {},
     })
@@ -147,7 +147,9 @@ describe('aula por seções', () => {
         />
       </LessonPlayerProvider>,
     )
-    expect(screen.queryByText('0% assistido · veja 90% para continuar') !== null).toBe(!completed)
+    // A regra dos 90% saiu de baixo do vídeo (02/10/2026): a faixa do rodapé já diz, na voz
+    // da criança, quanto falta ("Veja o vídeo até o fim (você já viu 0%)").
+    expect(screen.queryByText(/assistido|veja 90%|Você pode continuar/)).toBeNull()
   })
   test.each([
     false,

@@ -8,6 +8,7 @@ import {
 } from '@/app/perfis/parent-dashboard'
 import { KidsEyebrow } from '@/components/kids/kids-eyebrow'
 import { KidsScreen } from '@/components/kids/kids-screen'
+import { ParentAreaBack } from '@/components/kids/parent-area-back'
 import { isParentVerifiedFor } from '@/server/parent-gate'
 import { getSession } from '@/server/session'
 
@@ -21,6 +22,11 @@ export default async function ResponsavelPage() {
     redirect('/perfis?manage=1')
   return (
     <KidsScreen align="start" innerClassName="flex max-w-4xl flex-col items-center gap-7">
+      {/* Mesma volta de Minhas compras e do Atendimento: `/responsavel` não tem layout,
+          sidebar nem topo, e o pai que abria o acompanhamento não tinha a seta de volta. */}
+      <div className="w-full max-w-2xl">
+        <ParentAreaBack />
+      </div>
       <header className="w-full max-w-2xl">
         <KidsEyebrow icon={HeartHandshake}>Área dos responsáveis</KidsEyebrow>
         <h1 className="sz-display mt-3 text-[clamp(2rem,3.4vw,2.8125rem)]">

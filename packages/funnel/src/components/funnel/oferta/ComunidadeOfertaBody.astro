@@ -194,7 +194,7 @@ const faqVisuals = (id: string) =>
             </figure>
             <div class="origem-texto kof-reveal">
               <div class="cap-head">
-                <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">favorite</span>Uma experiência em família</span>
+                <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">favorite</span><span class="cap-chip-texto">Uma experiência em família</span></span>
                 <h2 id="title-origem" class="kof-display">{SHARED_COPY.founder.title}</h2>
                 <ComunidadeProsa paragraphs={founder.slice(0, 1)} class="cap-lead" />
               </div>
@@ -254,7 +254,7 @@ const faqVisuals = (id: string) =>
       <section class="section" id="duvidas" aria-labelledby="title-duvidas">
         <div class="wrap">
           <div class="cap-head kof-reveal cor-roxo">
-            <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">help</span>Na prática, em casa</span>
+            <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">help</span><span class="cap-chip-texto">Na prática, em casa</span></span>
             <h2 id="title-duvidas" class="kof-display">{page.faqTitle}</h2>
             {page.faqLinks && <p class="faq-atalhos">{page.faqLinks.map((link, index) => <>{index > 0 && ' · '}<a class="kof-link kof-link--inline" href={link.href}>{link.label}</a></>)}</p>}
           </div>

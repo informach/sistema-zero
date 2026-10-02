@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import {
   ChildrenDashboard,
@@ -83,6 +85,16 @@ describe('superfícies extraídas da área dos pais', () => {
     const back = screen.getByRole('link', { name: 'Voltar à área dos pais' })
     expect(back.getAttribute('href')).toBe('/perfis?manage=1')
     expect(PARENT_AREA_HREF).toBe('/perfis?manage=1')
+  })
+
+  // O acompanhamento da família (`/responsavel`) também vive fora do layout infantil: sem a
+  // seta, o pai que chegava por "Abrir acompanhamento da família" não tinha volta no topo.
+  test('o acompanhamento da família começa pela volta para a Área dos Pais', () => {
+    const page = readFileSync(join(import.meta.dir, '../src/app/responsavel/page.tsx'), 'utf8')
+    const back = page.indexOf('<ParentAreaBack />')
+    expect(back).toBeGreaterThan(-1)
+    // Antes do cabeçalho, como em Minhas compras e no Atendimento.
+    expect(back).toBeLessThan(page.indexOf('<header'))
   })
 
   test('renderiza progresso e créditos e persiste a preferência semanal', async () => {

@@ -248,9 +248,9 @@ com as quatro páginas e com `FAQ_VISUALS` já existem. Ver "Direção de arte d
 Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
 assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia na
 contratação inicial e em cada nova contratação anual via Pix, Mural de visitante após o fim).
-**Quiz da Comunidade (v3, tráfego frio):** entrada e perguntas não pressupõem conhecer o produto.
+**Quiz da Comunidade (v4, tráfego frio):** entrada e perguntas não pressupõem conhecer o produto.
 Resultado entrega orientação e atividade antes de apresentar a Comunidade e seus prints reais.
-Copy de entrada compartilhada em `quiz/entry-copy.ts`; perguntas de formato e equipamento tratam
+Resultado desenvolve ações do filho, mecanismo e benefício; formato, apoio e dúvida são compostos sem repetição, com prints pertinentes. Perguntas seguem situação → dificuldade/dúvida → desejo → condições; IDs permanecem estáveis. Copy de entrada compartilhada em `quiz/entry-copy.ts`; perguntas de formato e equipamento tratam
 da rotina geral. `FunnelQuiz.version` inicia novo lead para respostas de versão anterior,
 preservando o lead antigo. Oito perguntas-base, QT/QB/QC condicionais, inputs nativos e
 respostas múltiplas em Q3/Q4. `QuizAnswers` aceita `string[]` no JSONB existente, sem migração.
@@ -262,6 +262,16 @@ significa avatar A. Resultado SSR em componente próprio, com prints reais e lin
 quatro ofertas; `/oferta/continuar` não é resultado. Feedback é persistido antes de confirmar.
 Metadados `perfilLabels` enumeram os perfis no admin, inclusive para resultados compostos sem
 blocos estáticos em `result.profiles`. Referência: `docs/marketing/kids/comunidade-dos-criadores/quiz/`.
+⚠️ O PATCH recusa com 409 `QUIZ_CONFLICT` a gravação num lead de OUTRA versão do quiz (aba
+aberta antes do deploy): o `applyAnswer` tomaria as respostas antigas por vazias e apagaria o lead.
+**Desenho do quiz (02/10/2026, "mesmo estilo da oferta"):** `comunidade-quiz.css` (`.cq`) usa as
+receitas da oferta (`kof-eyebrow`, `cap-chip` na cor da etapa via `STAGE_CHIP`, `kof-ladrilho`,
+`kof-banda`, `kof-marca`, `fundo-folha`, `bloco--lado|largo`) e não cria cor própria. Etapas com
+linha de ligação e check nas feitas; opções táteis com o degrau de 3 px. O resultado
+(`ComunidadeResultado.astro`) é uma sequência de capítulos: herói com o Zappy, orientação + a
+atividade de casa (carta fixa ao rolar no computador), a Comunidade em folha branca com o aviso
+amarelo das diferenças, o dia a dia em blocos com tela (cada tela UMA vez; texto que diz "abaixo"
+ou tela com mais de um quadro vai para `bloco--largo`), o convite no cartão azul e a opinião.
 
 **Redesenho visual da Comunidade (30/09/2026, "a oficina do criador"):** a copy v2 ficou intacta e a
 página ganhou o desenho da plataforma kids: topo navy com a logo kids e o preço, herói com a TELA
@@ -305,6 +315,21 @@ sem `data-checkout-cta`: a contagem segue 2). Plano e prints:
   BRANCO (`.kof-marca .kof-btn:focus-visible`): o azul sumia no botão de compra do plano anual.
   A fonte de ícones é a instância estática 400 (sem eixo `FILL`): as estrelas decorativas saem
   vazadas de propósito.
+- ⚠️ **Ícone ao lado de texto tem ACERTO ÓPTICO (02/10/2026, a dona viu "os ícones mais para
+  baixo do texto").** Centrar as caixas não centra o que se vê: a Nunito e a Baloo desenham as
+  letras acima do meio da linha, e o ícone ficava 1,5 a 3 px abaixo (7 px no ladrilho dos
+  benefícios do herói, alinhado pelo topo). Medido na TINTA (foto em escala 3 + contagem de
+  pixels), em Chromium, nas cinco páginas, a 1440 e a 390 px. Os acertos: ícone da `.kof-eyebrow`
+  sobe 0,1em (0,05em no celular), o da `.kof-chip` 0,07em, o check da `.kof-selo` 0,07em; o
+  texto do `.cap-chip` desce 0,08em (num `<span class="cap-chip-texto">`, para o círculo não sair
+  do meio da pílula); o ladrilho ao lado de título Baloo (`.sub-head`, `.guarantee-head`,
+  `.faq-group h3`) e a seta da dúvida sobem 12% do tamanho do título; o ladrilho dos benefícios
+  do herói 0,06em; a marca da comparação 0,06em.
+  ⭐ **Texto de várias linhas: o ícone fica no MEIO DO BLOCO** (02/10/2026, decisão da dona: com
+  o ícone preso à 1ª linha, a frase de duas linhas deixava o ícone "mais para cima"). Por isso
+  benefícios do herói, selo, comparação e títulos usam `align-items`/`align-self: center` e só o
+  empurrão óptico acima, que vale igual para uma ou mais linhas. Ícone novo ao lado de texto:
+  medir com uma linha E com duas antes de achar que `align-items: center` resolve.
 
 **Direção de arte das quatro páginas (01/10/2026, "capítulos da oficina"):** a copy não mudou uma
 palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
@@ -385,9 +410,13 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   caixa da pilha). (3) **Área dos pais**: `KIDS_PAIS_SENHA_FILE` (arquivo fora do repositório,
   senha na 1ª linha, nunca impressa) + `KIDS_SO=pais`; saíram `responsavel` (painel cortado ANTES
   da lista de ferramentas, que na conta de teste diz "Não incluído na conta", + "Para conversar
-  sobre uma criação"), `privacidade`, `conta` e `indicacao`. Seguem pendentes `creditos` (a conta
-  de teste não tem o quadro), `compras` ("Nenhuma compra ainda"), `perfis` (um perfil só) e
-  `conexao`. (4) **Certificado**: a aula final de um curso CONCLUÍDO (`KIDS_CURSO_CONCLUIDO`), com
+  sobre uma criação"), `privacidade`, `conta` e `indicacao`. Em 02/10/2026 entraram `creditos`,
+  `compras` e `perfis` a partir de capturas da PRÓPRIA dona na conta dela (produção, escala 1):
+  recortadas por um script do scratchpad, com o sobrenome da criança e os dígitos do cartão
+  EMBAÇADOS antes do recorte e o @2x ampliado (não há captura em escala 2). Segue pendente só
+  `conexao`. ⚠️ Numa tira (`bloco--largo`/`visual--tira`) a moldura é 16:10 com `object-fit:
+  cover`: tela com proporção entre 1,4 e 1,8 NÃO ganha o `quadro-recorte` e perde o pé (o
+  `pais-perfis` nasceu 640×454 e cortava o botão; foi recortado em 640×400). (4) **Certificado**: a aula final de um curso CONCLUÍDO (`KIDS_CURSO_CONCLUIDO`), com
   o número do certificado escondido, e o documento (`tela-certificado-modelo` = o
   `entrega-certificado.webp` da página do Desafio, 760 px, sem @2x de verdade). Os roteiros
   `aula-estudio`, `pinta`, `estudio`, `molda` e `pais` foram rodados de ponta a ponta com
@@ -938,3 +967,13 @@ no cold-start). Também ali: as deps do **`@sistemazero/ui`** (`lucide-react`/`c
 (senão dá `Failed to resolve dependency`). Ao adicionar uma **nova** dep de terceiros consumida só por
 ilha lazy/import dinâmico, inclua-a ali também. Um restart simples basta (mudar `optimizeDeps` muda o
 config-hash → re-otimização automática).
+
+## Presente por convite e campanha (02/10/2026)
+
+`/bolsa/[codigo]`, `/embaixador/[token]` e `/kids/embaixadores` usam `components/referrals`, o CSS das ofertas e `content/presente.ts`. O rodapé fica fora de `.cdc`. Os prints atuais são reutilizados; capturas de assinante no Mural têm explicação do acesso de visitante. O presente mantém a faixa comunicada de 8–15 anos (não altera a recomendação da assinatura).
+
+`/bolsa/previa` é pública, noindex e sem formulário: somente apresentação escapada e datas, sem buscar campanha ou aceitar cadastro. O código `previa` é reservado no serviço. A resolução pública distingue scheduled/paused/ended/preparing; o backend revalida a janela no envio. Encerrada/pausada oferece retomada de cadastro previamente aceito, sem novos direitos.
+
+O painel privado usa no-store, no-referrer e canonical público sem token. O link do WhatsApp é sempre o presente público. A confirmação de resgate informa vencimento em Brasília e aceitação do e-mail, com acesso/recuperação de senha. Não afirmar entrega confirmada a partir de HTTP 202 do messaging.
+
+O referrals e o funil precisam ser liberados de forma coordenada, após a migration do serviço e o seed dos templates de campanha. Pendências e validação: `docs/marketing/kids/cade-todo-mundo/implementacao.md`.

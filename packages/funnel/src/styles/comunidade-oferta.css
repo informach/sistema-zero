@@ -247,7 +247,9 @@
 .cdc .hero-benefits li {
   display: flex;
   gap: 0.875rem;
-  align-items: flex-start;
+  /* O ladrilho fica no meio do texto, tenha ele uma linha ou duas (02/10/2026). Pelo topo, ele
+   * descia abaixo do texto de uma linha e subia acima do texto de duas. */
+  align-items: center;
   font-size: 1.0625rem;
   font-weight: 600;
   line-height: 1.5;
@@ -257,7 +259,8 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 10px;
-  margin-top: 0.05rem;
+  /* O mesmo acerto óptico das pílulas (ver `kids-oferta.css`). */
+  translate: 0 -0.06em;
 }
 .cdc .hero-benefits .kof-ladrilho .material-symbols-rounded {
   font-size: 1.25rem;
@@ -469,6 +472,11 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+/* O texto do chip desce o que falta para o meio das letras encontrar o do círculo (mover o
+ * círculo o deixaria torto dentro da pílula). */
+.cdc .cap-chip-texto {
+  translate: 0 0.08em;
+}
 .cdc .cap-chip-icone {
   display: grid;
   place-items: center;
@@ -532,6 +540,12 @@
 }
 .cdc .sub-head h3 {
   font-size: clamp(1.25rem, 2vw, 1.5rem);
+}
+/* A Baloo desenha as letras acima do meio da linha: o ladrilho centrado pela caixa ficava 3 px
+ * abaixo do título. Sobe 12% do tamanho do título (o mesmo `clamp` do h3). */
+.cdc .sub-head .kof-ladrilho,
+.cdc .guarantee-head .kof-ladrilho {
+  translate: 0 calc(clamp(1.25rem, 2vw, 1.5rem) * -0.12);
 }
 
 /* ── Blocos do capítulo ──────────────────────────────────────────────────────── */
@@ -648,7 +662,10 @@
   display: none;
   grid-column: 1 / -1;
 }
+/* A marca fica no meio do texto da célula, com uma linha ou com três (02/10/2026). */
 .cdc .comparacao-marca {
+  align-self: center;
+  translate: 0 -0.06em;
   display: grid;
   place-items: center;
   width: 1.75rem;
@@ -1260,6 +1277,10 @@
 .cdc .faq-group h3 .kof-ladrilho .material-symbols-rounded {
   font-size: 1.25rem;
 }
+/* Dentro do h3 o ladrilho herda o tamanho do título: 12% dele é o acerto da Baloo. */
+.cdc .faq-group h3 .kof-ladrilho {
+  translate: 0 -0.12em;
+}
 .cdc .faq {
   display: grid;
   gap: clamp(2rem, 4vw, 3rem);
@@ -1299,6 +1320,8 @@
 }
 .cdc .faq-seta {
   flex: none;
+  /* A pergunta é Baloo: sem o acerto, a seta ficava 2 px abaixo do meio das letras. */
+  translate: 0 calc(1.125rem * -0.12);
   display: grid;
   place-items: center;
   width: 2rem;

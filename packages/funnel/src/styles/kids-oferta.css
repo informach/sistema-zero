@@ -237,6 +237,12 @@
   color: inherit;
 }
 
+/* ── Ícone ao lado do texto: ajuste óptico (02/10/2026) ──────────────────────────
+ * Centrar as CAIXAS não centra o que se vê: a Nunito e a Baloo desenham as letras acima do meio
+ * da linha, e o ícone (desenhado no meio da caixa dele) ficava 1,5 a 3 px ABAIXO do texto.
+ * Medido na tinta, em Chromium, nas cinco páginas (a dona viu primeiro). Os acertos abaixo
+ * sobem o ícone até o meio das letras; o `translate` não mexe no layout nem no foco. */
+
 /* ── Eyebrow (pílula amarela) e selo de recompensa ───────────────────────────── */
 .theme-kids .kof-eyebrow {
   display: inline-flex;
@@ -256,6 +262,7 @@
 }
 .theme-kids .kof-eyebrow .material-symbols-rounded {
   font-size: 1rem;
+  translate: 0 -0.1em;
 }
 /* ⚠️ Numa coluna de grade `1fr` (= minmax(auto, 1fr)) o `nowrap` vira a largura MÍNIMA da coluna:
  * a 390px a pílula de 400px empurrava o herói inteiro para fora da margem. No celular ela quebra. */
@@ -267,6 +274,10 @@
     line-height: 1.25;
     padding: 0.25rem 0.75rem;
     border-radius: 16px;
+  }
+  /* Com a letra menor, o acerto também é menor (medido a 390 px nas pílulas de uma linha). */
+  .theme-kids .kof-eyebrow .material-symbols-rounded {
+    translate: 0 -0.05em;
   }
 }
 
@@ -288,6 +299,7 @@
 .theme-kids .kof-chip .material-symbols-rounded {
   font-size: 1.125rem;
   color: var(--kof-acao);
+  translate: 0 -0.07em;
 }
 .theme-kids .kof-chip--azul {
   background: var(--kof-azul-fundo);
@@ -364,16 +376,21 @@
 /* ── Selo de garantia (linha com o check verde) ──────────────────────────────── */
 .theme-kids .kof-selo {
   display: inline-flex;
+  /* Centrado no BLOCO de texto, com uma linha ou com duas (decisão dela, 02/10/2026: preso à
+   * primeira linha, o check parecia alto quando o texto quebrava). */
   align-items: center;
   gap: 0.4rem;
   color: var(--kof-tinta-suave);
   font-family: var(--kof-corpo);
   font-size: 0.9375rem;
   font-weight: 700;
+  line-height: 1.45;
 }
 .theme-kids .kof-selo .material-symbols-rounded {
+  flex: none;
   font-size: 1.125rem;
   color: var(--kof-verde);
+  translate: 0 -0.07em;
 }
 
 /* ── Banda navy: a âncora escura (prova, convite final) ─────────────────────── */

@@ -139,7 +139,7 @@ const situacoes = grupos.filter(({ group }) => group.title)
         {band ? (
           <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">{icone}</span>{section.eyebrow}</span>
         ) : (
-          <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">{icone}</span>{section.eyebrow}</span>
+          <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">{icone}</span><span class="cap-chip-texto">{section.eyebrow}</span></span>
         )}
         <h2 id={`title-${section.id}`} class="kof-display">{section.title}</h2>
         {abertura && <ComunidadeProsa paragraphs={[abertura]} class="cap-lead" />}

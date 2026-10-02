@@ -481,6 +481,47 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'O convite segue as condições apresentadas no programa de indicações.',
   },
+  // As três abaixo vêm de capturas da própria dona na conta dela (02/10/2026), recortadas e com
+  // o sobrenome da criança e os dígitos do cartão embaçados. O @2x é ampliado: não há captura
+  // em escala 2 dessas telas.
+  creditos: {
+    frames: [
+      tela(
+        'pais-creditos',
+        'Ajuda da IA neste mês',
+        'Quadro Ajuda da IA neste mês na Área dos pais: 0 de 500 no mês, renovação em 1º de novembro, 0 de 50 no dia e o aviso de que as crianças da família dividem o mesmo total.',
+        720,
+        193,
+      ),
+    ],
+    caption: 'O saldo de ajuda da IA do mês é um só para a família e aparece na Área dos pais.',
+  },
+  compras: {
+    frames: [
+      tela(
+        'pais-compras',
+        'Minhas compras',
+        'Minhas compras na Área dos pais: a assinatura da Comunidade dos Criadores ativa, com o valor, a data da próxima cobrança e o botão Cancelar, e as compras pagas logo abaixo.',
+        592,
+        572,
+      ),
+    ],
+    caption:
+      'Em Minhas compras ficam a assinatura, a data da próxima cobrança e a opção de cancelar.',
+  },
+  perfis: {
+    frames: [
+      tela(
+        'pais-perfis',
+        'Gerenciar perfis',
+        'Gerenciar perfis na Área dos pais, com o perfil de uma criança, o botão Adicionar e a indicação 1 de 2 perfis do seu plano.',
+        640,
+        400,
+      ),
+    ],
+    caption:
+      'Cada criança tem o próprio perfil. A Área dos pais mostra quantos perfis cabem no plano.',
+  },
 }
 
 /**
@@ -489,11 +530,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
  * `COMUNIDADE_VISUALS` (os vínculos com as quatro páginas e com as dúvidas já existem).
  */
 export const PENDING_VISUALS: Record<string, string> = {
-  creditos:
-    'Área dos pais: créditos de inteligência artificial da família (a conta de teste não mostra esse quadro).',
-  compras:
-    'Área dos pais: Minhas compras e a próxima renovação (a conta de teste não tem compra: a tela diz "Nenhuma compra ainda").',
-  perfis: 'Seleção de perfis com duas crianças (a conta de teste tem um perfil só).',
   conexao: 'Aviso de sem conexão: o editor não mostra um estado próprio para fotografar.',
 }
 
