@@ -39,7 +39,8 @@ const PILULA_APAGADA =
  *
  * Desenho das telas-modelo (11/09/2026, Trilha e Jornada): cartão branco de cantos de
  * 24px, sem borda nem cor de unidade; na trilha, a capa larga em cima, título em Baloo,
- * a frase, e embaixo o selo menta "Liberado" com a pílula azul "Acessar curso".
+ * a frase e, embaixo, o progresso com o próximo passo, como na home. Sem progresso,
+ * mostra o selo menta "Liberado" com a pílula azul "Acessar curso".
  */
 export function CatalogCourseCard({
   course,
@@ -173,7 +174,7 @@ export function CatalogCourseCard({
         Em breve na sua jornada
       </span>
     )
-  ) : available && linha && mine ? (
+  ) : available && mine ? (
     <MyProgress mine={mine} />
   ) : (
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -230,7 +231,7 @@ export function CatalogCourseCard({
   )
 }
 
-/** O "N de M aulas", a barra verde e o botão do próximo passo, no cartão deitado. */
+/** O "N de M aulas", a barra verde e o botão do próximo passo, nos dois layouts. */
 function MyProgress({ mine }: { mine: MyCourseView }) {
   const { progress } = mine
   const state = courseJourneyState(mine)

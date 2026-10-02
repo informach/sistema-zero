@@ -17,6 +17,7 @@ import {
   getGamificationReadonly,
   getStudioUnlocksReadonly,
   listCatalog,
+  listMyCourses,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 
@@ -90,13 +91,16 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   // (nível `lenda`). Os demais slugs sem tier não existem — 404.
   if (!tier && levelSlug !== 'god') notFound()
 
-  const [{ status, body }, gamification, studioRes, session, unlocksRes] = await Promise.all([
-    listCatalog(),
-    getGamificationReadonly(),
-    checkStudioAccessReadonly().catch(() => null),
-    getSession(),
-    getStudioUnlocksReadonly().catch(() => null),
-  ])
+  const [{ status, body }, gamification, studioRes, session, unlocksRes, mineRes] =
+    await Promise.all([
+      listCatalog(),
+      getGamificationReadonly(),
+      checkStudioAccessReadonly().catch(() => null),
+      getSession(),
+      getStudioUnlocksReadonly().catch(() => null),
+      // Aulas concluídas vêm de "Meus cursos"; sem essa resposta, o card mantém o acesso.
+      listMyCourses().catch(() => null),
+    ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const all = body?.courses ?? []
   const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
@@ -140,6 +144,9 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   }
 
   const courses = coursesForLevel(levelSlug, all)
+  const mine = new Map(
+    (mineRes?.status === 200 ? (mineRes.body?.courses ?? []) : []).map((c) => [c.courseSlug, c]),
+  )
   const titleBySlug = new Map(all.map((c) => [c.courseSlug, c.title]))
   const owner = levelInfo(levelSlug)
   const isCurrent = level?.slug === levelSlug
@@ -204,6 +211,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
               <CatalogCourseCard
                 key={course.courseSlug}
                 course={course}
+                mine={mine.get(course.courseSlug) ?? null}
                 salesUrl={course.salesPageUrl}
                 foundationTitle={
                   course.careerLock?.foundationCourseSlug
