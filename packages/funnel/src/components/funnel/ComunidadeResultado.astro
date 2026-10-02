@@ -20,12 +20,18 @@ const { result: r, imagesBase, basePath, funnel, revision, sessionToken } = Astr
     <p class="cq-note">Esta sugestão parte do que você contou sobre este momento da família. É um convite para experimentar e conversar com seu filho.</p>
     <div class="cq-prose">{r.reason.map(p => <p class="kof-lead">{p}</p>)}</div>
   </header>
+  {r.context.length > 0 && <section class="cq-reading cq-result-section cq-prose"><h2 class="kof-display">O que você contou também importa</h2>{r.context.map(p => <p>{p}</p>)}</section>}
+  {r.orientation && <section class="cq-reading cq-result-section cq-prose"><h2 class="kof-display">{r.orientation.title}</h2>{r.orientation.paragraphs.map(p => <p>{p}</p>)}</section>}
+  <section class="cq-panel cq-activity cq-reading cq-result-section"><span class="cq-badge">Para experimentar em casa</span><h2 class="kof-display">{r.activity.title}</h2>{r.activity.steps && <ol>{r.activity.steps.map(s => <li>{s}</li>)}</ol>}{r.activity.paragraphs.map(p => <p>{p}</p>)}</section>
+  <section class="cq-panel cq-result-cta cq-reading cq-result-section cq-prose" data-quiz-product-introduction>
+    <span class="cq-badge">{r.decision.unmet.length || r.decision.state === 'fora_das_opcoes' ? 'Uma proposta para conhecer e comparar' : 'Uma possibilidade para o próximo passo'}</span>
+    <h2 class="kof-display">{r.introduction.title}</h2>
+    {r.introduction.paragraphs.map(p => <p>{p}</p>)}
+  </section>
   {r.conditions.length > 0 && <section class="cq-panel cq-callout cq-reading cq-result-section" aria-labelledby="requirements-title">
-    <h2 id="requirements-title" class="kof-display">{r.decision.unmet.length ? 'Antes de considerar a Comunidade' : 'O que vale conferir antes de escolher'}</h2>
+    <h2 id="requirements-title" class="kof-display">{r.decision.unmet.length ? 'O que esta proposta não atende na sua procura' : 'O que vale conferir antes de escolher'}</h2>
     {r.conditions.map(c => <div class="cq-prose"><h3>{c.title}</h3>{c.paragraphs.map(p => <p>{p}</p>)}</div>)}
   </section>}
-  {r.context.length > 0 && <section class="cq-reading cq-result-section cq-prose"><h2 class="kof-display">O que você contou também importa</h2>{r.context.map(p => <p>{p}</p>)}</section>}
-  <section class="cq-panel cq-activity cq-reading cq-result-section"><span class="cq-badge">Para experimentar em casa</span><h2 class="kof-display">{r.activity.title}</h2>{r.activity.steps && <ol>{r.activity.steps.map(s => <li>{s}</li>)}</ol>}{r.activity.paragraphs.map(p => <p>{p}</p>)}</section>
   <section class="cq-result-section">
     <div class="cq-reading cq-prose"><h2 class="kof-display">{r.bridge?.title ?? 'Conheça a criação na Comunidade'}</h2>{r.bridge?.paragraphs.map(p => <p>{p}</p>)}</div>
     <div class="cq-proof">{r.visuals.map(v => <ComunidadeVisual visual={v} imagesBase={imagesBase} variant="plana" />)}</div>

@@ -78,10 +78,19 @@ export async function createLead(request: Request, deps: LeadDeps): Promise<Resp
   const existing = getLeadId(request)
   if (existing) {
     const lead = await deps.repo.getLead(existing)
+    const quizVersion = funnel ? getFunnelByKey(funnel)?.content.quiz?.version : undefined
+    const storedVersion = lead?.quizAnswers?._quiz_version
+    const outdatedQuiz = Boolean(quizVersion && storedVersion && storedVersion !== quizVersion)
     // Lead já PAGO não é reaproveitado: nova compra = novo lead. A /obrigado
     // mantém o cookie para permitir recarregar o comprovante, então este gate é
     // também a fronteira que inicia uma nova jornada com segurança.
-    if (!restart && lead && !lead.paidAt && (!funnel || leadBelongsToFunnel(lead.funnel, funnel))) {
+    if (
+      !restart &&
+      !outdatedQuiz &&
+      lead &&
+      !lead.paidAt &&
+      (!funnel || leadBelongsToFunnel(lead.funnel, funnel))
+    ) {
       if (!lead.attribution && attribution) await deps.repo.claimAttribution(lead.id, attribution)
       return json(
         {

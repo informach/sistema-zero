@@ -62,9 +62,54 @@
   line-height: 1.15;
   width: 70%;
 }
-.cq .cq-hero-screen {
-  border: 5px solid var(--kof-carta);
-  border-radius: var(--kof-raio-tela);
+.cq .cq-possibilities {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cq .cq-possibilities li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem;
+  border-radius: 20px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+}
+.cq .cq-possibilities li > span {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--kof-azul-fundo);
+  color: var(--kof-acao);
+  font-size: 1.7rem;
+}
+.cq .cq-possibilities li:nth-child(2) > span {
+  background: var(--kof-rosa-fundo);
+  color: var(--kof-tinta);
+}
+.cq .cq-possibilities li:nth-child(3) > span {
+  background: var(--kof-amarelo-fundo);
+  color: var(--kof-tinta);
+}
+.cq .cq-possibilities strong {
+  display: block;
+  font-family: var(--kof-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.cq .cq-possibilities div > span {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--kof-tinta-suave);
 }
 .cq .cq-mascot {
   position: absolute;

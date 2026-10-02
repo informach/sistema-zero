@@ -1,4 +1,4 @@
-// Copy aprovada: docs/marketing/kids/comunidade-dos-criadores/copy/quiz-comunidade.md
+// Tráfego frio, v3: docs/marketing/kids/comunidade-dos-criadores/copy/quiz-comunidade.md
 import type { SelecaoStep } from '../../../content/quiz-config'
 
 export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
@@ -198,7 +198,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_q5',
     tipo: 'selecao',
     etapa: 'objetivos',
-    titulo: 'O que você mais precisa esclarecer antes de escolher uma atividade?',
+    titulo: 'Ao pensar numa nova atividade para ele, qual é a sua principal dúvida?',
     opcoes: [
       {
         value: 'interesse',
@@ -273,19 +273,19 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_q7',
     tipo: 'selecao',
     etapa: 'comeco',
-    titulo: 'Como esse formato se encaixa no que vocês procuram?',
+    titulo: 'Que tipo de acompanhamento você consideraria para uma atividade em casa?',
     opcoes: [
       {
         value: 'pode_funcionar',
-        label: 'Esse formato pode funcionar para a nossa família',
+        label: 'Aulas gravadas para pausar e rever, com ajuda por mensagens quando precisar',
       },
       {
         value: 'prefere_ao_vivo',
-        label: 'Costumo preferir aulas ao vivo, mas quero conhecer essa alternativa',
+        label: 'Prefiro aulas ao vivo, mas posso conhecer outras formas de acompanhamento',
       },
       {
         value: 'conhecer',
-        label: 'Ainda preciso entender melhor como funcionaria',
+        label: 'Ainda não sei qual formato funcionaria melhor para nós',
       },
       {
         value: 'exige_ao_vivo',
@@ -293,7 +293,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       },
     ],
     subtitulo:
-      'Na Comunidade, as aulas são gravadas: a criança pode pausar, rever um trecho e fazer a atividade no horário combinado pela família. Quando tem uma dúvida, pode pedir ajuda por mensagens. Esse apoio pode exigir espera; não há professor ao vivo durante a atividade.',
+      'Pense no apoio de que ele precisaria e na rotina da família. Você também pode indicar que ainda não sabe.',
   },
   {
     id: 9,
@@ -302,7 +302,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_q8',
     tipo: 'selecao',
     etapa: 'comeco',
-    titulo: 'Seu filho terá acesso a um computador com internet para fazer as atividades?',
+    titulo: 'Se ele quiser experimentar uma atividade no computador, como seria o acesso em casa?',
     opcoes: [
       {
         value: 'disponivel',
@@ -321,7 +321,8 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
         label: 'Ainda preciso verificar',
       },
     ],
-    subtitulo: 'As ferramentas da Comunidade são usadas pelo navegador, com mouse e teclado.',
+    subtitulo:
+      'Pode ser um computador compartilhado. Considere o acesso à internet, ao mouse e ao teclado.',
   },
   {
     id: 10,
@@ -330,8 +331,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_qb',
     tipo: 'selecao',
     etapa: 'comeco',
-    titulo:
-      'Para a criação de jogos que vocês têm em mente, é indispensável usar alguma destas ferramentas?',
+    titulo: 'Se ele for experimentar criar jogos, usar uma ferramenta específica é indispensável?',
     opcoes: [
       {
         value: 'roblox',
@@ -364,7 +364,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_qc',
     tipo: 'selecao',
     etapa: 'comeco',
-    titulo: 'Como você gostaria que o desenho participasse da atividade?',
+    titulo: 'Que possibilidade com desenho vocês gostariam de explorar?',
     opcoes: [
       {
         value: 'interativo',
@@ -376,7 +376,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       },
       {
         value: 'ver_exemplo',
-        label: 'Quero conhecer um exemplo dessa integração antes de decidir',
+        label: 'Ainda não conheço essas possibilidades; gostaria de ver um exemplo',
       },
       {
         value: 'nao_condiciona',

@@ -1,14 +1,18 @@
 # Quiz da Comunidade: um ponto de partida para aprender criando
 
-Proposta revisada em 01/10/2026, versão 2, implementada localmente no funil. Entrada: `/kids/comunidade-dos-criadores/quiz`; resultado: `/kids/comunidade-dos-criadores/resultado`. O [registro da implementação](implementacao.md) descreve a integração e as verificações. O [registro da revisão](revisao-proposta.md) conserva os problemas da versão anterior e as correções aplicadas.
+Versão vigente: 3, para tráfego frio, revisada em 01/10/2026 a partir da correção do responsável pelo produto. Entrada: `/kids/comunidade-dos-criadores/quiz`; resultado: `/kids/comunidade-dos-criadores/resultado`. A [revisão da jornada para tráfego frio](revisao-trafego-frio.md) explica a mudança. O [registro da implementação](implementacao.md) conserva as verificações por versão; a [revisão anterior](revisao-proposta.md) é histórico da v2.
 
 ## Promessa pública
 
-> **Descubra um ponto de partida para seu filho aprender criando com tecnologia.**
+> **Descubra por onde seu filho pode começar a criar com tecnologia.**
 >
-> Conte o que chama a atenção dele e o que você procura para essa fase. Você vai receber uma ideia para experimentar em casa, o que observar nessa experiência e como a Comunidade pode participar desse começo.
+> O gosto por jogos, a vontade de desenhar e a curiosidade sobre como as coisas funcionam podem abrir caminhos diferentes para aprender. Conte um pouco sobre seu filho e o que você gostaria de proporcionar a ele.
+>
+> No final, você recebe uma sugestão de caminho, entende o motivo da escolha e leva uma ideia para experimentar com ele.
 
 Para a família, a entrega é uma orientação que pode ser usada antes da compra. Internamente, identificamos a motivação que deve orientar a apresentação da Comunidade. O quiz é identificado como iniciativa do Sistema Zero Kids e leva às ofertas do próprio produto.
+
+O visitante não precisa saber o que é a Comunidade. A abertura apresenta interesses e possibilidades, sem telas do produto. As perguntas sobre acompanhamento, computador, jogos e desenho exploram condições da família. O resultado entrega a orientação e uma experiência possível; depois apresenta a Comunidade por extenso, explica sua relação com a procura e mostra os prints reais. Diferenças e requisitos ficam explícitos antes do botão para a oferta.
 
 ## Estrutura recomendada
 
@@ -57,7 +61,8 @@ Os resultados passaram a oferecer experiências que o responsável consegue prop
 3. [Lógica, destinos, prints e cenários de validação](logica-e-validacao.md).
 4. [Pesquisa e decisões de estratégia](pesquisa-e-estrategia.md).
 5. [Problemas encontrados, correções e conferências da versão 2](revisao-proposta.md).
-6. [Dois exemplos completos de resultado](exemplos-de-resultado.md), mostrando como os textos se combinam numa experiência de leitura.
+6. [Dois exemplos completos da versão 2](exemplos-de-resultado.md), mantidos como histórico editorial.
+7. [Revisão e implementação da versão 3 para tráfego frio](revisao-trafego-frio.md).
 
 ## Alternativas e limites
 

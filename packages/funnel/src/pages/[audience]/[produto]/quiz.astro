@@ -1,5 +1,6 @@
 ---
 import ComunidadeQuizLayout from '../../../components/funnel/ComunidadeQuizLayout.astro'
+import { QUIZ_ENTRY } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { getFunnel } from '../../../funnels/registry'
 import ComunidadeQuiz from '../../../islands/ComunidadeQuiz'
 import Quiz from '../../../islands/Quiz'
@@ -32,7 +33,7 @@ const q1Images =
 ---
 
 {quiz.presentation === 'comunidade' ? (
-  <ComunidadeQuizLayout title="Um ponto de partida para seu filho | Sistema Zero" description={f.seoDescription} imagesBase={f.imagesBase} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}>
+  <ComunidadeQuizLayout title="Um caminho para seu filho criar com tecnologia | Sistema Zero" description={QUIZ_ENTRY.description} imagesBase={f.imagesBase} ogImage={new URL(`${f.imagesBase}/zappy-happy.webp`, Astro.site ?? Astro.url).toString()}>
     <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} />
     <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </ComunidadeQuizLayout>

@@ -6,11 +6,13 @@ import {
   communityDecision,
   isCommunityQuizComplete,
   PROFILE_IDS,
+  QUIZ_VERSION,
   validChoice,
 } from './engine'
 import { COMMUNITY_QUESTIONS } from './questions'
 
 export const COMMUNITY_QUIZ: FunnelQuiz = {
+  version: QUIZ_VERSION,
   presentation: 'comunidade',
   steps: COMMUNITY_QUESTIONS,
   total: 8,

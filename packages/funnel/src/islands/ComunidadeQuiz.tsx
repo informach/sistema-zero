@@ -9,6 +9,7 @@ import {
   quizRevision,
   validChoice,
 } from '../funnels/comunidade-dos-criadores/quiz/engine'
+import { QUIZ_ENTRY } from '../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { COMMUNITY_QUESTIONS } from '../funnels/comunidade-dos-criadores/quiz/questions'
 import { ApiError, apiPatch, apiPost } from '../lib/api-fetch'
 import { leadAttributionFromLocation } from '../lib/lead-attribution'
@@ -27,7 +28,7 @@ interface Session {
 const stages = [
   ['filho', 'Sobre seu filho'],
   ['objetivos', 'O que vocês procuram'],
-  ['comeco', 'Como funcionaria'],
+  ['comeco', 'A rotina de vocês'],
 ] as const
 
 /** Stable within a lead, including refreshes; ordering never changes the decision. */
@@ -178,19 +179,17 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
     return (
       <main id="quiz" className="wrap cq-intro">
         <div className="cq-intro-copy">
-          <span className="cq-badge">Um começo para criar · 9 a 14 anos</span>
+          <span className="cq-badge">Uma descoberta para a família · 9 a 14 anos</span>
           <h1 className="kof-display">
-            Descubra um ponto de partida para seu filho <em>aprender criando com tecnologia.</em>
+            {QUIZ_ENTRY.titleStart}
+            <em>{QUIZ_ENTRY.emphasis}</em>
           </h1>
-          <p className="kof-lead">
-            Conte o que chama a atenção dele e o que você procura para essa fase. Você vai receber
-            uma ideia para experimentar em casa, o que observar nessa experiência e como a
-            Comunidade pode participar desse começo.
-          </p>
+          <p className="kof-lead">{QUIZ_ENTRY.lead}</p>
+          <p>{QUIZ_ENTRY.delivery}</p>
           <ul className="cq-intro-points">
-            <li>Uma ideia para experimentar juntos</li>
-            <li>Orientação a partir das suas respostas</li>
-            <li>Resultado aqui, sem cadastro</li>
+            {QUIZ_ENTRY.points.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
           </ul>
           <p>Responda pensando em um filho de cada vez. Você pode indicar o que ainda não sabe.</p>
           {errorView}
@@ -209,7 +208,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
                   ? 'Ver meu resultado'
                   : quizRevision(current) > 0
                     ? 'Continuar de onde parei'
-                    : 'Encontrar um ponto de partida'}
+                    : QUIZ_ENTRY.cta}
               <span aria-hidden="true">→</span>
             </button>
             {session && quizRevision(current) > 0 && (
@@ -219,22 +218,26 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
             )}
           </div>
           <p className="cq-note">
-            Você pode responder pelo celular. Para realizar as atividades digitais, seu filho
-            precisará de computador com internet, mouse e teclado.
+            Uma orientação do Sistema Zero Kids para mães, pais e responsáveis. Você pode responder
+            pelo celular.
           </p>
         </div>
         <div className="cq-hero-art">
-          <span className="cq-badge">Imaginar. Experimentar. Criar.</span>
-          <img
-            className="cq-hero-screen"
-            src={`${imagesBase}/tela-aula-estudio.webp`}
-            srcSet={`${imagesBase}/tela-aula-estudio.webp 1x, ${imagesBase}/tela-aula-estudio@2x.webp 2x`}
-            alt="Aula da Comunidade com a explicação ao lado da criação de um jogo no Estúdio."
-            width="1280"
-            height="800"
-            fetchPriority="high"
-          />
-          <p>Um jeito de conhecer o que seu filho tem vontade de criar.</p>
+          <span className="cq-badge">Um interesse. Várias possibilidades.</span>
+          <ul className="cq-possibilities">
+            {QUIZ_ENTRY.possibilities.map((item) => (
+              <li key={item.icon}>
+                <span className="material-symbols-rounded" aria-hidden="true">
+                  {item.icon}
+                </span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{item.detail}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p>O começo pode estar no que já chama a atenção dele.</p>
           <img
             className="cq-mascot"
             src={`${imagesBase}/zappy-happy.webp`}
@@ -255,12 +258,13 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
             Esta orientação foi pensada para famílias com filhos de 9 a 14 anos.
           </h1>
           <p>
-            Isso não é uma avaliação da capacidade do seu filho. As atividades, os exemplos e o
-            percurso da Comunidade foram organizados para essa faixa de idade.
+            Os exemplos e as sugestões deste quiz foram preparados para essa faixa. A idade
+            informada, sozinha, não diz o que seu filho consegue fazer.
           </p>
           <p>
-            Você pode conhecer a proposta e conferir seus requisitos, mas este quiz não vai indicar
-            um perfil para ele.
+            Para escolher uma atividade em outra fase, vale observar os interesses dele, a linguagem
+            da orientação e o apoio de que precisa. Este quiz não vai indicar um caminho específico
+            para essa idade.
           </p>
           {errorView}
           <div className="cq-actions">
@@ -275,9 +279,6 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
             >
               Responder pensando em outro filho
             </button>
-            <a className="kof-btn" href={`${basePath}/oferta`}>
-              Conhecer a proposta e seus requisitos
-            </a>
           </div>
         </div>
       </main>
@@ -358,7 +359,13 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
         ))}
       </ol>
       <div className="cq-panel">
-        <p className="kof-sobretitulo">Pense em um filho de cada vez</p>
+        <p className="kof-sobretitulo">
+          {step.etapa === 'filho'
+            ? 'O que chama a atenção dele'
+            : step.etapa === 'objetivos'
+              ? 'O que importa para você'
+              : 'O que cabe na rotina de vocês'}
+        </p>
         <h1 className="kof-display" ref={heading} tabIndex={-1}>
           {step.titulo}
         </h1>

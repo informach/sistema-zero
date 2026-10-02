@@ -40,6 +40,7 @@ export interface FunnelLanding {
   tempo: string
 }
 export interface FunnelQuiz {
+  version?: string
   presentation?: 'comunidade'
   steps: QuizStep[]
   total: number

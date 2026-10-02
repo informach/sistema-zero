@@ -1,16 +1,20 @@
-# Descubra um ponto de partida para seu filho aprender criando com tecnologia
+# Descubra por onde seu filho pode começar a criar com tecnologia.
 
-Conte o que chama a atenção dele e o que você procura para essa fase. Você vai receber uma ideia para experimentar em casa, o que observar nessa experiência e como a Comunidade pode participar desse começo.
+O gosto por jogos, a vontade de desenhar e a curiosidade sobre como as coisas funcionam podem abrir caminhos diferentes para aprender. Conte um pouco sobre seu filho e o que você gostaria de proporcionar a ele.
 
-Uma orientação do Sistema Zero Kids para mães, pais e responsáveis por crianças e adolescentes de 9 a 14 anos.
+No final, você recebe uma sugestão de caminho, entende o motivo da escolha e leva uma ideia para experimentar com ele.
 
-Responda pensando em um filho de cada vez. Você pode indicar o que ainda não sabe. O resultado aparece aqui, sem cadastro.
+- Um caminho ligado aos interesses dele
+- O que procurar numa atividade para esse momento
+- Seu resultado na tela, sem cadastro
 
-O quiz pode ser respondido pelo celular. Para realizar as atividades digitais da Comunidade, seu filho precisará de computador com internet, mouse e teclado.
+Responda pensando em um filho de cada vez. Você pode indicar o que ainda não sabe.
 
-**Encontrar um ponto de partida**
+Uma orientação do Sistema Zero Kids para mães, pais e responsáveis por crianças e adolescentes de 9 a 14 anos. Você pode responder pelo celular.
 
-## Pergunta 1: idade
+**Descobrir um caminho para meu filho**
+
+## Pergunta 1
 
 Qual é a faixa de idade do filho em quem você está pensando?
 
@@ -19,7 +23,7 @@ Qual é a faixa de idade do filho em quem você está pensando?
 - De 12 a 14 anos.
 - 15 anos ou mais.
 
-## Pergunta 2: o que você observa
+## Pergunta 2
 
 No último mês, qual destas atividades ele procurou com mais frequência por vontade própria?
 
@@ -34,7 +38,7 @@ Pense no que você observou. Outras atividades também podem fazer parte da roti
 - Variou bastante; não percebi uma atividade mais frequente.
 - Não sei dizer.
 
-## Pergunta 3: o que ele já comentou
+## Pergunta 3
 
 Quais destas vontades ele já expressou?
 
@@ -47,7 +51,7 @@ Pode marcar mais de uma. As opções “ainda não expressou” e “ainda não 
 - Ainda não expressou vontade de criar algo assim.
 - Ainda não sei dizer o que ele gostaria de criar.
 
-## Pergunta 4: o que importa para você
+## Pergunta 4
 
 O que você mais gostaria de encontrar numa atividade para ele agora?
 
@@ -60,19 +64,17 @@ Escolha até dois objetivos que tenham mais importância neste momento. Se sua p
 - O que procuro não aparece nessas opções.
 - Preciso conhecer atividades antes de escolher.
 
-## Pergunta adicional: prioridade entre dois objetivos
+## Prioridade entre os dois objetivos
 
 Você marcou dois objetivos. Qual deles gostaria de explorar primeiro?
 
-- {{primeiro_objetivo}}.
-- {{segundo_objetivo}}.
+- {{primeiro_objetivo_escolhido}}.
+- {{segundo_objetivo_escolhido}}.
 - Os dois têm o mesmo peso para mim.
 
-**Rever os objetivos que marquei**
+## Pergunta 5
 
-## Pergunta 5: sua principal dúvida
-
-O que você mais precisa esclarecer antes de escolher uma atividade?
+Ao pensar numa nova atividade para ele, qual é a sua principal dúvida?
 
 - Se ela vai despertar o interesse do meu filho.
 - Como ele vai conseguir começar.
@@ -82,7 +84,7 @@ O que você mais precisa esclarecer antes de escolher uma atividade?
 - Se o investimento cabe no nosso planejamento.
 - Ainda não tenho uma dúvida principal.
 
-## Pergunta 6: apoio na primeira tentativa
+## Pergunta 6
 
 Quando tenta aprender algo novo no computador, que apoio ele costuma procurar primeiro?
 
@@ -92,31 +94,31 @@ Quando tenta aprender algo novo no computador, que apoio ele costuma procurar pr
 - Varia bastante conforme a atividade.
 - Ainda não observei uma situação assim.
 
-## Pergunta 7: acompanhamento
+## Pergunta 7
 
-Na Comunidade, as aulas são gravadas: a criança pode pausar, rever um trecho e fazer a atividade no horário combinado pela família. Quando tem uma dúvida, pode pedir ajuda por mensagens. Esse apoio pode exigir espera; não há professor ao vivo durante a atividade.
+Que tipo de acompanhamento você consideraria para uma atividade em casa?
 
-Como esse formato se encaixa no que vocês procuram?
+Pense no apoio de que ele precisaria e na rotina da família. Você também pode indicar que ainda não sabe.
 
-- Esse formato pode funcionar para a nossa família.
-- Costumo preferir aulas ao vivo, mas quero conhecer essa alternativa.
-- Ainda preciso entender melhor como funcionaria.
+- Aulas gravadas para pausar e rever, com ajuda por mensagens quando precisar.
+- Prefiro aulas ao vivo, mas posso conhecer outras formas de acompanhamento.
+- Ainda não sei qual formato funcionaria melhor para nós.
 - Ter um professor ao vivo durante a atividade é indispensável.
 
-## Pergunta 8: computador
+## Pergunta 8
 
-Seu filho terá acesso a um computador com internet para fazer as atividades?
+Se ele quiser experimentar uma atividade no computador, como seria o acesso em casa?
 
-As ferramentas da Comunidade são usadas pelo navegador, com mouse e teclado.
+Pode ser um computador compartilhado. Considere o acesso à internet, ao mouse e ao teclado.
 
 - Sim, ele poderá usar um computador.
 - Temos computador, mas preciso organizar os horários de uso.
 - Por enquanto, só temos celular ou tablet disponíveis para ele.
 - Ainda preciso verificar.
 
-## Pergunta adicional: ferramenta para criar jogos
+## Preferência sobre criação de jogos
 
-Para a criação de jogos que vocês têm em mente, é indispensável usar alguma destas ferramentas?
+Se ele for experimentar criar jogos, usar uma ferramenta específica é indispensável?
 
 - Precisa ser Roblox.
 - Precisa ser Minecraft.
@@ -124,45 +126,23 @@ Para a criação de jogos que vocês têm em mente, é indispensável usar algum
 - Podemos conhecer outra ferramenta de criação de jogos.
 - Ainda preciso conversar sobre isso com meu filho.
 
-## Pergunta adicional: o lugar do desenho
+## Possibilidades com desenho
 
-Como você gostaria que o desenho participasse da atividade?
+Que possibilidade com desenho vocês gostariam de explorar?
 
 - Criando personagens e imagens para usar em jogos.
 - Quero uma atividade de desenho que não envolva jogos.
-- Quero conhecer um exemplo dessa integração antes de decidir.
+- Ainda não conheço essas possibilidades; gostaria de ver um exemplo.
 - O desenho é um interesse dele, mas não é uma condição para a nossa escolha.
-
-**Ver meu ponto de partida**
 
 ## Mensagem para idade fora da faixa
 
-Esta orientação foi preparada para a proposta da Comunidade, voltada a crianças e adolescentes de 9 a 14 anos.
+Esta orientação foi pensada para famílias com filhos de 9 a 14 anos.
 
-Isso não permite concluir o que seu filho consegue fazer. Para outra faixa de idade, vale conhecer a linguagem das aulas, o que elas pedem da criança e o apoio disponível antes de avaliar a proposta.
+Os exemplos e as sugestões deste quiz foram preparados para essa faixa. A idade informada, sozinha, não diz o que seu filho consegue fazer.
 
-**Voltar e conferir a faixa de idade**
+Para escolher uma atividade em outra fase, vale observar os interesses dele, a linguagem da orientação e o apoio de que precisa. Este quiz não vai indicar um caminho específico para essa idade.
 
-**Conhecer a proposta para 9 a 14 anos**
-
-## Controles e mensagens
-
-**Continuar**
-
-**Voltar**
-
-**Rever minhas respostas**
+**Corrigir a faixa de idade**
 
 **Responder pensando em outro filho**
-
-Escolha uma opção para continuar.
-
-Marque pelo menos uma opção para continuar. Você pode indicar que ainda não sabe.
-
-Escolha até dois objetivos. Para trocar um deles, desmarque uma opção.
-
-Use essa opção sozinha ou volte às escolhas anteriores.
-
-Não conseguimos guardar esta resposta agora. Suas escolhas continuam nesta tela. Tente novamente para seguir.
-
-**Tentar novamente**

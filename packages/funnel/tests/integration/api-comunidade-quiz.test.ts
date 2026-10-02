@@ -38,6 +38,22 @@ async function setup(answers: QuizAnswers = {}) {
 }
 
 describe('API do quiz da Comunidade', () => {
+  test('versão anterior inicia novo lead sem reinterpretar nem apagar respostas', async () => {
+    const oldAnswers = { ...fixture(), _quiz_version: 'comunidade-orientacao-v2' }
+    const { deps, id, repo } = await setup(oldAnswers)
+    const response = await createLead(request('POST', { funnel }, id), deps)
+    expect(response.status).toBe(201)
+    const next = await response.json()
+    expect(next.id).not.toBe(id)
+    expect(next.answers).toEqual({})
+    expect((await repo.getLead(id))?.quizAnswers).toEqual(oldAnswers)
+  })
+  test('versão vigente continua na mesma sessão', async () => {
+    const { deps, id } = await setup(fixture())
+    const response = await createLead(request('POST', { funnel }, id), deps)
+    expect(response.status).toBe(200)
+    expect((await response.json()).id).toBe(id)
+  })
   test('uma aba do primeiro filho não escreve no segundo, mesmo com revisão igual', async () => {
     const { deps, id, repo } = await setup(fixture())
     const { id: nextId } = await repo.createLead(funnel)

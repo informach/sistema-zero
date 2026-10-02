@@ -16,11 +16,11 @@ As aberturas aplicam a decisão da conversa: **a promessa orienta a headline; he
 
 As quatro páginas por motivação têm argumento central, demonstração descrita, integração da plataforma, defesa do formato assíncrono, benefícios complementares, comparação de alternativas, origem do produto, oferta, garantia, 40 respostas práticas agrupadas por assunto e fechamento. A oferta e as respostas factuais comuns foram mantidas consistentes. A sequência e o desenvolvimento principal variam conforme o perfil, assim como as seis primeiras dúvidas. As respostas usam âncoras estáveis para permitir alinhamento entre páginas.
 
-## Quiz de orientação: proposta posterior
+## Quiz de orientação para tráfego frio
 
 A [copy das perguntas](quiz-comunidade.md) e os [quatro resultados com variações](resultados-quiz.md) foram implementados localmente no quiz da Comunidade; ver [registro técnico e verificações](../quiz/implementacao.md). A promessa é ajudar a família a encontrar um ponto de partida para aprender criando. A identificação da prioridade comercial acontece pela mesma conversa, separando o interesse da criança das necessidades do responsável.
 
-Os resultados são uma biblioteca condicional: cada família recebe o texto pertinente às respostas e o botão da oferta correspondente. Na versão 2, o quiz tem oito perguntas principais e até três adicionais, preserva interesses combinados e oferece atividades com papel antes da compra. Empate, procura aberta e objetivo fora das opções têm textos próprios, sem inventar um perfil dominante. Não publicar todos os complementos como uma página única. Consulte a [visão geral](../quiz/README.md), a [pesquisa](../quiz/pesquisa-e-estrategia.md), a [lógica com destinos e casos de validação](../quiz/logica-e-validacao.md) e a [revisão aplicada](../quiz/revisao-proposta.md). O quiz é opcional e não altera o quiz do Desafio.
+Os resultados são uma biblioteca condicional: cada família recebe o texto pertinente às respostas e o botão da oferta correspondente. Na versão 3, o quiz fala com quem não conhece o produto: entrega a orientação e apresenta a Comunidade depois. Mantém oito perguntas principais e até três adicionais, interesses combinados e atividades com papel antes da compra. Empate, procura aberta e objetivo fora das opções têm textos próprios, sem inventar um perfil dominante. Não publicar todos os complementos como uma página única. Consulte a [visão geral](../quiz/README.md), a [pesquisa](../quiz/pesquisa-e-estrategia.md), a [lógica e validação](../quiz/logica-e-validacao.md) e a [revisão para tráfego frio](../quiz/revisao-trafego-frio.md). O quiz é opcional e não altera o quiz do Desafio.
 
 ## Página de continuidade
 

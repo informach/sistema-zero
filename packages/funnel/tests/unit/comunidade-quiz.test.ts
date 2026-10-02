@@ -6,6 +6,7 @@ import {
   isCommunityQuizComplete,
   QUIZ_VERSION,
 } from '../../src/funnels/comunidade-dos-criadores/quiz/engine'
+import { QUIZ_ENTRY } from '../../src/funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { COMMUNITY_QUESTIONS } from '../../src/funnels/comunidade-dos-criadores/quiz/questions'
 import { buildCommunityResult } from '../../src/funnels/comunidade-dos-criadores/quiz/result'
 import { orderedOptions } from '../../src/islands/ComunidadeQuiz'
@@ -26,6 +27,35 @@ export const communityAnswers = (patch: QuizAnswers = {}): QuizAnswers => ({
 })
 
 describe('Comunidade: resultado completo e destinos', () => {
+  test('entrada e perguntas falam com quem ainda não conhece o produto', () => {
+    const copy = JSON.stringify([
+      QUIZ_ENTRY,
+      COMMUNITY_QUESTIONS.map((s) => ({ title: s.titulo, help: s.subtitulo, options: s.opcoes })),
+    ])
+    expect(copy).not.toMatch(/Comunidade|Estúdio|Pinta|Jornada|Recados|esse formato/i)
+  })
+  test('todas as combinações entregam orientação antes de mencionar o produto', () => {
+    for (const q4 of [
+      ['A'],
+      ['B'],
+      ['C'],
+      ['D'],
+      ['A', 'B'],
+      ['C', 'D'],
+      ['outro'],
+      ['explorar'],
+    ]) {
+      const result = buildCommunityResult(
+        communityAnswers({ q4, qt: 'iguais', qb: 'flexivel', qc: 'interativo' }),
+      )!
+      expect(
+        JSON.stringify([result.reason, result.context, result.orientation, result.activity]),
+      ).not.toMatch(/Comunidade|Estúdio|Pinta|Jornada|Recados/i)
+      expect(result.introduction.paragraphs.join(' ')).toContain(
+        'plataforma por assinatura do Sistema Zero Kids',
+      )
+    }
+  })
   test('as quatro motivações levam às quatro páginas existentes', () => {
     for (const [profile, suffix] of [
       ['A', ''],

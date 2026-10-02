@@ -1,5 +1,7 @@
 # Exemplos completos de resultado: revisão 2
 
+Histórico editorial da v2. A sequência vigente foi refeita para tráfego frio na [revisão 3](revisao-trafego-frio.md); use a [copy atual](../copy/resultados-quiz.md) e apresente o produto somente depois de entregar a orientação.
+
 Cenários inventados para revisão editorial, sem depoimentos ou dados de crianças reais. Estes exemplos mostram como montar a biblioteca; não são novos resultados ou páginas implementadas. As notas de respostas, imagem e destino são internas, fora da copy pública.
 
 ## Exemplo 1: desenho e jogos, com prioridade visual

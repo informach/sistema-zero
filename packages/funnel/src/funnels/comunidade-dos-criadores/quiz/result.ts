@@ -2,7 +2,13 @@ import type { QuizAnswers } from '../../../lib/quiz-types'
 import { comunidadeOfferPath } from '../oferta'
 import { type CommunityProfile, type Condition, communityDecision, PROFILE_IDS } from './engine'
 import { OBJECTIVE_LABELS } from './questions'
-import { PRIMARY_COPY, RESULT_COPY, type ResultSection } from './result-copy'
+import {
+  CHOOSING_ACTIVITY,
+  COMMUNITY_INTRO,
+  PRIMARY_COPY,
+  RESULT_COPY,
+  type ResultSection,
+} from './result-copy'
 
 const moduleCopy = (key: string): ResultSection => {
   const section = RESULT_COPY[key]?.[0]
@@ -80,6 +86,14 @@ export function buildCommunityResult(answers: QuizAnswers) {
     activity = PRIMARY_COPY[activityProfile]!.sections[1]!
     bridge = PRIMARY_COPY[activityProfile]!.sections[2]!
   }
+  const orientation: ResultSection | null = decision.profile
+    ? CHOOSING_ACTIVITY[decision.profile]!
+    : decision.state === 'misto_sem_prioridade'
+      ? {
+          title: 'O que procurar para reunir esses objetivos',
+          paragraphs: decision.objectives.map((p) => CHOOSING_ACTIVITY[p]!.paragraphs[0]!),
+        }
+      : null
 
   const context: string[] = []
   const interests = decision.interests
@@ -181,7 +195,7 @@ export function buildCommunityResult(answers: QuizAnswers) {
     bridge = {
       title: 'O que a Comunidade oferece',
       paragraphs: [
-        'A Comunidade reúne aulas gravadas, criação de jogos no Estúdio e expressão visual integrada aos projetos. As telas abaixo mostram como a plataforma se organiza. Elas não resolvem as diferenças em relação aos requisitos que você informou.',
+        'O Estúdio é a ferramenta de criação de jogos da plataforma; o Pinta é o editor de desenhos que podem participar desses projetos. As telas abaixo mostram como a plataforma se organiza. As diferenças em relação aos requisitos que você informou continuam sendo importantes para a escolha.',
       ],
     }
     cta = moduleCopy('Botão quando há uma condição não atendida').cta!
@@ -199,6 +213,8 @@ export function buildCommunityResult(answers: QuizAnswers) {
     title,
     reason,
     context,
+    orientation,
+    introduction: COMMUNITY_INTRO,
     activity: activity!,
     bridge,
     cta,

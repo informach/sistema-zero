@@ -2,7 +2,7 @@ import type { SelecaoStep } from '../../../content/quiz-config'
 import type { QuizAnswers, QuizAnswerValue } from '../../../lib/quiz-types'
 import { COMMUNITY_QUESTIONS } from './questions'
 
-export const QUIZ_VERSION = 'comunidade-orientacao-v2'
+export const QUIZ_VERSION = 'comunidade-orientacao-v3'
 export const PROFILE_IDS = {
   A: 'tempo-de-tela',
   B: 'criacao-de-jogos',

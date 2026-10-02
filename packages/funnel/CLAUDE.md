@@ -248,7 +248,11 @@ com as quatro páginas e com `FAQ_VISUALS` já existem. Ver "Direção de arte d
 Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
 assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia na
 contratação inicial e em cada nova contratação anual via Pix, Mural de visitante após o fim).
-**Quiz da Comunidade (v2):** oito perguntas-base, QT/QB/QC condicionais, inputs nativos e
+**Quiz da Comunidade (v3, tráfego frio):** entrada e perguntas não pressupõem conhecer o produto.
+Resultado entrega orientação e atividade antes de apresentar a Comunidade e seus prints reais.
+Copy de entrada compartilhada em `quiz/entry-copy.ts`; perguntas de formato e equipamento tratam
+da rotina geral. `FunnelQuiz.version` inicia novo lead para respostas de versão anterior,
+preservando o lead antigo. Oito perguntas-base, QT/QB/QC condicionais, inputs nativos e
 respostas múltiplas em Q3/Q4. `QuizAnswers` aceita `string[]` no JSONB existente, sem migração.
 `FunnelQuiz.applyAnswer/isComplete` validam, limpam ramos inativos e recalculam o perfil. PATCH
 exige revisão e token da sessão, derivados da sessão atual; o cookie HttpOnly continua sendo a

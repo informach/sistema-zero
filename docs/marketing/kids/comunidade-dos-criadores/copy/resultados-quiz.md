@@ -1,12 +1,18 @@
 # Seu ponto de partida para aprender criando
 
-Esta sugestão parte do que você contou sobre seu filho e do que procura para a família. A primeira experiência pode acontecer em casa, com papel e uma conversa. Convide-o a participar e conheçam juntos o que dá vontade de continuar.
+Esta sugestão parte do que você contou sobre este momento da família. É um convite para experimentar e conversar com seu filho.
 
 ## Resultado A: Aprender criando no tempo de tela combinado
 
 ### O que pesou na sugestão
 
 Você quer incluir aprendizagem no tempo de tela que a família já permite. Um projeto pequeno pode dar um assunto concreto para acompanhar: o que seu filho escolheu fazer, o que experimentou e o que mudou.
+
+### Uma criação que vocês consigam acompanhar
+
+Ao escolher uma atividade, procure espaço para seu filho fazer escolhas e mostrar o que mudou depois de uma tentativa. Isso dá à família um assunto concreto para conversar sobre o aprendizado, dentro do tempo de tela que vocês já permitem.
+
+Um primeiro convite pode ser pequeno. Ele ajuda a perceber o que desperta a vontade de continuar e que apoio faz falta.
 
 ### Experimentem em casa: um personagem, uma regra
 
@@ -15,6 +21,12 @@ Você quer incluir aprendizagem no tempo de tela que a família já permite. Um 
 3. Deixe que ele altere a regra e mostre a diferença. Por exemplo: duas palmas fazem o personagem voltar uma casa.
 
 Pergunte: “O que mudou quando você trocou a regra?”. A ideia é conversar sobre uma escolha que ele acabou de fazer. Se não quiser participar agora, vocês podem retomar o convite em outro momento.
+
+### Conheça a Comunidade dos Criadores
+
+A Comunidade dos Criadores é a plataforma por assinatura do Sistema Zero Kids para crianças e adolescentes de 9 a 14 anos aprenderem criando jogos, com desenhos e personagens que podem fazer parte desses projetos.
+
+Ela reúne aulas gravadas, ferramentas de criação e ajuda por mensagens. Seu filho acompanha a orientação, faz uma tentativa e observa o que acontece. A seguir, você pode ver como essa proposta se relaciona com o que contou.
 
 ### Como isso se aproxima da criação no computador
 
@@ -32,6 +44,12 @@ Os horários e a duração continuam sendo combinados por vocês. Para as ativid
 
 Você procura um começo para a criação de jogos. Escolher uma regra pequena ajuda a sair de uma ideia grande, como “quero fazer um jogo”, para algo que dá para experimentar.
 
+### Uma ideia pequena o bastante para começar
+
+Gostar de jogar pode abrir uma conversa sobre criar, mas são experiências diferentes. Uma atividade interessante para esse começo explica um passo, permite testar uma regra e dá espaço para a criança decidir algo do próprio projeto.
+
+Em vez de começar com todas as ideias de um jogo grande, escolham uma ação que dê para experimentar. O exemplo abaixo ajuda a abrir essa conversa.
+
 ### Experimentem em casa: inventem uma regra de jogo
 
 1. Numa folha, desenhem um caminho, a chegada e um obstáculo. Usem uma tampinha como personagem.
@@ -40,9 +58,15 @@ Você procura um começo para a criação de jogos. Escolher uma regra pequena a
 
 Pergunte qual versão ele prefere e por quê. A escolha dá um começo à conversa sobre construir jogos. Gostar de jogar e querer criar podem caminhar juntos; o convite ajuda a conhecer se essa segunda possibilidade interessa a ele.
 
+### Conheça a Comunidade dos Criadores
+
+A Comunidade dos Criadores é a plataforma por assinatura do Sistema Zero Kids para crianças e adolescentes de 9 a 14 anos aprenderem criando jogos, com desenhos e personagens que podem fazer parte desses projetos.
+
+Ela reúne aulas gravadas, ferramentas de criação e ajuda por mensagens. Seu filho acompanha a orientação, faz uma tentativa e observa o que acontece. A seguir, você pode ver como essa proposta se relaciona com o que contou.
+
 ### Como essa ideia ganha vida na Comunidade
 
-No Estúdio, a criança monta comandos em blocos e testa o que acontece no jogo. As primeiras atividades usam elementos preparados e a orientação da aula. Isso permite começar pelas regras e acrescentar escolhas conforme entende a montagem.
+O Estúdio é a ferramenta de criação de jogos da plataforma. Nele, a criança monta comandos em blocos e testa o que acontece no jogo. As primeiras atividades usam elementos preparados e a orientação da aula. Isso permite começar pelas regras e acrescentar escolhas conforme entende a montagem.
 
 A demonstração mostra uma regra desligada e ligada. Compare o efeito no exemplo. É uma forma de conhecer o trabalho que acontece entre imaginar uma ação e fazê-la funcionar.
 
@@ -56,6 +80,12 @@ A entrada é guiada. Depois de concluir o curso obrigatório e publicar o projet
 
 Você quer dar espaço ao desenho em novas criações. Uma possibilidade é imaginar o que um personagem faria se alguém pudesse interagir com ele. Vale conhecer o interesse do seu filho por essa passagem.
 
+### Dar uma função à ideia que ele desenhou
+
+Um personagem pode ter aparência, história e ações. Imaginar o que aconteceria se alguém interagisse com ele é uma forma de aproximar desenho e criação de jogos.
+
+Vale descobrir se essa possibilidade interessa ao seu filho. Querer desenhar não significa, por si só, querer programar um jogo. O convite abaixo ajuda vocês a conversar sobre isso.
+
 ### Experimentem em casa: um personagem em dois momentos
 
 1. Seu filho escolhe um personagem que já desenhou ou faz um esboço simples.
@@ -64,9 +94,15 @@ Você quer dar espaço ao desenho em novas criações. Uma possibilidade é imag
 
 Conversem sobre a parte de que ele mais gostou: imaginar a aparência, a história ou a ação. A resposta ajuda a perceber se ele quer explorar também a interação. Não é necessário avaliar a qualidade do desenho.
 
+### Conheça a Comunidade dos Criadores
+
+A Comunidade dos Criadores é a plataforma por assinatura do Sistema Zero Kids para crianças e adolescentes de 9 a 14 anos aprenderem criando jogos, com desenhos e personagens que podem fazer parte desses projetos.
+
+Ela reúne aulas gravadas, ferramentas de criação e ajuda por mensagens. Seu filho acompanha a orientação, faz uma tentativa e observa o que acontece. A seguir, você pode ver como essa proposta se relaciona com o que contou.
+
 ### Como desenho e interação se encontram na Comunidade
 
-O Pinta é o espaço para trabalhar criações visuais. No Estúdio, uma arte pode participar do projeto, junto das regras que fazem o jogo funcionar. A demonstração mostra as telas desse caminho.
+O Pinta é o editor de desenhos da plataforma. O Estúdio é a ferramenta para montar as regras dos jogos. Uma arte criada no Pinta pode participar de um projeto no Estúdio, junto das regras que fazem o jogo funcionar. As telas mostram esse caminho.
 
 A criança começa com atividades guiadas de jogos. O Estúdio e o Pinta livres são liberados no posto Construtor, depois de concluir o curso obrigatório de entrada e publicar o projeto exigido. Uma foto do desenho não se transforma automaticamente num jogo: preparar a arte digital e montar a interação são partes da criação.
 
@@ -80,6 +116,12 @@ Na próxima página, veja essa integração e o percurso para chegar ao uso livr
 
 Você procura uma iniciação em programação com uma sequência para seguir. Um começo útil é conhecer o que está sendo praticado e relacionar a explicação a uma tentativa que seu filho consiga mostrar.
 
+### Uma sequência que faça sentido na prática
+
+Para conhecer programação, vale procurar uma orientação que ligue a explicação a algo que a criança possa fazer e testar. Seguir instruções, observar o efeito e ajustar uma parte do projeto oferece situações concretas para conversar sobre o que ela entendeu.
+
+Ao acompanhar, peça que mostre uma escolha ou uma mudança. A explicação dela acrescenta algo que a simples marcação de uma atividade concluída não mostra.
+
 ### Experimentem em casa: instruções que outra pessoa consegue seguir
 
 1. Desenhem uma grade de três por três casas e marquem uma partida e uma chegada. Usem uma tampinha como personagem.
@@ -88,9 +130,15 @@ Você procura uma iniciação em programação com uma sequência para seguir. U
 
 Pergunte qual mudança resolveu a diferença. Esse exercício oferece uma conversa sobre sequência e revisão. Ele não mede o nível de programação da criança nem comprova aprendizagem por si só.
 
+### Conheça a Comunidade dos Criadores
+
+A Comunidade dos Criadores é a plataforma por assinatura do Sistema Zero Kids para crianças e adolescentes de 9 a 14 anos aprenderem criando jogos, com desenhos e personagens que podem fazer parte desses projetos.
+
+Ela reúne aulas gravadas, ferramentas de criação e ajuda por mensagens. Seu filho acompanha a orientação, faz uma tentativa e observa o que acontece. A seguir, você pode ver como essa proposta se relaciona com o que contou.
+
 ### Como acompanhar esse começo na Comunidade
 
-As aulas apresentam tarefas de criação de jogos, e o Estúdio permite montar e testar as regras. A Jornada organiza o percurso e as condições de liberação. Os registros ajudam a localizar as atividades e produções para conversar com seu filho.
+As aulas apresentam tarefas de criação de jogos. O Estúdio, ferramenta de criação da plataforma, permite montar e testar as regras. A Jornada do Criador organiza as etapas e mostra as condições para liberar novas áreas. Os registros ajudam a localizar as atividades e produções para conversar com seu filho.
 
 Conheça o conteúdo disponível e peça que ele mostre uma escolha que fez. Uma atividade marcada como concluída é um registro do percurso; a conversa e a prática ajudam a conhecer o que foi compreendido.
 
@@ -176,7 +224,7 @@ Você prefere conhecer atividades antes de escolher uma prioridade. Comecem por 
 
 Numa folha, escrevam três possibilidades: inventar uma regra de jogo, desenhar um personagem em dois momentos ou planejar um caminho por instruções. Seu filho escolhe uma e conta a primeira coisa que faria. Se nenhuma interessar, pergunte o que ele gostaria de criar.
 
-Essa conversa já oferece uma informação útil: uma ideia que ele quer experimentar ou um sinal de que vale procurar outro tema. Na demonstração abaixo, vocês podem conhecer como uma aula e a área de criação aparecem juntas na Comunidade.
+Essa conversa já oferece uma informação útil: uma ideia que ele quer experimentar ou um sinal de que vale procurar outro tema. Ouça o motivo da escolha e qual seria o primeiro passo que ele gostaria de tentar.
 
 **Conhecer a proposta da Comunidade**
 
@@ -188,13 +236,13 @@ Você informou que seu objetivo não aparece entre as opções. Ainda precisamos
 
 Para organizar a procura, anote o que você espera de uma atividade. Depois, ouça o que seu filho gostaria de experimentar. Compare as duas ideias e escolham uma pergunta para levar a quem oferece o curso, como o conteúdo ensinado ou a ajuda disponível.
 
-A Comunidade trabalha com criação de jogos e expressão visual integrada a esses projetos. Você pode conhecer essa proposta e verificar o que ela oferece em relação ao seu objetivo.
+Usem essa conversa para comparar o que ele gostaria de experimentar com o que você espera da atividade. Como sua procura é outra, estas respostas ainda não permitem indicar um dos caminhos apresentados como prioridade.
 
 **Conhecer a proposta e conferir o que ela oferece**
 
 ## Quando existe um segundo objetivo
 
-Você também marcou {{objetivo_complementar}} como objetivo importante. Ele continua fazendo parte da escolha. A página seguinte apresenta os recursos da Comunidade a partir da prioridade que você escolheu explorar primeiro.
+Você também marcou {{objetivo_complementar}} como objetivo importante. Ele continua fazendo parte da escolha. Ao conhecer uma atividade, considere como ela dá espaço a esse segundo objetivo, além da prioridade que você escolheu explorar primeiro.
 
 ## Apoio: costuma rever uma explicação
 
@@ -246,13 +294,13 @@ As aulas gravadas permitem rever um trecho e fazer a tentativa no horário escol
 
 ## Formato: prefere ao vivo, mas considera outra possibilidade
 
-Você costuma preferir aulas ao vivo e está considerando outra possibilidade. Nas aulas gravadas, seu filho pode pausar para fazer a tarefa e voltar ao mesmo trecho. O apoio por mensagens permite enviar a dúvida e consultar a conversa depois; ele não oferece a intervenção imediata de um professor durante a atividade.
+Você contou que prefere aulas ao vivo, mas pode conhecer outros formatos. Na Comunidade, as aulas são gravadas: seu filho pode pausar para fazer a tarefa e voltar ao mesmo trecho. O apoio por mensagens permite enviar a dúvida e consultar a conversa depois; ele não oferece a intervenção imediata de um professor durante a atividade.
 
 As telas da próxima página mostram a aula, a prática e o pedido de ajuda. Use essa demonstração para conhecer o formato e avaliar o apoio de que seu filho precisaria no começo.
 
 ## Formato: quer conhecer melhor
 
-Nas telas da próxima página, veja onde a criança acompanha a explicação, faz a tentativa e pede ajuda. A aula pode ser revista e a dúvida pode ser enviada por mensagem. Algumas crianças precisam de companhia inicial para conhecer esses caminhos. A demonstração ajuda a entender a organização; o uso é que permitirá observar como ela funciona para seu filho.
+Você ainda não sabe qual formato funcionaria melhor para a família. Na Comunidade, a explicação é gravada, pode ser revista e a dúvida pode ser enviada por mensagem. Algumas crianças precisam de companhia inicial para conhecer esses caminhos. As telas ajudam a entender a organização; o uso é que permitirá observar como ela funciona para seu filho.
 
 ## Formato: professor ao vivo indispensável
 
@@ -296,33 +344,19 @@ Para participar das atividades digitais, a criança precisa ler e usar mouse e t
 
 ## Botão quando há uma condição não atendida
 
+
+
 **Conhecer a proposta e conferir seus requisitos**
 
 ## Depois do resultado
 
 Esta sugestão representa o que vocês procuram neste momento?
 
-**Sim, faz sentido**
-
-**Em parte**
-
-**Não representa**
-
-**Rever minhas respostas**
-
 **Responder pensando em outro filho**
 
 ## Se a sugestão representar apenas em parte ou não representar
 
 O que você gostaria de ajustar?
-
-**Os interesses do meu filho**
-
-**O que procuro na atividade**
-
-**O apoio de que precisamos**
-
-**Só quero registrar essa opinião**
 
 Sua opinião foi registrada nesta resposta.
 

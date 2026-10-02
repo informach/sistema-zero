@@ -1,6 +1,6 @@
 # Lógica, resultados, destinos e validação do quiz
 
-Versão vigente: `comunidade-orientacao-v2`, revisada e implementada localmente em 01/10/2026. Ver [implementação e verificação](implementacao.md). Esta versão substitui a regra Q4/Q5/QT da v1. Os IDs devem sempre ser interpretados junto da versão: Q5–Q8 foram renumerados.
+Versão vigente: `comunidade-orientacao-v3`, para tráfego frio, revisada em 01/10/2026. Ver [direção editorial e implementação](revisao-trafego-frio.md). Os códigos de respostas e as regras de prioridade da v2 permanecem, mas as perguntas e a apresentação mudaram. A v3 não reinterpreta respostas da v2: cria uma nova sessão de quiz e conserva o lead anterior. Q7 agora pergunta sobre preferência geral de acompanhamento, sem apresentar o formato de um produto desconhecido.
 
 Textos públicos: [perguntas](../copy/quiz-comunidade.md) e [resultados](../copy/resultados-quiz.md). Fundamentos: [pesquisa](pesquisa-e-estrategia.md). Mudanças e problemas corrigidos: [revisão da proposta](revisao-proposta.md).
 
@@ -143,17 +143,17 @@ Na presença de condição não atendida, manter a atividade caseira como sugest
 
 Os textos formam uma biblioteca condicional. Não concatenar todos os blocos.
 
-Os [exemplos completos](exemplos-de-resultado.md) demonstram uma montagem com interesses combinados e outra com empate e requisito não atendido. Títulos como “Resultado A” e nomes técnicos de módulos são identificadores editoriais; a interface publica apenas o título dirigido à família e o texto escolhido.
+Os [exemplos da v2](exemplos-de-resultado.md) conservam o histórico editorial. A sequência vigente é a descrita abaixo e na [revisão para tráfego frio](revisao-trafego-frio.md). Títulos como “Resultado A” e nomes técnicos de módulos são identificadores editoriais; a interface publica apenas o título dirigido à família e o texto escolhido.
 
 ### Prioridade definida
 
-1. Título do perfil, introdução breve e condição não atendida, se houver.
-2. Explicação da prioridade, contexto Q3 e segundo objetivo conhecido, se existir.
-3. Experiência completa de três passos e pergunta de observação.
-4. Adaptação para projeto atual, quando Q2 indicar tentativa de criação.
-5. Uma orientação de apoio Q6 e resposta à dúvida Q5, sem repetir explicações.
-6. Demonstração e ponte para a Comunidade, condicionadas à adequação.
-7. Formato, equipamento, requisitos comuns e CTA. Conservar os fatos essenciais, podendo combinar textos repetidos.
+1. Título, explicação da prioridade, contexto Q3 e segundo objetivo conhecido, se existir.
+2. Orientação sobre o que procurar numa atividade para esse momento da família.
+3. Experiência completa de três passos e pergunta de observação; adaptação para projeto atual quando Q2 indicar tentativa de criação.
+4. Apresentação explícita: o que é a Comunidade dos Criadores, de quem é, para quem é e o que reúne. Até aqui, a orientação anterior não pressupõe conhecer o produto.
+5. Condições não atendidas e pendências declaradas, todas abertas antes do convite comercial.
+6. Demonstração, explicação dos recursos e relação com a procura. Uma orientação de apoio Q6 e resposta à dúvida Q5, sem repetir explicações.
+7. Requisitos comuns e CTA para a página correspondente. Sem afirmar que a proposta atende a uma condição que não atende.
 8. Reconhecimento opcional e caminhos de revisão.
 
 As atividades propostas usam papel e objetos simples. Não dependem de cadastro, aula grátis, plataforma paga ou saber programar. São convites para conversar e experimentar, não avaliações de conhecimento. Um responsável pode usá-las em qualquer idade do recorte e ajustar a complexidade ao interesse observado; idade não define nível técnico.
@@ -219,24 +219,24 @@ Uma demonstração central, com sequência quando pertinente. Na implementação
 | Misto sem prioridade | Conhecer a proposta completa da Comunidade | /kids/comunidade-dos-criadores/oferta |
 | Exploratório | Conhecer a proposta da Comunidade | /kids/comunidade-dos-criadores/oferta |
 | Fora das opções | Conhecer a proposta e conferir o que ela oferece | /kids/comunidade-dos-criadores/oferta |
-| Idade fora do recorte, acesso informativo | Conhecer a proposta para 9 a 14 anos | /kids/comunidade-dos-criadores/oferta |
+| Idade fora do recorte | Orientação sobre o limite do quiz, correção de idade ou outro filho | Sem direcionamento comercial |
 
 Com condição não atendida, trocar o texto por **Conhecer a proposta e conferir seus requisitos**, sem alterar a rota. Usar o domínio do ambiente atual. Não incluir respostas na URL, não substituir as rotas por ?perfil=, não reintroduzir origem=desafio.
 
 A página /oferta/continuar atende relacionamento anterior com o produto e não é saída de avatar. O quiz não faz redirecionamento automático nem impede acesso direto às ofertas.
 
-## 9. Implementação posterior: implicações reais
+## 9. Implementação e contratos
 
-Rotas previstas: /kids/comunidade-dos-criadores/quiz e /kids/comunidade-dos-criadores/resultado. Na versão local consultada, quiz e resultado estão desativados na Comunidade. Esta revisão é documental.
+Rotas implementadas: /kids/comunidade-dos-criadores/quiz e /kids/comunidade-dos-criadores/resultado. A estrutura da v2 foi mantida e a jornada editorial foi refeita na v3 para visitantes que não conhecem o produto.
 
 Fontes: `packages/funnel/src/funnels/comunidade-dos-criadores/index.ts`, `packages/funnel/src/funnels/registry.ts`, `packages/funnel/src/content/quiz-config.ts`, `packages/funnel/src/pages/[audience]/[produto]/resultado.astro` e `packages/funnel/src/funnels/comunidade-dos-criadores/oferta/index.ts`.
 
-| Estado atual observado | Necessidade desta proposta |
+| Situação antes da primeira implementação | Contrato implementado a preservar |
 | --- | --- |
 | QuizAnswers admite string ou number por chave. | Modelar Q3/Q4 como conjuntos validados. Não concatenar opções em strings improvisadas; alterar contrato/serialização/schema com escopo compatível e conferir consumidores. |
 | Etapas atuais não declaram ramificação. | Representar QT/QB/QC, com validação do caminho ativo no cliente e servidor. |
 | isQuizComplete usa etapas configuradas. | Validar campos ativos, ignorar inativos e não transformar ausência em resposta negativa. |
-| Resultado pode priorizar perfil persistido. | Versionar e recalcular após edições; não reutilizar classificação v1 como v2. |
+| Resultado pode priorizar perfil persistido. | Versionar e recalcular após edições; não reutilizar respostas de outra versão como se fossem vigentes. |
 | Resultado compartilhado usa ?perfil=. | Aplicar mapa explícito para esta Comunidade e preservar o Desafio. |
 | Resultado depende da sessão do funil. | Permitir identificação técnica sem barreira de cadastro para revelar a orientação. |
 
@@ -250,7 +250,7 @@ Navegação e persistência:
 - Alterar QT não muda as condições de ativação QB/QC, que dependem do conjunto de objetivos, não só do principal.
 - Qualquer edição recalcula resultado, condições e link. Mudar Q1 para fora do recorte invalida o resultado e leva à mensagem própria.
 - Exigir todos os campos ativos. Não completar por tempo de espera, fallback de rede ou respostas de sessão anterior.
-- Mostrar progresso por etapas: Sobre seu filho / O que vocês procuram / Como funcionaria. Não anunciar um total fixo que muda silenciosamente.
+- Mostrar progresso por etapas: Sobre seu filho / O que vocês procuram / A rotina de vocês. Não anunciar um total fixo que muda silenciosamente.
 - Controles acessíveis por teclado, mensagens junto ao campo e foco previsível. Ao selecionar opção exclusiva, informar que ela substitui as outras.
 - Novo filho inicia um conjunto separado de respostas. Tratar retorno/atualização de página sem misturar irmãos.
 - Dados mínimos, sem nome, escola, renda, diagnóstico ou texto livre sobre a criança. Definir retenção antes de lançar e separar abandono de incompatibilidade.

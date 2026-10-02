@@ -1,5 +1,7 @@
 # Implementação do quiz da Comunidade
 
+Versão vigente: v3, refeita para tráfego frio. A [revisão correspondente](revisao-trafego-frio.md) registra as alterações e a nova verificação. As entregas e contagens abaixo documentam a implementação original da v2.
+
 Especificação: [proposta v2](logica-e-validacao.md), autorizada para implementação em 01/10/2026. Implementado localmente em 01/10/2026, preservando as alterações anteriores das ofertas. Sem publicação ou deploy nesta etapa.
 
 ## Arquitetura e entregas
