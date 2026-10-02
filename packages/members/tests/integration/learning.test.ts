@@ -515,6 +515,43 @@ describe('learning activities and sections', () => {
     ).toBe(404)
   })
 
+  test('a dúvida mostra ao professor o NOME DO CURSO, na lista e na conversa aberta', async () => {
+    const ctx = setup()
+    const course = ctx.courses.courses.find((c) => c.id === ctx.courseId)
+    if (!course) throw new Error('Missing fixture')
+    const sent = await ctx.request(`/lessons/${ctx.lessonId}/section-help`, 'POST', {
+      sectionId: ctx.lessonId,
+      body: 'Não entendi a ordem.',
+    })
+    const { threadId } = (await sent.json()) as { threadId: string }
+
+    const list = await ctx.request('/admin/teacher-threads', 'GET', undefined, randomUUID(), true)
+    expect(list.status).toBe(200)
+    const rows = (await list.json()) as { threads: Array<{ id: string; courseTitle: unknown }> }
+    expect(rows.threads.find((t) => t.id === threadId)?.courseTitle).toBe(course.title)
+
+    const open = await ctx.request(
+      `/admin/teacher-threads/${threadId}`,
+      'GET',
+      undefined,
+      randomUUID(),
+      true,
+    )
+    expect(open.status).toBe(200)
+    expect(((await open.json()) as { courseTitle: unknown }).courseTitle).toBe(course.title)
+
+    // O título é o do curso VIVO: renomear o curso vale também para a conversa antiga.
+    course.title = 'Curso renomeado'
+    const renamed = await ctx.request(
+      `/admin/teacher-threads/${threadId}`,
+      'GET',
+      undefined,
+      randomUUID(),
+      true,
+    )
+    expect(((await renamed.json()) as { courseTitle: unknown }).courseTitle).toBe('Curso renomeado')
+  })
+
   test('essential HTML must have a native server checkpoint and iframe claims do not pass it', async () => {
     const ctx = setup()
     const html: InteractiveBlock = {

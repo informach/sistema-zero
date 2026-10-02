@@ -41,6 +41,8 @@ export interface TeacherThreadView {
   contextType: TeacherThreadContext
   contextRef: string | null
   courseId: string | null
+  /** Título atual do curso: o professor precisa saber de que curso é a conversa. */
+  courseTitle: string | null
   lessonId: string | null
   title: string | null
   lastMessageAt: string
@@ -59,6 +61,7 @@ export interface TeacherThreadSummaryView {
   contextType: TeacherThreadContext
   contextRef: string | null
   courseId: string | null
+  courseTitle: string | null
   lessonId: string | null
   title: string | null
   lastMessageAt: string
@@ -92,6 +95,7 @@ function toThreadView(thread: TeacherThreadRecord, page: TeacherMessagePage): Te
     contextType: thread.contextType,
     contextRef: thread.contextRef,
     courseId: thread.courseId,
+    courseTitle: thread.courseTitle ?? null,
     lessonId: thread.lessonId,
     title: thread.title,
     lastMessageAt: thread.lastMessageAt.toISOString(),
@@ -136,6 +140,7 @@ function toSummaryView(s: TeacherThreadSummary): TeacherThreadSummaryView {
     contextType: s.contextType,
     contextRef: s.contextRef,
     courseId: s.courseId,
+    courseTitle: s.courseTitle,
     lessonId: s.lessonId,
     title: s.title,
     lastMessageAt: s.lastMessageAt.toISOString(),

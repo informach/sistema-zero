@@ -29,6 +29,12 @@ export interface TeacherThreadRecord {
   /** Snapshot SEM FK: blockId (entrega) | threadId do hub (Mural) | null (geral). */
   contextRef: string | null
   courseId: string | null
+  /**
+   * Título ATUAL do curso (lido do curso vivo, não guardado na conversa). Assim o
+   * professor sabe de que curso é a dúvida também nas conversas antigas. `null` quando
+   * a conversa não é de curso ou o curso foi apagado. Opcional: só a leitura o traz.
+   */
+  courseTitle?: string | null
   lessonId: string | null
   title: string | null
   lastMessageAt: Date
@@ -75,6 +81,8 @@ export interface TeacherThreadSummary {
   contextType: TeacherThreadContext
   contextRef: string | null
   courseId: string | null
+  /** Título atual do curso (ver `TeacherThreadRecord.courseTitle`). */
+  courseTitle: string | null
   lessonId: string | null
   title: string | null
   lastMessageAt: Date

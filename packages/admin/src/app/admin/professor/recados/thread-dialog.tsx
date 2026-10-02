@@ -13,6 +13,7 @@ import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { LessonLearningPanel } from '@/components/professor/lesson-learning-panel'
 import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { threadSubject } from '@/lib/teacher-thread-subject'
 import type { TeacherThreadView } from '@/lib/types'
 
 /** Teto do corpo — espelha o DTO do members (`TeacherThreadReplyBody`). */
@@ -145,7 +146,9 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
           </div>
         ) : (
           <div className="space-y-3">
-            {thread.title ? <p className="text-xs text-muted-foreground">{thread.title}</p> : null}
+            {threadSubject(thread) ? (
+              <p className="text-xs text-muted-foreground">{threadSubject(thread)}</p>
+            ) : null}
             <label className="block text-sm">
               Atendimento da equipe
               <select

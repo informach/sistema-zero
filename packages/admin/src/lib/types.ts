@@ -842,6 +842,8 @@ export interface TeacherThreadView {
   contextType: TeacherThreadContext
   contextRef: string | null
   courseId: string | null
+  /** Título ATUAL do curso (ausente num members antigo; null sem curso). */
+  courseTitle?: string | null
   lessonId: string | null
   title: string | null
   lastMessageAt: string
@@ -860,6 +862,8 @@ export interface TeacherThreadSummaryView {
   contextType: TeacherThreadContext
   contextRef: string | null
   courseId: string | null
+  /** Título ATUAL do curso (ausente num members antigo; null sem curso). */
+  courseTitle?: string | null
   lessonId: string | null
   title: string | null
   lastMessageAt: string
