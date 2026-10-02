@@ -31,6 +31,24 @@ const stages = [
   ['comeco', 'A rotina de vocês'],
 ] as const
 
+/** O chip de cada etapa: o mesmo desenho dos capítulos da oferta (ícone e cor de unidade). */
+const STAGE_CHIP = {
+  filho: { cor: 'cor-azul', icone: 'face', texto: 'O que chama a atenção dele' },
+  objetivos: { cor: 'cor-rosa', icone: 'favorite', texto: 'O que importa para você' },
+  comeco: { cor: 'cor-verde', icone: 'schedule', texto: 'O que cabe na rotina de vocês' },
+} as const
+
+function Eyebrow({ icon, children }: { icon: string; children: string }) {
+  return (
+    <span className="kof-eyebrow">
+      <span className="material-symbols-rounded" aria-hidden="true">
+        {icon}
+      </span>
+      {children}
+    </span>
+  )
+}
+
 /** Stable within a lead, including refreshes; ordering never changes the decision. */
 export function orderedOptions(step: SelecaoStep, seed: string): SelecaoStep['opcoes'] {
   if (step.key === 'qt') {
@@ -179,7 +197,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
     return (
       <main id="quiz" className="wrap cq-intro">
         <div className="cq-intro-copy">
-          <span className="cq-badge">Uma descoberta para a família · 9 a 14 anos</span>
+          <Eyebrow icon="family_star">Uma descoberta para a família · 9 a 14 anos</Eyebrow>
           <h1 className="kof-display">
             {QUIZ_ENTRY.titleStart}
             <em>{QUIZ_ENTRY.emphasis}</em>
@@ -223,7 +241,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
           </p>
         </div>
         <div className="cq-hero-art">
-          <span className="cq-badge">Um interesse. Várias possibilidades.</span>
+          <Eyebrow icon="auto_awesome">Um interesse. Várias possibilidades.</Eyebrow>
           <ul className="cq-possibilities">
             {QUIZ_ENTRY.possibilities.map((item) => (
               <li key={item.icon}>
@@ -253,7 +271,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
     return (
       <main id="quiz" className="wrap cq-flow">
         <div className="cq-panel">
-          <span className="cq-badge">Sobre a faixa de idade</span>
+          <Eyebrow icon="cake">Sobre a faixa de idade</Eyebrow>
           <h1 ref={heading} tabIndex={-1} className="kof-display">
             Esta orientação foi pensada para famílias com filhos de 9 a 14 anos.
           </h1>
@@ -288,7 +306,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
     return (
       <main id="quiz" className="wrap cq-flow">
         <div className="cq-panel">
-          <span className="cq-badge">Suas respostas</span>
+          <Eyebrow icon="checklist">Suas respostas</Eyebrow>
           <h1 ref={heading} tabIndex={-1} className="kof-display">
             O que você gostaria de ajustar?
           </h1>
@@ -348,24 +366,38 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
 
   if (!step) return null
   const position = steps.findIndex((s) => s.key === step.key)
+  const stageIndex = stages.findIndex(([id]) => id === step.etapa)
+  const chip = STAGE_CHIP[step.etapa as keyof typeof STAGE_CHIP] ?? STAGE_CHIP.filho
   return (
     <main id="quiz" className="wrap cq-flow">
       <ol className="cq-stages" aria-label="Etapas do quiz">
         {stages.map(([id, title], i) => (
-          <li key={id} aria-current={step.etapa === id ? 'step' : undefined}>
-            <span>{i + 1}</span>
+          <li
+            key={id}
+            aria-current={step.etapa === id ? 'step' : undefined}
+            data-estado={i < stageIndex ? 'feita' : i === stageIndex ? 'atual' : 'depois'}
+          >
+            <span>
+              {i < stageIndex ? (
+                <span className="material-symbols-rounded" aria-hidden="true">
+                  check
+                </span>
+              ) : (
+                i + 1
+              )}
+            </span>
             {title}
+            {i < stageIndex && <span className="sr-only"> (concluída)</span>}
           </li>
         ))}
       </ol>
-      <div className="cq-panel">
-        <p className="kof-sobretitulo">
-          {step.etapa === 'filho'
-            ? 'O que chama a atenção dele'
-            : step.etapa === 'objetivos'
-              ? 'O que importa para você'
-              : 'O que cabe na rotina de vocês'}
-        </p>
+      <div className={`cq-panel ${chip.cor}`}>
+        <span className="cap-chip">
+          <span className="material-symbols-rounded cap-chip-icone" aria-hidden="true">
+            {chip.icone}
+          </span>
+          <span className="cap-chip-texto">{chip.texto}</span>
+        </span>
         <h1 className="kof-display" ref={heading} tabIndex={-1}>
           {step.titulo}
         </h1>
@@ -381,6 +413,12 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
           seed={session?.id ?? ''}
           busy={busy}
           blocked={conflict}
+          submitLabel={
+            step.key === 'q8' &&
+            steps.every((s) => s.key === step.key || validChoice(s, current[s.key]))
+              ? 'Ver a sugestão para meu filho'
+              : 'Continuar'
+          }
           onSave={save}
         />
         {errorView}
@@ -416,6 +454,7 @@ function Question({
   seed,
   busy,
   blocked,
+  submitLabel,
   onSave,
 }: {
   step: SelecaoStep
@@ -423,6 +462,7 @@ function Question({
   seed: string
   busy: boolean
   blocked: boolean
+  submitLabel: string
   onSave: (value: QuizAnswerValue) => Promise<void>
 }) {
   const [selected, setSelected] = useState<string[]>(
@@ -495,7 +535,7 @@ function Question({
         className="kof-btn kof-btn--grande cq-continue"
         disabled={busy || blocked}
       >
-        {busy ? 'Salvando…' : 'Continuar'}
+        {busy ? 'Salvando…' : submitLabel}
         <span aria-hidden="true">→</span>
       </button>
     </form>

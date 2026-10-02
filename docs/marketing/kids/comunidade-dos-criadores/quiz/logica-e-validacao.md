@@ -1,6 +1,6 @@
 # Lógica, resultados, destinos e validação do quiz
 
-Versão vigente: `comunidade-orientacao-v3`, para tráfego frio, revisada em 01/10/2026. Ver [direção editorial e implementação](revisao-trafego-frio.md). Os códigos de respostas e as regras de prioridade da v2 permanecem, mas as perguntas e a apresentação mudaram. A v3 não reinterpreta respostas da v2: cria uma nova sessão de quiz e conserva o lead anterior. Q7 agora pergunta sobre preferência geral de acompanhamento, sem apresentar o formato de um produto desconhecido.
+Versão vigente: `comunidade-orientacao-v4`, revisada em 02/10/2026. Ver [revisão das perguntas e da argumentação](revisao-argumentacao-personalizada.md). Os códigos de respostas e as regras de prioridade permanecem, mas a formulação e a ordem das perguntas mudaram. A v4 inicia uma nova sessão para respostas de versões anteriores e conserva o lead original. A [direção para tráfego frio](revisao-trafego-frio.md) continua válida.
 
 Textos públicos: [perguntas](../copy/quiz-comunidade.md) e [resultados](../copy/resultados-quiz.md). Fundamentos: [pesquisa](pesquisa-e-estrategia.md). Mudanças e problemas corrigidos: [revisão da proposta](revisao-proposta.md).
 
@@ -19,25 +19,25 @@ Não calcular talento, personalidade, autonomia, estilo de aprendizagem, nível 
 
 ## 2. Percurso mais curto e perguntas com função definida
 
-Ordem: Q1 → Q2 → Q3 → Q4 → QT quando houver dois objetivos → Q5 → Q6 → Q7 → Q8 → QB quando pertinente → QC quando pertinente → resultado.
+Ordem: Q1 → Q2 → Q3 → Q6 → Q5 → Q4 → QT quando houver dois objetivos → QB quando pertinente → QC quando pertinente → Q7 → Q8 → resultado. Os IDs são estáveis e não indicam a posição visual. A sequência começa pela situação observada, passa por dificuldade/dúvida, explora a necessidade e confere condições de participação.
 
 Oito perguntas principais, com até três adicionais. Percurso de oito a onze perguntas para a faixa da oferta. A v1 tinha nove perguntas principais e podia repetir a mesma decisão em Q4, Q5 e QT. A pergunta sobre critério de continuidade foi retirada; a versão atual pede os objetivos uma vez e só esclarece sua prioridade quando dois foram escolhidos.
 
 | ID | Conteúdo | Formato | Efeito |
 | --- | --- | --- | --- |
-| Q1 | Faixa etária | Uma opção. | Confere o recorte 9–14. |
+| Q1 | Faixa etária | Uma opção. | Confere o recorte 9–14 e adapta a apresentação do convite para experimentar; não infere capacidade ou nível técnico. |
 | Q2 | Atividade espontânea mais observada no último mês | Uma opção, com alternativas para variação e desconhecimento. | Contexto factual e identificação de temas a conferir em QB/QC. |
 | Q3 | Vontades já expressas | Seleção múltipla. | Preserva combinações reais, escolhe contexto e também informa QB/QC. |
 | Q4 | Objetivos mais importantes para a família | Um ou dois objetivos, ou uma saída exclusiva. | Define motivo ou candidatos. |
 | QT | Qual dos dois objetivos explorar primeiro | Uma opção entre os dois, ou mesmo peso. | Escolhe prioridade sem presumir desempate. |
 | Q5 | Principal dúvida de escolha | Uma opção. | Seleciona orientação útil ao adulto. |
 | Q6 | Apoio procurado pela criança | Uma opção. | Orienta como acompanhar a primeira tentativa. |
-| Q7 | Adequação do acompanhamento gravado com mensagens | Uma opção. | Distingue abertura, preferência e exigência de ao vivo. |
+| Q7 | Preferência de acompanhamento em casa | Uma opção. | Distingue abertura, preferência e exigência de ao vivo; seleciona a explicação do formato no resultado. |
 | Q8 | Computador disponível | Uma opção. | Orienta equipamento e organização. |
 | QB | Exigência de ferramenta para jogos | Uma opção, se ativa. | Confere requisito que pode aparecer em qualquer perfil. |
 | QC | Papel do desenho | Uma opção, se ativa. | Confere se a integração com jogos corresponde à procura. |
 
-O quiz identifica o Sistema Zero e sua proposta. Q7 explica o funcionamento antes de pedir a avaliação da família. O resultado é entregue na tela, sem exigir nome, telefone ou e-mail. Não prometer duração em minutos antes de medir.
+O quiz identifica o Sistema Zero como autor. Q7 pergunta sobre preferência de acompanhamento sem anunciar as vantagens do produto nas alternativas. O funcionamento da Comunidade é explicado no resultado, depois da orientação inicial. O resultado é entregue na tela, sem exigir nome, telefone ou e-mail. Não prometer duração em minutos antes de medir.
 
 ## 3. IDs e valores válidos
 
@@ -83,7 +83,7 @@ Os campos da copy são preenchidos por esta lista fechada, sem texto livre. Para
 | C | desenho em novas criações |
 | D | uma sequência de iniciação em programação |
 
-Na pergunta, preencher primeiro_objetivo e segundo_objetivo com os dois escolhidos. No resultado de prioridade definida, preencher objetivo_complementar com o outro selecionado. Omitir o bloco inteiro quando só houver um objetivo. Não publicar chaves de template nem mostrar as quatro alternativas em QT.
+Na pergunta, exibir somente os dois objetivos escolhidos e a opção de mesmo peso. No resultado de prioridade definida, selecionar o parágrafo concreto do objetivo complementar em `SECONDARY_CONTEXT`. Omitir esse parágrafo quando só houver um objetivo. Não publicar chaves de template nem mostrar as quatro alternativas em QT.
 
 Para dois objetivos com prioridade, o outro é registrado como complementar. Para empate, os dois ficam em `objetivos_declarados`, sem inventar principal ou secundário. Para exploração e outro objetivo, não registrar A como perfil. Guardar separadamente `perfil_principal`, `estado` e `destino_oferta`.
 
@@ -108,7 +108,7 @@ Quando Q2=`criar_jogo`, usar também o convite a conversar sobre um projeto atua
 
 Se Q2 e Q3 trouxerem temas diferentes, podem coexistir. Comportamento mais frequente e vontade expressa não são a mesma pergunta. Não exigir que se confirmem.
 
-Preservar o segundo objetivo de Q4 no resultado: acrescentar a frase “Você também marcou...” com seu nome público, usando a opção correspondente de QT. Não substituir o nome por “outro objetivo” quando já sabemos qual é. Seleção múltipla não cria ranking entre interesses; não escolher o primeiro clique como o mais forte.
+Preservar o segundo objetivo de Q4 no resultado com uma orientação própria para aprendizagem no tempo de tela, jogos, desenho ou programação. Não substituir a necessidade conhecida por “outro objetivo”. Seleção múltipla não cria ranking entre interesses; não escolher o primeiro clique como o mais forte.
 
 ## 6. Qualificações atravessam os quatro perfis
 
@@ -143,20 +143,23 @@ Na presença de condição não atendida, manter a atividade caseira como sugest
 
 Os textos formam uma biblioteca condicional. Não concatenar todos os blocos.
 
-Os [exemplos da v2](exemplos-de-resultado.md) conservam o histórico editorial. A sequência vigente é a descrita abaixo e na [revisão para tráfego frio](revisao-trafego-frio.md). Títulos como “Resultado A” e nomes técnicos de módulos são identificadores editoriais; a interface publica apenas o título dirigido à família e o texto escolhido.
+Os [exemplos da v2](exemplos-de-resultado.md) conservam o histórico editorial. Os [exemplos completos da v4](exemplos-de-resultado-v4.md) mostram a montagem atual. Títulos como “Resultado A” e nomes técnicos de módulos são identificadores editoriais; a interface publica apenas o título dirigido à família e o texto escolhido.
 
 ### Prioridade definida
 
-1. Título, explicação da prioridade, contexto Q3 e segundo objetivo conhecido, se existir.
+1. Título, explicação da prioridade, contexto de Q2/Q3 e segundo objetivo conhecido, se existir.
 2. Orientação sobre o que procurar numa atividade para esse momento da família.
 3. Experiência completa de três passos e pergunta de observação; adaptação para projeto atual quando Q2 indicar tentativa de criação.
 4. Apresentação explícita: o que é a Comunidade dos Criadores, de quem é, para quem é e o que reúne. Até aqui, a orientação anterior não pressupõe conhecer o produto.
-5. Condições não atendidas e pendências declaradas, todas abertas antes do convite comercial.
-6. Demonstração, explicação dos recursos e relação com a procura. Uma orientação de apoio Q6 e resposta à dúvida Q5, sem repetir explicações.
-7. Requisitos comuns e CTA para a página correspondente. Sem afirmar que a proposta atende a uma condição que não atende.
-8. Reconhecimento opcional e caminhos de revisão.
+5. Condições não atendidas, quando houver, antes das demonstrações comerciais.
+6. Demonstração específica do perfil e explicação de como a criação se relaciona com a procura. Em seguida: formato conforme Q7 com print da pausa; apoio conforme Q6 com pedido de ajuda e Recados; dúvida Q5 com prova pertinente. Quando Q5 é ajuda, a resposta já está no apoio. A exigência de professor ao vivo permanece no aviso e não recebe uma recomendação de aulas gravadas.
+7. Pendências práticas de ferramenta, desenho e computador, quando houver. Formato já foi explicado e não é repetido. Quando a integração do desenho é a demonstração principal, a dúvida sobre essa integração é desenvolvida ali.
+8. Requisitos comuns e CTA para a página correspondente. Sem afirmar que a proposta atende a uma condição que não atende.
+9. Reconhecimento opcional e caminhos de revisão.
 
 As atividades propostas usam papel e objetos simples. Não dependem de cadastro, aula grátis, plataforma paga ou saber programar. São convites para conversar e experimentar, não avaliações de conhecimento. Um responsável pode usá-las em qualquer idade do recorte e ajustar a complexidade ao interesse observado; idade não define nível técnico.
+
+Na segunda revisão da v4, o convite segue esta precedência: quando a atividade selecionada é C e QC pede desenho sem jogos, usa a experiência visual independente; quando Q2 relata tentativa de criar, parte da ideia ou projeto já tentado, com alternativa em papel; para 12–14 anos, usa exemplos de criação de regras e esboços; nos demais casos, usa a atividade padrão. A precedência vale também para a atividade escolhida em resultados mistos. A classificação e os quatro destinos não mudam. Quando Q2 e Q3 apontam para o mesmo interesse, o contexto une as respostas numa explicação, em vez de repeti-las.
 
 ### Dois objetivos com o mesmo peso
 

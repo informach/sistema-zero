@@ -1,7 +1,4 @@
 /* Mesmo sistema de receitas e tokens das ofertas; composição do quiz e resultado. */
-.cq {
-  min-height: 100vh;
-}
 .cq .cq-nav-label {
   font-weight: 800;
   font-size: 0.875rem;
@@ -18,31 +15,42 @@
   display: grid;
   gap: 1.4rem;
 }
+/* As pílulas do quiz têm a largura do texto (numa grade, elas esticavam até a borda). */
+.cq .kof-eyebrow {
+  justify-self: start;
+  width: fit-content;
+}
 .cq .cq-intro h1 {
   font-size: clamp(2.25rem, 4vw, 3.5rem);
 }
-.cq .cq-badge {
-  display: inline-flex;
-  width: fit-content;
-  padding: 0.45rem 0.9rem;
-  border-radius: 999px;
-  background: var(--kof-amarelo);
-  color: var(--kof-tinta);
-  font-size: 0.8rem;
-  font-weight: 800;
-}
 .cq .cq-intro-points {
   display: grid;
-  gap: 0.55rem;
+  gap: 0.7rem;
   margin: 0;
   padding: 0;
   list-style: none;
   font-weight: 800;
 }
+.cq .cq-intro-points li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 .cq .cq-intro-points li::before {
-  content: "✓";
-  margin-right: 0.65rem;
-  color: var(--kof-acao);
+  content: "check";
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: var(--kof-menta);
+  color: var(--kof-verde);
+  font-family: "Material Symbols Rounded", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1;
+  translate: 0 -0.06em;
 }
 .cq .cq-hero-art {
   position: relative;
@@ -167,6 +175,7 @@
   margin: 0 0 1.5rem;
 }
 .cq .cq-stages li {
+  position: relative;
   display: flex;
   gap: 0.55rem;
   align-items: center;
@@ -174,7 +183,19 @@
   font-weight: 800;
   color: var(--kof-tinta-suave);
 }
-.cq .cq-stages li span {
+/* A linha que liga uma etapa à seguinte: cheia nas etapas já feitas. */
+.cq .cq-stages li:not(:last-child)::after {
+  content: "";
+  flex: 1;
+  height: 3px;
+  margin-inline: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--kof-linha);
+}
+.cq .cq-stages li[data-estado="feita"]:not(:last-child)::after {
+  background: var(--kof-acao);
+}
+.cq .cq-stages li > span {
   width: 2rem;
   display: grid;
   place-items: center;
@@ -182,15 +203,22 @@
   height: 2rem;
   border-radius: 50%;
   background: var(--kof-carta);
-  border: 1px solid var(--kof-linha);
+  border: 2px solid var(--kof-linha);
+}
+.cq .cq-stages li > span .material-symbols-rounded {
+  font-size: 1.125rem;
 }
 .cq .cq-stages [aria-current] {
   color: var(--kof-acao);
 }
-.cq .cq-stages [aria-current] span {
+.cq .cq-stages [aria-current] > span,
+.cq .cq-stages [data-estado="feita"] > span {
   background: var(--kof-acao);
   color: var(--kof-sobre-acao);
   border-color: var(--kof-acao);
+}
+.cq .cq-stages [data-estado="feita"] {
+  color: var(--kof-tinta);
 }
 .cq .cq-panel {
   padding: clamp(1.25rem, 4vw, 2.5rem);
@@ -200,6 +228,13 @@
 }
 .cq .cq-panel > * + * {
   margin-top: 1.25rem;
+}
+/* O painel que já é uma coluna de prosa usa o espaço da prosa (somar os dois dobrava o vão). */
+.cq .cq-panel.cq-prose > * + * {
+  margin-top: 0;
+}
+.cq .cq-panel .cap-chip + h1 {
+  margin-top: 1rem;
 }
 .cq .cq-panel h1 {
   font-size: clamp(1.65rem, 3vw, 2.4rem);
@@ -224,21 +259,45 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  min-height: 3.65rem;
-  padding: 0.9rem 1rem;
+  min-height: 3.75rem;
+  padding: 0.9rem 1.125rem;
   border: 2px solid var(--kof-linha);
   border-radius: 16px;
   cursor: pointer;
   font-weight: 700;
   line-height: 1.4;
   background: var(--kof-carta);
+  /* O degrau das cartas clicáveis da plataforma: a escolha parece um botão de apertar. */
+  box-shadow: 0 3px 0 var(--kof-linha);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    translate 0.1s ease,
+    box-shadow 0.1s ease;
 }
 .cq .cq-option:hover {
   border-color: var(--kof-acao);
+  box-shadow: 0 3px 0 color-mix(in oklab, var(--kof-acao) 45%, var(--kof-linha));
+}
+.cq .cq-option:active {
+  translate: 0 2px;
+  box-shadow: 0 1px 0 var(--kof-linha);
 }
 .cq .cq-option:has(input:checked) {
   background: var(--kof-azul-fundo);
   border-color: var(--kof-acao);
+  box-shadow: 0 3px 0 var(--kof-acao);
+}
+.cq .cq-option > span {
+  flex: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cq .cq-option {
+    transition: none;
+  }
+  .cq .cq-option:active {
+    translate: none;
+  }
 }
 .cq .cq-option:has(input:focus-visible) {
   outline: 3px solid var(--kof-acao);
@@ -290,16 +349,133 @@
   color: var(--kof-tinta-suave);
 }
 .cq .cq-result {
-  padding-block: clamp(2.5rem, 5vw, 5rem);
+  padding-bottom: clamp(2.5rem, 5vw, 4rem);
 }
-.cq .cq-result-head {
-  max-width: 52rem;
-  margin-inline: auto;
+.cq .cq-res-hero {
+  padding-block: clamp(2.75rem, 6vw, 5rem) clamp(1rem, 3vw, 2rem);
+}
+.cq .cq-res-hero-grade {
   display: grid;
-  gap: 1.2rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 15rem);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
 }
-.cq .cq-result-head h1 {
+.cq .cq-res-hero-texto {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+  max-width: 50rem;
+}
+.cq .cq-res-hero h1 {
   font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+}
+.cq .cq-res-hero .prosa p {
+  max-width: 46rem;
+}
+.cq .cq-res-zappy {
+  width: 100%;
+  height: auto;
+}
+/* Começo e experiência lado a lado: o texto lê-se à esquerda e o convite fica à vista. */
+.cq .cq-res-duas {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  align-items: start;
+}
+.cq .cq-res-texto .sub-head h2,
+.cq .cq-res-comunidade .sub-head h2,
+.cq .cq-res-dia .sub-head h2 {
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+}
+.cq .cq-res-texto .sub-head .kof-ladrilho,
+.cq .cq-res-comunidade .sub-head .kof-ladrilho,
+.cq .cq-res-dia .sub-head .kof-ladrilho {
+  translate: 0 calc(clamp(1.375rem, 2.4vw, 1.75rem) * -0.12);
+}
+.cq .cq-activity {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-radius: var(--kof-raio-carta);
+}
+.cq .cq-activity h2 {
+  font-size: clamp(1.5rem, 2.6vw, 1.875rem);
+}
+.cq .cq-activity p {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--kof-navy-texto);
+}
+@media (min-width: 961px) {
+  .cq .cq-activity {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+.cq .cq-res-comunidade .cap-head {
+  margin-bottom: 1.5rem;
+}
+.cq .cq-callout {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-radius: var(--kof-raio-carta);
+  background: var(--kof-amarelo-fundo);
+  box-shadow: 0 0 0 2px var(--kof-amarelo);
+}
+.cq .cq-callout .sub-head {
+  margin-bottom: 0;
+}
+.cq .cq-callout-itens {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1.5rem clamp(1.5rem, 3vw, 2.5rem);
+}
+.cq .cq-callout h3 {
+  font-size: 1.25rem;
+}
+.cq .cq-callout .prosa p {
+  color: var(--kof-tinta);
+}
+.cq .cq-res-ponte {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+.cq .cq-res-nota {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+.cq .cq-res-dia .bloco:first-child {
+  margin-top: 0;
+}
+.cq .cq-res-cta {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+  max-width: 60rem;
+  margin-inline: auto;
+  padding: clamp(1.75rem, 4vw, 3rem);
+}
+.cq .cq-res-cta h2 {
+  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+  color: var(--kof-sobre-acao);
+}
+.cq .cq-res-cta p {
+  max-width: 44rem;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--kof-sobre-acao);
+}
+.cq .cq-res-cta .cq-res-cta-nota {
+  font-size: 0.9375rem;
+}
+.cq .cq-res-cta .cq-actions {
+  margin-top: 0.5rem;
+}
+.cq .cq-res-opiniao {
+  max-width: 52rem;
 }
 .cq .cq-result-section {
   margin-top: clamp(2rem, 4vw, 3.5rem);
@@ -325,17 +501,6 @@
   display: grid;
   gap: 1rem;
 }
-.cq .cq-callout {
-  background: var(--kof-amarelo-fundo);
-  border-color: var(--kof-amarelo);
-}
-.cq .cq-activity {
-  background: var(--kof-navy);
-  color: var(--kof-navy-texto);
-}
-.cq .cq-activity h2 {
-  color: var(--kof-navy-texto);
-}
 .cq .cq-activity ol {
   display: grid;
   gap: 1rem;
@@ -360,28 +525,6 @@
   color: var(--kof-tinta);
   font-weight: 800;
 }
-.cq .cq-proof {
-  display: grid;
-  gap: 1.5rem;
-  margin-top: 1.5rem;
-}
-.cq .cq-proof .visual {
-  max-width: 60rem;
-  margin-inline: auto;
-  width: 100%;
-}
-.cq .cq-details {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  align-items: start;
-}
-.cq .cq-result-cta {
-  background: var(--kof-azul-fundo);
-}
-.cq .cq-result-cta .cq-actions {
-  margin-top: 1.5rem;
-}
 .cq .cq-feedback-options {
   display: flex;
   flex-wrap: wrap;
@@ -405,10 +548,18 @@
   outline: 3px solid var(--kof-acao);
   outline-offset: 3px;
 }
+@media (max-width: 960px) {
+  .cq .cq-res-duas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
 @media (max-width: 760px) {
   .cq .cq-intro,
-  .cq .cq-details {
+  .cq .cq-res-hero-grade {
     grid-template-columns: 1fr;
+  }
+  .cq .cq-res-zappy {
+    display: none;
   }
   .cq .cq-hero-art {
     max-width: 32rem;
@@ -422,6 +573,10 @@
     text-align: center;
     font-size: 0.75rem;
     gap: 0.35rem;
+  }
+  /* Empilhadas no celular, as etapas não têm onde desenhar a linha. */
+  .cq .cq-stages li:not(:last-child)::after {
+    display: none;
   }
   .cq .cq-nav-label {
     display: none;

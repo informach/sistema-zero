@@ -1,14 +1,14 @@
 # Quiz da Comunidade: um ponto de partida para aprender criando
 
-Versão vigente: 3, para tráfego frio, revisada em 01/10/2026 a partir da correção do responsável pelo produto. Entrada: `/kids/comunidade-dos-criadores/quiz`; resultado: `/kids/comunidade-dos-criadores/resultado`. A [revisão da jornada para tráfego frio](revisao-trafego-frio.md) explica a mudança. O [registro da implementação](implementacao.md) conserva as verificações por versão; a [revisão anterior](revisao-proposta.md) é histórico da v2.
+Versão vigente: 4, revisada em 02/10/2026. Entrada: `/kids/comunidade-dos-criadores/quiz`; resultado: `/kids/comunidade-dos-criadores/resultado`. A [revisão de perguntas e argumentação](revisao-argumentacao-personalizada.md) aplica as orientações do Fluxo Criativo ao produto e desenvolve as explicações para cada família. A [direção para tráfego frio](revisao-trafego-frio.md) continua válida. O [registro da implementação](implementacao.md) conserva as verificações por versão.
 
 ## Promessa pública
 
 > **Descubra por onde seu filho pode começar a criar com tecnologia.**
 >
-> O gosto por jogos, a vontade de desenhar e a curiosidade sobre como as coisas funcionam podem abrir caminhos diferentes para aprender. Conte um pouco sobre seu filho e o que você gostaria de proporcionar a ele.
+> Os jogos de que seu filho gosta, os desenhos que faz e as perguntas que traz podem ajudar vocês a escolher uma atividade. Conte o que você observa em casa e o que gostaria que ele aprendesse.
 >
-> No final, você recebe uma sugestão de caminho, entende o motivo da escolha e leva uma ideia para experimentar com ele.
+> Você vai receber uma sugestão explicada a partir das suas respostas e uma ideia para experimentar com ele em casa.
 
 Para a família, a entrega é uma orientação que pode ser usada antes da compra. Internamente, identificamos a motivação que deve orientar a apresentação da Comunidade. O quiz é identificado como iniciativa do Sistema Zero Kids e leva às ofertas do próprio produto.
 
@@ -50,6 +50,8 @@ A mesma distinção vale para a procura ainda aberta e para quem busca algo fora
 
 ## O que melhorou na revisão
 
+Na v4, a conversa começa pela situação observada, passa pela dificuldade e pela dúvida, apresenta desejos em cenas concretas e confere as condições para começar. Cada alternativa de rotina participa da orientação. O resultado explica o que o filho faz, como o recurso ajuda e por que isso importa, com prints junto do argumento. Formato e apoio são desenvolvidos em sequência; uma dúvida sobre ajuda não produz um segundo cartão repetindo a resposta.
+
 A repetição de perguntas sobre prioridade foi reduzida. A classificação deixou de usar um desempate arbitrário. Interesses combinados passaram a gerar explicações próprias. A copy deixou de pressupor uso prévio de computador e a qualificação agora distingue preferência por ao vivo de exigência.
 
 Os resultados passaram a oferecer experiências que o responsável consegue propor a partir do próprio texto. As demonstrações são descritas como telas reais da plataforma, sem insinuar acesso gratuito a uma aula completa. Exigências de ferramenta ou desenho também são conferidas quando aparecem como interesse secundário, independentemente da página escolhida.
@@ -63,6 +65,8 @@ Os resultados passaram a oferecer experiências que o responsável consegue prop
 5. [Problemas encontrados, correções e conferências da versão 2](revisao-proposta.md).
 6. [Dois exemplos completos da versão 2](exemplos-de-resultado.md), mantidos como histórico editorial.
 7. [Revisão e implementação da versão 3 para tráfego frio](revisao-trafego-frio.md).
+8. [Revisão de perguntas e argumentação da versão 4](revisao-argumentacao-personalizada.md).
+9. [Onze exemplos completos da versão 4](exemplos-de-resultado-v4.md), incluindo adolescente, tentativa anterior de criação e desenho sem jogos.
 
 ## Alternativas e limites
 

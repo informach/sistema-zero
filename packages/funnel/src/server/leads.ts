@@ -186,6 +186,17 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
       return jsonError('Inicie uma nova resposta para continuar.', 409, 'ALREADY_PAID')
     const previous = lead.quizAnswers ?? {}
     const revision = typeof previous._quiz_revision === 'number' ? previous._quiz_revision : 0
+    // Uma aba aberta antes da troca de versão não grava por cima de respostas de OUTRA versão
+    // do quiz (o `applyAnswer` as trataria como vazias e apagaria o lead antigo). O 409 leva a
+    // ilha a "Retomar", e retomar abre um lead novo na versão atual.
+    const storedVersion = previous._quiz_version
+    if (quiz.version && typeof storedVersion === 'string' && storedVersion !== quiz.version) {
+      return jsonError(
+        'O quiz foi atualizado. Retome para responder a versão nova.',
+        409,
+        'QUIZ_CONFLICT',
+      )
+    }
     if (
       parsed.data.revision !== revision ||
       parsed.data.funnel !== lead.funnel ||

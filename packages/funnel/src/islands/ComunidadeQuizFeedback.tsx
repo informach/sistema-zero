@@ -50,13 +50,13 @@ export default function ComunidadeQuizFeedback({
   return (
     <section className="cq-panel cq-reading cq-result-section" aria-labelledby="feedback-title">
       <h2 id="feedback-title" className="kof-display">
-        Esta sugestão representa o que vocês procuram neste momento?
+        Esse caminho faz sentido para vocês?
       </h2>
-      <div className="cq-feedback-options">
+      <div className="cq-feedback-options" role="group" aria-labelledby="feedback-title">
         {[
           ['sim', 'Sim'],
           ['em_parte', 'Em parte'],
-          ['nao_representa', 'Não representa'],
+          ['nao_representa', 'Não'],
         ].map(([value, label]) => (
           <button
             key={value}
@@ -69,7 +69,9 @@ export default function ComunidadeQuizFeedback({
           </button>
         ))}
       </div>
-      <div aria-live="polite">{feedback && <p>Sua opinião foi registrada nesta resposta.</p>}</div>
+      <div aria-live="polite">
+        {feedback && <p>Obrigado por contar. Sua opinião ajuda a melhorar estas sugestões.</p>}
+      </div>
       {error && (
         <p className="cq-error" role="alert">
           {error}
@@ -77,7 +79,11 @@ export default function ComunidadeQuizFeedback({
       )}
       {feedback && feedback !== 'sim' && (
         <div className="cq-prose">
-          <h3>O que você gostaria de ajustar?</h3>
+          <h3>Você pode conferir suas respostas</h3>
+          <p>
+            Se alguma resposta ficou diferente do que você queria dizer, ajuste abaixo. Sua opinião
+            continua registrada.
+          </p>
           <div className="cq-actions">
             <a className="cq-link" href={`${basePath}/quiz#q3`}>
               Os interesses do meu filho

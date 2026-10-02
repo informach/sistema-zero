@@ -38,14 +38,33 @@ async function setup(answers: QuizAnswers = {}) {
 }
 
 describe('API do quiz da Comunidade', () => {
-  test('versão anterior inicia novo lead sem reinterpretar nem apagar respostas', async () => {
-    const oldAnswers = { ...fixture(), _quiz_version: 'comunidade-orientacao-v2' }
+  test.each([
+    'comunidade-orientacao-v2',
+    'comunidade-orientacao-v3',
+  ])('%s inicia novo lead sem reinterpretar nem apagar respostas', async (version) => {
+    const oldAnswers = { ...fixture(), _quiz_version: version }
     const { deps, id, repo } = await setup(oldAnswers)
     const response = await createLead(request('POST', { funnel }, id), deps)
     expect(response.status).toBe(201)
     const next = await response.json()
     expect(next.id).not.toBe(id)
     expect(next.answers).toEqual({})
+    expect((await repo.getLead(id))?.quizAnswers).toEqual(oldAnswers)
+  })
+  // Uma aba aberta antes do deploy grava num lead de outra versão: o `applyAnswer` tomaria as
+  // respostas antigas por vazias e apagaria o lead (com q1) ou travaria o pai (com o resto).
+  test.each([
+    ['q1', '9_a_11'],
+    ['q6', 'rever'],
+  ])('a aba antiga não grava em lead v3 (%s): pede para retomar', async (key, value) => {
+    const oldAnswers = { ...fixture(), _quiz_version: 'comunidade-orientacao-v3' }
+    const { deps, id, repo } = await setup(oldAnswers)
+    const response = await patchLead(
+      request('PATCH', { key, value, funnel, revision: 9 }, id),
+      deps,
+    )
+    expect(response.status).toBe(409)
+    expect((await response.json()).error.code).toBe('QUIZ_CONFLICT')
     expect((await repo.getLead(id))?.quizAnswers).toEqual(oldAnswers)
   })
   test('versão vigente continua na mesma sessão', async () => {

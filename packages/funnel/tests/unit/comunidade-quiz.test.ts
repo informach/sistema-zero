@@ -71,6 +71,122 @@ describe('Comunidade: resultado completo e destinos', () => {
       expect(result.cta.length).toBeGreaterThan(0)
     }
   })
+  test('exemplos para adolescentes mudam o convite, preservando a prioridade e o destino', () => {
+    for (const profile of ['A', 'B', 'C', 'D']) {
+      const choices = { q4: [profile], qb: 'flexivel', qc: 'interativo' }
+      const younger = buildCommunityResult(communityAnswers(choices))!
+      const older = buildCommunityResult(communityAnswers({ ...choices, q1: '12_a_14' }))!
+      expect(older.activityVariant).toBe('adolescente')
+      expect(older.activity.steps).toHaveLength(3)
+      expect(older.activity.steps).not.toEqual(younger.activity.steps)
+      expect(older.decision).toEqual(younger.decision)
+      expect(older.offerPath).toBe(younger.offerPath)
+    }
+  })
+  test('tentativa anterior de criar vira ponto de partida, em qualquer idade e perfil', () => {
+    for (const q1 of ['9_a_11', '12_a_14']) {
+      for (const profile of ['A', 'B', 'C', 'D'] as const) {
+        const result = buildCommunityResult(
+          communityAnswers({
+            q1,
+            q2: 'criar_jogo',
+            q4: [profile],
+            qb: 'flexivel',
+            qc: 'interativo',
+          }),
+        )!
+        expect(result.activityVariant).toBe('projeto_existente')
+        expect(result.activity.steps).toHaveLength(3)
+        expect(result.decision.profile).toBe(profile)
+      }
+    }
+  })
+  test('desenho sem jogos recebe atividade de desenho, inclusive com outro objetivo ou experiência anterior', () => {
+    for (const q4 of [['C'], ['B', 'C'], ['C', 'D']]) {
+      const result = buildCommunityResult(
+        communityAnswers({
+          q1: '12_a_14',
+          q2: 'criar_jogo',
+          q4,
+          qt: 'iguais',
+          qb: 'flexivel',
+          qc: 'sem_jogos',
+        }),
+      )!
+      expect(result.activityVariant).toBe('desenho_sem_jogos')
+      expect(result.activity.steps?.join(' ')).not.toMatch(/jogos?|jogador|programa|tecla/i)
+      expect(result.unmetConditions.map((c) => c.kind)).toContain('desenho')
+      expect(result.cta).toBe('Conhecer a proposta e conferir seus requisitos')
+    }
+  })
+  test('perguntas partem da situação, passam pela dificuldade e só então pedem a prioridade', () => {
+    const keys = activeCommunitySteps(communityAnswers({ q4: ['B', 'C'] })).map((s) => s.key)
+    expect(keys).toEqual(['q1', 'q2', 'q3', 'q6', 'q5', 'q4', 'qt', 'qb', 'qc', 'q7', 'q8'])
+    const stages = activeCommunitySteps(communityAnswers({ q4: ['B', 'C'] })).map((s) => s.etapa)
+    expect(stages).toEqual([
+      'filho',
+      'filho',
+      'filho',
+      'filho',
+      'objetivos',
+      'objetivos',
+      'objetivos',
+      'comeco',
+      'comeco',
+      'comeco',
+      'comeco',
+    ])
+  })
+  test('formato indefinido recebe demonstração da aula e ajuda não vira uma segunda resposta repetida', () => {
+    for (const q6 of ['rever', 'pessoa', 'experimentar', 'varia', 'nao_observou']) {
+      const result = buildCommunityResult(communityAnswers({ q5: 'ajuda', q6, q7: 'conhecer' }))!
+      expect(result.format?.title).toBe('Veja como seu filho acompanha uma aula, passo a passo')
+      expect(result.practicalConditions.some((c) => c.kind === 'formato')).toBe(false)
+      expect(result.support.paragraphs.join(' ')).toContain('Preciso de ajuda')
+      expect(result.support.paragraphs.join(' ')).toContain('pode exigir espera')
+      expect(result.doubt).toBeNull()
+    }
+  })
+  test('todas as observações de rotina mudam a orientação sem escolher um perfil pela criança', () => {
+    const contexts = new Set<string>()
+    for (const q2 of [
+      'jogar',
+      'desenhar',
+      'criar_jogo',
+      'investigar_programas',
+      'videos',
+      'outra',
+      'variado',
+      'nao_sei',
+    ]) {
+      const result = buildCommunityResult(
+        communityAnswers({ q2, qb: 'flexivel', qc: 'interativo' }),
+      )!
+      contexts.add(result.context.join(' '))
+      expect(result.decision.profile).toBe('A')
+    }
+    expect(contexts.size).toBe(8)
+  })
+  test('preferência por ao vivo é explicada; exigência permanece visível sem uma recomendação de formato', () => {
+    const preference = buildCommunityResult(communityAnswers({ q7: 'prefere_ao_vivo' }))!
+    const requirement = buildCommunityResult(communityAnswers({ q7: 'exige_ao_vivo' }))!
+    expect(preference.format?.paragraphs.join(' ')).toContain('não há um professor ao vivo')
+    expect(preference.unmetConditions).toHaveLength(0)
+    expect(requirement.format).toBeNull()
+    expect(requirement.unmetConditions.map((c) => c.kind)).toContain('formato')
+    expect(requirement.cta).toBe('Conhecer a proposta e conferir seus requisitos')
+  })
+  test('a integração aparece uma vez no argumento visual ou numa resposta própria', () => {
+    for (const profile of ['A', 'C']) {
+      const result = buildCommunityResult(
+        communityAnswers({ q4: [profile], q3: ['visual'], qc: 'ver_exemplo' }),
+      )!
+      const drawingSections =
+        Number(result.visuals.includes('integracao')) +
+        result.practicalConditions.filter((c) => c.kind === 'desenho').length
+      expect(drawingSections).toBe(1)
+    }
+  })
   test('os seis pares empatados têm atividade própria, sem principal presumido', () => {
     const titles = new Set<string>()
     for (const pair of ['AB', 'AC', 'AD', 'BC', 'BD', 'CD']) {

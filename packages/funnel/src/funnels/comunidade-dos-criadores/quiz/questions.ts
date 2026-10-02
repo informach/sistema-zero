@@ -1,4 +1,4 @@
-// Tráfego frio, v3: docs/marketing/kids/comunidade-dos-criadores/copy/quiz-comunidade.md
+// Tráfego frio, v4: docs/marketing/kids/comunidade-dos-criadores/copy/quiz-comunidade.md
 import type { SelecaoStep } from '../../../content/quiz-config'
 
 export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
@@ -9,7 +9,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_q1',
     tipo: 'selecao',
     etapa: 'filho',
-    titulo: 'Qual é a faixa de idade do filho em quem você está pensando?',
+    titulo: 'Qual é a idade do filho em quem você está pensando?',
     opcoes: [
       {
         value: 'ate_8',
@@ -53,7 +53,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       },
       {
         value: 'investigar_programas',
-        label: 'Investigar como programas funcionam',
+        label: 'Procurar entender como um programa funciona',
       },
       {
         value: 'videos',
@@ -72,7 +72,8 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
         label: 'Não sei dizer',
       },
     ],
-    subtitulo: 'Pense no que você observou. Outras atividades também podem fazer parte da rotina.',
+    subtitulo:
+      'Considere o último mês e escolha o que mais observou. Pode ser no computador, no celular ou fora das telas.',
     shuffle: true,
     fixedLast: ['outra', 'variado', 'nao_sei'],
   },
@@ -83,7 +84,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_q3',
     tipo: 'selecao',
     etapa: 'filho',
-    titulo: 'Quais destas vontades ele já expressou?',
+    titulo: 'Seu filho já falou que gostaria de fazer alguma destas coisas?',
     opcoes: [
       {
         value: 'jogo',
@@ -103,7 +104,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       },
       {
         value: 'nao_expressou',
-        label: 'Ainda não expressou vontade de criar algo assim',
+        label: 'Ele ainda não falou em criar algo assim',
       },
       {
         value: 'nao_sei',
@@ -111,12 +112,90 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       },
     ],
     subtitulo:
-      'Pode marcar mais de uma. As opções “ainda não expressou” e “ainda não sei” devem ser usadas sozinhas.',
+      'Pode marcar mais de uma vontade. Se ele ainda não falou sobre isso ou você não souber dizer, escolha a opção correspondente.',
     multiple: true,
     maxSelections: 4,
     exclusive: ['nao_expressou', 'nao_sei'],
     shuffle: true,
     fixedLast: ['outro', 'nao_expressou', 'nao_sei'],
+  },
+  {
+    id: 7,
+    key: 'q6',
+    lastStep: 'comunidade_q6',
+    eventName: 'respondeu_comunidade_q6',
+    tipo: 'selecao',
+    etapa: 'filho',
+    titulo:
+      'Quando encontra uma dificuldade ao aprender algo no computador, o que ele costuma fazer primeiro?',
+    opcoes: [
+      {
+        value: 'rever',
+        label: 'Volta a uma explicação ou a um exemplo',
+      },
+      {
+        value: 'pessoa',
+        label: 'Pede ajuda a uma pessoa',
+      },
+      {
+        value: 'experimentar',
+        label: 'Faz algumas tentativas para ver o que acontece',
+      },
+      {
+        value: 'varia',
+        label: 'Varia bastante conforme a atividade',
+      },
+      {
+        value: 'nao_observou',
+        label: 'Ainda não observei uma situação assim',
+      },
+    ],
+    shuffle: true,
+    fixedLast: ['varia', 'nao_observou'],
+    subtitulo:
+      'Pense numa situação que você já viu acontecer. Se ainda não observou, pode indicar isso.',
+  },
+  {
+    id: 6,
+    key: 'q5',
+    lastStep: 'comunidade_q5',
+    eventName: 'respondeu_comunidade_q5',
+    tipo: 'selecao',
+    etapa: 'objetivos',
+    titulo: 'O que você gostaria de entender melhor antes de escolher uma atividade para ele?',
+    opcoes: [
+      {
+        value: 'interesse',
+        label: 'Se ela vai despertar o interesse do meu filho',
+      },
+      {
+        value: 'comeco',
+        label: 'Como ele vai dar os primeiros passos',
+      },
+      {
+        value: 'ajuda',
+        label: 'Que ajuda terá quando surgir uma dúvida',
+      },
+      {
+        value: 'aprendizagem',
+        label: 'Como eu vou acompanhar o que ele está aprendendo',
+      },
+      {
+        value: 'rotina',
+        label: 'Como encaixar a atividade na rotina',
+      },
+      {
+        value: 'investimento',
+        label: 'Se o investimento cabe no nosso planejamento',
+      },
+      {
+        value: 'sem_duvida',
+        label: 'Ainda não tenho uma dúvida principal',
+      },
+    ],
+    shuffle: true,
+    fixedLast: ['sem_duvida'],
+    subtitulo: 'Escolha o ponto que mais pesa para você agora.',
   },
   {
     id: 4,
@@ -125,23 +204,23 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_q4',
     tipo: 'selecao',
     etapa: 'objetivos',
-    titulo: 'O que você mais gostaria de encontrar numa atividade para ele agora?',
+    titulo: 'Pensando numa atividade nova, o que você mais gostaria de ver seu filho fazendo?',
     opcoes: [
       {
         value: 'A',
-        label: 'Incluir aprendizagem no tempo de tela que a família já permite',
+        label: 'Usando parte do tempo de tela que já tem para criar algo e mostrar o que aprendeu',
       },
       {
         value: 'B',
-        label: 'Encontrar um começo para ele criar os próprios jogos',
+        label: 'Tirando uma ideia de jogo do papel e testando como ela funciona',
       },
       {
         value: 'C',
-        label: 'Dar espaço ao desenho em novas criações',
+        label: 'Criando desenhos e personagens e encontrando novos usos para essas ideias',
       },
       {
         value: 'D',
-        label: 'Oferecer uma iniciação em programação com uma sequência para seguir',
+        label: 'Aprendendo programação passo a passo e entendendo como os comandos funcionam',
       },
       {
         value: 'outro',
@@ -153,7 +232,7 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
       },
     ],
     subtitulo:
-      'Escolha até dois objetivos que tenham mais importância neste momento. Se sua procura for outra ou ainda estiver aberta, pode indicar isso.',
+      'Imagine uma atividade que valesse a pena para vocês. Escolha até duas possibilidades; se ainda estiver conhecendo os caminhos, pode dizer isso.',
     multiple: true,
     maxSelections: 2,
     exclusive: ['outro', 'explorar'],
@@ -192,146 +271,13 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     ],
   },
   {
-    id: 6,
-    key: 'q5',
-    lastStep: 'comunidade_q5',
-    eventName: 'respondeu_comunidade_q5',
-    tipo: 'selecao',
-    etapa: 'objetivos',
-    titulo: 'Ao pensar numa nova atividade para ele, qual é a sua principal dúvida?',
-    opcoes: [
-      {
-        value: 'interesse',
-        label: 'Se ela vai despertar o interesse do meu filho',
-      },
-      {
-        value: 'comeco',
-        label: 'Como ele vai conseguir começar',
-      },
-      {
-        value: 'ajuda',
-        label: 'Que ajuda terá quando surgir uma dúvida',
-      },
-      {
-        value: 'aprendizagem',
-        label: 'Como eu vou acompanhar o que ele está aprendendo',
-      },
-      {
-        value: 'rotina',
-        label: 'Como encaixar a atividade na rotina',
-      },
-      {
-        value: 'investimento',
-        label: 'Se o investimento cabe no nosso planejamento',
-      },
-      {
-        value: 'sem_duvida',
-        label: 'Ainda não tenho uma dúvida principal',
-      },
-    ],
-    shuffle: true,
-    fixedLast: ['sem_duvida'],
-  },
-  {
-    id: 7,
-    key: 'q6',
-    lastStep: 'comunidade_q6',
-    eventName: 'respondeu_comunidade_q6',
-    tipo: 'selecao',
-    etapa: 'comeco',
-    titulo:
-      'Quando tenta aprender algo novo no computador, que apoio ele costuma procurar primeiro?',
-    opcoes: [
-      {
-        value: 'rever',
-        label: 'Volta a uma explicação ou a um exemplo',
-      },
-      {
-        value: 'pessoa',
-        label: 'Pede ajuda a uma pessoa',
-      },
-      {
-        value: 'experimentar',
-        label: 'Faz algumas tentativas para ver o que acontece',
-      },
-      {
-        value: 'varia',
-        label: 'Varia bastante conforme a atividade',
-      },
-      {
-        value: 'nao_observou',
-        label: 'Ainda não observei uma situação assim',
-      },
-    ],
-    shuffle: true,
-    fixedLast: ['varia', 'nao_observou'],
-  },
-  {
-    id: 8,
-    key: 'q7',
-    lastStep: 'comunidade_q7',
-    eventName: 'respondeu_comunidade_q7',
-    tipo: 'selecao',
-    etapa: 'comeco',
-    titulo: 'Que tipo de acompanhamento você consideraria para uma atividade em casa?',
-    opcoes: [
-      {
-        value: 'pode_funcionar',
-        label: 'Aulas gravadas para pausar e rever, com ajuda por mensagens quando precisar',
-      },
-      {
-        value: 'prefere_ao_vivo',
-        label: 'Prefiro aulas ao vivo, mas posso conhecer outras formas de acompanhamento',
-      },
-      {
-        value: 'conhecer',
-        label: 'Ainda não sei qual formato funcionaria melhor para nós',
-      },
-      {
-        value: 'exige_ao_vivo',
-        label: 'Ter um professor ao vivo durante a atividade é indispensável',
-      },
-    ],
-    subtitulo:
-      'Pense no apoio de que ele precisaria e na rotina da família. Você também pode indicar que ainda não sabe.',
-  },
-  {
-    id: 9,
-    key: 'q8',
-    lastStep: 'comunidade_q8',
-    eventName: 'respondeu_comunidade_q8',
-    tipo: 'selecao',
-    etapa: 'comeco',
-    titulo: 'Se ele quiser experimentar uma atividade no computador, como seria o acesso em casa?',
-    opcoes: [
-      {
-        value: 'disponivel',
-        label: 'Sim, ele poderá usar um computador',
-      },
-      {
-        value: 'organizar',
-        label: 'Temos computador, mas preciso organizar os horários de uso',
-      },
-      {
-        value: 'celular_tablet',
-        label: 'Por enquanto, só temos celular ou tablet disponíveis para ele',
-      },
-      {
-        value: 'verificar',
-        label: 'Ainda preciso verificar',
-      },
-    ],
-    subtitulo:
-      'Pode ser um computador compartilhado. Considere o acesso à internet, ao mouse e ao teclado.',
-  },
-  {
     id: 10,
     key: 'qb',
     lastStep: 'comunidade_qb',
     eventName: 'respondeu_comunidade_qb',
     tipo: 'selecao',
     etapa: 'comeco',
-    titulo: 'Se ele for experimentar criar jogos, usar uma ferramenta específica é indispensável?',
+    titulo: 'Para criar jogos, ele precisa usar uma ferramenta específica?',
     opcoes: [
       {
         value: 'roblox',
@@ -356,6 +302,8 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     ],
     shuffle: true,
     fixedLast: ['conversar'],
+    subtitulo:
+      'Pense no que ele espera criar. Se ainda não conversaram sobre a ferramenta, pode indicar isso.',
   },
   {
     id: 11,
@@ -364,11 +312,11 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
     eventName: 'respondeu_comunidade_qc',
     tipo: 'selecao',
     etapa: 'comeco',
-    titulo: 'Que possibilidade com desenho vocês gostariam de explorar?',
+    titulo: 'Como vocês gostariam de aproveitar o interesse pelo desenho?',
     opcoes: [
       {
         value: 'interativo',
-        label: 'Criando personagens e imagens para usar em jogos',
+        label: 'Criar personagens e imagens que possam entrar em jogos',
       },
       {
         value: 'sem_jogos',
@@ -383,6 +331,64 @@ export const COMMUNITY_QUESTIONS: SelecaoStep[] = [
         label: 'O desenho é um interesse dele, mas não é uma condição para a nossa escolha',
       },
     ],
+    subtitulo: 'Escolha a possibilidade que combina mais com o que vocês procuram.',
+  },
+  {
+    id: 8,
+    key: 'q7',
+    lastStep: 'comunidade_q7',
+    eventName: 'respondeu_comunidade_q7',
+    tipo: 'selecao',
+    etapa: 'comeco',
+    titulo: 'Que tipo de acompanhamento você consideraria para seu filho aprender em casa?',
+    opcoes: [
+      {
+        value: 'pode_funcionar',
+        label: 'Considero aulas gravadas com ajuda por mensagens',
+      },
+      {
+        value: 'prefere_ao_vivo',
+        label: 'Prefiro aulas ao vivo, mas posso conhecer outras formas de acompanhamento',
+      },
+      {
+        value: 'conhecer',
+        label: 'Ainda não sei qual formato funcionaria melhor para nós',
+      },
+      {
+        value: 'exige_ao_vivo',
+        label: 'Ter um professor ao vivo durante a atividade é indispensável',
+      },
+    ],
+    subtitulo: 'Pense no que faria sentido para ele e para a rotina de vocês.',
+  },
+  {
+    id: 9,
+    key: 'q8',
+    lastStep: 'comunidade_q8',
+    eventName: 'respondeu_comunidade_q8',
+    tipo: 'selecao',
+    etapa: 'comeco',
+    titulo: 'Como seu filho teria acesso a um computador para fazer uma atividade em casa?',
+    opcoes: [
+      {
+        value: 'disponivel',
+        label: 'Ele poderá usar um computador',
+      },
+      {
+        value: 'organizar',
+        label: 'Temos computador, mas preciso organizar os horários de uso',
+      },
+      {
+        value: 'celular_tablet',
+        label: 'Por enquanto, só temos celular ou tablet disponíveis para ele',
+      },
+      {
+        value: 'verificar',
+        label: 'Ainda preciso verificar',
+      },
+    ],
+    subtitulo:
+      'Pode ser um computador compartilhado. Considere o acesso à internet, ao mouse e ao teclado.',
   },
 ]
 
