@@ -212,6 +212,7 @@ export function createServer(deps: HttpDeps) {
       internalRoutes({
         internalToken: deps.internalToken,
         getPayment: deps.getAdminPayment,
+        getSubscription: deps.getAdminSubscription,
         logger: deps.logger,
       }),
     )

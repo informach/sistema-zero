@@ -1,0 +1,171 @@
+/* Reutiliza as receitas das ofertas; só acrescenta os blocos específicos do presente. */
+.presente .gift-prose {
+  display: grid;
+  gap: 1.1rem;
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  color: var(--kof-tinta-suave);
+}
+.presente .gift-prose strong {
+  color: var(--kof-tinta);
+}
+.presente .gift-note {
+  padding: 1.25rem;
+  margin-block: 1.5rem;
+  border: 1px solid var(--kof-linha);
+  border-radius: 20px;
+  background: var(--kof-menta);
+  line-height: 1.7;
+}
+.presente .gift-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem 2rem;
+  padding-block: 2rem;
+}
+.presente .gift-cta p {
+  font-size: 0.9375rem;
+  color: var(--kof-tinta-suave);
+}
+.presente .gift-faq {
+  display: grid;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+.presente .gift-faq details {
+  background: var(--kof-carta);
+  border: 1px solid var(--kof-linha);
+  border-radius: 24px;
+  padding: 1.4rem;
+}
+.presente .gift-faq summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+.presente .gift-faq summary::-webkit-details-marker {
+  display: none;
+}
+.presente .gift-faq summary span {
+  color: var(--kof-acao);
+}
+.presente .gift-faq details[open] summary span {
+  transform: rotate(45deg);
+}
+.presente .gift-answer {
+  display: grid;
+  align-items: start;
+  gap: 2rem;
+  padding-top: 1.5rem;
+}
+.presente .gift-form-wrap {
+  max-width: 48rem;
+  margin-inline: auto;
+}
+.presente .gift-form-wrap > .gift-prose {
+  margin-block: 1.5rem;
+}
+.presente .gift-interactive {
+  color: var(--kof-tinta);
+}
+.presente .gift-interactive :is(p, h2) {
+  margin-top: 0.75rem;
+  line-height: 1.7;
+}
+.presente .gift-interactive h2 {
+  font-family: var(--kof-display);
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+.presente .gift-interactive .card {
+  background: var(--kof-carta);
+  border: 1px solid var(--kof-linha);
+  border-radius: 24px;
+}
+.presente .gift-interactive .btn-primary {
+  border-radius: 999px;
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  border: 2px solid var(--kof-acao);
+  box-shadow: 0 4px 0 var(--kof-azul);
+  padding: 0.8rem 1.4rem;
+  font-weight: 800;
+}
+.presente .gift-interactive :is(button, input, textarea):focus-visible,
+.presente .gift-faq summary:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+.presente .gift-interactive .text-red-400 {
+  color: #a72235;
+}
+.presente .gift-interactive input,
+.presente .gift-interactive textarea {
+  min-width: 0;
+}
+.presente .gift-status {
+  max-width: 46rem;
+  display: grid;
+  gap: 1.25rem;
+  padding: 2rem;
+  margin: 2rem auto;
+  border-radius: 24px;
+  background: var(--kof-carta);
+  border: 1px solid var(--kof-linha);
+}
+.presente .gift-status h1 {
+  font-family: var(--kof-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.15;
+}
+.presente .kof-h2 {
+  font-family: var(--kof-display);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.15;
+  font-weight: 800;
+  margin-top: 1rem;
+}
+.presente .gift-status p {
+  line-height: 1.8;
+}
+.presente .gift-private {
+  margin-block: 1.5rem;
+  padding: 1rem 1.3rem;
+  border-radius: 18px;
+  background: var(--kof-amarelo-fundo);
+  line-height: 1.65;
+}
+.presente .gift-panel {
+  max-width: 54rem;
+  margin-inline: auto;
+}
+.presente .gift-panel-title {
+  margin-bottom: 1.5rem;
+}
+.presente .gift-panel-title p {
+  margin-top: 1rem;
+  line-height: 1.7;
+}
+@media (min-width: 850px) {
+  .presente .gift-answer--visual {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .presente .nav > .kof-btn {
+    font-size: 0.8rem;
+    padding-inline: 0.9rem;
+  }
+  .presente .brand {
+    max-width: 44%;
+  }
+  .presente .gift-faq details {
+    padding: 1rem;
+  }
+}

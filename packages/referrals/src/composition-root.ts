@@ -1,5 +1,6 @@
 import { createLogger, type Logger, serializeError } from '@sistemazero/core/logging'
 import { AmbassadorAdminService } from './application/ambassadors/ambassador-admin.service'
+import { CampaignAdminService } from './application/campaigns/campaign-admin.service'
 import { RecordConversionService } from './application/conversions/record-conversion.service'
 import { SweepConversionsService } from './application/conversions/sweep-conversions.service'
 import { CreateInviteService } from './application/invites/create-invite.service'
@@ -12,6 +13,7 @@ import {
 } from './infrastructure/gateways/gateway.client'
 import { PaymentsHttpClient } from './infrastructure/gateways/payments-http.client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { DrizzleCampaignRepository } from './infrastructure/persistence/drizzle/campaign.repository'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleProcessedWebhookStore } from './infrastructure/persistence/drizzle/processed-webhook.store'
 import { DrizzleReferralRepository } from './infrastructure/persistence/drizzle/referral.repository'
@@ -30,6 +32,8 @@ export function createApplication(env: Env): Application {
 
   const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
   const repo = new DrizzleReferralRepository(connection.db)
+  const campaignRepo = new DrizzleCampaignRepository(connection.db)
+  const campaigns = new CampaignAdminService(campaignRepo, repo, env.FUNNEL_PUBLIC_URL)
 
   // Todas as integrações via gateway (consumer HMAC `referrals`). Sem
   // credenciais (dev local) → no-op: leituras 502, envios "não saíram".
@@ -50,6 +54,7 @@ export function createApplication(env: Env): Application {
       courseSlug: env.SCHOLARSHIP_COURSE_SLUG,
       kidsCommunityUrl: env.KIDS_COMMUNITY_URL,
       leaseMs: env.REDEMPTION_LEASE_MS,
+      campaigns: campaignRepo,
     },
     logger,
   )
@@ -99,6 +104,7 @@ export function createApplication(env: Env): Application {
     redeem,
     invite,
     ambassadors,
+    campaigns,
     funnelPublicUrl: env.FUNNEL_PUBLIC_URL,
     bonusAmountCents: env.BONUS_AMOUNT_CENTS,
     webhooks: {

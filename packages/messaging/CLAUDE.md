@@ -330,3 +330,7 @@ escalonados (cada lane com seu próprio `next_available_at`).
 - [ ] `bun run typecheck` limpo · `bun test` verde (sandbox off) · `bun run check` limpo.
 - [ ] Mudou schema? Gerou a migration (`db:generate`) e commitou.
 - [ ] Mudou contrato de rota/config/modelo? Atualizou este `CLAUDE.md` (e o do gateway, se a rota mudou).
+
+## Presente de campanha (02/10/2026)
+
+Templates `referrals-campaign-welcome` (conta nova, link de senha) e `referrals-campaign-existing` (conta existente, link de cursos): variáveis `nome`, `campanha`, `validade`, `link`. `validade` é o vencimento dos sete dias do resgate, formatado em Brasília pelo referrals; não é o encerramento da campanha. Os templates entram pelo seed de deploy já existente. Preservar templates históricos de indicação. Não executar seed remoto ou enviar mensagens reais para verificar copy.

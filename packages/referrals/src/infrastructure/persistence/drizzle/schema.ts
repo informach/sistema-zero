@@ -1,3 +1,4 @@
+import type { CampaignInput, GiftAttribution, GiftSource } from '@sistemazero/core/referrals'
 import { sql } from 'drizzle-orm'
 import {
   bigint,
@@ -5,6 +6,7 @@ import {
   check,
   index,
   integer,
+  jsonb,
   pgSchema,
   text,
   timestamp,
@@ -20,6 +22,43 @@ import {
  * o mesmo código do membro serve à landing de bolsa e à atribuição `?ref`.
  */
 export const referralsSchema = pgSchema('referrals')
+
+export const campaigns = referralsSchema.table(
+  'campaigns',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    name: varchar({ length: 120 }).notNull(),
+    publicTitle: varchar({ length: 160 }).notNull(),
+    description: varchar({ length: 600 }).notNull().default(''),
+    context: varchar({ length: 16 }).notNull(),
+    status: varchar({ length: 16 }).notNull().default('draft'),
+    startsAt: timestamp({ withTimezone: true }).notNull(),
+    endsAt: timestamp({ withTimezone: true }).notNull(),
+    channel: varchar({ length: 100 }).notNull().default(''),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check('campaigns_period_check', sql`${t.endsAt} > ${t.startsAt}`),
+    check('campaigns_status_check', sql`${t.status} in ('draft','active','paused','ended')`),
+    check('campaigns_context_check', sql`${t.context} in ('ad','event','other')`),
+  ],
+)
+
+export const campaignHistory = referralsSchema.table(
+  'campaign_history',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    campaignId: uuid()
+      .notNull()
+      .references(() => campaigns.id),
+    action: varchar({ length: 16 }).notNull(),
+    actor: varchar({ length: 160 }).notNull(),
+    changes: jsonb().$type<Partial<CampaignInput>>().notNull(),
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('campaign_history_campaign_idx').on(t.campaignId, t.createdAt)],
+)
 
 export const ambassadors = referralsSchema.table(
   'ambassadors',
@@ -56,9 +95,10 @@ export const codes = referralsSchema.table(
     id: uuid().primaryKey().defaultRandom(),
     /** Slug `^[a-z0-9-]{4,32}$`, sempre lower. */
     code: varchar({ length: 32 }).notNull(),
-    /** 'ambassador' | 'account' — exatamente UM dos owners preenchido (CHECK). */
+    /** 'ambassador' | 'account' | 'campaign' — exatamente UM dos owners (CHECK). */
     ownerKind: varchar({ length: 16 }).notNull(),
     ambassadorId: uuid().references(() => ambassadors.id),
+    campaignId: uuid().references(() => campaigns.id),
     /** Conta do auth (snapshot) — SEM FK cross-schema (regra do monorepo). */
     accountUserId: uuid(),
     /** O "quem indicou" exibido na landing (snapshot). */
@@ -76,9 +116,10 @@ export const codes = referralsSchema.table(
     uniqueIndex('codes_code_uq').on(t.code),
     uniqueIndex('codes_ambassador_uq').on(t.ambassadorId).where(sql`ambassador_id is not null`),
     uniqueIndex('codes_account_uq').on(t.accountUserId).where(sql`account_user_id is not null`),
+    uniqueIndex('codes_campaign_uq').on(t.campaignId).where(sql`campaign_id is not null`),
     check(
       'codes_owner_check',
-      sql`(owner_kind = 'ambassador' and ambassador_id is not null and account_user_id is null) or (owner_kind = 'account' and account_user_id is not null and ambassador_id is null)`,
+      sql`(owner_kind = 'ambassador' and ambassador_id is not null and account_user_id is null and campaign_id is null) or (owner_kind = 'account' and account_user_id is not null and ambassador_id is null and campaign_id is null) or (owner_kind = 'campaign' and campaign_id is not null and ambassador_id is null and account_user_id is null)`,
     ),
   ],
 )
@@ -95,6 +136,12 @@ export const scholarshipRedemptions = referralsSchema.table(
     email: text().notNull(),
     name: varchar({ length: 120 }).notNull(),
     phone: varchar({ length: 20 }),
+    /** Termos da origem no instante da aceitação; não mudam ao editar a campanha. */
+    sourceSnapshot: jsonb().$type<GiftSource>(),
+    courseSlug: varchar({ length: 100 }),
+    attribution: jsonb().$type<GiftAttribution>(),
+    /** Aceitação pelo messaging; welcome_sent_at continua sendo o claim de emissão. */
+    welcomeAcceptedAt: timestamp({ withTimezone: true }),
     /** Preenchido quando a etapa ensure-buyer concluiu. */
     userId: uuid(),
     /** `created` do ensure-buyer — ramifica o e-mail (welcome × new-access). */
@@ -175,7 +222,7 @@ export const conversions = referralsSchema.table(
     amountCents: bigint({ mode: 'bigint' }).notNull(),
     /** Snapshot do bônus no momento (env BONUS_AMOUNT_CENTS; 0 em self_blocked). */
     bonusCents: integer().notNull(),
-    /** pending | eligible | paid | canceled | self_blocked */
+    /** pending | eligible | paid | canceled | self_blocked | unrewarded (campanha) */
     status: varchar({ length: 16 }).notNull().default('pending'),
     /** paid_at do PAGAMENTO (âncora da maturação). */
     paidAt: timestamp({ withTimezone: true }).notNull(),
@@ -225,6 +272,8 @@ export const processedWebhooks = referralsSchema.table(
 )
 
 export const schema = {
+  campaigns,
+  campaignHistory,
   ambassadors,
   codes,
   scholarshipRedemptions,

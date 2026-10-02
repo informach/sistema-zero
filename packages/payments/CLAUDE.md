@@ -231,6 +231,8 @@ cross-consumer, auth = `x-internal-token` (`assertInternalCaller`). Consumida pe
 (o payload do webhook só traz ids; a view tem customer/valor/metadata/status). NÃO exposta no
 gateway — private networking direto. Log `payments.internal_read`.
 
+`GET /payments/internal/subscriptions/:id` usa o mesmo token interno e devolve somente `{id, createdAt}`. Referrals consulta a data original para não atribuir a um presente posterior a renovação de uma assinatura antiga. Continua fora do gateway público; não expõe cartão nem dados do cliente. Teste de autorização e contrato em `tests/integration/http-server.test.ts`.
+
 **Outros:** rate limit por consumidor (`RATE_LIMIT_PER_MINUTE` → 429 + `Retry-After`,
 em memória/por instância — troque por Redis p/ limite global) + rate limit **GLOBAL
 dos webhooks** (`WEBHOOK_RATE_LIMIT_PER_MINUTE`, chave única — backpressure, a auth é

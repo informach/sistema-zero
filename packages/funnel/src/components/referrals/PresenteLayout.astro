@@ -1,0 +1,43 @@
+---
+import '../../styles/kids-oferta.css'
+import '../../styles/comunidade-oferta.css'
+import '../../styles/presente.css'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import Footer from '../Footer.astro'
+
+interface Props {
+  title: string
+  description: string
+  action?: { href: string; label: string }
+  canonical?: string
+  noindex?: boolean
+}
+const { title, description, action, canonical, noindex = true } = Astro.props
+---
+<BaseLayout title={title} description={description} canonical={canonical} noindex={noindex} htmlClass="theme-kids">
+  <div class="cdc presente">
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+    <header class="topbar"><div class="wrap nav">
+      <a class="brand" href="/" aria-label="Sistema Zero Kids, início"><img class="logo" src="/img/comunidade-dos-criadores/logo-kids-escuro.svg" alt="Sistema Zero Kids" width="279" height="26" /></a>
+      <nav class="nav-links" aria-label="Partes da página"><a href="#experiencia">O curso</a><a href="#duvidas">Antes de começar</a></nav>
+      {action && <a class="kof-btn kof-btn--compacta" href={action.href}>{action.label}</a>}
+    </div></header>
+    <main id="conteudo"><slot /></main>
+    <dialog class="zoom" data-gift-zoom aria-label="Imagem ampliada"><form method="dialog"><button class="zoom-fechar" aria-label="Fechar a imagem ampliada"><span class="material-symbols-rounded" aria-hidden="true">close</span></button></form><img alt="" decoding="async" /></dialog>
+  </div>
+  <Footer audience="kids" />
+</BaseLayout>
+<script>
+  const zoom = document.querySelector<HTMLDialogElement>('[data-gift-zoom]')
+  const image = zoom?.querySelector('img')
+  if (zoom && image && typeof zoom.showModal === 'function') {
+    document.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('.presente a[data-zoom]')
+      if (!link) return
+      event.preventDefault(); image.src = link.href; image.alt = link.querySelector('img')?.alt ?? ''; zoom.showModal()
+    })
+    zoom.addEventListener('click', (event) => { if (event.target === zoom) zoom.close() })
+    zoom.addEventListener('close', () => image.removeAttribute('src'))
+  }
+</script>

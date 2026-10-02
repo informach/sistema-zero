@@ -1,0 +1,28 @@
+---
+import type { ReferralGiftView } from '@sistemazero/core/referrals'
+import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
+import PresenteOferta from '../../components/referrals/PresenteOferta.astro'
+import { getEnv } from '../../lib/env'
+export const prerender = false
+Astro.response.headers.set('cache-control', 'private, no-store')
+const params = Astro.url.searchParams
+const context = params.get('context')
+const validDate = (value: string | null) =>
+  value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null
+const gift: ReferralGiftView = {
+  code: '',
+  displayName: '',
+  ownerKind: 'campaign',
+  state: 'active',
+  giftAvailable: true,
+  source: {
+    kind: 'campaign',
+    name: (params.get('title') || 'Uma experiência gratuita no Sistema Zero').slice(0, 160),
+    context: context === 'event' || context === 'ad' ? context : 'other',
+    description: (params.get('description') ?? '').slice(0, 600),
+  },
+  startsAt: validDate(params.get('startsAt')),
+  endsAt: validDate(params.get('endsAt')),
+}
+---
+<PresenteLayout title="Prévia da campanha | Sistema Zero" description="Prévia sem cadastro do presente Cadê Todo Mundo?."><PresenteOferta gift={gift} kind="ready" communityUrl={getEnv().KIDS_COMMUNITY_URL.replace(/\/$/, '')} preview /></PresenteLayout>

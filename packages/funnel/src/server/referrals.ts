@@ -1,3 +1,4 @@
+import { sanitizeGiftAttribution } from '@sistemazero/core/referrals'
 import { z } from 'zod'
 import type { GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
@@ -31,6 +32,7 @@ const RedeemBody = z.object({
   nome: z.string().trim().min(2).max(120),
   email: z.string().trim().toLowerCase().regex(EMAIL_RE).max(254),
   telefone: z.string().trim().max(20).optional(),
+  attribution: z.unknown().optional(),
 })
 
 const InviteBody = z.object({
@@ -74,10 +76,13 @@ export async function postRedeemScholarship(
     name: nome,
     email,
     ...(telefone ? { phone: telefone } : {}),
+    ...(sanitizeGiftAttribution(parsed.data.attribution)
+      ? { attribution: sanitizeGiftAttribution(parsed.data.attribution) }
+      : {}),
   })
   // 201 completed · 202 processing · 404 código · 409 já-resgatada/terminal ·
   // 429 teto do gateway · 503 curso ainda não publicado.
-  return passthrough(res, [201, 202, 404, 409, 429, 503], deps.log, 'redeem')
+  return passthrough(res, [201, 202, 404, 409, 410, 429, 503], deps.log, 'redeem')
 }
 
 /** POST /api/embaixador/convites — convite de bolsa enviado pela plataforma. */

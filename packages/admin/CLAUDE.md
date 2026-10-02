@@ -1580,3 +1580,11 @@ gera o mesmo arquivo para levar de staging a produção) e `/admin/como-fazer/[i
   que aqui não existe). A pele do `HelpTutorialView` mora em `member-shell/src/styles/help.css`,
   importada pelo `globals.css` do admin e do kids (sem ela a prévia saía sem numeração).
   `/admin/como-fazer/<não-uuid>` → `notFound()`.
+
+## Convites e campanhas (02/10/2026)
+
+A rota `/admin/embaixadores` usa `ConvitesClient`: campanhas na aba inicial; o painel existente de pessoas e bônus permanece na outra. BFF `/api/admin/referrals/campaigns` passa pelo gateway com sessão e RBAC. O relatório inicial conta resgates e conversões, não confunde cadastro com atividade da criança. A ficha da conta permite examinar o progresso dos perfis.
+
+Datas do formulário são explicitamente de Brasília (`campaign-dates.ts`). Título público difere de nome interno. Código não muda após criar; duplicar exige outro. Prévia é somente leitura no funil. O QR é gerado localmente pelo member-shell com o link público retornado pelo serviço; jamais usar a capability privada do embaixador. Migração e pendências em `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
+
+Edição envia `expectedUpdatedAt` da versão exibida: o serviço recusa outra aba desatualizada com 409. Não reenviar automaticamente com versão nova, pois isso apagaria a proteção de conflito. Lista/detalhe ignoram respostas antigas; falha limpa resultados e oferece atualização. Regressão em `tests/campaigns-client.test.tsx`.

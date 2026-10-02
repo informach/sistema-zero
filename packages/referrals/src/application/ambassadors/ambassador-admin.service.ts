@@ -111,7 +111,7 @@ export class AmbassadorAdminService {
     email: string
     name: string
   }): Promise<
-    | { kind: 'ok'; ambassador: AmbassadorView; created: boolean }
+    | { kind: 'ok'; ambassador: AmbassadorView; created: boolean; emailSent?: boolean }
     | { kind: 'email_pending'; emailSent: boolean }
   > {
     const email = normalizeEmail(input.email)
@@ -131,7 +131,12 @@ export class AmbassadorAdminService {
       accountUserId: input.accountUserId,
     })
     if (created.kind === 'created') {
-      return { kind: 'ok', ambassador: created.ambassador, created: true }
+      return {
+        kind: 'ok',
+        ambassador: created.ambassador,
+        created: true,
+        emailSent: created.emailSent,
+      }
     }
     if (created.kind === 'account_exists') {
       // Corrida de dois selfEnroll da MESMA conta: o outro request venceu a

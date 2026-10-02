@@ -17,6 +17,8 @@ export interface PaymentSnapshot {
 export interface PaymentsClient {
   /** `GET /payments/internal/payments/:id` (x-internal-token). 404 → null. */
   getPayment(paymentId: string): Promise<PaymentSnapshot | null>
+  /** Data da assinatura original; renovação de compra anterior não é aquisição. */
+  getSubscriptionCreatedAt(subscriptionId: string): Promise<Date | null>
 }
 
 export interface OfferSnapshot {

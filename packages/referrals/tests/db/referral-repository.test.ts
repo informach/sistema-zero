@@ -1,7 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import path from 'node:path'
+import type { CampaignInput } from '@sistemazero/core/referrals'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
+import { CampaignConflictError, CampaignUnavailableError } from '../../src/domain/campaign'
+import { DrizzleCampaignRepository } from '../../src/infrastructure/persistence/drizzle/campaign.repository'
 import {
   createDbConnection,
   type DbConnection,
@@ -89,7 +92,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
   })
 
   beforeEach(async () => {
-    await connection.sql`truncate referrals.invites, referrals.scholarship_redemptions, referrals.codes, referrals.ambassadors cascade`
+    await connection.sql`truncate referrals.invites, referrals.scholarship_redemptions, referrals.codes, referrals.ambassadors, referrals.campaign_history, referrals.campaigns cascade`
   })
 
   async function seedCode() {
@@ -102,6 +105,109 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     if (created.kind !== 'created') throw new Error('seed falhou')
     return created
   }
+
+  test('campanha: snapshot vem da política travada; fim barra novos claims e preserva retomadas', async () => {
+    const campaigns = new DrizzleCampaignRepository(connection.db)
+    const input: CampaignInput = {
+      name: 'Teste local',
+      publicTitle: 'Encontro de famílias',
+      description: 'Presente do evento',
+      context: 'event',
+      code: 'evento-local',
+      startsAt: new Date(Date.now() - 60_000).toISOString(),
+      endsAt: new Date(Date.now() + 60_000).toISOString(),
+      status: 'active',
+      channel: 'teste',
+    }
+    const campaign = await campaigns.create(input, 'Operador de teste')
+    expect(campaign).not.toBeNull()
+    expect(await campaigns.create(input, 'Operador de teste')).toBeNull()
+    expect((await campaigns.list({ limit: 25, offset: 0 })).total).toBe(1)
+    const code = await repo.findCodeByCode(input.code)
+    if (!code || !campaign) throw new Error('seed')
+    const claim = {
+      codeId: code.id,
+      email: 'familia@example.com',
+      name: 'Família',
+      phone: null,
+      courseSlug: 'cade-todo-mundo',
+      sourceSnapshot: { kind: 'ambassador' as const, name: 'Texto desatualizado' },
+    }
+    const accepted = await repo.insertRedemption(claim)
+    expect(accepted.redemption.sourceSnapshot).toMatchObject({
+      kind: 'campaign',
+      name: input.publicTitle,
+      campaignId: campaign.id,
+    })
+    await campaigns.update(
+      campaign.id,
+      { ...input, status: 'ended', publicTitle: 'Título novo' },
+      'Outro operador',
+      campaign.updatedAt.toISOString(),
+    )
+    // Uma aba antiga não pode reabrir a campanha encerrada.
+    let staleEdit: unknown
+    try {
+      await campaigns.update(campaign.id, input, 'Aba antiga', campaign.updatedAt.toISOString())
+    } catch (error) {
+      staleEdit = error
+    }
+    expect(staleEdit).toBeInstanceOf(CampaignConflictError)
+    expect((await campaigns.findById(campaign.id))?.status).toBe('ended')
+    let rejection: unknown
+    try {
+      await repo.insertRedemption({ ...claim, email: 'outra@example.com' })
+    } catch (error) {
+      rejection = error
+    }
+    expect(rejection).toBeInstanceOf(CampaignUnavailableError)
+    const resumed = await repo.insertRedemption(claim)
+    expect(resumed.created).toBe(false)
+    expect(resumed.redemption.createdAt).toEqual(accepted.redemption.createdAt)
+    expect(resumed.redemption.sourceSnapshot?.name).toBe(input.publicTitle)
+    expect(await campaigns.history(campaign.id)).toHaveLength(2)
+    const current = (await campaigns.findById(campaign.id))!
+    const simultaneous = await Promise.allSettled([
+      campaigns.update(
+        campaign.id,
+        { ...input, status: 'paused' },
+        'Aba A',
+        current.updatedAt.toISOString(),
+      ),
+      campaigns.update(
+        campaign.id,
+        { ...input, status: 'ended' },
+        'Aba B',
+        current.updatedAt.toISOString(),
+      ),
+    ])
+    expect(simultaneous.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    expect(simultaneous.filter((result) => result.status === 'rejected')).toHaveLength(1)
+    expect(await campaigns.history(campaign.id)).toHaveLength(3)
+
+    await repo.markRedemptionGranted(accepted.redemption.id, new Date())
+    await repo.insertConversion({
+      redemptionId: accepted.redemption.id,
+      codeId: code.id,
+      ambassadorId: null,
+      paymentId: 'campanha-local-payment',
+      subscriptionId: null,
+      offerSlug: 'comunidade-dos-criadores-anual',
+      amountCents: 10000n,
+      bonusCents: 0,
+      status: 'unrewarded',
+      paidAt: new Date(),
+      maturesAt: new Date(0),
+    })
+    expect((await campaigns.stats(campaign.id)).conversions).toBe(1)
+    expect(await repo.matureConversions(new Date(), 50)).toBe(0)
+    expect((await repo.listConversions({ limit: 25, offset: 0 })).total).toBe(0)
+    expect(await repo.cancelPendingConversionByPayment('campanha-local-payment')).toEqual({
+      kind: 'canceled',
+    })
+    expect((await campaigns.stats(campaign.id)).conversions).toBe(0)
+    expect((await repo.listConversions({ limit: 25, offset: 0 })).total).toBe(0)
+  })
 
   test('insertRedemption: corrida no UNIQUE(email) → exatamente 1 criada', async () => {
     const { code } = await seedCode()

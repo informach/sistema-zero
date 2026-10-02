@@ -1,4 +1,5 @@
 import 'server-only'
+import type { CampaignDetailView, CampaignView } from '@sistemazero/core/referrals'
 import type {
   AmbassadorDetailView,
   AmbassadorListItemView,
@@ -7,6 +8,28 @@ import type {
   ConversionStatus,
 } from '@/lib/types'
 import { type GatewayResponse, gatewayFetch } from './gateway'
+
+export function listCampaigns(
+  p: ListAmbassadorsParams,
+): Promise<GatewayResponse<{ items: CampaignView[]; total: number }>> {
+  return gatewayFetch('/referrals/admin/campaigns', {
+    query: { q: p.q, limit: p.limit, offset: p.offset },
+  })
+}
+export function getCampaign(id: string): Promise<GatewayResponse<CampaignDetailView>> {
+  return gatewayFetch(`/referrals/admin/campaigns/${encodeURIComponent(id)}`)
+}
+export function saveCampaign(
+  body: unknown,
+  id?: string,
+  duplicate = false,
+): Promise<GatewayResponse<{ campaign: CampaignView }>> {
+  const suffix = id ? `/${encodeURIComponent(id)}${duplicate ? '/duplicate' : ''}` : ''
+  return gatewayFetch(`/referrals/admin/campaigns${suffix}`, {
+    method: id && !duplicate ? 'PATCH' : 'POST',
+    body,
+  })
+}
 
 export interface ListAmbassadorsParams {
   q?: string

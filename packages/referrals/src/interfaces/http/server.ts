@@ -4,10 +4,13 @@ import { serializeError } from '@sistemazero/core/logging'
 import { safeEqual } from '@sistemazero/core/security'
 import { Elysia } from 'elysia'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
+import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
 import type { CreateInviteService } from '../../application/invites/create-invite.service'
 import type { RedeemScholarshipService } from '../../application/redeem-scholarship/redeem-scholarship.service'
+import { CampaignConflictError, CampaignValidationError } from '../../domain/campaign'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { adminRoutes } from './admin.routes'
+import { campaignsRoutes } from './campaigns.routes'
 import { internalRoutes } from './internal.routes'
 import { meRoutes } from './me.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './webhooks.routes'
@@ -18,6 +21,7 @@ export interface HttpDeps {
   redeem: RedeemScholarshipService
   invite: CreateInviteService
   ambassadors: AmbassadorAdminService
+  campaigns?: CampaignAdminService
   funnelPublicUrl: string
   /** Snapshot da env BONUS_AMOUNT_CENTS — exposto na view "me" (copy nunca hardcoda). */
   bonusAmountCents: number
@@ -45,6 +49,14 @@ export function createServer(deps: HttpDeps) {
       serve: { maxRequestBodySize: deps.maxRequestBodyBytes ?? 64 * 1024 },
     })
       .onError(({ error, set, code }) => {
+        if (error instanceof CampaignConflictError) {
+          set.status = 409
+          return envelope('CAMPAIGN_CHANGED', error.message)
+        }
+        if (error instanceof CampaignValidationError) {
+          set.status = 400
+          return envelope('CAMPAIGN_INVALID', error.message)
+        }
         if (error instanceof UnauthorizedError) {
           set.status = 401
           return envelope('UNAUTHORIZED', error.message)
@@ -74,11 +86,22 @@ export function createServer(deps: HttpDeps) {
         }),
       )
       .use(
+        deps.campaigns
+          ? campaignsRoutes({
+              campaigns: deps.campaigns,
+              requireAdminEnabled: deps.requireAdminEnabled ?? true,
+              internalToken: deps.internalToken,
+            })
+          : new Elysia(),
+      )
+      .use(
         internalRoutes({
           repo: deps.repo,
           redeem: deps.redeem,
           invite: deps.invite,
           funnelPublicUrl: deps.funnelPublicUrl,
+          campaigns: deps.campaigns,
+          bonusAmountCents: deps.bonusAmountCents,
           internalToken: deps.internalToken,
         }),
       )

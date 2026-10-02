@@ -5,6 +5,7 @@ import { Gift } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { apiGet, apiSend } from '@/lib/api'
+import { EMBAIXADORES_URL } from '@/lib/links'
 import type { AmbassadorEnrollmentView } from '@/lib/types'
 
 /**
@@ -47,7 +48,11 @@ export function AmbassadorCard() {
             : 'Já existe um cadastro de embaixador com o seu e-mail, mas o envio falhou agora. Fale com a gente pelo Atendimento.',
         )
       } else if (res.created) {
-        toast.success('Pronto! Enviamos o link da sua página de embaixador por e-mail.')
+        toast.success(
+          res.linkEmailSent
+            ? 'Sua página está pronta. O e-mail com o link foi encaminhado; você também pode abrir pelo botão abaixo.'
+            : 'Sua página está pronta, mas o e-mail com o link não foi encaminhado agora. Você pode abrir pelo botão abaixo.',
+        )
       } else {
         toast.success('Sua página de embaixador já estava pronta. Os links estão aqui embaixo.')
       }
@@ -84,8 +89,16 @@ export function AmbassadorCard() {
   const needsPixKey = eligible > 0 && view.ambassador?.pixKeySet === false
 
   return (
-    <section className="w-full max-w-2xl">
+    <section id="embaixador" className="w-full max-w-2xl scroll-mt-6">
       <div className="kids-carta p-5 md:p-6">
+        <a
+          href={EMBAIXADORES_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="mb-4 inline-block text-sm font-bold text-primary underline underline-offset-4"
+        >
+          Conhecer o programa e o presente que vou oferecer
+        </a>
         <div className="flex items-start gap-3">
           <span className="kids-marca flex size-11 shrink-0 items-center justify-center rounded-xl">
             <Gift className="size-5" aria-hidden="true" />

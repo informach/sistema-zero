@@ -897,6 +897,67 @@ const seeds = [
     }),
   },
   {
+    key: 'referrals-campaign-welcome',
+    channel: 'email' as const,
+    name: 'Presente de campanha (conta nova)',
+    subject: 'Seu presente está pronto, {{nome}}',
+    variables: ['nome', 'campanha', 'validade', 'link'],
+    body: emailLayout({
+      preheader: 'Crie sua senha para começar o Cadê Todo Mundo? com seu filho.',
+      title: 'Vamos começar, {{nome}}?',
+      content: [
+        p(
+          'Seu cadastro na campanha <strong>{{campanha}}</strong> liberou o curso <strong>Cadê Todo Mundo?</strong>. Seu filho vai acompanhar as aulas e programar um jogo de esconde-esconde, usando um projeto preparado para começar.',
+        ),
+        p(
+          'O curso está disponível até <strong>{{validade}} (horário de Brasília)</strong>: são sete dias contados do cadastro. Separe um computador com internet e um momento para fazer o primeiro acesso com seu filho.',
+        ),
+        ctaButton('Criar minha senha e começar', '{{link}}'),
+        p(
+          'Depois dos sete dias, vocês continuam podendo ver e jogar no Mural dos Criadores enquanto a conta existir. Publicar, comentar, reagir e copiar jogos não fazem parte do presente.',
+        ),
+        p(
+          'O presente é gratuito. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
+        ),
+        divider,
+        small(
+          'O link de senha pode ser usado uma vez e expira em 14 dias. Isso não muda o vencimento do curso. Se precisar, use “Esqueci minha senha” na página de login.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque cadastrou sua família nesta campanha.',
+    }),
+  },
+  {
+    key: 'referrals-campaign-existing',
+    channel: 'email' as const,
+    name: 'Presente de campanha (conta existente)',
+    subject: 'Seu presente já está na sua conta, {{nome}}',
+    variables: ['nome', 'campanha', 'validade', 'link'],
+    body: emailLayout({
+      preheader: 'Entre com sua senha de sempre para começar o Cadê Todo Mundo?.',
+      title: 'Seu curso está liberado, {{nome}}',
+      content: [
+        p(
+          'Você resgatou o presente da campanha <strong>{{campanha}}</strong>. O curso <strong>Cadê Todo Mundo?</strong> já está na sua conta e fica disponível até <strong>{{validade}} (horário de Brasília)</strong>.',
+        ),
+        p(
+          'Entre com sua senha de sempre. Em um computador com internet, seu filho acompanha as aulas e programa um jogo de esconde-esconde a partir de um projeto preparado para começar. Vocês podem pausar e rever cada explicação dentro dos sete dias de acesso.',
+        ),
+        ctaButton('Acessar meu presente', '{{link}}'),
+        p(
+          'Vocês também podem ver e jogar no Mural dos Criadores enquanto a conta existir, mesmo depois do curso. Publicar, comentar, reagir e copiar jogos não fazem parte do presente.',
+        ),
+        p(
+          'Não há cobrança automática nem obrigação de assinar. Recuperar a senha não reinicia os sete dias, contados do cadastro.',
+        ),
+        divider,
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque cadastrou sua família nesta campanha.',
+    }),
+  },
+  {
     key: 'referrals-bonus-eligible',
     channel: 'email' as const,
     name: 'Bônus do embaixador liberado (e-mail)',

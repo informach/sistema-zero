@@ -22,6 +22,30 @@ const readJson = (res: Response): Promise<any> => res.json()
 describe('postRedeemScholarship (/api/bolsa/resgatar)', () => {
   const valid = { code: 'vo-x7k2', nome: 'Paula Prado', email: 'Paula@Example.com' }
 
+  test('confirmação preserva prazo e estado do envio; campanha fechada repassa 410', async () => {
+    const fake = createFakeGateway()
+    const done = { status: 'completed', expiresAt: '2026-10-09T12:00:00Z', emailStatus: 'failed' }
+    fake.setRedeemResult(201, done)
+    const result = await postRedeemScholarship(
+      post('/api/bolsa/resgatar', {
+        ...valid,
+        attribution: { utmSource: 'instagram', utmContent: 'mae@example.com' },
+      }),
+      { gateway: fake.gateway },
+    )
+    expect(await result.json()).toEqual(done)
+    expect(fake.calls.redemptions[0]?.input).toMatchObject({
+      attribution: { utmSource: 'instagram', utmContent: null },
+    })
+    fake.setRedeemResult(410, {
+      error: { code: 'CAMPAIGN_UNAVAILABLE', message: 'Campanha encerrada' },
+    })
+    expect(
+      (await postRedeemScholarship(post('/api/bolsa/resgatar', valid), { gateway: fake.gateway }))
+        .status,
+    ).toBe(410)
+  })
+
   test('feliz: repassa completed 201 e traduz os campos PT → API', async () => {
     const fake = createFakeGateway()
     const res = await postRedeemScholarship(post('/api/bolsa/resgatar', valid), {

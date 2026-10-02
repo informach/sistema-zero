@@ -21,7 +21,7 @@ export interface EmbaixadorPainelProps {
   name: string
   shareUrl: string
   stats: { redemptionsCompleted: number; invitesSent: number }
-  bonus?: { pixKey: string | null; items: BonusItem[] }
+  bonus?: { pixKey: string | null; items: BonusItem[]; amountCents?: number }
 }
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
@@ -37,7 +37,7 @@ function bonusLabel(item: BonusItem, hasPixKey: boolean): string {
   // esperando o próprio embaixador, e prometer o contrário faz a pessoa
   // fechar a página sem resolver a única coisa que trava o Pix.
   if (item.status === 'eligible') {
-    return hasPixKey ? 'liberado, pagamento a caminho' : 'liberado, falta a sua chave Pix'
+    return hasPixKey ? 'liberado, aguardando pagamento manual' : 'liberado, falta a sua chave Pix'
   }
   return 'aguardando a garantia de 7 dias'
 }
@@ -45,6 +45,7 @@ function bonusLabel(item: BonusItem, hasPixKey: boolean): string {
 export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: EmbaixadorPainelProps) {
   const uid = useId()
   const [copied, setCopied] = useState<'link' | 'message' | null>(null)
+  const [manualCopy, setManualCopy] = useState<string | null>(null)
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [sending, setSending] = useState(false)
@@ -90,23 +91,26 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
     setSavingPix(false)
   }
 
-  const shareMessage = [
-    `Oi! Quero presentear sua família com o curso Cadê Todo Mundo?, do Sistema Zero. Nele, crianças de 8 a 15 anos criam um jogo de procurar personagens, passo a passo. 🎮`,
-    ``,
-    `O acesso ao curso dura 7 dias a partir do cadastro pelo link. O Mural dos Criadores continua disponível para ver e jogar enquanto a conta existir.`,
-    ``,
-    `É um convite sem custo e sem cartão. Publicar, comentar e copiar jogos do Mural não estão incluídos; os demais cursos também não:`,
-    shareUrl,
-  ].join('\n')
+  const [shareMessage, setShareMessage] = useState(() =>
+    [
+      `Oi! Quero presentear sua família com o curso Cadê Todo Mundo?, do Sistema Zero. Nele, crianças de 8 a 15 anos criam um jogo de procurar personagens, passo a passo. 🎮`,
+      ``,
+      `O acesso ao curso dura 7 dias a partir do cadastro pelo link. O Mural dos Criadores continua disponível para ver e jogar enquanto a conta existir.`,
+      ``,
+      `Para as atividades, é preciso um computador com internet, mouse e teclado. É gratuito e não pede cartão. A página explica o que está incluído:`,
+      shareUrl,
+    ].join('\n'),
+  )
 
   async function copy(text: string, kind: 'link' | 'message') {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(kind)
+      setManualCopy(null)
       setTimeout(() => setCopied(null), 2500)
     } catch {
       // Clipboard bloqueado (http/permissão): selecionar à mão ainda funciona.
-      window.prompt('Copie o texto abaixo:', text)
+      setManualCopy(text)
     }
   }
 
@@ -151,7 +155,7 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
   return (
     <div className="flex flex-col gap-6">
       <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
-        <h2 className="text-lg font-bold text-ink">Compartilhe o seu link de bolsa</h2>
+        <h2 className="text-lg font-bold text-ink">Este é o link para presentear outra família</h2>
         <p className="mt-2 text-sm text-muted">
           Quem entrar por ele recebe 7 dias de acesso ao curso{' '}
           <strong className="text-ink">Cadê Todo Mundo?</strong>, sem custo. O prazo começa no
@@ -164,7 +168,7 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
             readOnly
             value={shareUrl}
             onFocus={(e) => e.currentTarget.select()}
-            aria-label="Seu link de bolsa"
+            aria-label="Seu link público do presente"
             className="w-full flex-1 rounded-xl border border-line bg-card px-4 py-3 text-sm text-ink outline-none"
           />
           <button
@@ -175,6 +179,32 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
             {copied === 'link' ? 'Copiado! ✓' : 'Copiar link'}
           </button>
         </div>
+        <p className="mt-3 text-sm">
+          <a className="font-bold underline" href={shareUrl} target="_blank" rel="noreferrer">
+            Ver a página que a família vai receber
+          </a>
+        </p>
+        <label className="mt-5 block text-sm font-bold" htmlFor={`${uid}-message`}>
+          Sua mensagem de convite
+        </label>
+        <p className="text-sm text-muted">
+          Ajuste o texto para a família que você conhece. O envio pelo WhatsApp é feito por você.
+        </p>
+        <textarea
+          id={`${uid}-message`}
+          value={shareMessage}
+          onChange={(event) => setShareMessage(event.target.value)}
+          rows={7}
+          className="mt-3 w-full rounded-xl border border-line bg-card p-4 text-sm leading-relaxed text-ink"
+        />
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-primary mt-3 inline-flex"
+        >
+          Abrir meu WhatsApp com o convite
+        </a>
         <button
           type="button"
           onClick={() => void copy(shareMessage, 'message')}
@@ -182,6 +212,21 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
         >
           {copied === 'message' ? 'Mensagem copiada! ✓' : 'Copiar mensagem pronta pro WhatsApp'}
         </button>
+        {manualCopy && (
+          <div role="status" className="mt-4">
+            <p className="text-sm">
+              A cópia automática não funcionou. Selecione o texto abaixo e copie:
+            </p>
+            <textarea
+              aria-label="Texto para copiar manualmente"
+              readOnly
+              value={manualCopy}
+              rows={4}
+              onFocus={(event) => event.target.select()}
+              className="mt-2 w-full rounded-xl border border-line p-3 text-sm"
+            />
+          </div>
+        )}
       </div>
 
       <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
@@ -228,13 +273,19 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
         </form>
       </div>
 
-      {bonus && bonus.items.length > 0 && (
+      {bonus && (
         <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
-          <h2 className="text-lg font-bold text-ink">Seus bônus</h2>
+          <h2 className="text-lg font-bold text-ink">
+            Um agradecimento quando a indicação vira assinatura
+          </h2>
           <p className="mt-2 text-sm text-muted">
             Quando uma família que ganhou a bolsa com o seu link assina a Comunidade dos Criadores,
-            você recebe um agradecimento em dinheiro. Ele libera depois do período de garantia de 7
-            dias e a gente paga por Pix.
+            você pode receber{' '}
+            {typeof bonus.amountCents === 'number'
+              ? formatBRLFromCents2(bonus.amountCents)
+              : 'um bônus'}{' '}
+            por essa indicação, após a verificação da compra e do período de garantia. O pagamento é
+            feito manualmente por Pix. O resgate gratuito, sozinho, não gera bônus.
           </p>
           <ul className="mt-4 flex flex-col gap-2">
             {bonus.items.map((item) => (
@@ -251,6 +302,12 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
               </li>
             ))}
           </ul>
+          {bonus.items.length === 0 && (
+            <p className="text-sm text-muted">
+              Ainda não há bônus registrados. Você já pode compartilhar seu link e cadastrar sua
+              chave Pix.
+            </p>
+          )}
           <div className="mt-4">
             <label htmlFor={`${uid}-pix`} className="mb-1.5 block text-sm font-semibold text-ink">
               Sua chave Pix para receber
@@ -304,7 +361,9 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
           <p className="mt-4 text-xs text-muted">
             O bônus é um agradecimento único por indicação que virar assinatura. Não é salário nem
             renda garantida e não cria vínculo com a plataforma. Pagamos por Pix na chave acima,
-            normalmente em poucos dias depois da liberação.
+            após a liberação e a conferência pela equipe. Autoindicação não gera bônus, e estorno
+            dentro da garantia cancela o bônus pendente. Uma renovação da mesma família não gera
+            outro bônus.
           </p>
         </div>
       )}

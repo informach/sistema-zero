@@ -1352,7 +1352,13 @@ export interface AmbassadorListItemView {
   createdAt: string
 }
 
-export type ConversionStatus = 'pending' | 'eligible' | 'paid' | 'canceled' | 'self_blocked'
+export type ConversionStatus =
+  | 'pending'
+  | 'eligible'
+  | 'paid'
+  | 'canceled'
+  | 'self_blocked'
+  | 'unrewarded'
 
 export interface AmbassadorRedemptionView {
   id: string
