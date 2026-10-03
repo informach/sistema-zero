@@ -103,6 +103,86 @@ test('"Editar o desenho" só vai ao Estúdio COM a posse do Pinta, e "Editar a c
   expect(lastEditorProps?.moldaLibrary).toBe(molda)
 })
 
+test('o XP de criar não atualiza a página com o jogo aberto: a barra só se atualiza quando o editor sai', async () => {
+  // Um refresh com o editor aberto vira RECARREGAMENTO quando o servidor mudou de versão
+  // (ou a ida falha), e a criança caía em "Meus Jogos" no meio do que estava fazendo.
+  const realFetch = globalThis.fetch
+  const calls: string[] = []
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
+    calls.push(String(input))
+    return new Response(null, { status: 200 })
+  }) as unknown as typeof fetch
+  router.refresh.mockClear()
+  try {
+    const view = renderEditor({})
+    await waitFor(() => expect(lastEditorProps).toBeDefined())
+    const onChange = lastEditorProps?.onChange as (
+      project: unknown,
+      ctx?: { reason: 'autosave' | 'flush' },
+    ) => void
+    const project = { id: 'p1', updatedAt: 2 }
+
+    onChange(project, { reason: 'flush' })
+    expect(calls).toEqual([])
+
+    onChange(project, { reason: 'autosave' })
+    onChange(project, { reason: 'autosave' })
+    await waitFor(() => expect(calls).toEqual(['/api/studio/activity']))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(router.refresh).not.toHaveBeenCalled()
+
+    view.unmount()
+    expect(router.refresh).toHaveBeenCalledTimes(1)
+  } finally {
+    globalThis.fetch = realFetch
+  }
+})
+
+test('XP confirmado depois que o editor já saiu atualiza a barra na hora', async () => {
+  const realFetch = globalThis.fetch
+  let respond: (response: Response) => void = () => {}
+  globalThis.fetch = (() =>
+    new Promise<Response>((resolve) => {
+      respond = resolve
+    })) as unknown as typeof fetch
+  router.refresh.mockClear()
+  try {
+    const view = renderEditor({})
+    await waitFor(() => expect(lastEditorProps).toBeDefined())
+    const onChange = lastEditorProps?.onChange as (
+      project: unknown,
+      ctx?: { reason: 'autosave' | 'flush' },
+    ) => void
+    onChange({ id: 'p1', updatedAt: 2 }, { reason: 'autosave' })
+    view.unmount()
+    expect(router.refresh).not.toHaveBeenCalled()
+    respond(new Response(null, { status: 200 }))
+    await waitFor(() => expect(router.refresh).toHaveBeenCalledTimes(1))
+  } finally {
+    globalThis.fetch = realFetch
+  }
+})
+
+test('sem XP gravado, sair do editor não atualiza a página', async () => {
+  const realFetch = globalThis.fetch
+  globalThis.fetch = (async () => new Response(null, { status: 403 })) as unknown as typeof fetch
+  router.refresh.mockClear()
+  try {
+    const view = renderEditor({})
+    await waitFor(() => expect(lastEditorProps).toBeDefined())
+    const onChange = lastEditorProps?.onChange as (
+      project: unknown,
+      ctx?: { reason: 'autosave' | 'flush' },
+    ) => void
+    onChange({ id: 'p1', updatedAt: 2 }, { reason: 'autosave' })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    view.unmount()
+    expect(router.refresh).not.toHaveBeenCalled()
+  } finally {
+    globalThis.fetch = realFetch
+  }
+})
+
 function StudioPresenceHarness() {
   const [editorOpen, setEditorOpen] = useState(false)
   const { navCollapsed, toggleNav } = useFocusMode()

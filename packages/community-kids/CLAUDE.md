@@ -1039,8 +1039,18 @@ matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no ne
 na 1ª edição REAL da sessão (`ctx.reason === 'autosave'`, guardado por ref — NÃO em abrir/flush), dispara
 best-effort `POST /api/studio/activity` (shim `shell.routes.studioActivityDay`, DENTRO do matcher, JSON
 sem corpo) → o members dá **10 XP/dia** que MOVE o streak (gated por posse do Estúdio, dedupe 1×/dia). No
-sucesso, `router.refresh()` acende o foguinho/XP/ranking na hora. É a âncora de quem já terminou os cursos
+sucesso, o foguinho/XP/ranking se atualizam quando o editor SAI da tela (o `router.refresh()` roda na
+desmontagem do `StudioFullEditor`). É a âncora de quem já terminou os cursos
 e só cria (sem publicar). Ver members §Missões "Retenção pós-cursos" (migration `0045`).
+⚠️⚠️ **Nada de `router.refresh()` com o editor aberto (02/10/2026).** Relato dela: instalar o Jogo 2D
+devolveu a criança a "Meus Jogos" uma vez, e na segunda tentativa não. O jogo aberto vive só no
+estado do `studio-full-client` (a URL é `/estudio`), e o Next 16 troca o refresh por um
+RECARREGAMENTO da página (`doMpaNavigation` em `fetch-server-response.js`) quando a resposta não
+serve: o servidor foi atualizado depois que a aba abriu (build diferente, o caso comum em staging, que
+publica a cada push) ou a ida voltou com erro. A primeira edição real da sessão era o gatilho (desde
+que abrir deixou de contar como edição, é a instalação de extensão). A segunda tentativa não repete
+porque a aba nova já está na versão nova e o beacon é um por editor aberto. Travado em
+`tests/studio-full-editor.test.tsx`.
 
 ## Ferramentas do Estúdio vêm dos CURSOS (currículo, 08/2026)
 
