@@ -7,11 +7,11 @@
   "blocks": [
     {
       "key": "video-d2-contexto",
-      "plannedVideo": "Título: A chave precisa fazer diferença\n\nRetomar o mesmo jogo e mostrar a necessidade da tarefa: encostar ainda não recolhe a chave. Explicar evento e variável pelo próprio jogo, sem analogia obrigatória ou chamada para outra aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: A chave precisa fazer diferença\n\nMostrar o problema real: o personagem atravessa a chave e ela continua no chão. Esta seção apresenta somente a necessidade. Evento, variável e valores entram na seção de montagem, junto do uso concreto. Terminar em Próxima seção.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "video-d2-programar",
-      "plannedVideo": "Título: Faça o jogo guardar a chave\n\nGuiar variável temChave falso, encontro personagem/chave, retirada da chave, temChave verdadeiro e aviso. Incluir teste, verificação, Salvo, envio com confirmação e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Faça o jogo guardar a chave\n\nExplicar variável ao criar temChave e evento ao programar o encontro. Distinguir falso/verdadeiro de erro/acerto. Guiar declaração falsa, encontro personagem/chave, retirada da chave, memória verdadeira e aviso. Testar, verificar, Salvo, envio confirmado e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d2-programar",
@@ -973,7 +973,7 @@
       "key": "contexto",
       "title": "Encostar ainda não é pegar",
       "intent": "explanation",
-      "objective": "Perceber que o encontro com a chave precisa chamar uma ação e que o jogo deve se lembrar dela.",
+      "objective": "Observar que o personagem atravessa a chave sem recolhê-la e reconhecer a regra que falta.",
       "blockKeys": ["video-d2-contexto"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1035,30 +1035,72 @@
           },
           {
             "id": "recolher",
-            "label": "Retire a chave depois do encontro.",
+            "label": "Retire a chave dentro do encontro entre personagem e chave.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_destroy_sprite",
+              "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "withinBlock": "sz_g2d_on_overlap",
               "fields": {
-                "SPRITE": "chave"
+                "A": "personagem",
+                "B": "chave"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  }
+                }
               }
             }
           },
           {
             "id": "lembrar",
-            "label": "Guarde que agora tem a chave.",
+            "label": "Mude temChave para verdadeiro dentro do encontro com a chave.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_js_var_assign",
+              "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "withinBlock": "sz_g2d_on_overlap",
               "fields": {
-                "NAME": "temChave"
+                "A": "personagem",
+                "B": "chave"
               },
-              "inputs": {
-                "VALUE": true
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "temChave"
+                  },
+                  "inputs": {
+                    "VALUE": true
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-chave",
+            "label": "Altere aviso com um texto dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fields": {
+                "A": "personagem",
+                "B": "chave"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "aviso"
+                  },
+                  "inputBlocks": {
+                    "VALUE": {
+                      "blockType": "sz_val_text"
+                    }
+                  }
+                }
               }
             }
           }

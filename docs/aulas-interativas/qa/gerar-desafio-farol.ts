@@ -1,6 +1,7 @@
-/** Regenera só os cinco manifestos do Desafio do farol. Não importa nem publica aulas. */
+/** Regenera os manifestos e o inventário do Desafio do farol. Não importa nem publica aulas. */
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import type { ProjectBlockPattern } from '../../../packages/core/src/learning/section-progression'
 import { montarProjetoFarol } from './desafio-farol-projeto'
 
 const DIR = resolve(import.meta.dir, '../aulas')
@@ -94,6 +95,27 @@ const projeto = (etapa: 'dia-1' | 'dia-2' | 'dia-3') => ({
   },
 })
 const check = (id: string, label: string, rule: Record<string, unknown>) => ({ id, label, rule })
+// Vincular a ação ao encontro e ao ramo corretos evita aprovar peças no lugar errado.
+const noEncontro = (target: string, body: ProjectBlockPattern) => ({
+  type: 'usesBlock',
+  blockType: 'sz_g2d_on_overlap',
+  area: 'events',
+  fields: { A: 'personagem', B: target },
+  inputBlocks: { BODY: body },
+})
+const naRespostaDaPorta = (branch: 'THEN' | 'ELSE', action: ProjectBlockPattern) =>
+  noEncontro('farol', {
+    blockType: 'sz_js_if_else',
+    inputBlocks: {
+      COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } },
+      [branch]: action,
+    },
+  })
+const aviso = {
+  blockType: 'sz_js_var_assign',
+  fields: { NAME: 'aviso' },
+  inputBlocks: { VALUE: { blockType: 'sz_val_text' } },
+}
 
 const dia1 = {
   version: 5,
@@ -161,13 +183,13 @@ const dia2 = {
       'video-d2-contexto',
       'A chave precisa fazer diferença',
       'desafio-dia-2.roteiro.md',
-      'Retomar o mesmo jogo e mostrar a necessidade da tarefa: encostar ainda não recolhe a chave. Explicar evento e variável pelo próprio jogo, sem analogia obrigatória ou chamada para outra aula.',
+      'Mostrar o problema real: o personagem atravessa a chave e ela continua no chão. Esta seção apresenta somente a necessidade. Evento, variável e valores entram na seção de montagem, junto do uso concreto. Terminar em Próxima seção.',
     ),
     video(
       'video-d2-programar',
       'Faça o jogo guardar a chave',
       'desafio-dia-2.roteiro.md',
-      'Guiar variável temChave falso, encontro personagem/chave, retirada da chave, temChave verdadeiro e aviso. Incluir teste, verificação, Salvo, envio com confirmação e Concluir aula.',
+      'Explicar variável ao criar temChave e evento ao programar o encontro. Distinguir falso/verdadeiro de erro/acerto. Guiar declaração falsa, encontro personagem/chave, retirada da chave, memória verdadeira e aviso. Testar, verificar, Salvo, envio confirmado e Concluir aula.',
     ),
     fala(
       'ponte-d2-programar',
@@ -180,7 +202,7 @@ const dia2 = {
       'contexto',
       'Encostar ainda não é pegar',
       'explanation',
-      'Perceber que o encontro com a chave precisa chamar uma ação e que o jogo deve se lembrar dela.',
+      'Observar que o personagem atravessa a chave sem recolhê-la e reconhecer a regra que falta.',
       ['video-d2-contexto'],
       ['video-d2-contexto'],
     ),
@@ -213,21 +235,28 @@ const dia2 = {
             },
           },
         }),
-        check('recolher', 'Retire a chave depois do encontro.', {
-          type: 'usesBlock',
-          blockType: 'sz_g2d_destroy_sprite',
-          area: 'events',
-          withinBlock: 'sz_g2d_on_overlap',
-          fields: { SPRITE: 'chave' },
-        }),
-        check('lembrar', 'Guarde que agora tem a chave.', {
-          type: 'usesBlock',
-          blockType: 'sz_js_var_assign',
-          area: 'events',
-          withinBlock: 'sz_g2d_on_overlap',
-          fields: { NAME: 'temChave' },
-          inputs: { VALUE: true },
-        }),
+        check(
+          'recolher',
+          'Retire a chave dentro do encontro entre personagem e chave.',
+          noEncontro('chave', {
+            blockType: 'sz_g2d_destroy_sprite',
+            fields: { SPRITE: 'chave' },
+          }),
+        ),
+        check(
+          'lembrar',
+          'Mude temChave para verdadeiro dentro do encontro com a chave.',
+          noEncontro('chave', {
+            blockType: 'sz_js_var_assign',
+            fields: { NAME: 'temChave' },
+            inputs: { VALUE: true },
+          }),
+        ),
+        check(
+          'aviso-chave',
+          'Altere aviso com um texto dentro do encontro com a chave.',
+          noEncontro('chave', aviso),
+        ),
       ],
     ),
   ],
@@ -247,7 +276,7 @@ const dia3 = {
     ),
     fala(
       'ponte-d3-condicao',
-      'Teste a mesma porta sem a chave e depois com a chave. Observe o que muda.',
+      'A chave já pode ser recolhida. Veja o que a porta precisa conferir.',
     ),
     {
       key: 'experiencia-porta',
@@ -325,28 +354,41 @@ const dia3 = {
             },
           },
         }),
-        check('condicao', 'Faça o Se consultar temChave no encontro com o farol.', {
-          type: 'usesBlock',
-          blockType: 'sz_js_if_else',
-          area: 'events',
-          withinBlock: 'sz_g2d_on_overlap',
-          inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } } },
-        }),
-        check('acender', 'Troque a imagem do farol quando a condição for verdadeira.', {
-          type: 'usesBlock',
-          blockType: 'sz_g2d_set_image',
-          area: 'events',
-          withinBlock: 'sz_js_if_else',
-          fields: { SPRITE: 'farol', IMAGE: 'farol-aceso' },
-        }),
-        check('vitoria', 'Guarde que o farol acendeu para o barco chegar.', {
-          type: 'usesBlock',
-          blockType: 'sz_js_var_assign',
-          area: 'events',
-          withinBlock: 'sz_js_if_else',
-          fields: { NAME: 'ganhou' },
-          inputs: { VALUE: true },
-        }),
+        check(
+          'condicao',
+          'Faça o Se consultar temChave no encontro com o farol.',
+          noEncontro('farol', {
+            blockType: 'sz_js_if_else',
+            inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } } },
+          }),
+        ),
+        check(
+          'acender',
+          'Troque a imagem do farol dentro de então, no encontro com o farol.',
+          naRespostaDaPorta('THEN', {
+            blockType: 'sz_g2d_set_image',
+            fields: { SPRITE: 'farol', IMAGE: 'farol-aceso' },
+          }),
+        ),
+        check(
+          'vitoria',
+          'Mude ganhou para verdadeiro dentro de então, no encontro com o farol.',
+          naRespostaDaPorta('THEN', {
+            blockType: 'sz_js_var_assign',
+            fields: { NAME: 'ganhou' },
+            inputs: { VALUE: true },
+          }),
+        ),
+        check(
+          'aviso-sem-chave',
+          'Altere aviso com um texto dentro de senão, no encontro com o farol.',
+          naRespostaDaPorta('ELSE', aviso),
+        ),
+        check(
+          'aviso-vitoria',
+          'Altere aviso com um texto dentro de então, no encontro com o farol.',
+          naRespostaDaPorta('THEN', aviso),
+        ),
       ],
     ),
     secao(
@@ -454,7 +496,8 @@ const introducao = {
       },
     },
     // Consultar a ajuda é opcional. O jogo e a tarefa vêm antes dos tutoriais de interface.
-    ajudaComoFazer('ajuda-como-fazer-intro', 'Para rever depois, no Como fazer', [
+    ajudaComoFazer('ajuda-como-fazer-intro', 'Como Fazer: ajuda para usar a plataforma', [
+      ['plataforma-baixar-materiais', 'Como ler o caderno na tela ou baixar os materiais'],
       ['plataforma-abrir-uma-aula', 'Como abrir uma aula e trocar de seção'],
       ['plataforma-ampliar-a-atividade', 'Como dar mais espaço para a atividade na aula'],
       ['plataforma-mostrar-o-menu', 'Como mostrar o menu dentro da aula ou da ferramenta'],
@@ -534,6 +577,11 @@ for (const [name, manifest] of [
   writeFileSync(target, `${JSON.stringify(manifest, null, 2)}\n`)
   generatedFiles.push(target)
 }
+
+// O inventário atual não pode continuar descrevendo o antigo jogo de nave.
+const inventory = resolve(DIR, '../blocos-desafio-primeiro-jogo.json')
+writeFileSync(inventory, `${JSON.stringify({ blocks: [...studioBlocks].sort() }, null, 2)}\n`)
+generatedFiles.push(inventory)
 
 const formatted = Bun.spawnSync({
   cmd: [process.execPath, 'x', 'biome', 'format', '--write', ...generatedFiles],

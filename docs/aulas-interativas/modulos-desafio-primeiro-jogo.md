@@ -8,6 +8,8 @@
 
 Revisão de 03/10/2026: aplicação do formato testado no Cadê Todo Mundo. Contexto pertinente antes de cada tarefa, instruções completas, menos navegação obrigatória, verificação antes do envio e publicação orientada.
 
+O [review pedagógico do curso](qa/review-pedagogico-desafio-2026-10-03.md) registra os achados e as correções seguintes: conceitos explicados no momento do uso, critérios vinculados ao encontro e ramo corretos, instruções completas e caderno alinhado às aulas. As propostas por aula incluem a triagem dos conceitos exigida no briefing.
+
 ## Módulo 1 · Sua aventura no farol
 
 | Aula | Seções | Resultado |
@@ -27,6 +29,10 @@ Identificador do curso e cadeia: `desafio-primeiro-jogo`. Aulas: `boas-vindas`, 
 A cadeia prioriza o envio anterior da criança. Os projetos embutidos dos Dias 2 e 3 são retomadas somente quando não há trabalho anterior. O jogo pronto da introdução é uma atividade isolada e nunca deve substituir o projeto da criança.
 
 Cada entrega ensina testar, **Verificar esta etapa**, corrigir pendências, conferir **Objetivo da etapa cumprido!**, esperar **Salvo**, **Enviar para o professor** e confirmar **Enviar**. Testes manuais do comportamento complementam a verificação dos blocos.
+
+No Dia 2, a primeira seção mostra a falta de coleta; variável e evento são explicados junto da montagem na segunda seção. A mensagem da tela é distinguida da informação guardada em temChave. No Dia 3, os dois ramos e seus avisos são conferidos dentro do encontro com o farol. A verificação não exige copiar literalmente as frases dos avisos.
+
+O inventário [blocos-desafio-primeiro-jogo.json](blocos-desafio-primeiro-jogo.json) é gerado junto dos manifestos e descreve os blocos disponíveis para este Farol, incluindo os preparados. O inventário do jogo antigo de nave permanece no acervo legado.
 
 No Dia 3, a seção de publicação usa o mesmo Estúdio da montagem. **Compartilhar** fica disponível após o envio. O título e o resumo vêm preenchidos; ensinar gerar capa, publicar e esperar a confirmação. Publicar é a tarefa, mas o vídeo segue como critério técnico daquela seção. Não criar bloqueio novo por acesso expirado ao Mural.
 

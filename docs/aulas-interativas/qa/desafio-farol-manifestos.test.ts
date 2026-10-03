@@ -192,6 +192,84 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(result.find((item) => item.checkId === 'condicao')?.passed).toBe(false)
   })
 
+  test('a coleta não passa se temChave só muda no encontro com o farol', () => {
+    const project = montarProjetoFarol('dia-3')
+    const ir = structuredClone(project.ir) as SZIRV2
+    const event = ir.behavior.events.find((item) => item.type === 'g2d:onOverlap')
+    if (event?.type !== 'g2d:onOverlap') throw new Error('Coleta ausente')
+    const remember = event.body.find((item) => item.type === 'assign' && item.name === 'temChave')
+    if (!remember) throw new Error('Memória ausente')
+    event.body = event.body.filter((item) => item !== remember)
+    ir.behavior.events.push({
+      type: 'g2d:onOverlap',
+      aVar: 'personagem',
+      bVar: 'farol',
+      body: [remember],
+    })
+    const wrong = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    expect(
+      evaluateStudioSectionProject(checks('dia-2'), wrong).every((result) => result.passed),
+    ).toBe(false)
+  })
+
+  test('a coleta precisa atualizar o aviso dentro do encontro com a chave', () => {
+    const project = montarProjetoFarol('dia-3')
+    const ir = structuredClone(project.ir) as SZIRV2
+    const event = ir.behavior.events.find((item) => item.type === 'g2d:onOverlap')
+    if (event?.type !== 'g2d:onOverlap') throw new Error('Coleta ausente')
+    event.body = event.body.filter((item) => item.type !== 'assign' || item.name !== 'aviso')
+    const wrong = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    expect(
+      evaluateStudioSectionProject(checks('dia-2'), wrong).every((result) => result.passed),
+    ).toBe(false)
+  })
+
+  test.each(['then', 'else'] as const)('a decisão precisa do aviso no ramo %s', (branch) => {
+    const project = montarProjetoFarol('concluido')
+    const ir = structuredClone(project.ir) as SZIRV2
+    const event = ir.behavior.events.find(
+      (item) => item.type === 'g2d:onOverlap' && item.bVar === 'farol',
+    )
+    if (event?.type !== 'g2d:onOverlap') throw new Error('Porta ausente')
+    const condition = event.body.find((item) => item.type === 'if')
+    if (condition?.type !== 'if') throw new Error('Condição ausente')
+    condition[branch] = (condition[branch] ?? []).filter(
+      (item) => item.type !== 'assign' || item.name !== 'aviso',
+    )
+    const wrong = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    expect(
+      evaluateStudioSectionProject(checks('dia-3'), wrong).every((result) => result.passed),
+    ).toBe(false)
+  })
+
+  test('avisos com palavras próprias não são reprovados por copiar um texto diferente', () => {
+    const project = montarProjetoFarol('concluido')
+    const ir = structuredClone(project.ir) as SZIRV2
+    for (const event of ir.behavior.events) {
+      if (event.type !== 'g2d:onOverlap') continue
+      for (const command of event.body) {
+        if (command.type === 'assign' && command.name === 'aviso')
+          command.value = { type: 'str', value: 'Achei! Vou levar a chave ao farol.' }
+        if (command.type === 'if') {
+          for (const [branch, message] of [
+            ['then', 'O farol acendeu!'],
+            ['else', 'Preciso buscar a chave.'],
+          ] as const) {
+            const statement = command[branch]?.find(
+              (item) => item.type === 'assign' && item.name === 'aviso',
+            )
+            if (statement?.type === 'assign') statement.value = { type: 'str', value: message }
+          }
+        }
+      }
+    }
+    const changed = { ...project, ir, blocksState: buildWorkspaceStateFromIR(ir) }
+    for (const day of ['dia-2', 'dia-3'])
+      expect(
+        evaluateStudioSectionProject(checks(day), changed).every((result) => result.passed),
+      ).toBe(true)
+  })
+
   test('cada roteiro cobre as seções e gravações do manifesto na mesma ordem', () => {
     for (const name of ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const m = manifesto(name)
@@ -206,5 +284,29 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
         m.blocks.filter((block) => 'plannedVideo' in block).map((block) => block.key),
       )
     }
+  })
+
+  test('a ajuda opcional aponta para tutoriais existentes, sem exigir sua leitura', () => {
+    const library = JSON.parse(
+      readFileSync(resolve(import.meta.dir, '../../como-fazer/como-fazer.json'), 'utf8'),
+    ) as { tutorials: Array<{ slug: string }> }
+    const slugs = new Set(library.tutorials.map((tutorial) => tutorial.slug))
+    let links = 0
+    for (const name of ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado']) {
+      const m = manifesto(name)
+      for (const block of m.blocks) {
+        if (block.content?.kind !== 'materials') continue
+        for (const item of block.content.items) {
+          if (item.kind !== 'link') continue
+          expect(item.url.startsWith('/como-fazer/')).toBe(true)
+          expect(slugs.has(item.url.slice('/como-fazer/'.length)), item.url).toBe(true)
+          expect(
+            m.sections.some((section) => section.completion?.blockIds.includes(block.key)),
+          ).toBe(false)
+          links++
+        }
+      }
+    }
+    expect(links).toBe(9)
   })
 })

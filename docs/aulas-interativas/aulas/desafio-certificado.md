@@ -1,23 +1,50 @@
-# A Chave do Farol · Certificado
+# A Chave do Farol · Certificado · Comemore sua criação
 
-## Resultado e diagnóstico
+## Resumo
 
-A criança reconhece o que programou e emite seu certificado. A aula anterior tinha uma seção obrigatória de apresentação comercial ao responsável. A revisão segue a celebração do Cadê Todo Mundo: encerramento curto, autoria verdadeira e ação de guardar a conquista.
+- Estado de entrada: o jogo já tem movimento, coleta e decisão; a publicação foi ensinada.
+- Vitória: reconhecer a autoria e guardar o certificado.
+- Seções na entrada deste review: 1 · Seções finais: 1.
+- Clipes na entrada deste review: 1 · Clipes finais: 1.
 
-## Seção final
+## Triagem dos conceitos
 
-| Seção | Vídeo | Atividade e conclusão |
-| --- | --- | --- |
-| Comemore sua criação | `video-certificado-farol` | Vídeo, diálogo curto `fala-certificado` e emissão pelo bloco existente `certificado`. |
+| O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
+| --- | --- | --- | --- | --- | --- |
+| Reconhecer a autoria | Não | Nas regras construídas | Nomear movimento, coleta e decisão | Abertura | Celebrar sem atribuir a arte preparada à criança |
+| Guardar a conquista | Interface | Na emissão | Pegar meu certificado e concluir | Após a celebração | Dar um encerramento claro |
 
-## Argumento da celebração
+Não acrescentar novo conceito, experiência, quiz ou conteúdo comercial.
 
-Reconhecer as três construções: movimento, coleta e decisão. Dizer que desenhos e movimento do barco já estavam preparados. Não atribuir toda a arte à criança nem pedir que convença a família a comprar outro produto.
+## Diagnóstico do desenho atual
 
-Orientar **Pegar meu certificado** e depois **Concluir aula**. Para quem já emitiu, o botão é **Baixar certificado (PDF)**. Usar conta de ensaio adequada na gravação e conferir que certificados existentes continuam acessíveis.
+A seção obrigatória de apresentação comercial já foi retirada. A celebração distingue a autoria das regras dos desenhos e do movimento do barco preparado. A emissão usa o bloco existente. Não foi encontrado problema que justifique mudar essa estrutura.
 
-## Preservação e produção
+A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar meu certificado**. Quem já emitiu encontra **Baixar certificado (PDF)**; conferir o caso de retorno sem simular nova emissão.
 
-Manter `lessonSlug: certificado`, a seção `certificado`, a chave e o conteúdo de emissão do certificado. Acrescentar o vídeo curto de celebração; retirar a seção `proximos-passos`. Aposentar explicitamente `fala-pitch`, `video-pitch-farol`, `link-comunidade` e a chave histórica `video-pitch`.
+## Proposta final
 
-Compra, visita à oferta e chamada de responsável não são requisitos da aula. Os links de continuidade já disponíveis na plataforma permanecem fora da tarefa infantil. Gravar o novo vídeo e reconciliar progresso e emissão de quem já concluiu antes de atualizar o curso no admin.
+### Seção 1. Comemore sua criação
+
+- **Intenção:** entrega da conquista (`delivery`).
+- **Por que existe:** concluir o percurso com reconhecimento concreto.
+- **Conclui quando:** vídeo e certificado emitido.
+- **Blocos:** `video-certificado-farol`, `fala-certificado`, bloco existente `certificado`.
+
+Nomear o que a criança programou; orientar **Pegar meu certificado** e **Concluir aula**. Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
+
+## Experiências e demonstrações desta aula
+
+Não há experimento. O vídeo mostra brevemente os três grupos de regras e a ação de emissão. Não repetir uma partida inteira.
+
+## Vídeos
+
+| Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
+| --- | --- | --- | --- | --- |
+| `video-certificado-farol` | Autoria, emissão e saída | Roteiro atual | 20 a 30 s | Gravar |
+
+## Continuidade
+
+Preservar aula e seção `certificado`, chave e conteúdo do bloco de emissão. Manter as aposentadorias de `fala-pitch`, `video-pitch-farol`, `link-comunidade` e `video-pitch`. A seção `proximos-passos` permanece retirada.
+
+Os links de continuidade da plataforma ficam fora da tarefa infantil. Reconciliar progresso e certificados existentes antes de aplicar o manifesto. A revisão local não altera a emissão já registrada.

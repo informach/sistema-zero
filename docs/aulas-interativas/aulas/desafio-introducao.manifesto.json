@@ -1225,8 +1225,14 @@
       "key": "ajuda-como-fazer-intro",
       "content": {
         "kind": "materials",
-        "title": "Para rever depois, no Como fazer",
+        "title": "Como Fazer: ajuda para usar a plataforma",
         "items": [
+          {
+            "id": "link-plataforma-baixar-materiais",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-baixar-materiais",
+            "label": "Como ler o caderno na tela ou baixar os materiais"
+          },
           {
             "id": "link-plataforma-abrir-uma-aula",
             "kind": "link",

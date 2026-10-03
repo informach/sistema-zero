@@ -13,7 +13,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste a mesma porta sem a chave e depois com a chave. Observe o que muda."
+        "text": "A chave já pode ser recolhida. Veja o que a porta precisa conferir."
       }
     },
     {
@@ -1200,14 +1200,22 @@
             "label": "Faça o Se consultar temChave no encontro com o farol.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_js_if_else",
+              "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "withinBlock": "sz_g2d_on_overlap",
+              "fields": {
+                "A": "personagem",
+                "B": "farol"
+              },
               "inputBlocks": {
-                "COND": {
-                  "blockType": "sz_val_variable",
-                  "fields": {
-                    "NAME": "temChave"
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    }
                   }
                 }
               }
@@ -1215,31 +1223,143 @@
           },
           {
             "id": "acender",
-            "label": "Troque a imagem do farol quando a condição for verdadeira.",
+            "label": "Troque a imagem do farol dentro de então, no encontro com o farol.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_set_image",
+              "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "withinBlock": "sz_js_if_else",
               "fields": {
-                "SPRITE": "farol",
-                "IMAGE": "farol-aceso"
+                "A": "personagem",
+                "B": "farol"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_g2d_set_image",
+                      "fields": {
+                        "SPRITE": "farol",
+                        "IMAGE": "farol-aceso"
+                      }
+                    }
+                  }
+                }
               }
             }
           },
           {
             "id": "vitoria",
-            "label": "Guarde que o farol acendeu para o barco chegar.",
+            "label": "Mude ganhou para verdadeiro dentro de então, no encontro com o farol.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_js_var_assign",
+              "blockType": "sz_g2d_on_overlap",
               "area": "events",
-              "withinBlock": "sz_js_if_else",
               "fields": {
-                "NAME": "ganhou"
+                "A": "personagem",
+                "B": "farol"
               },
-              "inputs": {
-                "VALUE": true
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_assign",
+                      "fields": {
+                        "NAME": "ganhou"
+                      },
+                      "inputs": {
+                        "VALUE": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-sem-chave",
+            "label": "Altere aviso com um texto dentro de senão, no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fields": {
+                "A": "personagem",
+                "B": "farol"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "ELSE": {
+                      "blockType": "sz_js_var_assign",
+                      "fields": {
+                        "NAME": "aviso"
+                      },
+                      "inputBlocks": {
+                        "VALUE": {
+                          "blockType": "sz_val_text"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "aviso-vitoria",
+            "label": "Altere aviso com um texto dentro de então, no encontro com o farol.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fields": {
+                "A": "personagem",
+                "B": "farol"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_val_variable",
+                      "fields": {
+                        "NAME": "temChave"
+                      }
+                    },
+                    "THEN": {
+                      "blockType": "sz_js_var_assign",
+                      "fields": {
+                        "NAME": "aviso"
+                      },
+                      "inputBlocks": {
+                        "VALUE": {
+                          "blockType": "sz_val_text"
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }

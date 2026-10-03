@@ -223,9 +223,9 @@ Gastar cena com isso é o que produziu o excesso de seções do v6.
 
 Não são molde, são pisos de qualidade:
 
-- **Toda seção começa dizendo o que fazer agora.** "Jogue esta versão pronta", "Toque no arbusto"
-  ou "Faça o jogo contar os personagens". Se uma retomada for necessária, limite-a ao fato que
-  ajuda a executar a tarefa. Não abrir com agenda, teoria ou justificativa para adultos.
+- **Toda seção começa com contexto pertinente e encaminha para a tarefa atual.** Situar o jogo
+  ou o estado que torna a tarefa necessária; então convidar a jogar, testar ou construir. A
+  retomada fica limitada ao fato útil. Não abrir com agenda, teoria ou justificativa para adultos.
 - **O roteiro ensina a tarefa; o Como Fazer ensina a interface.** Pausar, rever, ampliar,
   redimensionar, alternar abas e baixar materiais vão para a biblioteca. Quando publicar
   é a tarefa da seção, ensinar na aula o caminho mínimo até a confirmação e a conclusão;
@@ -292,12 +292,17 @@ página verdadeira do caderno. Registrar a seção no relatório, no manifesto e
 Virar páginas, trocar o modo de leitura, baixar e imprimir ficam no Como Fazer. A consulta
 opcional não vira uma tarefa obrigatória para preencher tempo.
 
+**Conteúdo do caderno, esclarecido pelo usuário em 03/10/2026:** acompanhar o conteúdo real
+das aulas. Pode incluir visão geral, navegação, montagem, testes, publicação e certificado.
+Não acrescentar um mapa como material ou atividade específica quando ele não existe na aula.
+A visão geral do percurso não substitui o passo a passo, nem exige um mapa adicional para a família.
+
 ## 6. Regras de língua e de execução (herdadas, obrigatórias)
 
 - Português brasileiro com acentuação correta.
 - **Travessão zero.** Exclamação pontual, 3 a 5 por aula, só nos picos.
 - Linguagem falada, não escrita. Proibido "o objetivo de hoje é este".
-- Na narração, começar pela tarefa. Explicar uma palavra nova em uma frase simples quando ela
+- Na narração, situar a tarefa com contexto curto e pertinente. Explicar uma palavra nova em uma frase simples quando ela
   for necessária. Usar o próprio jogo como exemplo; analogias são opcionais e curtas.
 - Cada "isso", "essa parte" ou "essas instruções" precisa apontar para algo já mostrado ou dito.
   Evitar definições com dois-pontos, frases telegráficas e enumerações que soam como documento.

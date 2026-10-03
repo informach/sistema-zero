@@ -157,15 +157,15 @@ def caderno():
            "<b>Jogo 2D &gt; Controles &gt; Teclado, ações e toque.</b><br/>"
            "Pegue <b>Ativar controles clássicos</b>. Encaixe no fim de <b>Ao iniciar</b>, "
            "depois dos blocos preparados. Escolha <b>só as quatro direções</b>.")
+    p.box("Duas palavras que aparecem aqui",
+          "<b>Sprite:</b> um elemento do jogo que podemos controlar, como o personagem.<br/>"
+          "<b>Velocidade:</b> quanto ele anda a cada repetição. O movimento fica dentro de "
+          "A cada quadro para ser repetido enquanto o jogo funciona.", SEA)
     p.step("2. Programe o movimento",
            "<b>Jogo 2D &gt; Movimento &gt; Movimentos prontos.</b><br/>"
            "Pegue <b>Mover sprite em 4 direções com setas</b>. Em <b>Enquanto estiver rodando</b>, "
            "encaixe dentro de <b>A cada quadro</b>, logo depois de <b>Desenhar o cenário cenario</b>. "
            "Escolha o sprite <b>personagem</b>. A velocidade já vem em <b>3</b>; deixe assim.")
-    p.box("Duas palavras que aparecem aqui",
-          "<b>Sprite:</b> um elemento do jogo que podemos controlar, como o personagem.<br/>"
-          "<b>Velocidade:</b> quanto ele anda a cada repetição. O movimento fica dentro de "
-          "A cada quadro para ser repetido enquanto o jogo funciona.", SEA)
     p.step("Teste",
            "Segure uma seta da tela. No computador, pode clicar no jogo e usar o teclado. "
            "Vá até uma beirada e observe se o personagem fica inteiro na tela. "
@@ -196,19 +196,21 @@ def caderno():
 
     p = Page(canvas, "Dia 2 · Montagem", "A chave precisa ser lembrada",
              "Seu personagem já anda. Agora o encontro com a chave precisa mudar o jogo.")
+    p.text("Uma <b>variável</b> tem nome e guarda um valor que pode mudar. A nossa é <b>temChave</b>. "
+           "Aqui, <b>falso</b> significa sem a chave e <b>verdadeiro</b>, com a chave. "
+           "Falso não quer dizer que você errou.")
     p.step("1. Crie a informação temChave",
            "<b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e "
            "encaixe no fim de <b>Ao iniciar</b>, depois de Ativar controles clássicos. "
-           "Nome: <b>temChave</b>, tudo junto, com C maiúsculo.<br/>"
+           "Troque o nome contador por <b>temChave</b>, tudo junto, com C maiúsculo.<br/>"
            "Em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>Verdadeiro ou falso</b>. "
            "Substitua o valor inicial por esse bloco e escolha <b>falso</b>.")
-    p.text("Uma <b>variável</b> guarda uma informação que pode mudar. No começo da partida, "
-           "temChave é falso porque o personagem ainda não pegou a chave.")
     p.step("2. Programe o encontro",
+           "O encontro é um <b>evento</b>, um acontecimento ao qual o jogo pode responder.<br/>"
            "<b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b><br/>"
            "Pegue <b>Quando o sprite começar a encostar no sprite</b> e encaixe em "
-           "<b>Quando acontecer</b>. Escolha <b>personagem</b> primeiro e <b>chave</b> depois. "
-           "Este evento vai executar as ações colocadas dentro dele.")
+           "<b>Quando acontecer</b>, que ainda está vazia. Escolha <b>personagem</b> primeiro e <b>chave</b> depois. "
+           "As ações dentro do bloco acontecem quando os dois começarem a se encostar.")
     p.step("3. Retire a chave do chão",
            "<b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b><br/>"
            "Pegue <b>Destruir o sprite</b>, encaixe dentro do encontro e escolha <b>chave</b>. "
@@ -225,9 +227,10 @@ def caderno():
            "encaixe no valor e mantenha <b>verdadeiro</b>, como veio no bloco.")
     p.step("5. Mostre a mensagem",
            "Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b>. "
-           "Encaixe abaixo e escolha <b>aviso</b>. Em <b>Programação &gt; Valores</b>, "
-           "pegue <b>texto</b>, encaixe no valor e escreva:<br/>"
-           "<b>Você pegou a chave! Agora vá ao farol.</b>")
+           "Encaixe abaixo de temChave, ainda no encontro, e escolha <b>aviso</b>. Em <b>Programação &gt; Valores</b>, "
+           "pegue <b>texto</b>, encaixe no valor de aviso, substituindo o número, e escreva:<br/>"
+           "<b>Você pegou a chave! Agora vá ao farol.</b><br/>"
+           "O aviso conta o que aconteceu; <b>temChave</b> guarda a informação da coleta.")
     p.step("Teste a coleta",
            "Pegue a chave, confira se ela sumiu e se a mensagem mudou. Passe pelo mesmo "
            "lugar outra vez. Aperte <b>Atualizar</b> para recomeçar: a chave deve voltar. "
@@ -273,8 +276,8 @@ def caderno():
            "Escolha o sprite <b>farol</b> e a imagem <b>farol-aceso</b>.")
     p.step("6. Conte o que aconteceu",
            "Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b>, "
-           "encaixe abaixo da troca de imagem e escolha <b>aviso</b>. Em "
-           "<b>Programação &gt; Valores</b>, pegue <b>texto</b> e encaixe no valor. Escreva:<br/>"
+           "encaixe abaixo da troca de imagem, ainda em <b>então</b>, e escolha <b>aviso</b>. Em "
+           "<b>Programação &gt; Valores</b>, pegue <b>texto</b> e encaixe no valor de aviso, substituindo o número. Escreva:<br/>"
            "<b>Você acendeu o farol! Olhe o barco chegando.</b>")
     p.diagram([
         (0, "Encontro: personagem com farol"),
@@ -291,13 +294,15 @@ def caderno():
           "Aperte <b>Atualizar</b> para recomeçar. Vá direto ao farol, sem passar pela chave. "
           "A luz deve continuar apagada, e a mensagem deve dizer que falta a chave.", CREAM)
     p.box("Teste 2 · Com a chave",
-          "Aperte <b>Atualizar</b> outra vez. Pegue a chave e vá ao farol. "
+          "Aperte <b>Atualizar</b> outra vez. Pegue a chave, afaste-se de onde ela estava e vá ao farol. "
+          "O jogo continua lembrando da coleta em <b>temChave</b>. "
           "A luz deve acender, a mensagem deve mudar e o barco deve chegar.", GREEN)
     p.step("Se a resposta saiu diferente",
            "Acendeu sem chave? Confira se a troca de imagem está em <b>então</b> e se o Se "
            "consulta <b>temChave</b>.<br/>Não acendeu com chave? Confira a coleta, "
            "<b>temChave verdadeiro</b> e a imagem <b>farol-aceso</b>.<br/>"
            "O barco não veio? Confira <b>ganhou verdadeiro</b> em então.<br/>"
+           "O aviso saiu errado? Confira o texto no ramo certo: <b>então</b> ou <b>senão</b>.<br/>"
            "Corrija e repita os dois testes.")
     delivery(p, "Próxima seção")
     footer(canvas, 8, total)

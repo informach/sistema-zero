@@ -1,32 +1,53 @@
 # A Chave do Farol · Dia 1 · O personagem ganha movimento
 
-## Resultado e diagnóstico
+## Resumo
 
-A criança faz o personagem andar nas quatro direções e permanecer dentro do mapa. O cenário, os desenhos e o comportamento futuro do barco vêm preparados. Os dois vídeos de apresentação sem prática foram incorporados à montagem: a introdução já permite conhecer e jogar a aventura.
+- Estado de entrada: cenário, sprites, desenho por quadro e comportamento do barco preparados; sem controles nem movimento.
+- Vitória do dia: personagem anda em quatro direções e permanece dentro da tela.
+- Seções na entrada deste review: 1 · Seções finais: 1.
+- Clipes na entrada deste review: 1 · Clipes finais: 1.
 
-A abertura situa a diferença concreta: a criança experimentou a versão pronta; nesta versão, o personagem ainda está parado. Isso dá sentido à tarefa antes de abrir a paleta.
+## Triagem dos conceitos
 
-## Seção final
+| O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
+| --- | --- | --- | --- | --- | --- |
+| Sprite | Vocabulário | Na identificação do personagem | Definição curta antes de nomear o bloco | Na montagem | Evitar termo desconhecido na instrução |
+| Controles e movimento | Não | No jogo | Setas aparecem; personagem se move depois do segundo bloco | Após cada montagem | Mostrar controles não move alguém sozinho |
+| A cada quadro | Sim, em nível inicial | No movimento contínuo | Explicar que o jogo repete o que está no bloco | Antes do encaixe | Justificar onde colocar o movimento, sem aula paralela de animação |
+| Velocidade | Não exige cena | No deslocamento | Explicar quanto anda a cada repetição; manter 3 | Ao conferir o campo | Não mandar redigitar o valor que já vem correto |
+| Borda e ordem | Relação concreta | No jogo | Testar a saída e depois segurar o personagem dentro da tela | Problema antes da correção | Mover primeiro, conferir o limite depois |
 
-| Seção | Vídeo | Atividade e conclusão |
-| --- | --- | --- |
-| Faça o personagem andar pelo mapa | `video-d1-borda` | Estúdio `projeto`, vídeo, verificação dos três critérios e envio confirmado. |
+## Diagnóstico do desenho atual
 
-A seção conserva a chave `borda` e o projeto conserva a cadeia `desafio-primeiro-jogo`. Aposentar `video-d1-chegada` e `video-d1-movimento`; não deixar seções vazias. Não exigir uma nova cena abstrata para algo testável no próprio jogo.
+A introdução já apresenta o jogo pronto. Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposentados, com o contexto necessário incorporado à montagem.
 
-## Conceitos e montagem
+O review encontrou “sprite” no nome do bloco antes da definição. A explicação agora vem primeiro, também no caderno. O seletor de borda não tem campo ctx; as instruções correspondem ao bloco atual. A velocidade inicial 3 é mantida.
 
-- **Controle:** mostrar setas não move um personagem sozinho. Colocar **Ativar controles clássicos**, com **só as quatro direções**, no fim de **Ao iniciar**.
-- **Sprite:** explicar brevemente como um elemento do jogo que podemos controlar.
-- **Repetição:** em **Enquanto estiver rodando**, dentro de **A cada quadro**, colocar **Mover sprite em 4 direções com setas**, sprite `personagem`, velocidade `3`, imediatamente depois de desenhar o cenário.
-- **Ordem:** testar a borda antes de colocar **Manter o sprite dentro da tela**, sprite `personagem`, logo após o movimento. O jogo move e então confere o limite.
+## Proposta final
 
-O roteiro informa caminhos completos, nomes, campos, valores e âncoras de encaixe. Os blocos preparados permanecem. A prévia atualiza automaticamente; não inventar um botão Play ou exigir Atualizar a cada alteração.
+### Seção 1. Faça o personagem andar pelo mapa
 
-## Testes, entrega e apoio
+- **Intenção:** construção e entrega (`delivery`).
+- **Por que existe:** produzir o primeiro comportamento jogável.
+- **Conclui quando:** vídeo, três critérios de projeto aprovados e envio confirmado.
+- **Blocos:** `video-d1-borda`, `ponte-d1-borda`, Estúdio `projeto` e ajuda opcional `ajuda-d1`.
 
-Testar movimento por toque ou teclado, conforme o dispositivo, e as quatro bordas. Não exigir que a criança tenha dois dispositivos. Os critérios recusam o projeto inicial e aceitam a montagem que gera o ponto de partida do Dia 2.
+A abertura conecta a versão pronta experimentada à versão com personagem parado. Construir controles só com quatro direções no fim de Ao iniciar; movimento dentro de A cada quadro depois do cenário; limite de tela imediatamente depois do movimento.
 
-Sequência final: **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Concluir aula**. Se houver pendência, corrigir e verificar de novo. Salvar, verificar e enviar são ações distintas.
+Testar com o dispositivo disponível, incluindo as quatro bordas. Não exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Concluir aula**.
 
-Apoio opcional: Como Fazer para ampliar a atividade e pedir ajuda. O caderno continua na introdução. Regravar o vídeo completo, inclusive a confirmação do envio. No Dia 2, retomar prioritariamente o trabalho enviado pela criança.
+## Experiências e demonstrações desta aula
+
+Não há cena paralela: controles, movimento e bordas podem ser testados no próprio jogo. Conferir a saída pela borda antes de mostrar a solução, sem encenar um defeito inexistente. A prévia atualiza automaticamente; Atualizar não é um passo a repetir a cada encaixe.
+
+## Vídeos
+
+| Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
+| --- | --- | --- | --- | --- |
+| `video-d1-borda` | Contexto, montagem completa, bordas, verificação e envio | Roteiro atual e projeto inicial | 4 a 5 min, sem acelerar os encaixes | Regravar |
+
+## Continuidade
+
+Preservar a seção `borda`, a chave `projeto` e a cadeia `desafio-primeiro-jogo`. A criança programa as regras de movimento, não a arte ou o barco preparado.
+
+Valores finais: controles directions, personagem, velocidade 3, movimento antes do limite de tela. O Dia 2 assume esse trabalho enviado; a retomada preparada é alternativa somente quando não há envio anterior. Caderno na introdução e Como Fazer para ampliar a atividade ou pedir ajuda.
