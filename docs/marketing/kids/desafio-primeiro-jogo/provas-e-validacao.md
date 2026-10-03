@@ -152,8 +152,8 @@ Contar todos os visitantes atribuídos no início, incluindo quem abandonou ou r
 
 Não existe nesta pesquisa evidência para declarar três páginas superiores a uma, prometer aumento percentual de conversão ou fixar um custo de aquisição aceitável sem margem e resultados reais. Essas são decisões a validar após a primeira entrega.
 
-## Limite da entrega atual
+## Limite da entrega documental original
 
 Esta entrega de funil é documental: pesquisa pública, leitura do repositório, estratégia, perguntas, regras, resultados, copy e roteiro de provas. A revisão cruza as promessas com o curso local e distingue o que ainda depende de teste operacional. A primeira versão teve seus links locais e 12 arquivos de captura citados nominalmente conferidos. A conferência da versão 2 está registrada na [revisão](revisao-v2.md). Existência de arquivo não valida o conteúdo para a oferta; essa conferência visual/operacional está no roteiro acima.
 
-Não foi executado o novo quiz, pois ele ainda não foi implementado; não houve teste de compra, acesso ao ambiente de venda, captura nova nem publicação.
+Na elaboração da proposta, o quiz ainda não havia sido implementado. A execução posterior, autorizada em 03/10/2026, está registrada em [implementacao.md](implementacao.md), com testes e capturas locais. A compra e a disponibilidade dos recursos no ambiente de venda continuam dependendo da conferência operacional; não houve publicação remota.

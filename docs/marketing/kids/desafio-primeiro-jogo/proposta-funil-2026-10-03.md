@@ -1,6 +1,6 @@
 # Proposta do novo funil do Desafio do Primeiro Jogo
 
-**Versão 2 · 03/10/2026 · Proposta para aprovação. Nenhuma implementação de página, oferta ou automação foi realizada.** A [segunda pesquisa](pesquisa-aprofundada-v2-2026-10-03.md) fundamenta esta revisão; a [revisão de decisões](revisao-v2.md) registra o que mudou.
+**Versão 2 · 03/10/2026 · Proposta aprovada.** A implementação local posterior está registrada em [implementacao.md](implementacao.md); as descrições de escopo documental abaixo se referem ao momento da proposta. A [segunda pesquisa](pesquisa-aprofundada-v2-2026-10-03.md) fundamenta esta revisão; a [revisão de decisões](revisao-v2.md) registra o que mudou.
 
 ## A decisão central
 
