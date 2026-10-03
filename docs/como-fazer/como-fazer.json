@@ -55,6 +55,7 @@
           "próxima",
           "anterior",
           "jornada",
+          "aprender",
           "curso",
           "começar",
           "trilha",
@@ -65,10 +66,10 @@
         "steps": [
           {
             "id": "jornada",
-            "title": "Abra a Jornada",
-            "body": "Toque em **Jornada** no menu da esquerda. No celular, ela fica na barra de baixo. Você verá o mapa das trilhas.",
+            "title": "Toque em Aprender",
+            "body": "Toque em **Aprender** no menu da esquerda. No celular, ele fica na barra de baixo. Você verá o mapa da Jornada do Criador, com as trilhas.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/jornada-ba6ee11ac0268543.webp",
-            "imageAlt": "Tela inicial da plataforma com o item Jornada destacado no menu da esquerda."
+            "imageAlt": "Tela inicial da plataforma com o item Aprender destacado no menu da esquerda."
           },
           {
             "id": "trilha",
@@ -130,7 +131,8 @@
           "voltar",
           "retomar",
           "de onde parei",
-          "progresso"
+          "progresso",
+          "aprender"
         ],
         "steps": [
           {
@@ -143,7 +145,7 @@
           {
             "id": "jornada",
             "title": "Encontre o curso",
-            "body": "Toque em **Jornada**, escolha a trilha no mapa e depois toque em **Acessar curso** no curso que você estava fazendo.",
+            "body": "Toque em **Aprender**, escolha a trilha no mapa e depois toque em **Acessar curso** no curso que você estava fazendo.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/jornada-a9481083bf0d1f4c.webp",
             "imageAlt": "Trilha da Jornada com o botão Acessar curso destacado no curso que estava sendo feito."
           },
@@ -438,6 +440,7 @@
         "summary": "Entenda o mapa da Jornada e encontre os cursos de cada trilha.",
         "keywords": [
           "jornada",
+          "aprender",
           "mapa",
           "nível",
           "xp",
@@ -452,9 +455,9 @@
           {
             "id": "mapa",
             "title": "Abra o mapa",
-            "body": "Toque em **Jornada**. O mapa mostra os níveis da Jornada do Criador e indica onde você está.",
+            "body": "Toque em **Aprender** no menu. O mapa mostra os níveis da Jornada do Criador e indica onde você está.",
             "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/mapa-f5f8ee6f6f4e0531.webp",
-            "imageAlt": "Página Jornada aberta pelo menu, com o mapa dos níveis da Jornada do Criador."
+            "imageAlt": "Página da Jornada do Criador aberta pelo item Aprender do menu, com o mapa dos níveis."
           },
           {
             "id": "trilha",

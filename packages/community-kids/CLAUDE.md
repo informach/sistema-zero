@@ -29,7 +29,11 @@ fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), microi
 bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`).
 
 ⭐⭐ **Nav: cinco seções, e as três com destinos por dentro ABREM em vez de navegar (09/2026).**
-`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Jornada, Criar, Comunidade e Meu espaço. As três
+⭐ **O item da Jornada chama "Aprender" desde 03/10/2026** (decisão da dona): o menu diz o que a
+criança FAZ ali, em par com o "Criar" (o caminho guiado × a criação livre); a página `/cursos`
+continua "Cursos da Jornada do Criador" e todo o "sua jornada" de dentro fica. Trava:
+`tests/copy-jornada.test.ts`. Os tutoriais do "Como fazer" e os prints acompanharam.
+`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Aprender, Criar, Comunidade e Meu espaço. As três
 últimas têm **`children`**, e é isso que o menu desenha: no computador um `<details>` controlado
 (o padrão nativo do "Minhas ferramentas"), no celular uma **gaveta** sobre a barra de abas
 (`useModalA11y`, o mesmo das celebrações). O agrupamento de 07/09 tinha deixado as ferramentas a

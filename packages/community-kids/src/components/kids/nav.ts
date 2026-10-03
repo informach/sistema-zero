@@ -52,8 +52,10 @@ export interface NavItem {
 /** Stable destinations across desktop and mobile, regardless of earned tools. */
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home, backLabel: 'Voltar ao início' },
-  // A página da Jornada É o mapa, e é assim que a trilha já chamava a volta.
-  { href: '/cursos', label: 'Jornada', icon: GraduationCap, backLabel: 'Voltar ao mapa' },
+  // ⭐ "Aprender", e não "Jornada" (decisão da dona, 03/10/2026): o menu diz o que a criança FAZ
+  // ali, em par com o "Criar" logo abaixo (aprender o caminho guiado × criar livre). A página
+  // continua se chamando "Jornada do Criador" e é o mapa, e é assim que a trilha já chamava a volta.
+  { href: '/cursos', label: 'Aprender', icon: GraduationCap, backLabel: 'Voltar ao mapa' },
   {
     href: '/criar',
     label: 'Criar',
