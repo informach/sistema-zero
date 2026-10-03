@@ -1,0 +1,250 @@
+---
+import '../styles/kids-oferta.css'
+import '../styles/comunidade-oferta.css'
+import '../styles/comunidade-home.css'
+import Footer from '../components/Footer.astro'
+import ComunidadeImageZoom from '../components/funnel/oferta/ComunidadeImageZoom.astro'
+import ComunidadeVisual from '../components/funnel/oferta/ComunidadeVisual.astro'
+import { HOME_CONTINUITY, HOME_FAQ, HOME_RESOURCES, HOME_STEPS } from '../content/home-comunidade'
+import { COMUNIDADE_DOS_CRIADORES } from '../funnels/comunidade-dos-criadores'
+import { DESAFIO_PRIMEIRO_JOGO } from '../funnels/desafio-primeiro-jogo'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { funnelLinkWithAttribution } from '../lib/lead-attribution'
+import { funnelOgImage } from '../lib/seo'
+
+export const prerender = false
+
+const f = COMUNIDADE_DOS_CRIADORES
+const img = (file: string) => `${f.imagesBase}/${file}`
+const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
+const ofertaUrl = link(`${f.basePath}/oferta`)
+const quizUrl = link(`${f.basePath}/quiz`)
+const desafioUrl = link(`${DESAFIO_PRIMEIRO_JOGO.basePath}/oferta`)
+const title = 'Como seu filho aprende criando jogos | Sistema Zero'
+const description =
+  'Seu filho joga, experimenta e aprende criando jogos. Conheça as aulas, ferramentas e ajuda da Comunidade dos Criadores, para crianças de 9 a 14 anos.'
+const heroSrc = img('tela-aula.webp')
+const heroSrcset = `${heroSrc} 1x, ${img('tela-aula@2x.webp')} 2x`
+// Os links variam com a origem recebida. Não compartilhar o HTML entre campanhas.
+Astro.response.headers.set('Cache-Control', 'no-store')
+---
+
+<BaseLayout title={title} description={description} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-kids">
+  <link slot="head" rel="preload" as="image" href={heroSrc} imagesrcset={heroSrcset} fetchpriority="high" />
+  <div class="cdc cdc-home">
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+    <header class="topbar">
+      <div class="wrap nav">
+        <a class="brand" href="#conteudo" aria-label="Sistema Zero Kids, início">
+          <img class="logo" src={img('logo-kids-escuro.svg')} alt="Sistema Zero Kids" width="279" height="26" decoding="async" />
+        </a>
+        <nav class="nav-links" aria-label="Partes da página">
+          <a href="#como-aprende">Como aprende</a>
+          <a href="#criar-mais">Criações</a>
+          <a href="#duvidas">Dúvidas</a>
+        </nav>
+        <a class="kof-btn kof-btn--compacta home-header-cta" href={ofertaUrl} data-home-cta="nav-planos">Ver planos</a>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="hero section" aria-labelledby="hero-title">
+        <div class="wrap hero-grid">
+          <div class="hero-copy">
+            <p class="home-byline">Helena e Júlio · Sistema Zero</p>
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span>Comunidade dos Criadores · 9 a 14 anos</span>
+            <h1 class="kof-display" id="hero-title">Seu filho aprende criando jogos, <em>da primeira experiência às próprias ideias.</em></h1>
+            <p class="kof-lead">Primeiro, ele joga o que vai construir. Depois, experimenta os conceitos ao lado do vídeo e usa o que aprendeu para programar o jogo. Ao avançar, libera ferramentas para criar seus próprios projetos.</p>
+            <p class="home-promise"><span class="material-symbols-rounded" aria-hidden="true">hub</span>Aulas, experiências, criação e ajuda na mesma plataforma.</p>
+            <div class="hero-actions">
+              <a class="kof-btn kof-btn--grande" href="#como-aprende" data-home-cta="B01">Ver como meu filho aprende<span class="material-symbols-rounded" aria-hidden="true">arrow_downward</span></a>
+              <a class="kof-link" href={ofertaUrl} data-home-cta="B02">Conhecer a Comunidade e os planos<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+            </div>
+            <p class="home-requirements"><span class="material-symbols-rounded" aria-hidden="true">computer</span>Para usar no computador, com internet, leitura e uso de mouse e teclado. A família pode ajudar nas primeiras atividades.</p>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-stage kof-marca">
+              <span class="kof-decor decor-1" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+              <span class="kof-decor kof-decor--rosa decor-2" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+              <img class="zappy" src={img('zappy-happy.webp')} alt="" width="300" height="300" decoding="async" />
+              <figure class="hero-figura">
+                <a class="quadro-link" href={img('tela-aula@2x.webp')} target="_blank" rel="noopener" data-zoom aria-label="Ampliar a aula com vídeo e experiência lado a lado">
+                  <div class="kof-tela kof-tela--sombra">
+                    <div class="kof-tela__barra" aria-hidden="true">
+                      <i></i><i></i><i></i><span class="kof-tela__url">Uma aula por dentro</span><span class="material-symbols-rounded quadro-lupa">zoom_in</span>
+                    </div>
+                    <img src={heroSrc} srcset={heroSrcset} alt="Aula com vídeo à esquerda e experiência de reação ao toque à direita, na mesma tela." width="1280" height="800" fetchpriority="high" decoding="async" />
+                  </div>
+                </a>
+                <figcaption>O vídeo explica. Ao lado, seu filho mexe, testa e observa o que acontece.</figcaption>
+              </figure>
+              <span class="kof-chip kof-chip--verde flutua flutua--1"><span class="material-symbols-rounded" aria-hidden="true">experiment</span>Explicação + experiência</span>
+            </div>
+            <p class="home-screen-note">Print real da plataforma. Toque na imagem para ampliar.</p>
+          </div>
+        </div>
+      </section>
+
+      <nav class="home-path" aria-label="O caminho da criação">
+        <div class="wrap">
+          <ol>
+            {HOME_STEPS.map((step, index) => (
+              <li><a href={`#passo-${step.id}`}><span>{index + 1}</span>{['Jogar', 'Experimentar', 'Programar', 'Testar e continuar', 'Criar novas ideias'][index]}</a></li>
+            ))}
+          </ol>
+        </div>
+      </nav>
+
+      <section class="section capitulo fundo-folha cor-azul" id="como-aprende" aria-labelledby="title-como-aprende">
+        <div class="folha">
+          <div class="wrap">
+            <div class="cap-head cap-head--centro">
+              <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">experiment</span>Como seu filho aprende</span>
+              <h2 class="kof-display" id="title-como-aprende">Ele joga, experimenta e programa <em>uma regra de cada vez.</em></h2>
+              <p class="cap-lead">Acompanhe um curso por dentro. Aqui, a criança constrói um jogo de encontrar personagens escondidos.</p>
+            </div>
+            <ol class="home-steps">
+              {HOME_STEPS.map((step, index) => (
+                <li class:list={['home-step', `cor-${step.color}`]} id={`passo-${step.id}`}>
+                  <div class="home-step-copy">
+                    <span class="home-step-number" aria-label={`Passo ${index + 1}`}>{String(index + 1).padStart(2, '0')}</span>
+                    <h3 class="kof-display">{step.title}</h3>
+                    <p>{step.text}</p>
+                    <p class="home-example"><span class="material-symbols-rounded" aria-hidden="true">{step.icon}</span>{step.example}</p>
+                  </div>
+                  <ComunidadeVisual visual={step.visual} imagesBase={f.imagesBase} variant="palco" only={step.visual === 'jornada' ? 'first' : undefined} />
+                </li>
+              ))}
+            </ol>
+            <div class="home-section-action">
+              <p class="home-note">Demonstração da plataforma. Os cursos começam com projetos guiados e materiais preparados.</p>
+              <a class="kof-btn" href={ofertaUrl} data-home-cta="B04">Conhecer a Comunidade e os planos<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section capitulo cor-rosa" id="criar-mais" aria-labelledby="title-criar-mais">
+        <div class="wrap">
+          <div class="cap-head">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">palette</span>Os próximos jogos</span>
+            <h2 class="kof-display" id="title-criar-mais">O que ele aprende nos cursos <em>ganha lugar nos jogos dele.</em></h2>
+            <p class="cap-lead">As ferramentas liberadas pela Jornada ficam disponíveis para novas criações durante a assinatura. Seu filho pode combinar regras, desenhar personagens e testar ideias.</p>
+          </div>
+          <ComunidadeVisual visual="integracao" imagesBase={f.imagesBase} variant="palco" />
+          <div class="home-community-grid">
+            <div class="home-community-copy">
+              <h3 class="kof-display">Um lugar para encontrar a próxima ideia.</h3>
+              <p>Além das ferramentas, a Comunidade reúne referências, conversas e novos temas para continuar criando.</p>
+            </div>
+            <ComunidadeVisual visual="mural" imagesBase={f.imagesBase} variant="plana" />
+          </div>
+          <div class="home-continuity">
+            {HOME_CONTINUITY.map((item) => (
+              <article class:list={['kof-carta', 'home-feature', `cor-${item.color}`]}>
+                <span class="home-feature-icon material-symbols-rounded" aria-hidden="true">{item.icon}</span>
+                <p class="home-feature-role">{item.role}</p>
+                <h3 class="kof-display">{item.title}</h3>
+                <p>{item.text}</p>
+              </article>
+            ))}
+          </div>
+          <p class="home-note home-access-note">Ferramentas e espaços de criação acompanham as liberações da Jornada.</p>
+          <details class="home-resources kof-carta kof-carta--fio" data-home-resources>
+            <summary data-home-cta="B05"><span class="home-resources-closed">Ver as ferramentas e os recursos</span><span class="home-resources-open">Recolher ferramentas e recursos</span><span class="material-symbols-rounded" aria-hidden="true">expand_more</span></summary>
+            <div class="home-resource-grid">
+              {HOME_RESOURCES.map((resource) => (
+                <article class="home-resource">
+                  <h3 class="kof-display"><span class="material-symbols-rounded" aria-hidden="true">{resource.icon}</span>{resource.title}</h3>
+                  <p>{resource.text}</p>
+                  <ComunidadeVisual visual={resource.visual} imagesBase={f.imagesBase} variant="plana" only="first" />
+                </article>
+              ))}
+            </div>
+            <p class="home-note">As possibilidades variam conforme o avanço da criança e o conteúdo disponível. Os planos apresentam as condições de acesso.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="section capitulo fundo-alt cor-verde" id="na-rotina" aria-labelledby="title-na-rotina">
+        <div class="wrap home-routine">
+          <div>
+            <div class="cap-head">
+              <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">schedule</span>Na rotina da família</span>
+              <h2 class="kof-display" id="title-na-rotina">Tempo para <em>experimentar, rever e continuar.</em></h2>
+            </div>
+            <div class="home-prose">
+              <p>As aulas são gravadas. Seu filho pode pausar para fazer uma atividade, voltar ao trecho e continuar a construção. Vocês escolhem o horário dentro dos combinados da casa.</p>
+              <p>Se surgir uma dúvida, ele pode pedir ajuda dentro da plataforma. A equipe responde por mensagens, em outro momento.</p>
+              <p>Você acompanha os registros do percurso e pode pedir que ele mostre o jogo e explique uma escolha.</p>
+            </div>
+          </div>
+          <ComunidadeVisual visual="pausa" imagesBase={f.imagesBase} />
+        </div>
+      </section>
+
+      <section class="section capitulo home-founders" aria-labelledby="title-fundadores">
+        <div class="wrap home-founders-grid">
+          <img src={img('familia-helena-julio-kids.webp')} alt="Helena e Júlio em uma foto e nas ilustrações do Sistema Zero." width="880" height="1019" loading="lazy" decoding="async" />
+          <div>
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">favorite</span>Quem está por aqui</span>
+            <h2 class="kof-display" id="title-fundadores">Crie com <em>Helena e Júlio.</em></h2>
+            <div class="home-prose">
+              <p>Somos desenvolvedores de sistemas e formados em Sistemas de Informação. A criação de jogos em família deu origem ao Sistema Zero.</p>
+              <p>Na Comunidade dos Criadores, organizamos aulas, experiências e ferramentas para a criança construir, testar e continuar suas ideias.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section capitulo kof-banda home-next" id="conhecer" aria-labelledby="title-conhecer">
+        <div class="wrap home-next-grid">
+          <div class="home-offer">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>Aprender e continuar criando</span>
+            <h2 class="kof-display" id="title-conhecer">Conheça a <em>Comunidade dos Criadores.</em></h2>
+            <p>A assinatura reúne os cursos publicados, as ferramentas conforme a Jornada, os espaços de criação e troca, a ajuda por mensagens e o acompanhamento da família.</p>
+            <a class="kof-btn kof-btn--grande kof-btn--sobre-navy" href={ofertaUrl} data-home-cta="B06">Conhecer a Comunidade e os planos<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+            <p class="home-offer-note">Veja os planos, as condições de acesso e renovação e a garantia vigente antes de contratar.</p>
+          </div>
+          <aside class="kof-carta home-quiz" aria-labelledby="title-quiz">
+            <span class="kof-ladrilho kof-ladrilho--roxo" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span>
+            <h3 class="kof-display" id="title-quiz">Comece pelo interesse do seu filho.</h3>
+            <p>Responda sobre o que ele gosta de fazer e o que sua família procura. Ao final do quiz, você recebe uma orientação e uma ideia para experimentar em casa.</p>
+            <a class="kof-btn kof-btn--secundario" href={quizUrl} data-home-cta="B07">Encontrar um caminho para meu filho<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+            <p class="home-note">Você também pode conhecer a Comunidade diretamente pelo botão dos planos.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section capitulo cor-roxo" id="duvidas" aria-labelledby="title-duvidas">
+        <div class="wrap home-faq">
+          <div class="cap-head cap-head--centro">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">chat_bubble</span>Para decidir em família</span>
+            <h2 class="kof-display" id="title-duvidas">Dúvidas frequentes.</h2>
+          </div>
+          <div class="faq">
+            {HOME_FAQ.map((item, index) => (
+              <details class="kof-carta kof-carta--fio" id={`duvida-home-${index + 1}`}>
+                <summary>{item.question}<span class="material-symbols-rounded faq-seta" aria-hidden="true">expand_more</span></summary>
+                <div class="resposta"><p>{item.answer}</p></div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="home-challenge capitulo" aria-labelledby="title-desafio">
+        <div class="wrap home-challenge-inner">
+          <span class="kof-ladrilho kof-ladrilho--verde" aria-hidden="true"><span class="material-symbols-rounded">sports_esports</span></span>
+          <div>
+            <h2 class="kof-display" id="title-desafio">Conheça também o Desafio do Primeiro Jogo.</h2>
+            <p>Uma experiência de entrada para conhecer a criação guiada. Veja o conteúdo, o formato e as condições do Desafio.</p>
+          </div>
+          <a class="kof-link" href={desafioUrl} data-home-cta="B08">Ver o Desafio do Primeiro Jogo<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+        </div>
+      </section>
+    </main>
+    <ComunidadeImageZoom />
+  </div>
+  <Footer audience="kids" />
+</BaseLayout>

@@ -1,0 +1,131 @@
+{
+  "conditions": "Local built server; Chromium; 390x844; CPU 4x; no network throttling; 3 runs per condition",
+  "summary": [
+    {
+      "path": "/",
+      "consent": "rejected",
+      "lcpMedianMs": 196,
+      "clsMedian": 0,
+      "longTasksMedian": 0
+    },
+    {
+      "path": "/",
+      "consent": "accepted",
+      "lcpMedianMs": 152,
+      "clsMedian": 0,
+      "longTasksMedian": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "rejected",
+      "lcpMedianMs": 520,
+      "clsMedian": 0,
+      "longTasksMedian": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "accepted",
+      "lcpMedianMs": 496,
+      "clsMedian": 0,
+      "longTasksMedian": 0
+    }
+  ],
+  "measurements": [
+    {
+      "path": "/",
+      "consent": "rejected",
+      "lcp": 780,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "consent": "rejected",
+      "lcp": 196,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "consent": "rejected",
+      "lcp": 136,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "consent": "accepted",
+      "lcp": 152,
+      "cls": 0,
+      "longTasks": 1,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/",
+      "consent": "accepted",
+      "lcp": 168,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/",
+      "consent": "accepted",
+      "lcp": 152,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "rejected",
+      "lcp": 452,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "rejected",
+      "lcp": 584,
+      "cls": 0,
+      "longTasks": 1,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "rejected",
+      "lcp": 520,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "accepted",
+      "lcp": 468,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "accepted",
+      "lcp": 496,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "accepted",
+      "lcp": 528,
+      "cls": 0,
+      "longTasks": 0,
+      "analyticsRequests": 2
+    }
+  ]
+}

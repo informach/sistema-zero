@@ -1,0 +1,30 @@
+<dialog class="zoom" data-zoom-dialog aria-label="Imagem ampliada">
+  <form method="dialog">
+    <button class="zoom-fechar" aria-label="Fechar a imagem ampliada">
+      <span class="material-symbols-rounded" aria-hidden="true">close</span>
+    </button>
+  </form>
+  <img alt="" decoding="async" />
+</dialog>
+
+<script>
+  // Sem JavaScript, os links continuam abrindo as capturas em outra aba.
+  const zoom = document.querySelector<HTMLDialogElement>('[data-zoom-dialog]')
+  const zoomImg = zoom?.querySelector('img')
+  if (zoom && zoomImg && typeof zoom.showModal === 'function') {
+    document.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[data-zoom]')
+      if (!link) return
+      event.preventDefault()
+      zoomImg.src = link.href
+      zoomImg.alt = link.querySelector('img')?.alt ?? ''
+      zoom.showModal()
+    })
+    zoom.addEventListener('click', (event) => {
+      if (event.target === zoom) zoom.close()
+    })
+    zoom.addEventListener('close', () => zoomImg.removeAttribute('src'))
+  }
+</script>

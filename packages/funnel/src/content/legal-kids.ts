@@ -83,7 +83,9 @@ export const PRIVACIDADE_KIDS: LegalDoc = {
     {
       titulo: '6. Cookies',
       paragrafos: [
-        'Utilizamos cookies e tecnologias semelhantes para manter a sessão (por exemplo, lembrar o progresso no diagnóstico e a sessão de compra), medir audiência e melhorar a plataforma.',
+        'Cookies essenciais mantêm o progresso no diagnóstico e a sessão de compra. Com sua permissão no aviso de privacidade, usamos também métricas próprias para entender visitas, cliques, seções vistas e etapas do quiz e da compra. Não coletamos o conteúdo digitado nos formulários nem fazemos gravação da sessão para essas métricas.',
+        'Você pode continuar sem métricas ou alterar a escolha pelo botão Privacidade nas páginas do funil. A escolha e o identificador de navegação duram até 30 dias; os registros analíticos são mantidos por até 90 dias. Ao recusar depois de aceitar, apagamos os registros analíticos associados ao identificador deste navegador. Isso não apaga respostas ou dados de compra necessários ao serviço.',
+        'Os mapas de cliques usam imagens das páginas públicas capturadas por nosso sistema, sem dados do visitante. Perguntas e etapas são identificadas por versão para preservar a precisão quando o site muda.',
         'Você pode desabilitar os cookies nas configurações do navegador. Ao fazer isso, partes do site, como o diagnóstico e o checkout, podem deixar de funcionar corretamente.',
       ],
     },

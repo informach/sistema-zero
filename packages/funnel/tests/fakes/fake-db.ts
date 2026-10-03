@@ -20,6 +20,7 @@ function baseLead(id: string): Lead {
     telefone: null,
     document: null,
     quizAnswers: null,
+    quizDefinitionId: null,
     perfilResultado: null,
     funnel: null,
     attribution: null,
@@ -68,9 +69,9 @@ export function createFakeRepo(): FakeRepoState {
   let seq = 0
 
   const repo: FunnelRepo = {
-    async createLead(funnel = null, attribution = null) {
+    async createLead(funnel = null, attribution = null, quizDefinitionId = null) {
       const id = `lead-${++seq}`
-      leads.set(id, { ...baseLead(id), funnel: funnel ?? null, attribution })
+      leads.set(id, { ...baseLead(id), funnel: funnel ?? null, attribution, quizDefinitionId })
       return { id }
     },
     async getLead(id) {

@@ -5,6 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "analytics:snapshots": "node --env-file-if-exists=.env --import tsx scripts/analytics-snapshots.ts",
     "dev": "astro dev --port 4321 --host",
     "dev:clean": "rimraf node_modules/.vite .astro && astro dev --port 4321 --host",
     "start": "bun ./scripts/start.mjs",
@@ -53,7 +54,9 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "drizzle-kit": "^0.31.5",
-    "rimraf": "^6.0.1"
+    "playwright": "^1.63.0",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.23.15"
   },
   "peerDependencies": {
     "typescript": "^5"

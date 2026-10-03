@@ -4,11 +4,12 @@ import type { ReactNode } from 'react'
 import { useState } from 'react'
 import type { AdminFunnelInfo } from '../../funnels/registry'
 import { apiPost } from '../../lib/api-fetch'
+import AnalyticsPanel from './AnalyticsPanel'
 import PerfisPanel from './PerfisPanel'
 import PerformancePanel from './PerformancePanel'
 import RespostasTable from './RespostasTable'
 
-type Aba = 'respostas' | 'performance' | 'perfis'
+type Aba = 'respostas' | 'performance' | 'perfis' | 'analytics'
 
 export default function AdminDashboard({ funnels }: { funnels: AdminFunnelInfo[] }) {
   const [aba, setAba] = useState<Aba>('respostas')
@@ -48,6 +49,9 @@ export default function AdminDashboard({ funnels }: { funnels: AdminFunnelInfo[]
 
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="inline-flex gap-1 rounded-xl border border-line bg-card/50 p-1">
+          <TabBtn active={aba === 'analytics'} onClick={() => setAba('analytics')}>
+            Métricas
+          </TabBtn>
           <TabBtn active={aba === 'respostas'} onClick={() => setAba('respostas')}>
             Respostas
           </TabBtn>
@@ -76,6 +80,7 @@ export default function AdminDashboard({ funnels }: { funnels: AdminFunnelInfo[]
       </div>
 
       {aba === 'respostas' && <RespostasTable funnel={funnel} funnels={funnels} />}
+      {aba === 'analytics' && <AnalyticsPanel funnel={funnel} />}
       {aba === 'performance' && <PerformancePanel funnel={funnel} />}
       {aba === 'perfis' && <PerfisPanel funnel={funnel} />}
     </div>

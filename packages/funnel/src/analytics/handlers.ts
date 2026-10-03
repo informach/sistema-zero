@@ -1,0 +1,154 @@
+import type { FunnelRepo } from '../db/repo'
+import { getFunnelByKey } from '../funnels/registry'
+import { json } from '../lib/http'
+import { sanitizeLeadAttribution } from '../lib/lead-attribution'
+import { getLeadId } from '../lib/lead-session'
+import {
+  analyticsCookie,
+  CONSENT_COOKIE,
+  clearVisitorCookie,
+  hasConsent,
+  sameOrigin,
+  visitorCookie,
+  visitorId,
+} from './identity'
+import { analyticsPage } from './page-context'
+import { analyticsJson, BootstrapBody, ConsentBody, EventBatch, UUID } from './protocol'
+import { quizDefinition } from './quiz-definition'
+import type { AnalyticsRepo, StoredAnalyticsEvent } from './repository'
+import { ANALYTICS_SESSION_MS, type AnalyticsEnvironment } from './types'
+
+export interface AnalyticsDeps {
+  repo: AnalyticsRepo
+  leads: FunnelRepo
+  secret: string
+  secure: boolean
+  environment: AnalyticsEnvironment
+  now?: () => Date
+}
+const reply = (body: unknown, status = 200, cookies: string[] = []) => {
+  const response = json(body, status, { 'cache-control': 'no-store' })
+  for (const cookie of cookies) response.headers.append('set-cookie', cookie)
+  return response
+}
+
+export async function linkAnalyticsLead(request: Request, leadId: string, deps: AnalyticsDeps) {
+  if (!hasConsent(request) || !UUID.safeParse(leadId).success) return
+  const visitor = visitorId(request, deps.secret)
+  if (!visitor) return
+  const now = deps.now?.() ?? new Date()
+  const session = await deps.repo.recentSession(visitor, deps.environment, now)
+  if (session) await deps.repo.linkLead(session.id, leadId, now)
+}
+
+export async function analyticsConsent(request: Request, deps: AnalyticsDeps) {
+  if (!sameOrigin(request)) return reply({ error: 'origin' }, 403)
+  const parsed = ConsentBody.safeParse(await analyticsJson(request))
+  if (!parsed.success) return reply({ error: 'payload' }, 400)
+  const cookies = [analyticsCookie(CONSENT_COOKIE, parsed.data.choice, deps.secure)]
+  if (parsed.data.choice === 'rejected') {
+    const visitor = visitorId(request, deps.secret)
+    if (visitor) await deps.repo.revoke(visitor)
+    cookies.push(clearVisitorCookie(deps.secure))
+  }
+  return reply({ ok: true }, 200, cookies)
+}
+
+export async function analyticsSession(request: Request, deps: AnalyticsDeps) {
+  if (!sameOrigin(request) || !hasConsent(request)) return reply({ error: 'consent' }, 403)
+  const parsed = BootstrapBody.safeParse(await analyticsJson(request))
+  if (!parsed.success) return reply({ error: 'payload' }, 400)
+  const page = analyticsPage(parsed.data.path)
+  if (!page) return reply({ error: 'page' }, 400)
+  const funnel = page.funnel ? getFunnelByKey(page.funnel) : null
+  const definition = funnel ? quizDefinition(funnel) : null
+  if (definition) await deps.repo.saveQuiz(definition)
+  if (parsed.data.quizDefinitionId && parsed.data.quizDefinitionId !== definition?.id) {
+    const archived = await deps.repo.quiz(parsed.data.quizDefinitionId)
+    if (archived?.funnel !== page.funnel) return reply({ error: 'quiz_updated' }, 409)
+  }
+  const now = deps.now?.() ?? new Date()
+  const session = await deps.repo.startSession({
+    visitorId: visitorId(request, deps.secret),
+    environment: deps.environment,
+    path: page.path,
+    attribution: sanitizeLeadAttribution(parsed.data.attribution),
+    device: parsed.data.device,
+    referrerHost: parsed.data.referrerHost ?? null,
+    now,
+  })
+  const leadId = getLeadId(request)
+  if (leadId && UUID.safeParse(leadId).success) {
+    const lead = await deps.leads.getLead(leadId)
+    if (lead && !lead.paidAt && lead.funnel === page.funnel)
+      await deps.repo.linkLead(session.id, lead.id, now)
+  }
+  return reply(
+    {
+      sessionId: session.id,
+      expiresAt: new Date(now.getTime() + ANALYTICS_SESSION_MS).toISOString(),
+    },
+    200,
+    [visitorCookie(session.visitorId, deps.secret, deps.secure)],
+  )
+}
+
+export async function analyticsIngest(request: Request, deps: AnalyticsDeps) {
+  if (!sameOrigin(request) || !hasConsent(request)) return reply({ error: 'consent' }, 403)
+  const parsed = EventBatch.safeParse(await analyticsJson(request))
+  if (!parsed.success) return reply({ error: 'payload' }, 400)
+  const visitor = visitorId(request, deps.secret)
+  const session = await deps.repo.session(parsed.data.sessionId)
+  const now = deps.now?.() ?? new Date()
+  if (
+    !visitor ||
+    !session ||
+    session.visitorId !== visitor ||
+    session.environment !== deps.environment ||
+    now.getTime() - session.lastSeenAt.getTime() > ANALYTICS_SESSION_MS
+  )
+    return reply({ error: 'session' }, 401)
+  const rows: StoredAnalyticsEvent[] = []
+  const cookieLead = getLeadId(request)
+  for (const event of parsed.data.events) {
+    const page = analyticsPage(event.path)
+    const at = new Date(event.at)
+    if (
+      !page ||
+      at.getTime() > now.getTime() + 300000 ||
+      at.getTime() < session.startedAt.getTime() - 300000
+    )
+      return reply({ error: 'event' }, 400)
+    if (event.name === 'quiz_question_view') {
+      const definition = event.quizDefinitionId
+        ? await deps.repo.quiz(event.quizDefinitionId)
+        : null
+      if (
+        definition?.funnel !== page.funnel ||
+        !definition?.questions.some((q) => q.id === event.questionId)
+      )
+        return reply({ error: 'question' }, 400)
+      if (!event.quizAttemptId || event.quizAttemptId !== cookieLead) continue
+      const attempt = await deps.leads.getLead(event.quizAttemptId)
+      if (attempt?.quizDefinitionId !== event.quizDefinitionId) continue
+    }
+    const { at: _, path: __, ...data } = event
+    rows.push({
+      ...data,
+      sessionId: session.id,
+      page: page.path,
+      funnel: page.funnel,
+      quizAttemptId: event.name === 'quiz_question_view' ? event.quizAttemptId : null,
+      // No text or coordinates from quizzes, contact, checkout or personalized pages.
+      label: page.publicText
+        ? event.label?.replace(/\S+@\S+|\b\d[\d .()+-]{8,}\d\b/g, '[oculto]')
+        : null,
+      x: page.publicText && event.name === 'click' ? event.x : null,
+      y: page.publicText && event.name === 'click' ? event.y : null,
+      occurredAt: at,
+      receivedAt: now,
+    })
+  }
+  const inserted = await deps.repo.append(rows, now)
+  return reply({ accepted: parsed.data.events.map((e) => e.id), inserted })
+}

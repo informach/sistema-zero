@@ -69,9 +69,20 @@ recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckou
 `/api/checkout/boleto`, sem ilha). `[audience]/index.astro`
 = landing de área (redireciona ao produto, ou "em breve" se vazia). **`/` (raiz,
 `src/pages/index.astro`) = página "bio" da marca kids** (destino do link da bio do Instagram
-@criecomhelenaejulio): tema kids, Zappy e três botões 3D — quiz kids, oferta do Desafio e oferta
-da Comunidade (não redireciona mais). URLs planas antigas → 301
-(config `redirects`).
+@criecomhelenaejulio): entrada curta com avatar, posicionamento e quatro acessos. A apresentação
+com prints reais, percurso jogar → experimentar → programar → continuar → criar, recursos e FAQ
+fica em `/como-funciona/` (`src/pages/como-funciona.astro`). Reutiliza tokens das ofertas, conteúdo
+em `src/content/home-comunidade.ts` e estilos `comunidade-home.css`. Oferta da Comunidade é o
+destino comercial principal; quiz e Desafio são entradas complementares. Links preservam a
+atribuição sanitizada, com HTML `no-store`; a raiz não cria lead. URLs planas antigas → 301.
+
+**Métricas próprias (03/10/2026):** `src/analytics/`, `components/Analytics.astro` no BaseLayout,
+`/api/analytics/*`, `/api/admin/analytics` e aba Métricas. Coleta depende de aceite; navegação sem
+PII, descoberta automática de elementos, versões do DOM, quizzes com snapshots imutáveis e
+`quizDefinitionId` no lead. Respostas salvas usam `quiz_answer_saved` (não depender do nome legado
+do evento de cada produto). Migrações aditivas 0017–0019. Prints/mapas usam worker separado
+`bun run analytics:snapshots` (Node + Playwright; nunca iniciar Chromium no handler do site).
+Operação, limites, retenção e testes: `docs/marketing/medicao-funil.md` na raiz do repositório.
 
 **Funil no lead + respostas (`leads.funnel` migration 0010; `leads.quiz_answers` jsonb migrations
 0011 [drop das 12 colunas fixas] + 0012 [add `quiz_answers`]):** o funil é gravado na CRIAÇÃO (a
@@ -213,7 +224,8 @@ página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOI
 "acesso AO Desafio" × "acesso À Comunidade"). Imagens em `public/img/comunidade-dos-criadores/`
 (capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
 dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
-(`/`) tem o 3º botão (verde) apontando pra oferta.
+(`/`) apresenta a Comunidade como oferta principal. A ampliação dos prints é compartilhada
+entre a raiz e as ofertas pelo componente `ComunidadeImageZoom.astro`.
 **Quatro copies da Comunidade (01/10/2026):** a referência vigente está em
 `docs/marketing/kids/comunidade-dos-criadores/copy/`. Conteúdo tipado em
 `src/funnels/comunidade-dos-criadores/oferta/`, com fatos e 40 respostas comuns em `shared.ts`.

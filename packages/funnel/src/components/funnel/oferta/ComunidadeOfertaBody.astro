@@ -29,6 +29,7 @@ import { funnelOgImage } from '../../../lib/seo'
 import type { OfferPlans } from '../../../server/catalog'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import ComunidadeImageZoom from './ComunidadeImageZoom.astro'
 import ComunidadeProsa from './ComunidadeProsa.astro'
 import ComunidadeSection from './ComunidadeSection.astro'
 import ComunidadeVisual from './ComunidadeVisual.astro'
@@ -325,12 +326,7 @@ const faqVisuals = (id: string) =>
       <p class="kof-mobar__preco">No anual, equivalente a<strong>{anualPorMesLabel} por mês</strong></p>
       <a class="kof-btn" href="#planos" tabindex="-1">Escolher um plano</a>
     </div>
-    <dialog class="zoom" data-zoom-dialog aria-label="Imagem ampliada">
-      <form method="dialog">
-        <button class="zoom-fechar" aria-label="Fechar a imagem ampliada"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
-      </form>
-      <img alt="" decoding="async" />
-    </dialog>
+    <ComunidadeImageZoom />
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} />
   <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} continuidade={profile === 'continuar'} />
@@ -405,25 +401,4 @@ const faqVisuals = (id: string) =>
   }
   abrirDuvida()
   window.addEventListener('hashchange', abrirDuvida)
-
-  // Ampliar uma tela sem sair da página. Sem JS (ou sem <dialog>) o link abre a imagem em outra aba.
-  const zoom = document.querySelector<HTMLDialogElement>('[data-zoom-dialog]')
-  const zoomImg = zoom?.querySelector('img')
-  if (zoom && zoomImg && typeof zoom.showModal === 'function') {
-    document.addEventListener('click', (event) => {
-      if (event.defaultPrevented || event.button !== 0) return
-      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
-      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[data-zoom]')
-      if (!link) return
-      event.preventDefault()
-      zoomImg.src = link.href
-      zoomImg.alt = link.querySelector('img')?.alt ?? ''
-      zoom.showModal()
-    })
-    // O clique fora da imagem (no fundo escuro) fecha.
-    zoom.addEventListener('click', (event) => {
-      if (event.target === zoom) zoom.close()
-    })
-    zoom.addEventListener('close', () => zoomImg.removeAttribute('src'))
-  }
 </script>

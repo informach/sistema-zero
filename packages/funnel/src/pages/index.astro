@@ -1,329 +1,46 @@
 ---
-// Entrada do site: página "bio" da marca kids (destino do link da bio do
-// Instagram @criecomhelenaejulio). Em vez de redirecionar, apresenta os
-// caminhos: o quiz (descobrir o perfil do filho), a oferta do Desafio do
-// Primeiro Jogo e a assinatura da Comunidade dos Criadores. Tema kids claro.
-import { EMPRESA } from '../content/legal'
-import { COMUNIDADE_DOS_CRIADORES } from '../funnels/comunidade-dos-criadores'
-import { DESAFIO_PRIMEIRO_JOGO } from '../funnels/desafio-primeiro-jogo'
+import '../styles/kids-oferta.css'
+import '../styles/comunidade-oferta.css'
+import { COMUNIDADE_DOS_CRIADORES as comunidade } from '../funnels/comunidade-dos-criadores'
+import { DESAFIO_PRIMEIRO_JOGO as desafio } from '../funnels/desafio-primeiro-jogo'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { funnelOgImage } from '../lib/seo'
-
+import { funnelLinkWithAttribution } from '../lib/lead-attribution'
 export const prerender = false
-
-const f = DESAFIO_PRIMEIRO_JOGO
-const quizUrl = `${f.basePath}/quiz`
-const ofertaUrl = `${f.basePath}/oferta`
-const comunidadeUrl = `${COMUNIDADE_DOS_CRIADORES.basePath}/oferta`
-const img = (file: string) => `${f.imagesBase}/${file}`
-const ano = new Date().getFullYear()
-
-const title = 'Crie com Helena e Júlio | Criação de jogos para crianças'
-const description =
-  'Seu filho vive em jogo, computador e tecnologia. Aqui esse interesse vira criação: crianças a partir de 9 anos criam o primeiro jogo em 5 dias. Descubra o perfil dele no quiz.'
+Astro.response.headers.set('cache-control', 'no-store')
+const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
 ---
-
-<BaseLayout
-  title={title}
-  description={description}
-  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
-  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
->
-  <div class="bio">
-    <!-- decorações flutuantes -->
-    <svg class="deco flutua" style="top:9%;left:8%;width:44px" viewBox="0 0 24 24" fill="var(--sz-community-yellow)"
-      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
-      ></path></svg
-    >
-    <svg
-      class="deco flutua lenta"
-      style="top:16%;right:10%;width:32px"
-      viewBox="0 0 24 24"
-      fill="var(--sz-community-pink-light)"
-      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
-      ></path></svg
-    >
-    <svg
-      class="deco flutua inversa"
-      style="bottom:14%;left:12%;width:26px"
-      viewBox="0 0 24 24"
-      fill="var(--sz-community-green)"><circle cx="12" cy="12" r="10"></circle></svg
-    >
-    <svg
-      class="deco flutua lenta inversa"
-      style="bottom:22%;right:8%;width:40px"
-      viewBox="0 0 24 24"
-      fill="var(--sz-community-blue)"
-      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
-      ></path></svg
-    >
-    <div class="bolha" style="width:240px;height:240px;background:var(--sz-community-ground-alt);top:-70px;left:-70px">
-    </div>
-    <div class="bolha" style="width:190px;height:190px;background:var(--sz-community-mint);bottom:-50px;right:-40px">
-    </div>
-
-    <main class="cartao">
-      <figure class="mascote">
-        <img
-          src={img('avatar-helena-julio.webp')}
-          alt="Helena e Júlio, criadores do Crie com Helena e Júlio"
-          width="360"
-          height="360"
-          fetchpriority="high"
-        />
-      </figure>
-
-      <h1>Crie com Helena e Júlio</h1>
-      <p class="arroba">@criecomhelenaejulio</p>
-      <p class="descricao">
-        Ele já joga. Falta descobrir que dá pra criar. Aqui, crianças a partir de 9 anos criam
-        os próprios jogos, guiadas do início ao fim. Escolha por onde começar:
-      </p>
-
-      <nav class="botoes" aria-label="Escolha por onde começar">
-        <a href={quizUrl} class="botao laranja">
-          <span class="material-symbols-rounded" aria-hidden="true">psychology</span>
-          <span class="rotulo">
-            Descubra o perfil do seu filho
-            <small>Quiz gratuito de 2 minutos</small>
-          </span>
-        </a>
-        <a href={ofertaUrl} class="botao azul">
-          <span class="material-symbols-rounded" aria-hidden="true">sports_esports</span>
-          <span class="rotulo">
-            Desafio do Primeiro Jogo
-            <small>O desafio de 5 dias para criar o primeiro jogo</small>
-          </span>
-        </a>
-        <a href={comunidadeUrl} class="botao verde">
-          <span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span>
-          <span class="rotulo">
-            Comunidade dos Criadores
-            <small>A assinatura da plataforma inteira de criar jogos</small>
-          </span>
-        </a>
+<BaseLayout title="Crie com Helena e Júlio | Sistema Zero" description="Seu filho aprende criando jogos. Aulas, experiências, ferramentas e ajuda na mesma plataforma, para crianças de 9 a 14 anos." htmlClass="theme-kids">
+  <main class="cdc bio" id="bio">
+    <div class="bio-card">
+      <img class="bio-avatar" src={`${desafio.imagesBase}/avatar-helena-julio.webp`} alt="Helena e Júlio" width="360" height="360" fetchpriority="high" />
+      <p class="bio-byline">Helena e Júlio · Sistema Zero</p>
+      <h1 class="kof-display">Seu filho aprende <em>criando jogos.</em></h1>
+      <p class="bio-lead">Aulas, experiências, ferramentas e ajuda na mesma plataforma.</p>
+      <p class="bio-age">Comunidade dos Criadores · 9 a 14 anos</p>
+      <nav class="bio-links" aria-label="Escolha por onde começar">
+        <a class="kof-btn" href={link(`${comunidade.basePath}/oferta`)} data-analytics-id="bio-comunidade">Conhecer a Comunidade e os planos<span aria-hidden="true">→</span></a>
+        <a class="bio-link" href={link('/como-funciona/')} data-analytics-id="bio-como-funciona"><span>Ver como meu filho aprende<small>Veja as aulas e a criação de jogos por dentro</small></span><span aria-hidden="true">→</span></a>
+        <a class="bio-link" href={link(`${comunidade.basePath}/quiz`)} data-analytics-id="bio-quiz"><span>Descobrir um caminho para meu filho<small>Responda ao quiz da Comunidade</small></span><span aria-hidden="true">→</span></a>
+        <a class="bio-link" href={link(`${desafio.basePath}/oferta`)} data-analytics-id="bio-desafio"><span>Conhecer o Desafio do Primeiro Jogo<small>Uma experiência para começar a criar</small></span><span aria-hidden="true">→</span></a>
       </nav>
-    </main>
-
-    <footer class="rodape">
-      <p class="linhas">
-        <a href="/kids/termos">Termos de uso</a> · <a href="/kids/privacidade"
-          >Política de privacidade</a
-        >
-      </p>
-      <p>© {ano} {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}</p>
-    </footer>
-  </div>
+      <footer><a href="/kids/privacidade">Privacidade</a><span aria-hidden="true"> · </span><a href="/kids/termos">Termos de uso</a></footer>
+    </div>
+  </main>
 </BaseLayout>
-
 <style>
-  .bio {
-    position: relative;
-    min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 28px;
-    padding: 48px 22px 34px;
-    /* `clip` nos DOIS eixos: as decorações que sangram nas bordas (bolhas com
-       top/bottom negativos) são cortadas sem esticar a página, senão elas
-       criam barra de rolagem e uma sobra depois do rodapé. */
-    overflow: clip;
-    background: var(--sz-community-ground);
-  }
-
-  /* decorações */
-  .deco {
-    position: absolute;
-    pointer-events: none;
-    opacity: 0.9;
-    z-index: 0;
-  }
-  .bolha {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(2px);
-    opacity: 0.6;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .flutua {
-    animation: bio-flutua 6s ease-in-out infinite;
-  }
-  .flutua.lenta {
-    animation-duration: 9s;
-  }
-  .flutua.inversa {
-    animation-direction: reverse;
-  }
-  @keyframes bio-flutua {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-14px);
-    }
-  }
-  /* No celular as decorações de baixo cairiam sobre o aviso legal. */
-  @media (max-width: 560px) {
-    .deco.inversa {
-      display: none;
-    }
-  }
-
-  .cartao {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 460px;
-    text-align: center;
-    /* Centraliza o miolo no espaço da tela e empurra o rodapé para o pé. */
-    margin-block: auto;
-  }
-  .mascote {
-    margin: 0 auto 12px;
-    max-width: 176px;
-    animation: bio-flutua 7s ease-in-out infinite;
-  }
-  .mascote img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  .cartao h1 {
-    font-size: clamp(1.7rem, 6vw, 2.2rem);
-    font-weight: 700;
-    color: var(--color-ink);
-    margin: 0;
-  }
-  .arroba {
-    display: inline-block;
-    margin-top: 8px;
-    font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 0.88rem;
-    color: var(--color-cyan);
-    background: var(--sz-community-card);
-    border: 2px solid var(--sz-community-line);
-    border-radius: 999px;
-    padding: 5px 16px;
-    box-shadow: 0 4px 0 var(--sz-community-card-step);
-  }
-  .descricao {
-    margin: 16px auto 0;
-    max-width: 400px;
-    color: var(--color-muted);
-    font-size: 1.02rem;
-    line-height: 1.55;
-  }
-
-  /* botões empilhados, estilo bio link com o 3D do tema */
-  .botoes {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-    margin-top: 28px;
-  }
-  .botao {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    text-align: left;
-    text-decoration: none;
-    border: 2px solid var(--sz-community-line);
-    border-radius: 18px;
-    padding: 16px 22px;
-    font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 1.08rem;
-    line-height: 1.2;
-    transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease;
-  }
-  .botao .material-symbols-rounded {
-    font-size: 30px;
-    flex: 0 0 auto;
-  }
-  .botao .rotulo {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .botao .rotulo small {
-    font-family: 'Nunito', ui-sans-serif, system-ui, sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
-    opacity: 0.85;
-  }
-  .botao.laranja {
-    background: var(--sz-community-card);
-    color: var(--sz-community-ink);
-    box-shadow: 0 5px 0 var(--sz-community-card-step);
-  }
-  .botao.laranja:hover {
-    transform: translateY(-1px);
-    border-color: var(--sz-community-action);
-    box-shadow: 0 6px 0 var(--sz-community-card-step);
-  }
-  .botao.laranja:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 var(--sz-community-card-step);
-  }
-  .botao.laranja .material-symbols-rounded {
-    color: var(--sz-community-action);
-  }
-  .botao.azul {
-    background: var(--sz-community-action);
-    color: var(--sz-community-on-action);
-    border-color: var(--sz-community-action);
-    box-shadow: 0 5px 0 var(--sz-community-action-step);
-  }
-  .botao.azul:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 0 var(--sz-community-action-step);
-  }
-  .botao.azul:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 var(--sz-community-action-step);
-  }
-  .botao.verde {
-    background: var(--sz-community-menu);
-    color: var(--sz-community-on-action);
-    border-color: var(--sz-community-menu);
-    box-shadow: 0 5px 0 var(--sz-community-menu-2);
-  }
-  .botao.verde:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 0 var(--sz-community-menu-2);
-  }
-  .botao.verde:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 var(--sz-community-menu-2);
-  }
-
-  .rodape {
-    position: relative;
-    z-index: 1;
-    max-width: 560px;
-    text-align: center;
-    color: var(--color-muted);
-    font-size: 0.72rem;
-    line-height: 1.5;
-    /* a sombra 3D do último botão ocupa a área logo acima */
-    margin-top: 10px;
-  }
-  .rodape p {
-    margin: 0 0 8px;
-  }
-  .rodape a {
-    color: var(--color-ink);
-    font-weight: 700;
-    text-decoration: none;
-  }
-  .rodape a:hover {
-    color: var(--color-cyan);
-  }
+  .bio { min-height: 100svh; padding: 32px 20px 48px; display: grid; place-items: center; background: radial-gradient(ellipse at top, #dedcfb 0, transparent 60%), var(--color-bg); }
+  .bio-card { width: min(100%, 510px); text-align: center; }
+  .bio-avatar { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px; border: 5px solid white; box-shadow: 0 5px 0 #c9c6eb; }
+  .bio-byline { font-size: .9rem; font-weight: 800; margin-bottom: 10px; }
+  .bio .kof-display { font-size: clamp(2rem, 7vw, 2.8rem); line-height: 1.08; margin: 0; }
+  .bio-lead { font-size: 1.05rem; line-height: 1.5; max-width: 390px; margin: 14px auto 8px; }
+  .bio-age { font-size: .8rem; color: var(--color-muted); margin-bottom: 24px; }
+  .bio-links { display: grid; gap: 12px; }
+  .bio-links a { width: 100%; justify-content: space-between; text-align: left; gap: 14px; }
+  .bio-link { display: flex; align-items: center; padding: 17px 20px; border: 1.5px solid #d4d1eb; border-radius: 16px; background: white; box-shadow: 0 3px 0 #d4d1eb; font-weight: 800; text-decoration: none; transition: transform .15s; }
+  .bio-link:hover { transform: translateY(-2px); }
+  .bio-link small { display: block; margin-top: 4px; font-weight: 500; font-size: .78rem; color: var(--color-muted); }
+  .bio footer { margin-top: 28px; font-size: .75rem; color: var(--color-muted); }
+  .bio footer a { text-decoration: underline; }
+  @media (prefers-reduced-motion: reduce) { .bio-link { transition: none; } }
 </style>

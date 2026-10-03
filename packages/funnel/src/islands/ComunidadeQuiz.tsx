@@ -19,6 +19,7 @@ interface Props {
   funnel: string
   basePath: string
   imagesBase: string
+  quizDefinitionId?: string
 }
 interface Session {
   id: string
@@ -69,12 +70,13 @@ export function orderedOptions(step: SelecaoStep, seed: string): SelecaoStep['op
   return [...movable, ...step.opcoes.filter((o) => step.fixedLast?.includes(o.value))]
 }
 
-export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) {
+export default function ComunidadeQuiz({ funnel, basePath, imagesBase, quizDefinitionId }: Props) {
   const [session, setSession] = useState<Session | null>(null)
   const [cursor, setCursor] = useState('intro')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [conflict, setConflict] = useState(false)
+  const [updated, setUpdated] = useState(false)
   const locked = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
   const answers = session?.answers ?? {}
@@ -107,12 +109,14 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
       const data = await apiPost<Session>('/api/leads', {
         funnel,
         restartQuiz: restart,
+        quizDefinitionId,
         attribution: leadAttributionFromLocation(window.location),
       })
       if (restart)
         window.history.replaceState(null, '', window.location.pathname + window.location.search)
       receive(data, restart)
-    } catch {
+    } catch (err) {
+      if (err instanceof ApiError && err.code === 'QUIZ_UPDATED') setUpdated(true)
       setError('Não foi possível abrir suas respostas. Confira a conexão e tente novamente.')
     } finally {
       locked.current = false
@@ -124,18 +128,20 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
     let active = true
     apiPost<Session>('/api/leads', {
       funnel,
+      quizDefinitionId,
       attribution: leadAttributionFromLocation(window.location),
     })
       .then((data) => {
         if (active) receive(data)
       })
-      .catch(() => {
+      .catch((err) => {
+        if (err instanceof ApiError && err.code === 'QUIZ_UPDATED') setUpdated(true)
         if (active) setError('Não foi possível abrir o quiz. Confira a conexão e tente novamente.')
       })
     return () => {
       active = false
     }
-  }, [funnel, receive])
+  }, [funnel, receive, quizDefinitionId])
 
   useEffect(() => {
     if (cursor !== 'intro') heading.current?.focus()
@@ -153,6 +159,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
     setError('')
     try {
       const data = await apiPatch<{ answers: QuizAnswers; complete: boolean }>('/api/leads', {
+        quizDefinitionId,
         key: step.key,
         value,
         revision: quizRevision(answers),
@@ -170,6 +177,7 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
         setCursor(next?.key ?? 'review')
       }
     } catch (err) {
+      if (err instanceof ApiError && err.code === 'QUIZ_UPDATED') setUpdated(true)
       const stale = err instanceof ApiError && [401, 404, 409].includes(err.status)
       setConflict(stale)
       setError(
@@ -185,8 +193,13 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
 
   const errorView = error && (
     <div className="cq-error" role="alert">
-      <p>{error}</p>
-      {(!session || conflict) && (
+      <p>{updated ? 'O quiz foi atualizado. Atualize a página para continuar.' : error}</p>
+      {updated && (
+        <button className="cq-link" type="button" onClick={() => window.location.reload()}>
+          Atualizar página
+        </button>
+      )}
+      {!updated && (!session || conflict) && (
         <button className="cq-link" type="button" disabled={busy} onClick={() => void load()}>
           Retomar respostas salvas
         </button>
@@ -369,7 +382,14 @@ export default function ComunidadeQuiz({ funnel, basePath, imagesBase }: Props) 
   const stageIndex = stages.findIndex(([id]) => id === step.etapa)
   const chip = STAGE_CHIP[step.etapa as keyof typeof STAGE_CHIP] ?? STAGE_CHIP.filho
   return (
-    <main id="quiz" className="wrap cq-flow">
+    <main
+      id="quiz"
+      className="wrap cq-flow"
+      data-analytics-question={step.key}
+      data-analytics-quiz={quizDefinitionId}
+      data-analytics-attempt={session?.id}
+      data-analytics-position={steps.indexOf(step) + 1}
+    >
       <ol className="cq-stages" aria-label="Etapas do quiz">
         {stages.map(([id, title], i) => (
           <li

@@ -76,18 +76,22 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   const method = ctx.request.method
   const isWrite = method === 'POST' || method === 'PATCH'
   const isAdminLogin = isWrite && ctx.url.pathname === ADMIN_LOGIN_PATH
-  const writeLimited = isWrite && (isAdminLogin || RATE_LIMITED_WRITE.test(ctx.url.pathname))
+  const isAnalytics = isWrite && ctx.url.pathname.startsWith('/api/analytics/')
+  const writeLimited =
+    isWrite && (isAnalytics || isAdminLogin || RATE_LIMITED_WRITE.test(ctx.url.pathname))
   const getLimited = method === 'GET' && isRateLimitedGetPath(ctx.url.pathname)
   if (writeLimited || getLimited) {
     // getEnv()/clientAddress SÓ aqui dentro: se alguma página voltar ao
     // prerender, a middleware roda no build (só GET, paths de marketing — não
     // casam os regex), onde não há env de runtime nem clientAddress.
     const ip = clientIp(ctx.request, ctx.clientAddress || 'unknown', getEnv().TRUST_PROXY)
-    const [key, limit]: [string, number] = isAdminLogin
-      ? [`${ip}:admin-login`, ADMIN_LOGIN_LIMIT]
-      : getLimited
-        ? [`${ip}:funnel-get`, GET_LIMIT]
-        : [`${ip}:funnel-api`, WRITE_LIMIT]
+    const [key, limit]: [string, number] = isAnalytics
+      ? [`${ip}:analytics`, 120]
+      : isAdminLogin
+        ? [`${ip}:admin-login`, ADMIN_LOGIN_LIMIT]
+        : getLimited
+          ? [`${ip}:funnel-get`, GET_LIMIT]
+          : [`${ip}:funnel-api`, WRITE_LIMIT]
     const { allowed, retryAfterSeconds } = rateLimit(key, limit, RATE_WINDOW_MS, Date.now())
     if (!allowed) {
       return new Response(

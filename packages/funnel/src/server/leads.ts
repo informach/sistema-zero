@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { quizDefinition } from '../analytics/quiz-definition'
+import type { QuizDefinition } from '../analytics/types'
 import type { FunnelRepo, Lead } from '../db/repo'
 import { leadBelongsToFunnel } from '../funnels/lead-scope'
 import { getFunnelByKey, isFunnelKey, isQuizComplete } from '../funnels/registry'
@@ -12,6 +14,8 @@ import { quizSessionToken } from './quiz-session'
 export interface LeadDeps {
   repo: FunnelRepo
   secureCookie: boolean
+  saveQuizDefinition?: (definition: QuizDefinition) => Promise<void>
+  linkAnalytics?: (request: Request, leadId: string) => Promise<void>
 }
 
 /**
@@ -29,6 +33,10 @@ const VENDAS_EVENTS = [
 ] as const
 
 const PatchBody = z.object({
+  quizDefinitionId: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
   // key/eventName são validados contra o quiz do FUNIL do lead, não um enum fixo.
   key: z.string().max(64),
   value: z.union([z.string(), z.number(), z.array(z.string().max(64)).max(8)]),
@@ -58,7 +66,12 @@ export function leadAnswers(lead: Lead): QuizAnswers {
 
 /** Corpo opcional do POST /api/leads: o funil de origem (`${audience}/${produto}`). */
 const CreateLeadBody = z
-  .object({ funnel: z.string(), attribution: z.unknown(), restartQuiz: z.boolean() })
+  .object({
+    funnel: z.string(),
+    attribution: z.unknown(),
+    restartQuiz: z.boolean(),
+    quizDefinitionId: z.string().regex(/^[a-f0-9]{64}$/),
+  })
   .partial()
 
 /**
@@ -73,6 +86,11 @@ export async function createLead(request: Request, deps: LeadDeps): Promise<Resp
   const funnel = parsed.success && isFunnelKey(parsed.data.funnel) ? parsed.data.funnel : null
   const attribution = parsed.success ? sanitizeLeadAttribution(parsed.data.attribution) : null
   const restart = parsed.success && parsed.data.restartQuiz === true
+  const requestedDefinition = parsed.success ? parsed.data.quizDefinitionId : undefined
+  const definition = funnel ? quizDefinition(getFunnelByKey(funnel)!) : null
+  if (requestedDefinition && requestedDefinition !== definition?.id)
+    return jsonError('O quiz mudou. Atualize a página para continuar.', 409, 'QUIZ_UPDATED')
+  if (requestedDefinition && definition) await deps.saveQuizDefinition?.(definition)
   if (restart && (!funnel || !getFunnelByKey(funnel)?.content.quiz))
     return jsonError('Quiz desconhecido.', 400, 'BAD_REQUEST')
   const existing = getLeadId(request)
@@ -87,11 +105,13 @@ export async function createLead(request: Request, deps: LeadDeps): Promise<Resp
     if (
       !restart &&
       !outdatedQuiz &&
+      (!requestedDefinition || lead?.quizDefinitionId === requestedDefinition) &&
       lead &&
       !lead.paidAt &&
       (!funnel || leadBelongsToFunnel(lead.funnel, funnel))
     ) {
       if (!lead.attribution && attribution) await deps.repo.claimAttribution(lead.id, attribution)
+      await deps.linkAnalytics?.(request, lead.id)
       return json(
         {
           id: lead.id,
@@ -103,8 +123,9 @@ export async function createLead(request: Request, deps: LeadDeps): Promise<Resp
       )
     }
   }
-  const { id } = await deps.repo.createLead(funnel, attribution)
+  const { id } = await deps.repo.createLead(funnel, attribution, requestedDefinition)
   await deps.repo.insertEvent(id, 'entrou_landing', 'landing')
+  await deps.linkAnalytics?.(request, id)
   return json(
     { id, answers: {}, lastStep: 'entrou_landing', sessionToken: quizSessionToken(id) },
     201,
@@ -151,6 +172,12 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
   }
   const quiz = getFunnelByKey(lead.funnel)?.content.quiz
   if (!quiz) return jsonError('Este funil não tem quiz.', 400, 'BAD_REQUEST')
+  const currentDefinition = quizDefinition(getFunnelByKey(lead.funnel)!)
+  if (
+    (lead.quizDefinitionId && lead.quizDefinitionId !== currentDefinition?.id) ||
+    (parsed.data.quizDefinitionId && parsed.data.quizDefinitionId !== lead.quizDefinitionId)
+  )
+    return jsonError('O quiz mudou. Atualize a página para continuar.', 409, 'QUIZ_UPDATED')
 
   const { key, value, lastStep, eventName } = parsed.data
   const step = quiz.steps.find((s) =>
@@ -159,6 +186,13 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
       : s.key === key,
   )
   if (!step) return jsonError('Pergunta desconhecida.', 400, 'BAD_REQUEST')
+  const questionMetadata = lead.quizDefinitionId
+    ? {
+        quiz_definition_id: lead.quizDefinitionId,
+        question_id: step.key,
+        question_position: quiz.steps.indexOf(step) + 1,
+      }
+    : {}
   // O resultadoKey das calculadoras é DERIVADO no servidor (invariante 3): o cliente
   // só envia campo1/campo2. Recusa um envio DIRETO do resultado (anti-forja do valor).
   if (
@@ -219,7 +253,19 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
         409,
         'QUIZ_CONFLICT',
       )
-    const metadata = { quiz_version: next._quiz_version, revision: next._quiz_revision }
+    const metadata = {
+      ...questionMetadata,
+      quiz_version: next._quiz_version,
+      revision: next._quiz_revision,
+    }
+    if (lead.quizDefinitionId)
+      await deps.repo.insertEvent(
+        id,
+        'quiz_answer_saved',
+        step.lastStep,
+        questionMetadata,
+        `${id}:answer-saved:${next._quiz_revision}`,
+      )
     if (revision === 0)
       await deps.repo.insertEvent(id, 'start_quiz', step.lastStep, metadata, `${id}:start_quiz`)
     await deps.repo.insertEvent(
@@ -242,13 +288,20 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
   const merged = { ...(lead.quizAnswers ?? {}), [key]: answer }
   const derived = quiz.derive?.(merged) ?? {}
   await deps.repo.mergeQuizAnswers(id, { [key]: answer, ...derived })
+  const combined = { ...merged, ...derived }
+  const stepComplete =
+    step.tipo === 'calculadora' || step.tipo === 'calculadora_prefilled'
+      ? [step.campo1.key, step.campo2.key, step.resultadoKey].every((k) => combined[k] != null)
+      : true
+  if (lead.quizDefinitionId && stepComplete)
+    await deps.repo.insertEvent(id, 'quiz_answer_saved', step.lastStep, questionMetadata)
 
   if (lastStep) await deps.repo.updateLead(id, { lastStep })
   if (Object.keys(lead.quizAnswers ?? {}).length === 0) {
     await deps.repo.insertEvent(id, 'start_quiz', lastStep ?? null, null, `${id}:start_quiz`)
   }
   // Só o evento do passo desta resposta é aceito (não dá p/ forjar marco server-side).
-  if (eventName) await deps.repo.insertEvent(id, eventName, lastStep ?? null)
+  if (eventName) await deps.repo.insertEvent(id, eventName, lastStep ?? null, questionMetadata)
   if (isQuizComplete(quiz, { ...merged, ...derived })) {
     await deps.repo.insertEvent(id, 'complete_quiz', lastStep ?? null, null, `${id}:complete_quiz`)
   }
@@ -286,5 +339,7 @@ export async function saveContact(request: Request, deps: LeadDeps): Promise<Res
     email: parsed.data.email,
     telefone: parsed.data.telefone,
   })
+  await deps.repo.insertEvent(id, 'contact_saved', 'contact', null, `${id}:contact_saved`)
+  await deps.linkAnalytics?.(request, id)
   return json({ ok: true })
 }

@@ -1,0 +1,34 @@
+---
+import { analyticsPage } from '../analytics/page-context'
+import { quizDefinition } from '../analytics/quiz-definition'
+import { getFunnelByKey } from '../funnels/registry'
+
+const page = analyticsPage(Astro.url.pathname)
+const funnel = page?.funnel ? getFunnelByKey(page.funnel) : null
+const definition = funnel ? quizDefinition(funnel)?.id : ''
+const release = process.env.RAILWAY_GIT_COMMIT_SHA || 'development'
+---
+{page && <aside id="sz-metrics-controls" data-path={page.path} data-public={String(page.publicText)} data-quiz={definition} data-release={release} aria-label="Preferências de privacidade" data-analytics-private>
+  <div id="sz-metrics-notice" hidden>
+    <p>Podemos medir sua navegação para melhorar as páginas? Registramos cliques e etapas, sem gravar o que você digita.</p>
+    <div><button type="button" data-choice="accepted">Permitir métricas</button><button type="button" data-choice="rejected">Continuar sem métricas</button></div>
+    <a href="/kids/privacidade">Política de privacidade</a>
+    <p id="sz-metrics-error" role="status" hidden>Não foi possível salvar. Tente novamente.</p>
+  </div>
+  <button id="sz-metrics-manage" type="button">Privacidade</button>
+</aside>}
+<style>
+  #sz-metrics-controls { position: relative; z-index: 100; font: 14px/1.5 var(--font-sans, sans-serif); }
+  #sz-metrics-notice { position: fixed; bottom: 16px; left: 16px; width: min(420px, calc(100vw - 32px)); padding: 20px; border: 1px solid #cbd5e1; border-radius: 16px; background: #fff; color: #172554; box-shadow: 0 8px 40px #0002; }
+  #sz-metrics-notice p { margin: 0 0 12px; }
+  #sz-metrics-notice div { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  #sz-metrics-notice button { padding: 9px 12px; border: 1px solid #4c56a5; border-radius: 8px; cursor: pointer; }
+  #sz-metrics-notice button:first-child { background: #353d88; color: white; }
+  #sz-metrics-notice a { text-decoration: underline; }
+  #sz-metrics-manage { position: fixed; bottom: 4px; right: 8px; background: white; color: #334155; padding: 3px 8px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 11px; cursor: pointer; }
+  [hidden] { display: none !important; }
+</style>
+<script>
+  import { setupConsent } from '../analytics/consent'
+  setupConsent()
+</script>

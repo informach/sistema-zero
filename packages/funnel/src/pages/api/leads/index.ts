@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro'
+import { analyticsDeps, tryLinkAnalytics } from '../../../analytics/runtime'
 import { getDeps } from '../../../server/deps'
 import { createLead, getLeadView, patchLead } from '../../../server/leads'
 
@@ -6,7 +7,12 @@ export const prerender = false
 
 const leadDeps = () => {
   const { repo, env } = getDeps()
-  return { repo, secureCookie: env.NODE_ENV === 'production' }
+  return {
+    repo,
+    secureCookie: env.NODE_ENV === 'production',
+    saveQuizDefinition: analyticsDeps().repo.saveQuiz,
+    linkAnalytics: tryLinkAnalytics,
+  }
 }
 
 export const POST: APIRoute = ({ request }) => createLead(request, leadDeps())

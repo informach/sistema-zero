@@ -9,7 +9,7 @@ import type {
   SimNaoStep,
   SliderStep,
 } from '../content/quiz-config'
-import { apiPatch, apiPost } from '../lib/api-fetch'
+import { ApiError, apiPatch, apiPost } from '../lib/api-fetch'
 import { leadAttributionFromLocation } from '../lib/lead-attribution'
 import Calculadora from './questions/Calculadora'
 import CalculadoraPrefilled from './questions/CalculadoraPrefilled'
@@ -28,6 +28,7 @@ export interface QuizProps {
   landing: { badge?: string; h1: string; subtitulo: string; tempo: string }
   /** Chave do funil (`pro/no-comando-da-ia`) — gravada na criação do lead. */
   funnel: string
+  quizDefinitionId?: string
   /** Para onde ir ao concluir o quiz (resultado do funil, ou direto à oferta). */
   donePath: string
 }
@@ -45,11 +46,20 @@ function firstUnanswered(answers: Answers, steps: QuizStep[]): number {
   return steps.length
 }
 
-export default function Quiz({ steps, total, landing, funnel, donePath }: QuizProps) {
+export default function Quiz({
+  steps,
+  total,
+  landing,
+  funnel,
+  donePath,
+  quizDefinitionId,
+}: QuizProps) {
   const [answers, setAnswers] = useState<Answers>({})
+  const [attemptId, setAttemptId] = useState<string>()
   const [index, setIndex] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [updated, setUpdated] = useState(false)
   const reduce = useReducedMotion()
 
   // Entrada do funil: `/` redireciona pra cá. UMA ida ao servidor: POST /api/leads
@@ -59,17 +69,20 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
   useEffect(() => {
     let active = true
     ;(async () => {
-      let data: { answers?: Answers } | null = null
+      let data: { id?: string; answers?: Answers } | null = null
       try {
-        data = await apiPost<{ answers?: Answers }>('/api/leads', {
+        data = await apiPost<{ id?: string; answers?: Answers }>('/api/leads', {
           funnel,
+          quizDefinitionId,
           attribution: leadAttributionFromLocation(window.location),
         })
-      } catch {
+      } catch (error) {
+        if (error instanceof ApiError && error.code === 'QUIZ_UPDATED') setUpdated(true)
         /* sem lead: o PATCH falharia, mas seguimos exibindo a P1 */
         data = { answers: {} }
       }
       if (!active) return
+      setAttemptId(data?.id)
       const answers = data?.answers ?? {}
       const start = firstUnanswered(answers, steps)
       if (start >= steps.length) {
@@ -82,7 +95,7 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
     return () => {
       active = false
     }
-  }, [funnel, donePath, steps])
+  }, [funnel, donePath, steps, quizDefinitionId])
 
   if (index == null) return <QuizSkeleton />
 
@@ -100,6 +113,8 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
         if (!pair) continue
         const last = i === pairs.length - 1
         await apiPatch('/api/leads', {
+          funnel,
+          quizDefinitionId,
           key: pair.key,
           value: pair.value,
           ...(last ? { lastStep: step.lastStep, eventName: step.eventName } : {}),
@@ -115,7 +130,8 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
       setAnswers(merged)
       setIndex(next)
       setSubmitting(false)
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'QUIZ_UPDATED') setUpdated(true)
       // Sem avançar a pergunta (o avanço só ocorre após o PATCH OK). Mostra o
       // erro p/ o usuário re-tentar em vez de "não aconteceu nada".
       setErro('Não consegui salvar sua resposta. Verifique a conexão e tente de novo.')
@@ -157,6 +173,10 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
+            data-analytics-question={step.key}
+            data-analytics-quiz={quizDefinitionId}
+            data-analytics-attempt={attemptId}
+            data-analytics-position={index + 1}
             initial={fade.initial}
             animate={fade.animate}
             exit={fade.exit}
@@ -215,7 +235,15 @@ export default function Quiz({ steps, total, landing, funnel, donePath }: QuizPr
             )}
           </motion.div>
         </AnimatePresence>
-        {erro && (
+        {updated && (
+          <p role="alert" className="mt-4 text-center">
+            O quiz foi atualizado.{' '}
+            <button type="button" className="underline" onClick={() => window.location.reload()}>
+              Atualizar página para continuar
+            </button>
+          </p>
+        )}
+        {erro && !updated && (
           <p role="alert" className="mt-4 text-center text-sm text-red-400">
             {erro}
           </p>

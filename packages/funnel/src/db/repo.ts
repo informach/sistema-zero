@@ -95,6 +95,7 @@ export interface FunnelRepo {
   createLead(
     funnel?: string | null,
     attribution?: LeadAttributionV1 | null,
+    quizDefinitionId?: string | null,
   ): Promise<{ id: string }>
   getLead(id: string): Promise<Lead | null>
   updateLead(id: string, set: LeadUpdate): Promise<void>
@@ -197,10 +198,10 @@ export interface FunnelRepo {
 
 export function createFunnelRepo(db: Database): FunnelRepo {
   return {
-    async createLead(funnel = null, attribution = null) {
+    async createLead(funnel = null, attribution = null, quizDefinitionId = null) {
       const [row] = await db
         .insert(leads)
-        .values({ funnel: funnel ?? null, attribution })
+        .values({ funnel: funnel ?? null, attribution, quizDefinitionId })
         .returning({ id: leads.id })
       return { id: row!.id }
     },

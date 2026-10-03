@@ -120,6 +120,27 @@
       "when": 1789592400000,
       "tag": "0016_lead_attribution",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791036610768,
+      "tag": "0017_funnel_analytics",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1791037535084,
+      "tag": "0018_analytics_visuals",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791038082601,
+      "tag": "0019_quiz_analytics_attempt",
+      "breakpoints": true
     }
   ]
 }

@@ -8,6 +8,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core'
+import type { AnalyticsEnvironment, QuizDefinition } from '../analytics/types'
 import type { LeadAttributionV1 } from '../lib/lead-attribution'
 import type { QuizAnswers } from '../lib/quiz-types'
 
@@ -35,6 +36,8 @@ export const leads = funil.table(
     // o seu próprio quiz (perguntas diferentes). A validação por chave e o cálculo de
     // derivados (ex.: custo_mensal) + o perfil vivem no módulo do funil (src/funnels).
     quizAnswers: jsonb('quiz_answers').$type<QuizAnswers>(),
+    // Hash da definição realmente apresentada. Não reinterpreta perguntas antigas.
+    quizDefinitionId: text('quiz_definition_id'),
     // Perfil/diagnóstico vencedor (string por funil), calculado ao concluir o quiz.
     // Mantido como coluna: a aba Perfis do /admin agrega por ele.
     perfilResultado: text('perfil_resultado'),
@@ -171,4 +174,122 @@ export const processedWebhooks = funil.table('processed_webhooks', {
   processedAt: timestamp('processed_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
-export const schema = { leads, funnelEvents, processedWebhooks, leadPayments }
+export const analyticsQuizDefinitions = funil.table(
+  'analytics_quiz_definitions',
+  {
+    id: text('id').primaryKey(),
+    funnel: text('funnel').notNull(),
+    definition: jsonb('definition').$type<QuizDefinition>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('analytics_quiz_funnel_idx').on(t.funnel, t.createdAt)],
+)
+
+export const analyticsVisitors = funil.table(
+  'analytics_visitors',
+  {
+    id: uuid('id').primaryKey(),
+    firstAttribution: jsonb('first_attribution').$type<LeadAttributionV1>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('analytics_visitor_retention_idx').on(t.lastSeenAt)],
+)
+
+export const analyticsSessions = funil.table(
+  'analytics_sessions',
+  {
+    id: uuid('id').primaryKey(),
+    visitorId: uuid('visitor_id')
+      .notNull()
+      .references(() => analyticsVisitors.id, { onDelete: 'cascade' }),
+    environment: text('environment').$type<AnalyticsEnvironment>().notNull(),
+    entryPath: text('entry_path').notNull(),
+    attribution: jsonb('attribution').$type<LeadAttributionV1>(),
+    device: text('device').notNull(),
+    referrerHost: text('referrer_host'),
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('analytics_session_visitor_idx').on(t.visitorId, t.lastSeenAt),
+    index('analytics_session_period_idx').on(t.environment, t.startedAt),
+  ],
+)
+
+export const analyticsEvents = funil.table(
+  'analytics_events',
+  {
+    id: uuid('id').primaryKey(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => analyticsSessions.id, { onDelete: 'cascade' }),
+    pageViewId: uuid('page_view_id').notNull(),
+    page: text('page').notNull(),
+    funnel: text('funnel'),
+    revision: text('revision').notNull(),
+    name: text('name').notNull(),
+    elementId: text('element_id'),
+    label: text('label'),
+    sectionId: text('section_id'),
+    destination: text('destination'),
+    quizDefinitionId: text('quiz_definition_id'),
+    questionId: text('question_id'),
+    quizAttemptId: uuid('quiz_attempt_id').references(() => leads.id, { onDelete: 'set null' }),
+    position: integer('position'),
+    progress: integer('progress'),
+    errorCode: text('error_code'),
+    viewport: integer('viewport'),
+    x: integer('x'),
+    y: integer('y'),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull(),
+    receivedAt: timestamp('received_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('analytics_events_session_idx').on(t.sessionId, t.occurredAt),
+    index('analytics_events_page_idx').on(t.page, t.revision, t.name),
+    index('analytics_events_quiz_idx').on(t.quizDefinitionId, t.questionId),
+    index('analytics_events_received_idx').on(t.receivedAt),
+  ],
+)
+
+// Um lead tem uma sessão de origem analítica. Retornos não multiplicam a compra.
+export const analyticsLeadLinks = funil.table('analytics_lead_links', {
+  leadId: uuid('lead_id')
+    .primaryKey()
+    .references(() => leads.id, { onDelete: 'cascade' }),
+  sessionId: uuid('session_id')
+    .notNull()
+    .references(() => analyticsSessions.id, { onDelete: 'cascade' }),
+  linkedAt: timestamp('linked_at', { withTimezone: true }).notNull(),
+})
+
+export const analyticsSnapshots = funil.table(
+  'analytics_snapshots',
+  {
+    id: text('id').primaryKey(),
+    page: text('page').notNull(),
+    revision: text('revision').notNull(),
+    viewport: integer('viewport').notNull(),
+    height: integer('height').notNull(),
+    image: text('image').notNull(),
+    elements: jsonb('elements')
+      .$type<Record<string, { x: number; y: number; width: number; height: number }>>()
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('analytics_snapshot_page_idx').on(t.page, t.revision, t.viewport)],
+)
+
+export const schema = {
+  leads,
+  funnelEvents,
+  processedWebhooks,
+  leadPayments,
+  analyticsQuizDefinitions,
+  analyticsVisitors,
+  analyticsSessions,
+  analyticsEvents,
+  analyticsLeadLinks,
+  analyticsSnapshots,
+}
