@@ -21,7 +21,7 @@
 1. [x] Conferir BRIEFING, ESPEC, Cadê atual, geradores, progressão, paleta, Mural e código da experiência. Baseline: 9 testes passaram.
 2. [x] Atualizar `docs/aulas-interativas/qa/gerar-desafio-farol.ts`, testes de manifesto e os cinco roteiros em `docs/aulas-interativas/aulas/desafio-*.roteiro.md`; regenerar os manifestos.
 3. [x] Reescrever as cinco propostas e `docs/aulas-interativas/modulos-desafio-primeiro-jogo.md`, incluindo reconciliar mídia, anexos e progresso antes de importar.
-4. [x] Atualizar `docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py`; produzir e inspecionar o PDF único do caderno em `output/pdf/`, preservando o mapa antigo apenas como arquivo histórico.
+4. [x] Atualizar `docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py`; produzir e inspecionar o PDF único do caderno em `output/pdf/`. Na conferência posterior de 03/10, o responsável pediu o mesmo visual do Cadê Todo Mundo e retirou também o arquivo do mapa para responsáveis. O caderno atual tem 14 páginas, com blocos desenhados e CSS/fontes da referência.
 5. [x] Rodar testes de projeto/manifestos, validadores de roteiro/manifestos, conferir links do Como Fazer, regeneração determinística e diff. Registrar limites: gravação, anexação, ensaio infantil e publicação ainda pendentes.
 
 ## Critérios de revisão

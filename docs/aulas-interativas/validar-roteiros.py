@@ -23,13 +23,18 @@ def audit(manifest_path):
         titles = [match.group(1) for match in headings]
         expected_titles = [section['title'] for section in manifest['sections']]
         errors = []
-        if titles != expected_titles or len(expected) != len(headings):
+        if titles != expected_titles:
             errors.append(f'{script_path.name}: seções ou vídeos diferentes do manifesto: {titles} vs {expected_titles}')
         for index, heading in enumerate(headings):
             body = script[heading.end():headings[index + 1].start() if index + 1 < len(headings) else len(script)]
+            section = manifest['sections'][index] if index < len(manifest['sections']) else None
+            if section and not any(key in video_keys for key in section['blockKeys']):
+                if '**Zappy na página (não gravar):**' not in body or '**Narração:**' in body or '**Na tela:**' in body:
+                    errors.append(f'{script_path.name}/seção {index + 1}: seção sem vídeo precisa de fala na página, sem gravação')
+                continue
             if '**Na tela:**' not in body or '> “' not in body:
                 errors.append(f'{script_path.name}/seção {index + 1}: direção de tela ou fala ausente')
-        return errors, (script_path.name, len(expected), len(headings), [])
+        return errors, (script_path.name, len(expected), len(expected), [])
     found = CLIP.findall(script)
     errors = []
     if found != expected:

@@ -11,6 +11,8 @@ Duas seções, dois vídeos curtos. O jogo pronto é uma atividade da criança, 
 **Narração:**
 > "Neste desafio, você vai programar A Chave do Farol. Um barco precisa chegar à costa, mas o farol está apagado. Antes de montar as regras, conheça a aventura jogando esta versão pronta. Use as setas da tela para mover o personagem. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. Explore o mapa e tente encontrar a chave para chegar ao farol. Quando quiser seguir, aperte Próxima seção. Você não precisa terminar a partida para continuar."
 
+**Ponte do Zappy na página (não gravar):** Esta é a aventura que você vai programar. Jogue a versão pronta para conhecer o caminho da chave até o farol. Depois de experimentar, clique em Próxima seção.
+
 ## Seção 2. Seu Caderno do Aluno
 
 ### Vídeo `video-intro-caderno` · Seu Caderno do Aluno
@@ -19,3 +21,5 @@ Duas seções, dois vídeos curtos. O jogo pronto é uma atividade da criança, 
 
 **Narração:**
 > "Para acompanhar a montagem da sua aventura, você tem este Caderno do Aluno. Ele segue as partes das aulas: os blocos que vamos usar, onde encaixar cada um, como testar e como publicar o jogo. Se esquecer um passo, pode consultar o caderno e voltar ao seu projeto. Você pode ler aqui, baixar ou imprimir se quiser. Não precisa imprimir nem preencher nada para fazer as aulas. Para começar a montagem do jogo, aperte Concluir aula."
+
+**Ponte do Zappy na página (não gravar):** Consulte este caderno quando precisar lembrar um passo da montagem. Para continuar, clique em Concluir aula.

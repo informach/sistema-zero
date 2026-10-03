@@ -4,6 +4,8 @@ import { resolve } from 'node:path'
 import type { ProjectBlockPattern } from '../../../packages/core/src/learning/section-progression'
 import { montarProjetoFarol } from './desafio-farol-projeto'
 
+import { farol } from './quizzes-cursos-curtos'
+
 const DIR = resolve(import.meta.dir, '../aulas')
 const CURSO = 'desafio-primeiro-jogo'
 const video = (key: string, title: string, script: string, direction: string) => ({
@@ -39,14 +41,6 @@ const studioBlocks = [
   'sz_frame_start',
   'sz_frame_events',
   'sz_frame_loops',
-  'sz_frame_structure',
-  'sz_frame_appearance',
-  'sz_html_canvas',
-  'sz_css_rule',
-  'sz_css_decl',
-  'sz_css_body_background',
-  'sz_css_align',
-  'sz_css_justify',
   'sz_g2d_setup_stage',
   'sz_g2d_create_image_sprite',
   'sz_g2d_clear',
@@ -130,7 +124,10 @@ const dia1 = {
       'desafio-dia-1.roteiro.md',
       'Situar o projeto com cenário pronto e personagem parado antes da tarefa. Mostrar paleta, encaixe, campos e valores dos três blocos: controles só direções, movimento e borda. Testar, Verificar esta etapa, conferir Objetivo da etapa cumprido!, Salvo, Enviar para o professor e confirmação Enviar. Encerrar em Concluir aula.',
     ),
-    fala('ponte-d1-borda', 'Faça o personagem andar nas quatro direções sem sair da tela.'),
+    fala(
+      'ponte-d1-borda',
+      'Agora monte o movimento do seu personagem. Teste as quatro direções e as bordas, depois use Verificar esta etapa antes de enviar o projeto.',
+    ),
     projeto('dia-1'),
     ajudaComoFazer('ajuda-d1', 'Se precisar de ajuda', [
       ['plataforma-ampliar-a-atividade', 'Como dar mais espaço para a atividade'],
@@ -185,6 +182,10 @@ const dia2 = {
       'desafio-dia-2.roteiro.md',
       'Mostrar o problema real: o personagem atravessa a chave e ela continua no chão. Esta seção apresenta somente a necessidade. Evento, variável e valores entram na seção de montagem, junto do uso concreto. Terminar em Próxima seção.',
     ),
+    fala(
+      'ponte-d2-contexto',
+      'Você viu que o personagem atravessa a chave sem recolhê-la. Clique em Próxima seção para continuar.',
+    ),
     video(
       'video-d2-programar',
       'Faça o jogo guardar a chave',
@@ -193,7 +194,7 @@ const dia2 = {
     ),
     fala(
       'ponte-d2-programar',
-      'O personagem já anda. Agora você vai fazer o encontro com a chave mudar o jogo.',
+      'Agora programe a coleta da chave no seu jogo. Teste se ela sai do chão e se o aviso muda. Use Verificar esta etapa antes de enviar o projeto.',
     ),
     projeto('dia-2'),
   ],
@@ -203,7 +204,7 @@ const dia2 = {
       'Encostar ainda não é pegar',
       'explanation',
       'Observar que o personagem atravessa a chave sem recolhê-la e reconhecer a regra que falta.',
-      ['video-d2-contexto'],
+      ['video-d2-contexto', 'ponte-d2-contexto'],
       ['video-d2-contexto'],
     ),
     secao(
@@ -276,7 +277,7 @@ const dia3 = {
     ),
     fala(
       'ponte-d3-condicao',
-      'A chave já pode ser recolhida. Veja o que a porta precisa conferir.',
+      'A chave já pode ser recolhida. Experimente a porta e compare o que acontece nas duas situações.',
     ),
     {
       key: 'experiencia-porta',
@@ -303,13 +304,17 @@ const dia3 = {
     ),
     fala(
       'ponte-d3-decisao',
-      'Você testou duas situações na porta. Agora vai montar a pergunta que o jogo faz.',
+      'Agora monte no seu jogo a regra que faz a porta conferir a chave. Teste os dois caminhos e use Verificar esta etapa antes de enviar o projeto.',
     ),
     video(
       'video-d3-fecho',
       'Publique seu jogo',
       'desafio-dia-3.roteiro.md',
       'Usar o mesmo projeto da seção anterior. Compartilhar, manter título e resumo, Gerar capa, conferir, Publicar, esperar Seu jogo está no Mural!, Fechar e Concluir aula. Personalização e cópia do link ficam no Como Fazer.',
+    ),
+    fala(
+      'ponte-d3-publicar',
+      'Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.',
     ),
     projeto('dia-3'),
     ajudaComoFazer('ajuda-publicar', 'Para consultar ao publicar', [
@@ -396,7 +401,7 @@ const dia3 = {
       'Publique seu jogo',
       'closing',
       'Publicar o projeto construído no Mural e concluir a aula.',
-      ['video-d3-fecho', 'ajuda-publicar'],
+      ['video-d3-fecho', 'ponte-d3-publicar', 'ajuda-publicar'],
       ['video-d3-fecho'],
       'projeto',
     ),
@@ -462,6 +467,10 @@ const introducao = {
       'desafio-introducao.roteiro.md',
       'Anunciar o jogo que será programado e o contexto do barco e do farol apagado; então convidar a jogar a versão pronta por toque ou teclado. Mostrar a cena inicial sem resolver o percurso. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.',
     ),
+    fala(
+      'ponte-intro-farol',
+      'Esta é a aventura que você vai programar. Jogue a versão pronta para conhecer o caminho da chave até o farol. Depois de experimentar, clique em Próxima seção.',
+    ),
     {
       key: 'jogo-pronto',
       content: {
@@ -485,6 +494,10 @@ const introducao = {
       'Seu Caderno do Aluno',
       'desafio-introducao.roteiro.md',
       'Apresentar o Caderno do Aluno como consulta opcional que acompanha as seções do curso: montagem, testes, publicação e certificado. Não inventar material de mapa nem ensinar o leitor. Download e impressão são opcionais.',
+    ),
+    fala(
+      'ponte-intro-caderno',
+      'Consulte este caderno quando precisar lembrar um passo da montagem. Para continuar, clique em Concluir aula.',
     ),
     {
       key: 'materiais-farol',
@@ -511,7 +524,7 @@ const introducao = {
       'A Chave do Farol',
       'presentation',
       'Experimentar a aventura pronta antes de construir suas regras, sem exigir vitória.',
-      ['video-intro-farol', 'jogo-pronto'],
+      ['video-intro-farol', 'ponte-intro-farol', 'jogo-pronto'],
       ['video-intro-farol', 'jogo-pronto'],
     ),
     secao(
@@ -519,7 +532,7 @@ const introducao = {
       'Seu Caderno do Aluno',
       'material',
       'Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.',
-      ['video-intro-caderno', 'materiais-farol', 'ajuda-como-fazer-intro'],
+      ['video-intro-caderno', 'ponte-intro-caderno', 'materiais-farol', 'ajuda-como-fazer-intro'],
       ['video-intro-caderno'],
     ),
   ],
@@ -532,6 +545,8 @@ const certificado = {
   title: 'Seu certificado',
   retireBlockKeys: ['video-pitch', 'fala-pitch', 'video-pitch-farol', 'link-comunidade'],
   blocks: [
+    fala('fala-revisao-final', farol.intro),
+    { key: 'quiz-revisao-final', content: farol.content },
     video(
       'video-certificado-farol',
       'Comemore sua criação',
@@ -540,7 +555,7 @@ const certificado = {
     ),
     fala(
       'fala-certificado',
-      'Você programou o movimento, a coleta da chave e a decisão do farol. Pegue seu certificado para guardar essa conquista.',
+      'Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.',
     ),
     {
       key: 'certificado',
@@ -554,6 +569,14 @@ const certificado = {
     },
   ],
   sections: [
+    secao(
+      'revisao-final',
+      farol.title,
+      'explanation',
+      'Conferir as regras do próprio jogo e corrigir dúvidas antes do certificado.',
+      ['fala-revisao-final', 'quiz-revisao-final'],
+      ['quiz-revisao-final'],
+    ),
     secao(
       'certificado',
       'Comemore sua criação',

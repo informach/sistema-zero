@@ -34,6 +34,8 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 >
 > Agora clique em Próxima seção.”
 
+**Zappy abaixo do vídeo:** “Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção.”
+
 **Conferência de produção:** o caderno é consulta opcional. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e baixar o PDF.
 
 ## 3. O que um toque faz?

@@ -35,7 +35,9 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Intenção:** dor observável, cadastrada como `explanation`.
 - **Por que existe:** reconhecer a regra que falta antes da ferramenta.
 - **Conclui quando:** vídeo assistido conforme o critério da plataforma.
-- **Blocos:** `video-d2-contexto`. Mostrar o personagem atravessando a chave e se afastando sem recolhê-la. Sem fichas, definição abstrata ou demonstração da solução.
+- **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`. Mostrar o personagem atravessando a chave e se afastando sem recolhê-la. Sem fichas, definição abstrata ou demonstração da solução.
+
+**Ponte do Zappy na página (não gravar):** Você viu que o personagem atravessa a chave sem recolhê-la. Clique em Próxima seção para continuar.
 
 ### Seção 2. Guarde que a chave foi encontrada
 
@@ -43,6 +45,8 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Por que existe:** montar a resposta ao encontro e guardar a coleta.
 - **Conclui quando:** vídeo, aprovação dos critérios e envio confirmado do projeto.
 - **Blocos:** `video-d2-programar`, `ponte-d2-programar`, Estúdio `projeto` com a cadeia existente.
+
+**Ponte do Zappy na página (não gravar):** Agora programe a coleta da chave no seu jogo. Teste se ela sai do chão e se o aviso muda. Use Verificar esta etapa antes de enviar o projeto.
 
 Montar na ordem: criar temChave falso em Ao iniciar após os controles; encontro personagem/chave em Quando acontecer; dentro dele, destruir chave, alterar temChave para verdadeiro e alterar aviso com texto. Caminhos, encaixes, valores e substituição do número inicial estão no roteiro.
 

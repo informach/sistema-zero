@@ -4,7 +4,7 @@
 
 - Estado de entrada: o jogo já tem movimento, coleta e decisão; a publicação foi ensinada.
 - Vitória: reconhecer a autoria e guardar o certificado.
-- Seções na entrada deste review: 1 · Seções finais: 1.
+- Seções na entrada deste review: 1 · Seções finais: 2.
 - Clipes na entrada deste review: 1 · Clipes finais: 1.
 
 ## Triagem dos conceitos
@@ -14,22 +14,34 @@
 | Reconhecer a autoria | Não | Nas regras construídas | Nomear movimento, coleta e decisão | Abertura | Celebrar sem atribuir a arte preparada à criança |
 | Guardar a conquista | Interface | Na emissão | Pegar meu certificado e concluir | Após a celebração | Dar um encerramento claro |
 
-Não acrescentar novo conceito, experiência, quiz ou conteúdo comercial.
+A revisão final tem quatro perguntas em seção própria, antes da celebração. A seção de celebração não recebe quiz nem conteúdo comercial.
 
 ## Diagnóstico do desenho atual
 
-A seção obrigatória de apresentação comercial já foi retirada. A celebração distingue a autoria das regras dos desenhos e do movimento do barco preparado. A emissão usa o bloco existente. Não foi encontrado problema que justifique mudar essa estrutura.
+A seção obrigatória de apresentação comercial já foi retirada. A celebração distingue a autoria das regras dos desenhos e do movimento do barco preparado. A emissão usa o bloco existente. A revisão acrescenta o quiz antes dela, preservando a estrutura de emissão.
 
 A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar meu certificado**. Quem já emitiu encontra **Baixar certificado (PDF)**; conferir o caso de retorno sem simular nova emissão.
 
 ## Proposta final
 
-### Seção 1. Comemore sua criação
+### Seção 1. As regras da sua aventura
+
+- **Intenção:** revisão de conceito (`explanation`).
+- **Por que existe:** retomar as regras construídas e explicar as dúvidas antes da celebração.
+- **Conclui quando:** todas as respostas corretas, com explicação após envio e novas tentativas imediatas.
+- **Blocos, nesta ordem:** `fala-revisao-final` (Zappy), `quiz-revisao-final` (quiz). Sem vídeo, ferramenta ou texto adicional.
+- **Conteúdo:** [perguntas, alternativas e explicações](../proposta-quizzes-cursos-curtos-2026-10-03.md).
+
+**Zappy na página (não gravar):** Seu personagem anda, recolhe a chave e faz o farol responder. Responda quatro perguntas sobre o que você programou. As explicações ajudam a conferir seu raciocínio e corrigir o que precisar.
+
+### Seção 2. Comemore sua criação
 
 - **Intenção:** entrega da conquista (`delivery`).
 - **Por que existe:** concluir o percurso com reconhecimento concreto.
 - **Conclui quando:** vídeo e certificado emitido.
 - **Blocos:** `video-certificado-farol`, `fala-certificado`, bloco existente `certificado`.
+
+**Ponte do Zappy na página (não gravar):** Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.
 
 Nomear o que a criança programou; orientar **Pegar meu certificado** e **Concluir aula**. Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
 

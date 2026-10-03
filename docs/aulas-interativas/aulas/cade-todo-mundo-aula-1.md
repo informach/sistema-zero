@@ -39,6 +39,8 @@ Mostrar o caderno real e dizer que ele tem os passos para consultar se surgir d�
 Leitura, download e impressão são opcionais. Encaminhar diretamente para a próxima seção.
 Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
 
+**Zappy abaixo do vídeo:** “Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção.”
+
 ### O que um toque faz?
 
 Apresentar a experiência com o jardim do jogo e apontar para ela ao dizer **aqui**. Em seguida,

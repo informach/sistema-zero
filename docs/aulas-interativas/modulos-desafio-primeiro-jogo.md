@@ -12,15 +12,19 @@ O [review pedagógico do curso](qa/review-pedagogico-desafio-2026-10-03.md) regi
 
 ## Módulo 1 · Sua aventura no farol
 
+**Resumo do módulo:** Conheça a aventura A Chave do Farol e programe as regras que fazem o jogo acontecer. Você vai fazer o personagem andar, recolher a chave e abrir a porta do farol para guiar o barco. Teste cada construção, aprenda a publicar seu jogo no Mural e guarde seu certificado.
+
 | Aula | Seções | Resultado |
 | --- | --- | --- |
 | [A aventura começa aqui](aulas/desafio-introducao.md) | 2 | Conhecer o jogo, jogar a versão pronta e encontrar o caderno opcional. |
 | [O personagem ganha movimento](aulas/desafio-dia-1.md) | 1 | Construir controles, movimento e limite das bordas. |
 | [A chave muda a aventura](aulas/desafio-dia-2.md) | 2 | Programar o encontro e guardar a coleta. |
 | [A luz do farol](aulas/desafio-dia-3.md) | 3 | Comparar a condição, programar a porta e publicar o mesmo jogo. |
-| [Seu certificado](aulas/desafio-certificado.md) | 1 | Reconhecer a autoria e guardar a conquista. |
+| [Seu certificado](aulas/desafio-certificado.md) | 2 | Rever as regras no quiz, reconhecer a autoria e guardar a conquista. |
 
-São nove seções com nove vídeos. A introdução deixa de ser um tour, mas apresenta a aventura antes do convite para jogar. No Dia 1, as explicações antes separadas entram na montagem. A experiência da porta continua no Dia 3. A seção comercial obrigatória sai do certificado.
+São dez seções com nove vídeos. A introdução deixa de ser um tour, mas apresenta a aventura antes do convite para jogar. No Dia 1, as explicações antes separadas entram na montagem. A experiência da porta continua no Dia 3. A seção comercial obrigatória sai do certificado.
+
+O [quiz único antes do certificado](proposta-quizzes-cursos-curtos-2026-10-03.md) integra os materiais locais: quatro perguntas, fala inicial do Zappy e nenhum vídeo na seção. A seção de celebração e os identificadores existentes foram preservados.
 
 ## Projeto e conclusão
 
@@ -34,6 +38,10 @@ No Dia 2, a primeira seção mostra a falta de coleta; variável e evento são e
 
 O inventário [blocos-desafio-primeiro-jogo.json](blocos-desafio-primeiro-jogo.json) é gerado junto dos manifestos e descreve os blocos disponíveis para este Farol, incluindo os preparados. O inventário do jogo antigo de nave permanece no acervo legado.
 
+O projeto preparado e a paleta usam somente **Programação e Jogo 2D**. As áreas Ao iniciar, Quando acontecer e Enquanto estiver rodando organizam esses blocos. A tela é criada pelo facilitador Jogo 2D; não liberar HTML, CSS ou Canvas nem embutir blocos dessas categorias no projeto inicial.
+
+As nove seções com vídeo têm uma ponte do Zappy imediatamente após o vídeo, encaminhando a ação da criança. As pontes são texto da página, não novos vídeos ou critérios de conclusão.
+
 No Dia 3, a seção de publicação usa o mesmo Estúdio da montagem. **Compartilhar** fica disponível após o envio. O título e o resumo vêm preenchidos; ensinar gerar capa, publicar e esperar a confirmação. Publicar é a tarefa, mas o vídeo segue como critério técnico daquela seção. Não criar bloqueio novo por acesso expirado ao Mural.
 
 ## Materiais de consulta
@@ -41,9 +49,9 @@ No Dia 3, a seção de publicação usa o mesmo Estúdio da montagem. **Comparti
 - **Caderno do Aluno:** [desafio-farol-caderno.pdf](../../output/pdf/desafio-farol-caderno.pdf). PDF único com passos de montagem, testes, entrega, publicação e ajuda. Anexar em `materiais-farol`, com `bookPreview: true`.
 - **Como Fazer:** links contextuais na introdução, primeira montagem e publicação. Abrem na mesma aba e permitem voltar à aula. Não exigir consulta, impressão ou download para concluir.
 
-O gerador dos PDFs fica em `recursos/desafio-farol/gerar-materiais.py`. O caderno deve ser anexado antes da gravação que o apresenta.
+O [gerador do caderno](recursos/desafio-farol/gerar-materiais.py) usa o conteúdo de `caderno-conteudo.json` e a composição de `gerar-caderno.ts`, com o mesmo CSS, fontes locais e blocos desenhados do Cadê Todo Mundo. O PDF tem 15 páginas, incluindo capa, montagens ilustradas, testes, publicação e certificado. O caderno deve ser anexado antes da gravação que o apresenta.
 
-O conteúdo do caderno acompanha as seções reais: visão geral, passos de montagem, testes, publicação, certificado e ajuda. Não existe um mapa como material ou atividade adicional. O antigo PDF de mapa para responsáveis não integra esta versão do curso; preservar o arquivo histórico, sem anexá-lo à aula ou ao leitor do caderno.
+O conteúdo do caderno acompanha as seções reais: visão geral, passos de montagem, testes, publicação, certificado e ajuda. Não existe um mapa como material ou atividade adicional. Por orientação posterior do responsável em 03/10/2026, o PDF do mapa para responsáveis foi retirado do repositório e não será gerado. O único material para anexar é o Caderno do Aluno.
 
 ## Atualização de aulas existentes
 

@@ -153,22 +153,10 @@ function irFarol(etapa: DiaDoFarol | 'concluido'): SZIRV2 {
   const comPorta = etapa === 'concluido'
   return {
     version: 2,
-    html: [{ type: 'canvas', id: 'tela', width: TAMANHO.w, height: TAMANHO.h }],
-    css: [
-      {
-        selector: 'body',
-        declarations: {
-          margin: '0',
-          background: '#b9dfd0',
-          display: 'flex',
-          'align-items': 'center',
-          'justify-content': 'center',
-          'min-height': '100vh',
-          'padding-bottom': '108px',
-          'box-sizing': 'border-box',
-        },
-      },
-    ],
+    // O facilitador Jogo 2D cria a tela ao executar setupStage, como no Cadê Todo Mundo.
+    // O projeto e a paleta ficam inteiramente em Programação e Jogo 2D.
+    html: [],
+    css: [],
     behavior: {
       start: [
         ...saida,

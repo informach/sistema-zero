@@ -1,5 +1,8 @@
 # Revisão e escrita dos roteiros de gravação
 
+> Registro histórico desta revisão. As decisões aplicáveis foram consolidadas nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), ponto de partida para todos os cursos. Quantidades, estado de publicação e verificações abaixo descrevem a data do relatório, não a versão atual.
+
+
 ## Escopo concluído
 
 - Os seis roteiros do Desafio do Primeiro Jogo foram conferidos contra os manifestos e a especificação de gravação.

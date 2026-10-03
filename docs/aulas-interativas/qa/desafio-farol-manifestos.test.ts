@@ -10,8 +10,10 @@ import {
   evaluateStudioSectionProject,
   projectCheckAuthoring,
 } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
+import { buildCoreToolbox } from '../../../packages/studio/src/blockly/toolbox'
 import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
 import type { SZIRV2 } from '../../../packages/studio/src/ir/schema'
+import { gameTwoDToolboxCategory } from '../../../packages/studio/src/official-extensions/game-2d/blocks'
 import { montarProjetoFarol } from './desafio-farol-projeto'
 
 function manifesto(name: string): LearningManifest {
@@ -53,19 +55,65 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       const m = manifesto(name)
       const byKey = new Map(m.blocks.map((block) => [block.key, block]))
       for (const section of m.sections) {
+        if (section.blockKeys.some((key) => byKey.get(key)?.content?.kind === 'quiz')) {
+          expect(section.blockKeys.map((key) => byKey.get(key)?.content?.kind)).toEqual([
+            'dialogue',
+            'quiz',
+          ])
+          expect(section.completion?.blockIds).toEqual(['quiz-revisao-final'])
+          continue
+        }
         const videos = section.blockKeys.filter((key) => {
           const block = byKey.get(key)
           return block && 'plannedVideo' in block
         })
         expect(videos, `${name}/${section.key}`).toHaveLength(1)
         expect(section.completion?.blockIds).toContain(videos[0]!)
+        const dialogues = section.blockKeys.filter(
+          (key) => byKey.get(key)?.content?.kind === 'dialogue',
+        )
+        expect(dialogues, `${name}/${section.key}: ponte do Zappy`).toHaveLength(1)
+        expect(section.blockKeys[section.blockKeys.indexOf(videos[0]!) + 1]).toBe(dialogues[0])
+        expect(section.completion?.blockIds).not.toContain(dialogues[0]!)
         const activities = section.blockKeys.filter((key) => {
           const block = byKey.get(key)
           return block?.content?.kind === 'interactive' || block?.content?.kind === 'studio'
         })
         for (const activity of activities) expect(section.completion?.blockIds).toContain(activity)
       }
-      expect(m.blocks.some((block) => block.content?.kind === 'quiz')).toBe(false)
+      expect(m.blocks.filter((block) => block.content?.kind === 'quiz')).toHaveLength(
+        name === 'certificado' ? 1 : 0,
+      )
+    }
+  })
+
+  test('as três montagens oferecem somente Programação e Jogo 2D', () => {
+    const { blocks } = JSON.parse(
+      readFileSync(resolve(import.meta.dir, '../blocos-desafio-primeiro-jogo.json'), 'utf8'),
+    ) as { blocks: string[] }
+    for (const day of ['dia-1', 'dia-2', 'dia-3']) {
+      const studio = manifesto(day).blocks.find((block) => block.key === 'projeto')?.content
+      if (studio?.kind !== 'studio') throw new Error(`Estúdio ausente: ${day}`)
+      expect([...(studio.allowBlocks ?? [])].sort()).toEqual(blocks)
+      const palette = buildCoreToolbox([gameTwoDToolboxCategory], {
+        level: 'iniciante-2d',
+        allowBlocks: studio.allowBlocks,
+      })
+      const categories = palette.contents
+        .filter((entry) => entry.kind === 'category')
+        .map((entry) => entry.name)
+      // Áreas contém só os recipientes de Programação: Ao iniciar, Quando acontecer
+      // e Enquanto estiver rodando. Não é outra linguagem liberada ao aluno.
+      expect([...categories].sort()).toEqual(['Jogo 2D', 'Programação', '🗂️ Áreas do projeto'])
+      expect(JSON.stringify(palette)).not.toMatch(
+        /sz_(?:html|css|canvas|frame_structure|frame_appearance)/,
+      )
+      const project = studio.initialProject as ReturnType<typeof montarProjetoFarol>
+      expect(project.ir.html).toEqual([])
+      expect(project.ir.css).toEqual([])
+      expect(JSON.stringify(project.blocksState)).not.toMatch(
+        /sz_(?:html|css|canvas|frame_structure|frame_appearance)/,
+      )
     }
   })
 
@@ -145,9 +193,8 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
 
   test('a celebração mantém a emissão do certificado e aposenta a apresentação comercial', () => {
     const m = manifesto('certificado')
-    expect(m.sections).toHaveLength(1)
-    expect(m.sections[0]?.key).toBe('certificado')
-    expect(m.sections[0]?.completion?.blockIds).toEqual(['video-certificado-farol', 'certificado'])
+    expect(m.sections.map((s) => s.key)).toEqual(['revisao-final', 'certificado'])
+    expect(m.sections[1]?.completion?.blockIds).toEqual(['video-certificado-farol', 'certificado'])
     expect(m.blocks.find((block) => block.key === 'certificado')?.content?.kind).toBe('certificate')
     expect(m.retireBlockKeys).toContain('video-pitch-farol')
     expect(m.retireBlockKeys).toContain('link-comunidade')

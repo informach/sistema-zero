@@ -11,6 +11,8 @@ Três seções: experiência com a porta, montagem da condição e publicação.
 **Narração:**
 > "Seu personagem já recolhe a chave, mas a porta do farol ainda não responde a esse encontro. Vamos investigar como ela pode decidir o que fazer. Uma condição é uma pergunta que o jogo confere. Aqui, a pergunta é se o personagem está com a chave. Nesta experiência, primeiro aperte Testar a porta sem levar a chave. Observe o que acontece. Depois aperte Levar a chave e Testar a porta outra vez. Compare as duas tentativas. Quando terminar os dois testes, aperte Próxima seção."
 
+**Ponte do Zappy na página (não gravar):** A chave já pode ser recolhida. Experimente a porta e compare o que acontece nas duas situações.
+
 ## Seção 2. Faça a porta conferir a chave
 
 ### Vídeo `video-d3-decisao` · Faça a porta decidir
@@ -50,6 +52,8 @@ Três seções: experiência com a porta, montagem da condição e publicação.
 **Narração:**
 > "Depois dos dois testes, aperte Verificar esta etapa. Se houver algo para corrigir, ajuste os blocos e verifique de novo. Quando aparecer Objetivo da etapa cumprido!, espere Salvo. Aperte Enviar para o professor e confirme em Enviar. Quando o envio terminar, aperte Próxima seção."
 
+**Ponte do Zappy na página (não gravar):** Agora monte no seu jogo a regra que faz a porta conferir a chave. Teste os dois caminhos e use Verificar esta etapa antes de enviar o projeto.
+
 ## Seção 3. Publique seu jogo
 
 ### Vídeo `video-d3-fecho` · Publique seu jogo
@@ -67,3 +71,5 @@ Três seções: experiência com a porta, montagem da condição e publicação.
 Ajuda escrita: [Como publicar seu jogo no Mural e copiar o link](/como-fazer/plataforma-publicar-no-mural). O tutorial abre na mesma aba e oferece retorno à aula.
 
 **Conferência de produção:** o envio anterior libera Compartilhar. A configuração de publicação fica somente no projeto do Dia 3. Publicar é a tarefa ensinada; o critério técnico desta seção continua sendo o vídeo. Não transformar expiração do acesso ao Mural ou indisponibilidade momentânea em bloqueio de conclusão da aula. Personalização, outras capas, cópia do link e solução de problemas ficam no Como Fazer.
+
+**Ponte do Zappy na página (não gravar):** Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.

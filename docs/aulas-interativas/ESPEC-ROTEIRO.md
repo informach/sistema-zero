@@ -1,8 +1,7 @@
 # Especificação do roteiro de gravação
 
 Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças.
-Esta especificação e o BRIEFING.md prevalecem sobre os moldes antigos e os roteiros já gravados.
-A primeira aplicação cobre as nove seções desse curso. Os demais cursos serão revistos depois.
+As [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md) são a referência única das regras. Esta especificação fornece exemplos e formato de execução para a gravação. Roteiros e moldes antigos não prevalecem sobre as Diretrizes.
 
 ## 1. A abertura situa a tarefa e convida à ação
 
@@ -126,6 +125,10 @@ Cada aula tem proposta, manifesto e roteiro na pasta aulas/. A proposta explica 
 para quem prepara a aula; o manifesto define o conteúdo importável; o roteiro contém a fala
 literal. Os três precisam concordar. Se houver gerador do manifesto, atualizar também o gerador.
 
+Registrar também a **ponte do Zappy na página (não gravar)** depois de cada vídeo. Ela liga
+o vídeo à tarefa seguinte e deve coincidir com o diálogo do manifesto. Nas seções de
+contexto ou consulta, encaminhar a continuação sem inventar uma atividade obrigatória.
+
 Separar sempre a nota de produção da fala, com uma linha em branco:
 
 ```markdown
@@ -140,6 +143,8 @@ Separar sempre a nota de produção da fala, com uma linha em branco:
 Cada nota de tela tem sua narração correspondente. Um vídeo pode conter vários pares.
 Instruções para quem grava não são falas da aula. Não usar o campo plannedVideo do manifesto
 como substituto do roteiro completo.
+
+Registrar também as seções sem vídeo: no quiz, escrever **Zappy na página (não gravar)** e a fala literal antes das perguntas, sem notas de cena ou narração de um vídeo inexistente.
 
 Manter os títulos de seção iguais aos do manifesto. Cadê Todo Mundo? usa um cabeçalho
 "## 1. Título" por vídeo e "## Comemore sua criação" no certificado. Os demais cursos mantêm os

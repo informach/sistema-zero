@@ -1,7 +1,8 @@
 # Orientação dos cursos de programação de jogos — princípios, escada e metodologia
 
-> Fonte da verdade da **pedagogia dos cursos de jogos** do Sistema Zero (Estúdio, aulas e
-> exemplos). Destilada do estudo (26/07/2026) do curso profissional do Clear Code
+> Referência de progressão técnica dos cursos de jogos (Estúdio, aulas e exemplos).
+> Para autoria e regras pedagógicas vigentes de todos os cursos, comece pelas
+> [Diretrizes Pedagógicas](aulas-interativas/DIRETRIZES-PEDAGOGICAS.md), que prevalecem sobre os modelos históricos abaixo. Destilada do estudo (26/07/2026) do curso profissional do Clear Code
 > ("Python Game Development Full Course – Build 2D & 3D Games with Raylib") e do código
 > dos 6 jogos dele, cruzado com o que o `@sistemazero/studio` já oferece. Cobre o "como
 > ensinar" (modelo mental, ordem dos conceitos, metodologia de aula) e o "com o quê"

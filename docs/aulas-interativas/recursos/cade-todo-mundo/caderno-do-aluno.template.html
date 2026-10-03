@@ -104,8 +104,14 @@
     .block { border-radius: 8px; padding: 8px 10px; color: #fff; font-weight: 800; font-size: 10pt; }
     .block--game { background: var(--game-block); }
     .block--program { background: var(--program-block); }
+    .value-block { display: inline-block; padding: 2px 4px; border-radius: 20px; }
     .field { color: var(--ink); background: #fff; border-radius: 30px; padding: 1px 9px; margin: 0 2px; white-space: nowrap; }
     .endline { font-size: 10.5pt; margin-top: 6mm; }
+    .construction .lesson-hero { min-height: 40mm; margin-bottom: 5mm; }
+    .construction .blocks { padding: 12px; margin: 3mm 0; }
+    .construction .blocks h3 { margin-bottom: 8px; }
+    .construction .activity { margin-bottom: 4mm; }
+    .construction .endline { margin-top: 3mm; }
     @media screen { .page { box-shadow: 0 12px 32px #16182b40; } }
     @media print { html, body { background: #fff; } .page { margin: 0; box-shadow: none; } * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
@@ -133,14 +139,14 @@
         <div class="map-card"><div class="number">1</div><div><h3>O primeiro achado</h3><p>Experimente o toque e faça um personagem aparecer quando alguém tocar no esconderijo.</p></div></div>
         <div class="map-card"><div class="number">2</div><div><h3>Complete a busca</h3><p>Faça cada descoberta aumentar o número Achados. Teste os três esconderijos e veja o jogo comemorar.</p></div></div>
       </div>
-      <div class="note map-end">Este caderno é uma ajuda para consultar na tela quando precisar. Os vídeos mostram os gestos; você não precisa baixar nem imprimir para continuar.</div>
+      <div class="note map-end">Consulte quando precisar, sem baixar ou imprimir. Montagem nas páginas 3 e 4; publicação na 5; revisão e certificado na 6.</div>
     </div>
-    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>2 / 4</span></div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>2 / 6</span></div>
   </section>
 
-  <section class="page lesson-one">
+  <section class="page lesson-one construction">
     <div class="inner">
-      <div class="lesson-hero"><img class="scene" src="{{SCENE_HIDDEN}}" alt="Jardim com personagens escondidos"><div class="lesson-hero-text"><div class="kicker">Aula 1 de 2</div><h2>O primeiro achado</h2><p>Você vai ligar o toque no esconderijo a uma ação.</p></div></div>
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_HIDDEN}}" alt="Jardim com personagens escondidos"><div class="lesson-hero-text"><div class="kicker">Aula 1</div><h2>O primeiro achado</h2><p>Você vai ligar o toque no esconderijo a uma ação.</p></div></div>
       <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>Toque no esconderijo da atividade. Depois ligue a reação e toque de novo. <strong>O que mudou?</strong> Observe antes de montar o seu jogo.</p></div>
       <span class="pill pill--build">Montar no Estúdio</span>
       <h3 class="section-head">Faça o personagem aparecer</h3>
@@ -149,16 +155,16 @@
         <div class="step"><span class="number">2</span><p>Na paleta, abra <span class="path">Jogo 2D &gt; Sprites &gt; Aparência</span>. Pegue <strong>Deixar o sprite com ___% de visibilidade</strong> e encaixe dentro do evento do toque.</p></div>
         <div class="step"><span class="number">3</span><p>No bloco novo, escolha <strong>escolhido</strong>, que é o esconderijo tocado. Troque o número por <strong>0</strong>. Ele fica invisível e revela o personagem que já estava atrás.</p></div>
       </div>
-      <div class="blocks"><h3>Confira se os blocos ficaram assim</h3><div class="event-block"><span class="tag">Áreas do projeto - Quando acontecer</span><br>Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de <span class="field">escolhido</span><div class="event-body"><div class="block block--game">Deixar o sprite <span class="field">escolhido</span> com <span class="field">0</span>% de visibilidade</div></div></div></div>
-      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Abra a <strong>Pré-visualização</strong>. Com o Estúdio estreito, ela fica numa aba; com mais espaço, o jogo aparece ao lado dos blocos. Espere a mudança aparecer e toque nos esconderijos. Quando aparecer <strong>Salvo</strong>, aperte <strong>Enviar para o professor</strong>. Achados ainda fica em zero: você fará a contagem na Aula 2.</p></div>
+      <div class="blocks"><h3>Confira se os blocos ficaram assim</h3><div class="event-block" data-block-type="sz_frame_events"><span class="tag">Áreas do projeto · Quando acontecer</span><div class="event-body"><div class="block" data-block-type="sz_g2d_on_group_click">Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de <span class="field">escolhido</span><div class="event-body"><div class="block block--game" data-block-type="sz_g2d_set_opacity">Deixar o sprite <span class="field">escolhido</span> com <span class="value-block" data-block-type="sz_val_number"><span class="field">0</span></span>% de visibilidade</div></div></div></div></div></div>
+      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Toque nos esconderijos. Os personagens aparecem; Achados ainda fica em zero. Clique em <strong>Verificar esta etapa</strong>. Corrija o que faltar e confira <strong>Objetivo da etapa cumprido!</strong> Espere <strong>Salvo</strong>, clique em <strong>Enviar para o professor</strong> e confirme <strong>Enviar</strong>. Termine em <strong>Concluir aula</strong>.</p></div>
     </div>
-    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>3 / 4</span></div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>3 / 6</span></div>
   </section>
 
-  <section class="page lesson-two">
+  <section class="page lesson-two construction">
     <div class="inner">
-      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Aula 2 de 2</div><h2>Complete a busca</h2><p>Agora o jogo vai contar cada descoberta.</p></div></div>
-      <div class="note">Toque em um esconderijo antes de mudar os blocos. O personagem aparece, mas Achados continua em zero. Falta ligar a ação de contar.</div>
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Aula 2</div><h2>Complete a busca</h2><p>Agora o jogo vai contar cada descoberta.</p></div></div>
+      <div class="note">Toque em um esconderijo antes de mudar os blocos. O personagem aparece, mas Achados continua em zero. Falta ligar a ação de contar. Na experiência da aula, teste dois achados, o espaço vazio e o recomeço antes de montar.</div>
       <span class="pill pill--build" style="margin-top:7mm">Montar no Estúdio</span>
       <h3 class="section-head">Cada personagem vale um achado</h3>
       <div class="steps">
@@ -166,10 +172,38 @@
         <div class="step"><span class="number">2</span><p>Na paleta, abra <span class="path">Programação &gt; Variáveis</span>. Pegue <strong>Somar ___ em variável ___</strong> e encaixe no mesmo evento, <strong>abaixo</strong> do bloco de visibilidade.</p></div>
         <div class="step"><span class="number">3</span><p>Deixe <strong>1</strong> no primeiro campo, porque cada personagem vale um achado. No segundo campo, escolha <strong>achados</strong>, o nome do número mostrado no jogo.</p></div>
       </div>
-      <div class="blocks"><h3>Confira se os blocos ficaram assim</h3><div class="event-block"><span class="tag">Áreas do projeto - Quando acontecer</span><br>Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de <span class="field">escolhido</span><div class="event-body"><div class="block block--game">Deixar o sprite <span class="field">escolhido</span> com <span class="field">0</span>% de visibilidade</div><div class="block block--program">Somar <span class="field">1</span> em variável <span class="field">achados</span></div></div></div></div>
-      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Na <strong>Pré-visualização</strong>, toque nos três esconderijos. Achados deve passar por <strong>1, 2 e 3</strong>; então aparece a comemoração que já estava preparada. Se o número não mudar, confira os campos e a posição dos dois blocos. Espere aparecer <strong>Salvo</strong> e aperte <strong>Enviar para o professor</strong>.</p></div>
+      <div class="blocks"><h3>Confira se os blocos ficaram assim</h3><div class="event-block" data-block-type="sz_frame_events"><span class="tag">Áreas do projeto · Quando acontecer</span><div class="event-body"><div class="block" data-block-type="sz_g2d_on_group_click">Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de <span class="field">escolhido</span><div class="event-body"><div class="block block--game" data-block-type="sz_g2d_set_opacity">Deixar o sprite <span class="field">escolhido</span> com <span class="value-block" data-block-type="sz_val_number"><span class="field">0</span></span>% de visibilidade</div><div class="block block--program" data-block-type="sz_js_var_increment">Somar <span class="value-block" data-block-type="sz_val_number"><span class="field">1</span></span> em variável <span class="field">achados</span></div></div></div></div></div></div>
+      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Toque nos três esconderijos: Achados passa por <strong>1, 2 e 3</strong>. Toque de novo no mesmo lugar: não deve contar outra vez. Se falhar, confira os campos e encaixes. Clique em <strong>Verificar esta etapa</strong> e corrija até aparecer <strong>Objetivo da etapa cumprido!</strong> Espere <strong>Salvo</strong>, clique em <strong>Enviar para o professor</strong> e confirme <strong>Enviar</strong>. Avance em <strong>Próxima seção</strong>.</p></div>
     </div>
-    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>4 / 4</span></div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>4 / 6</span></div>
+  </section>
+  <section class="page lesson-two">
+    <div class="inner">
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="O jogo com os personagens encontrados"><div class="lesson-hero-text"><div class="kicker">Aula 2 · Publicação</div><h2>Publique seu jogo</h2><p>O seu jardim está pronto para outras pessoas jogarem.</p></div></div>
+      <div class="steps">
+        <div class="step"><span class="number">1</span><p>No Estúdio da aula, depois de enviar o projeto, clique em <strong>Compartilhar</strong>.</p></div>
+        <div class="step"><span class="number">2</span><p>Mantenha o título e o resumo preenchidos. Clique em <strong>Gerar capa</strong> e confira a imagem do seu jogo.</p></div>
+        <div class="step"><span class="number">3</span><p>Clique em <strong>Publicar</strong>. Espere a confirmação <strong>Seu jogo está no Mural!</strong></p></div>
+        <div class="step"><span class="number">4</span><p>Clique em <strong>Fechar</strong> para sair da confirmação. Depois clique em <strong>Concluir aula</strong>.</p></div>
+      </div>
+      <div class="soft-box activity" style="margin-top:8mm"><span class="pill pill--experience">Se precisar de ajuda</span><p>Na área <strong>Como fazer</strong>, o tutorial <strong>Como publicar seu jogo no Mural</strong> explica também como trocar a capa e copiar o link. Abra a ajuda pelo link da aula e use o retorno para continuar de onde estava.</p></div>
+      <div class="note">O cenário e os desenhos já vieram preparados. Você programou a reação ao toque e a contagem que fazem a busca funcionar.</div>
+    </div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>5 / 6</span></div>
+  </section>
+  <section class="page lesson-one">
+    <div class="inner">
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Aula 3 · Seu certificado</div><h2>Reveja o que criou</h2><p>Você fez os personagens aparecerem e o jogo contar cada achado.</p></div></div>
+      <div class="soft-box activity"><span class="pill pill--experience">Como o seu jardim funciona</span><p>Na primeira seção desta aula, leia a fala do Zappy e responda às três perguntas sobre seu jogo. Essa seção não tem vídeo.</p></div>
+      <div class="steps">
+        <div class="step"><span class="number">1</span><p>Pense no que você montou: o toque, o personagem que aparece e a contagem. Marque uma resposta para cada pergunta e envie para conferir.</p></div>
+        <div class="step"><span class="number">2</span><p>Leia as explicações. Se alguma resposta precisar mudar, você pode corrigir e enviar de novo, sem esperar. Quando todas estiverem corretas, clique em <strong>Próxima seção</strong>.</p></div>
+      </div>
+      <h3 class="section-head">Comemore sua criação</h3>
+      <div class="check"><p>Na seção seguinte, assista ao vídeo e clique em <strong>Pegar meu certificado</strong>. Depois que baixar, clique em <strong>Concluir aula</strong>. Se já pegou o certificado, o botão mostra <strong>Baixar certificado (PDF)</strong>.</p></div>
+      <div class="note" style="margin-top:7mm">Ficou com uma dúvida da atividade? Use <strong>Preciso de ajuda?</strong> no rodapé da aula e conte onde parou. Para usar a plataforma, consulte <strong>Como fazer</strong>.</div>
+    </div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>6 / 6</span></div>
   </section>
 </body>
 </html>

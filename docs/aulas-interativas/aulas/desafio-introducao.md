@@ -29,14 +29,18 @@ O review encontrou falta de link direto para ler e baixar o caderno. A ajuda ago
 - **Intenção:** apresentação (`presentation`).
 - **Por que existe:** conhecer a aventura pela ação.
 - **Conclui quando:** vídeo e participação no jogo, sem exigir vitória.
-- **Blocos:** `video-intro-farol` e `jogo-pronto`.
+- **Blocos:** `video-intro-farol`, `ponte-intro-farol` e `jogo-pronto`.
+
+**Ponte do Zappy na página (não gravar):** Esta é a aventura que você vai programar. Jogue a versão pronta para conhecer o caminho da chave até o farol. Depois de experimentar, clique em Próxima seção.
 
 ### Seção 2. Seu Caderno do Aluno
 
 - **Intenção:** material (`material`).
 - **Por que existe:** apresentar o apoio que acompanha as aulas.
 - **Conclui quando:** vídeo; leitura, impressão e download opcionais.
-- **Blocos:** `video-intro-caderno`, `materiais-farol` com bookPreview, `ajuda-como-fazer-intro`.
+- **Blocos:** `video-intro-caderno`, `ponte-intro-caderno`, `materiais-farol` com bookPreview, `ajuda-como-fazer-intro`.
+
+**Ponte do Zappy na página (não gravar):** Consulte este caderno quando precisar lembrar um passo da montagem. Para continuar, clique em Concluir aula.
 
 Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno pode incluir visão geral, navegação, montagem, testes, publicação e certificado, acompanhando o conteúdo real das aulas. O mapa antigo para responsáveis não integra esta versão. Se ainda constar no bloco publicado, retirar apenas a referência após conferir o novo caderno, preservando a mídia armazenada.
 

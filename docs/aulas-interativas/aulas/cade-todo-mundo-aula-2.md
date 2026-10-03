@@ -25,7 +25,9 @@ antes dos testes e orientar a verificação da etapa antes do envio.
 
 Começar dizendo que a tarefa é fazer o jogo contar os personagens encontrados. Mostrar um toque
 revelando o personagem enquanto **Achados** continua em zero. Encaminhar para **Próxima seção**.
-A seção só tem vídeo, portanto a fala não pode pedir que a criança manipule um projeto ali.
+A seção tem vídeo e ponte do Zappy, sem ferramenta. A fala não pode pedir que a criança manipule um projeto ali.
+
+**Zappy abaixo do vídeo:** “Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar.”
 
 ### Um número que acompanha a busca
 
@@ -69,6 +71,8 @@ Uma ajuda escrita junto ao vídeo apresenta a área de ajuda e liga diretamente 
 Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Publicar é a atividade
 esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer
 “compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala.
+
+**Zappy abaixo do vídeo:** “Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.”
 
 ## Conferência antes de regravar
 

@@ -37,6 +37,14 @@
       "plannedVideo": "Título: Seu primeiro jogo: A Chave do Farol\n\nAnunciar o jogo que será programado e o contexto do barco e do farol apagado; então convidar a jogar a versão pronta por toque ou teclado. Mostrar a cena inicial sem resolver o percurso. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.\n\nRoteiro falado: desafio-introducao.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
+      "key": "ponte-intro-farol",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Esta é a aventura que você vai programar. Jogue a versão pronta para conhecer o caminho da chave até o farol. Depois de experimentar, clique em Próxima seção."
+      }
+    },
+    {
       "key": "jogo-pronto",
       "content": {
         "kind": "interactive",
@@ -55,8 +63,8 @@
             "updatedAt": 0,
             "mode": "blocks",
             "files": {
-              "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Chave do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <canvas id=\"tela\" width=\"640\" height=\"360\"></canvas>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
-              "style.css": "body {\n  margin: 0;\n  background: #b9dfd0;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  min-height: 100vh;\n  padding-bottom: 108px;\n  box-sizing: border-box;\n}\n",
+              "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Chave do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+              "style.css": "",
               "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#b9dfd0\");\n  const personagem = SZGame2D.createSprite({ x: 170, y: 130, w: 40, h: 48, image: \"personagem\" });\n  const chave = SZGame2D.createSprite({ x: 328, y: 171, w: 40, h: 40, image: \"chave\" });\n  const farol = SZGame2D.createSprite({ x: 485, y: 72, w: 100, h: 154, image: \"farol-apagado\" });\n  const barco = SZGame2D.createSprite({ x: 655, y: 267, w: 72, h: 50, image: \"barco\" });\n  let aviso = \"Encontre a chave e vá ao farol.\";\n  let ganhou = false;\n  SZGame2D.enableClassicControls(\"directions\");\n  let temChave = false;\n  // Quando acontecer\n  SZGame2D.onOverlap(() => personagem, () => chave, () => {\n    SZGame2D.destroySprite(chave);\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  }, \"eventoDeContato\");\n  SZGame2D.onOverlap(() => personagem, () => farol, () => {\n    if (temChave) {\n      ganhou = true;\n      SZGame2D.setImage(farol, \"farol-aceso\");\n      aviso = \"Você acendeu o farol! Olhe o barco chegando.\";\n    } else {\n      aviso = \"A porta não abriu. Falta a chave.\";\n    }\n  }, \"eventoDeContato_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"cenario\");\n    SZGame2D.topDown(personagem, 3);\n    SZGame2D.clampToScreen(personagem, ctx);\n    if (ganhou) {\n      if (barco.x > 530) {\n        barco.x = barco.x - 1.5;\n      }\n    }\n    SZGame2D.drawSprite(ctx, chave);\n    SZGame2D.drawSprite(ctx, farol);\n    SZGame2D.drawSprite(ctx, barco);\n    SZGame2D.drawSprite(ctx, personagem);\n    SZGame2D.drawLabel(ctx, aviso, 20, 32, \"#263a45\", 19, \"left\");\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
             },
             "extraFiles": [],
@@ -118,29 +126,8 @@
             ],
             "ir": {
               "version": 2,
-              "html": [
-                {
-                  "type": "canvas",
-                  "id": "tela",
-                  "width": 640,
-                  "height": 360
-                }
-              ],
-              "css": [
-                {
-                  "selector": "body",
-                  "declarations": {
-                    "margin": "0",
-                    "background": "#b9dfd0",
-                    "display": "flex",
-                    "align-items": "center",
-                    "justify-content": "center",
-                    "min-height": "100vh",
-                    "padding-bottom": "108px",
-                    "box-sizing": "border-box"
-                  }
-                }
-              ],
+              "html": [],
+              "css": [],
               "behavior": {
                 "start": [
                   {
@@ -415,112 +402,6 @@
               "blocks": {
                 "languageVersion": 0,
                 "blocks": [
-                  {
-                    "type": "sz_frame_structure",
-                    "inputs": {
-                      "CHILDREN": {
-                        "block": {
-                          "type": "sz_html_canvas",
-                          "fields": {
-                            "ID": "tela",
-                            "CLASS": "",
-                            "DESCRIPTION": ""
-                          },
-                          "data": "{\"width\":640,\"height\":360}"
-                        }
-                      }
-                    },
-                    "x": 32,
-                    "y": 32
-                  },
-                  {
-                    "type": "sz_frame_appearance",
-                    "inputs": {
-                      "CHILDREN": {
-                        "block": {
-                          "type": "sz_css_body_background",
-                          "fields": {
-                            "COLOR": "#b9dfd0"
-                          },
-                          "next": {
-                            "block": {
-                              "type": "sz_css_justify",
-                              "fields": {
-                                "SELECTOR": "body",
-                                "VALUE": "center"
-                              },
-                              "next": {
-                                "block": {
-                                  "type": "sz_css_align",
-                                  "fields": {
-                                    "SELECTOR": "body",
-                                    "VALUE": "center"
-                                  },
-                                  "next": {
-                                    "block": {
-                                      "type": "sz_css_rule",
-                                      "fields": {
-                                        "SELECTOR": "body"
-                                      },
-                                      "inputs": {
-                                        "CHILDREN": {
-                                          "block": {
-                                            "type": "sz_css_decl",
-                                            "fields": {
-                                              "PROP": "margin",
-                                              "VALUE": "0"
-                                            },
-                                            "next": {
-                                              "block": {
-                                                "type": "sz_css_decl",
-                                                "fields": {
-                                                  "PROP": "display",
-                                                  "VALUE": "flex"
-                                                },
-                                                "next": {
-                                                  "block": {
-                                                    "type": "sz_css_decl",
-                                                    "fields": {
-                                                      "PROP": "min-height",
-                                                      "VALUE": "100vh"
-                                                    },
-                                                    "next": {
-                                                      "block": {
-                                                        "type": "sz_css_decl",
-                                                        "fields": {
-                                                          "PROP": "padding-bottom",
-                                                          "VALUE": "108px"
-                                                        },
-                                                        "next": {
-                                                          "block": {
-                                                            "type": "sz_css_decl",
-                                                            "fields": {
-                                                              "PROP": "box-sizing",
-                                                              "VALUE": "border-box"
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "x": 452,
-                    "y": 32
-                  },
                   {
                     "type": "sz_frame_start",
                     "inputs": {
@@ -1213,6 +1094,14 @@
       "plannedVideo": "Título: Seu Caderno do Aluno\n\nApresentar o Caderno do Aluno como consulta opcional que acompanha as seções do curso: montagem, testes, publicação e certificado. Não inventar material de mapa nem ensinar o leitor. Download e impressão são opcionais.\n\nRoteiro falado: desafio-introducao.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
+      "key": "ponte-intro-caderno",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Consulte este caderno quando precisar lembrar um passo da montagem. Para continuar, clique em Concluir aula."
+      }
+    },
+    {
       "key": "materiais-farol",
       "content": {
         "kind": "materials",
@@ -1273,7 +1162,7 @@
       "title": "A Chave do Farol",
       "intent": "presentation",
       "objective": "Experimentar a aventura pronta antes de construir suas regras, sem exigir vitória.",
-      "blockKeys": ["video-intro-farol", "jogo-pronto"],
+      "blockKeys": ["video-intro-farol", "ponte-intro-farol", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -1287,7 +1176,12 @@
       "title": "Seu Caderno do Aluno",
       "intent": "material",
       "objective": "Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.",
-      "blockKeys": ["video-intro-caderno", "materiais-farol", "ajuda-como-fazer-intro"],
+      "blockKeys": [
+        "video-intro-caderno",
+        "ponte-intro-caderno",
+        "materiais-farol",
+        "ajuda-como-fazer-intro"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],

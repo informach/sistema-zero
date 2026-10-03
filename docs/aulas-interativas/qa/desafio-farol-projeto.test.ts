@@ -13,9 +13,14 @@ describe('projeto preparado A Chave do Farol', () => {
     const d1 = montarProjetoFarol('dia-1')
     const d2 = montarProjetoFarol('dia-2')
     const d3 = montarProjetoFarol('dia-3')
-    for (const project of [d1, d2, d3]) {
+    for (const project of [d1, d2, d3, montarProjetoFarol('concluido')]) {
       expect(project.installedExtensions?.map((item) => item.id)).toEqual(['game-2d'])
       expect(SZIRV2Schema.safeParse(project.ir).success).toBe(true)
+      expect(project.ir.html).toEqual([])
+      expect(project.ir.css).toEqual([])
+      expect(JSON.stringify(project.blocksState)).not.toMatch(
+        /sz_(?:html|css|canvas|frame_structure|frame_appearance)/,
+      )
       expect(
         project.assets.every((asset) => asset.dataUrl.startsWith('data:image/svg+xml;base64,')),
       ).toBe(true)

@@ -30,3 +30,5 @@ Uma seção, um vídeo de montagem. Estimativa: 4 a 5 minutos, incluindo encaixe
 
 **Narração:**
 > "Depois de testar, aperte Verificar esta etapa. Se aparecer algo para corrigir, confira o bloco indicado e verifique de novo. Quando aparecer Objetivo da etapa cumprido!, espere a palavra Salvo na barra do Estúdio. Ela indica que seu trabalho ficou guardado. Agora aperte Enviar para o professor e, na janela que abrir, confirme em Enviar. Espere terminar o envio. Para finalizar, aperte Concluir aula."
+
+**Ponte do Zappy na página (não gravar):** Agora monte o movimento do seu personagem. Teste as quatro direções e as bordas, depois use Verificar esta etapa antes de enviar o projeto.

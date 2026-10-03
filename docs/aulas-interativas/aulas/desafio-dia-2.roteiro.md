@@ -11,6 +11,8 @@ Duas seções, dois vídeos. Retomar o projeto enviado no Dia 1; o projeto prepa
 **Narração:**
 > "Seu personagem já anda pelo mapa. Veja o que acontece quando ele chega à chave: ele passa por ela sem pegar. Quando ele se afasta, ela continua no chão. Falta uma regra para esse encontro recolher a chave e guardar que ela foi encontrada. Aperte Próxima seção para montar essa parte do jogo."
 
+**Ponte do Zappy na página (não gravar):** Você viu que o personagem atravessa a chave sem recolhê-la. Clique em Próxima seção para continuar.
+
 ## Seção 2. Guarde que a chave foi encontrada
 
 ### Vídeo `video-d2-programar` · Faça o jogo guardar a chave
@@ -44,3 +46,5 @@ Duas seções, dois vídeos. Retomar o projeto enviado no Dia 1; o projeto prepa
 
 **Narração:**
 > "Quando os testes funcionarem, aperte Verificar esta etapa. Se faltar alguma coisa, corrija o bloco indicado e verifique novamente. Ao aparecer Objetivo da etapa cumprido!, espere Salvo. Aperte Enviar para o professor e confirme em Enviar. Quando o envio terminar, aperte Concluir aula."
+
+**Ponte do Zappy na página (não gravar):** Agora programe a coleta da chave no seu jogo. Teste se ela sai do chão e se o aviso muda. Use Verificar esta etapa antes de enviar o projeto.

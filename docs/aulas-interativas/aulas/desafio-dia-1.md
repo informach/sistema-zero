@@ -32,6 +32,8 @@ O review encontrou “sprite” no nome do bloco antes da definição. A explica
 - **Conclui quando:** vídeo, três critérios de projeto aprovados e envio confirmado.
 - **Blocos:** `video-d1-borda`, `ponte-d1-borda`, Estúdio `projeto` e ajuda opcional `ajuda-d1`.
 
+**Ponte do Zappy na página (não gravar):** Agora monte o movimento do seu personagem. Teste as quatro direções e as bordas, depois use Verificar esta etapa antes de enviar o projeto.
+
 A abertura conecta a versão pronta experimentada à versão com personagem parado. Construir controles só com quatro direções no fim de Ao iniciar; movimento dentro de A cada quadro depois do cenário; limite de tela imediatamente depois do movimento.
 
 Testar com o dispositivo disponível, incluindo as quatro bordas. Não exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Concluir aula**.

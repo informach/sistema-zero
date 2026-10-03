@@ -5,6 +5,83 @@
   "title": "Seu certificado",
   "blocks": [
     {
+      "key": "fala-revisao-final",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Depois de conferir as explicações, você pode corrigir o que precisar."
+      }
+    },
+    {
+      "key": "quiz-revisao-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você toca em um esconderijo e consegue ver o personagem que estava atrás. Qual regra que você montou faz isso acontecer?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O jogo deixa o esconderijo tocado invisível."
+              },
+              {
+                "id": "b",
+                "label": "O jogo deixa todos os esconderijos invisíveis."
+              },
+              {
+                "id": "c",
+                "label": "O jogo troca o personagem de lugar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O toque escolhe aquele esconderijo. Dentro dessa reação, você colocou a regra que deixa o esconderijo com 0% de visibilidade. Assim, o personagem que já estava atrás aparece. Os outros esconderijos continuam como estavam."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você encontrou um personagem e Achados mostra 1. Depois encontrou outro personagem. Com a regra de contagem que você montou, o que deve aparecer em Achados?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "1, porque o jogo guarda apenas o primeiro personagem."
+              },
+              {
+                "id": "b",
+                "label": "2, porque cada personagem encontrado soma um à contagem."
+              },
+              {
+                "id": "c",
+                "label": "3, porque existem três personagens no jardim."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "A variável achados guarda quantos personagens foram encontrados. O bloco de somar acrescenta 1 quando um novo esconderijo recebe o toque. Encontrar dois personagens faz a contagem chegar a 2. Ter três personagens no jogo não significa que os três já foram encontrados."
+          },
+          {
+            "id": "q3",
+            "prompt": "Você encontrou um personagem e tocou outra vez no mesmo lugar. Por que a contagem não deve aumentar nesse segundo toque?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Porque o jogo só pode contar até um."
+              },
+              {
+                "id": "b",
+                "label": "Porque o jogo precisa ser reiniciado para contar o próximo."
+              },
+              {
+                "id": "c",
+                "label": "Porque o esconderijo invisível não recebe outro toque."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "O esconderijo ficou invisível depois do primeiro toque. Neste jogo, ele deixa de receber o toque que dispara a contagem. Isso impede contar o mesmo personagem de novo. Para aumentar Achados, você precisa encontrar outro personagem. Essa é uma regra deste jogo, não uma afirmação sobre todo objeto invisível em qualquer programa."
+          }
+        ]
+      }
+    },
+    {
       "key": "video-certificado",
       "plannedVideo": "Título: Você criou seu primeiro jogo!\n\nReconhecer as duas regras que a criança programou e comemorar antes do encaminhamento. Pedir Pegar meu certificado e, após o download, terminar em Concluir aula, sem acrescentar falas depois da ação de saída. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.\n\nRoteiro falado completo: cade-todo-mundo-certificado.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
@@ -27,6 +104,20 @@
     }
   ],
   "sections": [
+    {
+      "key": "revisao-final",
+      "title": "Como o seu jardim funciona",
+      "intent": "explanation",
+      "objective": "Conferir as regras do próprio jogo e corrigir dúvidas antes do certificado.",
+      "blockKeys": ["fala-revisao-final", "quiz-revisao-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-revisao-final"]
+      }
+    },
     {
       "key": "certificado",
       "title": "Comemore sua criação",

@@ -1,8 +1,11 @@
 # Redesenho didático das aulas interativas
 
+**Comece aqui: [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md).** Regras, motivos, adaptações por curso e checklist em um só lugar. O briefing organiza a análise; as especificações explicam a execução.
+
 > **Migração pedagógica em andamento (24/09/2026).** O trio `nave-contra-asteroides-dia-1` foi o piloto
-> da direção vigente: uma ideia por seção, um vídeo no máximo, vídeo e atividade disponíveis juntos
-> e ambos obrigatórios, Zappy pontual, palpite seletivo e quiz isolado. O curso gratuito
+> da revisão daquela data: uma ideia por seção, um vídeo no máximo, Zappy pontual, palpite seletivo
+> e quiz isolado. A disponibilidade da atividade agora depende de `videoBeforeActivity` do curso,
+> conforme as Diretrizes. O curso gratuito
 > `cade-todo-mundo` segue essa estrutura. Após o teste dos vídeos gravados com duas crianças,
 > as nove seções receberam uma revisão de linguagem em 27/09/2026: tarefa direta, montagem
 > completa e tutoriais de interface no Como Fazer. Os novos roteiros precisam ser regravados.
@@ -43,7 +46,8 @@ dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 
 | Arquivo | O que é |
 |---|---|
-| `BRIEFING.md` | A doutrina que governa o redesenho. Os dois eixos, as seis perguntas por conceito, o critério de experimentação contra demonstração, as regras de seção e as regras de língua herdadas. **Leia antes de mexer em qualquer aula.** |
+| `DIRETRIZES-PEDAGOGICAS.md` | Referência única das regras, justificativas, variações por curso e conferência. **Primeira leitura para qualquer curso.** |
+| `BRIEFING.md` | Guia para preparar a análise, fazer a triagem dos conceitos e registrar decisões; encaminha às Diretrizes Pedagógicas. |
 | `CATALOGO-CENAS.json` | As **59 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
 | `REFERENCIA-PLATAFORMA.md` | **Onde cada coisa está na plataforma hoje**, lido direto do código, com a fonte citada por linha: o menu da esquerda, o recolhimento dele na aula e na ferramenta, a cor do perfil, as três ações de plataforma, os grupos do menu ⋯ do Estúdio, a lista de projetos e o Pinta. Toda fala que nomeie menu, tela ou botão confere aqui |
 | `REFERENCIA-BLOCOS-JOGO-2D.json` | Os **285 tipos** da paleta do Jogo 2D, extraídos do código: família, seção, todas as linhas do rótulo, cada campo com o padrão de fábrica e a lista de cada menu na ordem da tela |

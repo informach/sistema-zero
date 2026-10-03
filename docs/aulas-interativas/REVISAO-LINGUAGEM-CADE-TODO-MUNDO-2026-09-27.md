@@ -1,5 +1,8 @@
 # Revisão de linguagem: Cadê Todo Mundo?
 
+> Registro histórico desta revisão. As decisões aplicáveis foram consolidadas nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), ponto de partida para todos os cursos. Quantidades, estado de publicação e verificações abaixo descrevem a data do relatório, não a versão atual.
+
+
 > **Complemento de 28/09/2026:** o fechamento da Aula 2 foi revisto em
 > [Publicação na última seção](../plans/2026-09-28-cade-todo-mundo-publicacao-na-aula-design.md).
 > A seção agora é **Publique seu jogo**, ensina o caminho mínimo de publicação e termina em

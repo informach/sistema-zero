@@ -1,5 +1,8 @@
 # Review pedagógico do Desafio do Primeiro Jogo
 
+> Complemento da implementação: o curso agora tem dez seções e nove vídeos. O quiz foi incluído na aula final, antes do certificado, com quatro perguntas e Zappy, sem vídeo. O caderno tem quinze páginas. As regras comuns estão nas [Diretrizes Pedagógicas](../DIRETRIZES-PEDAGOGICAS.md); os números abaixo registram a revisão anterior ao quiz.
+
+
 **Data:** 03/10/2026. **Escopo:** curso inteiro A Chave do Farol, da introdução ao certificado. A referência a “número 8” foi corrigida pelo usuário e não identifica uma aula.
 
 ## Parecer
@@ -96,6 +99,8 @@ O caderno conserva visão geral, navegação útil, montagem, testes, publicaç�
 
 ## Validação executada
 
+Os resultados desta tabela pertencem à primeira revisão de 03/10. O complemento ao final registra as correções posteriores solicitadas pelo responsável, inclusive o novo visual do caderno.
+
 | Verificação | Resultado |
 | --- | --- |
 | Testes de manifestos e projeto | **20 passaram, 0 falharam, 238 verificações.** Incluem o jogo executado, estrutura, continuidade e os projetos incorretos descritos acima. |
@@ -120,3 +125,16 @@ Comandos reproduzíveis estão na [organização do curso](../modulos-desafio-pr
 7. **Aplicação no admin:** reconciliar vídeos, anexos, seções aposentadas e progresso antes de aplicar os manifestos. Não substituir mídia existente cegamente por `plannedVideo`.
 
 Não houve importação no admin, gravação ou publicação nesta revisão. O [caderno atualizado](../../../output/pdf/desafio-farol-caderno.pdf) e as fontes locais estão prontos para a conferência editorial e a preparação dessas etapas.
+
+## Complemento após a conferência do responsável
+
+- Acrescentado o resumo do módulo na organização do curso.
+- Acrescentadas quatro pontes ausentes e revistas as cinco existentes: cada uma das nove seções do Farol tem um diálogo do Zappy imediatamente após o vídeo. Proposta, roteiro e gerador acompanham o manifesto. Caderno continua opcional; diálogos não acrescentam requisitos de conclusão.
+- A mesma conferência encontrou três faltas no Cadê Todo Mundo: caderno, retomada e publicação. Corrigidas em fonte e manifesto, preservando vídeos e conclusão.
+- Removidos HTML, CSS e seus blocos dos projetos preparados e da paleta do Farol, incluindo o jogo pronto da introdução. O facilitador Jogo 2D cria a tela. As áreas de início, eventos e repetição continuam organizando os blocos de Programação.
+- Caderno reconstruído no padrão visual do Cadê Todo Mundo, com as mesmas fontes, CSS de referência, composição de capa, cores e blocos desenhados. São 14 páginas; conteúdo e diagramas têm espaço próprio, sem omitir passos ou criar mapa adicional. O mapa para responsáveis foi removido do repositório conforme a orientação posterior.
+- [Quiz por curso antes do certificado](../proposta-quizzes-cursos-curtos-2026-10-03.md): inicialmente proposto e agora implementado nos materiais locais. A leitura anterior de cinco minutos vinha de um comentário antigo do player; o servidor já permite correção imediata para quiz selecionado como critério de seção. A publicação e a primeira emissão foram ajustadas para admitir e respeitar a revisão anterior ao certificado.
+
+A conferência final deste complemento teve **32 testes aprovados, 424 verificações**, oito manifestos válidos e oito roteiros cobrindo 18 vídeos. Os 42 tutoriais do Como Fazer continuam válidos. O PDF foi renderizado integralmente para inspeção, com verificação automática de fontes, imagens e limites de página. As cores dos blocos são importadas das definições finais do Estúdio, incluindo os tons por família e as áreas do projeto; não reutilizam os valores aproximados do template. Esses checks não significam publicação no admin ou ensaio com crianças.
+
+Na última geração: **14 páginas, 32 desenhos de 17 tipos de bloco, nenhuma divergência de cor ou violação de limites no navegador**. Os oito manifestos e o inventário do Farol foram regenerados sem mudança dos nove hashes. Biome conferiu os geradores e testes alterados.

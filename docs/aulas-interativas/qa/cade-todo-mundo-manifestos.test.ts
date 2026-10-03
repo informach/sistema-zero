@@ -94,7 +94,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
         expect(projeto).not.toEqual(montarProjetoCadeTodoMundo())
       }
     }
-    expect(m.sections[1]?.blockKeys).toEqual(['video-a1-caderno', 'caderno'])
+    expect(m.sections[1]?.blockKeys).toEqual(['video-a1-caderno', 'ponte-a1-caderno', 'caderno'])
     expect(m.sections[1]?.intent).toBe('material')
     expect(m.sections[1]?.completion?.blockIds).toEqual(['video-a1-caderno'])
     expect(m.sections[2]?.blockKeys).toEqual([
@@ -193,7 +193,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     const closing = manifesto('aula-2').sections.find((section) => section.key === 'conclusao')
     expect(practice?.workspaceKey).toBe('projeto')
     expect(closing?.workspaceKey).toBe('projeto')
-    expect(closing?.blockKeys).toEqual(['video-a2-fecho', 'ajuda-a2-publicar'])
+    expect(closing?.blockKeys).toEqual(['video-a2-fecho', 'ponte-a2-publicar', 'ajuda-a2-publicar'])
     expect(closing?.completion?.blockIds).toEqual(['video-a2-fecho'])
     expect(
       manifesto('aula-2')
@@ -225,15 +225,26 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     ).toBe('jardim')
   })
 
-  test('todas as seções têm exatamente um vídeo e nenhuma traz oferta ou palpite', () => {
+  test('as seções com vídeo têm ponte; a revisão tem somente Zappy e quiz', () => {
     for (const name of ['aula-1', 'aula-2', 'certificado']) {
       const m = manifesto(name)
       const byId = new Map(m.blocks.map((b) => [b.key, b]))
       for (const s of m.sections) {
         const blocks = s.blockKeys.map((key) => byId.get(key))
+        if (blocks.some((b) => b?.content?.kind === 'quiz')) {
+          expect(blocks.map((b) => b?.content?.kind)).toEqual(['dialogue', 'quiz'])
+          expect(s.completion?.blockIds).toEqual(['quiz-revisao-final'])
+          continue
+        }
         expect(blocks.filter((b) => b && 'plannedVideo' in b)).toHaveLength(1)
+        const videoIndex = blocks.findIndex((b) => b && 'plannedVideo' in b)
+        expect(blocks.filter((b) => b?.content?.kind === 'dialogue')).toHaveLength(1)
+        expect(blocks[videoIndex + 1]?.content?.kind).toBe('dialogue')
+        expect(s.completion?.blockIds).not.toContain(blocks[videoIndex + 1]?.key)
       }
-      expect(m.blocks.some((b) => b.content?.kind === 'quiz')).toBe(false)
+      expect(m.blocks.filter((b) => b.content?.kind === 'quiz')).toHaveLength(
+        name === 'certificado' ? 1 : 0,
+      )
       expect(m.blocks.filter((b) => b.content?.kind === 'rich_text').map((b) => b.key)).toEqual(
         name === 'aula-2' ? ['ajuda-a2-publicar'] : [],
       )

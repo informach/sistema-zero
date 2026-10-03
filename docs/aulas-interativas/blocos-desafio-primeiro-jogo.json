@@ -1,15 +1,8 @@
 {
   "blocks": [
-    "sz_css_align",
-    "sz_css_body_background",
-    "sz_css_decl",
-    "sz_css_justify",
-    "sz_css_rule",
-    "sz_frame_appearance",
     "sz_frame_events",
     "sz_frame_loops",
     "sz_frame_start",
-    "sz_frame_structure",
     "sz_g2d_clamp_to_screen",
     "sz_g2d_clear",
     "sz_g2d_create_image_sprite",
@@ -23,7 +16,6 @@
     "sz_g2d_setup_stage",
     "sz_g2d_top_down",
     "sz_g2d_update_each_frame",
-    "sz_html_canvas",
     "sz_js_if_else",
     "sz_js_member_set",
     "sz_js_var_assign",

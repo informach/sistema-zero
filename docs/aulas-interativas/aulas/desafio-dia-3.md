@@ -35,6 +35,8 @@ A fala de ponte do Zappy repetia os comandos da experiência. Agora conecta a co
 - **Conclui quando:** vídeo e as duas tentativas reais na experiência.
 - **Blocos:** `video-d3-condicao`, `ponte-d3-condicao`, `experiencia-porta`.
 
+**Ponte do Zappy na página (não gravar):** A chave já pode ser recolhida. Experimente a porta e compare o que acontece nas duas situações.
+
 Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não responde. Explicar condição brevemente. Orientar os testes sem realizá-los pela criança.
 
 ### Seção 2. Faça a porta conferir a chave
@@ -43,6 +45,8 @@ Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não
 - **Por que existe:** programar a relação observada no jogo da criança.
 - **Conclui quando:** vídeo, critérios aprovados e envio confirmado.
 - **Blocos:** `video-d3-decisao`, `ponte-d3-decisao`, Estúdio `projeto`.
+
+**Ponte do Zappy na página (não gravar):** Agora monte no seu jogo a regra que faz a porta conferir a chave. Teste os dois caminhos e use Verificar esta etapa antes de enviar o projeto.
 
 Criar evento separado personagem/farol. Dentro dele, Se valor da variável temChave. Em então: ganhou verdadeiro, imagem farol-aceso e aviso de chegada. Usar **+ senão**, não + senão se; em senão, aviso de falta da chave.
 
@@ -53,7 +57,9 @@ Testar partidas reiniciadas por Atualizar: sem chave e com chave. Conferir mensa
 - **Intenção:** encerramento com publicação (`closing`).
 - **Por que existe:** mostrar o jogo a outras pessoas.
 - **Conclui quando:** vídeo; a publicação é a tarefa ensinada, sem requisito técnico novo de publicação.
-- **Blocos:** `video-d3-fecho`, `ajuda-publicar` e o mesmo `projeto` pela workspaceKey.
+- **Blocos:** `video-d3-fecho`, `ponte-d3-publicar`, `ajuda-publicar` e o mesmo `projeto` pela workspaceKey.
+
+**Ponte do Zappy na página (não gravar):** Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.
 
 **Compartilhar → manter título/resumo → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Fechar → Concluir aula**. O envio anterior libera Compartilhar. Personalizar, copiar link e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula.
 

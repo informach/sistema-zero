@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process'
 import {
   copyFileSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -19,6 +20,10 @@ import {
   type JardimSpriteName,
   jardimSpriteRect,
 } from '../../../../packages/studio/src/arte/jardim-assets'
+import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
+import { JS_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/js'
+import { VALUE_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/values'
+import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensions/game-2d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
 
@@ -50,11 +55,31 @@ function scene(revealed: boolean) {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
 
+const blockColors = new Map(
+  [...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameTwoDBlocks].map((b) => [
+    b.type,
+    b.colour,
+  ]),
+)
+const usedColors: Record<string, string> = {}
 const html = readFileSync(templatePath, 'utf8')
   .replace('/* {{FONT_FACES}} */', fontFaces)
   .replaceAll('{{SCENE_HIDDEN}}', scene(false))
   .replaceAll('{{SCENE_REVEALED}}', scene(true))
   .replace('{{ZAPPY}}', `data:image/webp;base64,${readFileSync(zappyPath).toString('base64')}`)
+
+const coloredHtml = html.replace(/data-block-type="([^"]+)"/g, (attribute, type: string) => {
+  const colour = blockColors.get(type)
+  if (typeof colour !== 'string' || !/^#[0-9a-f]{6}$/i.test(colour))
+    throw new Error(`Cor oficial ausente: ${type}`)
+  usedColors[type] = colour
+  return `${attribute} style="background-color:${colour}"`
+})
+const previewDir = resolve(root, 'tmp/pdfs/cade-todo-mundo')
+mkdirSync(previewDir, { recursive: true })
+writeFileSync(join(previewDir, 'caderno.html'), coloredHtml)
+writeFileSync(join(previewDir, 'cores-estudio.json'), JSON.stringify(usedColors, null, 2))
+if (process.argv.includes('--html-only')) process.exit(0)
 
 const browser = [
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -70,7 +95,7 @@ const browserProfile = join(temporary, 'chrome-profile')
 
 try {
   if (html.includes('{{')) throw new Error('O template do caderno tem campos sem preencher.')
-  writeFileSync(htmlPath, html)
+  writeFileSync(htmlPath, coloredHtml)
   const result = spawnSync(
     browser,
     [

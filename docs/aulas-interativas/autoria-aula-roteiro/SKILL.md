@@ -1,61 +1,35 @@
 ---
 name: aula-roteiro
-description: Escreve e revisa roteiros infantis do Sistema Zero, com tarefa direta, montagem completa e linguagem simples. Use para criar ou adaptar aulas e suas orientações de gravação.
+description: Escreve e revisa roteiros infantis do Sistema Zero, com contexto pertinente, montagem completa e linguagem simples. Use para criar ou adaptar aulas, quizzes pedagógicos e orientações de gravação. Não use para copy de marketing.
 ---
 
 # Roteiros de aula do Sistema Zero
 
-Direção revisada em 27/09/2026 após o ensaio de Cadê Todo Mundo? com duas crianças.
-A criança precisa saber o que fazer agora. Uma fala acolhedora pode ser direta e completa.
+## Começar pela referência única
 
-## Fontes atuais
+Leia `docs/aulas-interativas/DIRETRIZES-PEDAGOGICAS.md` inteiro antes de criar, revisar ou adaptar qualquer curso. Ele reúne as regras, seus motivos e as variações por curso. Não reconstruir a orientação cruzando relatórios antigos nem copiar o formato de um curso sem avaliar sua pertinência.
 
-- Leia docs/aulas-interativas/BRIEFING.md e ESPEC-ROTEIRO.md.
-- Para uma aula existente, leia o trio de proposta, manifesto e roteiro em
-  docs/aulas-interativas/aulas/. Confira se há gerador em docs/aulas-interativas/qa/.
-- Confira rótulos e comportamento no código. REFERENCIA-PLATAFORMA.md e
-  REFERENCIA-BLOCOS-JOGO-2D.json são apoio.
-- Cadê Todo Mundo? é a primeira aplicação desta revisão. Não copie a voz dos roteiros
-  antigos por hábito. As instruções explícitas do usuário prevalecem.
+- `docs/aulas-interativas/BRIEFING.md`: preparar a análise e registrar decisões.
+- `docs/aulas-interativas/ESPEC-ROTEIRO.md`: exemplos e formato da gravação.
+- `docs/aulas-interativas/ESPEC-MANIFESTO.md`: contrato técnico de blocos e seções.
+- Revisões de linguagem e relatórios preservam evidências históricas; não são versões concorrentes das diretrizes.
 
-O formato atual é **{slug}.roteiro.md**, junto de **{slug}.md** e
-**{slug}.manifesto.json**. Não encaminhar este trabalho a roteiro.yaml ou a um pipeline
-studio-aulas sem comprovar que esse formato existe e foi solicitado.
+## Aplicar ao curso
 
-## Como escrever
+1. Ler `modulos-*.md` e o trio da aula em `docs/aulas-interativas/aulas/`: proposta, manifesto e `{slug}.roteiro.md`. Conferir gerador em `qa/` e caderno em `recursos/`.
+2. Registrar conhecimentos prévios, partes preparadas, autoria da pessoa, ferramentas disponíveis, conquistas, experiências, distribuição dos quizzes e critérios. Adaptar conforme o curso e as instruções do usuário.
+3. Conferir rótulos, paletas, valores e ações no código. Referências exportadas ajudam, mas não substituem essa conferência.
+4. Escrever contexto, tarefa, passos completos, teste e saída conforme as Diretrizes. Registrar também as falas do Zappy na página, distinguindo-as da narração gravada.
+5. Atualizar proposta, roteiro, gerador, manifesto, caderno e organização do curso juntos. Preservar identificadores, projetos, mídias e progresso.
 
-1. Comece pela tarefa: "Jogue esta versão pronta", "Toque no arbusto", "Faça o jogo contar".
-2. Mantenha o passo a passo completo: caminho da paleta, bloco, encaixe, campo, valor e teste.
-   Não peça para adivinhar uma peça nem use "faça como eu fiz" no lugar da instrução.
-3. Explique a palavra nova brevemente quando ela for necessária. Analogias são opcionais.
-4. Na experiência, diga como executar os testes necessários. Não faça a experiência pela
-   criança nem conte todos os resultados. Pistas ajudam, mas não escondem passos obrigatórios.
-5. Termine com a ação real: Próxima seção, envio com confirmação ou Concluir aula.
-6. Escreva como se falasse com uma pessoa: "você", verbos simples, sem travessões.
-   Não repetir elogios, perguntas retóricas, agenda ou promessas da próxima aula.
-7. Reconheça o que veio preparado e o que a pessoa programou, sem exagerar sua autoria.
+O formato vigente é o trio de Markdown e manifesto, não `roteiro.yaml` nem um pipeline `studio-aulas` presumido. Não produzir arquivos para um formato antigo sem comprovar sua existência e necessidade.
 
-## Aula e Como Fazer
+## Conferir e entregar
 
-O roteiro conserva a montagem do jogo, os comandos da experiência e os encaminhamentos
-necessários para concluir. Pausar, rever, ampliar, alternar abas, usar o leitor do caderno,
-baixar materiais e publicar ficam em docs/como-fazer/como-fazer.json.
+- Rodar geradores e os validadores de manifesto, roteiro e Como Fazer para os materiais alterados; executar os testes do curso e dos fluxos modificados.
+- Conferir as cores oficiais dos blocos e a diagramação dos PDFs renderizados.
+- Usar o checklist das Diretrizes; verificar a correspondência entre a ação pedida e o funcionamento real.
+- Distinguir atualização local, atualização no Admin, gravação e ensaio com crianças. `plannedVideo` não substitui mídia publicada, e teste estrutural não comprova compreensão infantil.
+- Quando surgir decisão pedagógica nova, atualizar a referência central e sua aplicação no curso. Não manter outra lista de regras nesta skill.
 
-Mover um tutorial não significa deixar a criança sem instrução. Confira o destino na
-biblioteca e acrescente o que estiver faltando. Não exigir a leitura de todos os tutoriais
-antes de jogar. Não colocar tour da interface nas notas de gravação do vídeo da aula.
-
-## Entrega e conferência
-
-- Separar cada **Na tela:** da **Narração:** com linha em branco; fala em citação.
-- Preservar seções, experiências e critérios que funcionam quando a revisão é de linguagem.
-- Atualizar proposta, roteiro, manifesto e gerador juntos. Manter identificadores, projetos,
-  mídia anexada e progresso. O molde local plannedVideo não substitui um vídeo publicado.
-- Rodar os validadores de manifesto, roteiro e tutoriais para os arquivos alterados.
-  Usar os testes existentes do curso quando houver manifesto gerado.
-- Ler todas as falas em voz alta e conferir tarefa, passos, teste e saída.
-- Sinalizar a necessidade de nova gravação e ensaio com crianças. Não declarar que a
-  compreensão infantil foi validada só porque os arquivos passaram em testes.
-
-Esta é a cópia versionada da skill local .agents/skills/aula-roteiro/SKILL.md.
-Ao alterar a skill local, atualizar esta cópia para manter as diretrizes disponíveis no projeto.
+Esta orientação tem uma cópia de consulta em `docs/aulas-interativas/autoria-aula-roteiro/SKILL.md`. Ambas encaminham para a mesma referência pedagógica.
