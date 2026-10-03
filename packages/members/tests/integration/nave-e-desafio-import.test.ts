@@ -108,7 +108,7 @@ test.each([
     expect(
       first.document.blocks.find((b) => b.content.kind === 'materials')?.content,
     ).toMatchObject({
-      title: 'Caderno e mapa da aventura',
+      title: 'Caderno do Aluno: A Chave do Farol',
       items: [notebook],
     })
   expect(

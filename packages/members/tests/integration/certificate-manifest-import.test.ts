@@ -62,8 +62,8 @@ test('importar a aula final preserva a arte e as assinaturas do certificado exis
   const video = draft.document.blocks.find((block) => block.content.kind === 'video')
   expect(video).toBeDefined()
   if (!video) throw new Error('O vídeo de pitch não foi importado')
+  // A aula final é uma celebração curta numa seção só (03/10/2026): vídeo e certificado juntos.
   expect(draft.document.sections.map((section) => section.completion?.blockIds)).toEqual([
-    [certificateId],
-    [video.id],
+    [video.id, certificateId],
   ])
 })
