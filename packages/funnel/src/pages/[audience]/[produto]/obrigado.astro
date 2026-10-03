@@ -133,7 +133,10 @@ const confirmationTitle = approved
             alt={isCommunity ? `Capa da ${productName}` : `Capa do curso ${productName}`}
             width="112"
             height="112"
-            class="kids-thanks-product-image relative aspect-square w-24 -rotate-2 rounded-lg border border-line/60 object-cover shadow-xl sm:w-28"
+            class:list={[
+              'kids-thanks-product-image relative aspect-square w-24 -rotate-2 rounded-lg border border-line/60 shadow-xl sm:w-28',
+              f.key === 'kids/desafio-primeiro-jogo' ? 'object-contain bg-[#94d5f5]' : 'object-cover',
+            ]}
             decoding="async"
           />
         </div>

@@ -6,6 +6,7 @@
     "sz_g2d_clamp_to_screen",
     "sz_g2d_clear",
     "sz_g2d_create_image_sprite",
+    "sz_g2d_create_sprite",
     "sz_g2d_destroy_sprite",
     "sz_g2d_draw_backdrop",
     "sz_g2d_draw_label",

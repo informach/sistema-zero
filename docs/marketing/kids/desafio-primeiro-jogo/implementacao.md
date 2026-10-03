@@ -59,6 +59,8 @@ Nenhuma coleta paralela ou migração própria foi criada para esta implementaç
 
 Essas imagens demonstram o projeto e os recursos, não são depoimentos de clientes. Capturas da versão publicada do Farol poderão substituir os exemplos de interface após a conferência em staging.
 
+Em 03/10/2026, o jogo, a capa e o caderno receberam os SVGs personalizados do `pack-game-farol`, com palco 480 × 360. As capturas do jogo preservam 4:3 (1280 × 960); checkout e confirmação mostram a composição inteira nas miniaturas. A [documentação dos materiais](../../../aulas-interativas/recursos/desafio-farol/README.md) descreve as fontes, posições e comandos de regeneração.
+
 ## Verificação realizada
 
 | Verificação | Resultado |

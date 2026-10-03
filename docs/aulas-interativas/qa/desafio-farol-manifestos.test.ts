@@ -125,6 +125,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(content.activity.completion).toBe('participation')
     expect(content.activity.targets).toEqual([])
     expect(content.activity.project).toEqual(montarProjetoFarol('concluido'))
+    expect(content.activity.stage).toEqual({ width: 480, height: 360 })
     expect(m.blocks.some((block) => block.content?.kind === 'studio')).toBe(false)
     expect(m.sections[0]?.completion?.blockIds).toEqual(['video-intro-farol', 'jogo-pronto'])
     expect(JSON.stringify(montarProjetoFarol('dia-1').ir)).not.toContain('g2d:topDown')

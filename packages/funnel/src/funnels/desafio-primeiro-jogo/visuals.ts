@@ -10,12 +10,12 @@ type Frame = {
   height: number
   label: string
 }
-const real = (file: string, label: string, alt: string, height = 720): Frame => ({
+const real = (file: string, label: string, alt: string, height: number, width = 1280): Frame => ({
   src: `${base}/${file}`,
   large: `${base}/${file}`,
   alt,
   label,
-  width: 1280,
+  width,
   height,
 })
 const shared = (key: string): Frame[] =>
@@ -31,6 +31,7 @@ export const DESAFIO_VISUALS: Record<string, { frames: Frame[]; caption: string 
         'farol-jogo.png',
         'A Chave do Farol',
         'O personagem, a chave e o farol no projeto real do Desafio.',
+        960,
       ),
     ],
     caption:
@@ -42,7 +43,8 @@ export const DESAFIO_VISUALS: Record<string, { frames: Frame[]; caption: string 
         'farol-blocos.png',
         'Uma regra do Farol',
         'Esquema do caderno do Farol: condição que muda a resposta da porta.',
-        1276,
+        1360,
+        1364,
       ),
     ],
     caption:
@@ -69,7 +71,8 @@ export const DESAFIO_VISUALS: Record<string, { frames: Frame[]; caption: string 
         'farol-caderno.png',
         'Caderno do Aluno',
         'Página do caderno do Farol com os testes com e sem a chave.',
-        1810,
+        2246,
+        1588,
       ),
     ],
     caption:

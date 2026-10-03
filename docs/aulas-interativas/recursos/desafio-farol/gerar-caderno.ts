@@ -3,6 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   FAROL_ASSETS,
+  FAROL_LAYOUT,
   type FarolAssetName,
 } from '../../../../packages/studio/src/arte/farol-assets'
 import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
@@ -28,13 +29,17 @@ const fonts = `@font-face{font-family:Nunito;src:url(data:font/woff2;base64,${nu
 @font-face{font-family:'Baloo 2';src:url(data:font/woff2;base64,${baloo.base64}) format('woff2');font-weight:400 800}`
 const css = baseCss.replace('/* {{FONT_FACES}} */', fonts)
 const zappy = `data:image/webp;base64,${readFileSync(resolve(root, 'packages/community-kids/public/zappy/happy.webp')).toString('base64')}`
-function sprite(name: FarolAssetName, x: number, y: number) {
+function sprite(
+  name: FarolAssetName,
+  { x, y, w, h }: { x: number; y: number; w: number; h: number },
+) {
   const asset = FAROL_ASSETS[name]
-  return `<svg x="${x}" y="${y}" width="${asset.width}" height="${asset.height}" viewBox="0 0 ${asset.width} ${asset.height}">${asset.body}</svg>`
+  return `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 ${asset.width} ${asset.height}">${asset.body}</svg>`
 }
 function scene(lit = false) {
   // Ilustração com a arte do próprio jogo, não uma captura da interface.
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">${FAROL_ASSETS.cenario.body}${sprite(lit ? 'farol-aceso' : 'farol-apagado', 435, -5)}${sprite('personagem', lit ? 415 : 150, 106)}${lit ? sprite('barco', 546, 240) : sprite('chave', 308, 151)}</svg>`
+  const { palco, farol, personagem, personagemNaPorta, barco, chegadaBarcoX, chave } = FAROL_LAYOUT
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${palco.w}" height="${palco.h}" viewBox="0 0 ${palco.w} ${palco.h}">${FAROL_ASSETS.cenario.body}${sprite(lit ? 'farol-aceso' : 'farol-apagado', farol)}${sprite('personagem', lit ? personagemNaPorta : personagem)}${lit ? sprite('barco', { ...barco, x: chegadaBarcoX }) : sprite('chave', chave)}</svg>`
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
 // Importar as definições finais inclui os tons por família, não só a cor da categoria.

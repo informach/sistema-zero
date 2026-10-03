@@ -2,6 +2,7 @@
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { ProjectBlockPattern } from '../../../packages/core/src/learning/section-progression'
+import { FAROL_LAYOUT } from '../../../packages/studio/src/arte/farol-assets'
 import { montarProjetoFarol } from './desafio-farol-projeto'
 
 import { farol } from './quizzes-cursos-curtos'
@@ -43,6 +44,7 @@ const studioBlocks = [
   'sz_frame_loops',
   'sz_g2d_setup_stage',
   'sz_g2d_create_image_sprite',
+  'sz_g2d_create_sprite',
   'sz_g2d_clear',
   'sz_g2d_draw_backdrop',
   'sz_g2d_draw_sprite',
@@ -483,7 +485,7 @@ const introducao = {
         activity: {
           type: 'project-play',
           project: montarProjetoFarol('concluido'),
-          stage: { width: 640, height: 360 },
+          stage: { width: FAROL_LAYOUT.palco.w, height: FAROL_LAYOUT.palco.h },
           completion: 'participation',
           targets: [],
         },

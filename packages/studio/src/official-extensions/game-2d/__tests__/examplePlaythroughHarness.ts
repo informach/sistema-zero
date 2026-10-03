@@ -13,6 +13,7 @@
  */
 import type { ExtensionExample } from '#extensions'
 import { generateJS } from '#generators'
+import { assetMetaManifest } from '../../../core/project'
 import { gameTwoDRuntime } from '../runtime'
 import type { GameTwoDLifecycleApi } from '../runtimeContract'
 
@@ -318,6 +319,7 @@ export function exampleHarness(
     Math: harnessMath,
     Image: HarnessImage,
     __SZGAME_ASSETS: assetMap,
+    __SZGAME_ASSET_META: assetMetaManifest(example.assets ?? []),
     console: {
       warn(message: unknown) {
         warnings.push(String(message))

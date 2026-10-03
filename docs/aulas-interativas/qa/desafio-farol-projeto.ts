@@ -1,5 +1,7 @@
 import {
   FAROL_ASSETS,
+  FAROL_HITBOXES,
+  FAROL_LAYOUT,
   type FarolAssetName,
   farolSvg,
 } from '../../../packages/studio/src/arte/farol-assets'
@@ -15,7 +17,7 @@ import type { JSStatement, SZIRV2 } from '../../../packages/studio/src/ir/schema
 export type DiaDoFarol = 'dia-1' | 'dia-2' | 'dia-3'
 
 const NOME = 'A Chave do Farol'
-const TAMANHO = { w: 640, h: 360 }
+const TAMANHO = FAROL_LAYOUT.palco
 
 function image(name: FarolAssetName): ProjectAsset {
   const { width, height } = FAROL_ASSETS[name]
@@ -27,6 +29,16 @@ function image(name: FarolAssetName): ProjectAsset {
     dataUrl: `data:image/svg+xml;base64,${Buffer.from(farolSvg(name)).toString('base64')}`,
     width,
     height,
+    ...(FAROL_HITBOXES[name]
+      ? {
+          sprite: {
+            frameW: width,
+            frameH: height,
+            animations: [{ name: 'parado', from: 0, to: 0, fps: 1, loop: false }],
+            hitbox: FAROL_HITBOXES[name],
+          },
+        }
+      : {}),
   }
 }
 
@@ -40,27 +52,22 @@ export const ASSETS_FAROL: ProjectAsset[] = [
 ]
 
 const saida: JSStatement[] = [
-  { type: 'g2d:setupStage', width: TAMANHO.w, height: TAMANHO.h, bg: '#b9dfd0' },
+  { type: 'g2d:setupStage', width: TAMANHO.w, height: TAMANHO.h, bg: '#94d5f5' },
   {
     type: 'g2d:createImageSprite',
     varName: 'personagem',
-    x: 170,
-    y: 130,
-    w: 40,
-    h: 48,
+    ...FAROL_LAYOUT.personagem,
     image: 'personagem',
   },
-  { type: 'g2d:createImageSprite', varName: 'chave', x: 328, y: 171, w: 40, h: 40, image: 'chave' },
+  { type: 'g2d:createImageSprite', varName: 'chave', ...FAROL_LAYOUT.chave, image: 'chave' },
   {
     type: 'g2d:createImageSprite',
     varName: 'farol',
-    x: 485,
-    y: 72,
-    w: 100,
-    h: 154,
+    ...FAROL_LAYOUT.farol,
     image: 'farol-apagado',
   },
-  { type: 'g2d:createImageSprite', varName: 'barco', x: 655, y: 267, w: 72, h: 50, image: 'barco' },
+  { type: 'g2d:createImageSprite', varName: 'barco', ...FAROL_LAYOUT.barco, image: 'barco' },
+  { type: 'g2d:createSprite', varName: 'fundoAviso', x: 8, y: 8, w: 464, h: 28, color: '#143d35' },
   { type: 'var', name: 'aviso', value: { type: 'str', value: 'Encontre a chave e vá ao farol.' } },
   { type: 'var', name: 'ganhou', value: { type: 'bool', value: false } },
 ]
@@ -126,7 +133,7 @@ const barcoChega: JSStatement = {
         type: 'binop',
         op: '>',
         left: { type: 'memberGet', object: { type: 'var', name: 'barco' }, name: 'x' },
-        right: { type: 'num', value: 530 },
+        right: { type: 'num', value: FAROL_LAYOUT.chegadaBarcoX },
       },
       then: [
         {
@@ -184,14 +191,15 @@ function irFarol(etapa: DiaDoFarol | 'concluido'): SZIRV2 {
             { type: 'g2d:drawSprite', spriteVar: 'farol', ctxVar: 'ctx' },
             { type: 'g2d:drawSprite', spriteVar: 'barco', ctxVar: 'ctx' },
             { type: 'g2d:drawSprite', spriteVar: 'personagem', ctxVar: 'ctx' },
+            { type: 'g2d:drawSprite', spriteVar: 'fundoAviso', ctxVar: 'ctx' },
             {
               type: 'g2d:drawLabel',
               ctxVar: 'ctx',
               text: { type: 'var', name: 'aviso' },
               x: 20,
-              y: 32,
-              color: '#263a45',
-              size: 19,
+              y: 28,
+              color: '#ffffff',
+              size: 16,
               align: 'left',
             },
           ],
