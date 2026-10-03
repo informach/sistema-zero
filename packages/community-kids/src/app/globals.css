@@ -1978,24 +1978,70 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 }
 
 /* ⭐ O VÍDEO FLUTUANTE (03/10/2026): com a atividade ampliada e o vídeo tocando, ele vem
-   pequeno por cima. Cartão branco com o céu na barra, a mesma moldura das janelas das
-   ferramentas; a pílula "Vídeo" (vídeo minimizado) é a ação azul de sempre. Os dois são `fixed`,
-   mas continuam DENTRO de `.sz-lesson-sections` no DOM, então estas regras os alcançam. */
+   pequeno por cima. Os dois (ele e a pílula "Vídeo") são `fixed`, mas continuam DENTRO de
+   `.sz-lesson-sections` no DOM, então estas regras os alcançam.
+   ⭐⭐ Uma MOLDURA DE TV no navy do menu (decisão dela, no mesmo dia): o cartão branco com a
+   barra azul-clara era da família dos botões da atividade logo ao lado ("Jogar de novo",
+   "Voltar à aula") e não se lia como uma coisa que APARECEU por cima. Escuro, ele é a única peça
+   escura da tela ampliada, e o navy é o mesmo da moldura do palco das cenas e do menu. A
+   moldura em si (6px dos lados e embaixo) é estrutura do member-shell; aqui é só a cor. */
 .sz-lesson-sections .sz-lesson-video-float {
   border: 0;
   border-radius: 1.25rem;
-  background: var(--card);
+  background: var(--menu);
+  color: var(--menu-texto);
   box-shadow:
-    0 0 0 1px var(--linha-carta),
-    0 18px 40px rgba(28, 48, 90, 0.28);
+    0 0 0 3px color-mix(in oklab, var(--menu) 22%, transparent),
+    0 22px 48px rgba(14, 24, 52, 0.42);
 }
 .sz-lesson-sections .sz-lesson-video-float-bar {
-  border-bottom-color: var(--linha-carta);
-  background: var(--band-ceu);
+  background: transparent;
 }
 .sz-lesson-sections .sz-lesson-video-float-move {
   font-weight: 800;
-  color: var(--tinta);
+  color: var(--menu-texto);
+}
+.sz-lesson-sections .sz-lesson-video-float-move > svg {
+  color: var(--menu-icone);
+}
+/* "Vídeo da aula" vira a pílula AMARELA com o ▶: o amarelo da moeda com a tinta navy (10,88:1;
+   o branco sobre esse amarelo reprova). Diz "isto é um vídeo" antes de a criança ler. */
+.sz-lesson-sections .sz-lesson-video-float-move > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+  padding: 0.25rem 0.625rem 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--kids-ouro);
+  color: var(--menu);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.sz-lesson-sections .sz-lesson-video-float-move > span::before {
+  content: "";
+  flex: none;
+  border-block: 0.25rem solid transparent;
+  border-left: 0.375rem solid currentColor;
+}
+.sz-lesson-sections :is(.sz-lesson-video-float-size, .sz-lesson-video-float-minimize) {
+  color: var(--menu-texto);
+}
+.sz-lesson-sections
+  :is(
+    .sz-lesson-video-float-move,
+    .sz-lesson-video-float-size,
+    .sz-lesson-video-float-minimize
+  ):hover {
+  background: var(--menu-vidro);
+}
+.sz-lesson-sections .sz-lesson-video-float-size[aria-disabled="true"]:hover {
+  background: transparent;
+}
+/* O anel de foco do tema (azul) some no navy: aqui ele é claro. */
+.sz-lesson-sections .sz-lesson-video-float button:focus-visible {
+  outline-color: var(--menu-texto);
 }
 .sz-lesson-sections .sz-lesson-video-pill {
   min-height: 3rem;

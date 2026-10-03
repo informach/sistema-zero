@@ -1225,17 +1225,23 @@ arrastável e redimensionável; parado, vira a pílula "Vídeo", que o abre e d�
   ferramentas do editor mora logo abaixo da saída: eles marcam a saída com o valor `editor`,
   `EXPANDED_EXIT_EDITOR`); no celular, embaixo à direita e com 176px (a atividade ocupa o alto e
   sobra espaço embaixo; lá o título da barra some abaixo de 240px e fica só o ícone). O guardado
-  só existe depois que a criança MOVE (o padrão segue a tela ampliada de cada vez). Largura entre
-  200 (160 no celular) e
-  `min(560, 55% da janela)`, 16:9 + barra; guardado por perfil em
-  `sz:lesson-video-float:v1:<viewer>` (guardado torto volta ao padrão campo a campo). Teste:
+  só existe depois que a criança MOVE (o padrão segue a tela ampliada de cada vez). ⭐⭐ **O
+  tamanho é um DEGRAU, não pixels** (03/10/2026, decisão dela): pequeno (300; 176 no celular),
+  médio (480; 260) e grande (`floatMaxWidth`: 2/3 da largura, ou a largura menos o respiro no
+  celular, e na altura o que cabe entre a SAÍDA e o pé, em QUALQUER canto). A alça de arrastar
+  parava em `min(560, 55%)`, um terço de uma tela de computador, e "aumentava um pouquinho e
+  travava". Degraus a menos de 48px um do outro viram um só (`floatSizeSteps`): o + nunca cresce
+  10px. A moldura (`FLOAT_FRAME`, 6px dos lados e embaixo, `px-1.5 pb-1.5`) entra na conta da
+  altura. Guardado por perfil em `sz:lesson-video-float:v2:<viewer>` (`{corner, size}`; o `v1`
+  era em pixels e não é convertido; torto volta ao padrão campo a campo). Teste:
   `tests/lesson-video-float.test.ts`.
 - **Gestos**: a barra arrasta (captura de ponteiro; o corpo ganha `pointer-events: none` durante o
-  gesto porque o iframe engole o ponteiro); a alça de tamanho mora na barra, do lado do MEIO da
-  tela (não cobre os controles do Vimeo). A PÍLULA também arrasta (o clique que o navegador gera
-  ao soltar não abre o vídeo) e anda com as setas: muda de canto sem dar play. Teclado: setas na
-  alça de mover andam um canto e Enter/Espaço gira; a alça de tamanho é `role="slider"` (setas
-  ±24px, Home/End). ⚠️ Trocar de modo, `pointercancel` e `lostpointercapture` encerram o gesto:
+  gesto porque o iframe engole o ponteiro). O tamanho muda pelos botões **"Diminuir o vídeo"** e
+  **"Aumentar o vídeo"** (− e +, antes do Minimizar); ⚠️ na ponta eles ficam `aria-disabled`,
+  NUNCA `disabled`: o botão que a criança acabou de apertar sairia do foco. A PÍLULA também
+  arrasta (o clique que o navegador gera ao soltar não abre o vídeo) e anda com as setas: muda de
+  canto sem dar play. Teclado: setas na alça de mover andam um canto e Enter/Espaço gira; o novo
+  degrau é anunciado ("Vídeo grande."). ⚠️ Trocar de modo, `pointercancel` e `lostpointercapture` encerram o gesto:
   um arrasto interrompido (Esc, um segundo dedo no "Voltar à aula") deixava o vídeo preso no lugar
   solto e o player sem clique. O flutuante é `role="region"` "Vídeo da aula", NUNCA
   `role="dialog"` (desligaria o Esc do Estúdio e do Pinta, que checam `[role=dialog]`).
@@ -1250,7 +1256,7 @@ arrastável e redimensionável; parado, vira a pílula "Vídeo", que o abre e d�
   `inert`.
 - Ganchos (invariante 8): `sz-lesson-video-gate`, `-veil`, `-card`, `-mascot`, `-title`, `-text`,
   `-progress`, `-action`, `sz-lesson-video-gate-done`, `sz-lesson-video-slot`,
-  `sz-lesson-video-frame`, `sz-lesson-video-float`, `-bar`, `-move`, `-minimize`, `-grip`,
+  `sz-lesson-video-frame`, `sz-lesson-video-float`, `-bar`, `-move`, `-minimize`, `-size` (os botões − e +),
   `-body`, `-guard` e `sz-lesson-video-pill`.
 - ⚠️ Fora do escopo, registrado: tocar o vídeo continua parando o relógio de uma cena que esteja
   rodando (`lib/lesson-media-focus.ts`); para "fazer junto" numa cena com ▶ isso pode atrapalhar.

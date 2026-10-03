@@ -322,13 +322,16 @@ describe('o vídeo flutuante', () => {
     expect(nome()).toBe('Voltar à aula')
     screen.getByText('Ver a explicação').focus()
     const visitados: string[] = []
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 7; i++) {
       tab()
       visitados.push(nome())
     }
+    // ⚠️ O "Diminuir" no pequeno está apagado (`aria-disabled`), mas segue no Tab: com
+    // `disabled` o botão que a criança acabou de apertar perderia o foco no fim da escada.
     expect(visitados).toEqual([
-      'Tamanho do vídeo',
       'Vídeo da aula: mover para outro canto',
+      'Diminuir o vídeo',
+      'Aumentar o vídeo',
       'Minimizar o vídeo',
       'tocar',
       'pausar',
@@ -372,7 +375,7 @@ describe('o vídeo flutuante', () => {
     fireEvent.keyDown(pilula, { key: 'ArrowLeft' })
     expect(plays).toEqual([])
     expect(
-      JSON.parse(localStorage.getItem('sz:lesson-video-float:v1:crianca') ?? '{}').corner,
+      JSON.parse(localStorage.getItem('sz:lesson-video-float:v2:crianca') ?? '{}').corner,
     ).toBe('top-left')
     expect(pilula.style.left).toBe('16px')
   })
@@ -386,9 +389,41 @@ describe('o vídeo flutuante', () => {
     expect(screen.getByRole('region', { name: 'Vídeo da aula' }).getAttribute('data-corner')).toBe(
       'bottom-right',
     )
-    expect(JSON.parse(localStorage.getItem('sz:lesson-video-float:v1:crianca') ?? '{}')).toEqual({
+    expect(JSON.parse(localStorage.getItem('sz:lesson-video-float:v2:crianca') ?? '{}')).toEqual({
       corner: 'bottom-right',
-      width: 320,
+      size: 'small',
     })
+  })
+
+  test('− e + andam um degrau por toque; na ponta o botão apaga sem perder o foco', () => {
+    render(<Aula aula={aberta} />)
+    fireEvent.click(screen.getByRole('button', { name: 'tocar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ampliar jogo' }))
+    const flutuante = screen.getByRole('region', { name: 'Vídeo da aula' })
+    const aumentar = screen.getByRole('button', { name: 'Aumentar o vídeo' })
+    const diminuir = screen.getByRole('button', { name: 'Diminuir o vídeo' })
+    const largura = () => Number.parseFloat(flutuante.style.width)
+    // Nasce no pequeno: o − está apagado.
+    expect(diminuir.getAttribute('aria-disabled')).toBe('true')
+    const pequeno = largura()
+    fireEvent.click(aumentar)
+    const medio = largura()
+    expect(medio).toBeGreaterThan(pequeno)
+    aumentar.focus()
+    fireEvent.click(aumentar)
+    const grande = largura()
+    // O grande é de verdade grande: dois terços da janela, não os 560px da alça antiga.
+    expect(grande).toBeGreaterThan(window.innerWidth * 0.6)
+    expect(aumentar.getAttribute('aria-disabled')).toBe('true')
+    expect(document.activeElement).toBe(aumentar)
+    expect(screen.getByText('Vídeo grande.')).toBeTruthy()
+    // Apagado não faz nada.
+    fireEvent.click(aumentar)
+    expect(largura()).toBe(grande)
+    expect(JSON.parse(localStorage.getItem('sz:lesson-video-float:v2:crianca') ?? '{}').size).toBe(
+      'large',
+    )
+    fireEvent.click(diminuir)
+    expect(largura()).toBe(medio)
   })
 })

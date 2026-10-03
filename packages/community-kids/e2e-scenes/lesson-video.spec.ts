@@ -127,7 +127,7 @@ for (const viewport of [
   })
 }
 
-test('arrastar encaixa no canto, a alça muda o tamanho, e o Tab passa pelo flutuante', async ({
+test('arrastar encaixa no canto, o + muda o tamanho, e o Tab passa pelo flutuante', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1366, height: 768 })
@@ -154,23 +154,29 @@ test('arrastar encaixa no canto, a alça muda o tamanho, e o Tab passa pelo flut
     })
     .toBe(16)
 
+  // Três degraus: o + cresce de verdade, e o grande é dois terços da janela (a alça antiga
+  // parava em 560px, um terço desta tela, e parecia quebrada).
   const largura = (await flutuante.boundingBox())?.width ?? 0
-  const tamanho = page.getByRole('slider', { name: 'Tamanho do vídeo' })
-  const grip = await tamanho.boundingBox()
-  if (!grip) throw new Error('Alça de tamanho sem caixa')
-  await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2)
-  await page.mouse.down()
-  await page.mouse.move(grip.x + grip.width / 2 + 120, grip.y + grip.height / 2, { steps: 6 })
-  await page.mouse.up()
+  const aumentar = page.getByRole('button', { name: 'Aumentar o vídeo' })
+  await aumentar.click()
+  await aumentar.click()
   await expect
     .poll(async () => (await flutuante.boundingBox())?.width ?? 0)
-    .toBeGreaterThan(largura + 100)
+    .toBeGreaterThan(1366 * 0.6)
+  expect(largura).toBeLessThan(400)
+  await expect(aumentar).toHaveAttribute('aria-disabled', 'true')
+  // O grande no canto de baixo não sobe até o "Voltar à aula".
+  const saidaGrande = await page.getByRole('button', { name: 'Voltar à aula' }).boundingBox()
+  const grande = await flutuante.boundingBox()
+  if (!saidaGrande || !grande) throw new Error('Sem caixa')
+  expect(grande.y).toBeGreaterThan(saidaGrande.y + saidaGrande.height)
+  expect(grande.y + grande.height).toBeLessThanOrEqual(768)
 
   // Teclado: o Tab roda pelo flutuante (inclusive os controles do vídeo) e volta à tela
   // ampliada. Começa no flutuante porque o iframe do jogo tem Tab próprio.
   await mover.focus()
   const alcançados: string[] = []
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     await page.keyboard.press('Tab')
     alcançados.push(
       await page.evaluate(() => {
@@ -179,8 +185,12 @@ test('arrastar encaixa no canto, a alça muda o tamanho, e o Tab passa pelo flut
       }),
     )
   }
-  expect(alcançados.slice(0, 2)).toEqual(['Minimizar o vídeo', 'Tamanho do vídeo'])
-  expect(alcançados[3]).toBe('Jogar de novo')
+  expect(alcançados.slice(0, 3)).toEqual([
+    'Diminuir o vídeo',
+    'Aumentar o vídeo',
+    'Minimizar o vídeo',
+  ])
+  expect(alcançados[4]).toBe('Jogar de novo')
   // O lugar fica guardado: reabrir a página volta ao canto escolhido.
   await page.keyboard.press('Escape')
   await page.reload()

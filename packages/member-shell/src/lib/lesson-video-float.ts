@@ -9,7 +9,17 @@
 
 export type FloatCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 
-export type FloatGeometry = { corner: FloatCorner; width: number }
+/**
+ * O tamanho é um DEGRAU, não um número (03/10/2026, decisão da dona). A alça de arrastar parava
+ * em 560px, um terço de uma tela de computador, e a criança puxava, o vídeo não crescia mais e
+ * parecia quebrado. Três degraus com − e + dizem o que acontece a cada toque, e o maior é de
+ * verdade grande.
+ */
+export type FloatSize = 'small' | 'medium' | 'large'
+
+export const FLOAT_SIZES: readonly FloatSize[] = ['small', 'medium', 'large']
+
+export type FloatGeometry = { corner: FloatCorner; size: FloatSize }
 
 export type FloatViewport = {
   width: number
@@ -49,62 +59,139 @@ export function topInsetBelow(exitBottom: number | null): number {
 /** A barra de título do flutuante (alça de arrastar + botões de 44px). */
 export const FLOAT_BAR_HEIGHT = 44
 
-/** O passo do teclado na alça de tamanho. */
-export const FLOAT_RESIZE_STEP = 24
+/**
+ * A moldura em volta do vídeo, dos lados e embaixo (em cima é a barra). É ESTRUTURA, não só
+ * pele: entra na conta da altura, senão o vídeo no canto de baixo passaria da borda da janela.
+ * O componente a desenha com `px-1.5 pb-1.5` (6px); mexeu num, mexa no outro.
+ */
+export const FLOAT_FRAME = 6
 
-export const FLOAT_DEFAULT: FloatGeometry = { corner: 'top-right', width: 320 }
+export const FLOAT_DEFAULT: FloatGeometry = { corner: 'top-right', size: 'small' }
+
+/** Celular é o que tem menos de 640px de janela: lá os degraus são menores. */
+const PHONE_MAX = 640
+
+/** Pequeno e médio são números fixos; o grande é o quanto a janela deixa. */
+const FIXED_WIDTH: Record<'small' | 'medium', { phone: number; desktop: number }> = {
+  small: { phone: 176, desktop: 300 },
+  medium: { phone: 260, desktop: 480 },
+}
+
+/** O grande ocupa até 2/3 da largura: a atividade continua aparecendo do lado. */
+const LARGE_SHARE = 0.66
+
+/**
+ * Dois degraus mais perto que isto viram um só: numa janela pequena o grande quase não passa do
+ * médio, e um + que cresce 10px é o mesmo "não funciona" da alça antiga.
+ */
+const MIN_STEP = 48
 
 /**
  * O lugar de quem ainda não escolheu. No computador, em cima à direita, logo abaixo da saída (o
  * "ali em cima" da dona). No celular a atividade ocupa o alto da tela e sobra espaço embaixo: o
- * vídeo nasce lá, menor, para não cobrir o jogo. No Estúdio e no Pinta, embaixo à direita: em
- * cima está a barra de ferramentas do editor (full review de 03/10/2026).
+ * vídeo nasce lá, para não cobrir o jogo. No Estúdio e no Pinta, embaixo à direita: em cima está
+ * a barra de ferramentas do editor (full review de 03/10/2026). Sempre no degrau pequeno.
  */
 export function defaultFloatGeometry(viewportWidth: number, prefersBottom = false): FloatGeometry {
-  if (viewportWidth < 640) return { corner: 'bottom-right', width: 176 }
-  return prefersBottom ? { corner: 'bottom-right', width: FLOAT_DEFAULT.width } : FLOAT_DEFAULT
+  if (viewportWidth < PHONE_MAX || prefersBottom) return { corner: 'bottom-right', size: 'small' }
+  return FLOAT_DEFAULT
 }
 
-/** Celular é o que tem menos de 640px de janela: lá o vídeo pode ficar menor. */
-export function floatWidthLimits(viewportWidth: number): { min: number; max: number } {
-  const min = viewportWidth < 640 ? 160 : 200
-  // Nunca mais que a metade e pouco da janela: a atividade é o que a criança está fazendo.
-  const max = Math.max(min, Math.min(560, Math.floor(viewportWidth * 0.55)))
-  return { min, max }
+/** O menor vídeo que ainda dá para assistir. */
+export function floatMinWidth(viewportWidth: number): number {
+  return viewportWidth < PHONE_MAX ? 160 : 200
 }
 
-export function clampFloatWidth(width: number, viewportWidth: number): number {
-  const { min, max } = floatWidthLimits(viewportWidth)
-  if (!Number.isFinite(width)) return Math.min(max, Math.max(min, FLOAT_DEFAULT.width))
-  return Math.round(Math.min(max, Math.max(min, width)))
-}
-
-/** O vídeo é 16:9; a barra vai em cima. */
+/** O vídeo é 16:9 dentro da moldura; a barra vai em cima. */
 export function floatHeight(width: number): number {
-  return Math.round((width * 9) / 16) + FLOAT_BAR_HEIGHT
+  return Math.round(((width - 2 * FLOAT_FRAME) * 9) / 16) + FLOAT_BAR_HEIGHT + FLOAT_FRAME
+}
+
+/** A maior largura cuja altura cabe em `height`. */
+function widthForHeight(height: number): number {
+  return Math.floor(((height - FLOAT_BAR_HEIGHT - FLOAT_FRAME) * 16) / 9) + 2 * FLOAT_FRAME
+}
+
+/**
+ * O maior vídeo desta janela: até 2/3 da largura (no celular, a largura toda menos o respiro) e,
+ * na altura, o que cabe entre a SAÍDA da tela ampliada e o pé — em qualquer canto, porque um vídeo
+ * grande no canto de baixo também subiria até o "Voltar à aula".
+ */
+export function floatMaxWidth(viewport: FloatViewport): number {
+  const byWidth =
+    viewport.width < PHONE_MAX
+      ? viewport.width - 2 * FLOAT_MARGIN
+      : Math.floor(viewport.width * LARGE_SHARE)
+  const room = viewport.height - (viewport.topInset ?? FLOAT_TOP_INSET) - FLOAT_MARGIN
+  return Math.max(floatMinWidth(viewport.width), Math.min(byWidth, widthForHeight(room)))
+}
+
+export type FloatStep = { size: FloatSize; width: number }
+
+/** Os degraus que existem NESTA janela, do menor ao maior (os que ficariam iguais viram um). */
+export function floatSizeSteps(viewport: FloatViewport): FloatStep[] {
+  const max = floatMaxWidth(viewport)
+  const device = viewport.width < PHONE_MAX ? 'phone' : 'desktop'
+  const wanted: FloatStep[] = [
+    { size: 'small', width: Math.min(max, FIXED_WIDTH.small[device]) },
+    { size: 'medium', width: Math.min(max, FIXED_WIDTH.medium[device]) },
+    { size: 'large', width: max },
+  ]
+  const steps: FloatStep[] = []
+  for (const step of wanted) {
+    const last = steps.at(-1)
+    if (!last || step.width - last.width >= MIN_STEP) steps.push(step)
+  }
+  return steps
+}
+
+/**
+ * O degrau em que o vídeo está de verdade: o guardado, ou o maior que exista abaixo dele (o
+ * "grande" de uma janela pequena pode ter virado o médio).
+ */
+export function floatStepOf(
+  size: FloatSize,
+  viewport: FloatViewport,
+): { steps: FloatStep[]; index: number } {
+  const steps = floatSizeSteps(viewport)
+  const wanted = FLOAT_SIZES.indexOf(size)
+  let index = 0
+  steps.forEach((step, i) => {
+    if (FLOAT_SIZES.indexOf(step.size) <= wanted) index = i
+  })
+  return { steps, index }
+}
+
+/** O degrau vizinho (`null` na ponta: o botão daquele lado fica apagado). */
+export function resizedFloat(
+  size: FloatSize,
+  direction: 'grow' | 'shrink',
+  viewport: FloatViewport,
+): FloatSize | null {
+  const { steps, index } = floatStepOf(size, viewport)
+  return steps[index + (direction === 'grow' ? 1 : -1)]?.size ?? null
 }
 
 /**
  * Onde o vídeo fica de verdade nesta janela. `corner` pode diferir do pedido: ver abaixo.
  *
  * ⚠️⚠️ A SAÍDA da tela ampliada nunca fica coberta, nem em janela baixa (celular deitado, 340px
- * úteis no Safari; achado do full review de 03/10/2026). Num canto de cima que não cabe abaixo
- * da saída, o vídeo ENCOLHE até caber; se nem o tamanho mínimo cabe, ele desce para o canto de
- * baixo do mesmo lado. Antes, a régua "não sair da tela" vencia e o empurrava por cima da saída.
+ * úteis no Safari; achado do full review de 03/10/2026). Todo degrau já cabe abaixo da saída
+ * (`floatMaxWidth` olha a altura); se nem o tamanho mínimo cabe, ele desce para o canto de baixo
+ * do mesmo lado. Antes, a régua "não sair da tela" vencia e o empurrava por cima da saída.
  */
 export function floatRect(
   geometry: FloatGeometry,
   viewport: FloatViewport,
 ): FloatRect & { corner: FloatCorner } {
-  let width = clampFloatWidth(geometry.width, viewport.width)
+  const { steps, index } = floatStepOf(geometry.size, viewport)
+  const width = steps[index]?.width ?? floatMinWidth(viewport.width)
   let corner = geometry.corner
+  // O degrau já cabe abaixo da saída (`floatMaxWidth`); só a janela baixa demais para o MÍNIMO
+  // passa daqui, e aí o vídeo desce para o canto de baixo do mesmo lado.
   if (corner.startsWith('top')) {
     const room = viewport.height - (viewport.topInset ?? FLOAT_TOP_INSET) - FLOAT_MARGIN
-    if (floatHeight(width) > room) {
-      const fit = Math.floor(((room - FLOAT_BAR_HEIGHT) * 16) / 9)
-      if (fit >= floatWidthLimits(viewport.width).min) width = fit
-      else corner = corner.endsWith('left') ? 'bottom-left' : 'bottom-right'
-    }
+    if (floatHeight(width) > room) corner = corner.endsWith('left') ? 'bottom-left' : 'bottom-right'
   }
   const height = floatHeight(width)
   const left = corner.endsWith('left')
@@ -146,20 +233,11 @@ export function nextCorner(corner: FloatCorner): FloatCorner {
 }
 
 /**
- * A alça de tamanho mora no canto de BAIXO voltado para o MEIO da tela, e o canto ancorado não
- * se mexe: num vídeo à direita, puxar a alça para a esquerda AUMENTA.
+ * ⚠️ `v2` desde os degraus (03/10/2026): o `v1` guardava uma largura em pixels, e lê-la como
+ * degrau seria inventar uma conversão para uma escolha que a criança fez com outra ferramenta.
  */
-export function resizedWidth(corner: FloatCorner, startWidth: number, deltaX: number): number {
-  return corner.endsWith('right') ? startWidth - deltaX : startWidth + deltaX
-}
-
-/** O lado da alça de tamanho (o contrário do lado em que o vídeo encosta). */
-export function gripSide(corner: FloatCorner): 'left' | 'right' {
-  return corner.endsWith('right') ? 'left' : 'right'
-}
-
 export function floatStorageKey(viewerId: string | null): string | null {
-  return viewerId ? `sz:lesson-video-float:v1:${viewerId}` : null
+  return viewerId ? `sz:lesson-video-float:v2:${viewerId}` : null
 }
 
 /** O guardado é do navegador: qualquer coisa torta volta ao padrão, nunca quebra a aula. */
@@ -172,10 +250,10 @@ export function readFloatGeometry(
     const value: unknown = JSON.parse(raw)
     if (typeof value !== 'object' || value === null) return fallback
     const corner = 'corner' in value ? value.corner : undefined
-    const width = 'width' in value ? value.width : undefined
+    const size = 'size' in value ? value.size : undefined
     return {
       corner: CORNERS.includes(corner as FloatCorner) ? (corner as FloatCorner) : fallback.corner,
-      width: typeof width === 'number' && Number.isFinite(width) ? width : fallback.width,
+      size: FLOAT_SIZES.includes(size as FloatSize) ? (size as FloatSize) : fallback.size,
     }
   } catch {
     return fallback
@@ -183,5 +261,5 @@ export function readFloatGeometry(
 }
 
 export function serializeFloatGeometry(geometry: FloatGeometry): string {
-  return JSON.stringify({ corner: geometry.corner, width: Math.round(geometry.width) })
+  return JSON.stringify({ corner: geometry.corner, size: geometry.size })
 }

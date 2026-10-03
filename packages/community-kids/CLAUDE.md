@@ -1768,9 +1768,12 @@ de lá); aqui mora a PELE e o Zappy.
   cartão branco com `--sombra-carta-sm`, título no Baloo, a pílula do quanto já viu na menta (é
   progresso) e "Ver o vídeo" na pílula azul de sempre; o "Pronto!" na menta. O cartão gruda a
   5.5rem do topo (abaixo da barra de progresso da aula).
-- O vídeo flutuante: cartão branco com a barra no céu e o fio `--linha-carta`; a pílula "Vídeo"
-  é a ação azul com o degrau 3D. Os dois são `fixed`, mas continuam dentro de
-  `.sz-lesson-sections` no DOM, e é por isso que as regras os alcançam.
+- O vídeo flutuante: ⭐ MOLDURA DE TV no navy do menu (`--menu`, decisão dela em 03/10/2026, a
+  mesma moldura do palco das cenas), com o título "Vídeo" na pílula AMARELA com ▶ (`--kids-ouro`
+  com tinta navy) e os botões − e + claros sobre o escuro. O cartão branco com a barra no céu
+  era da família dos botões da atividade ao lado e não se lia como algo que apareceu por cima. A
+  pílula "Vídeo" (minimizado) segue a ação azul com o degrau 3D. Os dois são `fixed`, mas
+  continuam dentro de `.sz-lesson-sections` no DOM, e é por isso que as regras os alcançam.
 - Testes: `tests/lesson-video-gate.test.tsx` (a aula de verdade com um player e uma atividade de
   mentira que falam o contrato de produção: tranca, abre ao vivo, "Ver o vídeo", sem opção/sem
   player, o MESMO nó do vídeo flutuando, pílula, minimizar, Tab com a tela ampliada modal e o

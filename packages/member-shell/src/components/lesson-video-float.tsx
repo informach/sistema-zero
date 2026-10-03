@@ -1,6 +1,6 @@
 'use client'
 
-import { GripHorizontal, Minimize2, MoveHorizontal, Play } from 'lucide-react'
+import { GripHorizontal, Minimize2, Minus, Play, Plus } from 'lucide-react'
 import {
   createContext,
   type KeyboardEvent,
@@ -15,23 +15,20 @@ import {
 } from 'react'
 import { cn } from '../lib/cn'
 import {
-  clampFloatWidth,
   defaultFloatGeometry,
   FLOAT_MARGIN,
-  FLOAT_RESIZE_STEP,
   FLOAT_TOP_INSET,
   type FloatCorner,
   type FloatGeometry,
+  type FloatSize,
   type FloatViewport,
   floatRect,
+  floatStepOf,
   floatStorageKey,
-  floatWidthLimits,
-  gripSide,
   moveCorner,
   nearestCorner,
   nextCorner,
   readFloatGeometry,
-  resizedWidth,
   serializeFloatGeometry,
   topInsetBelow,
 } from '../lib/lesson-video-float'
@@ -41,8 +38,8 @@ import {
  * mandou ampliar a tela, a tela ampliada cobriu o vídeo e ela ficou sem saber o que fazer.
  *
  * Com uma atividade ampliada e o vídeo da seção TOCANDO, o mesmo vídeo aparece pequeno por cima
- * (estilo picture-in-picture, mas dentro da página), arrastável e redimensionável. Parado, ele
- * vira a pílula "Vídeo", que o abre.
+ * (estilo picture-in-picture, mas dentro da página), arrastável e em três tamanhos (− e +). Parado,
+ * ele vira a pílula "Vídeo", que o abre.
  *
  * ⚠️⚠️ O vídeo NUNCA muda de lugar no DOM: o SDK do Vimeo é o dono do iframe (invariante 6) e
  * mover o nó recarregaria o vídeo. Flutuar é só trocar a classe e o `style` da MOLDURA para
@@ -184,8 +181,8 @@ function focusExpandedExit() {
 }
 
 type Gesture = {
-  /** `move` e `resize` são do flutuante; `pill` é a pílula sendo levada a outro canto. */
-  kind: 'move' | 'resize' | 'pill'
+  /** `move` é o flutuante; `pill` é a pílula sendo levada a outro canto. */
+  kind: 'move' | 'pill'
   pointerId: number
   startX: number
   startY: number
@@ -193,7 +190,6 @@ type Gesture = {
   offsetY: number
   boxWidth: number
   boxHeight: number
-  startWidth: number
   moved: boolean
 }
 
@@ -209,6 +205,12 @@ const CORNER_LABEL: Record<FloatCorner, string> = {
   'top-right': 'em cima, à direita',
   'bottom-left': 'embaixo, à esquerda',
   'bottom-right': 'embaixo, à direita',
+}
+
+const SIZE_LABEL: Record<FloatSize, string> = {
+  small: 'pequeno',
+  medium: 'médio',
+  large: 'grande',
 }
 
 const ARROWS: Record<string, 'left' | 'right' | 'up' | 'down'> = {
@@ -229,7 +231,6 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
   const [chosen, setChosen] = useState<FloatGeometry | null>(() => readSaved(storageKey))
   const geometry = chosen ?? defaultFloatGeometry(viewport.width, viewport.prefersBottom)
   const [drag, setDrag] = useState<{ left: number; top: number } | null>(null)
-  const [liveWidth, setLiveWidth] = useState<number | null>(null)
   const [settled, setSettled] = useState(false)
   const [announce, setAnnounce] = useState('')
   const gesture = useRef<Gesture | null>(null)
@@ -260,7 +261,6 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
   useEffect(() => {
     gesture.current = null
     setDrag(null)
-    setLiveWidth(null)
   }, [slot.mode])
 
   // A transição de lugar só liga depois do primeiro quadro: o vídeo não nasce deslizando.
@@ -294,15 +294,23 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
     }
   }
 
-  const rect = floatRect({ ...geometry, width: liveWidth ?? geometry.width }, viewport)
+  const rect = floatRect(geometry, viewport)
   // O canto em que ele está DE VERDADE (numa janela baixa um canto de cima pode descer).
   const corner = rect.corner
-  const limits = floatWidthLimits(viewport.width)
-  const busy = drag !== null || liveWidth !== null
-  const side = gripSide(corner)
+  const busy = drag !== null
   const moveTo = (next: FloatCorner) => {
     commit({ ...geometry, corner: next })
     setAnnounce(`Vídeo ${CORNER_LABEL[next]}.`)
+  }
+  // O degrau é o da JANELA (o grande de uma janela pequena pode ter virado o médio).
+  const { steps, index: stepIndex } = floatStepOf(geometry.size, viewport)
+  const canShrink = stepIndex > 0
+  const canGrow = stepIndex < steps.length - 1
+  const resize = (direction: 'grow' | 'shrink') => {
+    const next = steps[stepIndex + (direction === 'grow' ? 1 : -1)]
+    if (!next) return
+    commit({ ...geometry, size: next.size })
+    setAnnounce(`Vídeo ${SIZE_LABEL[next.size]}.`)
   }
 
   const start = (kind: Gesture['kind']) => (event: PointerEvent<HTMLElement>) => {
@@ -320,7 +328,6 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
       offsetY: event.clientY - box.top,
       boxWidth: box.width,
       boxHeight: box.height,
-      startWidth: rect.width,
       moved: false,
     }
   }
@@ -335,23 +342,13 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
     const dy = event.clientY - current.startY
     if (!current.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return
     current.moved = true
-    if (current.kind === 'resize')
-      setLiveWidth(clampFloatWidth(resizedWidth(corner, current.startWidth, dx), viewport.width))
-    else setDrag(placeOf(current, event))
+    setDrag(placeOf(current, event))
   }
   const finish = (event: PointerEvent<HTMLElement>) => {
     const current = gesture.current
     if (!current || current.pointerId !== event.pointerId) return
     gesture.current = null
-    if (current.moved && current.kind === 'resize')
-      commit({
-        ...geometry,
-        width: clampFloatWidth(
-          resizedWidth(corner, current.startWidth, event.clientX - current.startX),
-          viewport.width,
-        ),
-      })
-    else if (current.moved) {
+    if (current.moved) {
       const place = placeOf(current, event)
       commit({
         ...geometry,
@@ -364,12 +361,10 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
       if (current.kind === 'pill') suppressPillClick.current = true
     }
     setDrag(null)
-    setLiveWidth(null)
   }
   const cancel = () => {
     gesture.current = null
     setDrag(null)
-    setLiveWidth(null)
   }
   const gestureHandlers = (kind: Gesture['kind']) => ({
     onPointerDown: start(kind),
@@ -385,50 +380,31 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
     event.preventDefault()
     moveTo(moveCorner(corner, direction))
   }
-  const resizeByKey = (event: KeyboardEvent<HTMLDivElement>) => {
-    const step = {
-      ArrowRight: FLOAT_RESIZE_STEP,
-      ArrowUp: FLOAT_RESIZE_STEP,
-      ArrowLeft: -FLOAT_RESIZE_STEP,
-      ArrowDown: -FLOAT_RESIZE_STEP,
-      PageUp: FLOAT_RESIZE_STEP * 4,
-      PageDown: -FLOAT_RESIZE_STEP * 4,
-    }[event.key]
-    const next =
-      event.key === 'Home'
-        ? limits.min
-        : event.key === 'End'
-          ? limits.max
-          : step === undefined
-            ? null
-            : rect.width + step
-    if (next === null) return
-    event.preventDefault()
-    commit({ ...geometry, width: clampFloatWidth(next, viewport.width) })
-  }
-
   // Coberto por outro diálogo: some (o vídeo segue tocando) e sai do alcance do Tab. `inert` já
-  // tira da árvore de acessibilidade; ⚠️ um `aria-hidden` aqui derrubava o observador do
-  // happy-dom nos testes (medido), sem acrescentar nada no navegador.
+  // tira da árvore de acessibilidade. (O `aria-hidden` que um dia esteve aqui não derrubava o
+  // observador: o que o derrubava nos testes era o coletor de lixo do happy-dom.)
   const hidden = covered ? { inert: true } : COMPANION
 
-  const grip = (
-    <div
-      role="slider"
-      tabIndex={0}
-      aria-label="Tamanho do vídeo"
-      aria-orientation="horizontal"
-      aria-valuemin={limits.min}
-      aria-valuemax={limits.max}
-      aria-valuenow={rect.width}
-      aria-valuetext={`${rect.width} pixels de largura`}
-      {...gestureHandlers('resize')}
-      onKeyDown={resizeByKey}
-      className="sz-lesson-video-float-grip flex size-11 shrink-0 cursor-ew-resize touch-none select-none items-center justify-center rounded-lg text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
-    >
-      <MoveHorizontal aria-hidden className="size-4" />
-    </div>
-  )
+  // ⚠️ Na ponta o botão fica `aria-disabled`, nunca `disabled`: com `disabled` o botão que a
+  // criança acabou de apertar sai do foco e o Tab recomeçava do nada no meio da tela.
+  const sizeButton = (direction: 'grow' | 'shrink') => {
+    const enabled = direction === 'grow' ? canGrow : canShrink
+    return (
+      <button
+        type="button"
+        onClick={() => resize(direction)}
+        aria-label={direction === 'grow' ? 'Aumentar o vídeo' : 'Diminuir o vídeo'}
+        aria-disabled={enabled ? undefined : true}
+        className="sz-lesson-video-float-size flex size-11 shrink-0 items-center justify-center rounded-lg hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring aria-disabled:cursor-default aria-disabled:opacity-40 aria-disabled:hover:bg-transparent"
+      >
+        {direction === 'grow' ? (
+          <Plus aria-hidden className="size-4" />
+        ) : (
+          <Minus aria-hidden className="size-4" />
+        )}
+      </button>
+    )
+  }
 
   return (
     <div
@@ -443,8 +419,9 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
         {...(floating ? { role: 'region', 'aria-label': 'Vídeo da aula', ...hidden } : {})}
         className={cn(
           'sz-lesson-video-frame',
+          // `px-1.5 pb-1.5` é a moldura (`FLOAT_FRAME`, 6px): entra na conta da altura.
           floating &&
-            'sz-lesson-video-float fixed z-[85] flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl',
+            'sz-lesson-video-float fixed z-[85] flex flex-col overflow-hidden rounded-2xl border border-border bg-card px-1.5 pb-1.5 shadow-2xl',
           floating &&
             settled &&
             !busy &&
@@ -458,8 +435,7 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
         }
       >
         {floating ? (
-          <div className="sz-lesson-video-float-bar flex h-11 shrink-0 items-center gap-1 border-border border-b px-1">
-            {side === 'left' && grip}
+          <div className="sz-lesson-video-float-bar flex h-11 shrink-0 items-center gap-0.5">
             <button
               ref={moveHandle}
               type="button"
@@ -481,12 +457,15 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
             >
               <GripHorizontal aria-hidden className="size-4 shrink-0 text-muted-foreground" />
               {/* Estreito (celular), o título cortado em "Ví…" só sujava a barra: fica o ícone,
-                  e o nome acessível continua inteiro. */}
-              {rect.width >= 240 ? <span className="truncate">Vídeo da aula</span> : null}
+                  e o nome acessível continua inteiro. ⚠️ "Vídeo", não "Vídeo da aula": com os
+                  botões − e + na barra o título longo não cabia no degrau pequeno. */}
+              {rect.width >= 240 ? <span className="truncate">Vídeo</span> : null}
             </button>
             <span id={hintId} className="sr-only">
               Arraste para outro canto da tela. Com o teclado, use as setas.
             </span>
+            {sizeButton('shrink')}
+            {sizeButton('grow')}
             <button
               type="button"
               onClick={slot.onMinimize}
@@ -495,14 +474,15 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
             >
               <Minimize2 aria-hidden className="size-4" />
             </button>
-            {side === 'right' && grip}
           </div>
         ) : null}
         <div
           className={cn(
             'sz-lesson-video-float-body',
-            // Flutuando, a moldura é a do flutuante: o canto e a borda do player sobravam.
-            floating && '[&_.aspect-video]:rounded-none [&_.aspect-video]:border-0',
+            // Flutuando, a moldura é a do flutuante: o canto e a borda do player sobravam, e o
+            // canto da tela passa a ser o do corpo, dentro da moldura.
+            floating &&
+              'overflow-hidden rounded-xl [&_.aspect-video]:rounded-none [&_.aspect-video]:border-0',
           )}
           // Minimizado, o vídeo segue tocando embaixo da tela ampliada, longe do Tab.
           inert={pill || undefined}
