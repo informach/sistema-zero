@@ -20,20 +20,34 @@ page.on('request', (request) => {
   if (request.url().endsWith('/api/analytics/events')) batches.push(request.postDataJSON())
 })
 try {
+  const initialBatch = page.waitForResponse(
+    (r) => r.url().endsWith('/api/analytics/events') && r.status() === 200,
+  )
   await page.goto(`${origin}/?utm_source=qa_analytics`)
   await page.waitForFunction(() => typeof window.__szAnalyticsSnapshot === 'function')
-  assert.equal(batches.length, 0, 'No events before consent')
+  await initialBatch
+  assert.ok(batches.length > 0, 'Automatic collection without interaction')
+  assert.equal(await page.locator('#sz-metrics-notice').isVisible(), false)
+  assert.ok(
+    !(await context.cookies()).some((c) => c.name === 'sz_metrics'),
+    'No implicit acceptance cookie',
+  )
   assert.equal(
     await page.locator('.bio-avatar').evaluate((img: HTMLImageElement) => img.naturalWidth > 0),
     true,
   )
-  await page.getByRole('button', { name: 'Continuar sem métricas' }).click()
+  await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
+  await page.getByRole('button', { name: 'Desativar métricas' }).click()
   await page.locator('#sz-metrics-notice').waitFor({ state: 'hidden' })
-  assert.equal(batches.length, 0, 'Refusal sends no events')
+  const afterDisable = batches.length
+  await page.reload()
+  await page.waitForFunction(() => typeof window.__szAnalyticsSnapshot === 'function')
+  await page.waitForTimeout(1500)
+  assert.equal(batches.length, afterDisable, 'Disabled preference persists after reload')
   await mkdir('output/analytics', { recursive: true })
   await page.screenshot({ path: 'output/analytics/bio-mobile.png', fullPage: true })
   await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
-  await page.getByRole('button', { name: 'Permitir métricas' }).click()
+  await page.getByRole('button', { name: 'Ativar métricas' }).click()
   await page.waitForResponse((r) => r.url().endsWith('/api/analytics/events') && r.status() === 200)
   await page.getByRole('link', { name: /Ver como meu filho aprende/ }).click()
   await page.waitForURL('**/como-funciona/**')
@@ -96,7 +110,7 @@ try {
     'No labels from quiz answers',
   )
   await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
-  await page.getByRole('button', { name: 'Continuar sem métricas' }).click()
+  await page.getByRole('button', { name: 'Desativar métricas' }).click()
   await page.locator('#sz-metrics-notice').waitFor({ state: 'hidden' })
   assert.ok(
     !(await context.cookies()).some((c) => c.name === 'sz_visitor'),
@@ -115,7 +129,7 @@ try {
       batches: batches.length,
       questions: questions.length,
       coverage: [
-        'no-consent',
+        'automatic-without-prompt',
         'refusal',
         'attribution',
         'FAQ',

@@ -12,11 +12,14 @@
 
 ## Execução nesta sessão
 
-- [ ] Reproduzir em `tests/integration/analytics.test.ts` a criação/ingestão sem cookie de preferência e o vínculo do contato. Demonstrar que a preferência `rejected` ainda bloqueia criação, ingestão e vínculo.
-- [ ] Criar `src/analytics/preference.ts` com a regra `choice !== 'rejected'`, usá-la em `identity.ts`, `handlers.ts` e `consent.ts`. Abrir o painel de preferência apenas no botão Privacidade; nunca criar um aceite implícito.
-- [ ] Atualizar `components/Analytics.astro`, textos de metodologia do painel e seções de métricas das políticas Kids/Pro para descrever a coleta automática e a associação com dados enviados. Registrar a mudança na documentação operacional.
-- [ ] Evitar coleta operacional no worker; adaptar os scripts de smoke, painel e performance. Testar uma visita automática seguida do envio real do pré-checkout e verificar o vínculo no PostgreSQL.
-- [ ] Executar suíte com PostgreSQL local, typecheck, lint e build isolada; smoke/integrado/performance no navegador. Preservar o dev server da outra sessão.
+- [x] Reproduzir em `tests/integration/analytics.test.ts` a criação/ingestão sem cookie de preferência e o vínculo do contato. Demonstrar que a preferência `rejected` ainda bloqueia criação, ingestão e vínculo.
+- [x] Criar `src/analytics/preference.ts` com a regra `choice !== 'rejected'`, usá-la em `identity.ts`, `handlers.ts` e `consent.ts`. Abrir o painel de preferência apenas no botão Privacidade; nunca criar um aceite implícito.
+- [x] Atualizar `components/Analytics.astro`, textos de metodologia do painel e seções de métricas das políticas Kids/Pro para descrever a coleta automática e a associação com dados enviados. Registrar a mudança na documentação operacional.
+- [x] Evitar coleta operacional no worker; adaptar os scripts de smoke, painel e performance. Testar uma visita automática seguida do envio real do pré-checkout e verificar o vínculo no PostgreSQL.
+- [x] Executar suíte com PostgreSQL local, typecheck, lint e build isolada; smoke/integrado/performance no navegador. Preservar o dev server da outra sessão.
+- [x] Revisar novamente a entrega: reproduzir/corrigir desativação perdida em falha de rede e vínculo ausente na corrida entre quiz e sessão. Validar duas abas, persistência, exclusão posterior e atraso proposital de bootstrap com PostgreSQL real; repetir o roteiro completo do novo Desafio em catálogo de QA isolado.
+- [x] Encerrar a ressalva de desempenho da segunda revisão (216 ms para o teto de 200 ms). Remedido com a máquina livre: 109 ms sem coleta e 105 ms com coleta na página longa, script aprovado nos quatro cenários, limites intactos. A/B mostrou que a coleta não pesa e que o ajuste do rodapé não tem ganho mensurável; o rastreamento atribui o custo restante à tipografia (várias faces de fonte na primeira montagem), decisão de direção de arte.
+- [x] Full review com dois revisores independentes e correção dos achados: comportamento do cadastro com métricas desativadas, desativação durante a abertura de sessão, Safari sem `AbortSignal.timeout`, cookies bloqueados, botão Privacidade sobre a barra do celular, foco e avisos acessíveis, limite por IP próprio, textos do painel e das políticas, testes de corrida e de preferências que não provavam o que diziam. Registro: `docs/marketing/revisao-medicao-2026-10-03.md`.
 
 ## Critérios de aceitação
 

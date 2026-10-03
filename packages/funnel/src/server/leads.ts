@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { isAnalyticsEnabled } from '../analytics/identity'
 import { quizDefinition } from '../analytics/quiz-definition'
 import type { QuizDefinition } from '../analytics/types'
 import type { FunnelRepo, Lead } from '../db/repo'
@@ -330,6 +331,9 @@ export async function recordEvent(request: Request, deps: LeadDeps): Promise<Res
   if (!parsed.success) return jsonError('Payload inválido.', 400, 'BAD_REQUEST')
   const lead = await deps.repo.getLead(id)
   if (!lead) return jsonError('Lead não encontrado.', 404, 'NOT_FOUND')
+  // Estes eventos são comportamento enviado pelo navegador (ver a página, abrir o checkout):
+  // quem desativou as métricas não os gera. Respostas, contato e pagamento seguem pelo cadastro.
+  if (!isAnalyticsEnabled(request)) return json({ ok: true, recorded: false }, 202)
   await deps.repo.insertEvent(
     id,
     parsed.data.eventName,

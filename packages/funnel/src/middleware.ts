@@ -85,8 +85,12 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     // prerender, a middleware roda no build (só GET, paths de marketing — não
     // casam os regex), onde não há env de runtime nem clientAddress.
     const ip = clientIp(ctx.request, ctx.clientAddress || 'unknown', getEnv().TRUST_PROXY)
+    // A preferência tem bucket próprio: num IP compartilhado, a coleta automática dos
+    // outros visitantes não pode empurrar o pedido de desativação para um 429.
     const [key, limit]: [string, number] = isAnalytics
-      ? [`${ip}:analytics`, 120]
+      ? ctx.url.pathname === '/api/analytics/consent'
+        ? [`${ip}:analytics-preference`, 60]
+        : [`${ip}:analytics`, 120]
       : isAdminLogin
         ? [`${ip}:admin-login`, ADMIN_LOGIN_LIMIT]
         : getLimited

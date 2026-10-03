@@ -13,6 +13,7 @@
 // Reaproveita os dados da empresa e os tipos de `legal.ts`.
 
 import { EMPRESA, type LegalDoc } from './legal'
+import { ANALYTICS_PRIVACY_PARAGRAPHS } from './legal-analytics'
 
 const PRODUTO = 'Desafio do Primeiro Jogo'
 const ASSINATURA = 'Comunidade dos Criadores'
@@ -31,7 +32,7 @@ export const PRIVACIDADE_KIDS: LegalDoc = {
   titulo: 'Política de Privacidade',
   descricao:
     'Como a Informach — Núcleo de Aprendizagem Ltda. trata os dados pessoais no Desafio do Primeiro Jogo e na Comunidade dos Criadores, com proteção reforçada para crianças e adolescentes, em conformidade com a LGPD, o ECA e o ECA Digital.',
-  atualizadoEm: '30 de setembro de 2026',
+  atualizadoEm: '3 de outubro de 2026',
   secoes: [
     {
       titulo: '1. Do objeto e do público',
@@ -61,7 +62,7 @@ export const PRIVACIDADE_KIDS: LegalDoc = {
       bullets: [
         'Do responsável: nome, e-mail e telefone (informados no pré-checkout); CPF e dados de pagamento necessários para processar a compra; e as respostas do diagnóstico, que são respondidas pelo adulto sobre o perfil de interesse da criança.',
         'Da criança/aluno: nome ou apelido de exibição, progresso nos cursos e na Jornada do Criador, as criações feitas por ela na plataforma (por exemplo, o jogo montado no Estúdio) e, na Comunidade dos Criadores, as mensagens publicadas no Clube dos Criadores e as atividades enviadas ao professor. Pedimos que o responsável evite inserir dados desnecessários da criança (como documentos ou endereço) nos campos livres.',
-        'Coletados automaticamente: endereço IP, características do dispositivo e do navegador e dados de navegação, por meio de cookies e tecnologias semelhantes, para manter a sessão e a segurança.',
+        'Coletados automaticamente: endereço IP, características do dispositivo e do navegador e dados de navegação, por meio de cookies e tecnologias semelhantes, para manter a sessão e a segurança. As métricas próprias registram também origem, páginas, cliques e etapas, conforme a seção Cookies.',
       ],
       posBullets: [
         'Não coletamos dados sensíveis e não exigimos da criança mais informações do que as necessárias para a atividade. Os dados completos do cartão de crédito NUNCA passam pelos nossos servidores: a captura é feita de forma segura ("tokenização") diretamente pelo processador de pagamentos.',
@@ -83,9 +84,7 @@ export const PRIVACIDADE_KIDS: LegalDoc = {
     {
       titulo: '6. Cookies',
       paragrafos: [
-        'Cookies essenciais mantêm o progresso no diagnóstico e a sessão de compra. Com sua permissão no aviso de privacidade, usamos também métricas próprias para entender visitas, cliques, seções vistas e etapas do quiz e da compra. Não coletamos o conteúdo digitado nos formulários nem fazemos gravação da sessão para essas métricas.',
-        'Você pode continuar sem métricas ou alterar a escolha pelo botão Privacidade nas páginas do funil. A escolha e o identificador de navegação duram até 30 dias; os registros analíticos são mantidos por até 90 dias. Ao recusar depois de aceitar, apagamos os registros analíticos associados ao identificador deste navegador. Isso não apaga respostas ou dados de compra necessários ao serviço.',
-        'Os mapas de cliques usam imagens das páginas públicas capturadas por nosso sistema, sem dados do visitante. Perguntas e etapas são identificadas por versão para preservar a precisão quando o site muda.',
+        ...ANALYTICS_PRIVACY_PARAGRAPHS,
         'Você pode desabilitar os cookies nas configurações do navegador. Ao fazer isso, partes do site, como o diagnóstico e o checkout, podem deixar de funcionar corretamente.',
       ],
     },

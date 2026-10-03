@@ -1,5 +1,5 @@
 /* A composição da raiz usa as mesmas receitas e tokens das ofertas da Comunidade. */
-/* Keep the full content in the DOM; lay out distant chapters when they approach the viewport. */
+/* O conteúdo inteiro fica no DOM; capítulos distantes só são diagramados quando chegam perto da tela. */
 .cdc-home main > section:not(:first-child) {
   content-visibility: auto;
   contain-intrinsic-size: auto 1000px;
@@ -7,6 +7,11 @@
 .cdc-home .home-step {
   content-visibility: auto;
   contain-intrinsic-size: auto 700px;
+}
+/* O rodapé compartilhado é irmão da apresentação, fora dos capítulos acima: adia o dele também. */
+.cdc-home + footer {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
 }
 
 .cdc-home .nav .logo {
@@ -263,6 +268,9 @@
 .cdc-home .home-resource {
   min-width: 0;
 }
+.cdc-home .home-support-grid {
+  padding: 0;
+}
 .cdc-home .home-resource h3 {
   display: flex;
   gap: 0.75rem;
@@ -271,11 +279,17 @@
 }
 .cdc-home .home-resource h3 > span {
   color: var(--kof-acao);
+  translate: 0 -0.12em;
 }
 .cdc-home .home-resource > p {
   margin: 1rem 0 1.5rem;
   line-height: 1.65;
   color: var(--kof-tinta-suave);
+}
+.cdc-home .home-resource > .home-support-access {
+  padding-left: 1rem;
+  border-left: 3px solid var(--kof-acao);
+  font-size: 0.875rem;
 }
 .cdc-home .home-resources > .home-note {
   padding: 0 1.5rem 1.5rem;

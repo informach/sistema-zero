@@ -1,6 +1,8 @@
 export const ANALYTICS_RETENTION_DAYS = 90
 export const ANALYTICS_SESSION_MS = 30 * 60 * 1000
 export const ANALYTICS_COOKIE_DAYS = 30
+/** A escolha de desativar não pode vencer junto com o identificador: a coleta é automática. */
+export const ANALYTICS_PREFERENCE_DAYS = 365
 export const CONVERSION_DAYS = 7
 
 export type AnalyticsEnvironment = 'production' | 'development'

@@ -1,8 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { readCookie } from '../lib/admin-auth'
+import { ANALYTICS_PREFERENCE_COOKIE, analyticsEnabled } from './preference'
 import { ANALYTICS_COOKIE_DAYS } from './types'
 
-export const CONSENT_COOKIE = 'sz_metrics'
 const VISITOR_COOKIE = 'sz_visitor'
 const mac = (id: string, secret: string) =>
   createHmac('sha256', secret).update(`analytics:v1:${id}`).digest('hex')
@@ -12,7 +12,8 @@ export function visitorId(request: Request, secret: string): string | null {
   const [id, signature] = token.split('.') as [string, string]
   return timingSafeEqual(Buffer.from(signature), Buffer.from(mac(id, secret))) ? id : null
 }
-export const hasConsent = (request: Request) => readCookie(request, CONSENT_COOKIE) === 'accepted'
+export const isAnalyticsEnabled = (request: Request) =>
+  analyticsEnabled(readCookie(request, ANALYTICS_PREFERENCE_COOKIE))
 export function analyticsCookie(
   name: string,
   value: string,

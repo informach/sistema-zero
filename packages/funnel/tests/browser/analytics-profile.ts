@@ -3,14 +3,17 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { chromium } from 'playwright'
 
 const base = process.env.ANALYTICS_CAPTURE_URL || 'http://127.0.0.1:4322'
+const path = process.env.QA_PROFILE_PATH || '/como-funciona/'
+const automatic = process.env.QA_PROFILE_COLLECTION === 'automatic'
 assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname))
+assert.ok(['/', '/como-funciona/'].includes(path))
 const browser = await chromium.launch()
+const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
 try {
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
-  await context.addCookies([{ name: 'sz_metrics', value: 'rejected', url: base }])
+  if (!automatic) await context.addCookies([{ name: 'sz_metrics', value: 'rejected', url: base }])
   const page = await context.newPage()
   if (process.env.QA_PROFILE_CSS)
-    await page.route('**/como-funciona/', async (route) => {
+    await page.route(`${base}${path}`, async (route) => {
       const response = await route.fetch()
       await route.fulfill({
         response,
@@ -33,7 +36,7 @@ try {
     categories: 'devtools.timeline,blink.user_timing,disabled-by-default-devtools.timeline',
     transferMode: 'ReturnAsStream',
   })
-  await page.goto(`${base}/como-funciona/`)
+  await page.goto(`${base}${path}`)
   await page.waitForTimeout(2000)
   const done = new Promise<{ stream?: string }>((resolve) =>
     cdp.once('Tracing.tracingComplete', resolve),
@@ -63,10 +66,16 @@ try {
     .slice(0, 30)
   await mkdir('.tmp', { recursive: true })
   await writeFile(
-    `.tmp/analytics-profile${process.env.QA_PROFILE_CSS ? '-experiment' : ''}.json`,
+    `.tmp/analytics-profile${path === '/' ? '-bio' : ''}${automatic ? '-automatic' : ''}${process.env.QA_PROFILE_CSS ? '-experiment' : ''}.json`,
     JSON.stringify(slow, null, 2),
   )
   console.log(JSON.stringify(slow))
 } finally {
+  await context.request
+    .post(`${base}/api/analytics/consent`, {
+      headers: { origin: base },
+      data: { choice: 'rejected' },
+    })
+    .catch(() => {})
   await browser.close()
 }

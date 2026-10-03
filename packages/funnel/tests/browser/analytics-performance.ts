@@ -10,7 +10,7 @@ assert.ok(
 const browser = await chromium.launch()
 const measurements: Array<{
   path: string
-  consent: string
+  collection: string
   lcp: number
   cls: number
   longTasks: number
@@ -18,12 +18,14 @@ const measurements: Array<{
   analyticsRequests: number
 }> = []
 try {
-  for (const path of ['/', '/como-funciona/'])
-    for (const consent of ['rejected', 'accepted'])
-      for (let run = 0; run < 3; run++) {
+  // Interleave conditions to avoid attributing browser warm-up or host drift to collection.
+  for (let run = 0; run < 7; run++)
+    for (const path of ['/', '/como-funciona/'])
+      for (const collection of ['disabled', 'automatic']) {
         const context = await browser.newContext({ viewport: { width: 390, height: 844 } })
         try {
-          await context.addCookies([{ name: 'sz_metrics', value: consent, url: base }])
+          if (collection === 'disabled')
+            await context.addCookies([{ name: 'sz_metrics', value: 'rejected', url: base }])
           const page = await context.newPage()
           const cdp = await context.newCDPSession(page)
           await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
@@ -76,8 +78,13 @@ try {
             longTasks: number
             blockingMs: number
           }>('window.qaMetrics')
-          measurements.push({ path, consent, ...metrics, analyticsRequests })
-          if (consent === 'rejected') assert.equal(analyticsRequests, 0)
+          measurements.push({ path, collection, ...metrics, analyticsRequests })
+          if (collection === 'disabled') assert.equal(analyticsRequests, 0)
+          else
+            assert.ok(
+              analyticsRequests > 0,
+              'Automatic metrics must actually run during measurement',
+            )
           await context.request.post(`${base}/api/analytics/consent`, {
             headers: { origin: base },
             data: { choice: 'rejected' },
@@ -89,11 +96,11 @@ try {
   const median = (values: number[]) =>
     [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]!
   const summary = ['/', '/como-funciona/'].flatMap((path) =>
-    ['rejected', 'accepted'].map((consent) => {
-      const rows = measurements.filter((row) => row.path === path && row.consent === consent)
+    ['disabled', 'automatic'].map((collection) => {
+      const rows = measurements.filter((row) => row.path === path && row.collection === collection)
       return {
         path,
-        consent,
+        collection,
         lcpMedianMs: Math.round(median(rows.map((row) => row.lcp))),
         clsMedian: median(rows.map((row) => row.cls)),
         longTasksMedian: median(rows.map((row) => row.longTasks)),
@@ -107,7 +114,7 @@ try {
     `${JSON.stringify(
       {
         conditions:
-          'Local built server; Chromium; 390x844; CPU 4x; 1.6Mbps down / 750Kbps up / 150ms latency; 3 runs per condition; empty browser cache',
+          'Local built server; Chromium; 390x844; CPU 4x; 1.6Mbps down / 750Kbps up / 150ms latency; 7 interleaved runs per condition; empty browser cache',
         summary,
         measurements,
       },
@@ -119,10 +126,10 @@ try {
   for (const row of summary) {
     assert.ok(
       row.lcpMedianMs > 0 && row.lcpMedianMs <= 2500,
-      `LCP budget: ${row.path} ${row.consent}`,
+      `LCP budget: ${row.path} ${row.collection}`,
     )
-    assert.ok(row.clsMedian <= 0.1, `CLS budget: ${row.path} ${row.consent}`)
-    assert.ok(row.blockingMsMedian <= 200, `Main-thread budget: ${row.path} ${row.consent}`)
+    assert.ok(row.clsMedian <= 0.1, `CLS budget: ${row.path} ${row.collection}`)
+    assert.ok(row.blockingMsMedian <= 200, `Main-thread budget: ${row.path} ${row.collection}`)
   }
 } finally {
   await browser.close()

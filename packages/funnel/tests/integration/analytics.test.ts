@@ -4,6 +4,7 @@ import {
   analyticsConsent,
   analyticsIngest,
   analyticsSession,
+  linkAnalyticsLead,
 } from '../../src/analytics/handlers'
 import { visitorCookie, visitorId } from '../../src/analytics/identity'
 import { quizDefinition } from '../../src/analytics/quiz-definition'
@@ -13,7 +14,7 @@ import type {
   StoredAnalyticsEvent,
 } from '../../src/analytics/repository'
 import { COMUNIDADE_DOS_CRIADORES } from '../../src/funnels/comunidade-dos-criadores'
-import { createLead, patchLead } from '../../src/server/leads'
+import { createLead, patchLead, saveContact } from '../../src/server/leads'
 import { quizSessionToken } from '../../src/server/quiz-session'
 import { createFakeRepo } from '../fakes/fake-db'
 
@@ -75,7 +76,7 @@ function fixture() {
     environment: 'development',
     now: () => now,
   }
-  const cookie = `sz_metrics=accepted; ${visitorCookie(session.visitorId, deps.secret, false).split(';')[0]}`
+  const cookie = visitorCookie(session.visitorId, deps.secret, false).split(';')[0]!
   const request = (body: unknown, cookies = cookie, origin = 'http://localhost:4321') =>
     new Request('http://localhost:4321/api/analytics/events', {
       method: 'POST',
@@ -97,13 +98,23 @@ function fixture() {
   }
   return { deps, session, stored, request, event, started: () => started }
 }
-describe('coleta com consentimento', () => {
-  test('não cria sessão sem aceite; bloqueia outra origem e assinatura adulterada', async () => {
+describe('coleta automática com preferência de desativação', () => {
+  test('cria sessão sem preferência e sem fabricar aceite; bloqueia desativação, outra origem e assinatura adulterada', async () => {
     const f = fixture()
+    const response = await analyticsSession(f.request({ path: '/', device: 'mobile' }, ''), f.deps)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('set-cookie')).toContain('sz_visitor=')
+    expect(response.headers.get('set-cookie')).not.toContain('sz_metrics=accepted')
+    expect(f.started()).toBe(1)
     expect(
-      (await analyticsSession(f.request({ path: '/', device: 'mobile' }, ''), f.deps)).status,
+      (
+        await analyticsSession(
+          f.request({ path: '/', device: 'mobile' }, 'sz_metrics=rejected'),
+          f.deps,
+        )
+      ).status,
     ).toBe(403)
-    expect(f.started()).toBe(0)
+    expect(f.started()).toBe(1)
     expect(
       (
         await analyticsSession(
@@ -115,6 +126,44 @@ describe('coleta com consentimento', () => {
     const signed = visitorCookie(f.session.visitorId, f.deps.secret, false).split(';')[0]!
     expect(visitorId(f.request({}, `sz_metrics=accepted; ${signed}0`), f.deps.secret)).toBeNull()
   })
+  test('liga o contato à navegação anterior sem aceite e respeita desativação no servidor', async () => {
+    const f = fixture()
+    const { repo, leads } = createFakeRepo()
+    const created = await repo.createLead('kids/comunidade-dos-criadores')
+    const id = crypto.randomUUID()
+    leads.set(id, { ...leads.get(created.id)!, id })
+    leads.delete(created.id)
+    const links: Array<{ sessionId: string; leadId: string }> = []
+    f.deps.repo.linkLead = async (sessionId, leadId) => {
+      links.push({ sessionId, leadId })
+    }
+    const cookie = `${visitorCookie(f.session.visitorId, f.deps.secret, false).split(';')[0]}; funil_lead=${id}`
+    const response = await saveContact(
+      f.request({ nome: 'Pessoa QA', email: 'qa@example.test', telefone: '31999999999' }, cookie),
+      {
+        repo,
+        secureCookie: false,
+        linkAnalytics: (request, leadId) => linkAnalyticsLead(request, leadId, f.deps),
+      },
+    )
+    expect(response.status).toBe(200)
+    expect(leads.get(id)?.email).toBe('qa@example.test')
+    expect(links).toEqual([{ sessionId: f.session.id, leadId: id }])
+    await linkAnalyticsLead(f.request({}, `${cookie}; sz_metrics=rejected`), id, f.deps)
+    expect(links).toHaveLength(1)
+    expect(
+      (
+        await analyticsIngest(
+          f.request(
+            { sessionId: f.session.id, events: [f.event] },
+            `${cookie}; sz_metrics=rejected`,
+          ),
+          f.deps,
+        )
+      ).status,
+    ).toBe(403)
+    expect(f.stored.size).toBe(0)
+  })
   test('tentativas repetidas não duplicam eventos e revogação apaga a coleta', async () => {
     const f = fixture()
     const body = { sessionId: f.session.id, events: [f.event] }
@@ -123,9 +172,33 @@ describe('coleta com consentimento', () => {
       inserted: 0,
     })
     expect(f.stored.size).toBe(1)
-    expect((await analyticsConsent(f.request({ choice: 'rejected' }), f.deps)).status).toBe(200)
+    const rejected = await analyticsConsent(f.request({ choice: 'rejected' }), f.deps)
+    expect(rejected.status).toBe(200)
     expect(f.stored.size).toBe(0)
     expect((await analyticsIngest(f.request(body), f.deps)).status).toBe(401)
+    // A coleta é automática: a desativação dura mais que o identificador de 30 dias.
+    const setCookies = rejected.headers.getSetCookie()
+    const preference = setCookies.find((c) => c.startsWith('sz_metrics=rejected'))
+    expect(preference).toContain(`Max-Age=${365 * 86400}`)
+    // O identificador e o marcador de exclusão pendente saem do navegador.
+    expect(setCookies.find((c) => c.startsWith('sz_visitor='))).toContain('Max-Age=0')
+    expect(setCookies.find((c) => c.startsWith('sz_metrics_cleanup='))).toContain('Max-Age=0')
+  })
+  test('desativar sem identificador responde ok, não apaga nada e encerra a pendência', async () => {
+    const f = fixture()
+    let revokes = 0
+    f.deps.repo.revoke = async () => {
+      revokes++
+    }
+    const response = await analyticsConsent(
+      f.request({ choice: 'rejected' }, 'sz_metrics=rejected; sz_metrics_cleanup=1'),
+      f.deps,
+    )
+    expect(response.status).toBe(200)
+    expect(revokes).toBe(0)
+    expect(
+      response.headers.getSetCookie().find((c) => c.startsWith('sz_metrics_cleanup=')),
+    ).toContain('Max-Age=0')
   })
   test('checkout descarta texto e coordenadas; protocolo recusa pagamento forjado e dados livres', async () => {
     const f = fixture()
@@ -213,6 +286,92 @@ test('respostas de outra aba mantêm a tentativa vinculada ao visitante, sem ace
   body.events[0]!.id = crypto.randomUUID()
   await analyticsIngest(f.request(body), f.deps)
   expect(f.stored.size).toBe(1)
+})
+
+test('primeiro lote recupera vínculo quando o lead nasceu antes do cookie analítico', async () => {
+  const f = fixture()
+  const definition = quizDefinition(COMUNIDADE_DOS_CRIADORES)!
+  const attempt = crypto.randomUUID()
+  const original = await f.deps.leads.createLead(definition.funnel, null, definition.id)
+  const lead = await f.deps.leads.getLead(original.id)
+  f.deps.leads.getLead = async (id) => (id === attempt ? { ...lead!, id: attempt } : null)
+  f.deps.repo.quiz = async () => definition
+  const links: string[] = []
+  f.deps.repo.linkLead = async (_session, id) => {
+    links.push(id)
+  }
+  await analyticsSession(
+    f.request({ path: '/kids/comunidade-dos-criadores/quiz', device: 'mobile' }, ''),
+    f.deps,
+  )
+  expect(links).toHaveLength(0)
+  const body = {
+    sessionId: f.session.id,
+    events: [
+      {
+        ...f.event,
+        name: 'quiz_question_view',
+        path: '/kids/comunidade-dos-criadores/quiz',
+        quizDefinitionId: definition.id,
+        quizAttemptId: attempt,
+        questionId: 'q1',
+      },
+    ],
+  }
+  const cookie = `${visitorCookie(f.session.visitorId, f.deps.secret, false).split(';')[0]}; funil_lead=${attempt}`
+  expect((await analyticsIngest(f.request(body, cookie), f.deps)).status).toBe(200)
+  expect(links).toEqual([attempt])
+  links.length = 0
+  const pageBody = {
+    sessionId: f.session.id,
+    events: [
+      {
+        ...f.event,
+        id: crypto.randomUUID(),
+        name: 'page_view',
+        path: '/kids/comunidade-dos-criadores/oferta',
+      },
+    ],
+  }
+  expect((await analyticsIngest(f.request(pageBody, cookie), f.deps)).status).toBe(200)
+  expect(links).toEqual([attempt])
+  links.length = 0
+  // A lead from another product must not absorb this visit, even in a mixed batch.
+  pageBody.events[0]!.path = '/kids/desafio-primeiro-jogo/oferta'
+  pageBody.events.push({
+    ...pageBody.events[0]!,
+    id: crypto.randomUUID(),
+    name: 'click',
+    path: '/kids/comunidade-dos-criadores/oferta',
+  })
+  expect((await analyticsIngest(f.request(pageBody, cookie), f.deps)).status).toBe(200)
+  expect(links).toHaveLength(0)
+  f.deps.leads.getLead = async () => ({ ...lead!, id: attempt, paidAt: f.session.startedAt })
+  expect((await analyticsIngest(f.request(body, cookie), f.deps)).status).toBe(200)
+  expect(links).toHaveLength(0)
+  // Compra concluída também pelo caminho da página vista (lead lido do cookie).
+  const paidPage = {
+    sessionId: f.session.id,
+    events: [
+      {
+        ...f.event,
+        id: crypto.randomUUID(),
+        name: 'page_view',
+        path: '/kids/comunidade-dos-criadores/oferta',
+      },
+    ],
+  }
+  expect((await analyticsIngest(f.request(paidPage, cookie), f.deps)).status).toBe(200)
+  expect(links).toHaveLength(0)
+  // Falha no vínculo recuperado não custa os eventos do lote.
+  f.deps.leads.getLead = async () => ({ ...lead!, id: attempt })
+  f.deps.repo.linkLead = async () => {
+    throw new Error('sessão apagada por uma desativação concorrente')
+  }
+  paidPage.events[0]!.id = crypto.randomUUID()
+  const kept = await analyticsIngest(f.request(paidPage, cookie), f.deps)
+  expect(kept.status).toBe(200)
+  expect(await kept.json()).toMatchObject({ inserted: 1 })
 })
 test('quiz arquiva versão antes da criação e impede aba antiga de alterar respostas', async () => {
   const { repo, leads, events } = createFakeRepo()

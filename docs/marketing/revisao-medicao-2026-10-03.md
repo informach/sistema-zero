@@ -1,6 +1,52 @@
 # Revisão da medição — 03/10/2026
 
-Status: revisão e correções concluídas no ambiente local, com as verificações abaixo. Publicação, migrações de produção e agendamento remoto de capturas ainda não foram executados. Este registro coordena a revisão de métricas com a implementação concorrente do Desafio/Farol.
+Status: três revisões e correções concluídas no ambiente local. A ressalva de desempenho da segunda revisão foi encerrada na terceira: o script passou nos quatro cenários com a máquina livre, a coleta não tem custo mensurável e o custo restante da página longa é tipografia (detalhes em `medicao-funil.md`). Migrações de produção e agendamento remoto de capturas ainda não foram executados. Este registro coordena a revisão de métricas com a implementação concorrente do Desafio/Farol.
+
+**Alteração posterior solicitada pelo usuário no mesmo dia:** a coleta passou a ser automática, sem aviso de autorização na entrada. A preferência de desativação continua respeitada e nenhum aceite é fabricado. Essa decisão substitui as referências a coleta dependente de consentimento na revisão histórica abaixo. Estado atual, nova validação e operação: `docs/marketing/medicao-funil.md`; plano: `docs/superpowers/plans/2026-10-03-metricas-automaticas.md`. O helper de privacidade de `tests/browser/desafio-farol.ts` foi adaptado aos botões Ativar/Desativar; copy e perguntas do Desafio não foram modificadas por esta mudança.
+
+## Segunda revisão — coleta automática
+
+Revisão solicitada depois da mudança para coleta automática. Dois defeitos foram reproduzidos com testes que falharam antes da correção:
+
+| Prioridade | Defeito | Correção e validação |
+| --- | --- | --- |
+| Alta | Se o quiz criasse o lead antes de terminar a abertura da sessão analítica, ambos os pedidos partiam sem o cookie um do outro e o vínculo podia ficar ausente. | O primeiro lote válido de visualização da página/pergunta recupera a associação pelo cookie do lead, limitada ao mesmo produto e a uma compra ainda não concluída. Teste de integração inclui lote misto, outro produto e compra concluída. `analytics-race.ts` atrasa a sessão no navegador e comprova vínculo/origem no PostgreSQL. |
+| Média | Falha na requisição de desativação parava apenas o coletor daquela página; recarregar podia iniciar tudo novamente. | Preferência local salva antes da rede, interrupção nas demais abas e marcador de exclusão pendente. Nova tentativa ao carregar/reconectar; reativação aguarda a limpeza. `analytics-preferences.ts` cobre falha de rede, duas abas, recarga, exclusão e reativação. |
+
+O painel de preferências recebeu limite de altura e rolagem para caber no celular na horizontal, também verificado no navegador. A entrada permanece sem janela de autorização, conforme solicitado, e não grava aceite automaticamente.
+
+Validação desta rodada:
+
+- **459 testes, 4.313 asserções, 47 arquivos; zero falhas**, incluindo o PostgreSQL local real.
+- Typecheck: zero erros/warnings, um hint anterior. Biome: zero erros, quatro avisos anteriores de CSS. Build de produção isolada concluída.
+- Navegação na build: raiz atualizada pela outra sessão, origem, FAQ, imagem, seção dinâmica, duas definições de quiz, desativação e proteção do admin passaram. Regressões de coletor no servidor de desenvolvimento também passaram.
+- Pré-checkout real da Comunidade: contato ligado à visita e origem anteriores, um único marco comercial, nenhum campo pessoal nos payloads analíticos.
+- Painel completo: clique → ingestão → PostgreSQL → worker → API autenticada → print, ponto e recorte. As capturas foram atualizadas para o visual corrente da raiz.
+- Desafio/Farol: roteiro completo aprovado em instância isolada, com catálogo sintético, incluindo variantes, 19 FAQs, cupom e percursos condicionais. Sem envio de contato ou criação de cobrança. A disponibilidade do catálogo real continua sendo uma verificação de publicação; a fixture não a comprova.
+- Performance final: sete amostras intercaladas por condição, cache vazio, CPU 4× e rede limitada. LCP mediano 1,7 s na raiz e 2,1 s na apresentação, CLS zero. **O script não passou integralmente:** apresentação sem coleta teve bloqueio mediano de 216 ms, acima dos 200 ms; com coleta, 200 ms. Rodadas anteriores e experimentos estão descritos em `medicao-funil.md`; medições brutas em `output/analytics/performance-mobile.json` e `performance-review-initial.json`. As alternativas experimentais de CSS não mostraram melhora consistente e não foram aplicadas. A redução do custo de layout continua pendente.
+
+Não houve deploy, migração remota ou agendamento de worker. A revisão histórica abaixo registra o estado anterior à coleta automática; para operação, use `medicao-funil.md`.
+
+## Terceira revisão — full review e fechamento (03/10, noite)
+
+A sessão do Codex que fazia as métricas caiu antes de medir o ajuste do rodapé. O trabalho foi assumido por outra sessão, que fez um full review com dois revisores independentes (servidor/dados e navegador/acessibilidade/testes/documentação). Cada achado foi conferido no código antes da correção.
+
+| Prioridade | Achado | Correção e validação |
+| --- | --- | --- |
+| Média | Depois de desativar, `/api/events` continuava gravando comportamento no cadastro (`viu_pagina_vendas`, `abriu_checkout`…), e a política dizia que a coleta parava. | Com `rejected`, `/api/events` responde 202 sem gravar. Respostas, início/conclusão do quiz, contato e pagamento seguem pelo cadastro, e a política agora descreve essa divisão. Teste em `api-leads.test.ts`. |
+| Média | Desativar com a abertura de sessão ainda no servidor cancelava a resposta: o servidor criava o visitante, o cookie nunca chegava e a exclusão saía sem ele (visitante órfão por 90 dias). | A abertura de sessão não é mais cancelada ao parar; `stop()` devolve uma promessa e a desativação espera por ela (até 5 s) antes de pedir a exclusão. Nada é enviado depois. Regressão nova em `analytics-regressions.ts`. |
+| Média | `AbortSignal.timeout` não existe antes do Safari 16: nesses iPhones a exclusão nunca acontecia e reativar ficava impossível. | `AbortController` + `setTimeout` na preferência e na abertura de sessão. Cenário no navegador com a função removida. |
+| Média | Com cookies bloqueados, desativar não tinha efeito e o coletor abria uma sessão (e um visitante) a cada 5 s. | Sem `navigator.cookieEnabled` a coleta não inicia e o painel explica o motivo; 401 logo após abrir uma sessão conta como falha, com espera crescente. Cenário no navegador. |
+| Média | A desativação só alcança o identificador atual (30 dias), mas os registros duram 90 dias. | Política e documentação dizem exatamente o que a desativação alcança. Alongar o identificador é decisão de produto pendente. |
+| Média | O botão Privacidade cobria parte de "Escolher um plano" na barra fixa do celular e ficava por cima do pré-checkout. | Sobe acima da barra quando ela aparece e some com o modal aberto. Conferido a 390 px. |
+| Média | Foco perdido ao desativar, fechar e no Esc; aviso escrito com a região ainda escondida. | Foco entra no painel ao abrir e volta ao botão ao fechar; região de aviso sempre presente fora do painel; erro aparece antes de receber o texto. Foco testado no navegador. |
+| Média | `analytics-race.ts` não provava a recuperação: o Chromium ignora a troca do cabeçalho `cookie`. | O cookie do lead sai de fato do navegador durante a abertura; o teste afirma zero vínculos depois dela. Passou com o PostgreSQL real. |
+| Baixa | Falha no vínculo recuperado derrubava o lote inteiro com 503. | Recuperação em `try/catch`; teste confirma que o lote é gravado. |
+| Baixa | Desativação dividia o limite por IP com a coleta automática. | Bucket próprio de 60 por minuto. |
+| Baixa | Textos antigos de "aceite" e "recusa" no painel; "Não gravamos o que você digita" impreciso; vínculo descrito só no quiz/pré-checkout. | Textos corrigidos no painel, no aviso e nas políticas. |
+| Baixa | Testes fracos: status sem conferência, desativação sem identificador sem teste, recarga contando só eventos, outra aba sem conferir a pendência. | Asserções e testes acrescentados; o teste de preferências conta toda a coleta. |
+
+Ficaram registrados, sem mudança nesta entrega: `analytics_visitors.first_attribution` dura enquanto o visitante continuar voltando (coluna não é lida); os testes de PostgreSQL das métricas pulam no CI sem `ANALYTICS_TEST_DATABASE_URL`, como já acontecia; o ajuste do rodapé de `/como-funciona/` (`content-visibility`) desenha igual mas não mostrou ganho mensurável no A/B, e a remoção dele foi bloqueada pela proteção da sessão por ser trabalho não commitado do Codex (fica a critério da dona).
 
 ## Contrato compartilhado com os funis
 

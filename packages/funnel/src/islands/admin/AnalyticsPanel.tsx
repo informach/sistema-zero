@@ -159,9 +159,9 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
         )}
       </div>
       <p className="text-sm text-muted">
-        Sessões iniciadas no período (horário de Brasília), com permissão para métricas. Uma sessão
-        termina após 30 minutos sem atividade. Conversões em até 7 dias, atribuídas à primeira
-        sessão vinculada ao lead. Os dias recentes ainda podem receber conversões.
+        Sessões medidas no período (horário de Brasília). Uma sessão termina após 30 minutos sem
+        atividade. Conversões em até 7 dias, atribuídas à primeira sessão vinculada ao lead. Os dias
+        recentes ainda podem receber conversões.
       </p>
       {error && (
         <p role="alert" className="rounded-xl border border-red-400 p-4">
@@ -203,13 +203,13 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
             Conferência comercial: {report.coverage.paid} compras confirmadas no período, das quais{' '}
             {report.coverage.unlinked} estão sem vínculo de navegação. Esta conferência usa a data
             do pagamento e o filtro de produto; inclui todos os ambientes deste banco e não aplica
-            filtros de origem, página ou versão. Uma compra sem vínculo pode vir de recusa, bloqueio
-            de coleta ou histórico anterior.
+            filtros de origem, página ou versão. Uma compra sem vínculo pode vir de métricas
+            desativadas, bloqueio de coleta ou histórico anterior.
           </p>
           {!report.summary.sessions && (
             <div className="rounded-xl border border-line p-5">
-              Ainda não há sessões medidas neste filtro. Os dados começam após a ativação e o aceite
-              do visitante; o histórico anterior de leads e vendas continua nas outras abas.
+              Ainda não há sessões medidas neste filtro. Os dados começam com a publicação da coleta
+              automática; o histórico anterior de leads e vendas continua nas outras abas.
             </div>
           )}
           <div className="flex flex-wrap gap-4">
@@ -445,9 +445,7 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
               arquivados.
             </p>
             {!report.quizzes.length && (
-              <p className="text-sm text-muted">
-                Nenhuma pergunta vista com permissão para métricas neste filtro.
-              </p>
+              <p className="text-sm text-muted">Nenhuma pergunta medida neste filtro.</p>
             )}
             {report.quizzes.map((q) => (
               <div key={q.definition.id} className="mb-4 rounded-xl border border-line p-4">

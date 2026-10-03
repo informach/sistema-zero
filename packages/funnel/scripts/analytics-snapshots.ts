@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm'
 import { type Browser, chromium } from 'playwright'
 import postgres from 'postgres'
 import { analyticsPage } from '../src/analytics/page-context'
+import { ANALYTICS_PREFERENCE_COOKIE } from '../src/analytics/preference'
 import { closeDb, getDb } from '../src/db/client'
 import { analyticsSnapshots } from '../src/db/schema'
 import { FUNNELS } from '../src/funnels/registry'
@@ -94,6 +95,9 @@ try {
       void context.close().catch(() => {})
     }, 45000)
     try {
+      await context.addCookies([
+        { name: ANALYTICS_PREFERENCE_COOKIE, value: 'rejected', url: base.origin },
+      ])
       // Fresh browser: no visitor/admin cookies, no submitted forms, no tracking or lead creation.
       await context.route('**/api/**', (route) =>
         route.request().method() === 'GET' ? route.continue() : route.abort(),

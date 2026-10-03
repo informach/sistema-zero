@@ -8,13 +8,16 @@ interface Config {
   definition: string
   release: string
 }
-export async function startCollector(config: Config, signal?: AbortSignal): Promise<() => void> {
+export async function startCollector(
+  config: Config,
+  signal?: AbortSignal,
+): Promise<() => Promise<void>> {
   let active = true
   let session: AnalyticsBootstrap | null = null
   let sending = false
   let bootstrap: Promise<boolean> | null = null
   let revision = await pageRevision(config.publicText, config.definition, config.release)
-  if (signal?.aborted) return () => {}
+  if (signal?.aborted) return async () => {}
   let pageViewId = crypto.randomUUID()
   const queue: BrowserAnalyticsEvent[] = []
   const seen = new Set<string>()
@@ -24,15 +27,20 @@ export async function startCollector(config: Config, signal?: AbortSignal): Prom
   let nextRetry = 0
   let failures = 0
   let refreshTimer: ReturnType<typeof setTimeout> | undefined
-  const post = (action: string, body: unknown) =>
-    fetch(`/api/analytics/${action}`, {
+  const post = (action: string, body: unknown, detached = false) => {
+    // AbortController + setTimeout: AbortSignal.timeout does not exist before Safari 16.
+    const own = detached ? new AbortController() : controller
+    const timer = detached ? setTimeout(() => own.abort(), 10000) : undefined
+    return fetch(`/api/analytics/${action}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
       keepalive: true,
       referrerPolicy: 'no-referrer',
-      signal: controller.signal,
-    })
+      signal: own.signal,
+    }).finally(() => clearTimeout(timer))
+  }
+  let openedAt = 0
   const emit = (name: AnalyticsEventName, data: Partial<BrowserAnalyticsEvent> = {}) => {
     if (!active || queue.length >= 200) return
     queue.push({
@@ -56,14 +64,20 @@ export async function startCollector(config: Config, signal?: AbortSignal): Prom
       } catch {
         /* no referrer */
       }
-      const response = await post('session', {
-        path: config.path,
-        quizDefinitionId: config.definition || undefined,
-        attribution: leadAttributionFromLocation(location),
-        device: innerWidth < 640 ? 'mobile' : innerWidth < 1024 ? 'tablet' : 'desktop',
-        referrerHost,
-      })
-      if (!response.ok) return false
+      // Not cancelled by stop(): the server may already be creating the visitor, and
+      // a deactivation must wait for its cookie to delete it (see the returned stop).
+      const response = await post(
+        'session',
+        {
+          path: config.path,
+          quizDefinitionId: config.definition || undefined,
+          attribution: leadAttributionFromLocation(location),
+          device: innerWidth < 640 ? 'mobile' : innerWidth < 1024 ? 'tablet' : 'desktop',
+          referrerHost,
+        },
+        true,
+      )
+      if (!active || !response.ok) return false
       const next = (await response.json()) as AnalyticsBootstrap
       // Old-session events are not attributed to a new session after inactivity.
       if (session && next.sessionId !== session.sessionId) {
@@ -79,6 +93,7 @@ export async function startCollector(config: Config, signal?: AbortSignal): Prom
         for (const el of discover()) observer.observe(el)
       }
       session = next
+      openedAt = Date.now()
       return true
     })().finally(() => {
       bootstrap = null
@@ -115,6 +130,9 @@ export async function startCollector(config: Config, signal?: AbortSignal): Prom
       if (response.status === 401) {
         // Force a bootstrap without discarding the fresh interaction that exposed expiry.
         session.expiresAt = new Date(0).toISOString()
+        // Rejected right after opening: the visitor cookie did not stick. Back off
+        // instead of opening a new session (and visitor) every few seconds.
+        if (Date.now() - openedAt < 10000) throw new Error('session')
         return
       }
       if (response.status === 400) {
@@ -341,6 +359,11 @@ export async function startCollector(config: Config, signal?: AbortSignal): Prom
     clearTimeout(refreshTimer)
     for (const timer of timers.values()) clearTimeout(timer)
     signal?.removeEventListener('abort', stop)
+    // Settles when an in-flight session opening ends, so its visitor cookie exists.
+    return (bootstrap ?? Promise.resolve()).then(
+      () => {},
+      () => {},
+    )
   }
   signal?.addEventListener('abort', stop, { once: true })
   return stop

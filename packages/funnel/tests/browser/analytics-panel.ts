@@ -69,12 +69,13 @@ try {
   const visitor = await context.newPage()
   const errors: string[] = []
   visitor.on('pageerror', (error) => errors.push(error.message))
-  await visitor.goto(`${base}/?utm_source=${source}`)
   const firstBatch = visitor.waitForResponse(
     (r) => r.url().endsWith('/api/analytics/events') && r.ok(),
   )
-  await visitor.getByRole('button', { name: 'Permitir métricas' }).click()
+  await visitor.goto(`${base}/?utm_source=${source}`)
   await firstBatch
+  assert.equal(await visitor.locator('#sz-metrics-notice').isVisible(), false)
+  assert.ok(!(await context.cookies()).some((c) => c.name === 'sz_metrics'))
   await visitor.getByRole('link', { name: /Ver como meu filho aprende/ }).click()
   await visitor.waitForURL('**/como-funciona/**')
   const capture = spawn(

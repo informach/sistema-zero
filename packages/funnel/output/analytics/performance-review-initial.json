@@ -1,0 +1,299 @@
+{
+  "note": "First two review runs, retained including budget failures. Same CPU/network/cache settings; 3 grouped samples per condition.",
+  "runs": [
+    {
+      "conditions": "Local built server; Chromium; 390x844; CPU 4x; 1.6Mbps down / 750Kbps up / 150ms latency; 3 runs per condition; empty browser cache",
+      "summary": [
+        {
+          "path": "/",
+          "collection": "disabled",
+          "lcpMedianMs": 1832,
+          "clsMedian": 0,
+          "longTasksMedian": 1,
+          "blockingMsMedian": 204
+        },
+        {
+          "path": "/",
+          "collection": "automatic",
+          "lcpMedianMs": 1712,
+          "clsMedian": 0,
+          "longTasksMedian": 1,
+          "blockingMsMedian": 99
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "disabled",
+          "lcpMedianMs": 2100,
+          "clsMedian": 0,
+          "longTasksMedian": 1,
+          "blockingMsMedian": 198
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "automatic",
+          "lcpMedianMs": 2100,
+          "clsMedian": 0,
+          "longTasksMedian": 2,
+          "blockingMsMedian": 191
+        }
+      ],
+      "measurements": [
+        {
+          "path": "/",
+          "collection": "disabled",
+          "lcp": 2412,
+          "cls": 0,
+          "longTasks": 2,
+          "blockingMs": 623,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/",
+          "collection": "disabled",
+          "lcp": 1832,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 204,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/",
+          "collection": "disabled",
+          "lcp": 1728,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 112,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/",
+          "collection": "automatic",
+          "lcp": 1712,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 89,
+          "analyticsRequests": 2
+        },
+        {
+          "path": "/",
+          "collection": "automatic",
+          "lcp": 1680,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 99,
+          "analyticsRequests": 2
+        },
+        {
+          "path": "/",
+          "collection": "automatic",
+          "lcp": 1728,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 148,
+          "analyticsRequests": 2
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "disabled",
+          "lcp": 2056,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 162,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "disabled",
+          "lcp": 2100,
+          "cls": 0,
+          "longTasks": 2,
+          "blockingMs": 198,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "disabled",
+          "lcp": 2100,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 200,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "automatic",
+          "lcp": 2200,
+          "cls": 0,
+          "longTasks": 2,
+          "blockingMs": 319,
+          "analyticsRequests": 3
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "automatic",
+          "lcp": 2088,
+          "cls": 0,
+          "longTasks": 2,
+          "blockingMs": 191,
+          "analyticsRequests": 3
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "automatic",
+          "lcp": 2100,
+          "cls": 0,
+          "longTasks": 2,
+          "blockingMs": 189,
+          "analyticsRequests": 3
+        }
+      ]
+    },
+    {
+      "conditions": "Local built server; Chromium; 390x844; CPU 4x; 1.6Mbps down / 750Kbps up / 150ms latency; 3 runs per condition; empty browser cache",
+      "summary": [
+        {
+          "path": "/",
+          "collection": "disabled",
+          "lcpMedianMs": 1704,
+          "clsMedian": 0,
+          "longTasksMedian": 1,
+          "blockingMsMedian": 112
+        },
+        {
+          "path": "/",
+          "collection": "automatic",
+          "lcpMedianMs": 1704,
+          "clsMedian": 0,
+          "longTasksMedian": 1,
+          "blockingMsMedian": 110
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "disabled",
+          "lcpMedianMs": 2088,
+          "clsMedian": 0,
+          "longTasksMedian": 1,
+          "blockingMsMedian": 176
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "automatic",
+          "lcpMedianMs": 2184,
+          "clsMedian": 0,
+          "longTasksMedian": 2,
+          "blockingMsMedian": 242
+        }
+      ],
+      "measurements": [
+        {
+          "path": "/",
+          "collection": "disabled",
+          "lcp": 1704,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 106,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/",
+          "collection": "disabled",
+          "lcp": 1732,
+          "cls": 0,
+          "longTasks": 2,
+          "blockingMs": 112,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/",
+          "collection": "disabled",
+          "lcp": 1692,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 114,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/",
+          "collection": "automatic",
+          "lcp": 1700,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 113,
+          "analyticsRequests": 2
+        },
+        {
+          "path": "/",
+          "collection": "automatic",
+          "lcp": 1704,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 91,
+          "analyticsRequests": 2
+        },
+        {
+          "path": "/",
+          "collection": "automatic",
+          "lcp": 1724,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 110,
+          "analyticsRequests": 2
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "disabled",
+          "lcp": 2088,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 176,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "disabled",
+          "lcp": 2084,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 168,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "disabled",
+          "lcp": 2176,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 270,
+          "analyticsRequests": 0
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "automatic",
+          "lcp": 2140,
+          "cls": 0,
+          "longTasks": 2,
+          "blockingMs": 242,
+          "analyticsRequests": 3
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "automatic",
+          "lcp": 2232,
+          "cls": 0,
+          "longTasks": 3,
+          "blockingMs": 314,
+          "analyticsRequests": 3
+        },
+        {
+          "path": "/como-funciona/",
+          "collection": "automatic",
+          "lcp": 2184,
+          "cls": 0,
+          "longTasks": 1,
+          "blockingMs": 221,
+          "analyticsRequests": 3
+        }
+      ]
+    }
+  ]
+}

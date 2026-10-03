@@ -23,11 +23,14 @@ const answers: Record<string, string[]> = {
   abertura_criacao: ['conhecer'],
 }
 async function consent(page: Page, accept = false) {
+  if (!(await page.locator('#sz-metrics-notice').isVisible()))
+    await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
   const button = page.getByRole('button', {
-    name: accept ? 'Permitir métricas' : 'Continuar sem métricas',
+    name: accept ? 'Ativar métricas' : 'Desativar métricas',
     exact: true,
   })
   if (await button.isVisible()) await button.click()
+  else await page.locator('#sz-metrics-close').click()
 }
 async function answer(page: Page, key: string, values: string[]) {
   await page.locator(`[data-analytics-question="${key}"]`).waitFor()

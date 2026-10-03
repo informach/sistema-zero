@@ -69,16 +69,29 @@ recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckou
 `/api/checkout/boleto`, sem ilha). `[audience]/index.astro`
 = landing de área (redireciona ao produto, ou "em breve" se vazia). **`/` (raiz,
 `src/pages/index.astro`) = página "bio" da marca kids** (destino do link da bio do Instagram
-@criecomhelenaejulio): entrada curta com avatar, posicionamento e quatro acessos. A apresentação
+@criecomhelenaejulio): entrada com avatar, posicionamento e três acessos: como funciona (principal),
+quiz do Desafio e oferta da Comunidade. O quiz da Comunidade fica contextual em como funciona. A apresentação
 com prints reais, percurso jogar → experimentar → programar → continuar → criar, recursos e FAQ
-fica em `/como-funciona/` (`src/pages/como-funciona.astro`). Reutiliza tokens das ofertas, conteúdo
+fica em `/como-funciona/` (`src/pages/como-funciona.astro`), com seção própria para orientação pelas
+atividades, Como fazer, Pensa, Zappy, Mural/Clube e equipe via Recados. Reutiliza tokens das ofertas, conteúdo
 em `src/content/home-comunidade.ts` e estilos `comunidade-home.css`. Oferta da Comunidade é o
 destino comercial principal; quiz e Desafio são entradas complementares. Links preservam a
 atribuição sanitizada, com HTML `no-store`; a raiz não cria lead. URLs planas antigas → 301.
 
 **Métricas próprias (03/10/2026):** `src/analytics/`, `components/Analytics.astro` no BaseLayout,
-`/api/analytics/*`, `/api/admin/analytics` e aba Métricas. Coleta depende de aceite; navegação sem
-PII, descoberta automática de elementos, versões do DOM, quizzes com snapshots imutáveis e
+`/api/analytics/*`, `/api/admin/analytics` e aba Métricas. Por decisão explícita de 03/10/2026,
+a coleta começa automaticamente, sem janela de autorização. `analytics/preference.ts` é a regra
+compartilhada: `sz_metrics=rejected` desativa; não gravar `accepted` automaticamente. Privacidade
+abre somente por clique e permite desativar/reativar. ⚠️ A desativação grava `sz_metrics=rejected`
+e `sz_metrics_cleanup=1` no navegador ANTES da rede (vale offline e nas outras abas, via
+BroadcastChannel), espera a abertura de sessão em andamento (`stop()` devolve essa promessa) e
+repete a exclusão ao carregar/reconectar até o servidor apagar o marcador. Não simplificar: sem
+isso, uma exclusão que falhou reabre a coleta no reload ou deixa um visitante órfão. Sem
+`navigator.cookieEnabled` a coleta não inicia; `/api/events` não grava comportamento com
+`rejected`. Pedidos com prazo usam `AbortController` (não `AbortSignal.timeout`, ausente antes do
+Safari 16). Eventos não copiam PII dos formulários,
+mas a sessão é vinculada ao lead identificado no pré-checkout. Descoberta automática de elementos,
+versões do DOM, quizzes com snapshots imutáveis e
 `quizDefinitionId` no lead. Respostas salvas usam `quiz_answer_saved` (não depender do nome legado
 do evento de cada produto). Migrações aditivas 0017–0020. Contato/resposta e marco são atômicos;
 `paid_payment_id` identifica a cobrança confirmada no relatório. Prints/mapas usam worker separado
@@ -259,8 +272,8 @@ entre a raiz e as ofertas pelo componente `ComunidadeImageZoom.astro`.
 `docs/marketing/kids/comunidade-dos-criadores/copy/`. Conteúdo tipado em
 `src/funnels/comunidade-dos-criadores/oferta/`, com fatos e 40 respostas comuns em `shared.ts`.
 
-A página padrão é `/kids/comunidade-dos-criadores/oferta` (aprendizagem dentro do tempo de tela
-permitido). As variantes usam `/oferta/criacao-de-jogos`, `/oferta/expressao-visual` e
+A página padrão é `/kids/comunidade-dos-criadores/oferta` (aprender criando jogos, da primeira
+experiência às próprias ideias; o perfil interno continua `tempo-de-tela`). As variantes usam `/oferta/criacao-de-jogos`, `/oferta/expressao-visual` e
 `/oferta/formacao-tecnologica`. São apresentações do mesmo produto e do mesmo checkout.
 `server/offer-page.ts` resolve os dados comerciais para as rotas; Responses de erro devem
 retornar na ROTA, nunca no componente Astro compartilhado. `OfertaPage.astro` despacha os bodies.

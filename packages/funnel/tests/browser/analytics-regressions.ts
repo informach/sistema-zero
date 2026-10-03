@@ -151,6 +151,76 @@ try {
     'Fast answers inside a form must record the question without collecting the form',
   )
   await context.close()
+
+  // Deactivation while the session opening is already on the server: stop() waits for it
+  // (the deletion needs its visitor cookie) and nothing is sent after stop.
+  const deactivation = await browser.newContext({ viewport: { width: 1280, height: 900 } })
+  await deactivation.addCookies([{ name: 'sz_metrics', value: 'rejected', url: base }])
+  let releaseOpening!: () => void
+  const openingHeld = new Promise<void>((resolve) => {
+    releaseOpening = resolve
+  })
+  let opened = 0
+  let stopped = false
+  let sentAfterStop = 0
+  await deactivation.route('**/api/analytics/**', async (route) => {
+    if (route.request().url().endsWith('/session')) {
+      opened++
+      await openingHeld
+      await route.fulfill({
+        json: {
+          sessionId: crypto.randomUUID(),
+          expiresAt: new Date(Date.now() + 1800000).toISOString(),
+        },
+      })
+    } else {
+      if (stopped) sentAfterStop++
+      const body = route.request().postDataJSON()
+      await route.fulfill({ json: { accepted: body.events.map((e: { id: string }) => e.id) } })
+    }
+  })
+  const held = await deactivation.newPage()
+  await held.goto(base)
+  await held.evaluate(async () => {
+    const path = '/src/analytics/collector.ts'
+    const { startCollector } = await import(/* @vite-ignore */ path)
+    Object.assign(window, {
+      qaHeldStop: await startCollector({
+        path: '/',
+        publicText: true,
+        definition: '',
+        release: 'test',
+      }),
+    })
+  })
+  await held.waitForTimeout(500)
+  check(opened === 1, 'The session opening must be in flight before deactivation')
+  stopped = true
+  await held.evaluate(() => {
+    const w = window as unknown as {
+      qaHeldStop: () => Promise<void>
+      qaStopped: Promise<void>
+      qaSettled: boolean
+    }
+    w.qaSettled = false
+    w.qaStopped = w.qaHeldStop().then(() => {
+      w.qaSettled = true
+    })
+  })
+  await held.waitForTimeout(500)
+  check(
+    (await held.evaluate('window.qaSettled')) === false,
+    'stop() must wait for the session opening already on the server',
+  )
+  releaseOpening()
+  await held.evaluate('window.qaStopped')
+  check(
+    (await held.evaluate('window.qaSettled')) === true,
+    'stop() settles once the session opening ends',
+  )
+  await held.waitForTimeout(5500)
+  check(sentAfterStop === 0, 'Nothing is sent after stop, even if the session answer arrives later')
+  await deactivation.close()
   assert.deepEqual(failures, [])
   console.log(
     'Collector regression checks passed: privacy, restart, identifiers, canonical revision',
