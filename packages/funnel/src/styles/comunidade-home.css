@@ -1,4 +1,14 @@
 /* A composição da raiz usa as mesmas receitas e tokens das ofertas da Comunidade. */
+/* Keep the full content in the DOM; lay out distant chapters when they approach the viewport. */
+.cdc-home main > section:not(:first-child) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1000px;
+}
+.cdc-home .home-step {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 700px;
+}
+
 .cdc-home .nav .logo {
   width: clamp(10rem, 22vw, 17.4375rem);
 }

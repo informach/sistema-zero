@@ -1,0 +1,147 @@
+{
+  "conditions": "Local built server; Chromium; 390x844; CPU 4x; 1.6Mbps down / 750Kbps up / 150ms latency; 3 runs per condition; empty browser cache",
+  "summary": [
+    {
+      "path": "/",
+      "consent": "rejected",
+      "lcpMedianMs": 1488,
+      "clsMedian": 0,
+      "longTasksMedian": 1,
+      "blockingMsMedian": 11
+    },
+    {
+      "path": "/",
+      "consent": "accepted",
+      "lcpMedianMs": 1480,
+      "clsMedian": 0,
+      "longTasksMedian": 1,
+      "blockingMsMedian": 11
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "rejected",
+      "lcpMedianMs": 2108,
+      "clsMedian": 0,
+      "longTasksMedian": 1,
+      "blockingMsMedian": 199
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "accepted",
+      "lcpMedianMs": 2112,
+      "clsMedian": 0,
+      "longTasksMedian": 3,
+      "blockingMsMedian": 193
+    }
+  ],
+  "measurements": [
+    {
+      "path": "/",
+      "consent": "rejected",
+      "lcp": 1640,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 128,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "consent": "rejected",
+      "lcp": 1464,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 3,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "consent": "rejected",
+      "lcp": 1488,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 11,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "consent": "accepted",
+      "lcp": 1472,
+      "cls": 0,
+      "longTasks": 2,
+      "blockingMs": 24,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/",
+      "consent": "accepted",
+      "lcp": 1492,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 11,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/",
+      "consent": "accepted",
+      "lcp": 1480,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 1,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "rejected",
+      "lcp": 2108,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 199,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "rejected",
+      "lcp": 2128,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 236,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "rejected",
+      "lcp": 2076,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 191,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "accepted",
+      "lcp": 2076,
+      "cls": 0,
+      "longTasks": 2,
+      "blockingMs": 200,
+      "analyticsRequests": 3
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "accepted",
+      "lcp": 2128,
+      "cls": 0,
+      "longTasks": 3,
+      "blockingMs": 193,
+      "analyticsRequests": 3
+    },
+    {
+      "path": "/como-funciona/",
+      "consent": "accepted",
+      "lcp": 2112,
+      "cls": 0,
+      "longTasks": 3,
+      "blockingMs": 173,
+      "analyticsRequests": 3
+    }
+  ]
+}

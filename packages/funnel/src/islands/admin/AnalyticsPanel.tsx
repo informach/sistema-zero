@@ -23,12 +23,14 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
   const [source, setSource] = useState('')
   const [campaign, setCampaign] = useState('')
   const [page, setPage] = useState('')
+  const [pageInput, setPageInput] = useState('')
   const [revision, setRevision] = useState('')
   const [reload, setReload] = useState(0)
   const [report, setReport] = useState<AnalyticsReport | null>(null)
   const [error, setError] = useState('')
   const [selected, setSelected] = useState<PageMetric | null>(null)
   const [heatmap, setHeatmap] = useState<Heatmap | null>(null)
+  const [mapError, setMapError] = useState('')
   const [section, setSection] = useState('')
   const params = new URLSearchParams({ from, to, environment })
   for (const [key, value] of Object.entries({ funnel, source, campaign, page, revision }))
@@ -50,7 +52,9 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
           )
         return response.json() as Promise<AnalyticsReport>
       })
-      .then(setReport)
+      .then((value) => {
+        if (!controller.signal.aborted) setReport(value)
+      })
       .catch((e) => {
         if (!controller.signal.aborted) setError(e.message)
       })
@@ -60,6 +64,7 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
     if (!selected) return
     const controller = new AbortController()
     setHeatmap(null)
+    setMapError('')
     setSection('')
     const search = new URLSearchParams(query)
     search.set('page', selected.page)
@@ -70,9 +75,11 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
         if (!response.ok) throw new Error('Não foi possível abrir o mapa. Tente novamente.')
         return response.json() as Promise<Heatmap>
       })
-      .then(setHeatmap)
+      .then((value) => {
+        if (!controller.signal.aborted) setHeatmap(value)
+      })
       .catch((e) => {
-        if (!controller.signal.aborted) setError(e.message)
+        if (!controller.signal.aborted) setMapError(e.message)
       })
     return () => controller.abort()
   }, [query, selected])
@@ -125,9 +132,10 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
           <input
             className={inputClass}
             placeholder="Todas · ex.: /"
-            value={page}
-            onChange={(e) => {
-              setPage(e.target.value)
+            value={pageInput}
+            onChange={(e) => setPageInput(e.target.value)}
+            onBlur={(e) => {
+              setPage(e.target.value.trim())
               setRevision('')
             }}
           />
@@ -266,6 +274,7 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
                           className="underline"
                           onClick={() => {
                             setPage(p.page)
+                            setPageInput(p.page)
                             setRevision(p.revision)
                           }}
                         >
@@ -276,7 +285,12 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
                       <td className="p-3">{p.views}</td>
                       <td className="p-3">{p.clicks}</td>
                       <td className="p-3">
-                        <button type="button" className="underline" onClick={() => setSelected(p)}>
+                        <button
+                          type="button"
+                          className="underline disabled:opacity-50"
+                          disabled={!p.viewport}
+                          onClick={() => setSelected(p)}
+                        >
                           {p.snapshot ? 'Ver print e mapa' : 'Ver disponibilidade'}
                         </button>
                       </td>
@@ -297,7 +311,8 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
               <h3 className="font-bold">
                 {selected.page} · {selected.revision.slice(0, 8)} · {selected.viewport}px
               </h3>
-              {!heatmap && <p role="status">Carregando visual…</p>}
+              {!heatmap && !mapError && <p role="status">Carregando visual…</p>}
+              {mapError && <p role="alert">{mapError}</p>}
               {heatmap && !snap && (
                 <p className="mt-3 text-sm text-muted">
                   Print indisponível para esta versão e largura. O processo de captura precisa

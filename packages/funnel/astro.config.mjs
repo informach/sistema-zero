@@ -40,6 +40,8 @@ export default defineConfig({
         `${site}/como-funciona/`,
         `${site}/pro/no-comando-da-ia/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
+        `${site}/kids/desafio-primeiro-jogo/oferta/tempo-de-tela`,
+        `${site}/kids/desafio-primeiro-jogo/oferta/iniciacao-tecnologica`,
         `${site}/kids/comunidade-dos-criadores/oferta`,
         `${site}/kids/comunidade-dos-criadores/oferta/criacao-de-jogos`,
         `${site}/kids/comunidade-dos-criadores/oferta/expressao-visual`,

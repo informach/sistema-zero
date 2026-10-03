@@ -1,16 +1,19 @@
 ---
 import { quizDefinition } from '../../../analytics/quiz-definition'
 import ComunidadeQuizLayout from '../../../components/funnel/ComunidadeQuizLayout.astro'
+import DesafioQuizLayout from '../../../components/funnel/DesafioQuizLayout.astro'
 import { QUIZ_ENTRY } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { getFunnel } from '../../../funnels/registry'
 import ComunidadeQuiz from '../../../islands/ComunidadeQuiz'
+import DesafioQuiz from '../../../islands/DesafioQuiz'
 import Quiz from '../../../islands/Quiz'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { funnelOgImage } from '../../../lib/seo'
+import { desafioQuizPrice } from '../../../server/desafio-price'
 
 // SSR de propósito: página pré-renderizada é servida estática SEM passar pela
 // middleware → ficaria SEM security headers em produção. O shell é trivial; o
-// cache público curto compensa.
+// HTML revalidado a cada abertura: uma atualização do quiz não pode ficar presa em cache.
 export const prerender = false
 
 // Funil resolvido pela URL; sem o passo de quiz habilitado → 404.
@@ -18,10 +21,11 @@ const f = getFunnel(Astro.params.audience, Astro.params.produto)
 if (!f) return new Response(null, { status: 404 })
 if (!f.steps.quiz || !f.content.quiz) return new Response(null, { status: 404 })
 
-Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
+Astro.response.headers.set('cache-control', 'no-store')
 
 const quiz = f.content.quiz
 const quizDefinitionId = quizDefinition(f)!.id
+const desafioPrice = quiz.presentation === 'desafio' ? await desafioQuizPrice(f) : null
 // Ao concluir: vai ao diagnóstico (se o funil tiver) ou direto à oferta.
 const donePath = f.steps.resultado ? `${f.basePath}/resultado` : `${f.basePath}/oferta`
 
@@ -34,7 +38,12 @@ const q1Images =
     : []
 ---
 
-{quiz.presentation === 'comunidade' ? (
+{quiz.presentation === 'desafio' ? (
+  <DesafioQuizLayout title="Um primeiro passo para seu filho criar jogos | Sistema Zero" description={f.seoDescription} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}>
+    <DesafioQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} priceLabel={desafioPrice}/>
+    <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz. Você também pode <a href={`${f.basePath}/oferta`}>conhecer o Desafio diretamente</a>.</p></noscript>
+  </DesafioQuizLayout>
+) : quiz.presentation === 'comunidade' ? (
   <ComunidadeQuizLayout title="Um caminho para seu filho criar com tecnologia | Sistema Zero" description={QUIZ_ENTRY.description} imagesBase={f.imagesBase} ogImage={new URL(`${f.imagesBase}/zappy-happy.webp`, Astro.site ?? Astro.url).toString()}>
     <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} />
     <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>

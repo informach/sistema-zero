@@ -41,7 +41,7 @@ export interface FunnelLanding {
 }
 export interface FunnelQuiz {
   version?: string
-  presentation?: 'comunidade'
+  presentation?: 'comunidade' | 'desafio'
   steps: QuizStep[]
   total: number
   /** Validação do valor por chave (server-side). Chaves fora daqui são rejeitadas. */

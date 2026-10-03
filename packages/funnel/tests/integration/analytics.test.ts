@@ -58,6 +58,9 @@ function fixture() {
       stored.clear()
     },
     async linkLead() {},
+    async ownsLead() {
+      return false
+    },
     async saveQuiz() {},
     async quiz() {
       return null
@@ -181,6 +184,35 @@ describe('coleta com consentimento', () => {
       ).status,
     ).toBe(400)
   })
+})
+test('respostas de outra aba mantêm a tentativa vinculada ao visitante, sem aceitar a de terceiros', async () => {
+  const f = fixture()
+  const definition = quizDefinition(COMUNIDADE_DOS_CRIADORES)!
+  const attempt = crypto.randomUUID()
+  f.deps.repo.quiz = async () => definition
+  const original = await f.deps.leads.createLead(definition.funnel, null, definition.id)
+  const lead = await f.deps.leads.getLead(original.id)
+  f.deps.leads.getLead = async (id) => (id === attempt ? { ...lead!, id: attempt } : null)
+  f.deps.repo.ownsLead = async (visitor, id) => visitor === f.session.visitorId && id === attempt
+  const body = {
+    sessionId: f.session.id,
+    events: [
+      {
+        ...f.event,
+        name: 'quiz_question_view',
+        path: '/kids/comunidade-dos-criadores/quiz',
+        quizDefinitionId: definition.id,
+        quizAttemptId: attempt,
+        questionId: 'q1',
+      },
+    ],
+  }
+  expect((await analyticsIngest(f.request(body), f.deps)).status).toBe(200)
+  expect(f.stored.size).toBe(1)
+  f.deps.repo.ownsLead = async () => false
+  body.events[0]!.id = crypto.randomUUID()
+  await analyticsIngest(f.request(body), f.deps)
+  expect(f.stored.size).toBe(1)
 })
 test('quiz arquiva versão antes da criação e impede aba antiga de alterar respostas', async () => {
   const { repo, leads, events } = createFakeRepo()

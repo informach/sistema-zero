@@ -2,12 +2,33 @@ import { expect, test } from 'bun:test'
 import { eq } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
+import { adminAnalytics } from '../../src/analytics/admin'
 import { quizDefinition } from '../../src/analytics/quiz-definition'
 import { analyticsReport } from '../../src/analytics/reports'
 import { createAnalyticsRepo } from '../../src/analytics/repository'
 import { createFunnelRepo } from '../../src/db/repo'
 import { analyticsVisitors, leads, schema } from '../../src/db/schema'
 import { COMUNIDADE_DOS_CRIADORES } from '../../src/funnels/comunidade-dos-criadores'
+import type { PurchasedOfferSnapshotV1 } from '../../src/server/purchased-offer-snapshot'
+import { createFakeGateway } from '../fakes/fake-gateway'
+
+const offerSnapshot = (amount: number): PurchasedOfferSnapshotV1 => ({
+  version: 1,
+  offerId: 'qa-offer',
+  offerSlug: 'qa-local',
+  pricingMode: 'one_time',
+  billingIntervalMonths: null,
+  accessMode: 'fixed',
+  accessDurationValue: 30,
+  accessDurationUnit: 'days',
+  listPriceCents: amount,
+  couponCode: null,
+  discountCents: 0,
+  chargedPriceCents: amount,
+  currency: 'BRL',
+  guaranteeDays: 7,
+  termsVersion: 'qa-only',
+})
 
 const url = process.env.ANALYTICS_TEST_DATABASE_URL
 // Explicit opt-in. The test only permits local PostgreSQL and cleans its own UUID fixtures.
@@ -61,14 +82,12 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
     const lead = await business.createLead('kids/comunidade-dos-criadores', null, definition.id)
     leadIds.push(lead.id)
     await analytics.linkLead(session.id, lead.id, now)
-    await business.insertEvent(
-      lead.id,
-      'contact_saved',
-      'contact',
-      null,
-      `${lead.id}:contact_saved`,
-      now,
-    )
+    // Both pre-checkout and direct checkout save through this repository operation.
+    await business.updateLead(lead.id, {
+      nome: 'Teste local',
+      email: 'qa@example.test',
+      telefone: '11999999999',
+    })
     const paymentId = crypto.randomUUID()
     await business.setPayment(lead.id, paymentId)
     await business.markPaid(lead.id, new Date(now.getTime() + 1000))
@@ -84,9 +103,10 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
       questionId: 'q1',
     }
     await analytics.append([questionView, { ...questionView, id: crypto.randomUUID() }], now)
-    await business.insertEvent(lead.id, 'quiz_answer_saved', 'comunidade_q1', {
-      quiz_definition_id: definition.id,
-      question_id: 'q1',
+    await business.saveQuizAnswers(lead.id, {}, { q1: '9_a_11' }, 'comunidade_q1', null, {
+      metadata: { quiz_definition_id: definition.id, question_id: 'q1' },
+      step: 'comunidade_q1',
+      eventKey: `${lead.id}:answer:1`,
     })
     const report = await analyticsReport(db, {
       from: new Date(now.getTime() - 1000),
@@ -108,6 +128,62 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
     })
     expect(report.journeys).toEqual([{ route: 'Com quiz', sessions: 1, paid: 1 }])
     expect(report.quizzes[0]?.questions).toEqual([{ id: 'q1', viewed: 1, answered: 1 }])
+    const retried = await business.createLead(definition.funnel)
+    leadIds.push(retried.id)
+    await analytics.linkLead(session.id, retried.id, now)
+    const paidPayment = crypto.randomUUID()
+    await business.setPayment(retried.id, paidPayment, null, { offerSnapshot: offerSnapshot(6700) })
+    await business.setPayment(retried.id, crypto.randomUUID(), null, {
+      offerSnapshot: offerSnapshot(39700),
+    })
+    await business.markPaid(retried.id, new Date(now.getTime() + 1000), paidPayment)
+    const revenue = await analyticsReport(db, {
+      from: new Date(now.getTime() - 1000),
+      to: new Date(now.getTime() + 60000),
+      environment: 'development',
+      source,
+    })
+    expect(revenue.summary.revenue).toBe(6700)
+    const direct = await business.createLead('pro/no-comando-da-ia')
+    leadIds.push(direct.id)
+    await analytics.linkLead(session.id, direct.id, now)
+    await analytics.append(
+      [
+        {
+          ...input,
+          id: crypto.randomUUID(),
+          pageViewId: crypto.randomUUID(),
+          page: '/pro/no-comando-da-ia/checkout',
+          funnel: 'pro/no-comando-da-ia',
+        },
+      ],
+      now,
+    )
+    const scoped = await analyticsReport(db, {
+      from: new Date(now.getTime() - 1000),
+      to: new Date(now.getTime() + 60000),
+      environment: 'development',
+      source,
+      funnel: 'pro/no-comando-da-ia',
+    })
+    expect(scoped.summary.checkout).toBe(1)
+    expect(scoped.journeys).toEqual([{ route: 'Sem quiz observado', sessions: 1, paid: 0 }])
+    const admin = createFakeGateway()
+    const query = new URLSearchParams({
+      from: new Date(now.getTime() - 86400000).toISOString().slice(0, 10),
+      to: new Date(now.getTime() + 86400000).toISOString().slice(0, 10),
+      environment: 'development',
+      source,
+      page: '/pro/no-comando-da-ia/checkout/',
+    })
+    const response = await adminAnalytics(
+      new Request(`http://localhost/api/admin/analytics?${query}`, {
+        headers: { cookie: `admin_access=${admin.auth.access}` },
+      }),
+      { gateway: admin.gateway, secure: false, db: () => db, log: () => {} },
+    )
+    expect(response.status).toBe(200)
+    expect(((await response.json()) as { summary: { sessions: number } }).summary.sessions).toBe(1)
     const old = await analytics.startSession({
       visitorId: null,
       environment: 'development',

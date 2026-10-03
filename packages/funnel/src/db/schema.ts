@@ -54,6 +54,8 @@ export const leads = funil.table(
     // Progresso / pagamento.
     lastStep: text('last_step').notNull().default('entrou_landing'),
     paymentId: uuid('payment_id'),
+    // A cobrança inicial confirmada pode ser mais antiga que a última tentativa.
+    paidPaymentId: uuid('paid_payment_id'),
     // Cupom aplicado no checkout (catálogo). Persistido p/ registrar o uso (redeem)
     // na confirmação do pagamento (pix/boleto confirmam fora da tela).
     couponCode: text('coupon_code'),
@@ -113,33 +115,37 @@ export const leads = funil.table(
  * perderia em silêncio. Alimentado pelo `setPayment`; consultado como fallback
  * pelo `findLeadByPayment`.
  */
-export const leadPayments = funil.table('lead_payments', {
-  paymentId: uuid('payment_id').primaryKey(),
-  leadId: uuid('lead_id')
-    .notNull()
-    .references(() => leads.id, { onDelete: 'cascade' }),
-  // Oferta e comprador congelados no momento em que a cobrança foi criada. O lead
-  // segue mutável enquanto o visitante navega/re-tenta, mas a entrega pós-pagamento
-  // precisa usar os dados da cobrança que DE FATO foi paga.
-  offerRef: text('offer_ref'),
-  customerName: text('customer_name'),
-  customerEmail: text('customer_email'),
-  customerPhone: text('customer_phone'),
-  customerDocument: text('customer_document'),
-  // Cupom aplicado NESTA cobrança (null = sem cupom). O redeem da confirmação lê
-  // daqui (cobrança efetivamente paga) — `leads.coupon_code` é só o contexto do
-  // ÚLTIMO checkout e ficava obsoleto (re-cotação sem cupom redimia cupom não
-  // aplicado; boleto antigo com cupom pago depois não redimia o certo).
-  couponCode: text('coupon_code'),
-  // Meses de ACESSO desta cobrança quando é uma compra por período (anual à vista
-  // via Pix/boleto = 12). Null = vitalícia (padrão) ou ciclo de assinatura. O
-  // grant lê daqui p/ conceder com validade em vez de para sempre.
-  accessPeriodMonths: integer('access_period_months'),
-  // Contrato comercial imutável aceito nesta cobrança (versão, preço, cupom,
-  // garantia e política de acesso). Null apenas em cobranças legadas/ciclos.
-  offerSnapshot: jsonb('offer_snapshot'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-})
+export const leadPayments = funil.table(
+  'lead_payments',
+  {
+    paymentId: uuid('payment_id').primaryKey(),
+    leadId: uuid('lead_id')
+      .notNull()
+      .references(() => leads.id, { onDelete: 'cascade' }),
+    // Oferta e comprador congelados no momento em que a cobrança foi criada. O lead
+    // segue mutável enquanto o visitante navega/re-tenta, mas a entrega pós-pagamento
+    // precisa usar os dados da cobrança que DE FATO foi paga.
+    offerRef: text('offer_ref'),
+    customerName: text('customer_name'),
+    customerEmail: text('customer_email'),
+    customerPhone: text('customer_phone'),
+    customerDocument: text('customer_document'),
+    // Cupom aplicado NESTA cobrança (null = sem cupom). O redeem da confirmação lê
+    // daqui (cobrança efetivamente paga) — `leads.coupon_code` é só o contexto do
+    // ÚLTIMO checkout e ficava obsoleto (re-cotação sem cupom redimia cupom não
+    // aplicado; boleto antigo com cupom pago depois não redimia o certo).
+    couponCode: text('coupon_code'),
+    // Meses de ACESSO desta cobrança quando é uma compra por período (anual à vista
+    // via Pix/boleto = 12). Null = vitalícia (padrão) ou ciclo de assinatura. O
+    // grant lê daqui p/ conceder com validade em vez de para sempre.
+    accessPeriodMonths: integer('access_period_months'),
+    // Contrato comercial imutável aceito nesta cobrança (versão, preço, cupom,
+    // garantia e política de acesso). Null apenas em cobranças legadas/ciclos.
+    offerSnapshot: jsonb('offer_snapshot'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index('lead_payments_lead_idx').on(t.leadId)],
+)
 
 /** Eventos do funil (analytics). Um lead gera N eventos ao longo do percurso. */
 export const funnelEvents = funil.table(
@@ -254,15 +260,19 @@ export const analyticsEvents = funil.table(
 )
 
 // Um lead tem uma sessão de origem analítica. Retornos não multiplicam a compra.
-export const analyticsLeadLinks = funil.table('analytics_lead_links', {
-  leadId: uuid('lead_id')
-    .primaryKey()
-    .references(() => leads.id, { onDelete: 'cascade' }),
-  sessionId: uuid('session_id')
-    .notNull()
-    .references(() => analyticsSessions.id, { onDelete: 'cascade' }),
-  linkedAt: timestamp('linked_at', { withTimezone: true }).notNull(),
-})
+export const analyticsLeadLinks = funil.table(
+  'analytics_lead_links',
+  {
+    leadId: uuid('lead_id')
+      .primaryKey()
+      .references(() => leads.id, { onDelete: 'cascade' }),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => analyticsSessions.id, { onDelete: 'cascade' }),
+    linkedAt: timestamp('linked_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('analytics_lead_links_session_idx').on(t.sessionId)],
+)
 
 export const analyticsSnapshots = funil.table(
   'analytics_snapshots',

@@ -5,7 +5,12 @@ import { resolveOfferPage } from '../../../server/offer-page'
 export const prerender = false
 const page = await resolveOfferPage(Astro.params, Astro.url, Astro.site)
 if (page instanceof Response) return page
-Astro.response.headers.set('cache-control', 'public, max-age=60, stale-while-revalidate=300')
+Astro.response.headers.set(
+  'cache-control',
+  Astro.params.produto === 'desafio-primeiro-jogo'
+    ? 'no-store'
+    : 'public, max-age=60, stale-while-revalidate=300',
+)
 ---
 
 <OfertaPage {...page} />

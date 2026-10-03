@@ -26,6 +26,7 @@ function baseLead(id: string): Lead {
     attribution: null,
     lastStep: 'entrou_landing',
     paymentId: null,
+    paidPaymentId: null,
     couponCode: null,
     offerRef: null,
     paidAt: null,
@@ -79,17 +80,29 @@ export function createFakeRepo(): FakeRepoState {
     },
     async updateLead(id, set: LeadUpdate) {
       const lead = leads.get(id)
-      if (lead) leads.set(id, { ...lead, ...set, updatedAt: new Date() })
+      if (lead) {
+        const next = { ...lead, ...set, updatedAt: new Date() }
+        leads.set(id, next)
+        if (
+          ['nome', 'email', 'telefone'].some((key) => key in set) &&
+          next.nome &&
+          next.email &&
+          next.telefone
+        )
+          await repo.insertEvent(id, 'contact_saved', 'contact', null, `${id}:contact_saved`)
+      }
     },
     async claimAttribution(id, attribution) {
       const lead = leads.get(id)
       if (lead && lead.attribution == null) lead.attribution = attribution
     },
-    async mergeQuizAnswers(id, patch) {
+    async mergeQuizAnswers(id, patch, event) {
       const lead = leads.get(id)
       if (lead) lead.quizAnswers = { ...(lead.quizAnswers ?? {}), ...patch }
+      if (lead && event)
+        await repo.insertEvent(id, 'quiz_answer_saved', event.step, event.metadata, event.eventKey)
     },
-    async saveQuizAnswers(id, expected, next, lastStep, perfil) {
+    async saveQuizAnswers(id, expected, next, lastStep, perfil, event) {
       const lead = leads.get(id)
       const canonical = (value: object) =>
         JSON.stringify(Object.entries(value).sort(([a], [b]) => a.localeCompare(b)))
@@ -101,6 +114,8 @@ export function createFakeRepo(): FakeRepoState {
         perfilResultado: perfil,
         updatedAt: new Date(),
       })
+      if (event)
+        await repo.insertEvent(id, 'quiz_answer_saved', event.step, event.metadata, event.eventKey)
       return true
     },
     async setPayment(id, paymentId, couponCode, snapshot) {
@@ -161,10 +176,11 @@ export function createFakeRepo(): FakeRepoState {
       const { couponCode, offerRef, nome, email, telefone, document, offerSnapshot } = mapped
       return { couponCode, offerRef, nome, email, telefone, document, offerSnapshot }
     },
-    async markPaid(id, paidAt) {
+    async markPaid(id, paidAt, paymentId) {
       const lead = leads.get(id)
       if (lead && lead.paidAt == null) {
         lead.paidAt = paidAt
+        lead.paidPaymentId = paymentId ?? null
         return true
       }
       return false

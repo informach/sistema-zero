@@ -20,6 +20,7 @@ export function setupConsent() {
   window.__szAnalyticsSnapshot = async () =>
     (await import('./dom')).snapshot(config.publicText, config.definition, config.release)
   let stop: (() => void) | undefined
+  let starting: AbortController | undefined
   let generation = 0
   const choice = () =>
     document.cookie
@@ -29,13 +30,15 @@ export function setupConsent() {
       ?.split('=')[1]
   async function refresh() {
     const current = ++generation
+    starting?.abort()
     stop?.()
     stop = undefined
     notice!.hidden = Boolean(choice())
     if (choice() === 'accepted') {
       const { startCollector } = await import('./collector')
       if (current !== generation) return
-      const cleanup = await startCollector(config)
+      starting = new AbortController()
+      const cleanup = await startCollector(config, starting.signal)
       if (current === generation) stop = cleanup
       else cleanup()
     }
@@ -52,6 +55,7 @@ export function setupConsent() {
     button.addEventListener('click', async () => {
       // Stop immediately on refusal, even if the deletion request needs retrying.
       ++generation
+      starting?.abort()
       stop?.()
       stop = undefined
       const buttons = controls.querySelectorAll<HTMLButtonElement>('[data-choice]')
@@ -59,6 +63,7 @@ export function setupConsent() {
         b.disabled = true
       })
       try {
+        document.querySelector<HTMLElement>('#sz-metrics-error')!.hidden = true
         const response = await fetch('/api/analytics/consent', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
@@ -76,6 +81,10 @@ export function setupConsent() {
         })
       }
     })
+  })
+  // Returning from the browser's page cache must honor consent changed in another page.
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) void refresh().catch(() => {})
   })
   void refresh().catch(() => {})
 }

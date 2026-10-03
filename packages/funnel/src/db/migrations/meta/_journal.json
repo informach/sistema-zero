@@ -141,6 +141,13 @@
       "when": 1791038082601,
       "tag": "0019_quiz_analytics_attempt",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1791042202958,
+      "tag": "0020_analytics_review",
+      "breakpoints": true
     }
   ]
 }

@@ -80,9 +80,12 @@ atribuição sanitizada, com HTML `no-store`; a raiz não cria lead. URLs planas
 `/api/analytics/*`, `/api/admin/analytics` e aba Métricas. Coleta depende de aceite; navegação sem
 PII, descoberta automática de elementos, versões do DOM, quizzes com snapshots imutáveis e
 `quizDefinitionId` no lead. Respostas salvas usam `quiz_answer_saved` (não depender do nome legado
-do evento de cada produto). Migrações aditivas 0017–0019. Prints/mapas usam worker separado
+do evento de cada produto). Migrações aditivas 0017–0020. Contato/resposta e marco são atômicos;
+`paid_payment_id` identifica a cobrança confirmada no relatório. Prints/mapas usam worker separado
 `bun run analytics:snapshots` (Node + Playwright; nunca iniciar Chromium no handler do site).
 Operação, limites, retenção e testes: `docs/marketing/medicao-funil.md` na raiz do repositório.
+Contrato compartilhado com o novo Desafio e achados da revisão:
+`docs/marketing/revisao-medicao-2026-10-03.md`. Não criar um segundo coletor ou cadastro de perguntas.
 
 **Funil no lead + respostas (`leads.funnel` migration 0010; `leads.quiz_answers` jsonb migrations
 0011 [drop das 12 colunas fixas] + 0012 [add `quiz_answers`]):** o funil é gravado na CRIAÇÃO (a
@@ -119,9 +122,10 @@ perfil é POR FUNIL, não mais o enum global). `FunnelResult` traz `profiles` + 
 `renderCorpo?`. `patchLead` é GENÉRICO: valida a chave/valor pelo `valueSchema` do funil do lead,
 grava em `quiz_answers`, roda `derive`, e só aceita `eventName` que seja um passo do funil
 (anti-forja de marco server-side). `resultado.astro` usa `computePerfil`+`renderCorpo` do funil;
-`oferta.astro` escolhe o hero por `perfil ∈ porPerfil` (só no NCI: no Desafio a oferta é PADRÃO e a
-personalização por perfil vive na tela de resultado, que é o elo quiz→oferta; os `?perfil/?quer` da
-URL seguem repassados para o tracking do `PreCheckoutModal`). O NCI liga scoring/derive/render em
+`oferta.astro` escolhe o hero por `perfil ∈ porPerfil` no NCI. Comunidade e Desafio usam
+rotas de oferta e resultados próprios. No Desafio, `?perfil/?quer` legados não personalizam
+copy nem substituem o motivo declarado nas respostas; o `PreCheckoutModal` não os registra
+como perfil. O NCI liga scoring/derive/render em
 `src/funnels/no-comando-da-ia/quiz.ts`. **Adicionar o quiz de um produto = só preencher o
 `FunnelQuiz` do módulo dele** (perguntas, validação, e — opcional — diagnóstico/resultado).
 
@@ -159,7 +163,7 @@ um CTA 3D pedem **respiro extra**; num container de altura fixa, compense a somb
 container e mata o sticky). O wordmark branco (`img[alt="Sistema Zero"]`) recebe filtro escuro no
 kids. Ilustrações dos personagens: 3D cartoon, geradas com chroma key `#00B140` e recortadas para
 WebP pelo script `preparar-assets-funil-kids.py` do repo de marketing (fluxo-criativo); a capa do
-checkout/OG segue sendo a arte clássica `hero-desafio.webp`.
+checkout/OG vem de `FunnelDef.checkoutImage`; no Desafio, `farol-capa.webp` mostra o projeto real atual.
 
 **Oferta POR FUNIL (`src/pages/[audience]/[produto]/oferta.astro` despacha o body):** a rota resolve
 preço/perfil e despacha em 3 vias: `f.content.sales ? NoComandoOfertaBody : f.key ===
@@ -168,11 +172,9 @@ promover a um map local `Record<funnelKey, Component>`). `content.sales` (shape 
 **opcional** — funis com layout de vendas próprio (Desafio, Comunidade) trazem a cópia no próprio
 body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
-partir de `SALES`); `DesafioOfertaBody.astro` = layout sob medida alinhado à plataforma (balões dos
-personagens, decorações flutuantes), com o CSS bespoke num `<style>` Astro escopado por `.dpj`
-(aliases semânticos no wrapper apontam para `--sz-community-*`, nunca valores repetidos) e ícones
-**Material Symbols self-hosted** (`@fontsource/material-symbols-rounded`; o NCI segue com o
-outlined); `ComunidadeOfertaBody.astro` = layout em `src/styles/comunidade-oferta.css`, prefixado por `.cdc`
+partir de `SALES`); `DesafioOfertaBody.astro` compartilha `kids-oferta.css` e
+`comunidade-oferta.css`, com complementos em `desafio-farol.css` sob `.df`, sem duplicar os
+valores dos tokens. Usa Material Symbols self-hosted; `ComunidadeOfertaBody.astro` = layout em `src/styles/comunidade-oferta.css`, prefixado por `.cdc`
 (sem o escopo do Astro; ver "Direção de arte das quatro páginas"). ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
 se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `data-checkout-cta` →
@@ -189,14 +191,34 @@ por `billingIntervalMonths`, sem assumir qual é a principal da env). ⚠️ O f
 (`env.PRODUCT_PRICE_CENTS`) é o do NCI — body de outro funil com catálogo fora deve usar o SEU
 fallback (`COMUNIDADE_PRECO_FALLBACK`).
 
-**Funil kids "Desafio do Primeiro Jogo" (`kids/desafio-primeiro-jogo`, R$ 67 público / R$ 37 com
-cupom de evento):** criança 9+ monta um jogo de nave em 5 etapas, com 30 dias contados da aprovação;
-é pagamento único sem renovação. **Comunicação SEMPRE aos pais** (CONANDA/ECA — rodapé com o aviso legal).
-Módulo em `src/funnels/desafio-primeiro-jogo/` (index/quiz/content): 7 perguntas de múltipla
-escolha; o perfil resulta da maioria entre `perfil_p1` a `perfil_p4`, com `perfil_p1` como
-desempate; `renderCorpo` resolve `{resposta_uso}`/`{resposta_desejo}`/`{resposta_apoio}`. O funil público deve
-apontar para `desafio-primeiro-jogo-30-dias`; a oferta `desafio-primeiro-jogo` continua
-reservada aos contratos vitalícios históricos e ao fluxo de bolsas.
+**Funil kids "Desafio do Primeiro Jogo" (Farol, 03/10/2026):** 9–14 anos, computador,
+pagamento único, 30 dias de curso e Mural completo contados da aprovação; depois Mural visitante.
+R$ 67 é a referência editorial: preço/cupom vêm do catálogo e da cotação. O contrato exige
+`one_time/fixed/30/days`, garantia de sete dias. O funil público deve apontar para
+`desafio-primeiro-jogo-30-dias`; a oferta `desafio-primeiro-jogo` continua reservada aos contratos
+vitalícios históricos e ao fluxo de bolsas. Não mudar direitos históricos para fazer a oferta passar.
+
+`src/funnels/desafio-primeiro-jogo/quiz/` contém perguntas, motor, definição e resultado.
+Versão `desafio-farol-v2`: oito perguntas principais, prioridade condicional entre dois motivos
+e motivo de recusa; idade/equipamento cedo, sem pontuação por personalidade. Motivo adulto,
+interesse observado, condição prática e destino são campos distintos. Empate não força perfil;
+C continua expressão visual, com limite de arte preparada explicado. O registry usa
+`activeSteps/applyAnswer/isComplete`; API mantém revisão, sessão e definição analítica.
+`DesafioQuiz.tsx` e `DesafioResultado.astro` usam a mesma composição Kids, rodapé institucional
+fora de `.cdc`, erros recuperáveis e convite copiável sem cadastro de contato.
+
+Ofertas: `/kids/desafio-primeiro-jogo/oferta` (primeiro jogo), `/oferta/tempo-de-tela` e
+`/oferta/iniciacao-tecnologica`. Mesma entrega/checkout, argumentos e ordem próprios em
+`offer.ts`/`offer-copy.ts`. O alias `/oferta/primeiro-jogo` redireciona ao padrão. As ofertas
+usam `no-store` e conferem o contrato antes de vender; indisponibilidade não recebe preço fictício.
+Quiz continua informativo quando não consegue consultar o preço.
+
+A raiz é a bio, `/como-funciona/` apresenta a plataforma e a Comunidade continua sendo a
+opção ampla, que pode ser contratada diretamente. Links usam `funnelLinkWithAttribution`.
+Capturas do Farol e do caderno são reais; telas compartilhadas identificam a interface e o
+curso usado no exemplo. Não recolocar nave, asteroides, Mapa dos Pais ou depoimentos antigos
+como prova do Farol. Detalhes, testes e pendências operacionais em
+`docs/marketing/kids/desafio-primeiro-jogo/implementacao.md`.
 
 No pós-pagamento desse funil, `welcome-email.ts` lê o snapshot congelado da cobrança. Quando a
 política é `fixed`, usa `challenge-access-approved` (e-mail + WhatsApp) e informa a data/hora exata
@@ -490,7 +512,8 @@ de divulgar). Client `updateAmbassadorPix` no `gateway-client.ts`; `TOKEN_RE` ú
 O filtro de público fala de COMPORTAMENTO observável (vive em jogo, computador e tecnologia; já
 cria no computador). **"hiperfoco"/"foco intenso"/"interesse intenso"/"concentração fora do comum"
 só podem existir na HISTÓRIA DO ANDRÉ**, delimitada por `<!-- historia-andre:inicio -->`/
-`<!-- historia-andre:fim -->` nos dois bodies de oferta (Desafio e Comunidade). O teste
+`<!-- historia-andre:fim -->` quando essa história for utilizada. As novas ofertas da Comunidade
+e do Farol não precisam incluí-la e não usam esses termos clínicos. O teste
 `tests/unit/copy-vocabulario.test.ts` varre `src/**` inteiro e reprova termo fora dos marcadores
 (regex tolerante a markup/plural/palavra no meio); todo bloco marcado precisa conter o André + o
 hiperfoco e ter <2k chars (marcador não é isenção genérica). Ao editar a história, mantenha os

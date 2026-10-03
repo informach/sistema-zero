@@ -246,7 +246,20 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
     if (!next) return jsonError('Resposta inválida para este percurso.', 400, 'BAD_REQUEST')
     const complete = isQuizComplete(quiz, next)
     const profile = complete ? (quiz.computePerfil?.(next) ?? null) : null
-    const saved = await deps.repo.saveQuizAnswers(id, previous, next, step.lastStep, profile)
+    const saved = await deps.repo.saveQuizAnswers(
+      id,
+      previous,
+      next,
+      step.lastStep,
+      profile,
+      lead.quizDefinitionId
+        ? {
+            step: step.lastStep,
+            metadata: questionMetadata,
+            eventKey: `${id}:answer-saved:${next._quiz_revision}`,
+          }
+        : undefined,
+    )
     if (!saved)
       return jsonError(
         'Suas respostas foram atualizadas. Retome o quiz antes de continuar.',
@@ -258,14 +271,6 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
       quiz_version: next._quiz_version,
       revision: next._quiz_revision,
     }
-    if (lead.quizDefinitionId)
-      await deps.repo.insertEvent(
-        id,
-        'quiz_answer_saved',
-        step.lastStep,
-        questionMetadata,
-        `${id}:answer-saved:${next._quiz_revision}`,
-      )
     if (revision === 0)
       await deps.repo.insertEvent(id, 'start_quiz', step.lastStep, metadata, `${id}:start_quiz`)
     await deps.repo.insertEvent(
@@ -287,14 +292,22 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
   }
   const merged = { ...(lead.quizAnswers ?? {}), [key]: answer }
   const derived = quiz.derive?.(merged) ?? {}
-  await deps.repo.mergeQuizAnswers(id, { [key]: answer, ...derived })
   const combined = { ...merged, ...derived }
   const stepComplete =
     step.tipo === 'calculadora' || step.tipo === 'calculadora_prefilled'
       ? [step.campo1.key, step.campo2.key, step.resultadoKey].every((k) => combined[k] != null)
       : true
-  if (lead.quizDefinitionId && stepComplete)
-    await deps.repo.insertEvent(id, 'quiz_answer_saved', step.lastStep, questionMetadata)
+  await deps.repo.mergeQuizAnswers(
+    id,
+    { [key]: answer, ...derived },
+    lead.quizDefinitionId && stepComplete
+      ? {
+          step: step.lastStep,
+          metadata: questionMetadata,
+          eventKey: `${id}:answer-saved:${lead.quizDefinitionId}:${step.key}`,
+        }
+      : undefined,
+  )
 
   if (lastStep) await deps.repo.updateLead(id, { lastStep })
   if (Object.keys(lead.quizAnswers ?? {}).length === 0) {
@@ -339,7 +352,6 @@ export async function saveContact(request: Request, deps: LeadDeps): Promise<Res
     email: parsed.data.email,
     telefone: parsed.data.telefone,
   })
-  await deps.repo.insertEvent(id, 'contact_saved', 'contact', null, `${id}:contact_saved`)
   await deps.linkAnalytics?.(request, id)
   return json({ ok: true })
 }

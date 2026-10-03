@@ -147,7 +147,11 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
         throw err
       }
     }
-    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(payload.data?.paidAt))
+    const newlyPaid = await deps.repo.markPaid(
+      lead.id,
+      paymentApprovedAt(payload.data?.paidAt),
+      paymentId,
+    )
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'webhook')
       // Registra o uso do cupom só na transição p/ pago (exactly-once via

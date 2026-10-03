@@ -40,6 +40,15 @@ try {
   assert.equal(new URL(page.url()).searchParams.get('utm_source'), 'qa_analytics')
   await page.locator('.home-faq summary').first().click()
   await page.locator('.home-faq details[open]').waitFor()
+  const spacing = await page.locator('.home-faq details[open]').evaluate((details) => {
+    const question = getComputedStyle(details.querySelector('summary')!)
+    const answer = getComputedStyle(details.querySelector('.resposta')!)
+    return [question.paddingLeft, question.paddingRight, answer.paddingLeft, answer.paddingRight]
+  })
+  assert.deepEqual(spacing, ['24px', '24px', '24px', '24px'])
+  await page.locator('a[data-zoom]').first().click()
+  await page.locator('dialog[data-zoom-dialog][open]').waitFor()
+  await page.getByRole('button', { name: 'Fechar a imagem ampliada' }).click()
   const before = await page.evaluate(() => window.__szAnalyticsSnapshot!())
   await page.evaluate(() => {
     const section = document.createElement('section')
@@ -73,6 +82,8 @@ try {
       .some((e) => e.name === 'quiz_question_view' && e.quizDefinitionId && e.quizAttemptId),
   )
   await page.goto(`${origin}/kids/desafio-primeiro-jogo/quiz`)
+  const desafioStart = page.locator('.cq-intro button.kof-btn')
+  if (await desafioStart.isVisible()) await desafioStart.click()
   await page.locator('[data-analytics-question]').waitFor()
   await page.waitForTimeout(5500)
   const questions = batches.flatMap((b) => b.events).filter((e) => e.name === 'quiz_question_view')

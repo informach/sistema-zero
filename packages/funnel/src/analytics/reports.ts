@@ -75,10 +75,12 @@ export async function analyticsReport(
   const business = sql`select s.id session_id, l.id lead_id, l.paid_at,
     case when (p.offer_snapshot->>'chargedPriceCents') ~ '^[0-9]{1,9}$' then (p.offer_snapshot->>'chargedPriceCents')::bigint end amount,
     exists(select 1 from funil.funnel_events f where f.lead_id=l.id and f.event_name='contact_saved' and f.timestamp between s.started_at and s.started_at + interval '7 days') contact,
-    exists(select 1 from funil.funnel_events f where f.lead_id=l.id and f.event_name='redirecionou_checkout' and f.timestamp between s.started_at and s.started_at + interval '7 days') checkout,
+    (exists(select 1 from funil.funnel_events f where f.lead_id=l.id and f.event_name='redirecionou_checkout' and f.timestamp between s.started_at and s.started_at + interval '7 days')
+      or exists(select 1 from funil.analytics_events e where e.session_id=s.id and e.funnel=l.funnel and e.name='page_view' and e.page like '%/checkout')) checkout,
     l.paid_at between s.started_at and s.started_at + interval '7 days' paid
     from cohort s join funil.analytics_lead_links a on a.session_id=s.id
-    join funil.leads l on l.id=a.lead_id left join funil.lead_payments p on p.payment_id=l.payment_id
+    join funil.leads l on l.id=a.lead_id left join funil.lead_payments p on p.payment_id=coalesce(l.paid_payment_id,
+      case when not exists(select 1 from funil.lead_payments other where other.lead_id=l.id and other.payment_id<>l.payment_id) then l.payment_id end)
     where true ${filter.funnel ? sql`and l.funnel=${filter.funnel}` : sql``}`
   const [summaryRows, pageRows, interactions, quizRows, journeyRows, coverageRows, campaignRows] =
     await Promise.all([
@@ -115,7 +117,8 @@ export async function analyticsReport(
     ) q),'[]'::jsonb) questions from funil.analytics_quiz_definitions d
     where exists(select 1 from views v where v.definition=d.id) order by d.created_at desc limit 100`),
       db.execute(sql`with cohort as (${cohort}), business as (${business}), paths as (
-      select s.id, case when exists(select 1 from funil.analytics_events e where e.session_id=s.id and e.name='quiz_question_view') then 'Com quiz' else 'Sem quiz observado' end route
+      select s.id, case when exists(select 1 from funil.analytics_events e where e.session_id=s.id and e.name='quiz_question_view'
+        ${filter.funnel ? sql`and e.funnel=${filter.funnel}` : sql``}) then 'Com quiz' else 'Sem quiz observado' end route
       from cohort s
     ) select route,count(*)::int sessions,count(*) filter(where exists(select 1 from business b where b.session_id=paths.id and b.paid))::int paid from paths group by route`),
       db.execute(sql`select count(*)::int paid, count(*) filter(where not exists(select 1 from funil.analytics_lead_links a where a.lead_id=l.id))::int unlinked

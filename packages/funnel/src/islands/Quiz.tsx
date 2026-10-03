@@ -60,6 +60,7 @@ export default function Quiz({
   const [submitting, setSubmitting] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [updated, setUpdated] = useState(false)
+  const [initialError, setInitialError] = useState(false)
   const reduce = useReducedMotion()
 
   // Entrada do funil: `/` redireciona pra cá. UMA ida ao servidor: POST /api/leads
@@ -68,6 +69,7 @@ export default function Quiz({
   // se tudo respondido, vai pro resultado.
   useEffect(() => {
     let active = true
+    setInitialError(false)
     ;(async () => {
       let data: { id?: string; answers?: Answers } | null = null
       try {
@@ -76,10 +78,12 @@ export default function Quiz({
           quizDefinitionId,
           attribution: leadAttributionFromLocation(window.location),
         })
+        if (!data.id) throw new Error('Missing quiz session')
       } catch (error) {
+        if (!active) return
         if (error instanceof ApiError && error.code === 'QUIZ_UPDATED') setUpdated(true)
-        /* sem lead: o PATCH falharia, mas seguimos exibindo a P1 */
-        data = { answers: {} }
+        setInitialError(true)
+        return
       }
       if (!active) return
       setAttemptId(data?.id)
@@ -96,6 +100,24 @@ export default function Quiz({
       active = false
     }
   }, [funnel, donePath, steps, quizDefinitionId])
+
+  if (index == null && initialError)
+    return (
+      <main className="mx-auto max-w-xl px-6 py-16 text-center">
+        <p role="alert" className="mb-6">
+          {updated
+            ? 'O quiz mudou. Atualize a página para continuar.'
+            : 'Não foi possível abrir o quiz. Confira sua conexão e tente novamente.'}
+        </p>
+        <button
+          type="button"
+          className="rounded-xl bg-lime px-6 py-3 font-bold text-bg"
+          onClick={() => window.location.reload()}
+        >
+          {updated ? 'Atualizar a página' : 'Tentar novamente'}
+        </button>
+      </main>
+    )
 
   if (index == null) return <QuizSkeleton />
 

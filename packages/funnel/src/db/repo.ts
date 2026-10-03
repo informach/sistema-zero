@@ -8,6 +8,11 @@ import { funnelEvents, leadPayments, leads, processedWebhooks } from './schema'
 export type Lead = typeof leads.$inferSelect
 /** Campos do lead atualizáveis via updateLead (contato/funil/perfil; respostas em quiz_answers). */
 export type LeadUpdate = Partial<typeof leads.$inferInsert>
+export interface QuizAnswerEvent {
+  step: string
+  metadata: Record<string, unknown>
+  eventKey?: string
+}
 
 export interface EventCount {
   eventName: string
@@ -102,7 +107,7 @@ export interface FunnelRepo {
   /** Preenche first-touch somente quando o lead ainda não possui atribuição. */
   claimAttribution(id: string, attribution: LeadAttributionV1): Promise<void>
   /** Mescla respostas no JSON `quiz_answers` (genérico — chaves do quiz de qualquer funil). */
-  mergeQuizAnswers(id: string, patch: QuizAnswers): Promise<void>
+  mergeQuizAnswers(id: string, patch: QuizAnswers, event?: QuizAnswerEvent): Promise<void>
   /** Compare-and-swap keeps conditional edits from overwriting another tab. */
   saveQuizAnswers(
     id: string,
@@ -110,6 +115,7 @@ export interface FunnelRepo {
     next: QuizAnswers,
     lastStep: string,
     perfil: string | null,
+    event?: QuizAnswerEvent,
   ): Promise<boolean>
   /**
    * Aponta o lead p/ a cobrança + grava o par no histórico (`lead_payments`),
@@ -142,7 +148,7 @@ export interface FunnelRepo {
   /** Oferta/comprador congelados por cobrança; null = pagamento fora do histórico. */
   paymentContext(paymentId: string): Promise<PaymentContext | null>
   /** Marca pago se ainda não estava; retorna true se ESTA chamada foi a que pagou. */
-  markPaid(id: string, paidAt: Date): Promise<boolean>
+  markPaid(id: string, paidAt: Date, paymentId?: string): Promise<boolean>
   /**
    * Claim ATÔMICO do welcome (one-shot): true só p/ a chamada que venceu
    * (UPDATE … WHERE welcome_sent_at IS NULL). Corrida webhook × polling não
@@ -212,10 +218,33 @@ export function createFunnelRepo(db: Database): FunnelRepo {
     },
 
     async updateLead(id, set) {
-      await db
-        .update(leads)
-        .set({ ...set, updatedAt: new Date() })
-        .where(eq(leads.id, id))
+      const now = new Date()
+      if (!['nome', 'email', 'telefone'].some((key) => key in set)) {
+        await db
+          .update(leads)
+          .set({ ...set, updatedAt: now })
+          .where(eq(leads.id, id))
+        return
+      }
+      // One atomic contact milestone, including direct checkout and URL recovery paths.
+      await db.transaction(async (tx) => {
+        const [lead] = await tx
+          .update(leads)
+          .set({ ...set, updatedAt: now })
+          .where(eq(leads.id, id))
+          .returning({ nome: leads.nome, email: leads.email, telefone: leads.telefone })
+        if (lead?.nome && lead.email && lead.telefone)
+          await tx
+            .insert(funnelEvents)
+            .values({
+              leadId: id,
+              eventName: 'contact_saved',
+              step: 'contact',
+              eventKey: `${id}:contact_saved`,
+              timestamp: now,
+            })
+            .onConflictDoNothing()
+      })
     },
 
     async claimAttribution(id, attribution) {
@@ -225,35 +254,58 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .where(sql`${leads.id} = ${id} and ${leads.attribution} is null`)
     },
 
-    async mergeQuizAnswers(id, patch) {
+    async mergeQuizAnswers(id, patch, event) {
       // Mescla (atômico) o patch no JSON de respostas: `coalesce(quiz_answers,{}) || patch`.
       // Genérico — aceita as chaves de QUALQUER funil (o quiz do produto define quais).
-      await db
-        .update(leads)
-        .set({
-          quizAnswers: sql`coalesce(${leads.quizAnswers}, '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb`,
-          updatedAt: new Date(),
-        })
-        .where(eq(leads.id, id))
+      await db.transaction(async (tx) => {
+        const changed = await tx
+          .update(leads)
+          .set({
+            quizAnswers: sql`coalesce(${leads.quizAnswers}, '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb`,
+            updatedAt: new Date(),
+          })
+          .where(eq(leads.id, id))
+          .returning({ id: leads.id })
+        if (changed.length && event)
+          await tx
+            .insert(funnelEvents)
+            .values({
+              leadId: id,
+              eventName: 'quiz_answer_saved',
+              ...event,
+            })
+            .onConflictDoNothing()
+      })
     },
 
-    async saveQuizAnswers(id, expected, next, lastStep, perfil) {
-      const rows = await db
-        .update(leads)
-        .set({
-          quizAnswers: next,
-          lastStep,
-          perfilResultado: perfil,
-          updatedAt: new Date(),
-        })
-        .where(
-          and(
-            eq(leads.id, id),
-            sql`coalesce(${leads.quizAnswers}, '{}'::jsonb) = ${JSON.stringify(expected)}::jsonb`,
-          ),
-        )
-        .returning({ id: leads.id })
-      return rows.length === 1
+    async saveQuizAnswers(id, expected, next, lastStep, perfil, event) {
+      return db.transaction(async (tx) => {
+        const rows = await tx
+          .update(leads)
+          .set({
+            quizAnswers: next,
+            lastStep,
+            perfilResultado: perfil,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(leads.id, id),
+              sql`coalesce(${leads.quizAnswers}, '{}'::jsonb) = ${JSON.stringify(expected)}::jsonb`,
+            ),
+          )
+          .returning({ id: leads.id })
+        if (rows.length && event)
+          await tx
+            .insert(funnelEvents)
+            .values({
+              leadId: id,
+              eventName: 'quiz_answer_saved',
+              ...event,
+            })
+            .onConflictDoNothing()
+        return rows.length === 1
+      })
     },
 
     async setPayment(id, paymentId, couponCode, snapshot) {
@@ -339,10 +391,10 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       return row ?? null
     },
 
-    async markPaid(id, paidAt) {
+    async markPaid(id, paidAt, paymentId) {
       const rows = await db
         .update(leads)
-        .set({ paidAt, updatedAt: new Date() })
+        .set({ paidAt, paidPaymentId: paymentId ?? null, updatedAt: new Date() })
         .where(sql`${leads.id} = ${id} and ${leads.paidAt} is null`)
         .returning({ id: leads.id })
       return rows.length > 0

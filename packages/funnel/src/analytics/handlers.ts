@@ -16,7 +16,7 @@ import { analyticsPage } from './page-context'
 import { analyticsJson, BootstrapBody, ConsentBody, EventBatch, UUID } from './protocol'
 import { quizDefinition } from './quiz-definition'
 import type { AnalyticsRepo, StoredAnalyticsEvent } from './repository'
-import { ANALYTICS_SESSION_MS, type AnalyticsEnvironment } from './types'
+import { ANALYTICS_SESSION_MS, type AnalyticsEnvironment, type QuizDefinition } from './types'
 
 export interface AnalyticsDeps {
   repo: AnalyticsRepo
@@ -110,6 +110,8 @@ export async function analyticsIngest(request: Request, deps: AnalyticsDeps) {
     return reply({ error: 'session' }, 401)
   const rows: StoredAnalyticsEvent[] = []
   const cookieLead = getLeadId(request)
+  const definitions = new Map<string, QuizDefinition | null>()
+  const attempts = new Map<string, boolean>()
   for (const event of parsed.data.events) {
     const page = analyticsPage(event.path)
     const at = new Date(event.at)
@@ -120,17 +122,27 @@ export async function analyticsIngest(request: Request, deps: AnalyticsDeps) {
     )
       return reply({ error: 'event' }, 400)
     if (event.name === 'quiz_question_view') {
-      const definition = event.quizDefinitionId
-        ? await deps.repo.quiz(event.quizDefinitionId)
-        : null
+      const definitionId = event.quizDefinitionId || ''
+      if (!definitions.has(definitionId))
+        definitions.set(definitionId, definitionId ? await deps.repo.quiz(definitionId) : null)
+      const definition = definitions.get(definitionId)
       if (
         definition?.funnel !== page.funnel ||
         !definition?.questions.some((q) => q.id === event.questionId)
       )
         return reply({ error: 'question' }, 400)
-      if (!event.quizAttemptId || event.quizAttemptId !== cookieLead) continue
-      const attempt = await deps.leads.getLead(event.quizAttemptId)
-      if (attempt?.quizDefinitionId !== event.quizDefinitionId) continue
+      if (!event.quizAttemptId) continue
+      const attemptKey = `${event.quizAttemptId}:${definitionId}`
+      if (!attempts.has(attemptKey)) {
+        // The lead cookie is shared by tabs; switching products/restarting must not erase
+        // queued views of an earlier attempt belonging to this same analytical visitor.
+        const owned =
+          event.quizAttemptId === cookieLead ||
+          (await deps.repo.ownsLead(visitor, event.quizAttemptId, deps.environment))
+        const attempt = owned ? await deps.leads.getLead(event.quizAttemptId) : null
+        attempts.set(attemptKey, attempt?.quizDefinitionId === definitionId)
+      }
+      if (!attempts.get(attemptKey)) continue
     }
     const { at: _, path: __, ...data } = event
     rows.push({

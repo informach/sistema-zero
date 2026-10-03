@@ -60,7 +60,11 @@ export default function PreCheckoutModal({
         // Perfil é POR FUNIL (string livre) — repassa o que veio na URL; o servidor
         // valida `perfil_resultado` (max 32). Antes usava o enum do NCI e descartava
         // os perfis dos outros funis (ex.: kids).
-        const perfilParam = new URLSearchParams(window.location.search).get('perfil')?.trim()
+        // O Desafio registra a prioridade nas respostas; URL de oferta não classifica a família.
+        const perfilParam =
+          funnel === 'kids/desafio-primeiro-jogo'
+            ? null
+            : new URLSearchParams(window.location.search).get('perfil')?.trim()
         const metadata = perfilParam ? { perfil_resultado: perfilParam.slice(0, 32) } : undefined
         await apiPost('/api/events', {
           eventName: 'viu_pagina_vendas',

@@ -1,27 +1,6 @@
-// Funil "Desafio do Primeiro Jogo" (kids, /kids/desafio-primeiro-jogo). Monta o
-// FunnelDef a partir do conteúdo (content.ts) + lógica do quiz (quiz.ts). A oferta
-// tem layout PRÓPRIO (DesafioOfertaBody) → `content.sales` fica ausente de propósito;
-// a /oferta despacha pelo body do Desafio quando o funil não tem `sales`.
-
 import type { FunnelDef } from '../registry'
-import {
-  DESAFIO_DESTAQUE,
-  DESAFIO_FECHO,
-  DESAFIO_HERO_PADRAO,
-  DESAFIO_HERO_POR_PERFIL,
-  DESAFIO_LANDING,
-  DESAFIO_OBRIGADO,
-  DESAFIO_PRODUTO,
-  DESAFIO_QUIZ_STEPS,
-  DESAFIO_RESULT_PROFILES,
-  DESAFIO_TOTAL,
-} from './content'
-import {
-  DESAFIO_PERFIL_LABELS,
-  DESAFIO_VALUE_SCHEMA,
-  desafioComputePerfil,
-  desafioRenderCorpo,
-} from './quiz'
+import { DESAFIO_LANDING, DESAFIO_OBRIGADO, DESAFIO_PRODUTO } from './content'
+import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz/definition'
 
 export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   audience: 'kids',
@@ -31,12 +10,11 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   productName: 'Desafio do Primeiro Jogo',
   productSku: 'desafio-primeiro-jogo',
   imagesBase: '/img/desafio-primeiro-jogo',
-  // Sem capa dedicada: o checkout usa a arte clássica do produto (a mesma de antes).
-  checkoutImage: 'hero-desafio.webp',
+  checkoutImage: 'farol-capa.webp',
   byline: 'Helena e Júlio · Sistema Zero',
-  seoTitle: 'Desafio do Primeiro Jogo | Seu filho pode criar um jogo',
+  seoTitle: 'Desafio do Primeiro Jogo | Sistema Zero',
   seoDescription:
-    'Trilha guiada de cinco etapas para crianças a partir de 9 anos criarem o primeiro jogo jogável, com 30 dias de acesso. Comunicação dirigida aos pais.',
+    'Seu filho aprende a programar A Chave do Farol. Para 9 a 14 anos, com aulas gravadas, prática integrada e 30 dias de acesso ao curso e ao Mural completo. Pagamento único.',
   theme: 'kids',
   lifetimeAccess: false,
   offerContract: {
@@ -50,25 +28,8 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   content: {
     copy: DESAFIO_PRODUTO,
     landing: DESAFIO_LANDING,
-    // sem `sales`: a página de vendas tem layout próprio (DesafioOfertaBody.astro).
     obrigado: DESAFIO_OBRIGADO,
-    quiz: {
-      steps: DESAFIO_QUIZ_STEPS,
-      total: DESAFIO_TOTAL,
-      valueSchema: DESAFIO_VALUE_SCHEMA,
-      computePerfil: desafioComputePerfil,
-    },
-    hero: {
-      padrao: DESAFIO_HERO_PADRAO,
-      paragrafoComum: '',
-      porPerfil: DESAFIO_HERO_POR_PERFIL,
-    },
-    result: {
-      profiles: DESAFIO_RESULT_PROFILES,
-      fecho: DESAFIO_FECHO,
-      destaque: DESAFIO_DESTAQUE,
-      perfilLabels: DESAFIO_PERFIL_LABELS,
-      renderCorpo: desafioRenderCorpo,
-    },
+    quiz: DESAFIO_QUIZ,
+    result: { profiles: {}, fecho: '', perfilLabels: DESAFIO_PERFIL_LABELS },
   },
 }

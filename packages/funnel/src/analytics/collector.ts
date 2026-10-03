@@ -1,5 +1,5 @@
 import { leadAttributionFromLocation } from '../lib/lead-attribution'
-import { describe, discover, elementId, pageRevision } from './dom'
+import { describe, discover, elementId, isPrivate, pageRevision } from './dom'
 import type { AnalyticsBootstrap, AnalyticsEventName, BrowserAnalyticsEvent } from './types'
 
 interface Config {
@@ -8,13 +8,14 @@ interface Config {
   definition: string
   release: string
 }
-export async function startCollector(config: Config): Promise<() => void> {
+export async function startCollector(config: Config, signal?: AbortSignal): Promise<() => void> {
   let active = true
   let session: AnalyticsBootstrap | null = null
   let sending = false
   let bootstrap: Promise<boolean> | null = null
   let revision = await pageRevision(config.publicText, config.definition, config.release)
-  const pageViewId = crypto.randomUUID()
+  if (signal?.aborted) return () => {}
+  let pageViewId = crypto.randomUUID()
   const queue: BrowserAnalyticsEvent[] = []
   const seen = new Set<string>()
   const timers = new Map<Element, ReturnType<typeof setTimeout>>()
@@ -66,9 +67,16 @@ export async function startCollector(config: Config): Promise<() => void> {
       const next = (await response.json()) as AnalyticsBootstrap
       // Old-session events are not attributed to a new session after inactivity.
       if (session && next.sessionId !== session.sessionId) {
+        const cutoff = Math.max(Date.parse(session.expiresAt), Date.now() - 5 * 60000)
+        // Preserve the interaction that brought an inactive tab back to life.
+        const pending = queue.filter((event) => Date.parse(event.at) >= cutoff)
         queue.length = 0
+        pageViewId = crypto.randomUUID()
         seen.clear()
         emit('page_view')
+        queue.push(...pending.map((event) => ({ ...event, pageViewId })))
+        observer.disconnect()
+        for (const el of discover()) observer.observe(el)
       }
       session = next
       return true
@@ -105,10 +113,8 @@ export async function startCollector(config: Config): Promise<() => void> {
       const batch = batchToSend()
       const response = await post('events', { sessionId: session.sessionId, events: batch })
       if (response.status === 401) {
-        session = null
-        queue.length = 0
-        seen.clear()
-        emit('page_view')
+        // Force a bootstrap without discarding the fresh interaction that exposed expiry.
+        session.expiresAt = new Date(0).toISOString()
         return
       }
       if (response.status === 400) {
@@ -130,7 +136,18 @@ export async function startCollector(config: Config): Promise<() => void> {
     }
   }
   function exposure(el: Element) {
-    if (!el.isConnected || document.hidden) return
+    if (!el.isConnected || document.hidden || isPrivate(el)) return
+    const rect = el.getBoundingClientRect()
+    if (
+      !rect.width ||
+      !rect.height ||
+      rect.bottom <= 0 ||
+      rect.top >= innerHeight ||
+      rect.right <= 0 ||
+      rect.left >= innerWidth ||
+      getComputedStyle(el).visibility === 'hidden'
+    )
+      return
     const data = describe(el, config.publicText)
     const questionId = el.getAttribute('data-analytics-question')
     const name = questionId
@@ -138,7 +155,9 @@ export async function startCollector(config: Config): Promise<() => void> {
       : el.matches('section, main, [data-analytics-section]')
         ? 'section_view'
         : 'element_view'
-    const key = `${revision}:${name}:${data.elementId}:${questionId || ''}`
+    const attempt = el.getAttribute('data-analytics-attempt')
+    if (questionId && !attempt) return
+    const key = `${revision}:${name}:${data.elementId}:${questionId || ''}:${attempt || ''}`
     if (seen.has(key)) return
     seen.add(key)
     emit(name, {
@@ -147,7 +166,7 @@ export async function startCollector(config: Config): Promise<() => void> {
         ? {
             questionId,
             quizDefinitionId: el.getAttribute('data-analytics-quiz') || config.definition,
-            quizAttemptId: el.getAttribute('data-analytics-attempt') || undefined,
+            quizAttemptId: attempt || undefined,
             position: Number(el.getAttribute('data-analytics-position')) || 1,
           }
         : {}),
@@ -186,22 +205,29 @@ export async function startCollector(config: Config): Promise<() => void> {
     if (
       !records.some(
         (r) =>
-          !(r.target instanceof Element ? r.target : r.target.parentElement)?.closest(
-            '#sz-metrics-controls',
+          !(
+            (r.target instanceof Element ? r.target : r.target.parentElement) &&
+            isPrivate((r.target instanceof Element ? r.target : r.target.parentElement)!)
           ),
       )
     )
       return
     clearTimeout(refreshTimer)
     refreshTimer = setTimeout(() => {
-      void pageRevision(config.publicText, config.definition, config.release).then((next) => {
+      void (
+        config.publicText
+          ? pageRevision(true, config.definition, config.release)
+          : Promise.resolve(revision)
+      ).then((next) => {
         if (!active) return
         revision = next
         scan()
-        // React often reuses the question wrapper; observe its new question key.
+        // React often reuses the wrapper. Restart its visibility interval for the new attempt/key.
         for (const el of Array.from(document.querySelectorAll('[data-analytics-question]'))) {
-          const r = el.getBoundingClientRect()
-          if (r.top < innerHeight && r.bottom > 0) exposure(el)
+          clearTimeout(timers.get(el))
+          timers.delete(el)
+          observer.unobserve(el)
+          observer.observe(el)
         }
       })
     }, 200)
@@ -211,23 +237,34 @@ export async function startCollector(config: Config): Promise<() => void> {
     subtree: true,
     characterData: true,
     attributes: true,
-    attributeFilter: ['data-analytics-question', 'data-analytics-id', 'href'],
+    attributeFilter: [
+      'data-analytics-question',
+      'data-analytics-quiz',
+      'data-analytics-attempt',
+      'data-analytics-position',
+      'data-analytics-id',
+      'data-analytics-section',
+      'data-home-cta',
+      'href',
+      'src',
+    ],
   })
   const listen = (name: string, callback: EventListener, capture = true) =>
     document.addEventListener(name, callback, { signal: controller.signal, capture })
   listen('click', (event) => {
+    // A fast submit is evidence that the active question was seen, even though the
+    // answer controls themselves stay private and never supply labels or values.
+    const question =
+      event.target instanceof Element ? event.target.closest('[data-analytics-question]') : null
+    if (question && !config.publicText) exposure(question)
     const el =
       event.target instanceof Element
         ? event.target.closest('a[href],button,summary,[data-analytics-id]')
         : null
-    if (
-      !el ||
-      el.closest('#sz-metrics-controls, [data-analytics-private], form, dialog, [role="dialog"]')
-    )
-      return
+    if (!el || isPrivate(el)) return
     exposure(el)
-    const question = el.closest('[data-analytics-question]')
-    if (question) exposure(question)
+    const publicQuestion = el.closest('[data-analytics-question]')
+    if (publicQuestion) exposure(publicQuestion)
     const mouse = event as MouseEvent
     const r = el.getBoundingClientRect()
     const point =
@@ -242,17 +279,25 @@ export async function startCollector(config: Config): Promise<() => void> {
     void flush()
   })
   listen('toggle', (event) => {
-    if (event.target instanceof HTMLDetailsElement && event.target.open) {
+    if (
+      event.target instanceof HTMLDetailsElement &&
+      event.target.open &&
+      !isPrivate(event.target)
+    ) {
       const summary = event.target.querySelector('summary')
       if (summary) emit('details_open', describe(summary, config.publicText))
     }
   })
   listen('play', (event) => {
-    if (event.target instanceof HTMLVideoElement)
+    if (event.target instanceof HTMLVideoElement && !isPrivate(event.target))
       emit('video_start', describe(event.target, config.publicText))
   })
   listen('timeupdate', (event) => {
-    if (!(event.target instanceof HTMLVideoElement) || !Number.isFinite(event.target.duration))
+    if (
+      !(event.target instanceof HTMLVideoElement) ||
+      isPrivate(event.target) ||
+      !Number.isFinite(event.target.duration)
+    )
       return
     const video = event.target
     const progress = Math.floor((video.currentTime / video.duration) * 4) * 25
@@ -286,7 +331,7 @@ export async function startCollector(config: Config): Promise<() => void> {
   const interval = setInterval(() => {
     void flush()
   }, 5000)
-  return () => {
+  const stop = () => {
     active = false
     queue.length = 0
     controller.abort()
@@ -295,5 +340,8 @@ export async function startCollector(config: Config): Promise<() => void> {
     clearInterval(interval)
     clearTimeout(refreshTimer)
     for (const timer of timers.values()) clearTimeout(timer)
+    signal?.removeEventListener('abort', stop)
   }
+  signal?.addEventListener('abort', stop, { once: true })
+  return stop
 }

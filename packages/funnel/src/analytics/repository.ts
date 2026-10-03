@@ -38,6 +38,7 @@ export interface AnalyticsRepo {
   append(events: StoredAnalyticsEvent[], now: Date): Promise<number>
   revoke(visitorId: string): Promise<void>
   linkLead(sessionId: string, leadId: string, now: Date): Promise<void>
+  ownsLead(visitorId: string, leadId: string, environment: AnalyticsEnvironment): Promise<boolean>
   saveQuiz(definition: QuizDefinition): Promise<void>
   quiz(id: string): Promise<QuizDefinition | null>
   prune(now: Date): Promise<void>
@@ -177,6 +178,21 @@ export function createAnalyticsRepo(db: Database): AnalyticsRepo {
         .insert(analyticsLeadLinks)
         .values({ sessionId, leadId, linkedAt: now })
         .onConflictDoNothing()
+    },
+    async ownsLead(visitorId, leadId, environment) {
+      const [row] = await db
+        .select({ id: analyticsLeadLinks.leadId })
+        .from(analyticsLeadLinks)
+        .innerJoin(analyticsSessions, eq(analyticsLeadLinks.sessionId, analyticsSessions.id))
+        .where(
+          and(
+            eq(analyticsLeadLinks.leadId, leadId),
+            eq(analyticsSessions.visitorId, visitorId),
+            eq(analyticsSessions.environment, environment),
+          ),
+        )
+        .limit(1)
+      return Boolean(row)
     },
     async saveQuiz(definition) {
       await db

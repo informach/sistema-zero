@@ -3,6 +3,7 @@ export const TRACKABLE =
   'section, main, [data-analytics-section], a[href], button, summary, video, [data-analytics-id], [data-analytics-question]'
 const PRIVATE =
   'form, input, textarea, select, [contenteditable], [data-analytics-private], dialog, [role="dialog"], #sz-metrics-controls'
+export const isPrivate = (el: Element) => Boolean(el.closest(PRIVATE))
 const cleanId = (s: string) => s.replace(/[^a-zA-Z0-9_./:#-]/g, '-').slice(0, 150)
 export function elementId(el: Element): string {
   const explicit = el.getAttribute('data-analytics-id') || el.getAttribute('data-home-cta') || el.id
@@ -21,7 +22,12 @@ export function elementId(el: Element): string {
     parts.unshift(`${tag}:${siblings.indexOf(node) + 1}`)
     node = node.parentElement
   }
-  return parts.join('/')
+  const path = parts.join('/')
+  if (path.length <= 180) return path
+  // Keep a readable prefix plus a stable suffix; a deep DOM cannot invalidate a whole batch.
+  let hash = 2166136261
+  for (let i = 0; i < path.length; i++) hash = Math.imul(hash ^ path.charCodeAt(i), 16777619)
+  return `${path.slice(0, 165)}:${(hash >>> 0).toString(16)}`
 }
 export function publicLabel(el: Element): string {
   if (el.closest(PRIVATE)) return ''
@@ -32,6 +38,7 @@ export function publicLabel(el: Element): string {
     ),
   ))
     node.remove()
+  for (const node of Array.from(copy.querySelectorAll('small, br, p, div'))) node.before(' ')
   return (el.getAttribute('aria-label') || copy.textContent || '')
     .replace(/\s+/g, ' ')
     .trim()
@@ -65,7 +72,7 @@ export async function pageRevision(
   definition: string,
   release: string,
 ): Promise<string> {
-  let content = `${location.pathname}|${definition}|${release}`
+  let content = `${location.pathname.replace(/\/$/, '') || '/'}|${definition}|${release}`
   // Bundled CSS filenames change with the build, even without a hosting release variable.
   content += Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]'))
     .map((link) => new URL(link.href, location.href).pathname)
@@ -79,6 +86,11 @@ export async function pageRevision(
     ))
       node.remove()
     content += (clone.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 100000)
+    content += [clone, ...Array.from(clone.querySelectorAll('*'))]
+      .map(
+        (el) => `${el.tagName}:${el.getAttribute('class') || ''}:${el.getAttribute('style') || ''}`,
+      )
+      .join('|')
     content += Array.from(root.querySelectorAll('img'))
       .map((img) => new URL(img.src, location.href).pathname)
       .join('|')

@@ -1,115 +1,195 @@
 import { describe, expect, test } from 'bun:test'
-import { DESAFIO_PRIMEIRO_JOGO } from '../../src/funnels/desafio-primeiro-jogo'
+import { DESAFIO_PRIMEIRO_JOGO as funnel } from '../../src/funnels/desafio-primeiro-jogo'
 import {
-  DESAFIO_VALUE_SCHEMA,
-  desafioComputePerfil,
-  desafioDesejoLabel,
-  desafioRenderCorpo,
-} from '../../src/funnels/desafio-primeiro-jogo/quiz'
-import { getFunnel, isQuizComplete } from '../../src/funnels/registry'
+  activeDesafioSteps,
+  applyDesafioAnswer,
+  DESAFIO_QUIZ_VERSION,
+  desafioDecision,
+  isDesafioQuizComplete,
+} from '../../src/funnels/desafio-primeiro-jogo/quiz/engine'
+import { buildDesafioResult } from '../../src/funnels/desafio-primeiro-jogo/quiz/result'
+import { isQuizComplete } from '../../src/funnels/registry'
+import type { QuizAnswers } from '../../src/lib/quiz-types'
 
-const FULL_ANSWERS = {
-  uso_digital_atual: 'joga_pronto',
-  perfil_p1: 'foguete',
-  perfil_p2: 'investigador',
-  perfil_p3: 'foguete',
-  perfil_p4: 'foguete',
-  resultado_desejado: 'mostrar_criacao',
-  apoio_para_comecar: 'projeto_curto',
-}
-
-describe('registro do funil Desafio', () => {
-  test('resolve por audience/produto e preserva o contrato público de 30 dias', () => {
-    const f = getFunnel('kids', 'desafio-primeiro-jogo')
-    expect(f).toBe(DESAFIO_PRIMEIRO_JOGO)
-    expect(f?.audience).toBe('kids')
-    expect(f?.theme).toBe('kids')
-    expect(f?.content.sales).toBeUndefined()
-    expect(f?.lifetimeAccess).toBe(false)
-    expect(f?.offerContract).toEqual({
+export const fixture = (override: QuizAnswers = {}): QuizAnswers => ({
+  _quiz_version: DESAFIO_QUIZ_VERSION,
+  _quiz_revision: 8,
+  idade: '9_11',
+  equipamento: 'disponivel',
+  interesses: ['joga'],
+  experiencia: 'primeira_vez',
+  motivos: ['B'],
+  duvida: 'ajuda',
+  formato: 'gravado',
+  interesse_no_projeto: 'conhecer',
+  ...override,
+})
+const result = (override: QuizAnswers = {}) => buildDesafioResult(fixture(override))!
+describe('Desafio Farol: orientação e encaminhamento', () => {
+  test('contrato preservado e oito perguntas principais', () => {
+    expect(funnel.offerContract).toEqual({
       pricingMode: 'one_time',
       accessMode: 'fixed',
       accessDurationValue: 30,
       accessDurationUnit: 'days',
       guaranteeDays: 7,
     })
+    expect(activeDesafioSteps(fixture())).toHaveLength(8)
+    expect(isQuizComplete(funnel.content.quiz!, fixture())).toBe(true)
   })
-})
-
-describe('desafioComputePerfil', () => {
-  test('usa a maioria das quatro respostas de perfil', () => {
-    expect(desafioComputePerfil(FULL_ANSWERS)).toBe('foguete')
+  test('A não infere vontade de criar por gostar de jogar', () => {
+    const r = result({ motivos: ['A'] })
+    expect(r.intro.join(' ')).toContain('ainda não contou que tenha pedido')
+    expect(r.decision.offerPath).toEndWith('/tempo-de-tela')
   })
-
-  test('usa a primeira resposta como desempate', () => {
+  test('B com tentativa interrompida orienta retomada e ajuda', () => {
+    const r = result({ experiencia: 'interrompida', interesses: ['quer_criar'] })
+    expect(r.decision.next).toBe('retomar_com_apoio')
+    expect(r.bridge.join(' ')).toContain('não é preciso transferi-la')
+    expect(r.doubt.paragraphs.join(' ')).toContain('Recados')
+  })
+  test('D que prefere ao vivo pode avaliar o gravado sem ser bloqueado', () => {
+    const r = result({ motivos: ['D'], formato: 'prefere_ao_vivo' })
+    expect(r.decision.unmet).toEqual([])
+    expect(r.decision.offerPath).toEndWith('/iniciacao-tecnologica')
+    expect(r.bridge.join(' ')).toContain('espera')
+  })
+  test('C preservado ao aceitar o Farol, com limite de arte explícito', () => {
+    const r = result({ motivos: ['C'], interesses: ['desenha'] })
+    expect(r.decision.principal).toBe('C')
+    expect(funnel.content.quiz!.computePerfil!(fixture({ motivos: ['C'] }))).toBe(
+      'expressao-visual',
+    )
+    expect(r.decision.offerPath).toEndWith('/oferta')
+    expect(r.conditions.join(' ')).toContain('não aprende a desenhar')
+  })
+  test('prioridade A e interesse C não fazem histórias virar gosto por desenho', () => {
+    const r = result({ motivos: ['A', 'C'], prioridade: 'A', interesses: ['inventa_historias'] })
+    expect(r.decision.principal).toBe('A')
+    expect(r.intro.join(' ')).toContain('inventa personagens ou histórias')
+    expect(r.intro.join(' ')).not.toContain('ele gosta de desenhar')
+  })
+  test('empate conserva motivos e não impõe principal', () => {
+    const r = result({ motivos: ['B', 'D'], prioridade: 'iguais' })
+    expect(r.decision.principal).toBeNull()
+    expect(r.decision.motivos).toEqual(['B', 'D'])
     expect(
-      desafioComputePerfil({
-        perfil_p1: 'explorador',
-        perfil_p2: 'investigador',
-        perfil_p3: 'foguete',
-        perfil_p4: 'especialista',
-      }),
-    ).toBe('explorador')
+      funnel.content.quiz!.computePerfil!(fixture({ motivos: ['B', 'D'], prioridade: 'iguais' })),
+    ).toBeNull()
   })
-
-  test('sem a primeira resposta retorna vazio', () => {
-    expect(desafioComputePerfil({ perfil_p2: 'investigador' })).toBe('')
+  test.each(['exploracao', 'outra_procura'])('%s não classifica pelo destino padrão', (motive) => {
+    const r = result({ motivos: [motive] })
+    expect(r.decision.principal).toBeNull()
+    expect(r.copyFirst).toBe(true)
+    expect(r.decision.offerPath).toEndWith('/oferta')
   })
-})
-
-describe('desafioRenderCorpo', () => {
-  test('apresenta o perfil como uma leitura das respostas, não como diagnóstico', () => {
-    const titles = Object.values(DESAFIO_PRIMEIRO_JOGO.content.result?.profiles ?? {}).map(
-      (profile) => profile.titulo,
-    )
-
-    expect(titles).toHaveLength(4)
-    for (const title of titles) expect(title).toStartWith('Pelas respostas,')
-    expect(titles.join(' ')).not.toContain('aprender melhor')
+  test('sem computador continua informativo e não recomenda compra', () => {
+    const r = result({ equipamento: 'sem_computador' })
+    expect(r.decision.unmet).toContain('computador')
+    expect(r.showBridge).toBe(false)
+    expect(r.primary.href).toEndWith('#requisitos')
   })
-
-  test('interpola uso, desejo e apoio sem deixar marcadores', () => {
-    const result = DESAFIO_PRIMEIRO_JOGO.content.result
-    const secoes = result?.profiles.foguete?.secoes ?? []
-    const bruto = [...secoes.map((s) => s.texto), result?.destaque ?? '', result?.fecho ?? ''].join(
-      ' ',
-    )
-    const out = desafioRenderCorpo(bruto, FULL_ANSWERS)
-
-    expect(out).toContain('jogar experiências que já estão prontas')
-    expect(out).toContain('chamando a família para mostrar algo que criou')
-    expect(out).toContain('um projeto curto, com uma chegada clara')
-    expect(out).not.toMatch(/\{resposta_[^}]+\}/)
+  test('computador compartilhado orienta horário sem reprovar', () => {
+    const r = result({ equipamento: 'compartilhado' })
+    expect(r.decision.unmet).toEqual([])
+    expect(r.conditions.join(' ')).toContain('horário')
   })
-
-  test('retoma o desejo no texto da oferta somente para valores conhecidos', () => {
-    expect(desafioDesejoLabel('entender_tecnologia')).toBe(
-      'entendendo melhor como a tecnologia funciona',
-    )
-    expect(desafioDesejoLabel('valor_forjado')).toBeNull()
+  test('exigir ao vivo não encaminha a assinatura como solução', () => {
+    const r = result({
+      formato: 'exige_ao_vivo',
+      interesse_no_projeto: 'outra_atividade',
+      desencontro: 'desenho',
+    })
+    expect(r.decision.unmet).toContain('formato')
+    expect(r.alternative).toBeNull()
+    expect(r.conditions.join(' ')).toContain('também não substitui')
   })
-})
-
-describe('DESAFIO_VALUE_SCHEMA', () => {
-  test('aceita respostas previstas e rejeita valores desconhecidos', () => {
-    expect(DESAFIO_VALUE_SCHEMA.uso_digital_atual.safeParse('joga_pronto').success).toBe(true)
-    expect(DESAFIO_VALUE_SCHEMA.perfil_p1.safeParse('explorador').success).toBe(true)
-    expect(DESAFIO_VALUE_SCHEMA.perfil_p4.safeParse('inexistente').success).toBe(false)
-    expect(DESAFIO_VALUE_SCHEMA.resultado_desejado.safeParse('raciocinio').success).toBe(true)
-    expect(DESAFIO_VALUE_SCHEMA.apoio_para_comecar.safeParse('qualquer_coisa').success).toBe(false)
+  test.each([
+    'desenho',
+    'ferramenta_especifica',
+    'avancado',
+    'outro',
+  ])('projeto recusado por %s não volta a ser recomendado', (mismatch) => {
+    const r = result({ interesse_no_projeto: 'outra_atividade', desencontro: mismatch })
+    expect(r.decision.next).toBe('outra_atividade')
+    expect(r.decision.unmet).toContain('projeto')
+    expect(r.showBridge).toBe(false)
   })
-})
-
-describe('isQuizComplete (Desafio)', () => {
-  const quiz = DESAFIO_PRIMEIRO_JOGO.content.quiz
-
-  test('exige as sete respostas e não depende de campo derivado', () => {
-    if (!quiz) throw new Error('Desafio deve ter quiz')
-    expect(isQuizComplete(quiz, { perfil_p1: 'foguete' })).toBe(false)
-    expect(isQuizComplete(quiz, FULL_ANSWERS)).toBe(true)
-
-    const incompleto = { ...FULL_ANSWERS } as Record<string, string | number>
-    delete incompleto.apoio_para_comecar
-    expect(isQuizComplete(quiz, incompleto)).toBe(false)
+  test('já cria independentemente recebe ressalva de nível', () => {
+    const r = result({ experiencia: 'independente' })
+    expect(r.decision.pending).toContain('nivel')
+    expect(r.decision.next).toBe('conferir_condicoes')
+  })
+  test.each(['menos_9', '15_mais'])('idade %s termina com orientação informativa', (idade) => {
+    const a = fixture({ idade })
+    expect(activeDesafioSteps(a)).toHaveLength(1)
+    expect(buildDesafioResult(a)).toBeNull()
+  })
+  test('trocar motivos limpa prioridade; editar aceitação limpa recusa', () => {
+    const a = applyDesafioAnswer(fixture({ motivos: ['A', 'D'], prioridade: 'A' }), 'motivos', [
+      'B',
+      'C',
+    ])!
+    expect(a.prioridade).toBeUndefined()
+    expect(isDesafioQuizComplete(a)).toBe(false)
+    const b = applyDesafioAnswer(
+      fixture({ interesse_no_projeto: 'outra_atividade', desencontro: 'desenho' }),
+      'interesse_no_projeto',
+      'conhecer',
+    )!
+    expect(b.desencontro).toBeUndefined()
+    expect(isDesafioQuizComplete(b)).toBe(true)
+  })
+  test('mudança de idade limpa todas as perguntas que deixam de existir', () => {
+    const a = applyDesafioAnswer(fixture(), 'idade', 'menos_9')!
+    expect(a.motivos).toBeUndefined()
+    expect(a.equipamento).toBeUndefined()
+    expect(applyDesafioAnswer(a, 'motivos', ['B'])).toBeNull()
+  })
+  test('legado e incompleto não viram resultado novo por aproximação', () => {
+    expect(desafioDecision({ perfil_p1: 'foguete', uso_digital_atual: 'joga_pronto' })).toBeNull()
+    expect(desafioDecision(fixture({ _quiz_version: 'desafio-antigo' }))).toBeNull()
+    expect(desafioDecision(fixture({ duvida: '' }))).toBeNull()
+  })
+  test.each([
+    'nao_observei',
+    'nao_sei',
+  ])('%s tem convite sem inventar ausência de interesse', (interest) => {
+    const r = result({ interesses: [interest] })
+    expect(r.intro.join(' ')).not.toContain('Ele gosta de jogar')
+    expect(r.intro.join(' ')).not.toContain('não tem interesses')
+  })
+  test('conversa pendente prevalece sobre tentativa interrompida', () => {
+    const r = result({ experiencia: 'interrompida', interesse_no_projeto: 'conversar' })
+    expect(r.decision.next).toBe('conversar_com_filho')
+    expect(r.copyFirst).toBe(true)
+  })
+  test.each(['equipamento', 'formato'])('%s incerto pede conferência', (key) => {
+    const r = result({ [key]: 'a_conferir' })
+    expect(r.decision.adequacy).toBe('precisa_conferir')
+    expect(r.decision.next).toBe('conferir_condicoes')
+  })
+  test('preserva múltiplos impedimentos e o motivo declarado', () => {
+    const r = result({ equipamento: 'sem_computador', formato: 'exige_ao_vivo' })
+    expect(r.decision.unmet).toEqual(['computador', 'formato'])
+    expect(r.decision.principal).toBe('B')
+    expect(r.conditions).toHaveLength(2)
+  })
+  test('desenho secundário não bloqueia o interesse em programação', () => {
+    const r = result({ interesses: ['quer_criar', 'desenha'], motivos: ['B'] })
+    expect(r.decision.unmet).toEqual([])
+    expect(r.conditions.join(' ')).toContain('desenhos já vêm preparados')
+  })
+  test('rejeita duplicatas, exclusivas misturadas, terceira prioridade e desempate forjado', () => {
+    for (const motives of [
+      ['A', 'A'],
+      ['exploracao', 'B'],
+      ['A', 'B', 'C'],
+    ])
+      expect(applyDesafioAnswer(fixture(), 'motivos', motives)).toBeNull()
+    expect(applyDesafioAnswer(fixture({ motivos: ['A', 'D'] }), 'prioridade', 'C')).toBeNull()
+    expect(
+      activeDesafioSteps(fixture({ motivos: ['A', 'D'], interesse_no_projeto: 'outra_atividade' })),
+    ).toHaveLength(10)
   })
 })

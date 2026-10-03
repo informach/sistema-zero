@@ -2,6 +2,7 @@
 import Footer from '../../../components/Footer.astro'
 import Header from '../../../components/Header.astro'
 import { EMPRESA } from '../../../content/legal'
+import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
 import { getFunnel } from '../../../funnels/registry'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import {
@@ -28,6 +29,7 @@ Astro.response.headers.set('cache-control', 'no-store')
 
 const leadId = getLeadId(Astro.request)
 const lead = leadId ? await repo.getLead(leadId) : null
+if (lead && !leadBelongsToFunnel(lead.funnel, f.key)) return Astro.redirect(`${f.basePath}/oferta`)
 const paymentContext = lead?.paymentId ? await repo.paymentContext(lead.paymentId) : null
 const purchased = parsePurchasedOfferSnapshot(paymentContext?.offerSnapshot ?? null)
 const fixedAccess = fixedAccessFromSnapshot(purchased)
@@ -56,7 +58,7 @@ const pageTitle = approved
   : `Pagamento em análise | ${productName}`
 const confirmationTitle = approved
   ? isTimedChallenge
-    ? 'Pagamento aprovado. Agora o primeiro jogo pode sair do papel.'
+    ? 'Pagamento aprovado. O próximo passo é conhecer o Farol.'
     : isCommunity
       ? 'Sua assinatura está confirmada.'
       : 'Pagamento confirmado!'
@@ -101,7 +103,7 @@ const confirmationTitle = approved
             isTimedChallenge && accessEnd ? (
               <>
                 Seu acesso vai até <strong class="text-ink">{formatSaoPauloDateTime(accessEnd)}</strong>.
-                {buyerEmail ? <> Enviamos para <strong class="text-ink">{buyerEmail}</strong> o link para criar sua senha e entrar na área da família.</> : ' O link de acesso foi enviado ao e-mail da compra.'}
+                {buyerEmail ? <> Confira as instruções de acesso em <strong class="text-ink">{buyerEmail}</strong>.</> : ' Confira as instruções no e-mail da compra.'} Se já tem conta, use seu acesso habitual. No primeiro acesso, siga as instruções para criar sua senha.
               </>
             ) : isCommunity ? (
               <>{introObrigado} Se já tem conta, entre com seu acesso habitual. No primeiro acesso, siga as instruções enviadas ao e-mail da compra.</>
@@ -198,7 +200,7 @@ const confirmationTitle = approved
         approved && (
           <a href={communityUrl} class="btn btn-primary mt-8 w-full">
             {isTimedChallenge
-              ? 'Criar acesso e abrir a primeira etapa →'
+              ? 'Entrar e conhecer A Chave do Farol →'
               : isCommunity
                 ? 'Entrar na Comunidade →'
                 : 'Ir para a área de membros →'}

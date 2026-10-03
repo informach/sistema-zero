@@ -1,100 +1,142 @@
-/** Visual smoke test of the actual React panel, using a real local snapshot and synthetic counts. */
+/** Actual built admin + database + ingestion + screenshot worker. Only the local IdP is a fixture. */
 import assert from 'node:assert/strict'
+import { spawn } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
-import { sql } from 'drizzle-orm'
+import { createServer } from 'node:http'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { chromium } from 'playwright'
-import { closeDb, getDb } from '../../src/db/client'
 
-const base = 'http://localhost:4321'
 assert.ok(['localhost', '127.0.0.1'].includes(new URL(process.env.DATABASE_URL!).hostname))
-const browser = await chromium.launch()
-const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
-try {
-  const [snap] = await getDb().execute(
-    sql`select * from funil.analytics_snapshots where page='/' and viewport=1280 order by created_at desc limit 1`,
-  )
-  assert.ok(snap, 'Run analytics:snapshots first')
-  const report = {
-    campaigns: [{ source: 'instagram', campaign: 'bio', sessions: 10, paid: 1 }],
-    coverage: { paid: 2, unlinked: 1 },
-    summary: {
-      sessions: 10,
-      visitors: 8,
-      contacts: 4,
-      checkout: 3,
-      paid: 1,
-      revenue: 3700,
-      missingRevenue: 0,
-      lastEvent: new Date().toISOString(),
-    },
-    pages: [
-      {
-        page: '/',
-        revision: snap.revision,
-        viewport: 1280,
-        views: 10,
-        clicks: 5,
-        snapshot: snap.id,
-      },
-    ],
-    interactions: [
-      {
-        page: '/',
-        revision: snap.revision,
-        element: 'bio-comunidade',
-        section: 'bio',
-        label: 'Conhecer a Comunidade e os planos',
-        exposed: 10,
-        clicked: 5,
-        opened: 0,
-        zoomed: 0,
-      },
-    ],
-    quizzes: [],
-    journeys: [{ route: 'Sem quiz observado', sessions: 10, paid: 1 }],
+const token = crypto.randomUUID()
+const gateway = createServer((req, res) => {
+  res.setHeader('content-type', 'application/json')
+  if (req.url === '/auth/me' && req.headers.authorization === `Bearer ${token}`)
+    res.end(
+      JSON.stringify({
+        user: { id: 'qa-local-admin', email: 'qa@example.test', role: 'admin', status: 'active' },
+      }),
+    )
+  else {
+    res.statusCode = 401
+    res.end('{}')
   }
-  const page = await context.newPage()
+})
+await new Promise<void>((done) => gateway.listen(0, '127.0.0.1', done))
+const address = gateway.address()
+assert.ok(address && typeof address !== 'string')
+const reservation = createServer()
+await new Promise<void>((done) => reservation.listen(0, '127.0.0.1', done))
+const port = (reservation.address() as { port: number }).port
+await new Promise<void>((done) => reservation.close(() => done()))
+const base = `http://127.0.0.1:${port}`
+const environment = {
+  ...process.env,
+  NODE_ENV: 'development',
+  GATEWAY_URL: `http://127.0.0.1:${address.port}`,
+  HOST: '127.0.0.1',
+  PORT: String(port),
+}
+const app = spawn(
+  'bun',
+  [
+    '-e',
+    `await import(${JSON.stringify(pathToFileURL(resolve('.tmp/analytics-review-build/server/entry.mjs')).href)})`,
+  ],
+  { env: environment, stdio: ['ignore', 'pipe', 'pipe'] },
+)
+let serverErrors = ''
+app.stderr.on('data', (data) => {
+  serverErrors += data
+})
+const browser = await chromium.launch()
+const context = await browser.newContext({
+  viewport: { width: 1280, height: 900 },
+  reducedMotion: 'reduce',
+})
+try {
+  let ready = false
+  for (let attempt = 0; attempt < 100; attempt++) {
+    if (app.exitCode !== null) throw new Error(serverErrors)
+    try {
+      ready = (await fetch(base)).ok
+    } catch {}
+    if (ready) break
+    await new Promise((done) => setTimeout(done, 100))
+  }
+  assert.ok(ready, 'Local QA build did not start')
+  const source = `qa-panel-${crypto.randomUUID()}`
+  const visitor = await context.newPage()
   const errors: string[] = []
-  page.on('pageerror', (error) => errors.push(error.message))
-  await page.route('**/api/admin/analytics?*', (route) =>
-    route.fulfill({
-      json: new URL(route.request().url()).searchParams.has('viewport')
-        ? { snapshot: snap, points: [{ element: 'bio-comunidade', x: 5000, y: 5000, count: 5 }] }
-        : report,
-    }),
+  visitor.on('pageerror', (error) => errors.push(error.message))
+  await visitor.goto(`${base}/?utm_source=${source}`)
+  const firstBatch = visitor.waitForResponse(
+    (r) => r.url().endsWith('/api/analytics/events') && r.ok(),
   )
-  await page.goto(`${base}/kids/comunidade-dos-criadores/quiz`)
-  await page.locator('.cq-intro button.kof-btn').waitFor()
-  await page.getByRole('button', { name: 'Continuar sem métricas' }).click()
-  await page.waitForFunction('typeof window.$RefreshReg$ === "function"')
-  await page.evaluate(async () => {
-    const panelPath = '/src/islands/admin/AnalyticsPanel.tsx'
-    const source = await (await fetch(panelPath)).text()
-    const reactPath = source.match(/from "([^"]*\/react\.js[^"]*)"/)![1]!
-    const domPath = reactPath.replace('/react.js', '/react-dom_client.js')
-    const [React, ReactDOM, panel] = await Promise.all([
-      import(reactPath),
-      import(domPath),
-      import(panelPath),
-    ])
-    document.documentElement.className = 'dark'
-    document.body.innerHTML =
-      '<main id="qa-panel" style="padding:32px;max-width:1400px;margin:auto"></main>'
-    ReactDOM.default
-      .createRoot(document.querySelector('#qa-panel'))
-      .render(React.default.createElement(panel.default, { funnel: '' }))
+  await visitor.getByRole('button', { name: 'Permitir métricas' }).click()
+  await firstBatch
+  await visitor.getByRole('link', { name: /Ver como meu filho aprende/ }).click()
+  await visitor.waitForURL('**/como-funciona/**')
+  const capture = spawn(
+    process.execPath,
+    ['--import', 'tsx', 'scripts/analytics-snapshots.ts', '--page=/', '--width=1280', '--refresh'],
+    {
+      env: { ...environment, ANALYTICS_CAPTURE_URL: base },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    },
+  )
+  let captureLog = ''
+  capture.stdout.on('data', (data) => {
+    captureLog += data
   })
+  capture.stderr.on('data', (data) => {
+    captureLog += data
+  })
+  const timer = setTimeout(() => capture.kill(), 60000)
+  const captureCode = await new Promise<number | null>((done) => capture.on('exit', done))
+  clearTimeout(timer)
+  assert.equal(captureCode, 0, captureLog)
+  await context.addCookies([{ name: 'admin_access', value: token, url: base, httpOnly: true }])
+  const page = await context.newPage()
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto(`${base}/admin`)
+  await page.locator('astro-island[component-url*="AdminDashboard"]:not([ssr])').waitFor()
+  await page.getByRole('button', { name: 'Métricas', exact: true }).click()
+  await page.getByLabel('Ambiente').selectOption('development')
+  await page.getByLabel('Origem (UTM)').fill(source)
+  const reportReady = page.waitForResponse(
+    (r) => r.url().includes('/api/admin/analytics?') && r.url().includes(source) && r.ok(),
+  )
+  await page.getByLabel('Origem (UTM)').press('Tab')
+  const report = await (await reportReady).json()
+  assert.equal(report.summary.sessions, 1)
+  assert.ok(
+    report.pages.some(
+      (row: { page: string; clicks: number; snapshot: string | null }) =>
+        row.page === '/' && row.clicks >= 1 && row.snapshot,
+    ),
+  )
   await page.getByRole('button', { name: 'Ver print e mapa' }).click()
   await page.getByRole('img', { name: 'Print da página com mapa de cliques' }).waitFor()
-  assert.equal(await page.locator('svg circle').count(), 1)
+  assert.ok((await page.locator('svg circle').count()) >= 1)
   await mkdir('output/analytics', { recursive: true })
   await page.screenshot({ path: 'output/analytics/painel-mapa.png', fullPage: true })
-  await page.getByLabel('Recortar uma seção ou elemento').selectOption('bio-comunidade')
+  await page.getByLabel('Recortar uma seção ou elemento').selectOption('bio-como-funciona')
   await page.screenshot({ path: 'output/analytics/painel-recorte.png', fullPage: true })
   assert.deepEqual(errors, [])
-  console.log('Panel, real snapshot, click overlay and section crop passed (synthetic counts).')
+  console.log(
+    'Passed: actual browser click → ingestion → PostgreSQL → capture worker → authenticated admin API → map and crop. Local synthetic visitor; local IdP fixture only.',
+  )
 } finally {
+  await context.request
+    .post(`${base}/api/analytics/consent`, {
+      headers: { origin: base },
+      data: { choice: 'rejected' },
+    })
+    .catch(() => {})
   await context.close()
   await browser.close()
-  await closeDb()
+  app.kill()
+  gateway.closeAllConnections()
+  gateway.close()
 }
