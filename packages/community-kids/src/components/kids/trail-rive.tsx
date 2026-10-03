@@ -25,9 +25,9 @@ const MARGEM_PRECARGA = '300px'
  * o SSR/primeiro quadro, a economia de dados do aparelho, a unidade nunca ter
  * chegado perto da tela, e qualquer falha do Rive (WASM bloqueado, `.riv` 404,
  * CORS do bucket). Isso é benigno aqui e por um motivo concreto: o
- * `.kids-trail-art` é `position: absolute`, então a arte está FORA do fluxo — sem
- * arte não há buraco, nem salto de layout, nem ícone de imagem quebrada. Some
- * um enfeite, e a trilha fica igual à de um módulo sem arquivo.
+ * `.kids-trail-art` é `position: absolute`. O `TrailUnitBody` só reserva altura
+ * adicional depois de `onReady`, quando a arte não cabe ao lado dos nós, e retira
+ * essa reserva no `onFailed`. Sem arte, a trilha fica igual à de um módulo sem arquivo.
  *
  * ⚠️⚠️ Mas o silêncio corta dos dois lados: "falhou" e "ninguém subiu arquivo"
  * ficam idênticos na tela, e o CORS do bucket público é um jeito REAL de cair
@@ -39,7 +39,15 @@ const MARGEM_PRECARGA = '300px'
  * `autoplay: false` pinta o primeiro quadro. Movimento reduzido é preferência
  * vestibular, não falta de banda — a criança continua vendo a arte.
  */
-export function TrailRive({ src }: { src: string }) {
+export function TrailRive({
+  src,
+  onReady,
+  onFailed,
+}: {
+  src: string
+  onReady?: () => void
+  onFailed?: () => void
+}) {
   const semMovimento = useReducedMotion()
   const alvo = useRef<HTMLSpanElement>(null)
   const [pode, setPode] = useState(false)
@@ -99,9 +107,11 @@ export function TrailRive({ src }: { src: string }) {
           src={src}
           tocar={!semMovimento}
           pausado={!visivel}
+          onReady={onReady}
           onFalhou={() => {
             console.warn('[trilha-rive] não carregou:', src)
             setCarga({ src, falhou: true })
+            onFailed?.()
           }}
         />
       ) : null}

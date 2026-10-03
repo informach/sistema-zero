@@ -178,7 +178,7 @@ describe('CourseTrail', () => {
     }
   })
 
-  test('ilustrações escolhem lado e altura pelo trecho mais livre da unidade', () => {
+  test('a arte aguarda medidas sem reservar espaço; aulas e baú expõem seus limites', () => {
     const desafio = course([
       { ...moduleOf('m1', [lesson('a'), lesson('b')]), riveUrl: riv('nave') },
       { ...moduleOf('vazio', []), riveUrl: riv('nave') },
@@ -190,17 +190,14 @@ describe('CourseTrail', () => {
     ])
     const { container } = render(<CourseTrail course={desafio} />)
     const arts = [...container.querySelectorAll<HTMLElement>('[data-trail-art]')]
-    expect(arts.map((art) => art.classList.contains('kids-trail-art--left'))).toEqual([
-      true,
-      true,
-      false,
-    ])
-    expect(arts.map((art) => art.classList.contains('kids-trail-art--right'))).toEqual([
-      false,
-      false,
-      true,
-    ])
-    expect(arts.map((art) => art.style.top)).toEqual(['55%', '21.67%', '66.25%'])
+    expect(arts.every((art) => art.style.visibility === 'hidden')).toBe(true)
+    expect(
+      [...container.querySelectorAll<HTMLElement>('[data-trail-body]')].every(
+        (body) => body.style.paddingBottom === '0px',
+      ),
+    ).toBe(true)
+    expect(container.querySelectorAll('[data-trail-obstacle]')).toHaveLength(10)
+    expect(container.querySelector('[data-trail-obstacle] .kids-balloon')).not.toBeNull()
   })
 
   test('módulos vazios e módulos sem animação no Admin não recebem arte', () => {

@@ -3011,10 +3011,11 @@ que troca uma tarde de investigação por cinco segundos.
 
 ⚠️ O `.kids-trail-art` ganhou `aspect-ratio: 9 / 8` e perdeu a regra de `img`: o
 `<canvas>` **não tem proporção intrínseca** e cairia nos 150px de fábrica. O 9/8 é o
-`180x160` do `<Image>` que saiu, então a trilha não se mexeu um pixel.
+`180x160` do `<Image>` que saiu. A largura mudou em 03/10/2026, conforme abaixo.
 
 Os quatro desvios calados (SSR/primeiro quadro, `saveData`, fora da viewport, falha
-do Rive) não deixam buraco porque a arte é `position: absolute` — fora do fluxo.
+do Rive) não deixam buraco: a arte é absoluta e qualquer altura adicional só é
+reservada depois da carga; uma falha retira essa reserva.
 `prefers-reduced-motion` é o único que NÃO some: monta com `autoplay: false`, que
 pinta o primeiro quadro. O canvas monta na primeira interseção e depois só pausa,
 nunca desmonta (desmontar reiniciaria do quadro 0 a cada rolagem).
@@ -3027,7 +3028,40 @@ de segurança é como uma delas apodrece.
 ⚠️ **Teste:** o `IntersectionObserver` do happy-dom EXISTE mas nunca chama o callback
 (medido) — sem o falso, o canvas nunca monta e o teste mediria o contrário do que a
 criança vê. E, como sempre com Rive aqui, **nenhum teste prova que anima**: quem
-verifica é a prévia no Admin.
+verifica é a prévia no Admin. O ensaio Chromium abaixo também carrega um `.riv` real.
+
+### Tamanho e posição responsivos — 03/10/2026
+
+A caixa do Rive tem **250 px no desktop** e, até 640 px de viewport, **45% da
+coluna, limitados a 130–160 px**. `aspect-ratio: 9 / 8` e `Fit.Contain` preservam
+o arquivo inteiro; margens internas do artboard continuam fazendo parte da arte.
+
+`CourseTrail` ainda renderiza os nós no servidor e os passa como `children` para
+`TrailUnitBody`. Essa ilha mede os limites reais das aulas, legendas, balão e baú
+(`data-trail-obstacle` e `.kids-balloon`). `trailArtPlacement` encontra uma caixa
+lateral livre com 12 px de margem; prefere a maior folga e, no empate, o centro
+vertical e o lado alternado do módulo. O cálculo antigo pela soma de offsets saiu.
+`ResizeObserver` acompanha largura e texto, incluindo o carregamento de fontes.
+
+Quando a unidade é curta ou estreita demais, a arte fica abaixo dos nós e o corpo
+reserva a altura necessária. `onReady`/`onFailed` do canvas controlam essa reserva:
+carregamento, `saveData`, arquivo ausente ou falha não deixam espaço vazio. O Rive
+só aparece depois da primeira medição e da carga. Pausa fora da tela, carregamento
+sob demanda e movimento reduzido mantêm o comportamento anterior.
+
+Verificação: `tests/trail-art-layout.test.ts` cobre colisões e 288 combinações de
+largura/curva/comprimento; `tests/course-trail.test.tsx` confere a estrutura inicial.
+`e2e-scenes/trail-rive.spec.ts` usa os componentes e CSS reais com dados locais e
+`/zappy/happy.riv`: 320, 390, 430, 768 e 1440 px, resize, arquivo inválido e recuperação,
+movimento reduzido e economia de dados. Não depende dos uploads nem do login de alunos.
+
+Revisão de 03/10: o estado de carga reinicia em **toda troca de `src`**, inclusive
+remoção e retorno à mesma URL; o reset não remonta as aulas nem o baú. Uma URL que
+carregou antes não comprova que a nova instância está pronta. Enquanto oculta, a
+caixa fica em `top: 0`: `visibility: hidden` preserva o overflow rolável, portanto
+deixá-la na posição de reserva criava um vão no fim da página mesmo com padding zero.
+O e2e também cobre esses dois casos, além da troca dos obstáculos e do resize apenas
+da coluna. A regressão de espaço vazio compara o `scrollHeight` com o módulo sem arte.
 
 ## Comandos
 

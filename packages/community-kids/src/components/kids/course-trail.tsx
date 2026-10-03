@@ -6,14 +6,8 @@ import type { CourseDetailView } from '@/lib/types'
 import { chestRiveSrc } from './chest-rive-src'
 import { KidsMascot } from './mascot'
 import { TrailChest } from './trail-chest'
-import {
-  balloonLabel,
-  buildTrail,
-  type TrailArtSide,
-  type TrailNode,
-  trailArtPlacement,
-} from './trail-layout'
-import { TrailRive } from './trail-rive'
+import { balloonLabel, buildTrail, type TrailArtSide, type TrailNode } from './trail-layout'
+import { TrailUnitBody } from './trail-unit-body'
 import { UNIT_THEME_CLASS } from './unit-theme'
 
 /** Mapa LITERAL (nunca montar classe por template string). */
@@ -45,8 +39,8 @@ function nodeAria(node: TrailNode): string {
  * alternando nas cores da marca), aula = nó circular serpenteante e fim de
  * unidade = BAÚ. Desde 09/2026 o baú é CLICÁVEL: a criança abre e AÍ ganha o XP
  * (antes ele caía sozinho ao concluir a última aula do módulo). Por isso o baú é
- * a única ilha `'use client'` daqui — ver `trail-chest.tsx`. O resto segue Server
- * Component puro, com as animações no CSS do globals.
+ * a ilha que cuida de recompensas — ver `trail-chest.tsx`. Os nós são renderizados
+ * no servidor; `TrailUnitBody` mede a coluna no cliente para colocar o Rive sem sobreposição.
  *
  * Sem ícone por TIPO de aula (quiz/vídeo): LessonOutlineView não expõe os
  * blocos — seria mudança de backend, fora desta fatia.
@@ -81,8 +75,6 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
         const doneCount = unit.module.lessons.filter((l) => l.completed).length
         const art = moduleRiveSrc(unit.module.riveUrl)
         const preferredSide: TrailArtSide = unitIndex % 2 === 0 ? 'left' : 'right'
-        const { side: artSide, row: artRow } = trailArtPlacement(unit, preferredSide)
-        const artTop = Math.round(((artRow + 0.65) / (unit.nodes.length + 1)) * 10_000) / 100
         return (
           <section key={unit.module.id} className={UNIT_THEME_CLASS[unit.theme]}>
             <header className="kids-unit-banner px-5 py-4 md:px-6">
@@ -100,20 +92,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
               {unit.module.summary ? <p className="mt-1 text-sm">{unit.module.summary}</p> : null}
             </header>
 
-            <div className="relative mt-10">
-              {art ? (
-                <div
-                  data-trail-art
-                  aria-hidden="true"
-                  className={cn(
-                    'kids-trail-art',
-                    artSide === 'left' ? 'kids-trail-art--left' : 'kids-trail-art--right',
-                  )}
-                  style={{ top: `${artTop}%` }}
-                >
-                  <TrailRive src={art} />
-                </div>
-              ) : null}
+            <TrailUnitBody src={art} preferredSide={preferredSide}>
               <ol className="relative z-10">
                 {unit.nodes.map((node) => {
                   return (
@@ -155,6 +134,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                         // Aula travada: nó NÃO clicável (a regra de acesso é do backend).
                         return node.state === 'locked' ? (
                           <div
+                            data-trail-obstacle
                             role="img"
                             aria-label={nodeAria(node)}
                             className={cn(className, 'cursor-not-allowed')}
@@ -164,6 +144,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                           </div>
                         ) : (
                           <Link
+                            data-trail-obstacle
                             href={lessonHref(node.lesson.id)}
                             aria-label={nodeAria(node)}
                             className={className}
@@ -191,7 +172,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                   />
                 </li>
               </ol>
-            </div>
+            </TrailUnitBody>
           </section>
         )
       })}

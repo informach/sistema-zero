@@ -42,6 +42,30 @@ const lessonVideoBundle = await Bun.build({
 if (!lessonVideoBundle.success) throw new Error(lessonVideoBundle.logs.join('\n'))
 const lessonVideoScript = lessonVideoBundle.outputs.find((output) => output.path.endsWith('.js'))
 if (!lessonVideoScript) throw new Error('Bundle da aula com vídeo não foi gerado')
+const trailBundle = await Bun.build({
+  entrypoints: [resolve(import.meta.dir, 'trail-rive-client.tsx')],
+  target: 'browser',
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+    'process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL': '""',
+    'process.env': '{}',
+  },
+  plugins: [
+    {
+      name: 'server-component-fixture',
+      setup(build) {
+        // CourseTrail roda no servidor no Next; neste ensaio isolado os dados são locais.
+        build.onLoad({ filter: /server-only[\\/]index\.js$/ }, () => ({
+          contents: '',
+          loader: 'js',
+        }))
+      },
+    },
+  ],
+})
+if (!trailBundle.success) throw new Error(trailBundle.logs.join('\n'))
+const trailScript = trailBundle.outputs.find((output) => output.path.endsWith('.js'))
+if (!trailScript) throw new Error('Bundle da trilha não foi gerado')
 
 /** O progresso que a aula grava volta como o members devolveria (sem banco). */
 async function echoProgress(request: Request, path: string) {
@@ -64,6 +88,14 @@ Bun.serve({
   port: Number(process.env.SCENE_E2E_PORT ?? 5198),
   async fetch(request) {
     const path = new URL(request.url).pathname
+    if (path === '/trail-rive.js') return new Response(trailScript)
+    if (
+      path === '/rive/rive.wasm' ||
+      path === '/zappy/happy.riv' ||
+      path === '/kids/chest-closed.svg'
+    )
+      return new Response(Bun.file(resolve(app, `public${path}`)))
+    if (path === '/missing.riv') return new Response(null, { status: 404 })
     if (request.method === 'POST' && path.endsWith('/learning-progress'))
       return echoProgress(request, path)
     if (request.method === 'POST' && path.startsWith('/api/')) return Response.json({})
@@ -86,7 +118,9 @@ Bun.serve({
           ? '/project-play.js'
           : path === '/lesson-video'
             ? '/lesson-video.js'
-            : '/client.js'
+            : path === '/trail-rive'
+              ? '/trail-rive.js'
+              : '/client.js'
     const extraStyles =
       path === '/project-play-authoring'
         ? '<link rel="stylesheet" href="/project-play-authoring.css">'

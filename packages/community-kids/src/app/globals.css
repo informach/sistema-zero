@@ -1168,15 +1168,13 @@ a.kid-pop:has(> .kids-carta):hover {
 
   .kids-trail-art {
     position: absolute;
-    /* O `top` vem do trecho de nós mais livre, calculado no course-trail.tsx. */
+    /* O `top` considera os limites reais dos nós, medidos pelo TrailUnitBody. */
     z-index: 0;
-    /* ~92px no celular estreito, ~104px no comum e até 176px no desktop.
-       Cresce junto da tela sem um salto brusco no breakpoint. */
-    width: clamp(5.75rem, 26vw, 11rem);
+    width: min(250px, 100%);
     /* ⚠️ O <canvas> do Rive NÃO tem proporção intrínseca: com `height: auto` o
        navegador cai nos 150px de fábrica dos elementos substituíveis. Quem manda
-       na altura agora é a caixa, e 9/8 é exatamente o 180x160 do <Image> que o
-       Rive substituiu — a trilha não se mexe um pixel. */
+       na altura é a caixa. A proporção 9/8 acompanha a largura; Fit.Contain
+       preserva o artboard inteiro dentro dela. */
     aspect-ratio: 9 / 8;
     pointer-events: none;
     user-select: none;
@@ -1186,6 +1184,12 @@ a.kid-pop:has(> .kids-carta):hover {
   }
   .kids-trail-art--right {
     right: 0;
+  }
+  @media (max-width: 640px) {
+    .kids-trail-art {
+      /* A porcentagem acompanha a coluna real, inclusive com menu/padding. */
+      width: min(100%, clamp(130px, 45%, 160px));
+    }
   }
   .kids-node {
     width: var(--trail-node);
