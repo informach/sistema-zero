@@ -14,6 +14,14 @@
 > O host verifica a janela emissora e reutiliza `projectPlayComplete` do core. Abrir, ampliar
 > e reiniciar não contam como participação; reiniciar após concluir preserva a conclusão.
 > `stage` define a proporção. A mesma implementação atende Kids, Community e prévia do Admin.
+> **03/10/2026, pedido dela:** as ações (interruptor do vídeo, "Jogar de novo", "Ampliar jogo")
+> ficam na MESMA linha do título (`sz-project-play-header`, quebra só sem espaço), como no Estúdio
+> e na cena. O palco (`sz-project-play-stage`) mantém a proporção e ENCOLHE em vez de criar
+> rolagem: no modo normal o teto vem da altura da janela (`--sz-stage-aspect`), e no ampliado a área
+> é `container-type: size` e o palco é `min(100cqw, 100cqh × proporção)`. Com rolagem, as setas do
+> jogo rolavam a tela junto. O e2e `project-play.spec.ts` confere sem rolagem, proporção e mesma
+> linha. As setas que ROLAVAM a página da aula no modo normal são resolvidas DENTRO do iframe,
+> pelo `scrollKeyGuard` do Studio (ver o CLAUDE.md de lá).
 
 > **Experiências ampliadas (23/09/2026):** `scene-workspace.tsx` amplia o mesmo player, sem portal,
 > remount ou Fullscreen API. `ConsoleVisual` e `ConsoleActions` mantêm HUD/cena antes de
@@ -1181,20 +1189,37 @@ cursos de quem está começando; o members manda `false` para a equipe.
 
 **2. O vídeo flutuante (todos os cursos).** Com uma atividade AMPLIADA e o vídeo da seção
 tocando, o MESMO vídeo aparece pequeno por cima (estilo picture-in-picture, dentro da página),
-arrastável e redimensionável; parado, vira a pílula "Vídeo", que o abre e dá play.
+arrastável e redimensionável. ⭐⭐ **O botão e o vídeo são peças SEPARADAS (03/10/2026, pedido
+dela):** a pílula "Vídeo" que flutuava no canto ficava por cima dos controles do Estúdio ampliado (o
+olho e o ⋯ ficavam inclicáveis) e SAIU. No lugar dela há o INTERRUPTOR **`LessonVideoToggle`**
+(`lesson-video-float.tsx`), um botão fixo na barra de AÇÕES de cada atividade ampliada, à esquerda
+das outras: no Estúdio antes do "Recomeçar", no Pinta antes do "Baixar o desenho", no jogo pronto
+antes do "Jogar de novo" e na cena antes do "Voltar à aula". `aria-pressed` diz se o vídeo está à
+vista, o rótulo é sempre "Vídeo" (só o ícone abaixo de 640px, nome mantido no `sr-only`).
+Desligado, o vídeo segue tocando no lugar dele na aula, embaixo da tela ampliada; ligado, flutua
+exatamente como antes. Quem liga as duas pontas é o contexto **`LessonVideoToggleContext`**
+(`{on, toggle}`), provido pelo `LessonSectionsContent` só quando há tela ampliada E vídeo na seção:
+fora disso o contexto é `null` e o botão não renderiza nada. ⚠️⚠️ O contexto vale para a SEÇÃO
+inteira, então cada tela passa `expanded` (o estado DELA): sem isso, numa seção com duas
+atividades, a que ficou embaixo da tela ampliada ganhava um segundo interruptor escondido, e o foco
+do "Minimizar" (que procura `[data-sz-video-toggle]`) podia cair nele (achado do full review;
+regressão no `lesson-video-gate.test.tsx` do kids, provada por mutação). O estado ligado vem no
+próprio componente (`aria-pressed:bg-primary`…), para valer no adulto, que não tem regra para o
+botão; o kids veste por cima com a TV navy.
 - **"Uma atividade está ampliada"** é o store de módulo `lib/lesson-activity-expansion.ts`
   (`useReportActivityExpanded(expanded)` + `useAnyActivityExpanded()`), que as QUATRO peças que
   ampliam chamam: `scene-workspace`, `project-play-activity`, `studio/studio-block` e
   `pinta/pinta-block`. Peça nova que amplia precisa chamar também.
 - **"O vídeo está tocando" e "dar play"**: `onVideoPlayingChange` + `registerVideoControls` do
   contexto (ver invariante 5b). O `LessonSectionsContent` guarda qual vídeo toca e um mapa de
-  controles; a decisão é só na TRANSIÇÃO de ampliar (tocando → flutua, parado → pílula).
-  "Minimizar" volta à pílula (o vídeo segue); fechar a tela ampliada devolve o vídeo ao lugar sem
-  parar. ⚠️ O modo mostrado é DERIVADO no render (`player && anyExpanded && floatVideoId ?
+  controles; a decisão é só na TRANSIÇÃO de ampliar (tocando → flutua, parado → escondido, com o
+  interruptor desligado). Ligar o interruptor flutua e dá play. "Minimizar" esconde (o vídeo segue)
+  e devolve o foco ao interruptor (`[data-sz-video-toggle]`) quando ele estava no flutuante ou se
+  perdeu; fechar a tela ampliada devolve o vídeo ao lugar sem parar. ⚠️ O modo mostrado é DERIVADO no render (`player && anyExpanded && floatVideoId ?
   escolha : null`): fechar a tela ampliada esconde de novo o painel do conteúdo (modo de abas) no
   MESMO render da devolução do foco, sem um quadro de layout trocado embaixo dela.
 - **Outro diálogo por cima** (o "Enviar para o professor?" do Estúdio ampliado, o diálogo do Pinta,
-  uma celebração do kids): o flutuante e a pílula ficam `invisible` + `inert` e perdem a marca de
+  uma celebração do kids): o flutuante fica `invisible` + `inert` e perde a marca de
   acompanhante enquanto existir um `[aria-modal="true"]` que não seja uma tela ampliada
   (`MutationObserver` só com o modo ativo, filtrando `aria-modal`). O vídeo segue tocando.
   ⚠️ Não ponha `aria-hidden` junto: no happy-dom ele derrubava o observador nos testes (medido), e
@@ -1207,8 +1232,8 @@ arrastável e redimensionável; parado, vira a pílula "Vídeo", que o abre e d�
   para `position: fixed`. A barra, o anúncio e a guarda de foco são irmãos condicionais
   ANTES/DEPOIS do corpo, que fica sempre na mesma posição. O lugar na aula (`sz-lesson-video-slot`)
   guarda a altura medida enquanto ele flutua (`min-height`; o e2e confere em Chromium). No modo de
-  abas o painel do conteúdo deixa de ser `hidden!` com o flutuante ou a pílula ativos (`fixed`
-  dentro de `display: none` não aparece). Trava: o teste do kids confere que o `<video>` é o MESMO
+  abas o painel do conteúdo deixa de ser `hidden!` com o modo do vídeo ativo (`fixed` dentro de
+  `display: none` não aparece, e escondido o vídeo precisa seguir tocando). Trava: o teste do kids confere que o `<video>` é o MESMO
   nó antes e depois.
 - **Geometria pura** em `lib/lesson-video-float.ts`: sempre num CANTO (soltar o arrasto encaixa no
   canto do quadrante em que o centro parou). ⚠️⚠️ **Os cantos de cima começam logo abaixo da SAÍDA
@@ -1238,33 +1263,33 @@ arrastável e redimensionável; parado, vira a pílula "Vídeo", que o abre e d�
 - **Gestos**: a barra arrasta (captura de ponteiro; o corpo ganha `pointer-events: none` durante o
   gesto porque o iframe engole o ponteiro). O tamanho muda pelos botões **"Diminuir o vídeo"** e
   **"Aumentar o vídeo"** (− e +, antes do Minimizar); ⚠️ na ponta eles ficam `aria-disabled`,
-  NUNCA `disabled`: o botão que a criança acabou de apertar sairia do foco. A PÍLULA também
-  arrasta (o clique que o navegador gera ao soltar não abre o vídeo) e anda com as setas: muda de
-  canto sem dar play. Teclado: setas na alça de mover andam um canto e Enter/Espaço gira; o novo
+  NUNCA `disabled`: o botão que a criança acabou de apertar sairia do foco. Teclado: setas na alça
+  de mover andam um canto e Enter/Espaço gira; o novo
   degrau é anunciado ("Vídeo grande."). ⚠️ Trocar de modo, `pointercancel` e `lostpointercapture` encerram o gesto:
   um arrasto interrompido (Esc, um segundo dedo no "Voltar à aula") deixava o vídeo preso no lugar
   solto e o player sem clique. O flutuante é `role="region"` "Vídeo da aula", NUNCA
   `role="dialog"` (desligaria o Esc do Estúdio e do Pinta, que checam `[role=dialog]`).
   `z-index` 85, acima dos 80 da tela ampliada.
-- **Acessibilidade das telas ampliadas**: o flutuante e a pílula levam `data-sz-modal-companion`,
+- **Acessibilidade das telas ampliadas**: o flutuante leva `data-sz-modal-companion`,
   que o `useModalA11y` do ui inclui no Tab SÓ dos modais que pedem (`companions: true`: a cena e o
   jogo pronto ampliados; ver ui/CLAUDE.md). No FIM do flutuante mora uma guarda de foco
   (`data-sz-focus-guard`) que leva à saída da tela ampliada: o Tab que sai do iframe do YouTube
   (o último foco do vídeo; o Tab de dentro dele nunca chega à página) caía na aula escondida. O
   jogo pronto ampliado torna o resto da página `inert` por `lib/inert-outside.ts`, que poupa o
-  caminho até `[data-sz-lesson-float-root]` (o lugar do vídeo); na pílula o corpo do vídeo fica
-  `inert`.
+  caminho até `[data-sz-lesson-float-root]` (o lugar do vídeo); escondido, o corpo do vídeo fica
+  `inert`. O interruptor mora DENTRO da barra da tela ampliada, então não precisa de marca de
+  acompanhante: ele já é alcançável pelo Tab da modal.
 - Ganchos (invariante 8): `sz-lesson-video-gate`, `-veil`, `-card`, `-mascot`, `-title`, `-text`,
   `-progress`, `-action`, `sz-lesson-video-gate-done`, `sz-lesson-video-slot`,
   `sz-lesson-video-frame`, `sz-lesson-video-float`, `-bar`, `-move`, `-minimize`, `-size` (os botões − e +),
-  `-body`, `-guard` e `sz-lesson-video-pill`.
+  `-body`, `-guard` e `sz-lesson-video-toggle` (o interruptor; era `sz-lesson-video-pill`).
 - ⚠️ Fora do escopo, registrado: tocar o vídeo continua parando o relógio de uma cena que esteja
   rodando (`lib/lesson-media-focus.ts`); para "fazer junto" numa cena com ▶ isso pode atrapalhar.
 - ⚠️ A tranca só se confere com conta de ALUNO: a equipe recebe a opção desligada, e o "Ver como
   aluno" do admin usa a conta da equipe.
 - Testes: `tests/video-gate.test.ts`, `tests/lesson-video-float.test.ts`,
   `community-kids/tests/lesson-video-gate.test.tsx` (a aula de verdade: tranca, abre ao vivo e
-  pela medida local com a rede falhando, a atividade e o `<video>` como os MESMOS nós, pílula,
+  pela medida local com a rede falhando, a atividade e o `<video>` como os MESMOS nós, interruptor,
   diálogo por cima, Tab com `summary` no cartão) e o e2e `community-kids/e2e-scenes/lesson-video.spec.ts`
   (Chromium, 1366×768, 390×844 e 844×340, com a conferência EXPLÍCITA de que o vídeo não cobre o
   "Voltar à aula" e de que o lugar guarda a altura). Lacuna aceita: o ensaio e2e usa o jogo pronto

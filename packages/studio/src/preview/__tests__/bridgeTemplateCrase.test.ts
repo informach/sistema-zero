@@ -5,6 +5,7 @@ import { buildLoopGuardRuntime } from '../loopGuard'
 import { buildModalGuardRuntime } from '../modalGuard'
 import { buildPermissionGuardRuntime } from '../permissionGuard'
 import { buildScriptSourceGuardRuntime } from '../scriptSourceGuard'
+import { buildScrollKeyGuardRuntime } from '../scrollKeyGuard'
 import { buildSnapshotBridgeRuntime } from '../snapshotBridge'
 import { buildStorageBridgeRuntime } from '../storageBridge'
 
@@ -42,6 +43,7 @@ const RUNTIMES: Array<[string, () => string]> = [
   ['modalGuard', () => buildModalGuardRuntime()],
   ['permissionGuard', () => buildPermissionGuardRuntime()],
   ['scriptSourceGuard', () => buildScriptSourceGuardRuntime()],
+  ['scrollKeyGuard', () => buildScrollKeyGuardRuntime()],
 ]
 
 describe('runtimes injetados no preview são JS válido', () => {

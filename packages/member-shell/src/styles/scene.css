@@ -717,6 +717,67 @@
   border-radius: var(--sz-activity-card-radius, 1.25rem);
   background: var(--color-card);
 }
+/* O JOGO PRONTO (03/10/2026, pedido dela). O título e as ações moram na MESMA linha, como na cena
+ * e no Estúdio: antes as ações caíam numa linha própria e roubavam altura do jogo. Quebram só
+ * quando não cabem. O palco mantém a proporção do jogo e nunca passa da janela: na aula, a altura
+ * dele fica abaixo da janela; ampliado, ele encaixa no espaço que sobra, sem rolagem. Com a tela
+ * ampliada rolando, as setas do jogo rolavam a tela junto. */
+.sz-project-play-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.sz-project-play-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.sz-project-play-heading {
+  flex: 1 1 14rem;
+  min-width: min(100%, 14rem);
+}
+.sz-project-play-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-inline-start: auto;
+}
+.sz-project-play-stage {
+  width: 100%;
+  margin-inline: auto;
+  /* Na aula: nunca mais alto que a janela menos o rodapé fixo e o cabeçalho do bloco. O piso
+   * evita um palco de largura zero numa janela muito baixa. */
+  max-width: max(
+    16rem,
+    calc((100dvh - var(--sz-lesson-nav-height, 7rem) - 8rem) * var(--sz-stage-aspect, 1.6667))
+  );
+}
+/* Ampliado: o cartão tem a altura da tela (não cresce com o conteúdo) e o palco encaixa no que
+ * sobra entre o cabeçalho e o que vem abaixo dele. Só numa janela baixa demais para o piso do
+ * palco (10rem) é o cartão que rola, com o jogo inteiro dentro. */
+.sz-activity-workspace--expanded > .sz-project-play-card {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.sz-activity-workspace--expanded .sz-project-play-stage-area {
+  flex: 1 1 0;
+  min-height: 10rem;
+  container-type: size;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+.sz-activity-workspace--expanded .sz-project-play-stage {
+  flex: none;
+  width: min(100cqw, 100cqh * var(--sz-stage-aspect, 1.6667));
+  max-width: none;
+}
 .sz-scene-workspace--expanded > .sz-scene-workspace-card {
   /* Altura definida para o palco caber em duas colunas. No empilhado, quem rola
    * é o cartão inteiro: sua moldura e o cabeçalho continuam acompanhando o conteúdo. */

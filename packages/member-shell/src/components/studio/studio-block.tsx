@@ -26,7 +26,7 @@ import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
-import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR } from '../lesson-video-float'
+import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { SectionProjectCheck } from './section-project-check'
 
 // "Compartilhar" da AULA = UMA vez só. O projeto da aula tem começo/meio/fim: a
@@ -468,6 +468,7 @@ export function StudioBlockView({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="sz-display text-base">Atividade no Estúdio</h3>
         <div className="flex items-center gap-2">
+          <LessonVideoToggle expanded={expanded} size="sm" />
           <Button
             variant="outline"
             size="sm"

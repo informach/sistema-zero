@@ -1,6 +1,7 @@
 'use client'
 
-import { GripHorizontal, Minimize2, Minus, Play, Plus } from 'lucide-react'
+import { Button } from '@sistemazero/ui/button'
+import { GripHorizontal, Minimize2, Minus, Plus, Tv } from 'lucide-react'
 import {
   createContext,
   type KeyboardEvent,
@@ -16,8 +17,6 @@ import {
 import { cn } from '../lib/cn'
 import {
   defaultFloatGeometry,
-  FLOAT_MARGIN,
-  FLOAT_TOP_INSET,
   type FloatCorner,
   type FloatGeometry,
   type FloatSize,
@@ -38,8 +37,13 @@ import {
  * mandou ampliar a tela, a tela ampliada cobriu o vídeo e ela ficou sem saber o que fazer.
  *
  * Com uma atividade ampliada e o vídeo da seção TOCANDO, o mesmo vídeo aparece pequeno por cima
- * (estilo picture-in-picture, mas dentro da página), arrastável e em três tamanhos (− e +). Parado,
- * ele vira a pílula "Vídeo", que o abre.
+ * (estilo picture-in-picture, mas dentro da página), arrastável e em três tamanhos (− e +).
+ *
+ * ⭐ O BOTÃO e o VÍDEO são peças separadas (03/10/2026, pedido dela). O interruptor "Vídeo"
+ * (`LessonVideoToggle`) mora FIXO na barra de cima de cada atividade ampliada, à esquerda das
+ * outras ações, e liga ou desliga o vídeo. Escondido, o vídeo não deixa nada solto na tela: a
+ * pílula flutuante que existia antes ficava por cima dos controles do Estúdio (o olho e o ⋯) em
+ * qualquer canto que a criança escolhesse.
  *
  * ⚠️⚠️ O vídeo NUNCA muda de lugar no DOM: o SDK do Vimeo é o dono do iframe (invariante 6) e
  * mover o nó recarregaria o vídeo. Flutuar é só trocar a classe e o `style` da MOLDURA para
@@ -47,17 +51,69 @@ import {
  * corpo (onde mora o player) fica sempre na mesma posição entre os filhos.
  */
 
-export type VideoFloatMode = 'floating' | 'pill' | null
+export type VideoFloatMode = 'floating' | 'hidden' | null
 
 export type VideoFloatSlot = {
   mode: VideoFloatMode
   viewerId: string | null
   onMinimize: () => void
-  onOpen: () => void
 }
 
 /** Provido pelo `BlockScope` em volta de cada bloco de vídeo da aula; fora dela, nada flutua. */
 export const LessonVideoFloatContext = createContext<VideoFloatSlot | null>(null)
+
+/** O estado do interruptor: `on` = o vídeo está flutuando à vista. */
+export type VideoToggle = { on: boolean; toggle: () => void }
+
+/**
+ * Provido pela aula (`LessonSections`) enquanto uma atividade está ampliada E a seção tem vídeo.
+ * Fora disso é `null` e o interruptor não aparece.
+ */
+export const LessonVideoToggleContext = createContext<VideoToggle | null>(null)
+
+/** Marca o interruptor: é para onde o foco volta quando o vídeo se esconde pela barra dele. */
+const VIDEO_TOGGLE_ATTR = 'data-sz-video-toggle'
+
+/**
+ * O interruptor "Vídeo" da barra de cima da atividade ampliada. Cada tela que amplia o põe à
+ * esquerda das ações dela; ele some sozinho quando não há vídeo para ligar. `aria-pressed` diz se
+ * o vídeo está à vista. Ligar abre o vídeo flutuante e dá play, como a pílula fazia.
+ *
+ * ⚠️⚠️ `expanded` é o estado da PRÓPRIA atividade: o contexto vale para a seção inteira, e numa
+ * seção com duas atividades a que ficou embaixo da tela ampliada ganharia um segundo interruptor
+ * escondido, para onde o foco do "Minimizar" (que procura o botão pelo atributo) podia ir.
+ */
+export function LessonVideoToggle({
+  expanded,
+  size,
+  className,
+}: {
+  expanded: boolean
+  size?: 'sm' | 'default'
+  className?: string
+}) {
+  const toggle = useContext(LessonVideoToggleContext)
+  if (!toggle || !expanded) return null
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size={size}
+      aria-pressed={toggle.on}
+      onClick={toggle.toggle}
+      {...{ [VIDEO_TOGGLE_ATTR]: '' }}
+      // Ligado tem que PARECER ligado em qualquer app: o kids veste por cima com a TV navy.
+      className={cn(
+        'sz-lesson-video-toggle aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground aria-pressed:hover:bg-primary/90 aria-pressed:hover:text-primary-foreground',
+        className,
+      )}
+    >
+      <Tv aria-hidden className="size-4" />
+      {/* Estreito, fica o ícone; o nome acessível continua "Vídeo". */}
+      <span className="max-sm:sr-only">Vídeo</span>
+    </Button>
+  )
+}
 
 /**
  * Marca o lugar do vídeo para quem torna o RESTO da página inerte (o jogo pronto ampliado): sem
@@ -79,7 +135,7 @@ export const EXPANDED_EXIT_ATTR = 'data-sz-expanded-exit'
  */
 export const EXPANDED_EXIT_EDITOR = 'editor'
 
-/** Marca o flutuante e a pílula para o `useModalA11y` incluí-los no Tab da tela ampliada. */
+/** Marca o flutuante para o `useModalA11y` incluí-lo no Tab da tela ampliada. */
 const COMPANION = { 'data-sz-modal-companion': '' }
 
 /** A guarda de foco do fim do vídeo (o `useModalA11y` a deixa fora da roda). */
@@ -181,8 +237,6 @@ function focusExpandedExit() {
 }
 
 type Gesture = {
-  /** `move` é o flutuante; `pill` é a pílula sendo levada a outro canto. */
-  kind: 'move' | 'pill'
   pointerId: number
   startX: number
   startY: number
@@ -223,7 +277,7 @@ const ARROWS: Record<string, 'left' | 'right' | 'up' | 'down'> = {
 function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNode }) {
   const active = slot.mode !== null
   const floating = slot.mode === 'floating'
-  const pill = slot.mode === 'pill'
+  const tucked = slot.mode === 'hidden'
   const viewport = useViewport(active)
   const covered = useForeignModalOpen(active)
   const storageKey = floatStorageKey(slot.viewerId)
@@ -234,10 +288,7 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
   const [settled, setSettled] = useState(false)
   const [announce, setAnnounce] = useState('')
   const gesture = useRef<Gesture | null>(null)
-  const suppressPillClick = useRef(false)
   const frame = useRef<HTMLDivElement>(null)
-  const moveHandle = useRef<HTMLButtonElement>(null)
-  const pillButton = useRef<HTMLButtonElement>(null)
   const hintId = useId()
 
   // O lugar do vídeo na aula guarda a altura enquanto ele flutua (o truque do `SceneWorkspace`):
@@ -273,15 +324,18 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
     return () => cancelAnimationFrame(frameId)
   }, [floating])
 
-  // Quem abriu pela pílula continua no vídeo; quem minimizou continua na pílula.
+  // Escondido pela barra DO VÍDEO (Minimizar), o foco que estava nele iria para o nada: volta ao
+  // interruptor. Quem desligou pelo interruptor já está nele e fica.
   const previousMode = useRef(slot.mode)
   useEffect(() => {
     const before = previousMode.current
     previousMode.current = slot.mode
-    if (before === 'pill' && slot.mode === 'floating')
-      moveHandle.current?.focus({ preventScroll: true })
-    if (before === 'floating' && slot.mode === 'pill')
-      pillButton.current?.focus({ preventScroll: true })
+    if (before !== 'floating' || slot.mode !== 'hidden') return
+    const focused = document.activeElement
+    // O Minimizar sai da árvore junto com a barra: o foco que estava nele vira `body` ou um nó solto.
+    const lost = !focused || focused === document.body || !focused.isConnected
+    if (!lost && !frame.current?.contains(focused)) return
+    document.querySelector<HTMLElement>(`[${VIDEO_TOGGLE_ATTR}]`)?.focus({ preventScroll: true })
   }, [slot.mode])
 
   const commit = (next: FloatGeometry) => {
@@ -313,14 +367,12 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
     setAnnounce(`Vídeo ${SIZE_LABEL[next.size]}.`)
   }
 
-  const start = (kind: Gesture['kind']) => (event: PointerEvent<HTMLElement>) => {
+  const start = (event: PointerEvent<HTMLElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
-    const box = (kind === 'pill' ? pillButton.current : frame.current)?.getBoundingClientRect()
+    const box = frame.current?.getBoundingClientRect()
     if (!box) return
-    suppressPillClick.current = false
     event.currentTarget.setPointerCapture?.(event.pointerId)
     gesture.current = {
-      kind,
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
@@ -357,8 +409,6 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
           viewport,
         ),
       })
-      // O clique que o navegador gera ao soltar a pílula não pode abrir o vídeo.
-      if (current.kind === 'pill') suppressPillClick.current = true
     }
     setDrag(null)
   }
@@ -366,13 +416,13 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
     gesture.current = null
     setDrag(null)
   }
-  const gestureHandlers = (kind: Gesture['kind']) => ({
-    onPointerDown: start(kind),
+  const gestureHandlers = {
+    onPointerDown: start,
     onPointerMove: move,
     onPointerUp: finish,
     onPointerCancel: cancel,
     onLostPointerCapture: cancel,
-  })
+  }
 
   const moveByKey = (event: KeyboardEvent<HTMLElement>) => {
     const direction = ARROWS[event.key]
@@ -437,12 +487,11 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
         {floating ? (
           <div className="sz-lesson-video-float-bar flex h-11 shrink-0 items-center gap-0.5">
             <button
-              ref={moveHandle}
               type="button"
               // Começa pelo texto à vista (WCAG 2.5.3) e diz o que a alça faz.
               aria-label="Vídeo da aula: mover para outro canto"
               aria-describedby={hintId}
-              {...gestureHandlers('move')}
+              {...gestureHandlers}
               onKeyDown={moveByKey}
               onClick={(event) => {
                 // Enter e Espaço chegam como clique sem ponteiro: andam um canto. O toque que
@@ -484,8 +533,8 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
             floating &&
               'overflow-hidden rounded-xl [&_.aspect-video]:rounded-none [&_.aspect-video]:border-0',
           )}
-          // Minimizado, o vídeo segue tocando embaixo da tela ampliada, longe do Tab.
-          inert={pill || undefined}
+          // Escondido, o vídeo segue tocando embaixo da tela ampliada, longe do Tab.
+          inert={tucked || undefined}
           // O iframe engole o ponteiro: durante o arrasto ele não pode recebê-lo.
           style={busy ? { pointerEvents: 'none' } : undefined}
         >
@@ -507,44 +556,6 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
           />
         ) : null}
       </div>
-      {pill ? (
-        <button
-          ref={pillButton}
-          type="button"
-          {...hidden}
-          {...gestureHandlers('pill')}
-          onKeyDown={moveByKey}
-          onClick={() => {
-            if (suppressPillClick.current) {
-              suppressPillClick.current = false
-              return
-            }
-            slot.onOpen()
-          }}
-          aria-label="Abrir o vídeo da aula"
-          aria-describedby={hintId}
-          className={cn(
-            'sz-lesson-video-pill fixed z-[85] flex min-h-11 touch-none select-none items-center gap-2 rounded-full border border-border bg-card px-4 font-semibold text-sm shadow-lg hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring',
-            covered && 'invisible',
-          )}
-          style={drag ?? pillStyle(corner, viewport.topInset ?? FLOAT_TOP_INSET)}
-        >
-          <Play aria-hidden className="size-4" />
-          Vídeo
-          {/* A pílula também muda de canto (arrastando ou com as setas), sem dar play. */}
-          <span id={hintId} className="sr-only">
-            Arraste ou use as setas para levar a outro canto.
-          </span>
-        </button>
-      ) : null}
     </div>
   )
-}
-
-/** A pílula mora no canto do vídeo: é ali que a criança procura. */
-function pillStyle(corner: FloatCorner, topInset: number) {
-  return {
-    ...(corner.startsWith('top') ? { top: topInset } : { bottom: FLOAT_MARGIN }),
-    ...(corner.endsWith('left') ? { left: FLOAT_MARGIN } : { right: FLOAT_MARGIN }),
-  }
 }

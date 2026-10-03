@@ -28,7 +28,7 @@ import { resolvePintaSeed } from '../../lib/pinta-seed'
 import { preparePintaSubmission } from '../../lib/pinta-submission'
 import type { PintaBlock, PintaStateView, PintaSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
-import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR } from '../lesson-video-float'
+import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { loadPintaLessonModule, type PintaLessonModule } from './pinta-loader'
 
 /** O módulo do Pinta é carregado só no client (IndexedDB/canvas não existem no SSR). */
@@ -215,6 +215,7 @@ export function PintaBlockView({
       )}
     >
       <div className="flex flex-wrap items-center justify-end gap-2">
+        <LessonVideoToggle expanded={expanded} size="sm" />
         <Button variant="outline" size="sm" onClick={download} disabled={!ready}>
           <Download className="size-4" />
           Baixar o desenho

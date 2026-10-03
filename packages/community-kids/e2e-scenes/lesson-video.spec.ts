@@ -113,12 +113,30 @@ for (const viewport of [
     expect(await page.locator('video').evaluate((el: HTMLVideoElement) => el.paused)).toBe(false)
     await page.screenshot({ path: info.outputPath(`flutuante-${viewport.width}.png`) })
 
+    // Escondido, o vídeo não deixa nada solto: o interruptor "Vídeo" mora na barra da atividade.
+    const interruptor = page.getByRole('button', { name: 'Vídeo', exact: true })
+    await expect(interruptor).toHaveAttribute('aria-pressed', 'true')
     await page.getByRole('button', { name: 'Minimizar o vídeo' }).click()
     await expect(flutuante).toHaveCount(0)
-    await expect(page.getByRole('button', { name: 'Abrir o vídeo da aula' })).toBeVisible()
-    await page.screenshot({ path: info.outputPath(`pilula-${viewport.width}.png`) })
-    await page.getByRole('button', { name: 'Abrir o vídeo da aula' }).click()
+    await expect(interruptor).toBeVisible()
+    await expect(interruptor).toHaveAttribute('aria-pressed', 'false')
+    await expect(interruptor).toBeFocused()
+    // ⚠️⚠️ Nada por cima dele e ele por cima de nada (a pílula cobria o olho e o ⋯ do Estúdio).
+    const doInterruptor = await interruptor.boundingBox()
+    if (!doInterruptor) throw new Error('Interruptor sem caixa')
+    const noCentro = await page.evaluate(
+      ({ x, y }) => document.elementFromPoint(x, y)?.closest('button')?.textContent?.trim() ?? null,
+      {
+        x: doInterruptor.x + doInterruptor.width / 2,
+        y: doInterruptor.y + doInterruptor.height / 2,
+      },
+    )
+    expect(noCentro).toBe('Vídeo')
+    expect(await interruptor.evaluate((el) => getComputedStyle(el).position)).not.toBe('fixed')
+    await page.screenshot({ path: info.outputPath(`interruptor-${viewport.width}.png`) })
+    await interruptor.click()
     await expect(flutuante).toBeVisible()
+    await expect(interruptor).toHaveAttribute('aria-pressed', 'true')
 
     await page.getByRole('button', { name: 'Voltar à aula' }).click()
     await expect(flutuante).toHaveCount(0)
@@ -190,7 +208,8 @@ test('arrastar encaixa no canto, o + muda o tamanho, e o Tab passa pelo flutuant
     'Aumentar o vídeo',
     'Minimizar o vídeo',
   ])
-  expect(alcançados[4]).toBe('Jogar de novo')
+  // O interruptor abre a barra da tela ampliada, à esquerda do "Jogar de novo".
+  expect(alcançados[4]).toBe('Vídeo')
   // O lugar fica guardado: reabrir a página volta ao canto escolhido.
   await page.keyboard.press('Escape')
   await page.reload()

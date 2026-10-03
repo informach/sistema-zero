@@ -9,7 +9,10 @@ import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
-import { LessonVideoFrame } from '@sistemazero/member-shell/components/lesson-video-float'
+import {
+  LessonVideoFrame,
+  LessonVideoToggle,
+} from '@sistemazero/member-shell/components/lesson-video-float'
 import { useReportActivityExpanded } from '@sistemazero/member-shell/lib/lesson-activity-expansion'
 import type { LessonBlockView, LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
@@ -94,13 +97,17 @@ function VideoDeMentira() {
   )
 }
 
+/** Como as quatro telas que ampliam: o interruptor "Vídeo" à esquerda da saída, na barra. */
 function AtividadeAmpliavel() {
   const [expanded, setExpanded] = useState(false)
   useReportActivityExpanded(expanded)
   return (
-    <button type="button" onClick={() => setExpanded((v) => !v)}>
-      {expanded ? 'Voltar à aula' : 'Ampliar jogo'}
-    </button>
+    <div data-testid="barra-da-atividade">
+      <LessonVideoToggle expanded={expanded} />
+      <button type="button" onClick={() => setExpanded((v) => !v)}>
+        {expanded ? 'Voltar à aula' : 'Ampliar jogo'}
+      </button>
+    </div>
   )
 }
 
@@ -270,30 +277,83 @@ describe('o vídeo flutuante', () => {
     expect(flutuante.contains(video)).toBe(true)
   })
 
-  test('ampliar com o vídeo PARADO: a pílula "Vídeo", que abre e dá play', () => {
+  test('ampliar com o vídeo PARADO: o interruptor "Vídeo" desligado na barra, que liga e dá play', () => {
     render(<Aula aula={aberta} />)
+    // Fora da tela ampliada não há interruptor.
+    expect(screen.queryByRole('button', { name: 'Vídeo' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Ampliar jogo' }))
     expect(screen.queryByRole('region', { name: 'Vídeo da aula' })).toBeNull()
     // Embaixo da tela ampliada o vídeo fica longe do Tab.
     expect(screen.getByTestId('o-video').closest('[inert]')).not.toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Abrir o vídeo da aula' }))
+    const interruptor = screen.getByRole('button', { name: 'Vídeo' })
+    expect(interruptor.getAttribute('aria-pressed')).toBe('false')
+    // ⚠️⚠️ Nada solto por cima da atividade: o botão mora NA BARRA dela (a pílula flutuante
+    // cobria o olho e o ⋯ do Estúdio, 03/10/2026).
+    expect(screen.getByTestId('barra-da-atividade').contains(interruptor)).toBe(true)
+    expect(interruptor.className).not.toContain('fixed')
+    fireEvent.click(interruptor)
     expect(screen.getByRole('region', { name: 'Vídeo da aula' })).toBeDefined()
+    expect(interruptor.getAttribute('aria-pressed')).toBe('true')
     expect(plays).toEqual(['play'])
   })
 
-  test('minimizar volta à pílula com o vídeo tocando; voltar à aula devolve o vídeo ao lugar', () => {
+  test('esconder pelo Minimizar ou pelo interruptor; o foco volta ao interruptor; voltar à aula devolve o vídeo', () => {
     render(<Aula aula={aberta} />)
     const video = screen.getByTestId('o-video')
     fireEvent.click(screen.getByRole('button', { name: 'tocar' }))
     fireEvent.click(screen.getByRole('button', { name: 'Ampliar jogo' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Minimizar o vídeo' }))
+    const interruptor = screen.getByRole('button', { name: 'Vídeo' })
+    expect(interruptor.getAttribute('aria-pressed')).toBe('true')
+    const minimizar = screen.getByRole('button', { name: 'Minimizar o vídeo' })
+    minimizar.focus()
+    fireEvent.click(minimizar)
     expect(screen.queryByRole('region', { name: 'Vídeo da aula' })).toBeNull()
-    expect(screen.getByRole('button', { name: 'Abrir o vídeo da aula' })).toBeDefined()
+    expect(interruptor.getAttribute('aria-pressed')).toBe('false')
+    // O Minimizar sumiu com a barra do vídeo: o foco não pode cair no nada.
+    expect(document.activeElement).toBe(interruptor)
+    // Ligar e desligar pelo próprio interruptor.
+    fireEvent.click(interruptor)
+    expect(screen.getByRole('region', { name: 'Vídeo da aula' })).toBeDefined()
+    fireEvent.click(interruptor)
+    expect(screen.queryByRole('region', { name: 'Vídeo da aula' })).toBeNull()
+    // Voltar à aula devolve o vídeo ao lugar, e o interruptor some com a tela ampliada.
     fireEvent.click(screen.getByRole('button', { name: 'Voltar à aula' }))
-    expect(screen.queryByRole('button', { name: 'Abrir o vídeo da aula' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Vídeo' })).toBeNull()
     expect(screen.queryByRole('region', { name: 'Vídeo da aula' })).toBeNull()
     expect(screen.getByTestId('o-video')).toBe(video)
     expect(video.closest('[inert]')).toBeNull()
+  })
+
+  test('numa seção com DUAS atividades, só a ampliada tem o interruptor', () => {
+    // O contexto do interruptor vale para a seção inteira: sem o `expanded` de cada atividade, a
+    // que ficou embaixo da tela ampliada ganhava um segundo botão escondido, e o foco do Minimizar
+    // (que procura o botão pelo atributo) podia ir parar nele.
+    const duas: LessonDetailView = {
+      ...aberta,
+      blocks: [
+        ...aberta.blocks,
+        { id: 'jogo2', kind: 'studio', sortOrder: 2, content: { kind: 'studio' } },
+      ],
+      sections: [
+        {
+          id: 'secao',
+          title: 'Procure os amigos',
+          externalTool: null,
+          blockIds: ['video', 'jogo', 'jogo2'],
+          workspaceBlockId: null,
+        },
+      ],
+    }
+    render(<Aula aula={duas} />)
+    fireEvent.click(screen.getByRole('button', { name: 'tocar' }))
+    const [primeira] = screen.getAllByRole('button', { name: 'Ampliar jogo' })
+    if (!primeira) throw new Error('a primeira atividade não apareceu')
+    fireEvent.click(primeira)
+    expect(document.querySelectorAll('[data-sz-video-toggle]')).toHaveLength(1)
+    const minimizar = screen.getByRole('button', { name: 'Minimizar o vídeo' })
+    minimizar.focus()
+    fireEvent.click(minimizar)
+    expect(document.activeElement).toBe(document.querySelector('[data-sz-video-toggle]'))
   })
 
   test('com a experiência ampliada (modal), o Tab passa pelo flutuante e volta ao cartão', () => {
@@ -366,18 +426,6 @@ describe('o vídeo flutuante', () => {
     })
     expect(flutuante.className).not.toContain('invisible')
     expect(flutuante.hasAttribute('data-sz-modal-companion')).toBe(true)
-  })
-
-  test('a pílula muda de canto pelas setas, sem dar play', () => {
-    render(<Aula aula={aberta} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Ampliar jogo' }))
-    const pilula = screen.getByRole('button', { name: 'Abrir o vídeo da aula' })
-    fireEvent.keyDown(pilula, { key: 'ArrowLeft' })
-    expect(plays).toEqual([])
-    expect(
-      JSON.parse(localStorage.getItem('sz:lesson-video-float:v2:crianca') ?? '{}').corner,
-    ).toBe('top-left')
-    expect(pilula.style.left).toBe('16px')
   })
 
   test('o lugar escolhido fica guardado por perfil', () => {

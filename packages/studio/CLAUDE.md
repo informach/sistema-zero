@@ -11,6 +11,25 @@
 > `__szReportGroupClick` e `__szReportGameReady` atendem os jogos por alvos. O jogo exportado
 > continua sem essas pontes do preview; não ampliar o sandbox ou a CSP para esse recurso.
 
+> **As setas do jogo não rolam a página de fora (03/10/2026):** relato dela, no jogo pronto da
+> aula, andar com as setas rolava a aula junto. A seta que o documento do iframe não tem o que
+> rolar SOBE para a página que o embute, e nenhum runtime de jogo cancelava a tecla; o host não
+> alcança esses eventos. `preview/scrollKeyGuard.ts` (`buildScrollKeyGuardRuntime`, string pura,
+> `trustedScriptTag` no `<head>` logo depois do `inputBridge`) cancela o padrão de setas, Espaço,
+> PageUp/PageDown e Home/End SÓ quando nada no jogo consegue rolar NAQUELE SENTIDO (nem o
+> documento, nem uma caixa rolável em volta do foco). ⚠️ O sentido conta (com o documento do
+> jogo no fim, a próxima seta para baixo também subiria para a aula), e `overflow: hidden` no
+> `<html>` ou no `<body>` (que propaga para a janela) quer dizer "não rola", mesmo com o canvas
+> maior que a janela: é o caso comum dos jogos, e o full review do lote pegou a primeira versão
+> deixando a tecla passar ali. Ficam de fora: campos e controles que usam as teclas (texto,
+> seleção, slider, menu, abas, áudio e vídeo com controles) e o Espaço em botão ou link (é o
+> clique). Custo no documento: ~2 KB (o Reino Zero mediu 738.281 de 790.000). Só `preventDefault`,
+> nunca `stopPropagation`, na CAPTURA do `window`: o jogo continua recebendo a tecla. Vale no
+> jogo pronto, no Estúdio da aula, no editor e na página pública de jogar; o site EXPORTADO não
+> tem a guarda. Testes: `preview/__tests__/scrollKeyGuard.test.ts` + a rede da crase; e2e no kids
+> (`e2e-scenes/project-play.spec.ts`, provado por mutação: sem a guarda a página foi de 122 a
+> 1800px).
+
 `server-project-checks` (12/09/2026) expõe validação de autoria e avaliação estrutural para
 Members/Admin. Importa apenas contratos puros do catálogo e Core; o teste de bundle rejeita
 Blockly, React e Monaco nessa fronteira. Cores de categorias, nomes de extensões de blocos,

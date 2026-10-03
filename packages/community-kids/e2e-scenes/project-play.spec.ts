@@ -24,6 +24,37 @@ for (const input of ['keyboard', 'pointer'] as const) {
   })
 }
 
+test('as setas do jogo não rolam a página da aula no modo normal', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 600 })
+  await page.goto('/project-play?completion=participation')
+  await expect(page.getByRole('button', { name: 'Jogar de novo' })).toBeEnabled()
+  const game = page.frameLocator('iframe[title="Jogo clássico de participação"]')
+  const jogar = game.getByRole('button', { name: 'Jogar', exact: true })
+  await expect(jogar).toBeVisible()
+  // A aula de verdade é bem mais alta que a janela; o ensaio não, então a página ganha altura.
+  await page.evaluate(() => {
+    document.body.style.minHeight = '400vh'
+    window.scrollTo(0, 120)
+  })
+
+  // Anti-vácuo: com o foco na PÁGINA, a seta rola (o teclado rola neste navegador).
+  await page.locator('body').click({ position: { x: 5, y: 5 } })
+  const antes = await page.evaluate(() => window.scrollY)
+  await page.keyboard.press('ArrowDown')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(antes)
+
+  await page.evaluate(() => window.scrollTo(0, 120))
+  // Dar o foco traz o botão para a vista e pode rolar a página uns pixels: mede DEPOIS dele.
+  await jogar.focus()
+  await page.waitForTimeout(200)
+  const comFoco = await page.evaluate(() => window.scrollY)
+  for (const key of ['ArrowDown', 'ArrowDown', 'ArrowUp', 'PageDown', 'Space', 'End'])
+    await page.keyboard.press(key)
+  // Dá tempo de uma rolagem suave terminar antes de medir.
+  await page.waitForTimeout(400)
+  expect(await page.evaluate(() => window.scrollY)).toBe(comFoco)
+})
+
 for (const viewport of [
   { width: 1280, height: 800 },
   { width: 390, height: 844 },
@@ -72,6 +103,26 @@ for (const viewport of [
         element.contains(document.elementFromPoint(1, innerHeight - 1)),
       ),
     ).toBe(true)
+    // O jogo encaixa SEM rolagem (com a tela ampliada rolando, as setas do jogo rolavam junto),
+    // na proporção do palco, e as ações ficam na linha do título quando cabem.
+    const encaixe = await expanded.evaluate((el) => {
+      const card = el.querySelector<HTMLElement>('.sz-project-play-card')
+      const palco = el.querySelector<HTMLElement>('.sz-project-play-stage')
+      const titulo = el.querySelector<HTMLElement>('.sz-project-play-heading')
+      const acoes = el.querySelector<HTMLElement>('.sz-project-play-actions')
+      if (!card || !palco || !titulo || !acoes) throw new Error('Peças do jogo ampliado ausentes')
+      const box = palco.getBoundingClientRect()
+      return {
+        rola: el.scrollHeight > el.clientHeight + 1 || card.scrollHeight > card.clientHeight + 1,
+        proporcao: box.width / box.height,
+        cabe: box.bottom <= innerHeight,
+        mesmaLinha: acoes.getBoundingClientRect().top < titulo.getBoundingClientRect().bottom,
+      }
+    })
+    expect(encaixe.rola).toBe(false)
+    expect(encaixe.proporcao).toBeCloseTo(640 / 360, 1)
+    expect(encaixe.cabe).toBe(true)
+    if (viewport.width >= 640) expect(encaixe.mesmaLinha).toBe(true)
     await page.screenshot({ path: info.outputPath('jogo-ampliado.png') })
     await page.keyboard.press('Escape')
     await expect(page.getByRole('dialog', { name: 'Jogo ampliado' })).toHaveCount(0)

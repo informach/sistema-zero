@@ -1771,12 +1771,19 @@ de lá); aqui mora a PELE e o Zappy.
 - O vídeo flutuante: ⭐ MOLDURA DE TV no navy do menu (`--menu`, decisão dela em 03/10/2026, a
   mesma moldura do palco das cenas), com o título "Vídeo" na pílula AMARELA com ▶ (`--kids-ouro`
   com tinta navy) e os botões − e + claros sobre o escuro. O cartão branco com a barra no céu
-  era da família dos botões da atividade ao lado e não se lia como algo que apareceu por cima. A
-  pílula "Vídeo" (minimizado) segue a ação azul com o degrau 3D. Os dois são `fixed`, mas
-  continuam dentro de `.sz-lesson-sections` no DOM, e é por isso que as regras os alcançam.
+  era da família dos botões da atividade ao lado e não se lia como algo que apareceu por cima. O
+  flutuante é `fixed`, mas continua dentro de `.sz-lesson-sections` no DOM, e é por isso que as
+  regras o alcançam.
+- ⭐⭐ **O botão "Vídeo" é um INTERRUPTOR na barra da atividade, não mais a pílula flutuante
+  (03/10/2026).** Relato dela: a pílula ficava por cima dos controles do Estúdio ampliado (o olho
+  e o ⋯) e era "o mesmo componente do vídeo"; ela pediu o botão separado, sempre na barra, e o
+  vídeo ligado funcionando como antes. A estrutura é do member-shell (`LessonVideoToggle`); aqui
+  mora a pele, `.sz-lesson-video-toggle` no `globals.css`: contorno quieto desligado e, com
+  `aria-pressed="true"`, o fundo do menu (`--menu`) com tinta `--menu-texto`, o degrau num tom do
+  menu e o ícone de TV no ouro. ⚠️ A regra antiga `.sz-lesson-video-pill` saiu junto.
 - Testes: `tests/lesson-video-gate.test.tsx` (a aula de verdade com um player e uma atividade de
   mentira que falam o contrato de produção: tranca, abre ao vivo, "Ver o vídeo", sem opção/sem
-  player, o MESMO nó do vídeo flutuando, pílula, minimizar, Tab com a tela ampliada modal e o
+  player, o MESMO nó do vídeo flutuando, interruptor, minimizar, Tab com a tela ampliada modal e o
   canto guardado por perfil) e, no Chromium, `e2e-scenes/lesson-video.spec.ts`: a página
   `/lesson-video` do harness monta a aula de verdade com um vídeo nativo de 6 s
   (`e2e-scenes/fixtures/video.webm`, gerado com `ffmpeg -f lavfi -i testsrc`) e o jogo pronto do
@@ -1784,7 +1791,8 @@ de lá); aqui mora a PELE e o Zappy.
   devolve o progresso que recebe, então a tranca abre AO VIVO aos 90%. Cobre 1366×768, 390×844 e
   844×340 (celular deitado): o flutuante por cima da tela ampliada (o centro dele é ele mesmo), a
   conferência EXPLÍCITA de que ele não cobre o "Voltar à aula", o lugar do vídeo guardando a
-  altura, o `<video>` sendo o mesmo e o tempo andando, pílula, arrastar encaixando no canto, a alça
+  altura, o `<video>` sendo o mesmo e o tempo andando, o interruptor (o foco volta a ele ao
+  minimizar, e ele é a 5ª parada do Tab), arrastar encaixando no canto, a alça
   de tamanho, o Tab e o canto guardado após recarregar. Lacuna aceita: Estúdio, Pinta, Vimeo e
   YouTube no flutuante, e a pele do cartão de vídeo do kids, se conferem em staging.
 - ⚠️⚠️ **O `MutationObserver` do happy-dom morre na primeira coleta de lixo** (o ouvinte fica só

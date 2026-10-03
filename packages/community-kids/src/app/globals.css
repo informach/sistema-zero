@@ -2047,20 +2047,23 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 .sz-lesson-sections .sz-lesson-video-float button:focus-visible {
   outline-color: var(--menu-texto);
 }
-.sz-lesson-sections .sz-lesson-video-pill {
-  min-height: 3rem;
-  padding-inline: 1.25rem;
-  border: 0;
-  background: var(--sz-primary);
-  color: var(--sz-primary-fg);
+/* O interruptor "Vídeo" da barra da atividade ampliada (03/10/2026): desligado é um botão da barra
+   como os outros; ligado, veste a TV do vídeo (o navy da moldura, com o ícone no amarelo da pílula
+   da TV), porque é o mesmo objeto aceso. O relevo do `Button` segue, com o degrau escurecido. */
+.sz-lesson-sections .sz-lesson-video-toggle {
   font-weight: 800;
-  font-size: 0.9375rem;
-  box-shadow:
-    0 4px 0 var(--pen-acao-degrau),
-    0 10px 24px rgba(28, 48, 90, 0.22);
 }
-.sz-lesson-sections .sz-lesson-video-pill:hover {
-  background: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
+.sz-lesson-sections .sz-lesson-video-toggle[aria-pressed="true"] {
+  --k3d-degrau: color-mix(in oklab, var(--menu) 70%, black);
+  border-color: var(--menu);
+  background: var(--menu);
+  color: var(--menu-texto);
+}
+.sz-lesson-sections .sz-lesson-video-toggle[aria-pressed="true"]:hover {
+  background: color-mix(in oklab, var(--menu) 88%, white);
+}
+.sz-lesson-sections .sz-lesson-video-toggle[aria-pressed="true"] > svg {
+  color: var(--kids-ouro);
 }
 @media (min-width: 768px) {
   .sz-lesson-sections .sz-lesson-nav-immersive {
