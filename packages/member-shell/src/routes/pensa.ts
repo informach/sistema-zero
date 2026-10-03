@@ -232,7 +232,7 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
         {
           error: {
             code: 'PENSA_PLAN_AUDIT_STALE',
-            message: 'A ideia ou a Bíblia Visual mudou. Execute uma nova auditoria.',
+            message: 'A ideia ou a Bíblia Visual mudou. Revise o plano de novo.',
           },
         },
         { status: 409 },

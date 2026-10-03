@@ -331,10 +331,51 @@ aborta a geração (≠ chat): o resultado persiste no members e um F5 o mostra 
 podia deixar `pensaReplaceTasks` aplicado sem o artefato salvo. A geração rejeita referência
 inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset —
 mas **arte 2D citada em `visualAssetIds` de tarefa do Estúdio é NORMALIZADA, não reprovada**
-(`stripPintaArtFromStudioTasks`, 08/2026): o modelo insiste em citar o fundo/sprite que o jogo USA
+(08/2026): o modelo insiste em citar o fundo/sprite que o jogo USA
 (3 gerações seguidas reprovadas no QA) e a referência é redundante — a cobertura 1:1 segue garantida
 pela tarefa Pinta; id desconhecido continua reprovando. JSON quebrado do modelo (SyntaxError após o
 nudge) também vira frase gentil, não o erro cru do parser.
+
+⭐⭐ **Plano 3D que reprovava com erro técnico na tela (02/10/2026).** A criança via "A tarefa
+molda_tela_vitoria_background não corresponde à criação 3D da Bíblia Visual": um fundo 2D da tela
+de vitória mandado ao Molda, e o `mapGenerateError` mandava a mensagem da validação crua. Hoje o
+caminho do `task_plan` é `buildTaskPlan` (`planner-contract.ts`), em quatro passos:
+- **O pedido diz a ferramenta de cada item** (`visualCardChecklist`, a mesma régua de
+  `visualCardFor` que a validação usa): `- id (nome, kind) → tarefa pinta|molda com assetId e
+  artKind`, ou "uma única tarefa studio" para o mundo (e para modelo/material/céu sem o Molda).
+  ⚠️ `moldaUsable` = Molda liberado **E** jogo 3D: num jogo 2D o pedido dizia "Molda disponível"
+  e o `resolveTaskPlan` recusava o cartão que o próprio pedido sugeriu.
+- **`normalizeArtCards` arruma o que o inventário decide sozinho**: artKind errado num cartão da
+  ferramenta CERTA sai do inventário, e o destino passa a seguir o contexto. ⚠️ Cartão na
+  ferramenta ERRADA (fundo 2D no Molda) só troca de ferramenta na 2ª geração (`switchTools`), e aí
+  o título e o guia viram texto neutro ("Desenhar <item>", "No Pinta, crie …"): o texto do modelo
+  falava da ferramenta errada. Na 1ª ele reprova e o modelo recebe o cartão certo no motivo. Item
+  inexistente, mundo num cartão de arte e Molda fora do alcance seguem para a validação reprovar.
+- **`stripRedundantArtFromStudioTasks`** (era `stripPintaArtFromStudioTasks`) tira das tarefas do
+  Estúdio a arte 2D, o item que já tem cartão do Molda e a 2ª citação em diante de um item que só
+  o Estúdio cria. E o `resolveGuide` põe sufixo (`-2`, `-3`) no id repetido de passo/critério,
+  que o members recusaria com 400. A paleta do CARTÃO tem papel de no máximo 80 caracteres
+  (`CardPaletteSchema`, o teto do DTO do members).
+- **Uma segunda geração com o motivo**: só para `PensaCatalogDriftError`, com "O PLANO ANTERIOR FOI
+  RECUSADO: <motivo>" no fim do pedido. Os motivos de `validateVisualTaskCoverage` dizem o cartão
+  certo de cada item (`cardInstruction`). Falha da IA, timeout e JSON não repetem; a 2ª vai com
+  `maxAttempts: 1` (sem o reparo de JSON por dentro) e só acontece se a 1ª levou menos de
+  `PLAN_RETRY_DEADLINE_MS` (150 s). A quota é cobrada uma vez.
+- **O que não depende do modelo não gasta geração**: Bíblia Visual com item repetido (que
+  reprovaria QUALQUER plano) e artefato aprovado que não passa mais no schema
+  (`validatedContent`) viram `PensaStepError` dizendo que etapa refazer, antes de chamar a IA.
+⚠️⚠️ **A mensagem do erro da geração vai INTEIRA para a tela da criança.** Só o
+`PensaStepError` (etapa sem aprovação: "Aprove a Carta da Ideia antes de seguir.", com os nomes do
+`ARTIFACT_LABELS` do pacote) é escrito para ela; drift, provider, parser e Zod vão ao log
+(`[pensa-ai] …`) e a tela recebe uma frase gentil. As recusas do members (`membersFailure`, no
+substituir tarefas, salvar e validar) passam como vieram SÓ nas de regra (403, 409, 429, que lá
+são frases para criança); 404 vira "Esse plano não está mais aqui.", 400/422 e 5xx viram frase.
+Pelo mesmo motivo os achados da auditoria (`plan-audit.ts`, a lista da Revisão do Plano) chamam o
+cartão pelo TÍTULO, o item pelo nome e o bloco pelo rótulo, sem id, "asset" ou "metadados", e o
+corte do título é por CARACTERE (`clipText`: um emoji partido não salva). Testes:
+`tests/pensa-ai.test.ts` ("o plano 3D que reprovava", "a Revisão do Plano fala com o nome que a
+criança vê" e "plano de tarefas 3D", com a IA trocada pelo `completeJson` opcional de
+`createPensaAiRoutes`).
 A etapa O repete a auditoria contra o catálogo atual. O chat chama o OpenRouter no BFF; ownership e
 persistência passam pelo members. Contrato: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
