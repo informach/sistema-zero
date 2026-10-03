@@ -1,7 +1,7 @@
 'use client'
 
 import { Spinner } from '@sistemazero/ui/spinner'
-import { Download, ExternalLink, Play } from 'lucide-react'
+import { ArrowRight, Download, ExternalLink, Play } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { downloadLessonAttachment, lessonAttachmentUrl } from '../lib/attachment-download'
@@ -156,27 +156,31 @@ export function MaterialsBlockView({
             ) : item.kind === 'link' ? (
               <>
                 <a
-                  // Link INTERNO do "Como fazer" (`/como-fazer/<slug>`): mesma aba nova (a ajuda
-                  // não atrapalha a aula), mas leva o caminho da aula de volta (`?voltar=`) e é
-                  // da nossa origem — o referrer pode ir.
+                  // Ajuda interna abre na mesma aba e conserva a volta à aula.
                   href={
                     isHelpLink(item.url)
                       ? helpLinkHref(item.url, lessonReturnPath(player))
                       : item.url
                   }
-                  target="_blank"
-                  rel={isHelpLink(item.url) ? 'noopener' : 'noopener noreferrer'}
+                  target={isHelpLink(item.url) ? undefined : '_blank'}
+                  rel={isHelpLink(item.url) ? undefined : 'noopener noreferrer'}
                   className="sz-lesson-material-action"
                   {...(isHelpLink(item.url) ? { 'data-sz-help-link': '' } : {})}
                 >
                   <span className="sz-lesson-material-icon" aria-hidden>
-                    <ExternalLink className="size-4" />
+                    {isHelpLink(item.url) ? (
+                      <ArrowRight className="size-4" />
+                    ) : (
+                      <ExternalLink className="size-4" />
+                    )}
                   </span>
                   <span className="sz-lesson-material-label">{item.label}</span>
                   {/* ⚠️ SÓ para o leitor de tela. MEDIDO num celular de 390px: visível, "abre em outra
                       aba" ocupa 120px e o NOME do link fica com 108 — o aviso maior que a coisa. O
                       ícone de link externo já diz isso a quem enxerga. */}
-                  <span className="sz-lesson-material-meta sr-only">abre em outra aba</span>
+                  {!isHelpLink(item.url) && (
+                    <span className="sz-lesson-material-meta sr-only">abre em outra aba</span>
+                  )}
                 </a>
                 {item.note ? <p className="sz-lesson-material-note">{item.note}</p> : null}
               </>
@@ -194,7 +198,10 @@ export function MaterialsBlockView({
 
             {item.kind === 'text' ? (
               <div className="lesson-prose sz-lesson-material-text">
-                {renderMarkdown(item.markdown)}
+                {renderMarkdown(item.markdown, {
+                  helpReturnPath: lessonReturnPath(player),
+                  helpLinks,
+                })}
               </div>
             ) : null}
           </li>

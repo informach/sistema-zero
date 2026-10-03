@@ -1,0 +1,210 @@
+---
+import { visualDe } from '../../funnels/comunidade-dos-criadores/oferta/visuals'
+import type { Condition } from '../../funnels/comunidade-dos-criadores/quiz/engine'
+import type { CommunityResult } from '../../funnels/comunidade-dos-criadores/quiz/result'
+import ComunidadeQuizFeedback from '../../islands/ComunidadeQuizFeedback'
+import ComunidadeVisual from './oferta/ComunidadeVisual.astro'
+
+interface Props {
+  result: CommunityResult
+  imagesBase: string
+  basePath: string
+  funnel: string
+  revision: number
+  sessionToken: string
+}
+const { result: r, imagesBase, basePath, funnel, revision, sessionToken } = Astro.props
+
+// Direção de arte (02/10/2026): o resultado usa os capítulos da oferta (chip, ladrilho, folha
+// branca, texto ao lado da tela) para não virar uma parede de texto. A copy não muda; só ganha
+// composição. O ícone de cada bloco vem do ASSUNTO.
+const ICONE_DA_CONDICAO: Record<Condition, string> = {
+  ferramenta: 'construction',
+  desenho: 'palette',
+  formato: 'videocam',
+  computador: 'computer',
+}
+const VISUAL_DA_CONDICAO: Partial<Record<Condition, string>> = {
+  desenho: 'integracao',
+  ferramenta: 'estudio',
+}
+const LADRILHOS = [
+  '',
+  'kof-ladrilho--rosa',
+  'kof-ladrilho--verde',
+  'kof-ladrilho--roxo',
+  'kof-ladrilho--laranja',
+]
+
+// Os blocos de "como funcionaria": texto ao lado da tela, alternando o lado.
+type Bloco = {
+  id: string
+  marca: string
+  icone: string
+  title: string
+  paragraphs: string[]
+  visual?: string
+}
+const blocos: Bloco[] = [
+  ...(r.format
+    ? [
+        {
+          id: 'format',
+          marca: 'data-quiz-format',
+          icone: 'play_circle',
+          ...r.format,
+          visual: 'pausa',
+        },
+      ]
+    : []),
+  { id: 'support', marca: 'data-quiz-support', icone: 'forum', ...r.support, visual: 'recados' },
+  ...(r.doubt
+    ? [
+        {
+          id: 'doubt',
+          marca: 'data-quiz-doubt',
+          icone: 'help',
+          ...r.doubt,
+          visual: r.doubtVisual ?? undefined,
+        },
+      ]
+    : []),
+  ...r.practicalConditions.map((c) => ({
+    id: `condition-${c.kind}`,
+    marca: 'data-quiz-condition',
+    icone: ICONE_DA_CONDICAO[c.kind],
+    title: c.title,
+    paragraphs: c.paragraphs,
+    visual: VISUAL_DA_CONDICAO[c.kind],
+    kind: c.kind,
+  })),
+]
+// Uma tela aparece uma vez só na página: a que já acompanha a ponte não se repete num bloco.
+const usadas = new Set(r.visuals)
+for (const b of blocos) {
+  if (!b.visual) continue
+  if (usadas.has(b.visual)) b.visual = undefined
+  else usadas.add(b.visual)
+}
+// A tela vai AO LADO do texto, a não ser que a copy a anuncie "abaixo" (aí ela é cumprida) ou
+// que seja uma sequência de telas (numa coluna estreita, os passos ficariam ilegíveis).
+const embaixo = (paragraphs: readonly string[], visuais: readonly string[]) =>
+  paragraphs.some((p) => /\babaixo\b/i.test(p)) ||
+  visuais.some((v) => (visualDe(v)?.frames.length ?? 1) > 1)
+const pontePorBaixo = embaixo(r.bridge?.paragraphs ?? [], r.visuals)
+const procuraOutra = r.decision.unmet.length > 0 || r.decision.state === 'fora_das_opcoes'
+---
+<main id="quiz" class="cq-result">
+  <section class="cq-res-hero" aria-labelledby="titulo-resultado">
+    <div class="wrap cq-res-hero-grade">
+      <div class="cq-res-hero-texto">
+        <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">explore</span>Um ponto de partida para vocês</span>
+        <h1 id="titulo-resultado" class="kof-display">{r.title}</h1>
+        <p class="cq-note">Pelo que você contou, este é um caminho para conversar com seu filho e experimentar em casa.</p>
+        <div class="prosa">{r.reason.map((p, i) => <p class:list={[{ 'cap-lead': i === 0 }]}>{p}</p>)}</div>
+      </div>
+      <img class="cq-res-zappy" src={`${imagesBase}/zappy-happy.webp`} alt="" width="300" height="300" />
+    </div>
+  </section>
+
+  <section class="section cq-res-comeco" aria-labelledby="titulo-comeco">
+    <div class="wrap cq-res-duas">
+      <div class="cq-res-texto">
+        <div class="sub-head">
+          <span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">lightbulb</span></span>
+          <h2 id="titulo-comeco" class="kof-display">{r.orientation?.title ?? 'Um começo ligado ao que você contou'}</h2>
+        </div>
+        <div class="prosa">
+          {r.context.map((p) => <p>{p}</p>)}
+          {r.orientation?.paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+      </div>
+      <section class="cq-activity kof-banda" aria-labelledby="titulo-atividade">
+        <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">home</span>Para experimentar em casa</span>
+        <h2 id="titulo-atividade" class="kof-display">{r.activity.title}</h2>
+        {r.activity.steps && <ol>{r.activity.steps.map((s) => <li>{s}</li>)}</ol>}
+        {r.activity.paragraphs.map((p) => <p>{p}</p>)}
+      </section>
+    </div>
+  </section>
+
+  <section class="fundo-folha cq-res-comunidade" aria-labelledby="titulo-comunidade" data-quiz-product-introduction>
+    <div class="folha">
+      <div class="wrap">
+        <div class="cap-head cor-azul">
+          <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">rocket_launch</span><span class="cap-chip-texto">{procuraOutra ? 'Uma proposta para conhecer e comparar' : 'Uma possibilidade para o próximo passo'}</span></span>
+          <h2 id="titulo-comunidade" class="kof-display">{r.introduction.title}</h2>
+        </div>
+        <div class="prosa prosa--colunas">{r.introduction.paragraphs.map((p) => <p>{p}</p>)}</div>
+
+        {r.unmetConditions.length > 0 && (
+          <section class="cq-callout" aria-labelledby="requirements-title">
+            <div class="sub-head">
+              <span class="kof-ladrilho kof-ladrilho--laranja" aria-hidden="true"><span class="material-symbols-rounded">info</span></span>
+              <h2 id="requirements-title" class="kof-display">Há diferenças importantes em relação ao que vocês procuram</h2>
+            </div>
+            <div class="cq-callout-itens">
+              {r.unmetConditions.map((c) => (
+                <div class="prosa" data-quiz-condition={c.kind}>
+                  <h3 class="kof-display">{c.title}</h3>
+                  {c.paragraphs.map((p) => <p>{p}</p>)}
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div class:list={['bloco', 'cq-res-ponte', r.visuals.length === 0 ? '' : pontePorBaixo ? 'bloco--largo' : 'bloco--lado']}>
+          <div class="bloco-texto">
+            <div class="sub-head">
+              <span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">sports_esports</span></span>
+              <h2 class="kof-display">{r.bridge?.title ?? 'Conheça a criação na Comunidade'}</h2>
+            </div>
+            <div class:list={['prosa', { 'prosa--colunas': pontePorBaixo && (r.bridge?.paragraphs.length ?? 0) > 1 }]}>{r.bridge?.paragraphs.map((p) => <p>{p}</p>)}</div>
+          </div>
+          {r.visuals.length > 0 && (
+            <div class="bloco-visuais">{r.visuals.map((v) => <ComunidadeVisual visual={v} imagesBase={imagesBase} />)}</div>
+          )}
+        </div>
+        <p class="cq-note cq-res-nota">Telas reais da plataforma. Elas mostram as ferramentas e a organização das atividades.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cq-res-dia" aria-label="Como funcionaria no dia a dia">
+    <div class="wrap">
+      {blocos.map((b, i) => {
+        const marca = b.marca === 'data-quiz-condition' ? { 'data-quiz-condition': (b as Bloco & { kind?: string }).kind } : { [b.marca]: true }
+        const porBaixo = !!b.visual && embaixo(b.paragraphs, [b.visual])
+        const arranjo = !b.visual ? 'bloco--texto kof-carta kof-carta--fio' : porBaixo ? 'bloco--largo' : 'bloco--lado'
+        return (
+          <div class:list={['bloco', arranjo, { inverso: i % 2 === 1 }]} {...marca}>
+            <div class="bloco-texto">
+              <div class="sub-head">
+                <span class:list={['kof-ladrilho', LADRILHOS[(i + 1) % LADRILHOS.length]]} aria-hidden="true"><span class="material-symbols-rounded">{b.icone}</span></span>
+                <h2 class="kof-display">{b.title}</h2>
+              </div>
+              <div class:list={['prosa', { 'prosa--colunas': (porBaixo || !b.visual) && b.paragraphs.length > 1 }]}>{b.paragraphs.map((p) => <p>{p}</p>)}</div>
+            </div>
+            {b.visual && <div class="bloco-visuais"><ComunidadeVisual visual={b.visual} imagesBase={imagesBase} /></div>}
+          </div>
+        )
+      })}
+    </div>
+  </section>
+
+  <section class="section cq-res-convite" aria-labelledby="titulo-convite">
+    <div class="wrap">
+      <div class="cq-res-cta kof-marca">
+        <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">family_star</span>Comunidade dos Criadores</span>
+        <h2 id="titulo-convite" class="kof-display">Veja as atividades e os planos para a família</h2>
+        {r.requirements.map((p) => <p>{p}</p>)}
+        <div class="cq-actions"><a class="kof-btn kof-btn--grande kof-btn--inversa" href={r.offerPath} data-quiz-offer>{r.cta}<span aria-hidden="true">→</span></a></div>
+        <p class="cq-res-cta-nota">O botão abre a apresentação da Comunidade. Lá, você pode conhecer os detalhes antes de escolher um plano.</p>
+      </div>
+    </div>
+  </section>
+  <div class="wrap cq-res-opiniao">
+    <ComunidadeQuizFeedback client:load revision={revision} basePath={basePath} funnel={funnel} sessionToken={sessionToken} />
+  </div>
+</main>

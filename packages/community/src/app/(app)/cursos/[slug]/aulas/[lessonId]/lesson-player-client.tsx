@@ -140,19 +140,23 @@ export function LessonPlayer({
       Concluir aula
     </Button>
   )
-  const completionMessage = lesson.completed ? null : blockedByLearning ? (
-    <p>Termine as atividades essenciais das seções para concluir a aula.</p>
-  ) : blockedByPinta ? (
-    <p>Envie seu desenho ao professor para concluir a aula.</p>
-  ) : blockedByComingSoon ? (
-    <p>Esta aula ainda está sendo preparada.</p>
-  ) : blockedByQuiz ? (
-    <p>Passe no quiz da aula para poder concluí-la.</p>
-  ) : blockedByStudio ? (
-    <p>Envie o projeto do Estúdio para poder concluir a aula.</p>
-  ) : blockedByStudioNotPassed ? (
-    <p>Atinja a nota mínima do Estúdio para poder concluir a aula.</p>
-  ) : null
+  // Em TEXTO: vira um item da faixa "o que falta para seguir" do rodapé (`LessonSectionStatus`),
+  // só quando a seção não tem itens próprios (aula legada, equipe).
+  const completionMessage = lesson.completed
+    ? null
+    : blockedByLearning
+      ? 'Termine as atividades desta aula para concluir'
+      : blockedByPinta
+        ? 'Envie seu desenho ao professor para concluir a aula'
+        : blockedByComingSoon
+          ? 'Esta aula ainda está sendo preparada'
+          : blockedByQuiz
+            ? 'Passe no quiz da aula para concluir'
+            : blockedByStudio
+              ? 'Envie seu projeto do Estúdio para concluir a aula'
+              : blockedByStudioNotPassed
+                ? 'Alcance a nota mínima do Estúdio para concluir a aula'
+                : null
 
   return (
     <LessonPlayerProvider value={playerContext}>

@@ -1039,19 +1039,42 @@ matcher do proxy (multipart) — coberto pelo prefixo `api/studio/publish` no ne
 na 1ª edição REAL da sessão (`ctx.reason === 'autosave'`, guardado por ref — NÃO em abrir/flush), dispara
 best-effort `POST /api/studio/activity` (shim `shell.routes.studioActivityDay`, DENTRO do matcher, JSON
 sem corpo) → o members dá **10 XP/dia** que MOVE o streak (gated por posse do Estúdio, dedupe 1×/dia). No
-sucesso, `router.refresh()` acende o foguinho/XP/ranking na hora. É a âncora de quem já terminou os cursos
+sucesso, o foguinho/XP/ranking se atualizam quando o editor SAI da tela (o `router.refresh()` roda na
+desmontagem do `StudioFullEditor`). É a âncora de quem já terminou os cursos
 e só cria (sem publicar). Ver members §Missões "Retenção pós-cursos" (migration `0045`).
+⚠️⚠️ **Nada de `router.refresh()` com o editor aberto (02/10/2026).** Relato dela: instalar o Jogo 2D
+devolveu a criança a "Meus Jogos" uma vez, e na segunda tentativa não. O jogo aberto vive só no
+estado do `studio-full-client` (a URL é `/estudio`), e o Next 16 troca o refresh por um
+RECARREGAMENTO da página (`doMpaNavigation` em `fetch-server-response.js`) quando a resposta não
+serve: o servidor foi atualizado depois que a aba abriu (build diferente, o caso comum em staging, que
+publica a cada push) ou a ida voltou com erro. A primeira edição real da sessão era o gatilho (desde
+que abrir deixou de contar como edição, é a instalação de extensão). A segunda tentativa não repete
+porque a aba nova já está na versão nova e o beacon é um por editor aberto. Travado em
+`tests/studio-full-editor.test.tsx`.
 
 ## Ferramentas do Estúdio vêm dos CURSOS (currículo, 08/2026)
 
 A paleta do Estúdio livre deixou de ser fixa por NÍVEL: cada curso declara os blocos que libera e a
 criança tem a UNIÃO dos que **concluiu E publicou no Mural**. O nível segue decidindo o MODO
 (livre/Ponte/Pro). No kids isso aparece em três lugares:
-- **`/estudio`**: a página soma `getStudioUnlocksReadonly()` ao `Promise.all` e passa
-  `{blocks, extensions: extensionsForBlocks(blocks)}` ao `resolveStudioTier`. Best-effort — falhar
-  NÃO esvazia a caixa (o tier cai no perfil do nível).
+- **`/estudio`**: a página soma `getStudioUnlocksReadonly()` ao `Promise.all` e decide a porta
+  por **`studioGate`** (`src/server/studio-gate.ts`, sobre o `earnedStudioTier` do member-shell).
+  A ORDEM é contrato: nível sem Estúdio livre → `KidsJourneyLockedStudio` (Faísca, mesmo se a
+  lista não chegou); EQUIPE → abre (ignora o currículo, mesmo sem a lista); a lista não chegou →
+  `KidsStudioUnavailable` ("tente de novo"); nenhum bloco conquistado → `KidsStudioWithoutTools`
+  ("Suas ferramentas vêm dos cursos": o "Acenda sua Faísca" seria falso para um Construtor);
+  senão abre. ⭐ **Sem reserva desde 02/10/2026** (decisão da dona): o Kit essencial do
+  Construtor e a paleta do nível para os outros postos saíram, e sem curso concluído não há
+  bloco. ⚠️ O editor nunca recebe a lista vazia (o Estúdio a leria como "sem restrição"). Em
+  produção todos os cursos têm a lista cadastrada; em staging e no local, nem sempre, e ali o
+  Estúdio pode aparecer trancado. Teste: `tests/studio-gate.test.ts`.
+  ⭐ **Os ATALHOS para o Estúdio usam a mesma régua** (`canOpenFreeStudio` e
+  `canOpenPensaStudioTask` recebem a resposta dos blocos): posse + `freeStudio` + algum bloco.
+  Mapa, trilha, perfil, ranking, Pensa, Pinta e Molda somam `getStudioUnlocksReadonly()` (com
+  `React.cache`) ao `Promise.all`. Lista que não chegou NÃO esconde o atalho (quem decide é a
+  porta, com o "tente de novo").
 - **`/mural-dos-criadores`**: o mesmo, p/ o remix perguntar "o que você conquistou cobre este jogo?"
-  em vez de "seu nível cobre?".
+  em vez de "seu nível cobre?". Blocos indisponíveis ou nenhum bloco → sem remix naquela visita.
 - **`/perfil` → `my-tools.tsx` (`MyTools`)**: "Minhas ferramentas", as GAVETAS conquistadas
   (`drawersForBlocks` — 🎮 Sprites, 💥 Colisões, 🚀 Kit espaço…). Gaveta é o que torna a recompensa
   legível p/ criança; lista de ids não é. Sem nenhuma, a seção some.
@@ -1225,6 +1248,18 @@ adulto. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
 verde, sem o gradiente) e o quiz sem cartão dentro de cartão (painel `bg-background`; aprovado =
 bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos saiu).
 
+⭐⭐ **E em 30/09/2026 o "o que falta" ganhou uma casa nova: a faixa do RODAPÉ FIXO.** Não é o
+cartão de cima voltando: é UMA linha acima dos botões, com o ícone da razão num ladrilho colorido
+(`LessonSectionStatus` do member-shell, ganchos `sz-lesson-status*`), que diz por que o "Próxima
+seção" está travado e fica verde ("Tudo pronto nesta parte. Pode seguir!") quando a seção fecha.
+Decisão dela entre três lugares. O que muda AQUI é o material, no bloco "O QUE FALTA PARA SEGUIR"
+do `globals.css`: fundo `--band-creme` (pendente) e `--band-menta` (pronto), ladrilho do ícone na
+família do chip (cyan padrão; verde para experimentar/criar/desenhar; laranja para quiz,
+certificado e ação da plataforma; cinza para o que espera o professor ou a seção anterior), Nunito
+700/15px, cantos de 16px, "+N" em pílula. As frases vêm do core na voz da criança (ver o CLAUDE.md
+do member-shell); o `completionMessage` do `lesson-player-client` virou TEXTO na mesma voz e só
+aparece quando a seção não tem itens próprios.
+
 ⭐⭐ **Materiais complementares viraram um BLOCO (19/09/2026).** O `<details>` "Materiais de apoio",
 pregado no pé de toda seção e alheio à ordem que ela monta, e o card "Materiais da aula" no pé da
 página SUMIRAM os dois. Hoje é um bloco (`materials`) com uma lista ordenada de arquivos, imagens,
@@ -1269,6 +1304,33 @@ compartilhada). É tudo do member-shell — o desenho, as regras e as armadilhas
 em "O CONSOLE" e "O placar é o do Jogo 2D". O que muda AQUI é só o material: o console veste o tema do
 PERFIL (cartão, borda, cor de ação), e não o deck escuro do jogo. Foi o meio-termo que ela escolheu
 depois de ver três propostas numa maquete descartável.
+
+⭐⭐ **O console virou o v2 (30/09/2026).** Pedido dela: o experimento com olho de diretor de arte.
+A anatomia (dois painéis num deck, a faixa em ladrilhos, o palco com moldura escura de tela de
+jogo, a frase da situação sob o mundo, "Sua vez" na bancada, a lista "O que você já descobriu")
+mora no member-shell (§"O CONSOLE v2" do CLAUDE.md de lá). O que muda AQUI é o MATERIAL, por
+variáveis em `.sz-lesson-sections .sz-scene-console` (bloco "O CONSOLE v2 da experiência" do
+`globals.css`): deck em `--pen-sup2`, moldura no navy `--menu`, momento no `--kids-verde` do chip
+"Experimente", situação em `--band-amarelo`, descoberta feita em `--band-menta` com
+`--success-foreground`, pendente em `--band-creme`. Decisões dela na maquete: pendente trancada e
+NEUTRA (sem o gesto que falta), moldura no PALCO (revoga o "mundo de borda a borda, reto" da maquete
+de 18/09, no CLAUDE.md do member-shell), valores da
+faixa ESCUROS com a cor do par só na bolinha. Teste: `tests/lesson-scene-console-v2.test.tsx`.
+⚠️ A maquete aprovada é `tmp/maquete-experiencia.tsx` (fora do git): não apagar enquanto a tela
+não bater com ela. ⭐⭐ No AMPLIADO o mundo NUNCA rola por dentro (01/10/2026, relato dela: "a
+cena é o mais importante, tem que estar sempre visível; se for para ter barra de rolagem, tem que
+ser no card inteiro"): o palco encaixa pela altura em todo tipo de cena (conta e medição no
+member-shell, `lib/scene-encaixe.ts`; o CSS daqui não muda nada) e, se não couber, quem rola é o
+cartão do mundo. Um harness descartável em `tmp/diag-cenas/` (serve + spec, fora do git) abre
+QUALQUER experiência dos manifestos por `?aula=<slug>&block=<key>` e mede quem rola no ampliado:
+foi assim que as 56 experiências × 4 janelas foram conferidas. ⚠️ O e2e das cenas RODA nesta máquina pelo runner (`bunx playwright test --config
+playwright.scenes.config.ts`, ~80 s): é a régua do console (palco e botão de executar inteiros à
+vista; a 320px sem rolagem lateral; a 1920×600 o svg inteiro no ampliado) e deve rodar ANTES de
+qualquer review de CSS da cena — em 30/09 dois achados de um full review passaram no Windows e
+caíram no Linux do CI (fonte mais larga). O que NÃO funciona é o `chromium.launch()` avulso num
+script (trava no launch); para prints soltos use o Chrome instalado por linha de comando
+(`chrome.exe --headless=new --screenshot=… <url>`) contra o harness
+`bun e2e-scenes/fixtures/serve.ts` (:5198), que compila o CSS UMA vez ao subir.
 
 ⚠️ **A cena agora divide a tela como o Estúdio, e o teto dela subiu para 680px** — a régua é do
 member-shell (`lib/lesson-split.ts`), com o porquê no CLAUDE.md de lá. O que muda AQUI é o que se
@@ -2012,6 +2074,16 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   SVG existente permanece visível e conclui pelo próprio `animationend` — nunca por `setTimeout`.
   O canvas só esconde o SVG depois de validar a entrada; `StateChange.data` pode ser `string` ou
   `string[]`. A falha depois do claim devolve a transição ao SVG, sem pular a reação da criança.
+  ⭐ **01/10/2026, o arquivo novo dela:** o estado `Closed` ganhou uma animação em LAÇO, e nada
+  mudou no código: a máquina roda com `autoplay: true`, então o baú fechado se mexe sozinho até
+  o `open`. Medido num harness descartável com o runtime real (`@rive-app/canvas` 2.42.1 + o
+  `rive.wasm` do app): 19 quadros distintos em 2,4 s no `Closed`, `open` → `Opening` → `Open`, e
+  em `Open` o quadro para. ⚠️ O arquivo mora no bucket PÚBLICO do R2 (`kids/chest/chest-<sha256>.riv`,
+  chave endereçada pelo conteúdo) e a env de STAGING aponta para ele; PRODUÇÃO NÃO tem a env (o
+  baú de produção segue no SVG). Subir uma versão nova = `bun run r2:put:public <arquivo>
+  --prefix=kids/chest` no admin (ver o CLAUDE.md de lá) e trocar a env no Railway: a URL muda
+  junto com o conteúdo, nunca se sobrescreve a antiga. Com `prefers-reduced-motion` o Rive nem
+  carrega, então o laço respeita a preferência.
 - `streak-widget.tsx` — sidebar (cheio) + `MobileTopbar` (compact): fogo aceso (vermelho
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
   **Equipe (passe livre):** quando `coins.unlimited` (members marca p/ superadmin/admin/staff), o
@@ -2356,12 +2428,13 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   vê o botão — importaria projeto que nem consegue abrir; rank indisponível também esconde,
   salvo equipe = Lenda) → fetch `/api/studio/play/:id` → **checagem de FERRAMENTAS**
   (`remixRequirementFromSnapshot` × `studioRemixCovered` do member-shell — jogo Pro sem ser
-  Lenda ou extensão fora da allowlist do degrau → `toast.info` gentil nomeando o nível via
-  `minJourneyLevelForRemix`+`levelInfo`, SEM importar) → `setStudioStorageNamespace(viewerId)` →
+  Lenda ou extensão que os cursos ainda não deram → `toast.info` gentil "Esse jogo usa ferramentas
+  que você ainda vai conquistar nos cursos", SEM importar) → `setStudioStorageNamespace(viewerId)` →
   `importProjectSnapshot(snapshot, {name: 'Remix de <título>'})` → toast + push `/estudio`.
   **Selo no card:** `thread.studioMeta` ({pro, extensions[]}, snapshot no publish — hub migr
-  `0007`) fora do degrau → botão vira cadeado tracejado "Fazer a minha versão · no nível X"
-  (`remixLockFor` no client → prop `remixLock` de ShowcaseCard/ThreadDetail/PlayLinkActions;
+  `0007`) com ferramenta não conquistada → botão vira cadeado tracejado "Fazer a minha versão",
+  SEM nível (02/10/2026: as ferramentas vêm dos cursos; `remixLockFor` devolve um booleano → prop
+  `remixLock` de ShowcaseCard/ThreadDetail/PlayLinkActions;
   clique continua vivo e mostra o recado). Post ANTIGO sem meta → botão normal, a checagem do
   clique segura. Jogo só com blocos avançados do NÚCLEO (sem extensão) abre e roda — a paleta
   curada é a pedagogia (aceito na v1).
@@ -3036,7 +3109,8 @@ atualiza quando a interface muda sem obrigar ninguém a refazer aula. Rotas em
 - **Volta para a aula:** `?voltar=` allowlistado por `lib/help-return.ts` (`LESSON_PATH`, mesma
   régua do `resolveAvatarReturnPath`). Quem escreve o `voltar` é o link da aula (materiais ou
   `rich_text`, que agora passa `helpReturnPath` ao `renderMarkdown` quando está numa aula); o
-  link abre em outra aba (decisão dela).
+  link abre na mesma aba (decisão de 03/10/2026, substitui a orientação anterior). Textos,
+  materiais e enunciados/correções do quiz conservam o caminho de retorno.
 - **Zappy:** os hosts do Estúdio passam `openHelp: openStudioZappyHelp`
   (`lib/studio-zappy-navigation.ts`), e o chip "Passo a passo: …" abre `/como-fazer/<slug>`.
 - O guia "Como funciona?" ganhou o passo final `ajuda` com link (é onboarding; a biblioteca é

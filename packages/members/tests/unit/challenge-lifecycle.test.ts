@@ -154,7 +154,7 @@ describe('SendChallengeLifecycleService', () => {
       'https://kids.sistemazero.com.br/cursos/desafio-primeiro-jogo',
     )
     expect(messaging.sent[1]?.variables?.link).toBe(
-      'https://sistemazero.com.br/kids/comunidade-do-criador/oferta',
+      'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta/continuar',
     )
   })
 

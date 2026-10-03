@@ -1,0 +1,47 @@
+---
+const questions = [
+  {
+    title: 'Como faço para participar?',
+    paragraphs: [
+      'Se você é responsável por um aluno, entre na sua conta e abra a Área dos pais. No cartão de embaixador, você pode participar usando os dados da própria conta. Seu link público e o acesso ao painel ficam disponíveis ali.',
+      'Se a equipe cadastrou você manualmente, o acesso ao painel chega pelo seu e-mail. Já existe um cadastro com esse e-mail? A plataforma pode pedir que você abra o link enviado à caixa de entrada para proteger o painel e a chave Pix.',
+    ],
+  },
+  {
+    title: 'Qual dos links devo mandar para a outra família?',
+    paragraphs: [
+      'Envie o link do presente, que tem /bolsa/ no endereço e aparece no campo de compartilhamento do painel. Esse é o link público: a outra família abre a apresentação do curso e faz o próprio cadastro.',
+      'O endereço que tem /embaixador/ é o seu acesso privado. Ele permite ver seu painel e atualizar sua chave Pix. Guarde-o para você. Se o compartilhar sem querer, avise a equipe para que ela troque esse acesso.',
+    ],
+  },
+  {
+    title: 'A família precisa assinar alguma coisa para receber o curso?',
+    paragraphs: [
+      'Não. Ela recebe sete dias de Cadê Todo Mundo? a partir do cadastro, sem cartão e sem assinatura automática. A visita ao Mural permite ver e jogar enquanto a conta existir.',
+      'Explique isso ao fazer o convite e lembre que a criança precisará de um computador para as atividades. Os outros cursos, a criação livre e a participação completa no Mural fazem parte da Comunidade dos Criadores, que o responsável pode escolher contratar depois.',
+    ],
+  },
+  {
+    title: 'Quando uma indicação gera bônus?',
+    paragraphs: [
+      'Primeiro, a família precisa resgatar o presente pelo seu link. Se depois fizer uma compra elegível da Comunidade dos Criadores, a plataforma registra a conversão. O bônus aguarda o período de garantia e a conferência da compra antes de ser liberado.',
+      'O valor vigente aparece no seu painel. Depois da liberação, a equipe faz o pagamento manualmente pela chave Pix cadastrada. Só o cadastro gratuito não gera bônus, autoindicação não conta e uma renovação da mesma família não gera outro bônus. Um estorno na garantia cancela o bônus pendente.',
+    ],
+  },
+  {
+    title: 'O que eu consigo acompanhar sobre quem convidei?',
+    paragraphs: [
+      'Seu painel mostra quantos resgates foram concluídos pelo seu link e a situação dos seus bônus. Você também vê quantos convites pediu para enviar por e-mail.',
+      'Você não recebe o nome ou o progresso das crianças convidadas. O acompanhamento do aluno continua com o responsável daquela família. Se quiser saber como foi a experiência, pode conversar com ele, sem acesso aos dados privados da conta.',
+    ],
+  },
+  {
+    title: 'E se a pessoa já recebeu esse presente por outro link?',
+    paragraphs: [
+      'O presente tem um resgate por e-mail, considerando convites pessoais e campanhas. Trocar de link não dá novos sete dias nem muda a origem do cadastro já aceito.',
+      'Se ela já tem conta, mas ainda não recebeu o presente, pode usar o mesmo e-mail para resgatar pelo seu link. O curso entra na conta que já existe, sem precisar criar outro cadastro.',
+    ],
+  },
+]
+---
+<section id="duvidas" class="section fundo-alt cor-roxo"><div class="wrap"><span class="kof-eyebrow">Para indicar com tranquilidade</span><h2 class="kof-h2">Sobre participar e compartilhar</h2><div class="gift-faq">{questions.map((question) => <details><summary>{question.title}<span aria-hidden="true">+</span></summary><div class="gift-answer"><div class="gift-prose">{question.paragraphs.map((paragraph) => <p>{paragraph}</p>)}</div></div></details>)}</div></div></section>

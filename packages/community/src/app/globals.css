@@ -221,7 +221,9 @@
 }
 .sz-app:has(.sz-aula-adulto) > main {
   max-width: none;
-  padding-bottom: 8rem;
+  /* O que o rodapé fixo mede (`--sz-lesson-nav-height`, do member-shell) e não um número fixo:
+     com a faixa "o que falta para seguir" ele cresceu (review do lote 2). */
+  padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);
 }
 main:has(.sz-aula-adulto) {
   --lesson-outline-width: min(20rem, 90vw);
@@ -388,9 +390,6 @@ main:has(.sz-aula-adulto) {
   border-top: 1px solid var(--border);
   border-radius: 0;
   padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
-}
-.sz-aula-adulto .sz-lesson-nav-immersive .sz-lesson-nav-message {
-  text-align: right;
 }
 @media (min-width: 1024px) {
   main:has(.sz-aula-adulto) {
@@ -623,6 +622,47 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 }
 .lesson-prose > :last-child {
   margin-bottom: 0;
+}
+
+/* Depois das regras do `.lesson-prose`: o `> ul` da lista da faixa tem especificidade maior que
+   `.lesson-prose ul`, e o biome cobra a ordem crescente (full review de 30/09, M4). */
+/* "O que falta para seguir" (30/09/2026): a faixa sóbria acima dos botões do rodapé. */
+.sz-aula-adulto .sz-lesson-status {
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.75rem;
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.sz-aula-adulto .sz-lesson-status[data-state="pronto"] {
+  color: var(--success-foreground);
+}
+.sz-aula-adulto .sz-lesson-status-item {
+  min-height: 2.25rem;
+}
+.sz-aula-adulto .sz-lesson-status-icone {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.5rem;
+  background: var(--card);
+  color: currentColor;
+}
+.sz-aula-adulto .sz-lesson-status-lista > summary {
+  min-height: 2.75rem;
+  list-style: none;
+}
+.sz-aula-adulto .sz-lesson-status-lista > summary::-webkit-details-marker {
+  display: none;
+}
+.sz-aula-adulto .sz-lesson-status-mais {
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.sz-aula-adulto .sz-lesson-status-lista > ul {
+  padding-bottom: 0.25rem;
 }
 
 /* Modal — backdrop + entrada */

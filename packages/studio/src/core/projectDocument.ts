@@ -19,6 +19,19 @@ export class ProjectDocumentError extends Error {
   }
 }
 
+/**
+ * O projeto passa dos tetos de tamanho ou de complexidade. É recusa PERMANENTE (tentar de novo não
+ * resolve), e a importação diz isso à criança. ⚠️ NÃO estende `ProjectDocumentError` de propósito:
+ * quem pergunta por aquela classe (o `/jogar`, a migração local) a lê como "aguardando conversão",
+ * e um projeto grande demais não vai melhorar com conversão.
+ */
+export class ProjectTooLargeError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ProjectTooLargeError'
+  }
+}
+
 export function isDocumentRecord(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false
   const prototype = Object.getPrototypeOf(value)

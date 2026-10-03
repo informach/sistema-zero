@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { boundsUnion, shapeBounds } from '../../../vector/geometry'
+import { boundsUnion, scaleShape, shapeBounds } from '../../../vector/geometry'
 import type { VectorShape } from '../../../vector/model'
 import { DEFAULT_STYLE } from '../../../vector/shapes'
 import {
@@ -11,6 +11,7 @@ import {
   formatStrokeWidth,
   occupiedBoundsOf,
   offsetInsideDoc,
+  resizeFactors,
   STROKE_WIDTHS,
   selectedShapeUnits,
   strokeDotSize,
@@ -322,5 +323,70 @@ describe('occupiedBoundsOf (as caixas que a cópia evita)', () => {
     expect(
       offsetInsideDoc(uniao, { width: 480, height: 360 }, occupiedBoundsOf([...grupo, ...copia])),
     ).toEqual({ dx: -12, dy: 12 })
+  })
+})
+
+describe('resizeFactors (as alças, livre e com Shift, 30/09/2026)', () => {
+  const A = { x: 0, y: 0 }
+
+  it('canto livre: cada eixo pelo seu fator', () => {
+    expect(resizeFactors('se', A, { x: 20, y: 10 }, { x: 40, y: 5 }, false)).toEqual({
+      fx: 2,
+      fy: 0.5,
+    })
+  })
+
+  it('canto com Shift: UM fator, a projeção do ponteiro na diagonal (não a média dos dois)', () => {
+    const { fx, fy } = resizeFactors('se', A, { x: 20, y: 10 }, { x: 40, y: 5 }, true)
+    // Seleção 2:1: 1,7 não é 2, nem 0,5, nem a média 1,25. Quem tira a média falha aqui.
+    expect(fx).toBeCloseTo(1.7, 10)
+    expect(fy).toBe(fx)
+  })
+
+  it('lado livre escala só o eixo dele; com Shift o mesmo fator vai para os dois', () => {
+    const anchor = { x: 0, y: 5 }
+    expect(resizeFactors('e', anchor, { x: 10, y: 5 }, { x: 15, y: 40 }, false)).toEqual({
+      fx: 1.5,
+      fy: 1,
+    })
+    expect(resizeFactors('e', anchor, { x: 10, y: 5 }, { x: 15, y: 40 }, true)).toEqual({
+      fx: 1.5,
+      fy: 1.5,
+    })
+    expect(resizeFactors('n', { x: 5, y: 10 }, { x: 5, y: 0 }, { x: 30, y: -5 }, true)).toEqual({
+      fx: 1.5,
+      fy: 1.5,
+    })
+  })
+
+  it('seleção degenerada num ponto devolve 1 nos dois modos', () => {
+    expect(resizeFactors('se', A, A, { x: 9, y: 9 }, false)).toEqual({ fx: 1, fy: 1 })
+    expect(resizeFactors('se', A, A, { x: 9, y: 9 }, true)).toEqual({ fx: 1, fy: 1 })
+  })
+
+  it('alça de canto numa linha horizontal (dy = 0): livre deixa o eixo morto em 1, Shift projeta em X', () => {
+    expect(resizeFactors('se', A, { x: 10, y: 0 }, { x: 20, y: 7 }, false)).toEqual({
+      fx: 2,
+      fy: 1,
+    })
+    expect(resizeFactors('se', A, { x: 10, y: 0 }, { x: 20, y: 7 }, true)).toEqual({ fx: 2, fy: 2 })
+  })
+
+  it('projeção negativa sai crua; quem clampa é o scaleShape (nunca vira do avesso)', () => {
+    const f = resizeFactors('se', A, { x: 10, y: 10 }, { x: -20, y: -20 }, true)
+    expect(f).toEqual({ fx: -2, fy: -2 })
+    const shape: VectorShape = {
+      ...DEFAULT_STYLE,
+      id: 'r',
+      type: 'rect',
+      x: 0,
+      y: 0,
+      w: 10,
+      h: 10,
+      rx: 0,
+      rotation: 0,
+    }
+    const scaled = scaleShape(shape, A, f.fx, f.fy)
+    expect(scaled.type === 'rect' && scaled.w).toBeGreaterThan(0)
   })
 })

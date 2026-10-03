@@ -1,14 +1,26 @@
 ---
-// Página de vendas da "Comunidade dos Criadores" (funil kids, ASSINATURA
-// mensal/anual). Layout PRÓPRIO alinhado à paleta Pen da Comunidade Kids
-// (chão azul-acinzentado, ação azul, Baloo 2/Nunito e relevo 3D), estrutura 8D em
-// 19 blocos. O CSS sob medida vive no `<style>` escopado abaixo, sob `.cdc`
-// (tokens no wrapper, não no :root). Os CTAs de compra levam `data-checkout-cta`
-// → PreCheckoutModal; os CTAs de PLANO levam também `data-checkout-oferta`
-// (slug da oferta mensal/anual) → o modal anexa `?oferta=` e o checkout
-// pré-seleciona o plano. Copy segue o Light Copy (sem travessão, sem "!",
-// sem "Não é X. É Y.", depoimentos reais, bônus ancorados).
+// Quatro perfis e continuidade: docs/marketing/kids/comunidade-dos-criadores/copy/.
+// As receitas visuais ficam em kids-oferta.css; o layout (`.cdc`), em comunidade-oferta.css.
+import '../../../styles/kids-oferta.css'
+import '../../../styles/comunidade-oferta.css'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
+import { COMUNIDADE_PAGES } from '../../../funnels/comunidade-dos-criadores/oferta'
+import {
+  ENFASE_NUMA_LINHA,
+  ICONES_DE_DUVIDAS,
+} from '../../../funnels/comunidade-dos-criadores/oferta/arte'
+import { DESTAQUES } from '../../../funnels/comunidade-dos-criadores/oferta/destaques'
+import { FAQ, SHARED_COPY } from '../../../funnels/comunidade-dos-criadores/oferta/shared'
+import type {
+  ComunidadeFaqEntry,
+  ComunidadeOffer,
+  ComunidadePageId,
+} from '../../../funnels/comunidade-dos-criadores/oferta/types'
+import {
+  FAQ_VISUALS,
+  TOUR,
+  visualDe,
+} from '../../../funnels/comunidade-dos-criadores/oferta/visuals'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -17,30 +29,35 @@ import { funnelOgImage } from '../../../lib/seo'
 import type { OfferPlans } from '../../../server/catalog'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import ComunidadeProsa from './ComunidadeProsa.astro'
+import ComunidadeSection from './ComunidadeSection.astro'
+import ComunidadeVisual from './ComunidadeVisual.astro'
 
 interface Props {
   f: FunnelDef
   productName: string
-  /** "R$ 97,00" (não usado aqui; a página trabalha com os planos). */
   priceLabel: string
-  /** "R$ 97" (fallback de exibição da oferta principal). */
   priceLabelShort: string
-  /** "97.00" (JSON-LD — preço da oferta PRINCIPAL da env). */
   priceReais: string
   imagesBase: string
-  /** Repassados pela rota; esta oferta padrão não os renderiza. */
   perfil: string | null
   quer?: string | null
   ofertaUrl: string
-  /** Planos da assinatura (principal + irmã do alternador). null = catálogo fora. */
   plans: OfferPlans | null
+  profile?: ComunidadePageId
 }
-const { f, productName, priceReais, imagesBase, ofertaUrl, plans } = Astro.props
-
-const description = f.seoDescription
+const { f, productName, imagesBase, ofertaUrl, plans, profile = 'tempo-de-tela' } = Astro.props
+const page = COMUNIDADE_PAGES[profile]
 const img = (file: string) => `${imagesBase}/${file}`
-
-// Normaliza mensal/anual por INTERVALO (sem assumir qual é a principal da env).
+const heroVisual = visualDe(page.heroVisual)
+const heroFrame = heroVisual?.frames[0]
+if (!heroVisual || !heroFrame) throw new Error(`Herói sem tela real: ${page.heroVisual}`)
+const heroSrc = img(heroFrame.file)
+const heroSrcset = `${heroSrc} 1x, ${img(heroFrame.retina)} 2x`
+const [titleStart, titleEnd] = page.hero.title.split(page.emphasis)
+const enfaseEm = ENFASE_NUMA_LINHA[page.id]
+// Jornada do Criador: incluído não significa liberado no primeiro acesso.
+// A resolução por intervalo conserva qual oferta é a principal e qual é a irmã.
 const byInterval = (n: number) =>
   plans?.main.intervalMonths === n
     ? plans.main
@@ -49,3078 +66,364 @@ const byInterval = (n: number) =>
       : null
 const mensal = byInterval(1)
 const anual = byInterval(12)
-
-// Preços de exibição com fallback PRÓPRIO (o da rota é o do NCI — R$ 37, errado
-// aqui). Catálogo fora do ar → mostra os preços de tabela e os CTAs seguem
-// funcionando sem pré-seleção de plano.
 const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
-const mensalLabel = formatBRLFromCents(mensalCents) // "R$ 97"
-const anualLabel = formatBRLFromCents(anualCents) // "R$ 797"
-const anualPorMesLabel = formatBRLFromCents2(Math.round(anualCents / 12)) // "R$ 66,42"
-const anualAncoraLabel = formatBRLFromCents(mensalCents * 12) // "R$ 1.164"
-const economiaLabel = formatBRLFromCents(mensalCents * 12 - anualCents) // "R$ 367"
+const mensalLabel = formatBRLFromCents(mensalCents)
+const anualLabel = formatBRLFromCents(anualCents)
+const anualPorMesLabel = formatBRLFromCents2(Math.round(anualCents / 12))
+const priceReais = ((plans?.main.priceCents ?? mensalCents) / 100).toFixed(2)
+const offer: ComunidadeOffer = page.offer ?? SHARED_COPY.offer
+const faq: Record<string, ComunidadeFaqEntry> = page.faq ?? FAQ
+const fillPrice = (text: string) =>
+  text
+    .replaceAll('{{preco_mensal}}', mensalLabel)
+    .replaceAll('{{preco_anual}}', anualLabel)
+    .replaceAll('{{equivalente_mensal_anual}}', anualPorMesLabel)
+const benefitIcons = ['extension', 'brush', 'group']
+const benefitColors = ['', 'kof-ladrilho--rosa', 'kof-ladrilho--verde']
+const founder = SHARED_COPY.founder.groups.flatMap((group) => group.paragraphs)
+const closing = page.closing.groups.flatMap((group) => group.paragraphs)
+const faqIcons = ICONES_DE_DUVIDAS[page.id] ?? [
+  'schedule',
+  'school',
+  'build',
+  'devices',
+  'diversity_3',
+  'receipt_long',
+]
+const faqColors = ['', 'rosa', 'verde', 'roxo', 'laranja', 'amarelo']
+const faqVisuals = (id: string) =>
+  ((page.faqVisuals ?? FAQ_VISUALS)[id] ?? []).filter((visual) => visualDe(visual))
 ---
 
-<BaseLayout
-  title={f.seoTitle}
-  description={description}
-  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
-  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
->
-  <ProductJsonLd
-    slot="head"
-    name={productName}
-    description={description}
-    price={priceReais}
-    url={ofertaUrl}
-    image={img('checkout-capa.webp')}
-  />
-  <link slot="head" rel="preload" as="image" href={img('hero.webp')} fetchpriority="high" />
-
-  <div class="cdc">
-    <!-- ===== TOPO FIXO ===== -->
+<BaseLayout title={page.seoTitle} description={page.description} canonical={ofertaUrl} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-kids">
+  <ProductJsonLd slot="head" name={productName} description={page.description} price={priceReais} url={ofertaUrl} image={img('checkout-capa.webp')} />
+  <link slot="head" rel="preload" as="image" href={heroSrc} imagesrcset={heroSrcset} fetchpriority="high" />
+  <div class="cdc" data-comunidade-profile={profile}>
+    <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
     <header class="topbar">
       <div class="wrap nav">
-        <div class="logo">
-          <span class="badge"><span class="material-symbols-rounded">stadia_controller</span></span>
-          Comunidade dos Criadores
-        </div>
-        <div class="price-mini">{mensalLabel}/mês</div>
-        <a href="#planos" class="btn header-cta">
-          <span class="material-symbols-rounded">bolt</span><span class="lbl">Quero assinar</span>
+        <a class="brand" href="#conteudo" aria-label="Comunidade dos Criadores, início">
+          <img class="logo" src={img('logo-kids-escuro.svg')} alt="Sistema Zero Kids" width="279" height="26" decoding="async" />
         </a>
+        <nav class="nav-links" aria-label="Partes da página">
+          <a href="#experiencia">Experiência</a>
+          <a href="#planos">Planos</a>
+          <a href="#duvidas">Dúvidas</a>
+        </nav>
+        <div class="nav-right">
+          <p class="nav-preco">No plano anual, equivalente a<strong>{anualPorMesLabel} por mês</strong></p>
+          <a class="kof-btn kof-btn--compacta" href="#planos">Escolher um plano</a>
+        </div>
       </div>
     </header>
-
-    <!-- ===== BLOCO 01 · HERO ===== -->
-    <section class="hero sec">
-      {/* Deco só do lado da ARTE: a estrela que ficava à esquerda caía em cima
-          da headline e atrapalhava a leitura (feedback da usuária). */}
-      <svg
-        class="deco float slow rev"
-        style="top:22%;right:6%;width:34px"
-        viewBox="0 0 24 24"
-        fill="var(--sz-community-pink-light)"
-        aria-hidden="true"
-        ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
-        ></path></svg
-      >
-      <div class="blob" style="width:220px;height:220px;background:var(--sz-community-ground-alt);top:-40px;right:-40px">
-      </div>
-      <div class="blob" style="width:160px;height:160px;background:var(--sz-community-mint);bottom:20px;left:-50px">
-      </div>
-      <div class="wrap">
-        <div class="grid">
+    <main id="conteudo">
+      <section class="hero section" aria-labelledby="hero-title">
+        <div class="wrap hero-grid">
           <div class="hero-copy">
-            <span class="eyebrow"
-              >Para crianças de 9 a 14 anos<br />que gostam de jogos e tecnologia</span
-            >
-            <h1>
-              Seu filho pode aprender a
-              <span class="hl">transformar as próprias ideias em jogos.</span>
-            </h1>
-            <p class="lead">
-              Ele começa com projetos guiados e aprende a fazer escolhas, testar o que montou e
-              descobrir como fazer seu jogo funcionar. As aulas mostram por onde começar, e o
-              professor orienta pelas atividades enviadas e pelos Recados.
-            </p>
-            <ul class="hero-bullets">
-              <li>
-                <span class="tick"><span class="material-symbols-rounded">check</span></span>Cursos e
-                projetos para começar mesmo sem saber programar
-              </li>
-              <li>
-                <span class="tick"><span class="material-symbols-rounded">check</span></span>Ele
-                aprende criando algo que pode jogar, explicar e compartilhar
-              </li>
-              <li>
-                <span class="tick"><span class="material-symbols-rounded">check</span></span>A cada
-                conquista, a Jornada do Criador mostra o próximo passo
-              </li>
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span>Comunidade dos Criadores · 9 a 14 anos</span>
+            <h1 id="hero-title" class:list={['kof-display', { 'enfase-junta': enfaseEm }]} style={enfaseEm ? `--enfase-em: ${enfaseEm}` : undefined}>{titleStart}<em>{page.emphasis}</em>{titleEnd}</h1>
+            <p class="kof-lead">{page.hero.description}</p>
+            <ul class="hero-benefits">
+              {page.hero.benefits.map((benefit, index) => (
+                <li><span class:list={['kof-ladrilho', benefitColors[index]]} aria-hidden="true"><span class="material-symbols-rounded">{benefitIcons[index]}</span></span><span>{benefit}</span></li>
+              ))}
             </ul>
-            <div class="hero-cta">
-              <a href="#planos" class="btn big">
-                <span class="material-symbols-rounded">rocket_launch</span>Quero ver meu filho criando
-              </a>
+            <div class="hero-actions">
+              <a class="kof-btn kof-btn--grande" href={page.hero.primary.href}>{page.hero.primary.label}</a>
+              <a class="kof-link" href={page.hero.secondary.href}>{page.hero.secondary.label}<span class="material-symbols-rounded" aria-hidden="true">arrow_downward</span></a>
             </div>
-            <div class="seals">
-              <span><span class="material-symbols-rounded">check_circle</span>Acesso após aprovação</span>
-              <span
-                ><span class="material-symbols-rounded">check_circle</span>Garantia de 7 dias</span
-              >
-              <span
-                ><span class="material-symbols-rounded">check_circle</span>Cancele quando quiser</span
-              >
+            <div class="requirements"><span class="kof-selo"><span class="material-symbols-rounded" aria-hidden="true">check_circle</span>{page.hero.requirements}</span></div>
+          </div>
+          <div class="hero-visual">
+            <div class="hero-stage kof-marca">
+              <span class="kof-decor decor-1" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+              <span class="kof-decor kof-decor--rosa decor-2" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+              <span class="kof-decor decor-3" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+              <img class="zappy" src={img('zappy-happy.webp')} alt="" width="300" height="300" loading="eager" decoding="async" />
+              <figure class="hero-figura" data-visual={page.heroVisual}>
+                <a class="quadro-link" href={img(heroFrame.retina)} target="_blank" rel="noopener" data-zoom aria-label={`Ampliar a imagem: ${heroFrame.alt}`}>
+                  <div class="kof-tela kof-tela--sombra">
+                    <div class="kof-tela__barra" aria-hidden="true">
+                      <i></i><i></i><i></i>
+                      <span class="kof-tela__url">{heroFrame.label}</span>
+                      <span class="material-symbols-rounded quadro-lupa">zoom_in</span>
+                    </div>
+                    <img src={heroSrc} srcset={heroSrcset} alt={heroFrame.alt} width={heroFrame.width} height={heroFrame.height} loading="eager" decoding="async" fetchpriority="high" />
+                  </div>
+                </a>
+                <figcaption>{heroVisual.caption}</figcaption>
+              </figure>
+              <span class="kof-chip kof-chip--verde flutua flutua--1"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>{page.heroChip}</span>
+              <span class="kof-chip flutua flutua--2"><span class="material-symbols-rounded" aria-hidden="true">group</span>Até dois perfis</span>
+              <img class="dede" src={img('dede-fala.webp')} alt="" width="360" height="869" loading="eager" decoding="async" />
             </div>
           </div>
-          <figure class="art hero-art">
-            <div class="glow"></div>
-            <img
-              src={img('hero.webp')}
-              alt="Criança apontando orgulhosa para o jogo que ela mesma criou, com o vagalume Zappy comemorando ao lado"
-              width="940"
-              height="1366"
-              fetchpriority="high"
-            />
+        </div>
+      </section>
+
+      <section class="tour" aria-labelledby="title-tour">
+        <div class="wrap">
+          <h2 id="title-tour" class="tour-titulo kof-sobretitulo">Por dentro da Comunidade</h2>
+          <ul class="tour-faixa">
+            {TOUR.map((frame) => (
+              <li class="tour-item">
+                <a href={img(frame.retina)} target="_blank" rel="noopener" data-zoom aria-label={`Ampliar a imagem: ${frame.alt}`}>
+                  <img src={img(frame.file)} alt={frame.alt} width={frame.width} height={frame.height} loading="lazy" decoding="async" />
+                  <span class="tour-nome">{frame.label}<span class="material-symbols-rounded tour-lupa" aria-hidden="true">zoom_in</span></span>
+                  <span class="tour-resumo">{frame.resumo}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {page.sections.map((section, index) => <ComunidadeSection section={section} imagesBase={imagesBase} index={index} experience={index === 1 && !page.sections.some((item) => item.id === 'experiencia')} />)}
+
+      {page.showFounder !== false && <section class="section capitulo fundo-folha cor-rosa" id="origem" aria-labelledby="title-origem">
+        <div class="folha">
+          <div class="wrap origem-grid">
+            <figure class="family-photo kof-reveal">
+              <div class="family-palco kof-marca">
+                <span class="kof-decor decor-1" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+                <span class="kof-decor kof-decor--rosa decor-2" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+                <img src={img('familia-helena-julio-kids.webp')} alt="Helena e Júlio: foto do casal e versão ilustrada dos dois" width="880" height="1019" loading="lazy" decoding="async" />
+              </div>
+              <figcaption>Helena e Júlio. A experiência em família que deu origem à Comunidade.</figcaption>
+            </figure>
+            <div class="origem-texto kof-reveal">
+              <div class="cap-head">
+                <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">favorite</span><span class="cap-chip-texto">Uma experiência em família</span></span>
+                <h2 id="title-origem" class="kof-display">{SHARED_COPY.founder.title}</h2>
+                <ComunidadeProsa paragraphs={founder.slice(0, 1)} class="cap-lead" />
+              </div>
+              <div class="prosa"><ComunidadeProsa paragraphs={founder.slice(1)} destaques={DESTAQUES.origem} /></div>
+            </div>
+          </div>
+        </div>
+      </section>}
+
+      <section class="planos section fundo-alt cor-azul" id="assinatura" aria-labelledby="title-assinatura">
+        <div class="wrap">
+          <div class="cap-head cap-head--centro kof-reveal">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">workspace_premium</span>Assinatura</span>
+            <h2 id="title-assinatura" class="kof-display">{offer.title}</h2>
+            <ComunidadeProsa paragraphs={offer.paragraphs.slice(0, 1)} class="cap-lead" />
+          </div>
+          <div class="value-story prosa kof-reveal">
+            <ComunidadeProsa paragraphs={offer.paragraphs.slice(1)} destaques={DESTAQUES.assinatura} />
+          </div>
+          <ComunidadeVisual visual="perfis" imagesBase={imagesBase} class="planos-visual" />
+          <div class="plans kof-reveal" id="planos">
+            <article class="plan kof-carta kof-carta--fio">
+              <h3>{offer.monthly.title}</h3>
+              <p class="price">{mensalLabel}<span>por mês</span></p>
+              {offer.monthly.paragraphs.map((paragraph) => <p>{fillPrice(paragraph)}</p>)}
+              <button type="button" class="kof-btn kof-btn--cheia kof-btn--contorno" data-checkout-cta data-checkout-oferta={mensal?.slug}>{offer.monthly.cta}</button>
+            </article>
+            <article class="plan annual kof-marca">
+              <span class="kof-eyebrow saving"><span class="material-symbols-rounded" aria-hidden="true">calendar_month</span>12 meses de acesso</span>
+              <h3>{offer.annual.title}</h3>
+              <p class="price">{anualLabel}<span>por 12 meses</span></p>
+              {offer.annual.paragraphs.map((paragraph) => <p>{fillPrice(paragraph)}</p>)}
+              <button type="button" class="kof-btn kof-btn--cheia kof-btn--inversa" data-checkout-cta data-checkout-oferta={anual?.slug}>{offer.annual.cta}</button>
+            </article>
+          </div>
+          {offer.period && <div class="guarantee guarantee--periodo kof-carta kof-carta--fio kof-reveal">
+            <div class="guarantee-head">
+              <span class="kof-ladrilho kof-ladrilho--grande" aria-hidden="true"><span class="material-symbols-rounded">event_available</span></span>
+              <h3 class="kof-display">{offer.period.title}</h3>
+            </div>
+            <div class="guarantee-texto"><ComunidadeProsa paragraphs={offer.period.paragraphs} /></div>
+          </div>}
+          <div id="garantia" class="guarantee kof-carta kof-carta--fio kof-reveal">
+            <div class="guarantee-head">
+              <span class="kof-ladrilho kof-ladrilho--verde kof-ladrilho--grande" aria-hidden="true"><span class="material-symbols-rounded">verified_user</span></span>
+              <h3 class="kof-display">{offer.guarantee.title}</h3>
+            </div>
+            <div class="guarantee-texto">
+              <ComunidadeProsa paragraphs={offer.guarantee.paragraphs} />
+            </div>
+            <a href="/kids/termos" class="kof-link kof-link--inline">Consultar os termos da assinatura</a>
+          </div>
+          <p id="contratacao" class="checkout-note kof-carta kof-carta--fio">{offer.checkout}</p>
+        </div>
+      </section>
+
+      <section class="section" id="duvidas" aria-labelledby="title-duvidas">
+        <div class="wrap">
+          <div class="cap-head kof-reveal cor-roxo">
+            <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">help</span><span class="cap-chip-texto">Na prática, em casa</span></span>
+            <h2 id="title-duvidas" class="kof-display">{page.faqTitle}</h2>
+            {page.faqLinks && <p class="faq-atalhos">{page.faqLinks.map((link, index) => <>{index > 0 && ' · '}<a class="kof-link kof-link--inline" href={link.href}>{link.label}</a></>)}</p>}
+          </div>
+          <div class="duvidas-grid">
+            <nav class="faq-nav-area" aria-label="Assuntos das perguntas">
+              <ul class="faq-nav">
+                {page.faqGroups.map((group, index) => (
+                  <li>
+                    <a href={`#assunto-${index}`}>
+                      <span class:list={['kof-ladrilho', faqColors[index % faqColors.length] ? `kof-ladrilho--${faqColors[index % faqColors.length]}` : '']} aria-hidden="true"><span class="material-symbols-rounded">{faqIcons[index % faqIcons.length]}</span></span>
+                      <span>{group.title}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div class="faq">
+              {page.faqGroups.map((group, index) => (
+                <div class="faq-group" id={`assunto-${index}`}>
+                  <h3 class="kof-display">
+                    <span class:list={['kof-ladrilho', faqColors[index % faqColors.length] ? `kof-ladrilho--${faqColors[index % faqColors.length]}` : '']} aria-hidden="true"><span class="material-symbols-rounded">{faqIcons[index % faqIcons.length]}</span></span>
+                    {group.title}
+                  </h3>
+                  {group.questions.map((id) => {
+                    const answer = faq[id]
+                    if (!answer) throw new Error(`Dúvida sem resposta: ${id}`)
+                    const visuals = faqVisuals(id)
+                    return (
+                      <details class="kof-carta kof-carta--fio" id={`duvida-${id}`}>
+                        <summary>{answer.question}<span class="material-symbols-rounded faq-seta" aria-hidden="true">expand_more</span></summary>
+                        <div class:list={['resposta', { 'resposta--visual': visuals.length > 0 }]}>
+                          <div class="resposta-texto">
+                            <ComunidadeProsa paragraphs={answer.paragraphs} />
+                            {id === 'reembolso' && <a href="/kids/termos" class="kof-link kof-link--inline">Ver o canal e as condições nos termos da assinatura</a>}
+                          </div>
+                          {visuals.length > 0 && (
+                            <div class="resposta-visuais">{visuals.map((visual) => <ComunidadeVisual visual={visual} imagesBase={imagesBase} variant="plana" />)}</div>
+                          )}
+                        </div>
+                      </details>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="convite section kof-banda" id="convite" aria-labelledby="title-convite">
+        <div class="wrap convite-grid">
+          <span class="kof-decor decor-a" aria-hidden="true"><span class="material-symbols-rounded">star</span></span>
+          <div class="convite-copy kof-reveal">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">celebration</span>{page.closing.eyebrow}</span>
+            <h2 id="title-convite" class="kof-display">{page.closing.title}</h2>
+            <ComunidadeProsa paragraphs={closing.slice(0, 1)} class="cap-lead" />
+            <div class="prosa"><ComunidadeProsa paragraphs={closing.slice(1)} destaques={DESTAQUES[`${page.id}:convite`]} /></div>
+            {page.closing.actions.map((action) => <a class="kof-btn kof-btn--grande kof-btn--sobre-navy" href={action.href}>{action.label}</a>)}
+          </div>
+          <figure class="convite-arte kof-reveal">
+            <img src={img('ilustra-vitoria.webp')} alt="Ilustração de duas crianças e o Zappy comemorando uma criação" width="1000" height="943" loading="lazy" decoding="async" />
+            <figcaption>Ilustração da experiência de criar e compartilhar com a família.</figcaption>
           </figure>
         </div>
-        <!-- fala do Zappy pra criança (mesmo registro lúdico do Desafio) -->
-        <div class="kid reveal">
-          <div class="char">
-            <figure class="art">
-              <img
-                src={img('zappy-fala.webp')}
-                alt="Zappy, o vagalume da Comunidade dos Criadores"
-                width="360"
-                height="458"
-                loading="lazy"
-              />
-            </figure>
-            <span class="name">Zappy</span>
-          </div>
-          <div class="bubble">
-            Oi, sou o Zappy. Aqui você começa com um jogo e libera novos projetos e ferramentas
-            conforme a sua jornada avança. Quando publicar, pode mandar o link para a família
-            inteira jogar. Chama seu pai, sua mãe ou seu responsável para conhecer com você.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== FAIXA DE CONFIANÇA ===== -->
-    <section class="stats-band">
-      <div class="wrap">
-        <div class="stats">
-          <div class="stat">
-            <span class="material-symbols-rounded">verified_user</span>
-            <div class="l">Comunidade moderada<br />por gente de verdade</div>
-          </div>
-          <div class="stat">
-            <span class="material-symbols-rounded">devices</span>
-            <div class="l">Abre no navegador,<br />sem instalar nada</div>
-          </div>
-          <div class="stat">
-            <span class="material-symbols-rounded">family_star</span>
-            <div class="l">Criado por uma família<br />que começou com os filhos</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 02 · DOR ===== -->
-    <section class="sec" id="dor">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Uma ideia que ele pode fazer acontecer</span>
-          <h2 class="reveal">
-            Por trás de um jogo funcionando, há decisões que seu filho pode aprender a tomar.
-          </h2>
-        </div>
-        <div class="feat">
-          <figure class="art reveal">
-            <img
-              src={img('ilustra-dor.webp')}
-              alt="Ilustração de uma criança concentrada em um jogo no computador"
-              width="1000"
-              height="577"
-              loading="lazy"
-            />
-          </figure>
-          <div class="feat-txt">
-            <p>
-              Seu filho já imaginou uma fase diferente ou um personagem com um poder que ainda
-              não existe no jogo? Essa curiosidade pode ser o começo de uma criação.
-            </p>
-            <p>
-              Para a ideia funcionar, ele precisa decidir o que acontece primeiro, montar uma
-              regra e testar. Às vezes, o resultado sai diferente do que esperava. É uma chance
-              de investigar e tentar outro caminho, com ajuda quando precisar.
-            </p>
-            <p>
-              E quando funciona, há algo concreto para mostrar: um jogo que ele ajudou a construir
-              e escolhas que consegue explicar. Você pode jogar junto e perguntar como ele fez.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Ver o próprio jogo funcionando dá sentido às tentativas. No caminho até ele, seu filho
-          tem oportunidades de pensar, fazer escolhas e descobrir o que consegue construir.
-        </div>
-        <div class="evidence reveal">
-          <p>
-            Imagine uma pequena mudança no jogo: seu filho quer que o personagem corra mais rápido.
-            Esse experimento pode começar assim:
-          </p>
-          <div class="evidence-links">
-            <div>
-              <strong>Ele faz uma previsão</strong>
-              <span>
-                Escolhe uma nova velocidade e pensa no que vai acontecer quando o jogo começar.
-              </span>
-            </div>
-            <div>
-              <strong>Coloca a ideia à prova</strong>
-              <span>
-                Roda o jogo e observa. O personagem ficou rápido demais? Ainda dá tempo de desviar?
-              </span>
-            </div>
-            <div>
-              <strong>Decide o que ajustar</strong>
-              <span>
-                Experimenta outro valor e compara. Agora tem uma razão para explicar a escolha.
-              </span>
-            </div>
-          </div>
-          <small>
-            Um exemplo de como uma mudança pequena pode abrir espaço para raciocinar durante a criação.
-          </small>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 03 · A VIRADA DE CHAVE ===== -->
-    <section class="sec sec-amar" id="virada">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">O começo vem com ajuda</span>
-          <h2 class="reveal">
-            Ele pode gostar de jogos e ainda não saber<br /><span class="hl2">como criar o primeiro.</span>
-          </h2>
-        </div>
-        <div class="feat feat-rev">
-          <figure class="art reveal">
-            <img
-              src={img('ilustra-virada.webp')}
-              alt="A mesma criança criando o próprio jogo, com blocos coloridos na tela e o Zappy ao lado"
-              width="1100"
-              height="630"
-              loading="lazy"
-            />
-          </figure>
-          <div class="feat-txt">
-            <p>
-              Os primeiros projetos são guiados. As aulas apresentam os comandos e mostram a
-              montagem por etapas, com elementos preparados para a criança começar.
-            </p>
-            <p>
-              Conforme entende o que montou, ela experimenta mudanças e faz novas escolhas.
-              Pode alterar uma regra, testar uma dificuldade diferente e observar o resultado.
-              As possibilidades aumentam junto com o que aprende.
-            </p>
-            <div class="tese">
-              Primeiro, um passo que ela consegue acompanhar. Depois, mais espaço para colocar
-              as próprias ideias no jogo.
-            </div>
-            <p style="margin-top:16px;">
-              Você ajuda no primeiro acesso e combina os momentos de uso. As aulas apresentam
-              o caminho técnico, e a criança pode pedir orientação pelos Recados.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 04 · PALIATIVO ===== -->
-    <section class="sec" id="paliativo">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">O primeiro jogo é só o começo</span>
-          <h2 class="reveal">
-            Depois da primeira criação, a criança precisa<br />saber <span class="hl2"
-              >o que fazer em seguida.</span
-            >
-          </h2>
-        </div>
-        <div class="pal">
-          <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">sports_esports</span></span>
-            <div>
-              <h4>O primeiro jogo mostra que é possível</h4>
-              <p>
-                A criança deixa de imaginar e vê uma criação própria funcionando. Essa primeira
-                entrega torna o próximo projeto mais fácil de visualizar.
-              </p>
-            </div>
-          </div>
-          <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">route</span></span>
-            <div>
-              <h4>Uma sequência ajuda a continuar</h4>
-              <p>
-                Em vez de terminar um curso e ficar sem saber para onde ir, ela encontra outro
-                projeto com dificuldade compatível com o que já aprendeu.
-              </p>
-            </div>
-          </div>
-          <div class="pal-item reveal">
-            <span class="xi"><span class="material-symbols-rounded">military_tech</span></span>
-            <div>
-              <h4>A Jornada organiza a continuidade</h4>
-              <p>
-                Cursos, projetos, ferramentas e conquistas aparecem em uma ordem clara. A criança
-                enxerga o que concluiu e qual é o próximo passo.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="tese reveal">
-          A Comunidade organiza um percurso para que seu filho continue experimentando depois
-          do primeiro jogo. Você encontra as aulas e a orientação no mesmo lugar.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 05 · PROVA SOCIAL 1 (crianças reais) ===== -->
-    <section class="sec sec-verde" id="prova">
-      <div class="wrap center">
-        <span class="eyebrow">Projetos que podem ser vistos e jogados</span>
-        <h2 class="reveal">Quando a ideia sai da cabeça<br />e começa a <span class="hl">funcionar</span></h2>
-        <p class="sub">
-          Rafael, Débora e André já testaram a plataforma. Veja o que contaram sobre as primeiras criações.
-        </p>
-        <div class="depo-grid">
-          <div class="depo reveal">
-            <div class="stars">★★★★★</div>
-            <p class="quote">
-              "Fiz uma nave que atira nos asteroides e marca ponto. No fim eu peguei o link e mandei
-              pro meu amigo jogar."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img
-                  src={img('depo-rafael.webp')}
-                  alt="Rafael"
-                  width="160"
-                  height="160"
-                  loading="lazy"
-                /></span
-              >
-              <span class="who-name">Rafael<small>criou e publicou o próprio jogo</small></span>
-            </div>
-          </div>
-          <div class="depo reveal">
-            <div class="stars">★★★★★</div>
-            <p class="quote">
-              "Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No terceiro dia
-              chamei a minha mãe pra ver o meu jogo."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img
-                  src={img('depo-debora.webp')}
-                  alt="Débora"
-                  width="160"
-                  height="160"
-                  loading="lazy"
-                /></span
-              >
-              <span class="who-name">Débora<small>criou e publicou o próprio jogo</small></span>
-            </div>
-          </div>
-          <div class="depo reveal">
-            <div class="stars">★★★★★</div>
-            <p class="quote">
-              "Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero
-              fazer um maior."
-            </p>
-            <div class="who">
-              <span class="av"
-                ><img
-                  src={img('depo-andre.webp')}
-                  alt="André"
-                  width="160"
-                  height="160"
-                  loading="lazy"
-                /></span
-              >
-              <span class="who-name">André<small>filho dos criadores da plataforma</small></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 06 · CTA INTERMEDIÁRIO ===== -->
-    <section class="sec sec-slim">
-      <div class="wrap">
-        <div class="ctaband reveal">
-          <h3>O primeiro jogo pode ser uma conquista. A Comunidade mostra o caminho depois dele.</h3>
-          <a href="#metodo" class="btn big">
-            <span class="material-symbols-rounded">visibility</span>Quero conhecer por dentro
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 07 · MÉTODO Z.E.R.O. + JORNADA ===== -->
-    <section class="sec sec-tint" id="metodo">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Como a continuidade funciona</span>
-          <h2 class="reveal">
-            Um projeto de cada vez, com etapas que ajudam<br />a criança a <span class="hl"
-              >tirar a ideia do papel.</span
-            >
-          </h2>
-          <p class="sub">
-              Nos primeiros cursos, as aulas guiam a montagem. Conforme avança, seu filho também
-              encontra o Método Z.E.R.O. para organizar os próprios projetos, da ideia à publicação.
-          </p>
-        </div>
-        <div class="zero">
-          <div class="zstep z1 reveal">
-            <div class="zl">Z</div>
-            <h4>Zerar a Bagunça</h4>
-            <p>
-                A criança organiza o que quer criar na Carta da Ideia. O Pensa, liberado no posto
-                de Inventor, ajuda nessa etapa com o Zappy.
-            </p>
-          </div>
-          <div class="zstep z2 reveal">
-            <div class="zl">E</div>
-            <h4>Enxergar o Jogo</h4>
-            <p>
-                Ela escolhe nome, cores e aparência. Desenhar as telas ajuda a visualizar o que
-                quer construir antes de montar cada parte.
-            </p>
-          </div>
-          <div class="zstep z3 reveal">
-            <div class="zl">R</div>
-            <h4>Rodar as Missões</h4>
-            <p>
-                A ideia vira missões menores. A criança constrói uma parte por vez e pode enviar
-                suas atividades para receber orientação do professor.
-            </p>
-          </div>
-          <div class="zstep z4 reveal">
-            <div class="zl">O</div>
-            <h4>O Grande Lançamento</h4>
-            <p>
-              Caça aos bugs, um toque final e a publicação com link de verdade pra mandar pra
-              família. Uma vitória que fica.
-            </p>
-          </div>
-        </div>
-        <div class="zloop reveal">
-          Terminou o O, volta pro Z com um jogo mais ambicioso. O ciclo é o mesmo, o desafio é que
-          cresce.
-        </div>
-
-        <div class="center" style="margin-top:52px;">
-          <h2 class="reveal" style="font-size:clamp(1.4rem,2.8vw,2rem);">
-            E acima do método, uma escada para subir: a <span class="hl2">Jornada do Criador</span>
-          </h2>
-          <p class="sub">
-            O Z.E.R.O. organiza o projeto. A Jornada organiza o caminho inteiro: cursos concluídos e
-            projetos publicados registram o avanço, como as faixas do judô. Cada novo posto libera
-            cursos e ferramentas que combinam com o que a criança já aprendeu.
-          </p>
-        </div>
-        <div class="journey reveal">
-          <span class="lvl-pill" style="--c:var(--sz-community-field)"
-            ><span class="material-symbols-rounded">bolt</span>Faísca</span
-          >
-          <span class="lvl-pill" style="--c:var(--verde)"
-            ><span class="material-symbols-rounded">build</span>Construtor</span
-          >
-          <span class="lvl-pill" style="--c:var(--azul)"
-            ><span class="material-symbols-rounded">lightbulb</span>Inventor</span
-          >
-          <span class="lvl-pill" style="--c:var(--verde)"
-            ><span class="material-symbols-rounded">explore</span>Explorador de Mundos</span
-          >
-          <span class="lvl-pill" style="--c:var(--roxo)"
-            ><span class="material-symbols-rounded">swords</span>Mestre dos Jogos</span
-          >
-          <span class="lvl-pill" style="--c:var(--azul)"
-            ><span class="material-symbols-rounded">castle</span>Arquiteto de Mundos</span
-          >
-          <span class="lvl-pill" style="--c:var(--laranja)"
-            ><span class="material-symbols-rounded">auto_awesome</span>Gênio da Criação</span
-          >
-          <span class="lvl-pill" style="--c:var(--rosa)"
-            ><span class="material-symbols-rounded">military_tech</span>Lenda</span
-          >
-        </div>
-        <div class="tese reveal">
-          Toda a plataforma faz parte da assinatura. A liberação gradual não esconde uma compra
-          extra. Ela apresenta os recursos em uma ordem que acompanha o avanço da criança.
-        </div>
-        <!-- fala do Dedé pra criança -->
-        <div class="kid verde reveal">
-          <div class="char">
-            <figure class="art">
-              <img
-                src={img('dede-fala.webp')}
-                alt="Dedé, personagem da Comunidade dos Criadores"
-                width="360"
-                height="869"
-                loading="lazy"
-              />
-            </figure>
-            <span class="name">Dedé</span>
-          </div>
-          <div class="bubble">
-            Cada aventura que você conclui e cada projeto que publica fazem a sua jornada andar.
-            Eu comecei na Faísca e agora tô batalhando pra chegar em Mestre dos Jogos. Qual nome
-            você vai dar pro seu primeiro jogo?
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 08 · O QUE DESENVOLVE (DECORADOS) ===== -->
-    <section class="sec sec-rosa" id="desenvolve">
-      <div class="wrap">
-        <div class="center">
-        <span class="eyebrow">O que acontece durante um projeto</span>
-        <h2 class="reveal">
-          Quando um jogo ganha forma, seu filho põe<br /><span class="hl">muitas escolhas em prática.</span>
-        </h2>
-        <p class="sub">
-          São ações que aparecem quando a criança decide, testa possibilidades e entende a relação
-          entre cada comando e o resultado na tela.
-          </p>
-        </div>
-        <div class="dev">
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--azul)">
-              <span class="material-symbols-rounded">account_tree</span>
-            </div>
-            <h4>Entender o que cada escolha muda</h4>
-            <p>
-              Relacionar cada comando ao que acontece no jogo e investigar por que algo não
-              funcionou como esperado.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--verde)">
-              <span class="material-symbols-rounded">restart_alt</span>
-            </div>
-            <h4>Testar e ajustar</h4>
-            <p>
-              Testar uma ideia, observar o resultado, fazer ajustes e tentar novamente quando
-              alguma parte não funciona.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--laranja)">
-              <span class="material-symbols-rounded">checklist</span>
-            </div>
-            <h4>Organizar a ideia em etapas</h4>
-            <p>
-              Dividir uma ideia em etapas e decidir o que precisa ser construído primeiro para o
-              projeto avançar.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--rosa)">
-              <span class="material-symbols-rounded">stars</span>
-            </div>
-            <h4>Fazer escolhas próprias</h4>
-            <p>
-              Escolher regras, personagens e desafios, explicar as próprias decisões e apresentar
-              algo que foi criado por ele.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--roxo)">
-              <span class="material-symbols-rounded">flag</span>
-            </div>
-            <h4>Levar a ideia até uma versão jogável</h4>
-            <p>
-              Acompanhar uma sequência de etapas e continuar ajustando o projeto até chegar a uma
-              versão que possa ser publicada.
-            </p>
-          </div>
-          <div class="dev-item reveal">
-            <div class="di" style="background:var(--ciano)">
-              <span class="material-symbols-rounded">rocket_launch</span>
-            </div>
-            <h4>Usar ferramentas para criar</h4>
-            <p>
-              Usar ferramentas digitais para construir, testar e compartilhar, em vez de apenas
-              navegar por experiências prontas.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Pergunte o que ele mudou e peça para mostrar no jogo. Uma explicação sobre a própria
-          escolha ajuda você a acompanhar o que ele está entendendo.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 09 · POR DENTRO DA PLATAFORMA ===== -->
-    <section class="sec" id="plataforma">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Uma olhada por dentro</span>
-          <h2 class="reveal">Um lugar que cresce junto com <span class="hl2">o seu filho</span></h2>
-          <p class="sub">
-            Toda a plataforma está incluída na assinatura. A liberação acontece conforme a
-            Jornada do Criador, para a criança aprender primeiro, conquistar o próximo posto e
-            abrir novas possibilidades sem nenhuma compra extra por dentro.
-          </p>
-        </div>
-        <div class="cards">
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-jornada.webp')}
-                alt="Mapa da Jornada do Criador, de Faísca a Lenda, com o posto atual destacado"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>A Jornada organiza cada conquista</h3>
-            <p>
-              A criança enxerga onde está, o que já conquistou e qual é o próximo passo. Os cursos e
-              as ferramentas abrem conforme ela avança de Faísca até Lenda.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-aula.webp')}
-                alt="Aula prática da Comunidade com etapas guiadas, blocos do Estúdio e jogo funcionando ao lado"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Cursos que viram projetos</h3>
-            <p>
-              A explicação e a prática ficam juntas. A criança aprende uma ideia, monta no Estúdio
-              dentro da aula e vê o resultado aparecer no próprio jogo.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-oficina.webp')}
-                alt="Oficina de criação com Estúdio e Pinta liberados e Pensa e Molda incluídos nos próximos postos"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Quatro ferramentas, uma oficina completa</h3>
-            <p>
-              Estúdio, Pinta, Pensa e Molda estão incluídos. Ela planeja, desenha, modela e constrói,
-              com cada oficina liberada no momento certo da jornada.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-mural.webp')}
-                alt="Mural dos Criadores com jogos da turma, contador de jogadas e botões para jogar e compartilhar"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Um jogo para mostrar à família</h3>
-            <p>
-              Cada jogo publicado ganha um endereço para jogar e compartilhar. Você pode abrir
-              o link com seu filho e conhecer as regras que ele montou.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-clube.webp')}
-                alt="Clube dos Criadores com canais, conversas da turma e aviso de acompanhamento do professor"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>O Clube dos Criadores</h3>
-            <p>
-              Um espaço moderado onde ela conversa com outras crianças que criam, compartilha
-              ideias, tira dúvidas e mostra o que fez.
-            </p>
-          </div>
-          <div class="card reveal">
-            <figure class="shot">
-              <img
-                src={img('print-recados.webp')}
-                alt="Caixa de Recados com devolutivas do professor sobre aulas, entregas e jogos publicados"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Os Recados, com o professor</h3>
-            <p>
-              As atividades enviadas podem ser revisadas pelo professor, que orienta a criança
-              dentro da plataforma e conversa com ela sobre o projeto.
-            </p>
-          </div>
-          <div class="card card-wide reveal">
-            <figure class="shot">
-              <img
-                src={img('print-espaco.webp')}
-                alt="Meu Espaço com avatar, posto atual, sequência, experiência, jogos e conquistas da criança"
-                width="1280"
-                height="720"
-                loading="lazy"
-              />
-            </figure>
-            <h3>Um espaço com a cara dela</h3>
-            <p>
-              Avatar, quarto, sequência e conquistas guardam a história da criança e mostram o que
-              ela já construiu ao longo da jornada.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          A jornada mostra o que está disponível agora e o que vem depois. Cursos e ferramentas
-          fazem parte da assinatura, com liberações conforme o avanço da criança.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 10 · PARA QUEM É ===== -->
-    <section class="sec sec-tint" id="paraquem">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Honestidade antes da assinatura</span>
-          <h2 class="reveal">Veja se a Comunidade combina com o seu filho</h2>
-        </div>
-        <div class="two">
-          <div class="two-box is reveal">
-            <h3>
-              <span class="mk"><span class="material-symbols-rounded">check</span></span>É pra você
-              se o seu filho se encaixa em pelo menos um destes:
-            </h3>
-            <ul>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">check</span></span>Seu filho
-                tem de 9 a 14 anos e tem curiosidade de descobrir como criar um jogo
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">check</span></span>Ele adora
-                mexer no computador e nas telas: testa, configura e desmonta pra ver como funciona
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">check</span></span>Ele já
-                cria coisa no computador: desenha em algum programa, faz skin, monta mundo no
-                Minecraft ou mexe em vídeo
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">check</span></span>Você
-                gostaria de acompanhar algo que ele está aprendendo a criar, além das partidas
-                de que já gosta
-              </li>
-            </ul>
-          </div>
-          <div class="two-box isnt reveal">
-            <h3>
-              <span class="mk"><span class="material-symbols-rounded">close</span></span>Ainda não é
-              pra você se:
-            </h3>
-            <ul>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">close</span></span>Seu filho
-                tem menos de 9 anos (o percurso pede leitura e mouse já firmes)
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">close</span></span>Ele não
-                tem interesse nenhum por jogos, computador ou tecnologia (é daí que o percurso
-                parte)
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">close</span></span>Você
-                procura reforço escolar de matemática ou português
-              </li>
-              <li>
-                <span class="mk"><span class="material-symbols-rounded">close</span></span>Você quer
-                aulas ao vivo individuais em horário marcado
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="tese reveal">
-          A Comunidade combina melhor com a criança que demonstra interesse por jogos e tecnologia
-          e está pronta para experimentar o papel de quem também cria.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 11 · ENTREGÁVEIS ===== -->
-    <section class="sec" id="entrega">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">O que está incluído</span>
-          <h2 class="reveal">Tudo que faz parte da assinatura</h2>
-          <p class="sub">
-            Toda a plataforma está incluída na assinatura, sem nenhuma compra extra por dentro. A
-            liberação acontece conforme a Jornada do Criador, para cada conquista chegar no momento
-            certo.
-          </p>
-        </div>
-        <div class="cards">
-          <div class="card reveal">
-            <div class="ci" style="background:var(--rosa)">
-              <span class="material-symbols-rounded">smart_toy</span>
-            </div>
-            <h3>Desafio do Primeiro Jogo e todos os cursos</h3>
-            <p>
-              O primeiro projeto e as trilhas seguintes, do início aos projetos mais avançados. Os
-              cursos atuais e os novos estão incluídos, e a jornada mostra qual é o próximo a ser
-              liberado.
-            </p>
-          </div>
-          <div class="card reveal">
-            <div class="ci" style="background:var(--verde)">
-              <span class="material-symbols-rounded">public</span>
-            </div>
-            <h3>Mural dos Criadores</h3>
-            <p>
-              A vitrine onde cada jogo é publicado com link próprio e QR code. O jogo do seu filho
-              ganha um endereço no mundo pra mandar pros avós e pros amigos.
-            </p>
-          </div>
-          <div class="card reveal">
-            <div class="ci" style="background:var(--azul)">
-              <span class="material-symbols-rounded">groups</span>
-            </div>
-            <h3>Clube dos Criadores</h3>
-            <p>
-              O espaço moderado em que a criança conversa sobre ideias, projetos e dificuldades
-              com outros criadores da faixa etária atendida.
-            </p>
-          </div>
-          <div class="card reveal">
-            <div class="ci" style="background:var(--laranja)">
-              <span class="material-symbols-rounded">supervisor_account</span>
-            </div>
-            <h3>Acompanhamento do professor</h3>
-            <p>
-              As atividades enviadas podem ser revisadas pelo professor, que responde pelos Recados
-              e orienta a criança sobre o projeto.
-            </p>
-          </div>
-          <div class="card reveal">
-            <div class="ci" style="background:var(--roxo)">
-              <span class="material-symbols-rounded">military_tech</span>
-            </div>
-            <h3>Jornada do Criador e conquistas</h3>
-            <p>
-              O caminho completo, de Faísca a Lenda, com oito postos, conquistas e missões que
-              mostram o avanço e liberam novas possibilidades na hora certa.
-            </p>
-          </div>
-          <div class="card destaque reveal">
-            <div class="ci" style="background:var(--verde)">
-              <span class="material-symbols-rounded">workspace_premium</span>
-            </div>
-            <h3>Até 2 perfis de criança</h3>
-            <p>
-              Uma assinatura inclui toda a plataforma para até 2 perfis na mesma conta. Tem
-              irmãos? Cada um cria os próprios jogos e abre cursos e ferramentas no ritmo da
-              própria jornada.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 12 · BÔNUS ===== -->
-    <section class="sec sec-verde" id="bonus">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Mais motivos para continuar criando</span>
-          <h2 class="reveal">Três experiências que mantêm<br /><span class="hl">a jornada em movimento</span></h2>
-          <p class="sub">
-            Elas fazem parte da assinatura e oferecem novas formas de criar, participar e registrar
-            as conquistas.
-          </p>
-        </div>
-        <div class="cards">
-          <div class="card bonus reveal">
-            <span class="bonus-tag">Experiência 1</span>
-            <div class="ci" style="background:var(--rosa)">
-              <span class="material-symbols-rounded">palette</span>
-            </div>
-            <h3>Kit de Criação Livre</h3>
-            <p>
-              Estúdio, Pinta, Pensa e Molda: as quatro ferramentas para planejar, desenhar em 2D,
-              modelar em 3D e construir o jogo da própria cabeça. Todas estão incluídas, e cada uma
-              abre no posto da jornada em que a criança já consegue aproveitar o que ela oferece.
-            </p>
-            <p class="anchor-note">
-              Estúdio e Pinta chegam no posto de Construtor, Pensa no posto de Inventor e Molda no
-              posto de Explorador de Mundos.
-            </p>
-          </div>
-          <div class="card bonus reveal">
-            <span class="bonus-tag">Experiência 2</span>
-            <div class="ci" style="background:var(--laranja)">
-              <span class="material-symbols-rounded">calendar_month</span>
-            </div>
-            <h3>Desafio do Mês</h3>
-            <p>
-              Um novo tema convida a comunidade a experimentar ideias e publicar criações em uma
-              prateleira própria no Mural.
-            </p>
-          </div>
-          <div class="card bonus reveal">
-            <span class="bonus-tag">Experiência 3</span>
-            <div class="ci" style="background:var(--roxo)">
-              <span class="material-symbols-rounded">bedroom_child</span>
-            </div>
-            <h3>Mundo do Criador</h3>
-            <p>
-              Avatar e quarto virtual em 3D guardam os troféus e as conquistas da criança em um
-              espaço que registra a história dela na plataforma.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="sec" id="rotina">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Uma atividade que cabe nos combinados da família</span>
-          <h2 class="reveal">Reserve um espaço para <span class="hl2">criar e experimentar.</span></h2>
-          <p class="sub">
-            Uma parte do tempo de tela que vocês já permitem pode virar um momento de criação.
-            Combinar quando começar e quando parar ajuda a preservar o descanso e as outras brincadeiras.
-          </p>
-        </div>
-        <div class="tese reveal">
-          Uma etapa por vez: abrir o projeto, testar uma mudança e mostrar o que aconteceu.
-          Você pode acompanhar com uma pergunta simples: “Como você fez isso funcionar?”
-        </div>
-      </div>
-    </section>
-
-    <section class="sec sec-amar" id="inteligencia-artificial">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">E se a inteligência artificial já escreve código?</span>
-          <h2 class="reveal">Entender o que está criando <span class="hl2">continua fazendo parte.</span></h2>
-          <p class="sub">
-            A IA pode explicar um comando, sugerir uma ideia e ajudar a investigar um erro.
-            Seu filho também precisa experimentar, fazer escolhas e conferir se o resultado
-            funciona como imaginou.
-          </p>
-        </div>
-        <div class="tese reveal">
-          A Comunidade também usa IA como apoio. Nas aulas, a criança monta e testa os projetos:
-          há espaço para perguntar, compreender uma regra e experimentar outra possibilidade.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 13 · QUANTO VALE + PLANOS ===== -->
-    <section class="sec sec-tint" id="valor">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Escolha como sua família quer começar</span>
-          <h2 class="reveal">
-            A Comunidade completa, com opção<br />mensal ou <span class="hl">anual.</span>
-          </h2>
-          <p class="sub">
-            Nos dois planos, a criança recebe a mesma plataforma, os mesmos cursos e as mesmas
-            ferramentas. O que muda é o período e a forma de pagamento.
-          </p>
-        </div>
-        <div class="compare">
-          <div class="cmp reveal">
-            <div class="cmp-t">Cursos e projetos</div>
-            <div class="cmp-v">Incluídos</div>
-            <div class="cmp-u">liberados conforme a jornada</div>
-          </div>
-          <div class="cmp reveal">
-            <div class="cmp-t">Ferramentas de criação</div>
-            <div class="cmp-v">4 oficinas</div>
-            <div class="cmp-u">sem compra extra</div>
-          </div>
-          <div class="cmp reveal">
-            <div class="cmp-t">Perfis de criança</div>
-            <div class="cmp-v">Até 2</div>
-            <div class="cmp-u">cada um com seu progresso</div>
-          </div>
-        </div>
-        <p class="between reveal">
-          Você encontra o percurso preparado, as ferramentas e os canais de orientação em uma
-          assinatura. Seu filho tem por onde começar, e a família não precisa montar uma sequência
-          de aulas por conta própria.
-        </p>
-
-        <div class="plans" id="planos">
-          <div class="plan reveal">
-            <h4>Mensal</h4>
-            <div class="now">{mensalLabel}<small>/mês</small></div>
-            <div class="cond">Para conhecer o ritmo da plataforma. Renovação automática no cartão.</div>
-            <button
-              type="button"
-              class="btn plan-btn"
-              data-checkout-cta
-              data-checkout-oferta={mensal?.slug}
-            >
-              Começar no plano mensal
-            </button>
-          </div>
-          <div class="plan destaque reveal">
-            <span class="plan-badge">Economize {economiaLabel} no ano</span>
-            <h4>Anual</h4>
-            <div class="from">12 meses no mensal sairiam por <s>{anualAncoraLabel}</s></div>
-            <div class="now">{anualLabel}<small>/ano</small></div>
-            <div class="permonth">equivale a {anualPorMesLabel} por mês</div>
-            <div class="cond">12 meses de acesso. Renovação anual automática no cartão.</div>
-            <button
-              type="button"
-              class="btn plan-btn"
-              data-checkout-cta
-              data-checkout-oferta={anual?.slug}
-            >
-              <span class="material-symbols-rounded">rocket_launch</span>Começar no plano anual
-            </button>
-          </div>
-        </div>
-        <p class="plans-mini reveal">
-          Garantia de 7 dias · Aviso por e-mail antes de toda renovação · Até 2 perfis de criança
-        </p>
-        <div class="tese reveal">
-          A criança pode começar pelo Desafio do Primeiro Jogo e seguir para novos projetos no
-          próprio ritmo. O papel da família continua importante para organizar os momentos de uso,
-          acompanhar o começo e celebrar o que foi criado.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 14 · O QUE MUDA NUMA CASA (argumento) ===== -->
-    <section class="sec sec-verde" id="mudanca">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Uma conquista que vocês podem acompanhar juntos</span>
-          <h2 class="reveal">
-            Ele mostra o jogo.<br />Você conhece <span class="hl">as ideias por trás dele.</span>
-          </h2>
-        </div>
-        {/* Quando existirem depoimentos REAIS de pais (com resultado + prazo), esta
-            banda de argumento pode ser trocada por 3 cards .depo, no mesmo molde
-            da prova social 1. Sem depoimento real, argumento vale mais que
-            depoimento inventado. */}
-        <div class="shifts">
-          <div class="shift reveal">
-            <span class="material-symbols-rounded">swap_horiz</span>
-            <h4>“Por que você escolheu essa regra?”</h4>
-            <p>
-              Peça para seu filho mostrar uma escolha. Pode ser a velocidade do personagem ou
-              o que acontece quando ele ganha um ponto.
-            </p>
-          </div>
-          <div class="shift reveal">
-            <span class="material-symbols-rounded">flag_check</span>
-            <h4>“Como você resolveu essa parte?”</h4>
-            <p>
-              Uma tentativa que deu errado pode render uma boa conversa. Ele pode contar o que
-              testou, onde pediu ajuda e o que decidiu mudar.
-            </p>
-          </div>
-          <div class="shift reveal">
-            <span class="material-symbols-rounded">videogame_asset</span>
-            <h4>“O que você quer tentar agora?”</h4>
-            <p>
-              Depois de jogar juntos, ouça a próxima ideia. A jornada ajuda a encontrar novas
-              aulas e projetos para continuar experimentando.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Você não precisa conhecer os comandos para se interessar pela criação. Dar espaço
-          para ele explicar já faz parte desse encontro.
-        </div>
-        <!-- fala da Debinha pra criança -->
-        <div class="kid rosa reveal">
-          <div class="char">
-            <figure class="art">
-              <img
-                src={img('debinha-fala.webp')}
-                alt="Debinha, personagem da Comunidade dos Criadores"
-                width="360"
-                height="640"
-                loading="lazy"
-              />
-            </figure>
-            <span class="name">Debinha</span>
-          </div>
-          <div class="bubble">
-            O melhor momento é mandar o link do seu jogo no grupo da família e ficar espiando o
-            contador de jogadas subir. Cada nova jogada mostra que alguém abriu uma criação sua.
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 15 · SUPORTE ===== -->
-    <section class="sec" id="suporte">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Orientação durante a jornada</span>
-          <h2 class="reveal">Você pode acompanhar<br /><span class="hl2"
-              >sem saber programar.</span
-            ></h2>
-          <p class="sub">
-            A criança segue os projetos no ritmo dela e conta com canais de acompanhamento dentro
-            da própria plataforma.
-          </p>
-        </div>
-        <div class="feat feat-rev">
-          <figure class="art shot-feat reveal">
-            <img
-              src={img('print-recados.webp')}
-              alt="Os Recados: o canal onde o professor responde a criança dentro da plataforma"
-              width="1280"
-              height="720"
-              loading="lazy"
-            />
-          </figure>
-          <div class="feat-txt">
-            <p>
-              <strong>O professor acompanha as atividades enviadas.</strong> Ele pode revisar o que a
-              criança fez e responder pelos Recados, conversando sobre aquele projeto.
-            </p>
-            <p>
-              <strong>O Clube aproxima quem também cria.</strong> No espaço moderado, a criança pode
-              conversar sobre ideias, mostrar o que fez e trocar experiências com outros criadores.
-            </p>
-            <p>
-              <strong>O responsável tem uma área própria.</strong> Perfis e assinatura ficam separados
-              da experiência da criança, inclusive o controle da próxima renovação.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          Seu papel é ajudar no primeiro acesso, combinar os momentos de uso e ouvir o que seu
-          filho está criando. Para as dúvidas do projeto, ele encontra orientação pelos Recados.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 16 · GARANTIA ===== -->
-    <section class="sec sec-verde" id="garantia">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Conheça antes de decidir continuar</span>
-          <h2 class="reveal">Sua família tem <span class="hl">7 dias de garantia.</span></h2>
-        </div>
-        <div class="seal-box reveal">
-          <div class="seal-badge">
-            <span class="material-symbols-rounded">shield</span>
-            <b>7</b>
-            <span>dias de garantia</span>
-          </div>
-          <div>
-            <p>
-              <strong>Conheça a plataforma por 7 dias.</strong> Crie o perfil da criança, abra o
-              primeiro percurso e observe como a experiência entra na rotina da sua família.
-            </p>
-            <p>
-              <strong>Se não fizer sentido neste momento,</strong> solicite o reembolso dentro do
-              prazo da garantia. Depois desse período, você pode desativar a próxima renovação pelo
-              painel do responsável. Também enviamos um aviso antes de renovar.
-            </p>
-          </div>
-        </div>
-        <div class="tese reveal">
-          A garantia permite conhecer o caminho por dentro. A continuidade deve ser uma decisão
-          consciente da família, com as condições da assinatura apresentadas antes do pagamento.
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 17 · AUTORIDADE ===== -->
-    <section class="sec auth" id="autoridade">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Quem está por trás</span>
-          <h2 class="reveal">A Comunidade começou com uma pergunta<br /><span class="hl2"
-              >dentro da nossa própria casa.</span
-            ></h2>
-        </div>
-        <div class="grid">
-          <figure class="art reveal">
-            <img
-              src={img('familia-helena-julio-kids.webp')}
-              alt="Helena, Júlio e o filho André criando um jogo juntos"
-              width="880"
-              height="1019"
-              loading="lazy"
-            />
-          </figure>
-          <div class="story">
-            <span class="who-tag"
-              ><span class="material-symbols-rounded">verified</span>Helena e Júlio ·
-              @criecomhelenaejulio</span
-            >
-            <!-- historia-andre:inicio -->
-            <p class="lead-line">
-              A gente é a Helena e o Júlio. Somos desenvolvedores de sistemas, e o Sistema Zero
-              começou com o André, nosso filho.
-            </p>
-            <p>
-              Nós dois somos desenvolvedores de sistemas, formados em Sistemas de Informação, com
-              mais de dez anos de estrada e passagem por lugares como o Banco do Brasil. Programar
-              é o nosso dia a dia.
-            </p>
-            <p>
-              O André é autista nível 1 e tem hiperfoco em jogos. Quando ele tinha 7 anos, quase todo
-              o interesse digital dele terminava no jogar. Como muitas famílias, também estávamos
-              aprendendo a cuidar do equilíbrio. E percebemos que o computador já fazia parte do
-              universo dele. Faltava apresentar uma possibilidade dentro desse interesse.
-            </p>
-            <p>
-              Quando começamos a criar jogos juntos, apareceu uma mudança que dava para observar.
-              Em vez de falar apenas das fases que outras pessoas tinham criado, o André passou a
-              nos chamar para testar suas regras, explicar escolhas e imaginar a próxima versão.
-            </p>
-            <!-- historia-andre:fim -->
-            <p>
-              Foi dessa experiência que nasceu a Comunidade dos Criadores: um lugar em português,
-              pensado para ajudar outras crianças a começar, continuar e compartilhar o que criam.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 18 · FAQ ===== -->
-    <section class="sec sec-tint" id="faq">
-      <div class="wrap center">
-        <span class="eyebrow">Ainda está decidindo?</span>
-        <h2 class="reveal">O que você pode querer saber antes de assinar</h2>
-        <div class="faq-wrap">
-          <details class="faq" open>
-            <summary
-              >E se meu filho começar e perder o interesse?<span class="material-symbols-rounded">add</span></summary
-            >
-            <div class="a">
-              Nenhuma plataforma pode garantir o interesse de toda criança. Aqui, a continuidade é
-              apoiada por projetos com entregas visíveis, pela Jornada do Criador e pela liberação
-              de novas possibilidades conforme ela avança. Se preferir conhecer o ritmo antes de
-              escolher o ano, comece pelo plano mensal.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Meu filho já joga bastante. Como a Comunidade se encaixa na rotina?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Vocês podem reservar uma parte do tempo de tela já combinado para os projetos.
-              Escolham uma etapa e um horário para parar, mantendo espaço para descanso,
-              movimento e outras brincadeiras. A família continua definindo os limites.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Ele nunca fez nada de tecnologia além de jogar. Consegue mesmo?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Os primeiros cursos partem do zero e usam blocos visuais. A criança não precisa
-              conhecer programação, mas precisa conseguir ler e utilizar mouse e teclado com
-              alguma autonomia.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Se está tudo incluído, por que algumas ferramentas aparecem fechadas?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Porque a Jornada organiza a ordem de liberação. Estúdio e Pinta chegam no posto de
-              Construtor, Pensa no posto de Inventor e Molda no posto de Explorador de Mundos. Não
-              existe compra extra para liberar essas ferramentas.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >O Scratch é gratuito. Por que assinar a Comunidade?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Dá para aprender muito com ferramentas e materiais gratuitos. Aqui, a assinatura
-              reúne uma sequência de aulas e projetos, ferramentas próprias e orientação pelos
-              Recados. É uma opção para a família que quer esse caminho preparado, com um próximo
-              passo para a criança e um lugar para pedir ajuda.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Como faço pra cancelar se não der certo?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
-            <div class="a">
-              Nos primeiros 7 dias, você pode solicitar o reembolso conforme as condições da
-              garantia. Depois disso, pode desativar a próxima renovação pelo painel do responsável.
-              Também enviamos um aviso por e-mail antes de renovar.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Sem aula ao vivo com professor na frente, meu filho aprende de verdade?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              A criança segue cursos e projetos no ritmo dela. As atividades enviadas podem ser
-              revisadas pelo professor, que orienta pelos Recados. A experiência combina explicação,
-              prática e testes dentro do próprio projeto.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >É seguro meu filho conversar com outras crianças ali dentro?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              O Clube dos Criadores é moderado e atende crianças de 9 a 14 anos. O perfil público
-              começa desligado, e o responsável administra os perfis e a assinatura pela área da
-              família. A plataforma segue regras específicas de proteção de dados de crianças.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Meu filho tem 9 anos. É cedo demais?<span class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              A partir dos 9 anos, se a criança já lê e usa o mouse com firmeza, ela acompanha o
-              percurso. Os primeiros projetos são mais guiados e apresentam uma etapa por vez.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Eu não entendo nada de tecnologia. Vou conseguir ajudar?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Sim. Você pode ajudar no primeiro acesso, combinar a rotina e pedir que seu filho
-              mostre o que fez. As aulas apresentam os comandos, e as dúvidas do projeto podem
-              ser enviadas pelos Recados. Você não precisa preparar ou ensinar as aulas.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Meu filho já fez o Desafio do Primeiro Jogo. Precisa fazer novamente?<span
-                class="material-symbols-rounded">add</span
-              ></summary
-            >
-            <div class="a">
-              Não. O Desafio continua disponível dentro da assinatura, mas a criança pode seguir do
-              ponto em que está e avançar para os próximos cursos e projetos.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Posso cadastrar irmãos?<span class="material-symbols-rounded">add</span></summary
-            >
-            <div class="a">
-              Sim. A assinatura permite até 2 perfis de criança. Cada perfil possui seu próprio
-              progresso, seus projetos e a sua Jornada do Criador.
-            </div>
-          </details>
-          <details class="faq">
-            <summary
-              >Preciso instalar ou comprar algum programa?<span class="material-symbols-rounded"
-                >add</span
-              ></summary
-            >
-            <div class="a">
-              Tudo abre no navegador. Um computador com internet e o seu filho por perto bastam.
-            </div>
-          </details>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== BLOCO 19 · OFERTA FINAL ===== -->
-    <section class="sec final" id="final">
-      <div class="wrap">
-        <div class="center">
-          <span class="eyebrow">Um caminho para continuar criando</span>
-          <h2 class="reveal">
-            O primeiro jogo mostra que ele consegue.<br />A Comunidade mostra <span class="hl"
-              >o que ele pode criar depois.</span
-            >
-          </h2>
-        </div>
-        <div class="final-grid">
-          <figure class="art final-art reveal">
-            <img
-              src={img('ilustra-vitoria.webp')}
-              alt="Menino e menina comemorando com um troféu na tela e o Zappy voando entre confetes"
-              width="1000"
-              height="943"
-              loading="lazy"
-            />
-          </figure>
-          <div class="feat-txt">
-            <p>
-              Imagine seu filho chamando você para jogar uma fase que ajudou a construir e
-              contando por que mudou uma regra. Na Comunidade, ele encontra um caminho para
-              começar a criar e ganhar espaço para as próprias ideias, projeto por projeto.
-            </p>
-            <p class="final-list-title">A partir do dia em que entra, a assinatura inclui:</p>
-            <ul class="final-list">
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O Desafio do Primeiro Jogo
-                para começar pelo primeiro projeto
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>Todos os cursos atuais e
-                os novos que entrarem, liberados conforme ele avança na jornada
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O Clube dos Criadores,
-                espaço moderado para crianças da faixa etária atendida
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O Mural, com link próprio
-                pra cada jogo que ele publicar
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O acompanhamento de um
-                professor de verdade
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>A Jornada do Criador, de
-                Faísca a Lenda, com todo o sistema de conquistas
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>Estúdio, Pinta, Pensa e
-                Molda, incluídos e liberados no momento certo da jornada
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O Desafio do Mês, sempre
-                com uma missão nova esperando
-              </li>
-              <li>
-                <span class="material-symbols-rounded">check_circle</span>O Mundo do Criador, a casa
-                dele ali dentro
-              </li>
-            </ul>
-            <p>
-              O primeiro jogo é uma conquista. A Comunidade é o caminho que vem depois, com 7 dias
-              de garantia e aviso antes de cada renovação.
-            </p>
-          </div>
-        </div>
-        <div class="final-cta reveal">
-          <a href="#planos" class="btn big">
-            <span class="material-symbols-rounded">rocket_launch</span>Quero que meu filho faça parte
-            da Comunidade
-          </a>
-          <p class="price-line">
-            Anual {anualLabel} (equivale a {anualPorMesLabel}/mês) · ou mensal {mensalLabel}/mês ·
-            Garantia de 7 dias
-          </p>
-        </div>
-        <div class="tese reveal">
-          O próximo passo pode ser pequeno: abrir a primeira aula juntos e experimentar.
-          A partir daí, seu filho tem um caminho para continuar criando.
-        </div>
-        <p class="terms">
-          Ao assinar, você concorda com os <a href="/kids/termos">termos de uso</a> e a <a
-            href="/kids/privacidade">política de privacidade</a
-          >, feitos com atenção especial à proteção de dados de crianças. O acesso da criança é
-          vinculado à sua conta de responsável.
-        </p>
-      </div>
-    </section>
-
-    <!-- ===== BARRA FIXA MOBILE ===== -->
-    <div class="mobar">
-      <div class="p">{mensalLabel}/mês <span class="dias">· anual {anualLabel}</span></div>
-      <a href="#planos" class="btn mobar-btn">
-        <span class="material-symbols-rounded">bolt</span>Assinar
-      </a>
+      </section>
+    </main>
+    <div class="kof-mobar" data-mobar aria-hidden="true">
+      <p class="kof-mobar__preco">No anual, equivalente a<strong>{anualPorMesLabel} por mês</strong></p>
+      <a class="kof-btn" href="#planos" tabindex="-1">Escolher um plano</a>
     </div>
+    <dialog class="zoom" data-zoom-dialog aria-label="Imagem ampliada">
+      <form method="dialog">
+        <button class="zoom-fechar" aria-label="Fechar a imagem ampliada"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+      </form>
+      <img alt="" decoding="async" />
+    </dialog>
   </div>
-
-  <!-- Rodapé institucional único dos funis kids (o mesmo do checkout/obrigado). -->
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} />
-
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} continuidade={profile === 'continuar'} />
 </BaseLayout>
 
 <script>
-  // Scroll reveal (mesmo padrão do DesafioOfertaBody).
-  const obs = new IntersectionObserver(
-    (entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) {
-          e.target.classList.add('visible')
-          obs.unobserve(e.target)
-        }
-      }
-    },
-    { threshold: 0.14 },
-  )
-  for (const el of Array.from(document.querySelectorAll('.cdc .reveal'))) obs.observe(el)
+  // Reveal ao rolar e a barra fixa do celular. Sem JS nada disto existe: o `.kof-reveal` só
+  // esconde sob `html.kof-js`, e a barra nasce escondida e `aria-hidden`.
+  document.documentElement.classList.add('kof-js')
+  const reduz = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const revelar = document.querySelectorAll<HTMLElement>('.kof-reveal')
+  if (reduz || !('IntersectionObserver' in window)) {
+    for (const el of Array.from(revelar)) el.classList.add('is-visible')
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries)
+          if (e.isIntersecting) {
+            e.target.classList.add('is-visible')
+            io.unobserve(e.target)
+          }
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    )
+    for (const el of Array.from(revelar)) io.observe(el)
+  }
 
-  // Barra fixa mobile: aparece após a 1ª dobra, some perto dos planos.
-  // ⚠️ `#planos` vive DENTRO de uma section `position: relative` → `offsetTop`
-  // seria o offset LOCAL (pequeno, errado); mede a posição no DOCUMENTO via rect.
-  const mobar = document.querySelector('.cdc .mobar')
+  const barra = document.querySelector<HTMLElement>('[data-mobar]')
   const planos = document.getElementById('planos')
-  if (mobar) {
-    window.addEventListener('scroll', () => {
-      const y = window.scrollY
-      const showAfter = window.innerHeight * 0.9
-      const hideNear = planos
-        ? planos.getBoundingClientRect().top + y - window.innerHeight
-        : Number.POSITIVE_INFINITY
-      mobar.classList.toggle('visible', y > showAfter && y < hideNear)
+  const rodape = document.querySelector('footer')
+  if (barra && planos && 'IntersectionObserver' in window) {
+    const link = barra.querySelector('a')
+    let planosAVista = false
+    let rodapeAVista = false
+    let roladoAlemDaDobra = false
+    let ultimo: boolean | null = null
+    const aplicar = () => {
+      const mostra = roladoAlemDaDobra && !planosAVista && !rodapeAVista
+      if (mostra === ultimo) return
+      ultimo = mostra
+      barra.classList.toggle('is-visible', mostra)
+      barra.setAttribute('aria-hidden', mostra ? 'false' : 'true')
+      link?.setAttribute('tabindex', mostra ? '0' : '-1')
+    }
+    new IntersectionObserver(
+      ([e]) => {
+        planosAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      },
+      { rootMargin: '0px 0px -40% 0px' },
+    ).observe(planos)
+    if (rodape)
+      new IntersectionObserver(([e]) => {
+        rodapeAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      }).observe(rodape)
+    const aoRolar = () => {
+      roladoAlemDaDobra = window.scrollY > window.innerHeight * 0.9
+      aplicar()
+    }
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    aoRolar()
+  }
+
+  const abrirDuvida = () => {
+    const id = window.location.hash.slice(1)
+    if (!id.startsWith('duvida-')) return
+    const detail = document.getElementById(id)
+    if (!(detail instanceof HTMLDetailsElement)) return
+    detail.open = true
+    detail.scrollIntoView({ block: 'start' })
+  }
+  abrirDuvida()
+  window.addEventListener('hashchange', abrirDuvida)
+
+  // Ampliar uma tela sem sair da página. Sem JS (ou sem <dialog>) o link abre a imagem em outra aba.
+  const zoom = document.querySelector<HTMLDialogElement>('[data-zoom-dialog]')
+  const zoomImg = zoom?.querySelector('img')
+  if (zoom && zoomImg && typeof zoom.showModal === 'function') {
+    document.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0) return
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>('a[data-zoom]')
+      if (!link) return
+      event.preventDefault()
+      zoomImg.src = link.href
+      zoomImg.alt = link.querySelector('img')?.alt ?? ''
+      zoom.showModal()
     })
+    // O clique fora da imagem (no fundo escuro) fecha.
+    zoom.addEventListener('click', (event) => {
+      if (event.target === zoom) zoom.close()
+    })
+    zoom.addEventListener('close', () => zoomImg.removeAttribute('src'))
   }
 </script>
-
-<style>
-  /* ===== Comunidade dos Criadores — CSS sob medida, alinhado à paleta Pen
-     da Comunidade Kids (chão frio, ação azul, Baloo 2/Nunito e relevo 3D).
-     Escopado pelo Astro a
-     este componente + prefixado por `.cdc` (tokens no wrapper, não no :root).
-     Os ícones self-hosted são carregados pelo BaseLayout. ===== */
-
-  /* ===== Paleta Pen da plataforma Kids + base ===== */
-  .cdc {
-    --azul: var(--sz-community-action);
-    --azul-esc: var(--sz-community-action-step);
-    --laranja: var(--sz-community-orange);
-    --laranja-cta: var(--sz-community-action);
-    --rosa: var(--sz-community-pink);
-    --roxo: var(--sz-community-purple);
-    --ciano: var(--sz-community-blue);
-    --verde: var(--sz-community-green);
-    --amarelo: var(--sz-community-yellow);
-    --creme: var(--sz-community-ground);
-    --ceu: var(--sz-community-ground-alt);
-    --superficie: var(--sz-community-surface-2);
-    --menta-bg: var(--sz-community-ground);
-    --rosa-bg: var(--sz-community-ground-alt);
-    --amar-bg: var(--sz-community-ground-alt);
-    --navy: var(--sz-community-menu);
-    --navy-2: var(--sz-community-menu-2);
-    --tinta: var(--sz-community-ink);
-    --tinta-suave: var(--sz-community-ink-muted);
-    --branco: var(--sz-community-card);
-    --borda: var(--sz-community-line);
-    --campo: var(--sz-community-field);
-    --degrau: var(--sz-community-action-step);
-    --degrau-cartao: var(--sz-community-card-step);
-    --sombra: 0 5px 0 var(--degrau-cartao);
-    --sombra-sm: 0 3px 0 var(--degrau-cartao);
-    --raio: 18px;
-    --raio-sm: 16px;
-    --head: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
-    --body: 'Nunito', ui-sans-serif, system-ui, sans-serif;
-    --maxw: 1120px;
-
-    font-family: var(--body);
-    color: var(--tinta);
-    background: var(--creme);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    /* `clip` (e não `hidden`): overflow hidden criaria um scroll container e
-       quebraria o position: sticky da faixa do topo. */
-    overflow-x: clip;
-  }
-  .cdc h1,
-  .cdc h2,
-  .cdc h3,
-  .cdc h4 {
-    font-family: var(--head);
-    line-height: 1.14;
-    letter-spacing: -0.01em;
-    font-weight: 700;
-    margin: 0;
-    text-wrap: balance;
-  }
-  .cdc p {
-    margin: 0;
-  }
-  .cdc img {
-    max-width: 100%;
-    display: block;
-  }
-  .cdc a {
-    text-decoration: none;
-    color: inherit;
-  }
-  .cdc .wrap {
-    width: 100%;
-    max-width: var(--maxw);
-    margin: 0 auto;
-    padding: 0 22px;
-  }
-  .cdc .sec {
-    padding: 74px 0;
-    position: relative;
-    overflow: hidden;
-  }
-  .cdc .sec-slim {
-    padding: 30px 0;
-  }
-  .cdc .sec-tint {
-    background: var(--ceu);
-  }
-  .cdc .sec-verde {
-    background: var(--creme);
-  }
-  .cdc .sec-rosa {
-    background: var(--rosa-bg);
-  }
-  .cdc .sec-amar {
-    background: var(--amar-bg);
-  }
-  .cdc .center {
-    text-align: center;
-  }
-  .cdc .eyebrow {
-    display: inline-block;
-    font-family: var(--head);
-    font-weight: 600;
-    font-size: 0.82rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--azul);
-    background: #fff;
-    border: 2px solid var(--borda);
-    padding: 6px 16px;
-    border-radius: 22px;
-    box-shadow: var(--sombra-sm);
-    margin-bottom: 18px;
-    line-height: 1.45;
-    text-align: center;
-  }
-  .cdc .sec h2 {
-    font-size: clamp(1.66rem, 4.2vw, 2.5rem);
-    font-weight: 700;
-  }
-  .cdc .hl {
-    color: var(--azul);
-  }
-  .cdc .hl2 {
-    color: var(--azul);
-  }
-  .cdc .sub {
-    font-size: clamp(1rem, 2.1vw, 1.16rem);
-    color: var(--tinta-suave);
-    max-width: 680px;
-    margin: 14px auto 0;
-  }
-  .cdc .tese {
-    max-width: 860px;
-    margin: 30px auto 0;
-    background: #fff;
-    border-left: 6px solid var(--amarelo);
-    border-top: 2px solid var(--borda);
-    border-right: 2px solid var(--borda);
-    border-bottom: 2px solid var(--borda);
-    border-radius: 0 var(--raio-sm) var(--raio-sm) 0;
-    padding: 18px 22px;
-    font-weight: 700;
-    box-shadow: var(--sombra-sm);
-  }
-  .cdc .evidence {
-    max-width: 920px;
-    margin: 34px auto 0;
-    padding: 22px;
-    background: #fff;
-    border: 2px solid var(--borda);
-    border-radius: var(--raio);
-    box-shadow: var(--sombra-sm);
-  }
-  .cdc .evidence > p {
-    color: var(--tinta-suave);
-    font-weight: 700;
-  }
-  .cdc .evidence-links {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 18px;
-  }
-  .cdc .evidence-links > div {
-    display: grid;
-    gap: 4px;
-    padding: 14px;
-    border: 2px solid var(--borda);
-    border-radius: 14px;
-    background: var(--ceu);
-  }
-  .cdc .evidence-links strong {
-    color: var(--azul);
-    font-family: var(--head);
-    font-size: 1rem;
-  }
-  .cdc .evidence-links span,
-  .cdc .evidence small {
-    color: var(--tinta-suave);
-    line-height: 1.45;
-  }
-  .cdc .evidence small {
-    display: block;
-    margin-top: 16px;
-  }
-  @media (max-width: 760px) {
-    .cdc .evidence-links {
-      grid-template-columns: 1fr;
-    }
-  }
-  .cdc .between {
-    max-width: 720px;
-    margin: 24px auto 0;
-    text-align: center;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-
-  /* ===== botões 3D da plataforma Kids ===== */
-  .cdc .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    border: none;
-    font-family: var(--head);
-    font-weight: 600;
-    font-size: 1.08rem;
-    min-height: 48px;
-    color: #fff;
-    background: var(--azul);
-    border-radius: 16px;
-    padding: 16px 30px;
-    box-shadow: 0 6px 0 var(--degrau);
-    transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease;
-    text-align: center;
-    line-height: 1.15;
-  }
-  .cdc .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 7px 0 var(--degrau);
-  }
-  .cdc .btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 var(--degrau);
-  }
-  .cdc .btn:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--azul) 35%, white);
-    outline-offset: 4px;
-  }
-  .cdc .btn .material-symbols-rounded {
-    font-size: 22px;
-  }
-  .cdc .btn.big {
-    font-size: 1.2rem;
-    padding: 20px 38px;
-  }
-
-  /* ===== topo fixo ===== */
-  .cdc .topbar {
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    background: color-mix(in srgb, var(--creme) 92%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 2px solid var(--borda);
-  }
-  .cdc .nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    height: 68px;
-  }
-  .cdc .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 1.06rem;
-    color: var(--navy);
-  }
-  .cdc .logo .badge {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    background: var(--azul);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    box-shadow: 0 3px 0 var(--degrau);
-    flex-shrink: 0;
-  }
-  .cdc .logo .badge .material-symbols-rounded {
-    font-size: 22px;
-  }
-  .cdc .price-mini {
-    font-family: var(--head);
-    font-weight: 700;
-    color: var(--azul);
-    white-space: nowrap;
-  }
-  .cdc .header-cta {
-    padding: 10px 18px;
-    font-size: 0.98rem;
-    box-shadow: 0 5px 0 var(--degrau);
-    /* compensa a sombra 3D dentro da barra de altura fixa */
-    margin-bottom: 6px;
-  }
-  @media (max-width: 640px) {
-    .cdc .price-mini {
-      display: none;
-    }
-    .cdc .logo {
-      font-size: 0.95rem;
-    }
-    .cdc .header-cta .lbl {
-      display: none;
-    }
-  }
-
-  /* ===== hero ===== */
-  .cdc .hero {
-    background: var(--creme);
-    padding-top: 54px;
-  }
-  .cdc .hero .grid {
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 36px;
-    align-items: center;
-  }
-  .cdc .hero h1 {
-    font-size: clamp(1.9rem, 4.4vw, 2.9rem);
-    letter-spacing: -0.02em;
-    margin-bottom: 16px;
-  }
-  .cdc .hero .lead {
-    font-size: clamp(1.02rem, 2vw, 1.16rem);
-    color: var(--tinta-suave);
-    font-weight: 600;
-    max-width: 560px;
-    margin-bottom: 20px;
-  }
-  .cdc .hero-bullets {
-    list-style: none;
-    display: grid;
-    gap: 12px;
-    margin: 0 0 26px;
-    padding: 0;
-  }
-  .cdc .hero-bullets li {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-    font-weight: 700;
-  }
-  .cdc .hero-bullets .tick {
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--verde);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 3px 0 color-mix(in srgb, var(--verde) 65%, black);
-    margin-top: 2px;
-  }
-  .cdc .hero-bullets .tick .material-symbols-rounded {
-    font-size: 18px;
-  }
-  .cdc .seals {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 22px;
-    margin-top: 32px;
-    font-weight: 700;
-    color: var(--tinta-suave);
-    font-size: 0.95rem;
-  }
-  .cdc .seals span {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .cdc .seals .material-symbols-rounded {
-    color: var(--verde);
-    font-size: 20px;
-  }
-  .cdc .hero-art {
-    position: relative;
-  }
-  .cdc .hero-art .glow {
-    display: none;
-  }
-  .cdc .hero-art img {
-    position: relative;
-    filter: drop-shadow(0 22px 30px rgba(28, 48, 90, 0.18));
-  }
-  /* Ilustrações são RECORTES (webp transparente, chroma cortado): integram no
-     fundo da página com drop-shadow, como o hero e os balões de fala — NUNCA
-     border-radius/box-shadow (viravam um "cartão com relevo" em volta do PNG
-     transparente; feedback da usuária 13/07). Print/screenshot é a exceção e
-     tem moldura própria (.shot). */
-  .cdc .art img {
-    border-radius: 0;
-  }
-  .cdc .deco {
-    position: absolute;
-    pointer-events: none;
-  }
-  .cdc .float {
-    animation: cdc-float 5s ease-in-out infinite;
-  }
-  .cdc .float.slow {
-    animation-duration: 7s;
-  }
-  .cdc .float.rev {
-    animation-direction: reverse;
-  }
-  @keyframes cdc-float {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-12px);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .cdc .float {
-      animation: none;
-    }
-  }
-  .cdc .blob {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(2px);
-    opacity: 0.6;
-    pointer-events: none;
-  }
-
-  /* ===== balões dos personagens (mesmo padrão do Desafio) ===== */
-  .cdc .kid {
-    display: flex;
-    align-items: flex-end;
-    gap: 18px;
-    max-width: 720px;
-    margin: 46px auto 0;
-    text-align: left;
-  }
-  .cdc .kid .char {
-    flex-shrink: 0;
-    width: 120px;
-    text-align: center;
-  }
-  .cdc .kid .char img {
-    border-radius: 0;
-    filter: drop-shadow(0 10px 16px rgba(28, 48, 90, 0.2));
-  }
-  .cdc .kid .char .name {
-    display: inline-block;
-    margin-top: 6px;
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.88rem;
-    color: #fff;
-    background: var(--azul);
-    padding: 3px 12px;
-    border-radius: 12px;
-  }
-  .cdc .kid.verde .char .name {
-    background: var(--verde);
-  }
-  .cdc .kid.rosa .char .name {
-    background: var(--rosa);
-  }
-  .cdc .kid .bubble {
-    position: relative;
-    background: #fff;
-    border: 2px solid var(--borda);
-    border-radius: var(--raio);
-    padding: 18px 22px;
-    font-weight: 600;
-    box-shadow: var(--sombra-sm);
-    margin-bottom: 26px;
-  }
-  .cdc .kid .bubble::before {
-    content: '';
-    position: absolute;
-    left: -12px;
-    bottom: 24px;
-    width: 22px;
-    height: 22px;
-    background: #fff;
-    border-left: 2px solid var(--borda);
-    border-bottom: 2px solid var(--borda);
-    transform: rotate(45deg);
-    border-radius: 0 0 0 6px;
-  }
-  @media (max-width: 560px) {
-    .cdc .kid {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    .cdc .kid .bubble::before {
-      display: none;
-    }
-  }
-
-  /* ===== faixa de confiança ===== */
-  .cdc .stats-band {
-    background: var(--navy);
-    color: #fff;
-    padding: 22px 0;
-  }
-  .cdc .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-  }
-  .cdc .stat {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    text-align: left;
-    min-height: 82px;
-    padding: 14px 18px;
-    background: var(--navy-2);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--raio-sm);
-  }
-  .cdc .stat .material-symbols-rounded {
-    font-size: 30px;
-    color: var(--amarelo);
-    flex-shrink: 0;
-  }
-  .cdc .stat .l {
-    font-weight: 700;
-    font-size: 0.94rem;
-    line-height: 1.35;
-    opacity: 0.94;
-  }
-  @media (max-width: 720px) {
-    .cdc .stats {
-      grid-template-columns: 1fr;
-      gap: 12px;
-    }
-    .cdc .stat {
-      justify-content: flex-start;
-    }
-  }
-
-  /* ===== seções de feature (imagem + texto) ===== */
-  .cdc .feat {
-    display: grid;
-    grid-template-columns: 1fr 1.1fr;
-    gap: 40px;
-    align-items: center;
-    max-width: 1000px;
-    margin: 34px auto 0;
-  }
-  .cdc .feat-rev {
-    grid-template-columns: 1.1fr 1fr;
-  }
-  .cdc .feat-rev > :first-child {
-    order: 2;
-  }
-  .cdc .feat .art img {
-    filter: drop-shadow(0 18px 28px rgba(28, 48, 90, 0.18));
-  }
-  .cdc .feat-txt {
-    display: grid;
-    gap: 14px;
-    font-size: 1.04rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .feat-txt strong {
-    color: var(--tinta);
-  }
-  @media (max-width: 860px) {
-    .cdc .feat,
-    .cdc .feat-rev {
-      grid-template-columns: 1fr;
-      gap: 22px;
-    }
-    .cdc .feat-rev > :first-child {
-      order: 0;
-    }
-  }
-
-  /* ===== paliativos ===== */
-  .cdc .pal {
-    display: grid;
-    gap: 16px;
-    max-width: 840px;
-    margin: 34px auto 0;
-  }
-  .cdc .pal-item {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 22px 24px;
-    box-shadow: var(--sombra-sm);
-    border: 2px solid var(--borda);
-    display: flex;
-    gap: 16px;
-  }
-  .cdc .pal-item .xi {
-    flex-shrink: 0;
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--azul) 10%, white);
-    color: var(--azul);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .cdc .pal-item h4 {
-    font-size: 1.1rem;
-    margin-bottom: 5px;
-  }
-  .cdc .pal-item p {
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-
-  /* ===== depoimentos ===== */
-  .cdc .depo-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-    text-align: left;
-  }
-  .cdc .depo {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .cdc .depo .stars {
-    color: var(--amarelo);
-    letter-spacing: 3px;
-    font-size: 1.05rem;
-  }
-  .cdc .depo .quote {
-    font-weight: 700;
-    color: var(--tinta);
-    flex: 1;
-  }
-  .cdc .depo .who {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .cdc .depo .av {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    overflow: hidden;
-    flex-shrink: 0;
-    box-shadow: var(--sombra-sm);
-  }
-  .cdc .depo .av img {
-    border-radius: 50%;
-  }
-  .cdc .depo .who-name {
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.98rem;
-    line-height: 1.2;
-  }
-  .cdc .depo .who-name small {
-    display: block;
-    font-family: var(--body);
-    font-weight: 600;
-    color: var(--tinta-suave);
-    font-size: 0.8rem;
-  }
-  @media (max-width: 860px) {
-    .cdc .depo-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== banda CTA ===== */
-  .cdc .ctaband {
-    background: var(--navy);
-    border: 2px solid var(--navy-2);
-    border-radius: var(--raio);
-    padding: 42px 32px;
-    text-align: center;
-    color: #fff;
-    box-shadow: var(--sombra);
-  }
-  .cdc .ctaband h3 {
-    font-size: clamp(1.3rem, 3vw, 1.8rem);
-    margin-bottom: 26px;
-    color: #fff;
-  }
-
-  /* ===== método Z.E.R.O. ===== */
-  .cdc .zero {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 18px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-  }
-  .cdc .zstep {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px 20px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    border-top: 6px solid var(--c);
-  }
-  .cdc .zstep .zl {
-    font-family: var(--head);
-    font-weight: 800;
-    font-size: 2.4rem;
-    line-height: 1;
-    color: var(--c);
-  }
-  .cdc .zstep h4 {
-    font-size: 1.08rem;
-    margin: 6px 0 8px;
-  }
-  .cdc .zstep p {
-    font-size: 0.94rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .z1 {
-    --c: var(--rosa);
-  }
-  .cdc .z2 {
-    --c: var(--azul);
-  }
-  .cdc .z3 {
-    --c: var(--laranja);
-  }
-  .cdc .z4 {
-    --c: var(--verde);
-  }
-  .cdc .zloop {
-    text-align: center;
-    font-family: var(--head);
-    font-weight: 700;
-    color: var(--roxo);
-    margin-top: 20px;
-  }
-  .cdc .journey {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    max-width: 900px;
-    margin: 22px auto 0;
-  }
-  .cdc .lvl-pill {
-    background: #fff;
-    border-radius: 50px;
-    padding: 10px 20px;
-    font-family: var(--head);
-    font-weight: 700;
-    box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 28%, var(--degrau-cartao));
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    border: 2px solid var(--c);
-    color: var(--c);
-  }
-  .cdc .lvl-pill .material-symbols-rounded {
-    font-size: 20px;
-  }
-  @media (max-width: 860px) {
-    .cdc .zero {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-  @media (max-width: 560px) {
-    .cdc .zero {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== decorados (o que desenvolve) ===== */
-  .cdc .dev {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-  }
-  .cdc .dev-item {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px 22px;
-    box-shadow: var(--sombra-sm);
-    border: 2px solid var(--borda);
-  }
-  .cdc .dev-item .di {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    margin-bottom: 14px;
-  }
-  .cdc .dev-item .di .material-symbols-rounded {
-    font-size: 26px;
-  }
-  .cdc .dev-item h4 {
-    font-size: 1.1rem;
-    margin-bottom: 6px;
-  }
-  .cdc .dev-item p {
-    font-size: 0.96rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  @media (max-width: 860px) {
-    .cdc .dev {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== cards genéricos (plataforma / entregáveis / bônus) ===== */
-  .cdc .cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-    text-align: left;
-  }
-  .cdc .card {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    position: relative;
-  }
-  .cdc .card.card-wide {
-    grid-column: 2;
-  }
-  .cdc .card h3 {
-    font-size: 1.14rem;
-    margin-bottom: 8px;
-  }
-  .cdc .card p {
-    font-size: 0.98rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .card .ci {
-    width: 54px;
-    height: 54px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    margin-bottom: 14px;
-  }
-  .cdc .card .ci .material-symbols-rounded {
-    font-size: 28px;
-  }
-  .cdc .card.destaque {
-    background: var(--superficie);
-    border-color: color-mix(in srgb, var(--azul) 45%, var(--borda));
-  }
-  .cdc .card .shot {
-    margin: 0 0 14px;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: var(--sombra-sm);
-    /* Print INTEIRO (nada de corte — senão não dá pra ler): a imagem é contida e
-       o vão é preenchido com o azul-céu claro da própria plataforma (#F0F9FF, a
-       cor de fundo dos prints), compondo sem emenda. Altura fixa p/ o grid alinhar. */
-    height: 200px;
-    background: var(--superficie);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--borda);
-    box-shadow: none;
-  }
-  .cdc .card .shot img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 0;
-  }
-  /* Screenshot emoldurado no bloco de feature (Recados no Suporte): moldura branca
-     arredondada + borda fina, imagem inteira (sem corte), sombra do card. */
-  .cdc .shot-feat {
-    background: #fff;
-    border-radius: 18px;
-    padding: 8px;
-    border: 2px solid var(--borda);
-    box-shadow: var(--sombra);
-  }
-  .cdc .shot-feat img {
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-    display: block;
-  }
-  .cdc .shot-slot {
-    border-radius: 16px;
-    min-height: 150px;
-    background: var(--superficie);
-    border: 2px dashed var(--campo);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 18px;
-    color: var(--tinta-suave);
-    margin-bottom: 14px;
-  }
-  .cdc .shot-slot .material-symbols-rounded {
-    font-size: 38px;
-    margin-bottom: 6px;
-  }
-  .cdc .shot-slot .slot-t {
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.98rem;
-  }
-  .cdc .shot-slot .slot-d {
-    font-size: 0.84rem;
-    margin-top: 4px;
-    max-width: 300px;
-    line-height: 1.4;
-  }
-  .cdc .shot-slot.tall {
-    min-height: 320px;
-    margin-bottom: 0;
-  }
-  .cdc .card.bonus {
-    padding-top: 34px;
-  }
-  .cdc .bonus-tag {
-    position: absolute;
-    top: -12px;
-    left: 20px;
-    background: var(--amarelo);
-    color: var(--tinta);
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.8rem;
-    padding: 4px 14px;
-    border-radius: 40px;
-    box-shadow: var(--sombra-sm);
-  }
-  .cdc .anchor-note {
-    margin-top: 10px;
-    font-weight: 700;
-    color: var(--tinta);
-  }
-  .cdc .anchor-note s {
-    color: var(--tinta-suave);
-  }
-  @media (max-width: 860px) {
-    .cdc .cards {
-      grid-template-columns: 1fr;
-    }
-    .cdc .card.card-wide {
-      grid-column: auto;
-    }
-  }
-
-  /* ===== para quem é / não é ===== */
-  .cdc .two {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    max-width: 1000px;
-    margin: 34px auto 0;
-    text-align: left;
-  }
-  .cdc .two-box {
-    background: #fff;
-    border: 2px solid var(--borda);
-    border-radius: var(--raio);
-    padding: 26px;
-    box-shadow: var(--sombra);
-  }
-  .cdc .two-box.is {
-    border-top: 6px solid var(--verde);
-  }
-  .cdc .two-box.isnt {
-    border-top: 6px solid var(--sz-community-red);
-  }
-  .cdc .two-box h3 {
-    font-size: 1.16rem;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .cdc .two-box ul {
-    list-style: none;
-    display: grid;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-  }
-  .cdc .two-box li {
-    display: flex;
-    gap: 11px;
-    font-weight: 600;
-  }
-  .cdc .two-box .mk {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    margin-top: 2px;
-  }
-  .cdc .two-box .mk .material-symbols-rounded {
-    font-size: 16px;
-  }
-  .cdc .is .mk {
-    background: var(--verde);
-  }
-  .cdc .isnt .mk {
-    background: var(--sz-community-red);
-  }
-  @media (max-width: 860px) {
-    .cdc .two {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== comparativo de valor ===== */
-  .cdc .compare {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    max-width: 900px;
-    margin: 34px auto 0;
-  }
-  .cdc .cmp {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 20px;
-    box-shadow: var(--sombra-sm);
-    border: 2px solid var(--borda);
-    text-align: center;
-  }
-  .cdc .cmp-t {
-    font-weight: 700;
-    color: var(--tinta-suave);
-    font-size: 0.95rem;
-    margin-bottom: 6px;
-  }
-  .cdc .cmp-v {
-    font-family: var(--head);
-    font-weight: 800;
-    font-size: 1.22rem;
-  }
-  .cdc .cmp-u {
-    font-size: 0.82rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  @media (max-width: 720px) {
-    .cdc .compare {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== planos (mensal × anual) ===== */
-  .cdc .plans {
-    display: grid;
-    grid-template-columns: 1fr 1.15fr;
-    gap: 22px;
-    max-width: 820px;
-    margin: 40px auto 0;
-    align-items: stretch;
-    scroll-margin-top: 90px;
-  }
-  .cdc .plan {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 30px 26px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    position: relative;
-  }
-  .cdc .plan.destaque {
-    border-color: var(--azul);
-    background: var(--superficie);
-  }
-  .cdc .plan h4 {
-    font-size: 1.2rem;
-    color: var(--tinta-suave);
-  }
-  .cdc .plan.destaque h4 {
-    color: var(--azul);
-  }
-  .cdc .plan .from {
-    font-size: 0.9rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .plan .now {
-    font-family: var(--head);
-    font-weight: 800;
-    font-size: 2.6rem;
-    line-height: 1;
-    color: var(--navy);
-  }
-  .cdc .plan .now small {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--tinta-suave);
-  }
-  .cdc .plan.destaque .now {
-    color: var(--azul);
-  }
-  .cdc .plan .permonth {
-    font-family: var(--head);
-    font-weight: 700;
-    color: var(--azul);
-  }
-  .cdc .plan .cond {
-    font-size: 0.9rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-    flex: 1;
-  }
-  .cdc .plan .plan-btn {
-    width: 100%;
-    margin-top: 8px;
-    font-size: 1.05rem;
-    padding: 16px 18px;
-    /* respiro pra sombra 3D dentro do card */
-    margin-bottom: 10px;
-  }
-  .cdc .plan-badge {
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--verde);
-    color: #fff;
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.85rem;
-    padding: 5px 16px;
-    border-radius: 40px;
-    box-shadow: var(--sombra-sm);
-    white-space: nowrap;
-  }
-  .cdc .plans-mini {
-    text-align: center;
-    margin-top: 18px;
-    font-weight: 700;
-    color: var(--tinta-suave);
-    font-size: 0.92rem;
-  }
-  @media (max-width: 720px) {
-    .cdc .plans {
-      grid-template-columns: 1fr;
-    }
-    /* no mobile o ANUAL (destaque) vem primeiro */
-    .cdc .plan.destaque {
-      order: -1;
-    }
-  }
-
-  /* ===== o que muda numa casa ===== */
-  .cdc .shifts {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    max-width: 1050px;
-    margin: 34px auto 0;
-    text-align: left;
-  }
-  .cdc .shift {
-    background: #fff;
-    border-radius: var(--raio);
-    padding: 24px;
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-  }
-  .cdc .shift .material-symbols-rounded {
-    font-size: 30px;
-    color: var(--azul);
-    margin-bottom: 10px;
-  }
-  .cdc .shift h4 {
-    font-size: 1.1rem;
-    margin-bottom: 6px;
-  }
-  .cdc .shift p {
-    font-size: 0.96rem;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  @media (max-width: 860px) {
-    .cdc .shifts {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== garantia ===== */
-  .cdc .seal-box {
-    max-width: 760px;
-    margin: 34px auto 0;
-    background: #fff;
-    border-radius: var(--raio);
-    box-shadow: var(--sombra);
-    border: 2px solid var(--borda);
-    padding: 32px;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 28px;
-    align-items: center;
-    text-align: left;
-  }
-  .cdc .seal-box p {
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .seal-box p + p {
-    margin-top: 12px;
-  }
-  .cdc .seal-box strong {
-    color: var(--tinta);
-  }
-  .cdc .seal-badge {
-    width: 130px;
-    height: 130px;
-    border-radius: 50%;
-    background: var(--superficie);
-    border: 4px dashed var(--verde);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    color: var(--verde);
-    font-family: var(--head);
-    text-align: center;
-    flex-shrink: 0;
-  }
-  .cdc .seal-badge b {
-    font-size: 2.1rem;
-    line-height: 1;
-  }
-  .cdc .seal-badge span {
-    font-size: 0.84rem;
-    font-weight: 700;
-  }
-  .cdc .seal-badge .material-symbols-rounded {
-    font-size: 26px;
-  }
-  @media (max-width: 640px) {
-    .cdc .seal-box {
-      grid-template-columns: 1fr;
-      justify-items: center;
-      text-align: center;
-    }
-  }
-
-  /* ===== autoridade ===== */
-  .cdc .auth .grid {
-    display: grid;
-    grid-template-columns: 0.85fr 1.15fr;
-    gap: 40px;
-    align-items: center;
-    max-width: 1000px;
-    margin: 34px auto 0;
-  }
-  .cdc .auth .art img {
-    filter: drop-shadow(0 18px 28px rgba(28, 48, 90, 0.18));
-  }
-  .cdc .auth .story {
-    display: grid;
-    gap: 13px;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-  .cdc .auth .lead-line {
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 1.16rem;
-    color: var(--tinta);
-  }
-  .cdc .who-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #fff;
-    border: 2px solid var(--borda);
-    color: var(--azul);
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 0.9rem;
-    padding: 6px 14px;
-    border-radius: 40px;
-    box-shadow: var(--sombra-sm);
-    justify-self: start;
-  }
-  .cdc .who-tag .material-symbols-rounded {
-    font-size: 18px;
-  }
-  @media (max-width: 860px) {
-    .cdc .auth .grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* ===== FAQ ===== */
-  .cdc .faq-wrap {
-    max-width: 780px;
-    margin: 34px auto 0;
-    display: grid;
-    gap: 12px;
-    text-align: left;
-  }
-  .cdc .faq {
-    background: #fff;
-    border-radius: var(--raio-sm);
-    box-shadow: var(--sombra-sm);
-    border: 2px solid var(--borda);
-    overflow: hidden;
-  }
-  .cdc .faq summary {
-    list-style: none;
-    cursor: pointer;
-    padding: 18px 22px;
-    font-family: var(--head);
-    font-weight: 700;
-    font-size: 1.02rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 14px;
-    min-height: 56px;
-  }
-  .cdc .faq summary:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--azul) 28%, transparent);
-    outline-offset: -3px;
-  }
-  .cdc .faq summary::-webkit-details-marker {
-    display: none;
-  }
-  .cdc .faq summary .material-symbols-rounded {
-    color: var(--azul);
-    transition: transform 0.2s;
-    flex-shrink: 0;
-  }
-  .cdc .faq[open] summary .material-symbols-rounded {
-    transform: rotate(45deg);
-  }
-  .cdc .faq .a {
-    padding: 0 22px 20px;
-    color: var(--tinta-suave);
-    font-weight: 600;
-  }
-
-  /* ===== oferta final ===== */
-  .cdc .final {
-    background: var(--ceu);
-  }
-  .cdc .final-grid {
-    display: grid;
-    grid-template-columns: 0.8fr 1.2fr;
-    gap: 36px;
-    align-items: center;
-    max-width: 1000px;
-    margin: 34px auto 0;
-  }
-  .cdc .final-art img {
-    margin: 0 auto;
-    filter: drop-shadow(0 18px 26px rgba(28, 48, 90, 0.18));
-  }
-  .cdc .final-list-title {
-    font-weight: 800;
-    color: var(--tinta);
-  }
-  .cdc .final-list {
-    list-style: none;
-    display: grid;
-    gap: 9px;
-    margin: 0;
-    padding: 0;
-  }
-  .cdc .final-list li {
-    display: flex;
-    gap: 10px;
-    font-weight: 700;
-    color: var(--tinta);
-    font-size: 0.99rem;
-  }
-  .cdc .final-list .material-symbols-rounded {
-    color: var(--verde);
-    font-size: 20px;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  .cdc .final-cta {
-    text-align: center;
-    margin-top: 38px;
-  }
-  .cdc .price-line {
-    margin-top: 26px;
-    font-weight: 700;
-    color: var(--tinta-suave);
-  }
-  .cdc .terms {
-    font-size: 0.84rem;
-    color: var(--tinta-suave);
-    max-width: 760px;
-    margin: 26px auto 0;
-    text-align: center;
-  }
-  .cdc .terms a {
-    text-decoration: underline;
-  }
-  @media (max-width: 860px) {
-    .cdc .final-grid {
-      grid-template-columns: 1fr;
-      gap: 22px;
-    }
-    .cdc .final-art img {
-      max-width: 300px;
-    }
-  }
-
-  /* ===== barra fixa mobile ===== */
-  .cdc .mobar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 45;
-    display: none;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    background: rgba(18, 26, 48, 0.97);
-    backdrop-filter: blur(8px);
-    border-top: 2px solid var(--navy-2);
-    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-    transform: translateY(110%);
-    transition: transform 0.25s ease;
-  }
-  .cdc .mobar.visible {
-    transform: translateY(0);
-  }
-  .cdc .mobar .p {
-    font-family: var(--head);
-    font-weight: 700;
-    color: #fff;
-    font-size: 0.98rem;
-  }
-  .cdc .mobar .dias {
-    color: var(--sz-community-menu-text);
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-  .cdc .mobar-btn {
-    padding: 12px 22px;
-    font-size: 1rem;
-    box-shadow: 0 5px 0 var(--degrau);
-    margin-bottom: 4px;
-  }
-  @media (max-width: 860px) {
-    .cdc .mobar {
-      display: flex;
-    }
-  }
-
-  /* ===== reveal on scroll ===== */
-  .cdc .reveal {
-    opacity: 0;
-    transform: translateY(22px);
-    transition:
-      opacity 0.55s ease,
-      transform 0.55s ease;
-  }
-  .cdc .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .cdc .reveal {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
-  }
-
-  /* ===== hero responsivo ===== */
-  @media (max-width: 860px) {
-    .cdc .hero .grid {
-      grid-template-columns: 1fr;
-      gap: 18px;
-    }
-    .cdc .hero-art img {
-      max-width: 320px;
-      margin: 0 auto;
-    }
-    .cdc .sec {
-      padding: 54px 0;
-    }
-  }
-</style>

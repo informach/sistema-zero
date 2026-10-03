@@ -1,11 +1,12 @@
 // Conteúdo do funil "Comunidade dos Criadores" (kids, assinatura mensal/anual).
-// A copy da página de vendas (19 blocos) vive DENTRO do body próprio
-// (ComunidadeOfertaBody.astro), na mesma convenção do Desafio. Aqui ficam só os
+// As quatro copies vivem em oferta/, renderizadas pelo ComunidadeOfertaBody.
+// Aqui ficam os
 // conteúdos consumidos pelas etapas COMPARTILHADAS (obrigado) + os obrigatórios
 // pelo tipo FunnelContent (copy/landing — este funil não tem quiz, então a
 // landing nunca renderiza; os valores espelham o hero por consistência).
 
 import type { FunnelCopy, FunnelLanding, FunnelObrigado } from '../registry'
+import { PAGE_A } from './oferta/tempo-de-tela'
 
 export const COMUNIDADE_PRODUTO: FunnelCopy = {
   nome: 'Comunidade dos Criadores',
@@ -16,9 +17,8 @@ export const COMUNIDADE_PRODUTO: FunnelCopy = {
 
 // Exigida pelo tipo FunnelContent; a /quiz deste funil é 404 (steps.quiz=false).
 export const COMUNIDADE_LANDING: FunnelLanding = {
-  h1: 'Seu filho pode aprender a transformar as próprias ideias em jogos.',
-  subtitulo:
-    'Projetos guiados para começar, espaço para fazer escolhas e orientação pelos Recados. Seu filho aprende a montar, testar e entender como fazer o jogo funcionar.',
+  h1: PAGE_A.hero.title,
+  subtitulo: PAGE_A.hero.description,
   tempo: '',
 }
 
@@ -29,17 +29,19 @@ export const COMUNIDADE_LANDING: FunnelLanding = {
 export const COMUNIDADE_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 79_700 } as const
 
 // Conteúdo da /obrigado (entrega + primeiros passos), em linguagem para os pais.
-// Diferença pro Desafio: é ASSINATURA — o texto avisa do aviso prévio de renovação
-// e aponta o cancelamento na área do responsável.
+// Diferença pro Desafio: é ASSINATURA — o texto aponta o controle da renovação e
+// o cancelamento na área do responsável. ⚠️ Não prometer "aviso antes de toda
+// renovação": o lembrete só existe para o anual à vista (renewal-reminder); o
+// cartão recorrente não recebe aviso prévio.
 export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
   intro:
-    'O primeiro projeto vem com orientação para seu filho começar a montar, testar e experimentar as próprias ideias.',
+    'Seu filho pode começar por um projeto guiado ou continuar do ponto em que está na Jornada do Criador.',
   entrega: [
-    'Desafio do Primeiro Jogo e cursos com projetos guiados para começar e continuar criando',
-    'Estúdio, Pinta, Pensa e Molda, liberados conforme a Jornada do Criador',
+    'Desafio do Primeiro Jogo e acesso aos cursos publicados durante a assinatura',
+    'Estúdio, Pinta, Pensa e Molda, com liberação por progresso e disponibilidade dos cursos necessários',
     'Clube dos Criadores e Mural para publicar e compartilhar os jogos',
-    'Orientação do professor pelas atividades enviadas e pelos Recados',
-    'Jornada do Criador, desafios, conquistas e Mundo do Criador',
+    'Recados para enviar dúvidas à equipe dentro da plataforma',
+    'Jornada do Criador para encontrar a etapa atual e os próximos passos disponíveis',
     'Até 2 perfis de criança, cada um com seu próprio progresso',
   ],
   passos: [
@@ -49,14 +51,14 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
         'Depois da aprovação do pagamento, as instruções de acesso chegam ao e-mail da compra. No primeiro acesso, você cria sua senha. Se já tem conta, entre com seu acesso habitual. Confira também o spam ou as promoções.',
     },
     {
-      titulo: 'Crie o perfil da criança',
+      titulo: 'Abra ou crie o perfil da criança',
       texto:
-        'Já dentro da plataforma, crie o perfil do seu filho. A assinatura permite até 2 perfis de criança na mesma conta, cada um com seu próprio progresso.',
+        'Dentro da plataforma, abra o perfil do seu filho. Se ainda não tiver um, crie o perfil da criança. A assinatura permite até 2 perfis, cada um com seu próprio progresso.',
     },
     {
       titulo: 'Mostre a Jornada do Criador',
       texto:
-        'Abra a plataforma com seu filho e escolham o primeiro curso disponível. As aulas guiam a montagem por etapas. A jornada mostra o que vem depois de cada conquista.',
+        'Abra a Jornada com seu filho. Se ele está começando, sigam a atividade de entrada. Se já começou pelo Desafio, continuem do ponto em que está. As aulas guiam a montagem por etapas.',
     },
     {
       titulo: 'Combinem um momento para criar',
@@ -66,7 +68,7 @@ export const COMUNIDADE_OBRIGADO: FunnelObrigado = {
     {
       titulo: 'Acompanhe pela área do responsável',
       texto:
-        'Perfis e assinatura ficam na sua área. Por ali, você também controla a próxima renovação. Antes de renovar, enviamos um aviso por e-mail.',
+        'Perfis e assinatura ficam na sua área. Por ali, você também controla a próxima renovação e pode cancelar quando quiser; o acesso continua até o fim do período já pago.',
     },
   ],
 }

@@ -16,6 +16,7 @@ import {
   type VectorShape,
   visibleShapes,
 } from './model'
+import { rectCornerArcs } from './rectCorners'
 
 /**
  * Um "documento" vetorial ESTRUTURAL: qualquer coisa com dimensões + shapes
@@ -130,6 +131,32 @@ export function textLines(shape: Extract<VectorShape, { type: 'text' }>): TextLi
   return shape.text.split('\n').map((text, index) => ({ x, dy: index === 0 ? 0 : dy, text }))
 }
 
+/**
+ * O `d` de um retângulo com cantos DIFERENTES (o `<rect>` só conhece um `rx`): linhas e um
+ * quarto de círculo por cúbica em cada canto redondo, no sentido horário a partir do fim do
+ * canto de cima-esquerda. Só M/L/C/Z absolutos, o dialeto do `parsePathD` (sem arcos `A`):
+ * o caminho continua legível para o achatamento, o editar os pontos e o pathfinder.
+ */
+export function roundedRectPathD(shape: Extract<VectorShape, { type: 'rect' }>): string {
+  const [tl, tr, br, bl] = rectCornerArcs(shape)
+  const pt = (p: { x: number; y: number }) => `${round2(p.x)} ${round2(p.y)}`
+  let cursor = tl.to
+  const parts = [`M ${pt(cursor)}`]
+  for (const arc of [tr, br, bl, tl]) {
+    if (arc.radius > 0) {
+      if (pt(cursor) !== pt(arc.from)) parts.push(`L ${pt(arc.from)}`)
+      parts.push(`C ${pt(arc.c1)} ${pt(arc.c2)} ${pt(arc.to)}`)
+      cursor = arc.to
+    } else {
+      // O canto de cima-esquerda reto não emite `L`: o `Z` já fecha no `M`.
+      if (arc.corner !== 'tl' && pt(cursor) !== pt(arc.point)) parts.push(`L ${pt(arc.point)}`)
+      cursor = arc.point
+    }
+  }
+  parts.push('Z')
+  return parts.join(' ')
+}
+
 /** Tag + atributos GEOMÉTRICOS do shape (sem os comuns). */
 export function shapeGeometryAttrs(shape: VectorShape): {
   tag: string
@@ -140,6 +167,9 @@ export function shapeGeometryAttrs(shape: VectorShape): {
 } {
   switch (shape.type) {
     case 'rect':
+      // Cantos DIFERENTES não cabem num `<rect>`: saem como caminho. Decidir pela PRESENÇA da
+      // chave (não pelos raios efetivos) mantém o `rx` legado saindo cru, byte a byte.
+      if (shape.corners) return { tag: 'path', attrs: { d: roundedRectPathD(shape) } }
       return {
         tag: 'rect',
         attrs: {

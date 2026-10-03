@@ -106,7 +106,7 @@ describe('o bloco de materiais complementares', () => {
     expect(html).toContain('rel="noopener noreferrer"')
   })
 
-  test('link interno do "Como fazer" abre em outra aba e leva o caminho da aula de volta', () => {
+  test('link interno do "Como fazer" abre na mesma aba e leva o caminho da aula de volta', () => {
     const html = render([
       {
         id: 'l1',
@@ -118,7 +118,8 @@ describe('o bloco de materiais complementares', () => {
     expect(html).toContain(
       'href="/como-fazer/estudio-pre-visualizacao?voltar=%2Fcursos%2Fcorre-dino%2Faulas%2F11111111-1111-4111-8111-111111111111"',
     )
-    expect(html).toContain('target="_blank"')
+    expect(html).not.toContain('target="_blank"')
+    expect(html).not.toContain('abre em outra aba')
     expect(html).toContain('data-sz-help-link')
     // Fora da aula (prévia do admin, sem player) o link vai sem `voltar`.
     const previa = renderToStaticMarkup(
@@ -131,6 +132,13 @@ describe('o bloco de materiais complementares', () => {
       />,
     )
     expect(previa).toContain('href="/como-fazer/x"')
+    const texto = render([
+      { id: 't1', kind: 'text', markdown: '[Publicar](/como-fazer/plataforma-publicar-no-mural)' },
+    ])
+    expect(texto).toContain(
+      'href="/como-fazer/plataforma-publicar-no-mural?voltar=%2Fcursos%2Fcorre-dino%2Faulas%2F11111111-1111-4111-8111-111111111111"',
+    )
+    expect(texto).not.toContain('target="_blank"')
   })
 
   test('o nome do bloco aparece quando a autora escreve um, e some quando não', () => {

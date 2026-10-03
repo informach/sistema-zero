@@ -106,7 +106,7 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
   }
 
   function _driverHasWork() {
-    return _loopOrder.length > 0 || (typeof _overlapOrder !== 'undefined' && _overlapOrder.length > 0);
+    return _loopOrder.length > 0 || (typeof _overlapOrder !== 'undefined' && _overlapOrder.length > 0) || (_spriteScene && _spriteScene.active());
   }
 
   function _runSimulationFrame() {
@@ -114,8 +114,14 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
     var generation = _driverGeneration;
     _frameStamp++;
     _particlesDrawnThisFrame = false;
+    if (_spriteScene && _spriteScene.active()) {
+      _spriteScene.step(1 / 60);
+      if (_runGenerationChanged(generation)) return;
+      clear();
+    }
     var loops = _loopOrder.slice();
     for (var i = 0; i < loops.length; i++) {
+      if (_paused || (_spriteScene && _spriteScene.simulationBlocked())) break;
       var id = loops[i];
       var fn = _loopHandlers[id];
       if (typeof fn !== 'function') continue;
@@ -128,13 +134,17 @@ export const gameTwoDLifecycleRuntime = `  // ---- Ciclo de vida da partida ----
       _runningLoopId = null;
       if (_runGenerationChanged(generation)) return;
     }
-    _runOverlapHandlers();
+    if (!_spriteScene || !_spriteScene.simulationBlocked()) _runOverlapHandlers();
     if (_runGenerationChanged(generation)) return;
+    if (_spriteScene && _spriteScene.active()) {
+      _spriteScene.draw('world');
+    }
     // Partículas são desenhadas uma vez depois de TODOS os blocos de quadro.
     if (!_particlesDrawnThisFrame && particles.length) {
       try { _camWrap(drawParticles)(ensureStage()); }
       catch (error) { _reportHandlerError('de partículas', 'interno', error); }
     }
+    if (_spriteScene && _spriteScene.active()) { _spriteScene.draw('front'); _spriteScene.draw('hud'); }
   }
 
   function _driverTick(timestamp) {

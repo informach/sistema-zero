@@ -47,11 +47,21 @@ packages/fiscal/.local-fonts/
 # Finder (MacOS) folder config
 .DS_Store
 
-# Claude Code (config local + biblioteca de skills — tooling, não código do projeto)
-.claude/
+# Ferramentas do projeto (.claude/ e .agents/) são versionadas.
+# Ignorar somente configurações pessoais e estado local de sessões.
+**/.claude/settings.local.json
+**/.claude/worktrees/
+**/.claude/projects/
+**/.claude/plans/
+**/.claude/*.lock
 
-# Agentes (skills de sessão — tooling, não código do projeto)
-.agents/
+# Arquivos gerados ao executar ou editar as ferramentas.
+**/.claude/**/__pycache__/
+**/.agents/**/__pycache__/
+**/.claude/**/*.pyc
+**/.agents/**/*.pyc
+**/.claude/**/*.backup
+**/.agents/**/*.backup
 
 # Playwright MCP (artefatos de sessão de teste no browser)
 .playwright-mcp/

@@ -9,6 +9,7 @@ import {
   lessonCompletionRequirements,
   PLATFORM_ACTION_LABELS,
   playbackLessonStructure,
+  type SectionPendingItem,
   type SectionProgressRecord,
   type SectionProgressView,
   sectionCompletionIssues,
@@ -57,6 +58,17 @@ export class SectionProgressionService {
       return { id: block.id, revision: block.contentRevision }
     })
   }
+  /**
+   * O certificado do curso já foi emitido para este perfil? Só consulta quando a aula tem o bloco.
+   * Os requisitos calculados BLOCO A BLOCO (equipe, que não tem progresso por seção, e aula sem
+   * critério de seção) precisam disto: sem o estado, o bloco de certificado ficava pendente para
+   * sempre e o "Concluir aula" nunca destravava, mesmo depois de emitido.
+   */
+  async certificateIssued(userId: string, lesson: LessonWithContent): Promise<boolean> {
+    if (!lesson.blocks.some((block) => block.kind === 'certificate')) return false
+    return (await this.certificates.findByUserAndCourse(userId, lesson.courseId)) !== null
+  }
+
   async isCriterion(lessonId: string, blockId: string) {
     const structure = await this.repository.getStructure(lessonId)
     return (
@@ -111,7 +123,7 @@ export class SectionProgressionService {
       : sectionCompletionIssues(structure.sections, lesson.blocks, {
           purpose: 'playback',
         })
-    const pending = new Map<string, string[]>()
+    const pending = new Map<string, SectionPendingItem[]>()
     const newlyComplete: SectionProgressRecord[] = []
     let reachable = true
     for (const section of structure.sections) {
@@ -137,7 +149,7 @@ export class SectionProgressionService {
           pintaState: { submitted: submissions.has(b.id) },
           certificateState: { issued: certificate !== null },
         }))
-      const missing = lessonCompletionRequirements({
+      const missing: SectionPendingItem[] = lessonCompletionRequirements({
         completed: false,
         blocks,
         learningProgress: learning,
@@ -156,7 +168,9 @@ export class SectionProgressionService {
             : [],
       })
         .filter((r) => !r.complete)
-        .map((r) => r.action)
+        .map((r) => ({ kind: r.reason, text: r.action }))
+      // ⚠️ Mensagem de AUTORIA (`authoring`): é para o professor; a faixa do rodapé a troca por
+      // "Esta parte ainda está sendo preparada" fora do ensaio do admin.
       if (
         !structure.legacyLayout &&
         (!criteria ||
@@ -164,17 +178,32 @@ export class SectionProgressionService {
             !criteria.projectChecks?.length &&
             !criteria.platformAction))
       )
-        missing.push('A verificação desta seção precisa ser configurada pelo professor.')
+        missing.push({
+          kind: 'authoring',
+          text: 'A verificação desta seção precisa ser configurada pelo professor.',
+        })
       if (criteria?.platformAction)
-        missing.push(`${PLATFORM_ACTION_LABELS[criteria.platformAction]} e verificar a ação.`)
+        missing.push({
+          kind: 'platform-action',
+          // Os rótulos das ações são infinitivos ("Personalizar o avatar"): a frase os leva sem
+          // conjugar, e o botão citado é o do `SectionPlatformAction` do member-shell.
+          text: `Depois de ${minuscula(PLATFORM_ACTION_LABELS[criteria.platformAction])}, toque em "Verificar minha ação"`,
+        })
       if (
         criteria?.projectChecks?.length &&
         !records.some(
           (r) => r.sectionId === section.id && r.revision === revision && r.projectPassed,
         )
       )
-        missing.push('Verifique o objetivo desta etapa no seu projeto.')
-      missing.push(...issues.filter((i) => i.sectionId === section.id).map((i) => i.message))
+        missing.push({
+          kind: 'project-check',
+          text: 'Confira o objetivo desta parte no seu projeto',
+        })
+      missing.push(
+        ...issues
+          .filter((i) => i.sectionId === section.id)
+          .map((i) => ({ kind: 'authoring' as const, text: i.message })),
+      )
       pending.set(section.id, missing)
       if (reachable && !missing.length) {
         completed.add(section.id)
@@ -356,4 +385,9 @@ export class SectionProgressionService {
       sectionProgress: await this.read(owner, lesson),
     }
   }
+}
+
+/** "Personalizar o avatar" → "personalizar o avatar", para entrar no meio da frase. */
+function minuscula(texto: string) {
+  return texto.charAt(0).toLowerCase() + texto.slice(1)
 }

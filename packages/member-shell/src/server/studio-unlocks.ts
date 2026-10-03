@@ -1,4 +1,5 @@
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
+import { resolveStudioTier, type StudioTier } from '../lib/studio-tier'
 
 /**
  * Deriva as EXTENSÕES a partir dos blocos conquistados.
@@ -27,6 +28,30 @@ export function extensionsForBlocks(blocks: readonly string[]): string[] {
     if (extension) extensions.add(extension)
   }
   return [...extensions]
+}
+
+/** Os tipos que o catálogo do Studio conhece hoje. */
+const KNOWN_BLOCKS = new Set(SERVER_BLOCK_CATALOG.map((entry) => entry.type))
+
+/**
+ * O Estúdio livre de quem tem estes blocos conquistados. É a régua ÚNICA da paleta, do Zappy e
+ * do Pensa: os três precisam oferecer exatamente os mesmos blocos e extensões.
+ *
+ * ⚠️ O `hasPalette` daqui só conta os blocos que o catálogo CONHECE: um currículo antigo com ids
+ * que saíram do Studio daria `true` no `resolveStudioTier` (que só olha o tamanho da lista) e o
+ * editor abriria com a caixa vazia. A lista em si (`allowBlocks`) segue como veio.
+ */
+export function earnedStudioTier(
+  levelSlug: string | undefined,
+  role: string | undefined,
+  blocks: readonly string[],
+): StudioTier {
+  const tier = resolveStudioTier(levelSlug, role, {
+    blocks,
+    extensions: extensionsForBlocks(blocks),
+  })
+  if (!tier.allowBlocks) return tier
+  return { ...tier, hasPalette: tier.allowBlocks.some((type) => KNOWN_BLOCKS.has(type)) }
 }
 
 /** Uma "gaveta" da caixa de ferramentas, do jeito que a criança a vê na paleta. */

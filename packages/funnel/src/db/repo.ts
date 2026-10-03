@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
 import type { LeadAttributionV1 } from '../lib/lead-attribution'
+import type { QuizAnswers } from '../lib/quiz-types'
 import type { PurchasedOfferSnapshotV1 } from '../server/purchased-offer-snapshot'
 import type { Database } from './client'
 import { funnelEvents, leadPayments, leads, processedWebhooks } from './schema'
@@ -100,7 +101,15 @@ export interface FunnelRepo {
   /** Preenche first-touch somente quando o lead ainda não possui atribuição. */
   claimAttribution(id: string, attribution: LeadAttributionV1): Promise<void>
   /** Mescla respostas no JSON `quiz_answers` (genérico — chaves do quiz de qualquer funil). */
-  mergeQuizAnswers(id: string, patch: Record<string, string | number>): Promise<void>
+  mergeQuizAnswers(id: string, patch: QuizAnswers): Promise<void>
+  /** Compare-and-swap keeps conditional edits from overwriting another tab. */
+  saveQuizAnswers(
+    id: string,
+    expected: QuizAnswers,
+    next: QuizAnswers,
+    lastStep: string,
+    perfil: string | null,
+  ): Promise<boolean>
   /**
    * Aponta o lead p/ a cobrança + grava o par no histórico (`lead_payments`),
    * com o cupom e o snapshot aplicados NESTA cobrança (a confirmação lê de lá).
@@ -225,6 +234,25 @@ export function createFunnelRepo(db: Database): FunnelRepo {
           updatedAt: new Date(),
         })
         .where(eq(leads.id, id))
+    },
+
+    async saveQuizAnswers(id, expected, next, lastStep, perfil) {
+      const rows = await db
+        .update(leads)
+        .set({
+          quizAnswers: next,
+          lastStep,
+          perfilResultado: perfil,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(leads.id, id),
+            sql`coalesce(${leads.quizAnswers}, '{}'::jsonb) = ${JSON.stringify(expected)}::jsonb`,
+          ),
+        )
+        .returning({ id: leads.id })
+      return rows.length === 1
     },
 
     async setPayment(id, paymentId, couponCode, snapshot) {

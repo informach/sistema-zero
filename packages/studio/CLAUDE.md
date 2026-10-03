@@ -482,6 +482,16 @@ Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__t
   **tudo-ou-nada** (`sanitizeImportedBlocksState`): um bloco fora de `CORE_BLOCKLY_BLOCK_TYPES` (ou da
   allowlist da extensão) zera TODOS os blocos — todo bloco novo PRECISA entrar no allowlist (guardado pelo
   drift `blockAllowlist.test.ts`).
+  **A recusa fala com a criança (02/10/2026):** `components/projects/importRefusal.ts` escolhe a
+  FRASE (`projects.importRefused.*`: mais nova, blocos, partes, grande demais, genérica) e o
+  detalhe técnico vai só ao console. Os tetos de tamanho lançam **`ProjectTooLargeError`**
+  (`core/projectDocument.ts`), que NÃO estende `ProjectDocumentError` de propósito: o `/jogar` e a
+  migração local leem aquela classe como "aguardando conversão", e grande demais é permanente.
+  Depois do `importProjectFromJSON` o projeto já está gravado: o aviso de ferramenta bloqueada usa
+  o NOME (`extensionDisplayName`, exportado pela store) e um tropeço do host ao abrir não vira
+  "Nada mudou na sua lista". ⚠️ O botão mora na lista INICIAL: um `import()` novo ali (a primeira
+  versão buscava o catálogo de extensões por conta própria) parte o pacote em mais um arquivo e
+  reprova o teto de 20 do `initialBundleBudget.test.ts`. Use o que a store já carrega.
 - **Virar profissional** (`src/state/convertToPro.ts` → `convertClassicToProTree`, ação `convertToPro`
   no `projectStore`): graduação **one-way** do básico (3 arquivos) p/ a árvore Vite — reusa
   `buildClassicFileMap` SEM minificar (é código que o aluno vai editar), index.html na raiz, assets p/
@@ -1130,7 +1140,7 @@ Nasceu porque o "Ao iniciar" dos jogos da família ficou grande demais. Medido n
 32 exemplos do Jogo 2D (peso = nós da subárvore de `behavior.start`): **42% do
 conteúdo sai** para a área nova, **47% nos dez maiores** (Safári 247→98, Muralha
 71%, Sobrevivente 66%). ⭐ O peso vem do `Desenhar a figura ⟨X⟩ assim:` (15 dos 17
-exemplos com molde), não dos tipos de inimigo. Os jogos do Kit essencial (Pong,
+exemplos com molde), não dos tipos de inimigo. Os jogos do primeiro degrau (o antigo Kit essencial: Pong,
 Dino Run, Pegue a moeda, Sala com paredes) medem **0%**: as crianças clientes não
 são afetadas e a área nem aparece para elas.
 
@@ -1160,7 +1170,7 @@ são afetadas e a área nem aparece para elas.
 - ⭐ **A régua é "molde é a receita que EU escrevo", e CARREGAR não é.** Trazer um
   arquivo que já existe (som, folha de quadros, imagem) é preparação de partida e
   fica no Ao iniciar. Além de ser a distinção mais fácil de ensinar, é o que
-  mantém a área invisível no Kit essencial: som é o PRIMEIRO degrau, e torná-lo
+  mantém a área invisível no primeiro degrau (`iniciante-2d`): som é do PRIMEIRO degrau, e torná-lo
   molde fazia a área aparecer para todo mundo. Pelo mesmo motivo
   `g2d:enemyStateAnim` ficou de fora: ele configura o tipo mas CONSOME a folha.
 - **O encaixe é ESTRITO** (o Blockly recusa um molde no Ao iniciar), com **duas
@@ -1207,8 +1217,8 @@ são afetadas e a área nem aparece para elas.
   oferece algum bloco que PERTENCE a ela. Um número fixo abre o pior buraco
   possível — a criança vê "Desenhar a figura assim:", arrasta, e a área onde ele
   encaixa não existe para ela. Medido na primeira versão: SETE blocos órfãos,
-  incluindo o som do núcleo. Hoje: `iniciante-2d` sem a área (Kit essencial
-  limpo), `iniciante-3d` em diante com ela e os 3 moldes do Jogo 2D.
+  incluindo o som do núcleo. Hoje: `iniciante-2d` sem a área (o primeiro
+  degrau limpo), `iniciante-3d` em diante com ela e os 3 moldes do Jogo 2D.
   ⚠️ Três armadilhas neste detector, todas já pagas: (a) contar quem só CABE na
   área (variável/função) fazia ela aparecer no primeiro degrau, sem nada para pôr
   dentro; (b) o flyout DINÂMICO (Funções/Classes) não tem `contents`, então a
@@ -1258,7 +1268,7 @@ Completo, ficou sem ⚡ Quando acontecer e sem 🔁 Enquanto estiver rodando, e 
 conseguia montar jogo nenhum. O detalhe que ela deu fechou o diagnóstico —
 *"quando criei apareceu, quando saí e voltei sumiu"*: ao criar, a extensão vinha
 junto; ao reabrir, a paleta era montada antes de a extensão hidratar. A lista do
-Kit essencial (`ESSENTIAL_2D_ALLOW_BLOCKS`) é quase toda de blocos do Jogo 2D,
+Kit essencial de então (hoje, a lista de blocos conquistados nos cursos) é quase toda de blocos do Jogo 2D,
 então sem a extensão carregada não sobrava evento nem laço para "provar" um
 direito que a criança tinha. Pelo universo, o direito vem do NÍVEL e da lista, e
 instalar ou remover extensão não mexe mais nas áreas. Regressão travada em
@@ -1860,7 +1870,7 @@ inteira). `sz_w3d_totem_image`/`sz_g3k_part` (W/H em unidades de MUNDO) estão n
 `blockly/fields/__tests__/applySuggestedSize.test.ts` (mapa × sombras reais da toolbox; todo bloco
 com seletor de imagem + soquete de tamanho no mapa OU no opt-out). Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`1.2.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`2.0.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -3421,8 +3431,8 @@ virou `toBe(0)`.
 ⚠️ **Todos são `placement: 'command'`, não `loop-command'`**: os irmãos (`bounce_edges`,
 `apply_velocity`, `arrows_x`) são `command`, e `loop-command` PROÍBE `event-body`. Gêmeos com
 encaixes diferentes é armadilha — a criança troca um pelo outro e o programa recusa sem dizer
-por quê. E **`blockLevels.ts` não muda**: o piso de `sz_g2d_*` é derivado de
-`ESSENTIAL_2D_BLOCK_TYPES`, então os cinco caem no Inventor sozinhos.
+por quê. E **`blockLevels.ts` não muda**: o piso de `sz_g2d_*` é a lista `INICIANTE_2D_G2D`
+(até 02/10/2026, o `ESSENTIAL_2D_BLOCK_TYPES`), então os cinco caem no iniciante-3d sozinhos.
 
 ### O Pong reescrito: 1036 → 733 linhas de IR
 
@@ -4037,6 +4047,14 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
   `getProject()` e o próprio `PersistenceService` descarregam os buffers síncronos registrados
   pelos editores (o Blockly agrupa eventos por 120 ms), portanto enviar, salvar, desmontar ou
   fechar a página imediatamente nunca captura o frame anterior.
+- ⭐ **Abrir não é editar (02/10/2026).** Na carga (`force`) com os mesmos blocos que estão
+  salvos, o `BlocklyPanel` completa só o que DERIVA deles (a IR, que a casca do projeto não traz)
+  por `hydrateProjectState`, que não carimba `updatedAt` nem acorda o autosave. Antes ia por
+  `applyProjectState`, e só abrir um jogo mudava o "Atualizado em" do card e o subia para a nuvem
+  como versão nova. Efeito colateral consertado junto: o projeto trocado pelo HOST
+  (`handle.replaceProject`, o "Trazer o que eu enviei") só era gravado por causa daquela
+  regravação; hoje o `StudioCore` o marca sujo de propósito (`Studio.test.tsx`, "o projeto trocado
+  pelo host é gravado; o aberto pela prop, não").
 - **Sanitizador da partição** une as extensões do META persistido (`loadProjectMetaById`) às do
   chamador — lista defasada não descarta mais um jogo inteiro (tudo-ou-nada continua).
 - ⭐ **Canvas VAZIO não é estado rejeitado** (15/08). `Blockly.serialization.workspaces.save()` num
@@ -4381,6 +4399,49 @@ Decisão dela, com minha recomendação: segurar até o uso real mostrar que a c
 frequência que justifique gastar 1 membro da união da IR e 14 pontos da cadeia de blocos. Enquanto
 isso, `setHitboxScale` é a válvula.
 
+## Cenários e pista com sprites (g2d 2.0.0 / gk 0.63.0, 02/10/2026)
+
+A API pública manual de camadas/perspectiva foi substituída, por decisão do usuário: staging,
+sem projetos de alunos. Não registrar blocos antigos ou criar categorias ocultas para eles.
+`scene-2d/catalog.ts` é o vocabulário público. `runtime.ts` contém apenas primitivas internas
+de projeção/composição; `spriteRuntime.ts` vincula sprites reais, controla movimento e encontros;
+`spriteHosts.ts` adapta os dois motores. A cena reutiliza os relógios dos motores.
+
+Ao iniciar: cenários, pista, sprite jogador, controles, percurso e cópias. Eventos: encontros
+por sprite e chegada. `collectTrackItem` só cabe no corpo de um encontro; remove uma instância.
+Camadas e desenho são automáticos. No básico, controles, HUD e telas têm atalhos prontos.
+No Avançado, câmera, velocidade, entrada, limites e chegada são separados; vida, HUD e telas
+usam os blocos nativos. Colocar/repetir funciona durante a partida e cópias de moldes integram o pool. A projeção transforma o contexto Canvas;
+não sobrescreve a geometria do sprite. `sceneAnimation` resolve nomes do Pinta pelo manifesto
+normalizado de metadados, inclusive na ponte do preview. O seletor ANIM novo é serializável.
+
+Os três exemplos Descida da Neve têm fontes separadas para Canvas manual e extensões.
+O básico usa escolhas prontas, padrões e eventos sem objetos/listas/funções próprias; o
+intermediário combina controles, vida, encontros, HUD e telas, com seis estrelas na chegada. O percurso e a arte permanecem compartilhados.
+Gerar com `gen:snow-descent` e conferir com `check:snow-descent`. Guia: `docs/jogo-2d-cenarios-e-neve.md`.
+
+**Full review do mesmo dia (02/10/2026):**
+- ⭐ **Animação nomeada no básico reaproveita a folha** (`spriteHosts.ts`): o `setAnimation`
+  compara a folha por IDENTIDADE, e uma folha nova a cada chamada recomeçava a animação no
+  "a cada quadro" (o sprite parava no primeiro quadro). Teste no `snowDescentRuntime.test.ts`.
+- **Poda de grupo no básico pergunta à projeção** (`worldGroups.ts`): sprite de pista tem
+  `y` = distância, e o retângulo da tela apagava os itens à frente e chamava o `onLeave`.
+- **O placar só aparece com "Mostrar vidas e placar"** e o rodapé só nomeia os controles que
+  a pista tem (`drawHud` ganhou `hud` e `controls`). Telas prontas sozinhas não desenham
+  mais "VIDAS 0". Com placar, R recomeça (está na dica e no manual).
+- Recriar a pista solta os sprites da criança e destrói só as cópias; pedir a mesma vista a
+  cada quadro não reconstrói a pista (era aviso falso citando "Criar pista"); cada cópia do
+  Avançado ganha as próprias tabelas `_stateAnims`/`_stateLooks`/`_platFrames`.
+- ⭐ **O manual cita blocos pela face real** (`scene-2d/docs.test.ts`: todo negrito do
+  `sceneDocumentation` tem que casar com o `message0` de um bloco, `…` = soquete).
+- ⚠️ **O runtime do básico não pode ter template literal fora de comentário**: a
+  compactação apaga linhas e o teste de equivalência não reanalisa o miolo de um template
+  (`bundle.test.ts` agora trava). Folga atual: ~7 KB cru e ~2,3 KB gzip sob o teto.
+- ⚠️ Catálogo de bloco novo pede o typecheck de TODOS os pacotes (members lê o catálogo sem
+  DOM) e o e2e `reino-zero-performance.spec.ts` tem teto de 790.000 bytes no srcdoc.
+- Registrado e não mudado: encontro com o item exatamente na distância do jogador (Δz = 0)
+  não dispara; o Avançado só zera a cena no `resetProject`.
+
 ## Comandos
 
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
@@ -4391,6 +4452,8 @@ isso, `setHitboxScale` é a válvula.
 - `bun run e2e:smoke` / `e2e:gallery` / `e2e:security` / `e2e:a11y` / `e2e:flush` — recortes locais
   rápidos (o `e2e:flush` roda o `reload-flush.spec.ts` no Chromium e no WebKit)
 - `bun run gen:game-3d-examples` / `check:game-3d-examples` — regenera ou valida a IR 3D
+- `bun run gen:snow-descent` / `check:snow-descent` — regenera ou valida a IR dos três jogos
+  "Descida da Neve" a partir de `examples/snowDescentSource.ts`
 - O CI roda Chromium em 3 shards e os projetos Firefox e WebKit definidos em `playwright.config.ts`.
 - ⚠️ Se o servidor do e2e estourar os 120 s do `webServer`: suba-o à mão
   (`E2E_PORT=5297 bun scripts/serve-e2e.ts`) e rode com `PW_REUSE_SERVER=1`. Em 11/09/2026 o

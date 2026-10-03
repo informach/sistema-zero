@@ -85,7 +85,7 @@ function setup() {
 }
 
 describe('GetStudioUnlocksService', () => {
-  test('sem curso qualificado, a paleta vem vazia (o tier cai no perfil do nível)', async () => {
+  test('sem curso qualificado, a paleta vem vazia (o Estúdio livre fica trancado)', async () => {
     const { service, userId } = setup()
     expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
   })

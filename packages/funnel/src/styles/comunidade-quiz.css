@@ -1,0 +1,588 @@
+/* Mesmo sistema de receitas e tokens das ofertas; composição do quiz e resultado. */
+.cq .cq-nav-label {
+  font-weight: 800;
+  font-size: 0.875rem;
+  color: var(--kof-navy-texto);
+}
+.cq .cq-intro {
+  display: grid;
+  grid-template-columns: 1.08fr 1fr;
+  align-items: center;
+  gap: clamp(2rem, 4vw, 4.5rem);
+  padding-block: clamp(3rem, 6vw, 6rem);
+}
+.cq .cq-intro-copy {
+  display: grid;
+  gap: 1.4rem;
+}
+/* As pílulas do quiz têm a largura do texto (numa grade, elas esticavam até a borda). */
+.cq .kof-eyebrow {
+  justify-self: start;
+  width: fit-content;
+}
+.cq .cq-intro h1 {
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+}
+.cq .cq-intro-points {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 800;
+}
+.cq .cq-intro-points li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.cq .cq-intro-points li::before {
+  content: "check";
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background: var(--kof-menta);
+  color: var(--kof-verde);
+  font-family: "Material Symbols Rounded", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1;
+  translate: 0 -0.06em;
+}
+.cq .cq-hero-art {
+  position: relative;
+  display: grid;
+  gap: 1.5rem;
+  padding: 2rem 1.5rem 4.5rem;
+  margin-bottom: 3rem;
+  border-radius: var(--kof-raio-heroi);
+  background: var(--kof-acao);
+  box-shadow: var(--kof-sombra-heroi);
+}
+.cq .cq-hero-art > p {
+  color: var(--kof-sobre-acao);
+  font-family: var(--kof-display);
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.15;
+  width: 70%;
+}
+.cq .cq-possibilities {
+  display: grid;
+  gap: 0.9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cq .cq-possibilities li {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem;
+  border-radius: 20px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+}
+.cq .cq-possibilities li > span {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: var(--kof-azul-fundo);
+  color: var(--kof-acao);
+  font-size: 1.7rem;
+}
+.cq .cq-possibilities li:nth-child(2) > span {
+  background: var(--kof-rosa-fundo);
+  color: var(--kof-tinta);
+}
+.cq .cq-possibilities li:nth-child(3) > span {
+  background: var(--kof-amarelo-fundo);
+  color: var(--kof-tinta);
+}
+.cq .cq-possibilities strong {
+  display: block;
+  font-family: var(--kof-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.cq .cq-possibilities div > span {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--kof-tinta-suave);
+}
+.cq .cq-mascot {
+  position: absolute;
+  right: -0.5rem;
+  bottom: -3rem;
+  width: 38%;
+}
+.cq .cq-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+}
+.cq .cq-actions .kof-btn {
+  padding-block: 0.9rem;
+}
+.cq .cq-note {
+  font-size: 0.875rem;
+  color: var(--kof-tinta-suave);
+  line-height: 1.6;
+}
+.cq .cq-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.3rem 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 800;
+  color: var(--kof-acao);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.cq .cq-link:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.cq button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+.cq .cq-flow {
+  max-width: 52rem;
+  padding-block: 2rem 4rem;
+}
+.cq .cq-stages {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem;
+}
+.cq .cq-stages li {
+  position: relative;
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--kof-tinta-suave);
+}
+/* A linha que liga uma etapa à seguinte: cheia nas etapas já feitas. */
+.cq .cq-stages li:not(:last-child)::after {
+  content: "";
+  flex: 1;
+  height: 3px;
+  margin-inline: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--kof-linha);
+}
+.cq .cq-stages li[data-estado="feita"]:not(:last-child)::after {
+  background: var(--kof-acao);
+}
+.cq .cq-stages li > span {
+  width: 2rem;
+  display: grid;
+  place-items: center;
+  flex: 0 0 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--kof-carta);
+  border: 2px solid var(--kof-linha);
+}
+.cq .cq-stages li > span .material-symbols-rounded {
+  font-size: 1.125rem;
+}
+.cq .cq-stages [aria-current] {
+  color: var(--kof-acao);
+}
+.cq .cq-stages [aria-current] > span,
+.cq .cq-stages [data-estado="feita"] > span {
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  border-color: var(--kof-acao);
+}
+.cq .cq-stages [data-estado="feita"] {
+  color: var(--kof-tinta);
+}
+.cq .cq-panel {
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  border-radius: var(--kof-raio-carta);
+  background: var(--kof-carta);
+  border: 1px solid var(--kof-linha);
+}
+.cq .cq-panel > * + * {
+  margin-top: 1.25rem;
+}
+/* O painel que já é uma coluna de prosa usa o espaço da prosa (somar os dois dobrava o vão). */
+.cq .cq-panel.cq-prose > * + * {
+  margin-top: 0;
+}
+.cq .cq-panel .cap-chip + h1 {
+  margin-top: 1rem;
+}
+.cq .cq-panel h1 {
+  font-size: clamp(1.65rem, 3vw, 2.4rem);
+}
+.cq .cq-panel p {
+  line-height: 1.65;
+}
+.cq h1[tabindex="-1"]:focus {
+  outline: none;
+}
+.cq .cq-description {
+  color: var(--kof-tinta-suave);
+}
+.cq .cq-options {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.cq .cq-option {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 3.75rem;
+  padding: 0.9rem 1.125rem;
+  border: 2px solid var(--kof-linha);
+  border-radius: 16px;
+  cursor: pointer;
+  font-weight: 700;
+  line-height: 1.4;
+  background: var(--kof-carta);
+  /* O degrau das cartas clicáveis da plataforma: a escolha parece um botão de apertar. */
+  box-shadow: 0 3px 0 var(--kof-linha);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    translate 0.1s ease,
+    box-shadow 0.1s ease;
+}
+.cq .cq-option:hover {
+  border-color: var(--kof-acao);
+  box-shadow: 0 3px 0 color-mix(in oklab, var(--kof-acao) 45%, var(--kof-linha));
+}
+.cq .cq-option:active {
+  translate: 0 2px;
+  box-shadow: 0 1px 0 var(--kof-linha);
+}
+.cq .cq-option:has(input:checked) {
+  background: var(--kof-azul-fundo);
+  border-color: var(--kof-acao);
+  box-shadow: 0 3px 0 var(--kof-acao);
+}
+.cq .cq-option > span {
+  flex: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cq .cq-option {
+    transition: none;
+  }
+  .cq .cq-option:active {
+    translate: none;
+  }
+}
+.cq .cq-option:has(input:focus-visible) {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+.cq .cq-option input {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+  accent-color: var(--kof-acao);
+}
+.cq .cq-continue {
+  margin-top: 1.5rem;
+  min-width: 12rem;
+}
+.cq .cq-question-nav {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border-top: 1px solid var(--kof-linha);
+  padding-top: 0.75rem;
+}
+.cq .cq-error {
+  padding: 1rem;
+  margin-block: 1rem;
+  border-radius: 12px;
+  border: 2px solid var(--kof-vermelho);
+  color: var(--kof-tinta);
+  background: var(--kof-carta);
+}
+.cq .cq-save-note {
+  text-align: center;
+  margin-top: 1rem;
+}
+.cq .cq-review {
+  list-style: none;
+  padding: 0;
+}
+.cq .cq-review li {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--kof-linha);
+}
+.cq .cq-review li p {
+  margin-top: 0.3rem;
+  color: var(--kof-tinta-suave);
+}
+.cq .cq-result {
+  padding-bottom: clamp(2.5rem, 5vw, 4rem);
+}
+.cq .cq-res-hero {
+  padding-block: clamp(2.75rem, 6vw, 5rem) clamp(1rem, 3vw, 2rem);
+}
+.cq .cq-res-hero-grade {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 15rem);
+  gap: clamp(1.5rem, 4vw, 3rem);
+  align-items: center;
+}
+.cq .cq-res-hero-texto {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+  max-width: 50rem;
+}
+.cq .cq-res-hero h1 {
+  font-size: clamp(2.2rem, 4.5vw, 3.6rem);
+}
+.cq .cq-res-hero .prosa p {
+  max-width: 46rem;
+}
+.cq .cq-res-zappy {
+  width: 100%;
+  height: auto;
+}
+/* Começo e experiência lado a lado: o texto lê-se à esquerda e o convite fica à vista. */
+.cq .cq-res-duas {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  align-items: start;
+}
+.cq .cq-res-texto .sub-head h2,
+.cq .cq-res-comunidade .sub-head h2,
+.cq .cq-res-dia .sub-head h2 {
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+}
+.cq .cq-res-texto .sub-head .kof-ladrilho,
+.cq .cq-res-comunidade .sub-head .kof-ladrilho,
+.cq .cq-res-dia .sub-head .kof-ladrilho {
+  translate: 0 calc(clamp(1.375rem, 2.4vw, 1.75rem) * -0.12);
+}
+.cq .cq-activity {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-radius: var(--kof-raio-carta);
+}
+.cq .cq-activity h2 {
+  font-size: clamp(1.5rem, 2.6vw, 1.875rem);
+}
+.cq .cq-activity p {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--kof-navy-texto);
+}
+@media (min-width: 961px) {
+  .cq .cq-activity {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+.cq .cq-res-comunidade .cap-head {
+  margin-bottom: 1.5rem;
+}
+.cq .cq-callout {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: clamp(2rem, 4vw, 3rem);
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border-radius: var(--kof-raio-carta);
+  background: var(--kof-amarelo-fundo);
+  box-shadow: 0 0 0 2px var(--kof-amarelo);
+}
+.cq .cq-callout .sub-head {
+  margin-bottom: 0;
+}
+.cq .cq-callout-itens {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1.5rem clamp(1.5rem, 3vw, 2.5rem);
+}
+.cq .cq-callout h3 {
+  font-size: 1.25rem;
+}
+.cq .cq-callout .prosa p {
+  color: var(--kof-tinta);
+}
+.cq .cq-res-ponte {
+  margin-top: clamp(2.5rem, 5vw, 4rem);
+}
+.cq .cq-res-nota {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+.cq .cq-res-dia .bloco:first-child {
+  margin-top: 0;
+}
+.cq .cq-res-cta {
+  display: grid;
+  gap: 1.1rem;
+  justify-items: start;
+  max-width: 60rem;
+  margin-inline: auto;
+  padding: clamp(1.75rem, 4vw, 3rem);
+}
+.cq .cq-res-cta h2 {
+  font-size: clamp(1.75rem, 3.4vw, 2.5rem);
+  color: var(--kof-sobre-acao);
+}
+.cq .cq-res-cta p {
+  max-width: 44rem;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--kof-sobre-acao);
+}
+.cq .cq-res-cta .cq-res-cta-nota {
+  font-size: 0.9375rem;
+}
+.cq .cq-res-cta .cq-actions {
+  margin-top: 0.5rem;
+}
+.cq .cq-res-opiniao {
+  max-width: 52rem;
+}
+.cq .cq-result-section {
+  margin-top: clamp(2rem, 4vw, 3.5rem);
+}
+.cq .cq-result-section h2 {
+  font-size: clamp(1.65rem, 3vw, 2.2rem);
+}
+.cq .cq-result-section h3 {
+  font-family: var(--kof-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--kof-tinta);
+}
+.cq .cq-result-section p {
+  line-height: 1.7;
+}
+.cq .cq-reading {
+  max-width: 52rem;
+  margin-inline: auto;
+}
+.cq .cq-prose {
+  display: grid;
+  gap: 1rem;
+}
+.cq .cq-activity ol {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  counter-reset: activity;
+  padding: 0;
+}
+.cq .cq-activity li {
+  counter-increment: activity;
+  display: flex;
+  gap: 1rem;
+  line-height: 1.6;
+}
+.cq .cq-activity li::before {
+  content: counter(activity);
+  display: grid;
+  place-items: center;
+  flex: 0 0 2rem;
+  height: 2rem;
+  border-radius: 10px;
+  background: var(--kof-amarelo);
+  color: var(--kof-tinta);
+  font-weight: 800;
+}
+.cq .cq-feedback-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.cq .cq-feedback-options button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 2px solid var(--kof-linha);
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  font-weight: 800;
+  cursor: pointer;
+}
+.cq .cq-feedback-options button[aria-pressed="true"] {
+  border-color: var(--kof-acao);
+  background: var(--kof-azul-fundo);
+}
+.cq .cq-feedback-options button:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+@media (max-width: 960px) {
+  .cq .cq-res-duas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .cq .cq-intro,
+  .cq .cq-res-hero-grade {
+    grid-template-columns: 1fr;
+  }
+  .cq .cq-res-zappy {
+    display: none;
+  }
+  .cq .cq-hero-art {
+    max-width: 32rem;
+    margin-inline: auto;
+  }
+  .cq .cq-stages {
+    gap: 0.4rem;
+  }
+  .cq .cq-stages li {
+    flex-direction: column;
+    text-align: center;
+    font-size: 0.75rem;
+    gap: 0.35rem;
+  }
+  /* Empilhadas no celular, as etapas não têm onde desenhar a linha. */
+  .cq .cq-stages li:not(:last-child)::after {
+    display: none;
+  }
+  .cq .cq-nav-label {
+    display: none;
+  }
+  .cq .cq-actions .kof-btn,
+  .cq .cq-continue {
+    width: 100%;
+  }
+}

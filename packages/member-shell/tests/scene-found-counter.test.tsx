@@ -21,6 +21,17 @@ describe('experiência Achados no jardim', () => {
     expect(markup).toMatch(/sz-scene-frame[^"]*relative/)
   })
 
+  test('o fundo do jardim COBRE o palco: a raiz do SVG apontado leva o "slice"', () => {
+    // ⚠️ Anti-vácuo: sem o atributo na RAIZ, o `<image>` de fora ajusta por "meet" e o palco de
+    // 560 × 300 ganha ~13 px de beirada vazia de cada lado (a borda escura do console deixou à vista).
+    const markup = renderToStaticMarkup(<FoundCounterStage state={openScene(start)} />)
+    const fundo = markup.match(/<image data-fundo="jardim" href="([^"]+)"/)
+    expect(fundo).not.toBeNull()
+    expect(decodeURIComponent(fundo![1] ?? '')).toMatch(
+      /^data:image\/svg\+xml;charset=utf-8,<svg [^>]*preserveAspectRatio="xMidYMid slice"/,
+    )
+  })
+
   test('mostra somente a contagem atual; recomeçar continua disponível', () => {
     const found = stepScene(start, openScene(start), { type: 'find-character', id: 1 })
     const markup = renderToStaticMarkup(<FoundCounterStage state={found} />)

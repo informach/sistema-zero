@@ -1943,6 +1943,18 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
 
 /** Fake das conversas professor↔aluno (mirror do Drizzle: watermark de não-lido). */
 export class InMemoryTeacherThreadRepository implements TeacherThreadRepository {
+  // Espelha o join do Drizzle com `courses`: o título vem do curso VIVO.
+  constructor(private readonly courses?: InMemoryCourseRepository) {}
+
+  private courseTitleOf(courseId: string | null): string | null {
+    if (!courseId) return null
+    return this.courses?.courses.find((c) => c.id === courseId)?.title ?? null
+  }
+
+  private withCourseTitle(thread: TeacherThreadRecord | undefined): TeacherThreadRecord | null {
+    return thread ? { ...thread, courseTitle: this.courseTitleOf(thread.courseId) } : null
+  }
+
   async setWorkflowStatus(
     id: string,
     status: import('../../src/domain/ports/teacher-thread-repository.port').TeacherWorkflowStatus,
@@ -2025,7 +2037,7 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
   }
 
   async findById(id: string): Promise<TeacherThreadRecord | null> {
-    return this.threads.find((t) => t.id === id) ?? null
+    return this.withCourseTitle(this.threads.find((t) => t.id === id))
   }
 
   async findByContext(
@@ -2033,10 +2045,10 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     contextType: TeacherThreadRecord['contextType'],
     contextRef: string,
   ): Promise<TeacherThreadRecord | null> {
-    return (
+    return this.withCourseTitle(
       this.threads.find(
         (t) => t.userId === userId && t.contextType === contextType && t.contextRef === contextRef,
-      ) ?? null
+      ),
     )
   }
 
@@ -2194,6 +2206,7 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
       contextType: thread.contextType,
       contextRef: thread.contextRef,
       courseId: thread.courseId,
+      courseTitle: this.courseTitleOf(thread.courseId),
       lessonId: thread.lessonId,
       title: thread.title,
       lastMessageAt: thread.lastMessageAt,

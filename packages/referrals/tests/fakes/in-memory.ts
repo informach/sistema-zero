@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import type { GiftAttribution, GiftSource } from '@sistemazero/core/referrals'
 import type {
   EnsureBuyerInput,
   GatewayResult,
@@ -260,6 +261,9 @@ export class InMemoryReferralRepository implements ReferralRepository {
     email: string
     name: string
     phone: string | null
+    sourceSnapshot?: GiftSource
+    courseSlug?: string
+    attribution?: GiftAttribution | null
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
     const existing = this.redemptions.find((r) => r.email === input.email)
     if (existing) return { created: false, redemption: existing }
@@ -269,22 +273,35 @@ export class InMemoryReferralRepository implements ReferralRepository {
       email: input.email,
       name: input.name,
       phone: input.phone,
+      sourceSnapshot: input.sourceSnapshot,
+      courseSlug: input.courseSlug,
+      attribution: input.attribution,
       userId: null,
       buyerCreated: null,
       grantedAt: null,
       welcomeSentAt: null,
+      welcomeAcceptedAt: null,
       status: 'pending',
       failedReason: null,
       lastError: null,
       attemptCount: 0,
       completedAt: null,
       accessDurationDays: 7,
-      muralVisitorPolicy: 'visitor',
+      muralVisitorPolicy: 'trial',
       muralVisitorGrantedAt: null,
       createdAt: new Date(),
     }
     this.redemptions.push(redemption)
     return { created: true, redemption }
+  }
+
+  async findCodeById(id: string): Promise<CodeRecord | null> {
+    return this.codes.find((code) => code.id === id) ?? null
+  }
+
+  async markWelcomeAccepted(id: string, when: Date): Promise<void> {
+    const redemption = this.redemptions.find((item) => item.id === id)
+    if (redemption) redemption.welcomeAcceptedAt = when
   }
 
   async acquireRedemptionLease(
@@ -449,7 +466,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
     offerSlug: string
     amountCents: bigint
     bonusCents: number
-    status: 'pending' | 'self_blocked'
+    status: 'pending' | 'self_blocked' | 'unrewarded'
     paidAt: Date
     maturesAt: Date
   }): Promise<{ created: boolean }> {
@@ -481,7 +498,8 @@ export class InMemoryReferralRepository implements ReferralRepository {
   > {
     const c = this.conversions.find((x) => x.paymentId === paymentId)
     if (!c) return { kind: 'not_found' }
-    if (c.status !== 'pending') return { kind: 'not_pending', status: c.status }
+    if (c.status !== 'pending' && c.status !== 'unrewarded')
+      return { kind: 'not_pending', status: c.status }
     c.status = 'canceled'
     return { kind: 'canceled' }
   }
@@ -523,7 +541,11 @@ export class InMemoryReferralRepository implements ReferralRepository {
     limit: number
     offset: number
   }): Promise<{ items: ConversionListItem[]; total: number }> {
-    const filtered = this.conversions.filter((c) => !opts.status || c.status === opts.status)
+    const filtered = this.conversions.filter(
+      (c) =>
+        this.codes.find((code) => code.id === c.codeId)?.ownerKind !== 'campaign' &&
+        (!opts.status || c.status === opts.status),
+    )
     const items = filtered
       .slice()
       .sort((a, b) => b.paidAt.getTime() - a.paidAt.getTime())
@@ -575,6 +597,7 @@ export interface RecordedCall {
     | 'createPasswordToken'
     | 'grantManualCourse'
     | 'grantMuralVisitor'
+    | 'grantMuralTrial'
     | 'sendEmail'
   input: unknown
   idempotencyKey?: string
@@ -591,6 +614,7 @@ export class FakeReferralsGateway implements ReferralsGateway {
   }
   grantResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
   muralVisitorResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
+  muralTrialResult: GatewayResult = { status: 200, body: { ok: true, granted: 2 } }
   sendEmailResult: GatewayResult = { status: 202, body: {} }
 
   async getGiftAvailability(courseRef: string): Promise<GatewayResult> {
@@ -616,6 +640,13 @@ export class FakeReferralsGateway implements ReferralsGateway {
   async grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult> {
     this.calls.push({ kind: 'grantMuralVisitor', input })
     return this.muralVisitorResult
+  }
+
+  async grantMuralTrial(
+    input: Parameters<ReferralsGateway['grantMuralTrial']>[0],
+  ): Promise<GatewayResult> {
+    this.calls.push({ kind: 'grantMuralTrial', input })
+    return this.muralTrialResult
   }
 
   async sendEmail(input: SendEmailInput, idempotencyKey: string): Promise<GatewayResult> {

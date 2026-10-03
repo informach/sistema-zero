@@ -325,17 +325,38 @@ describe('section gates across HTTP and persistence', () => {
     expect(view.sectionProgress.completed).toBe(1)
     expect(view.sectionProgress.sections[1]?.status).toBe('available')
   })
+  test('seção sem critério de conclusão vira um item de AUTORIA (a faixa o troca fora do ensaio)', async () => {
+    const ctx = setup()
+    ctx.sections[0]!.completion = { version: 1, blockIds: [] }
+    const view = await json(ctx.read())
+    const itens = view.sectionProgress.sections[0]!.pendingItems as { kind: string; text: string }[]
+    expect(itens.length).toBeGreaterThan(0)
+    expect(itens.every((item) => item.kind === 'authoring')).toBe(true)
+    expect(itens.map((item) => item.text)).toContain(
+      'A verificação desta seção precisa ser configurada pelo professor.',
+    )
+  })
   test('hides future content and refuses navigation, draft saves and attempts there', async () => {
     const ctx = setup()
     const view = await json(ctx.read())
     expect(Object.keys(view.sectionProgress.sections[2]!).sort()).toEqual([
       'id',
       'pending',
+      'pendingItems',
       'status',
       'title',
     ])
     expect(view.blocks.map((b: { id: string }) => b.id)).toEqual([ctx.ids[0]!])
     expect(view.sectionProgress).toMatchObject({ completed: 0, total: 3, percent: 0 })
+    // Os itens TIPADOS (30/09/2026): a razão do requisito na seção aberta, `locked` nas travadas,
+    // e `pending` é o texto dos mesmos itens.
+    expect(view.sectionProgress.sections[0]!.pendingItems).toEqual([
+      { kind: 'LEARNING_GATE_INCOMPLETE', text: 'Termine o experimento' },
+    ])
+    expect(view.sectionProgress.sections[0]!.pending).toEqual(['Termine o experimento'])
+    expect(view.sectionProgress.sections[1]!.pendingItems).toEqual([
+      { kind: 'locked', text: 'Conclua a seção anterior' },
+    ])
     expect(view.sectionProgress.sections.map((s: { status: string }) => s.status)).toEqual([
       'available',
       'locked',

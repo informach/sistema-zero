@@ -329,6 +329,15 @@ export function isBlockTypeKnown(type: string, installedExtensions: InstalledExt
   return getAllowedBlocklyBlockTypes(installedExtensions).has(type)
 }
 
+/**
+ * O nome que a criança lê (Jogo 2D), nunca o id interno (game-2d); id desconhecido volta como
+ * veio. Mora aqui porque o `ImportButton` já carrega esta store sob demanda: um `import()` próprio
+ * do catálogo partiria o pacote da lista em mais um arquivo (`initialBundleBudget.test.ts`).
+ */
+export function extensionDisplayName(id: string): string {
+  return findExtension(id)?.manifest.name ?? id
+}
+
 export interface CreateProjectStoreOptions {
   /** Limites de política do host — anti-DoS profundos continuam internos. */
   limits?: StudioLimits

@@ -4,6 +4,8 @@ import type { EntitlementSnapshot } from './entitlement-snapshot'
 export const MURAL_VISITOR_PRODUCT_ID = '00000000-0000-0000-0000-000000000002'
 export const MURAL_VISITOR_REF = 'mural-dos-criadores-visitante'
 export const MURAL_FULL_REF = 'mural-dos-criadores'
+/** Concessão temporária do presente, independente de produtos pagos e da visita. */
+export const MURAL_TRIAL_PRODUCT_ID = '00000000-0000-0000-0000-000000000003'
 
 export function createMuralVisitorSnapshot(
   offerId: string,

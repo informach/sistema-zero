@@ -2,10 +2,8 @@
 
 import type { UploadedAttachment } from '@sistemazero/member-shell/components/attachment-uploader'
 import {
-  minJourneyLevelForRemix,
   remixRequirementFromSnapshot,
   type StudioRemixCapability,
-  type StudioRemixRequirement,
   studioRemixCovered,
 } from '@sistemazero/member-shell/lib/studio-tier'
 import { useRouter } from 'next/navigation'
@@ -14,7 +12,6 @@ import { toast } from 'sonner'
 import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
 import { KidsSpaceSkeleton } from '@/components/kids/kids-space-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
-import { levelInfo } from '@/lib/level-info'
 import type {
   HubChannelView,
   HubCommentView,
@@ -44,6 +41,10 @@ export type RemixTier = StudioRemixCapability
 
 // Slugs/ids vêm do servidor (slug/UUID), mas codificamos por consistência/segurança.
 const enc = encodeURIComponent
+
+/** As ferramentas vêm dos cursos concluídos: o recado aponta para eles, nunca para um nível. */
+const REMIX_BLOCKED_MESSAGE =
+  'Esse jogo usa ferramentas que você ainda vai conquistar nos cursos. 🚀'
 
 function postingError(e: ApiError): string {
   if (e.code === 'POSTING_NOT_ALLOWED') return 'Aqui só a equipe pode escrever. 🙂'
@@ -160,27 +161,15 @@ export function KidsSpaceViewClient({
 
   const canRemix = remixTier !== null && space?.canInteract === true
 
-  // Recado gentil quando o jogo usa ferramentas ALÉM do degrau do viewer — nomeia o
-  // nível que destrava (a mesma régua do selo do card). Sem nível resolvível
-  // (metadado desconhecido) → copy genérica; nunca destrava nada.
-  const remixBlockedMessage = useCallback((req: StudioRemixRequirement): string => {
-    const slug = minJourneyLevelForRemix(req)
-    const label = slug ? levelInfo(slug).label : null
-    return label
-      ? `Esse jogo usa ferramentas do nível ${label}. Continue a sua jornada de criador para fazer a sua versão! 🚀`
-      : 'Esse jogo usa ferramentas que você ainda vai conquistar na sua jornada. 🚀'
-  }, [])
-
-  // Selo do card: o `studioMeta` do post (snapshot no publish) diz as ferramentas do
-  // jogo; fora do degrau → rótulo do nível que destrava (`null` = sem selo). É só
-  // APRESENTAÇÃO — a checagem autoritativa do clique roda sobre o snapshot baixado.
+  // Selo do card: o `studioMeta` do post (snapshot no publish) diz as ferramentas do jogo,
+  // e as ferramentas vêm dos CURSOS concluídos (não de um nível), então o selo só diz que
+  // falta ferramenta. É só APRESENTAÇÃO: a checagem do clique roda sobre o snapshot baixado.
   const remixLockFor = useCallback(
-    (t: HubThreadView): { levelLabel: string | null } | null => {
-      if (!canRemix || !remixTier || !t.studioMeta) return null
-      if (studioRemixCovered(remixTier, t.studioMeta)) return null
-      const slug = minJourneyLevelForRemix(t.studioMeta)
-      return { levelLabel: slug ? levelInfo(slug).label : null }
-    },
+    (t: HubThreadView): boolean =>
+      canRemix &&
+      remixTier !== null &&
+      !!t.studioMeta &&
+      !studioRemixCovered(remixTier, t.studioMeta),
     [remixTier, canRemix],
   )
 
@@ -194,9 +183,9 @@ export function KidsSpaceViewClient({
       if (!canRemix || !t.playId || remixBusyRef.current) return
       remixBusyRef.current = true
       try {
-        // Selo do post já diz que falta nível → recado gentil sem nem baixar o jogo.
+        // Selo do post já diz que falta ferramenta → recado gentil sem nem baixar o jogo.
         if (remixTier && t.studioMeta && !studioRemixCovered(remixTier, t.studioMeta)) {
-          toast.info(remixBlockedMessage(t.studioMeta))
+          toast.info(REMIX_BLOCKED_MESSAGE)
           return
         }
         const res = await fetch(`/api/studio/play/${enc(t.playId)}`)
@@ -207,7 +196,7 @@ export function KidsSpaceViewClient({
         // importado nem abriria no Estúdio (trava de conquista) e viraria beco sem saída.
         const requirement = remixRequirementFromSnapshot(snapshot)
         if (remixTier && !studioRemixCovered(remixTier, requirement)) {
-          toast.info(remixBlockedMessage(requirement))
+          toast.info(REMIX_BLOCKED_MESSAGE)
           return
         }
         const studio = await import('@sistemazero/studio')
@@ -229,7 +218,7 @@ export function KidsSpaceViewClient({
         remixBusyRef.current = false
       }
     },
-    [viewerId, router, remixTier, remixBlockedMessage, canRemix],
+    [viewerId, router, remixTier, canRemix],
   )
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadNonce` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.

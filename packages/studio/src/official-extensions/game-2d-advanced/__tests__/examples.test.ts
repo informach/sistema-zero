@@ -43,6 +43,7 @@ import {
   reinoZeroProExample,
   safariDeMonstrosProfissionalExample,
   saltoNaFlorestaExample,
+  snowDescentAdvancedExample,
   sobreviventeProfissionalExample,
   treinadorDeCriaturasExample,
   valeEnsolaradoExample,
@@ -89,12 +90,21 @@ const EXAMPLES = [
   sobreviventeProfissionalExample,
   fazendaFelizProfissionalExample,
   heroiQueEvoluiProfissionalExample,
+  snowDescentAdvancedExample,
 ] as const
 
 type ExampleName = (typeof EXAMPLES)[number]['name']
 
 /** Promessa estrutural independente da implementação detalhada de cada fixture. */
 const REQUIRED_TYPES = {
+  'Descida da Neve (Jogo 2D Avançado)': [
+    'gk:setup',
+    'gk:sceneCommand',
+    'gk:sceneValue',
+    'gk:sceneEvent',
+    'gk:createCharacter',
+    'if',
+  ],
   'Meu primeiro jogo': [
     'gk:setup',
     'gk:createCharacter',
@@ -587,7 +597,7 @@ beforeAll(() => {
 })
 
 describe('game-2d-advanced — catálogo dos exemplos', () => {
-  it('manifest mantém os 37 exemplos canônicos na ordem da vitrine', () => {
+  it('manifest mantém os 38 exemplos canônicos na ordem da vitrine', () => {
     expect(gameKitExtension.examples.count).toBe(EXAMPLES.length)
     expect(gameKitExtension.minLevel).toBe('intermediario-2d')
   })

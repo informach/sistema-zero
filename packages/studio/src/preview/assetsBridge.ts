@@ -21,7 +21,9 @@ import {
   type Asset3DManifestEntry,
   PROJECT_ASSET_LIMITS,
   type ProjectSpriteHitbox,
+  type ProjectSpriteMeta,
   type ProjectTilemapMeta,
+  sanitizeSpriteMeta,
 } from '#core'
 
 const ASSET_DATA_URL_PREFIX = 'data:image/'
@@ -91,6 +93,7 @@ export interface AssetPreviewMeta {
   tilemap?: ProjectTilemapMeta
   /** Caixa MEDIDA no desenho (fração do quadro) — o runtime aplica sozinho. */
   hitbox?: ProjectSpriteHitbox
+  sprite?: ProjectSpriteMeta
 }
 
 /**
@@ -111,13 +114,21 @@ function safeMetaManifest(
     if (!Object.hasOwn(safeAssets, name)) continue
     const tilemap = safeTilemapEntry(entry?.tilemap)
     const hitbox = safeHitboxEntry(entry?.hitbox)
+    const sprite = sanitizeSpriteMeta(entry?.sprite)
     // Entrada vazia não entra: meta sem conteúdo só inflaria o srcdoc.
-    if (!tilemap && !hitbox) continue
-    // A caixa são 4 números; quem pesa é a folha de peças, e o orçamento é dela.
-    const size = tilemap ? tilemap.tileset.dataUrl.length + tilemap.grid.length + name.length : 0
+    if (!tilemap && !hitbox && !sprite) continue
+    // Mapas e animações compartilham o orçamento de metadados do preview.
+    const size =
+      name.length +
+      (sprite ? JSON.stringify(sprite).length : 0) +
+      (tilemap ? tilemap.tileset.dataUrl.length + tilemap.grid.length : 0)
     if (totalChars + size > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) continue
     totalChars += size
-    out[name] = { ...(tilemap ? { tilemap } : {}), ...(hitbox ? { hitbox } : {}) }
+    out[name] = {
+      ...(tilemap ? { tilemap } : {}),
+      ...(hitbox ? { hitbox } : {}),
+      ...(sprite ? { sprite } : {}),
+    }
   }
   return out
 }

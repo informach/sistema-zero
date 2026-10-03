@@ -165,7 +165,7 @@ export interface ProjectAsset {
    * Metadados de SPRITESHEET vindos do Pinta (animações nomeadas com faixa de
    * quadros/fps). Alimenta o SELETOR de animação por nome no bloco "Animar sprite"
    * (sem ele a criança digita from/to à mão — fallback). Opcional: asset legado /
-   * de upload / sem metadado não tem. NÃO vai ao preview (só o `dataUrl` roda).
+   * de upload / sem metadado não tem. Quadros, animações e caixa também vão ao preview.
    */
   sprite?: ProjectSpriteMeta
   /** Metadados de TILESET vindos do Pinta (tamanho + tiles sólidos) — seletor de sólidos. */
@@ -619,7 +619,7 @@ export function asset3DManifest(
 
 /**
  * Manifesto `nome → metadados de preview` — irmão do `assetManifest`, mas só com
- * o que o RUNTIME precisa (hoje: `tilemap`). Semeado em `window.__SZGAME_ASSET_META`
+ * o que o runtime precisa: mapa, caixa de colisão e animações nomeadas. Semeado em `window.__SZGAME_ASSET_META`
  * pelos mesmos call sites. Só entra asset com meta presente (objeto vazio = nada
  * a injetar; o assetsBridge emite saída byte-idêntica à de antes).
  */
@@ -630,14 +630,14 @@ export function assetMetaManifest(
   if (!assets) return out
   for (const a of assets) {
     if (a?.kind !== 'image' || typeof a.name !== 'string') continue
-    // ⭐ A caixa de colisão anda pelo MESMO cano do mapa. Só ela do `sprite` vem:
-    // quadro e animações o runtime já lê da própria imagem, e o orçamento de
-    // caracteres do srcdoc é compartilhado com as folhas de peças.
     const hitbox = a.sprite?.hitbox
-    if (!a.tilemap && !hitbox) continue
+    // Named animation is resolved by the engine, so its geometry travels with it.
+    const sprite = a.sprite?.animations.length ? a.sprite : undefined
+    if (!a.tilemap && !hitbox && !sprite) continue
     out[a.name] = {
       ...(a.tilemap ? { tilemap: a.tilemap } : {}),
       ...(hitbox ? { hitbox } : {}),
+      ...(sprite ? { sprite } : {}),
     }
   }
   return out
@@ -647,6 +647,7 @@ export function assetMetaManifest(
 export interface ProjectAssetPreviewMeta {
   tilemap?: ProjectTilemapMeta
   hitbox?: ProjectSpriteHitbox
+  sprite?: ProjectSpriteMeta
 }
 
 /** Limites públicos dos assets — a UI lê para validar upload e mostrar avisos. */

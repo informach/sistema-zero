@@ -1,5 +1,7 @@
 import { categoryShades } from '../../blockly/colorShades'
 import type { ExtensionToolboxCategory } from '../../extensions/toolboxTypes'
+import { sceneShadows } from '../scene-2d/blocks'
+import { isSceneNameBlock, sceneTypes } from '../scene-2d/catalog'
 import { gameTwoDBlocks as canonicalGameTwoDBlocks } from './blockCatalog'
 import { GAME_TWO_D_PALETTE } from './palette'
 
@@ -13,11 +15,16 @@ const COLOUR_BY_TYPE = new Map<string, string>(
     ),
   ),
 )
+// A lista de nomes vive DENTRO dos blocos de camada e de pista: sai no tom deles.
+const SCENE_COLOUR = COLOUR_BY_TYPE.get(sceneTypes('g2d', 'begin')[0] ?? '')
 const ORDER_BY_TYPE = new Map([...COLOUR_BY_TYPE.keys()].map((type, index) => [type, index]))
 export const gameTwoDBlocks = canonicalGameTwoDBlocks
   .map((block) => ({
     ...block,
-    colour: COLOUR_BY_TYPE.get(block.type) ?? block.colour,
+    colour:
+      COLOUR_BY_TYPE.get(block.type) ??
+      (isSceneNameBlock(block.type) ? SCENE_COLOUR : undefined) ??
+      block.colour,
   }))
   .sort(
     (a, b) =>
@@ -40,6 +47,7 @@ const colShadow = (color: string, alpha: number) => ({
   shadow: { type: 'sz_val_color_alpha', fields: { COLOR: color, ALPHA: alpha } },
 })
 const G2D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
+  ...sceneShadows('g2d'),
   sz_g2d_with_cooldown: { FRAMES: numShadow(30) },
   sz_g2d_create_text_sprite: { TEXT: txtShadow('Olá!'), X: numShadow(100), Y: numShadow(100) },
   sz_g2d_spawn_text_in_group: { TEXT: numShadow(1), X: numShadow(100), Y: numShadow(100) },

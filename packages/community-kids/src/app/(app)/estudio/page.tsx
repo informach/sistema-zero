@@ -1,7 +1,9 @@
-import { isPrivilegedRole, resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
-import { extensionsForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
+import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
-import { KidsJourneyLockedStudio } from '@/components/kids/kids-journey-locked-studio'
+import {
+  KidsJourneyLockedStudio,
+  KidsStudioWithoutTools,
+} from '@/components/kids/kids-journey-locked-studio'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
@@ -15,6 +17,7 @@ import {
   getStudioUnlocksReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
+import { studioGate } from '@/server/studio-gate'
 
 export const dynamic = 'force-dynamic'
 
@@ -59,8 +62,7 @@ export default async function EstudioPage({
     // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
     getGamificationReadonly({ withRanking: true }).catch(() => null),
     // Paleta pelo CURRÍCULO: bônus concluídos + cursos da jornada concluídos e publicados.
-    // Best-effort — falhar aqui NÃO pode esvaziar a caixa de ferramentas: o
-    // `resolveStudioTier` cai no perfil do NÍVEL quando a lista vem vazia.
+    // É a paleta INTEIRA (sem reserva), então falhar aqui é "indisponível", nunca "sem blocos".
     getStudioUnlocksReadonly().catch(() => null),
   ])
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
@@ -73,16 +75,19 @@ export default async function EstudioPage({
   // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const levelSlug = gam.body?.level?.slug ?? 'noob'
-  // A paleta vem do CURRÍCULO (08/2026): o nível decide o MODO (livre/Ponte/Pro) e os
-  // cursos conquistados decidem os BLOCOS. As extensões saem dos próprios blocos.
-  const unlockedBlocks = unlocksRes?.status === 200 ? (unlocksRes.body?.blocks ?? []) : []
-  const tier = resolveStudioTier(levelSlug, session?.role, {
-    blocks: unlockedBlocks,
-    extensions: extensionsForBlocks(unlockedBlocks),
-  })
-  // O produto pode estar comprado pela conta, mas a criação livre só começa após
-  // concluir+publicar o primeiro curso. Dentro das aulas, o Estúdio segue disponível.
-  if (!tier.freeStudio) return <ToolRouteRecado screen={KidsJourneyLockedStudio} />
+  // A paleta vem do CURRÍCULO: o nível decide o MODO (livre/Ponte/Pro) e os cursos
+  // conquistados decidem os BLOCOS. O produto pode estar comprado pela conta, mas a criação
+  // livre só começa com algum bloco conquistado. Dentro das aulas o Estúdio segue disponível.
+  const gate = studioGate(levelSlug, session?.role, unlocksRes)
+  if (gate.kind === 'unavailable') return <ToolRouteRecado screen={KidsStudioUnavailable} />
+  if (gate.kind === 'journey-locked') {
+    return (
+      <ToolRouteRecado
+        screen={gate.reason === 'no-blocks' ? KidsStudioWithoutTools : KidsJourneyLockedStudio}
+      />
+    )
+  }
+  const { tier } = gate
   const challengeEligible =
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&

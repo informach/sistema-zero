@@ -1,6 +1,9 @@
+import { sceneDocumentation } from '../scene-2d/docs'
 import { GAME_TWO_D_PALETTE } from './palette'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
+const sceneReference = sceneDocumentation('SZGame2D', true)
+const paletteCount = GAME_TWO_D_PALETTE.length
 export const gameTwoDDocs = withGameTwoDLifecycleGuidance(
   `## Jogo 2D
 
@@ -9,7 +12,7 @@ como chamadas de código. A fonte escolhida acompanha o jogo e funciona offline.
 
 ### Onde encontrar os blocos
 
-A paleta tem 14 famílias, nesta ordem: ` +
+A paleta tem ${paletteCount} famílias, nesta ordem: ` +
     GAME_TWO_D_PALETTE.map((family) => family.name).join('; ') +
     `.
 Dentro de cada família, as subseções aproximam as ações relacionadas. A busca também
@@ -237,6 +240,8 @@ quadros (o **tileset**). Escolha um na aba **Imagens** (ex.: \`tileset\`).
 
 Enquanto o tileset carrega (ou se faltar), os tiles aparecem como retângulos. O jogo
   nunca quebra por falta de imagem.
+
+${sceneReference}
 
 ### Crie muitos objetos, HUD e telas
 

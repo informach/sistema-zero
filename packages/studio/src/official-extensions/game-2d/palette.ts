@@ -1,3 +1,4 @@
+import { sceneTypes } from '../scene-2d/catalog'
 /** Ordem editorial da paleta. Compartilhada pelo Estúdio, busca, tutor e catálogo do professor. */
 export const GAME_TWO_D_PALETTE = [
   {
@@ -73,6 +74,7 @@ export const GAME_TWO_D_PALETTE = [
       {
         name: 'Animação',
         types: [
+          ...sceneTypes('g2d', 'animation'),
           'sz_g2d_load_spritesheet',
           'sz_g2d_animate_sprite',
           'sz_g2d_animate_once',
@@ -439,6 +441,15 @@ export const GAME_TWO_D_PALETTE = [
           'sz_g2d_current_level_draw',
         ],
       },
+    ],
+  },
+  // Depois de "Cenários", e não no topo: camadas e pista são jeitos de montar o
+  // cenário, e a primeira gaveta da paleta é a que a criança abre para começar.
+  {
+    name: 'Camadas e perspectiva',
+    sections: [
+      { name: 'Começar com cenários e pista', types: sceneTypes('g2d', 'begin') },
+      { name: 'Mais controles', types: sceneTypes('g2d', 'more') },
     ],
   },
   {

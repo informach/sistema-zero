@@ -1,0 +1,17 @@
+---
+import { GIFT_SECTIONS } from '../../content/presente'
+import ComunidadeSection from '../funnel/oferta/ComunidadeSection.astro'
+
+interface Props {
+  action?: { href: string; label: string }
+  ambassador?: boolean
+}
+const { action, ambassador = false } = Astro.props
+---
+{GIFT_SECTIONS.map((section, index) => (
+  <>
+    {ambassador && index === 0 && <div class="wrap gift-note"><p>A experiência a seguir é a que você oferece à família convidada. É assim que o responsável vai conhecer o curso.</p></div>}
+    <ComunidadeSection section={section} imagesBase="/img/comunidade-dos-criadores" index={index} />
+    {action && index === 2 && <div class="wrap gift-cta"><a class="kof-btn" href={action.href}>{action.label}</a><p>Sem cartão. Sete dias de curso a partir do cadastro.</p></div>}
+  </>
+))}

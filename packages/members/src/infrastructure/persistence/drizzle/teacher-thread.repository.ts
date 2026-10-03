@@ -18,7 +18,7 @@ import type {
 } from '../../../domain/ports/teacher-thread-repository.port'
 import { ValidationError } from '../../../domain/shared/errors'
 import type { Database } from './db'
-import { teacherMessages, teacherThreadStaffReads, teacherThreads } from './schema'
+import { courses, teacherMessages, teacherThreadStaffReads, teacherThreads } from './schema'
 
 /** Prévia da última mensagem na caixa de entrada (corta no servidor). */
 const PREVIEW_MAX = 140
@@ -142,12 +142,13 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
 
   async findById(id: string): Promise<TeacherThreadRecord | null> {
     const rows = await this.db
-      .select()
+      .select({ thread: teacherThreads, courseTitle: courses.title })
       .from(teacherThreads)
+      .leftJoin(courses, eq(courses.id, teacherThreads.courseId))
       .where(eq(teacherThreads.id, id))
       .limit(1)
     const row = rows[0]
-    return row ? this.toRecord(row) : null
+    return row ? { ...this.toRecord(row.thread), courseTitle: row.courseTitle ?? null } : null
   }
 
   async findByContext(
@@ -156,8 +157,9 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
     contextRef: string,
   ): Promise<TeacherThreadRecord | null> {
     const rows = await this.db
-      .select()
+      .select({ thread: teacherThreads, courseTitle: courses.title })
       .from(teacherThreads)
+      .leftJoin(courses, eq(courses.id, teacherThreads.courseId))
       .where(
         and(
           eq(teacherThreads.userId, userId),
@@ -167,7 +169,7 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
       )
       .limit(1)
     const row = rows[0]
-    return row ? this.toRecord(row) : null
+    return row ? { ...this.toRecord(row.thread), courseTitle: row.courseTitle ?? null } : null
   }
 
   async listMessages(threadId: string, before?: TeacherMessageCursor): Promise<TeacherMessagePage> {
@@ -330,8 +332,8 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
   }
 
   // ── Interno ──────────────────────────────────────────────────────────────────
-  // Quatro queries LIMITADAS por página: cabeçalhos + contagem + última mensagem +
-  // última recebida. Nunca carregamos todos os corpos para montar a caixa.
+  // Queries LIMITADAS por página: cabeçalhos + contagem + última mensagem + última
+  // recebida + títulos dos cursos. Nunca carregamos todos os corpos para montar a caixa.
   private async selectSummaries(
     where: SQL<unknown> | undefined,
     side: 'student' | 'teacher',
@@ -358,7 +360,8 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
     if (threads.length === 0) return []
 
     const ids = threads.map((t) => t.id)
-    const [counts, latest, latestIncoming, staffReads] = await Promise.all([
+    const courseIds = [...new Set(threads.flatMap((t) => (t.courseId ? [t.courseId] : [])))]
+    const [counts, latest, latestIncoming, staffReads, courseTitles] = await Promise.all([
       this.db
         .select({ threadId: teacherMessages.threadId, count: sql<number>`count(*)::int` })
         .from(teacherMessages)
@@ -406,7 +409,14 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
               ),
             )
         : Promise.resolve([]),
+      courseIds.length
+        ? this.db
+            .select({ id: courses.id, title: courses.title })
+            .from(courses)
+            .where(inArray(courses.id, courseIds))
+        : Promise.resolve([]),
     ])
+    const titleByCourse = new Map(courseTitles.map((row) => [row.id, row.title]))
     const countByThread = new Map(counts.map((row) => [row.threadId, row.count]))
     const latestByThread = new Map(latest.map((row) => [row.threadId, row]))
     const incomingByThread = new Map(latestIncoming.map((row) => [row.threadId, row.createdAt]))
@@ -424,6 +434,7 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
         contextType: t.contextType as TeacherThreadContext,
         contextRef: t.contextRef ?? null,
         courseId: t.courseId ?? null,
+        courseTitle: t.courseId ? (titleByCourse.get(t.courseId) ?? null) : null,
         lessonId: t.lessonId ?? null,
         title: t.title ?? null,
         lastMessageAt: t.lastMessageAt,

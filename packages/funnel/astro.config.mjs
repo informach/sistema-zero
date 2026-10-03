@@ -40,6 +40,10 @@ export default defineConfig({
         `${site}/pro/no-comando-da-ia/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
         `${site}/kids/comunidade-dos-criadores/oferta`,
+        `${site}/kids/comunidade-dos-criadores/oferta/criacao-de-jogos`,
+        `${site}/kids/comunidade-dos-criadores/oferta/expressao-visual`,
+        `${site}/kids/comunidade-dos-criadores/oferta/formacao-tecnologica`,
+        `${site}/kids/comunidade-dos-criadores/oferta/continuar`,
         // Páginas legais por público (rotas dinâmicas não são enumeradas sozinhas).
         `${site}/pro/termos`,
         `${site}/pro/privacidade`,

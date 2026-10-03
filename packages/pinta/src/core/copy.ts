@@ -420,6 +420,7 @@ export const COPY = {
       deselectShapes: 'Soltar a seleção',
       nudge: 'Mover a seleção 1 pixel',
       nudgeFar: 'Mover a seleção 10 pixels',
+      resizeProportional: 'Mudar o tamanho sem esticar (segure enquanto puxa a beirada da caixa)',
       group: 'Agrupar',
       ungroup: 'Desagrupar',
       forward: 'Uma camada para a frente',
@@ -632,6 +633,12 @@ export const COPY = {
     playMap: 'Jogar meu mapa',
   },
   vector: {
+    paperLabel: 'Visualizar fundo',
+    paperTransparent: 'Transparente',
+    paperWhite: 'Branco',
+    paperDark: 'Escuro',
+    paperHint:
+      'Só muda a visualização. Áreas vazias continuam transparentes ao exportar; branco pintado continua branco.',
     select: 'Selecionar',
     reshape: 'Editar os pontos',
     pan: 'Mão (arrastar a tela)',
@@ -760,6 +767,12 @@ export const COPY = {
     distributeCentersV: 'Distribuir centros na vertical',
     pen: 'Caneta (clique para marcar os pontos)',
     cornerRadius: 'Cantos arredondados',
+    /** A grade 2x2 do painel: quais cantos usam o raio do slider. Rótulo FIXO + `aria-pressed`. */
+    corners: 'Quais cantos arredondar',
+    cornerTopLeft: 'Canto de cima na esquerda',
+    cornerTopRight: 'Canto de cima na direita',
+    cornerBottomLeft: 'Canto de baixo na esquerda',
+    cornerBottomRight: 'Canto de baixo na direita',
     fontSize: 'Tamanho da letra',
     fontFamily: 'Fonte',
     /** Alinhamento das LINHAS do texto. Rótulos distintos dos `align*` da faixa
@@ -983,6 +996,7 @@ export const COPY = {
         'A Caneta marca pontos; aperte Enter para fechar a forma.',
         'A Grade ajuda a desenhar tudo alinhado.',
         'Rode a bolinha do mouse para aproximar e afastar.',
+        'Segure Shift enquanto puxa a beirada da caixa para mudar o tamanho sem esticar o desenho.',
         'Teclas rápidas: V selecionar, B pincel, H mão, T texto.',
       ],
     },

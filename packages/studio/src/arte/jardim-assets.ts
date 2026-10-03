@@ -44,11 +44,22 @@ export function jardimSpriteRect(name: JardimSpriteName, centroX: number, baseY?
   }
 }
 
-export function jardimSvg(name: JardimAssetName): string {
+/**
+ * `cobrir`: a arte PREENCHE a caixa em que for colocada, cortando as sobras, em vez de caber
+ * inteira com faixas vazias dos lados.
+ *
+ * ⚠️⚠️ Um `<image>` de SVG que aponta para OUTRO SVG não manda no encaixe de dentro: o
+ * `preserveAspectRatio="slice"` do `<image>` de fora vale só para a caixa dele, e quem decide
+ * como o desenho de 640 × 360 entra nessa caixa é a RAIZ do SVG apontado, que por padrão é
+ * "meet". Foi assim que o fundo do jardim, num palco de 560 × 300, ficou com ~13 px de beirada
+ * vazia de cada lado (30/09/2026): as cenas assumiam a escala 0,875 do "slice" e recebiam 0,833.
+ */
+export function jardimSvg(name: JardimAssetName, opcoes: { cobrir?: boolean } = {}): string {
   const { width, height, viewBox, body } = JARDIM_ASSETS[name]
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${viewBox}">${body}</svg>`
+  const encaixe = opcoes.cobrir ? ' preserveAspectRatio="xMidYMid slice"' : ''
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${viewBox}"${encaixe}>${body}</svg>`
 }
 
-export function jardimSvgUrl(name: JardimAssetName): string {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(jardimSvg(name))}`
+export function jardimSvgUrl(name: JardimAssetName, opcoes: { cobrir?: boolean } = {}): string {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(jardimSvg(name, opcoes))}`
 }

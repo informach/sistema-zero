@@ -1,4 +1,6 @@
+import type { GiftAttribution, GiftSource } from '@sistemazero/core/referrals'
 import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
+import { CampaignUnavailableError, campaignSource, campaignState } from '../../../domain/campaign'
 import { SCHOLARSHIP_ACCESS_DURATION_DAYS } from '../../../domain/gift-policy'
 import type {
   AmbassadorListItem,
@@ -19,7 +21,14 @@ import type {
 import { AMBASSADOR_VISIBLE_CONVERSION_STATUSES } from '../../../domain/ports/referral-repository.port'
 import type { Database } from './db'
 import { escapeLike, isUniqueViolation, uniqueConstraintName } from './pg-errors'
-import { ambassadors, codes, conversions, invites, scholarshipRedemptions } from './schema'
+import {
+  ambassadors,
+  campaigns,
+  codes,
+  conversions,
+  invites,
+  scholarshipRedemptions,
+} from './schema'
 
 /**
  * Advisory lock do sweep de conversões — espaço GLOBAL do Postgres compartilhado
@@ -77,6 +86,7 @@ function toCode(row: CodeRow): CodeRecord {
     id: row.id,
     code: row.code,
     ownerKind: row.ownerKind as CodeRecord['ownerKind'],
+    campaignId: row.campaignId,
     ambassadorId: row.ambassadorId,
     accountUserId: row.accountUserId,
     displayName: row.displayName,
@@ -92,6 +102,10 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     email: row.email,
     name: row.name,
     phone: row.phone,
+    sourceSnapshot: row.sourceSnapshot,
+    courseSlug: row.courseSlug,
+    attribution: row.attribution,
+    welcomeAcceptedAt: row.welcomeAcceptedAt,
     userId: row.userId,
     buyerCreated: row.buyerCreated,
     grantedAt: row.grantedAt,
@@ -467,28 +481,83 @@ export class DrizzleReferralRepository implements ReferralRepository {
 
   // ── Resgates ──────────────────────────────────────────────────────────────
 
+  async findCodeById(id: string): Promise<CodeRecord | null> {
+    const [row] = await this.db.select().from(codes).where(eq(codes.id, id))
+    return row ? toCode(row) : null
+  }
+
+  async markWelcomeAccepted(id: string, when: Date): Promise<void> {
+    await this.db
+      .update(scholarshipRedemptions)
+      .set({ welcomeAcceptedAt: when })
+      .where(eq(scholarshipRedemptions.id, id))
+  }
+
   async insertRedemption(input: {
     codeId: string
     email: string
     name: string
     phone: string | null
+    sourceSnapshot?: GiftSource
+    courseSlug?: string
+    attribution?: GiftAttribution | null
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
-    const [inserted] = await this.db
-      .insert(scholarshipRedemptions)
-      .values({
-        codeId: input.codeId,
-        email: input.email,
-        name: input.name,
-        phone: input.phone,
-        accessDurationDays: SCHOLARSHIP_ACCESS_DURATION_DAYS,
-        muralVisitorPolicy: 'visitor',
-      })
-      .onConflictDoNothing({ target: scholarshipRedemptions.email })
-      .returning()
-    if (inserted) return { created: true, redemption: toRedemption(inserted) }
-    const existing = await this.findRedemptionByEmail(input.email)
-    if (!existing) throw new Error('conflito no insert sem linha existente (corrida de delete?)')
-    return { created: false, redemption: existing }
+    return this.db.transaction(async (tx) => {
+      const [previous] = await tx
+        .select()
+        .from(scholarshipRedemptions)
+        .where(eq(scholarshipRedemptions.email, input.email))
+      if (previous) return { created: false, redemption: toRedemption(previous) }
+      const [code] = await tx.select().from(codes).where(eq(codes.id, input.codeId))
+      if (!code) throw new Error('Código de resgate inexistente')
+      let sourceSnapshot = input.sourceSnapshot
+      let acceptedAt = new Date()
+      if (code.ownerKind === 'campaign') {
+        if (!code.campaignId) throw new CampaignUnavailableError('draft')
+        // Mesma ordem de lock da edição: campanha antes do código. Nenhum S2S na tx.
+        const [campaign] = await tx
+          .select()
+          .from(campaigns)
+          .where(eq(campaigns.id, code.campaignId))
+          .for('update')
+        if (!campaign) throw new CampaignUnavailableError('draft')
+        acceptedAt = new Date()
+        const state = campaignState(
+          { ...campaign, status: campaign.status as 'draft' | 'active' | 'paused' | 'ended' },
+          acceptedAt,
+        )
+        if (state !== 'active') throw new CampaignUnavailableError(state)
+        sourceSnapshot = campaignSource({
+          ...campaign,
+          code: code.code,
+          context: campaign.context as 'ad' | 'event' | 'other',
+          status: campaign.status as 'draft' | 'active' | 'paused' | 'ended',
+        })
+      }
+      const [inserted] = await tx
+        .insert(scholarshipRedemptions)
+        .values({
+          codeId: input.codeId,
+          email: input.email,
+          name: input.name,
+          phone: input.phone,
+          sourceSnapshot,
+          courseSlug: input.courseSlug,
+          attribution: input.attribution,
+          createdAt: acceptedAt,
+          accessDurationDays: SCHOLARSHIP_ACCESS_DURATION_DAYS,
+          muralVisitorPolicy: 'trial',
+        })
+        .onConflictDoNothing({ target: scholarshipRedemptions.email })
+        .returning()
+      if (inserted) return { created: true, redemption: toRedemption(inserted) }
+      const [existing] = await tx
+        .select()
+        .from(scholarshipRedemptions)
+        .where(eq(scholarshipRedemptions.email, input.email))
+      if (!existing) throw new Error('conflito no insert sem linha existente (corrida de delete?)')
+      return { created: false, redemption: toRedemption(existing) }
+    })
   }
 
   async acquireRedemptionLease(
@@ -691,7 +760,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
     offerSlug: string
     amountCents: bigint
     bonusCents: number
-    status: 'pending' | 'self_blocked'
+    status: 'pending' | 'self_blocked' | 'unrewarded'
     paidAt: Date
     maturesAt: Date
   }): Promise<{ created: boolean }> {
@@ -713,7 +782,12 @@ export class DrizzleReferralRepository implements ReferralRepository {
     const rows = await this.db
       .update(conversions)
       .set({ status: 'canceled', updatedAt: sql`now()` })
-      .where(and(eq(conversions.paymentId, paymentId), eq(conversions.status, 'pending')))
+      .where(
+        and(
+          eq(conversions.paymentId, paymentId),
+          inArray(conversions.status, ['pending', 'unrewarded']),
+        ),
+      )
       .returning({ id: conversions.id })
     if (rows.length > 0) return { kind: 'canceled' }
     // O STATUS decide o desfecho no serviço: self_blocked/canceled são
@@ -796,7 +870,10 @@ export class DrizzleReferralRepository implements ReferralRepository {
     limit: number
     offset: number
   }): Promise<{ items: ConversionListItem[]; total: number }> {
-    const where = opts.status ? eq(conversions.status, opts.status) : undefined
+    const where = and(
+      sql`${codes.ownerKind} <> 'campaign'`,
+      opts.status ? eq(conversions.status, opts.status) : undefined,
+    )
     const [rows, [{ value: total } = { value: 0 }]] = await Promise.all([
       this.db
         .select({
@@ -809,12 +886,17 @@ export class DrizzleReferralRepository implements ReferralRepository {
         })
         .from(conversions)
         .leftJoin(ambassadors, eq(ambassadors.id, conversions.ambassadorId))
+        .innerJoin(codes, eq(codes.id, conversions.codeId))
         .innerJoin(scholarshipRedemptions, eq(scholarshipRedemptions.id, conversions.redemptionId))
         .where(where)
         .orderBy(desc(conversions.paidAt))
         .limit(opts.limit)
         .offset(opts.offset),
-      this.db.select({ value: count() }).from(conversions).where(where),
+      this.db
+        .select({ value: count() })
+        .from(conversions)
+        .innerJoin(codes, eq(codes.id, conversions.codeId))
+        .where(where),
     ])
     return {
       items: rows.map((r) => ({

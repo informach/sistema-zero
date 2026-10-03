@@ -1,5 +1,6 @@
 import { isInteractiveBlock, type LessonSection } from './index'
 import { isPlatformAction, type PlatformAction } from './platform-action'
+import type { LessonRequirementReason } from './requirements'
 
 export interface ProjectBlockPattern {
   blockType: string
@@ -47,6 +48,26 @@ export interface SectionProgressRecord {
   projectPassed: boolean
 }
 
+/**
+ * Por que a seção ainda não fechou, TIPADO (30/09/2026): o `kind` é o que escolhe o ícone e a cor
+ * na faixa "o que falta para seguir" do rodapé da aula. As razões de requisito vêm de
+ * `lessonCompletionRequirements`; `platform-action`, `project-check` e `authoring` são as outras
+ * três coisas que o members acrescenta; `locked` é a seção que espera a anterior; `lesson` é o
+ * motivo do "Concluir aula" travado que o player conhece; `other` é um texto sem razão (fixtures).
+ */
+export type SectionPendingKind =
+  | LessonRequirementReason
+  | 'platform-action'
+  | 'project-check'
+  | 'authoring'
+  | 'locked'
+  | 'lesson'
+  | 'other'
+export interface SectionPendingItem {
+  kind: SectionPendingKind
+  text: string
+}
+
 export interface SectionProgressView {
   revision: string
   completed: number
@@ -56,7 +77,10 @@ export interface SectionProgressView {
     id: string
     title: string
     status: 'locked' | 'available' | 'completed'
+    /** As frases do que falta (compatibilidade: ajuda ao professor, recados). */
     pending: string[]
+    /** As mesmas frases, com o `kind`: é o que a faixa do rodapé lê. */
+    pendingItems: SectionPendingItem[]
   }>
 }
 
@@ -385,23 +409,51 @@ export function sectionCompletionIssues(
 }
 
 /** Completed milestones survive review. Only the first unfinished section is available. */
+function semRepetidos(itens: readonly SectionPendingItem[]): SectionPendingItem[] {
+  const vistos = new Set<string>()
+  return itens.filter((item) => {
+    const chave = `${item.kind}\u0000${item.text}`
+    if (vistos.has(chave)) return false
+    vistos.add(chave)
+    return true
+  })
+}
+
 export function sectionProgressView(
   revision: string,
   sections: { id: string; title: string }[],
   completedIds: ReadonlySet<string>,
-  pending: ReadonlyMap<string, string[]>,
+  /** Texto cru vira `kind: 'other'`; o members manda itens tipados. */
+  pending: ReadonlyMap<string, readonly (string | SectionPendingItem)[]>,
 ): SectionProgressView {
   let available = true
   const states = sections.map((s) => {
     if (completedIds.has(s.id))
-      return { id: s.id, title: s.title, status: 'completed' as const, pending: [] }
+      return {
+        id: s.id,
+        title: s.title,
+        status: 'completed' as const,
+        pending: [],
+        pendingItems: [],
+      }
     const status = available ? ('available' as const) : ('locked' as const)
     available = false
+    // ⚠️ Sem repetidos: `lessonCompletionRequirements` cria UM requisito por bloco, e uma seção com
+    // três descobertas obrigatórias virava três "Termine o experimento" (review do lote 2).
+    const itens: SectionPendingItem[] =
+      status === 'locked'
+        ? [{ kind: 'locked', text: 'Conclua a seção anterior' }]
+        : semRepetidos(
+            (pending.get(s.id) ?? []).map((item) =>
+              typeof item === 'string' ? { kind: 'other', text: item } : item,
+            ),
+          )
     return {
       id: s.id,
       title: s.title,
       status,
-      pending: status === 'locked' ? ['Conclua a seção anterior.'] : (pending.get(s.id) ?? []),
+      pending: itens.map((item) => item.text),
+      pendingItems: itens,
     }
   })
   const completed = states.filter((s) => s.status === 'completed').length

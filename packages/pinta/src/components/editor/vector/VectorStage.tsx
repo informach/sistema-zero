@@ -111,6 +111,7 @@ import { useWheelZoom } from '../useWheelZoom'
 import { useVectorEditor } from './VectorEditorScope'
 import { VectorGradientDialog } from './VectorGradientDialog'
 import { VectorNodeActions } from './VectorNodeActions'
+import { type VectorPaper, VectorPaperPicker, vectorPaperClass } from './VectorPaperPicker'
 import {
   mergeNodeSelection,
   type NodeFrame,
@@ -118,7 +119,12 @@ import {
   nodesInBox,
   toLocalPoint,
 } from './vectorNodeGestures'
-import { constrainPoint, expandToSelectionUnits } from './vectorTools'
+import {
+  constrainPoint,
+  expandToSelectionUnits,
+  type ResizeHandleId,
+  resizeFactors,
+} from './vectorTools'
 
 // Todo gesto guarda o pointerId: pointer capture é POR ponteiro, então um
 // segundo dedo/palma no palco dispararia move/up do gesto do primeiro dedo.
@@ -159,7 +165,7 @@ type Gesture =
   | {
       kind: 'resize'
       pointerId: number
-      handle: string
+      handle: ResizeHandleId
       anchor: Vec2
       start: Vec2
       startClient: Vec2
@@ -293,7 +299,7 @@ const SHAPE_TOOLS: ReadonlySet<string> = new Set(['rect', 'ellipse', 'line', 'po
 /** Largura do alvo do toque de uma guia, em px de TELA (o traço visível tem 1 px). */
 const GUIDE_HIT_SCREEN_PX = 16
 
-const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
+const HANDLES: Array<{ id: ResizeHandleId; fx: number; fy: number }> = [
   { id: 'nw', fx: 0, fy: 0 },
   { id: 'n', fx: 0.5, fy: 0 },
   { id: 'ne', fx: 1, fy: 0 },
@@ -305,6 +311,7 @@ const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
 ]
 
 export function VectorStage(): JSX.Element {
+  const [paper, setPaper] = useState<VectorPaper>('transparent')
   const { editor, session } = useEditorStores()
   const { showToast } = useToast()
   const {
@@ -326,6 +333,7 @@ export function VectorStage(): JSX.Element {
     polygonSides,
     starTips,
     rectRadius,
+    rectCorners,
     textAlign,
     fontFamily,
     svgRef,
@@ -859,7 +867,7 @@ export function VectorStage(): JSX.Element {
         // Capped: garante que o `d` criado SEMPRE passa no sanitize do load.
         return makePath(smoothStrokeToPathCapped(points, 1.2), style)
       case 'rect':
-        return makeRect(start, current, style, rectRadius)
+        return makeRect(start, current, style, rectRadius, rectCorners)
       case 'ellipse':
         return makeEllipse(start, current, style)
       case 'line':
@@ -1168,7 +1176,7 @@ export function VectorStage(): JSX.Element {
   }
 
   function handleResizeDown(
-    handle: { id: string; fx: number; fy: number },
+    handle: { id: ResizeHandleId; fx: number; fy: number },
     bounds: Bounds,
     event: PointerEvent<SVGElement>,
   ): void {
@@ -1526,13 +1534,13 @@ export function VectorStage(): JSX.Element {
       // Tremida do duplo clique não é arrasto (ver `alcaAindaParada`).
       if (alcaAindaParada(gesture, event)) return
       const { anchor, start, baseShapes, handle } = gesture
+      // Grade PRIMEIRO, Shift depois (a mesma ordem do desenho de formas). O Shift é lido
+      // VIVO a cada movimento, do evento do React ou do `pointermove` nativo do `document`
+      // (o `StagePointer` carrega o `shiftKey` nos dois): apertar ou soltar no meio do
+      // arrasto troca o modo no próximo movimento, sem estado acumulado, porque os fatores
+      // são sempre recalculados sobre a `base`.
       const point = maybeSnap(gesturePoint(gesture, event))
-      const isCorner = handle.length === 2
-      const horizontal = handle === 'e' || handle === 'w'
-      const denomX = start.x - anchor.x
-      const denomY = start.y - anchor.y
-      const fx = isCorner || horizontal ? (denomX === 0 ? 1 : (point.x - anchor.x) / denomX) : 1
-      const fy = isCorner || !horizontal ? (denomY === 0 ? 1 : (point.y - anchor.y) / denomY) : 1
+      const { fx, fy } = resizeFactors(handle, anchor, start, point, event.shiftKey)
       // Mesma régua do mover: fator 1 com nada pintado é ficar como está.
       if (fx === 1 && fy === 1 && editor.getState().asset === gesture.base) return
       const resized = new Map(baseShapes.map((s) => [s.id, scaleShape(s, anchor, fx, fy)]))
@@ -1839,7 +1847,8 @@ export function VectorStage(): JSX.Element {
   const selectionHasCustomPivot = selected.some((shape) => shape.rotationPivot !== undefined)
 
   return (
-    <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
+    <div className="pin-stage relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <VectorPaperPicker value={paper} onChange={setPaper} />
       {/* As réguas (em cima e à esquerda) embrulham a CÉLULA do palco: as barras flutuantes
           abaixo são absolutas em relação a ela, então nascem abaixo da régua de cima. Na tela
           estreita não há régua: cada px vertical conta e a tira de 24 px é pouco para o dedo. */}
@@ -2019,15 +2028,14 @@ export function VectorStage(): JSX.Element {
           ref={stageRef}
           className="flex min-h-0 min-w-0 flex-1 overflow-auto p-2 [align-items:safe_center] [justify-content:safe_center]"
         >
-          {/* Papel BRANCO fixo (sem xadrez): cor absoluta em qualquer tema; canto
-            RETO para a borda não "comer" o desenho da criança. */}
-          <div className="pin-paper bg-white">
+          {/* O papel só ajuda a enxergar o alfa; não faz parte do SVG exportado. */}
+          <div className={`pin-paper ${vectorPaperClass[paper]}`}>
             <svg
               ref={svgRef}
               width={stageWidth}
               height={stageHeight}
               viewBox={`0 0 ${doc.width} ${doc.height}`}
-              className="block bg-white/60"
+              className="block"
               style={{
                 touchAction: 'none',
                 cursor: stageCursor({

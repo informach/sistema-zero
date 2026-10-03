@@ -5,6 +5,7 @@ import {
   type LearningAnswers,
   type LearningResult,
   type LessonDraftDocument,
+  type SectionPendingItem,
   sectionProgressView,
 } from '@sistemazero/core/learning'
 import { LessonPreviewProvider } from '@sistemazero/member-shell/components/lesson-preview-context'
@@ -65,24 +66,32 @@ export function LessonRehearsal({
   )
   const section = document.sections.find((s) => s.id === sectionId)
   const completed = new Set<string>()
-  const pending = new Map<string, string[]>()
+  // Itens TIPADOS (30/09/2026), como o members manda: a faixa "o que falta para seguir" do
+  // rodapé escolhe o ícone pelo `kind`, e o ensaio mostra ao professor a mesma faixa (com os
+  // textos DO ENSAIO: o ensaio não passa pelo `lessonCompletionRequirements` do members).
+  const pending = new Map<string, SectionPendingItem[]>()
   for (const s of document.sections) {
-    const missing: string[] = []
+    const missing: SectionPendingItem[] = []
     for (const id of s.completion?.blockIds ?? [])
-      if (!state.completedBlocks.has(id)) missing.push('Realize a atividade desta seção.')
+      if (!state.completedBlocks.has(id))
+        missing.push({ kind: 'LEARNING_GATE_INCOMPLETE', text: 'Realize a atividade desta seção' })
     if (s.completion?.projectChecks?.length && !state.completedProjects.has(s.id))
-      missing.push('Confira o objetivo no projeto desta seção.')
+      missing.push({ kind: 'project-check', text: 'Confira o objetivo no projeto desta seção' })
     if (s.completion?.platformAction && !state.fixtures.has(s.id))
-      missing.push('Verifique a ação da plataforma.')
+      missing.push({ kind: 'platform-action', text: 'Verifique a ação da plataforma' })
     if (
       !s.completion ||
       (!s.completion.blockIds.length &&
         !s.completion.projectChecks?.length &&
         !s.completion.platformAction)
     )
-      missing.push('Configure um critério de conclusão na autoria.')
+      missing.push({ kind: 'authoring', text: 'Configure um critério de conclusão na autoria' })
     if (missing.length === 0) completed.add(s.id)
-    pending.set(s.id, [...new Set(missing)])
+    const vistos = new Set<string>()
+    pending.set(
+      s.id,
+      missing.filter((item) => !vistos.has(item.text) && vistos.add(item.text)),
+    )
   }
   const progress = sectionProgressView('local-rehearsal', document.sections, completed, pending)
   function confirm() {

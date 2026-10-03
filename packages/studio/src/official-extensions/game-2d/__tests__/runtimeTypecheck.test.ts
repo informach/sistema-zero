@@ -2,12 +2,27 @@ import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import ts from 'typescript'
+import { BASIC_SPRITE_SCENE_API_KEYS as SCENE_API_KEYS } from '../../scene-2d/spriteContract'
 import { gameTwoDRuntime } from '../runtime'
 
 const RUNTIME_FILE = 'game-2d-runtime.generated.js'
 const BROKEN_RUNTIME_FILE = 'game-2d-runtime.broken.generated.js'
 const RUNTIME_CONTRACT_FILE = 'runtimeContract.ts'
 const CLASSIC_CONTRACTS_FILE = 'classicContracts.ts'
+const SCENE_CONTRACT_FILE = 'sceneContract.ts'
+const SCENE_CONTRACT = readFileSync(join(import.meta.dir, '../../scene-2d/contract.ts'), 'utf8')
+// O anfitrião da cena (tipos do navegador) mora num arquivo próprio para o contrato
+// público continuar carregável por pacotes de servidor, que compilam sem a lib DOM.
+const SPRITE_CONTRACT = readFileSync(
+  join(import.meta.dir, '../../scene-2d/spriteContract.ts'),
+  'utf8',
+)
+const SPRITE_HOST = readFileSync(
+  join(import.meta.dir, '../../scene-2d/spriteHostContract.ts'),
+  'utf8',
+)
+const SCENE_HOST_FILE = 'sceneHost.ts'
+const SCENE_HOST = readFileSync(join(import.meta.dir, '../../scene-2d/host.ts'), 'utf8')
 const HOST_CONTRACT_FILE = 'game-2d-runtime-host.d.ts'
 const RUNTIME_CONTRACT = readFileSync(join(import.meta.dir, '../runtimeContract.ts'), 'utf8')
 const CLASSIC_CONTRACTS = readFileSync(join(import.meta.dir, '../classicContracts.ts'), 'utf8')
@@ -15,6 +30,7 @@ const HOST_CONTRACT = `
 type GameTwoDRuntimeApi = import('./runtimeContract').GameTwoDRuntimeApi
 
 interface SZGameTileMapAssetMetadata {
+  sprite?: { frameW: number; frameH: number; animations: { name: string; from: number; to: number; fps: number; loop: boolean }[] }
   tilemap?: {
     grid?: string
     platform?: ArrayLike<number>
@@ -72,7 +88,7 @@ function parameterNames(parameters: ts.NodeArray<ts.ParameterDeclaration>): stri
 function contractMethodSignatures(source: string): Map<string, string[]> {
   const file = ts.createSourceFile(
     RUNTIME_CONTRACT_FILE,
-    source,
+    `${source}\n${SPRITE_CONTRACT}`,
     ts.ScriptTarget.ES2022,
     true,
     ts.ScriptKind.TS,
@@ -87,7 +103,7 @@ function contractMethodSignatures(source: string): Map<string, string[]> {
   const collect = (name: string) => {
     if (visited.has(name)) return
     visited.add(name)
-    const declaration = interfaces.get(name)
+    const declaration = interfaces.get(name === 'BasicSpriteSceneApi' ? 'SpriteSceneApi' : name)
     if (!declaration) throw new Error(`interface ${name} ausente no contrato do Jogo 2D`)
     for (const heritage of declaration.heritageClauses ?? []) {
       for (const parent of heritage.types) {
@@ -96,6 +112,11 @@ function contractMethodSignatures(source: string): Map<string, string[]> {
     }
     for (const member of declaration.members) {
       if (ts.isMethodSignature(member) && ts.isIdentifier(member.name)) {
+        if (
+          name === 'BasicSpriteSceneApi' &&
+          !SCENE_API_KEYS.some((key) => key === member.name.getText())
+        )
+          continue
         signatures.set(member.name.text, parameterNames(member.parameters))
       }
     }
@@ -116,6 +137,14 @@ function runtimeFunctionSignatures(source: string): Map<string, string[]> {
   const visit = (node: ts.Node) => {
     if (ts.isFunctionDeclaration(node) && node.name) {
       signatures.set(node.name.text, parameterNames(node.parameters))
+    }
+    if (
+      ts.isPropertyAssignment(node) &&
+      ts.isIdentifier(node.name) &&
+      SCENE_API_KEYS.some((key) => key === node.name.getText()) &&
+      ts.isFunctionExpression(node.initializer)
+    ) {
+      signatures.set(node.name.text, parameterNames(node.initializer.parameters))
     }
     ts.forEachChild(node, visit)
   }
@@ -157,6 +186,10 @@ function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<stri
     ),
     [RUNTIME_CONTRACT_FILE, { source: RUNTIME_CONTRACT, kind: ts.ScriptKind.TS }],
     [CLASSIC_CONTRACTS_FILE, { source: CLASSIC_CONTRACTS, kind: ts.ScriptKind.TS }],
+    [SCENE_CONTRACT_FILE, { source: SCENE_CONTRACT, kind: ts.ScriptKind.TS }],
+    [SCENE_HOST_FILE, { source: SCENE_HOST, kind: ts.ScriptKind.TS }],
+    ['spriteContract.ts', { source: SPRITE_CONTRACT, kind: ts.ScriptKind.TS }],
+    ['spriteHostContract.ts', { source: SPRITE_HOST, kind: ts.ScriptKind.TS }],
     [HOST_CONTRACT_FILE, { source: HOST_CONTRACT, kind: ts.ScriptKind.TS }],
   ])
   const host: ts.CompilerHost = {
@@ -178,10 +211,22 @@ function compileRuntimeVariants(variants: ReadonlyMap<string, string>): Map<stri
     },
     resolveModuleNames: (moduleNames, containingFile) =>
       moduleNames.map((moduleName) => {
+        if (moduleName.endsWith('/spriteContract'))
+          return { resolvedFileName: 'spriteContract.ts', extension: ts.Extension.Ts }
+        if (moduleName.endsWith('/spriteHostContract'))
+          return { resolvedFileName: 'spriteHostContract.ts', extension: ts.Extension.Ts }
+        if (moduleName === './contract')
+          return { resolvedFileName: SCENE_CONTRACT_FILE, extension: ts.Extension.Ts }
         if (moduleName === './runtimeContract')
           return { resolvedFileName: RUNTIME_CONTRACT_FILE, extension: ts.Extension.Ts }
         if (moduleName === './classicContracts') {
           return { resolvedFileName: CLASSIC_CONTRACTS_FILE, extension: ts.Extension.Ts }
+        }
+        if (moduleName === '../scene-2d/contract') {
+          return { resolvedFileName: SCENE_CONTRACT_FILE, extension: ts.Extension.Ts }
+        }
+        if (moduleName === '../scene-2d/host') {
+          return { resolvedFileName: SCENE_HOST_FILE, extension: ts.Extension.Ts }
         }
         return ts.resolveModuleName(
           moduleName,
@@ -348,7 +393,23 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // remandar carregar, desligar o aviso) não cabe numa linha inline.
   // 1240 → 1241: +1 rótulo acessível do botão de direção no modo sem ações.
   // 1241 → 1242: +1 detector de SVG para preservar a suavização ao ampliar vetores.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1242)
+  // +83: shared scene factory (79) and basic host adapter (4). Its public API is
+  // contextually typed by SceneTwoDApi, and host callbacks by SceneHost.
+  // 1325 → 1328: a cena ganhou o aviso de criador rodando no laço (`rebuilt(old,
+  // message)`, 2) e o modo de repetição da camada (`repeatMode(value)`, 1).
+  // 1328 → 1337: a terceira revisão da cena. Na fábrica (4): a cota própria do aviso
+  // de criador no laço (`warn(message, reserved)`, +1), a lista do que foi desenhado
+  // (`remember(kind, name)`, 2) e a imagem que ainda não chegou (`picture(name)`, 1).
+  // No anfitrião (5): a nitidez por imagem (`smoothing(ctx, img, width)`, 3) e a
+  // repintura da cena sem laço (`late(name, redraw)`, 2).
+  // 1337 → 1336: `finite` passou a entregar `Number.isFinite` direto ao `every`.
+  // 02/10: scene controller, typed engine adapters and shared HUD replace the manual object renderer.
+  // 02/10 revisão: operações separadas, famílias persistentes, cópias nativas e isolamento de eventos.
+  // Este contador inclui parâmetros com tipagem contextual do adaptador; o teste semântico acima cobre todos.
+  // +12: shared projection/decorations, mold event, pause host and family cleanup.
+  // +6 (full review 02/10): o painel e o drawHud recebem `hud` e `controls` (4), e as duas
+  // varreduras novas das pistas (recriar só destrói cópias; o rodapé lê os controles).
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1484)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

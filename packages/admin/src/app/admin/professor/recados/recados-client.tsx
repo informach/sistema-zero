@@ -20,6 +20,7 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
 import { platformTransition } from '@/lib/platform-transition'
+import { threadSubject } from '@/lib/teacher-thread-subject'
 import type { CourseView, Paginated, TeacherThreadContext, TeacherThreadRow } from '@/lib/types'
 import { BroadcastPanel } from './broadcast-panel'
 import { ThreadDialog } from './thread-dialog'
@@ -332,7 +333,9 @@ export function RecadosClient() {
                   </span>
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                  {t.title ? <span className="truncate font-medium">{t.title}</span> : null}
+                  {threadSubject(t) ? (
+                    <span className="truncate font-medium">{threadSubject(t)}</span>
+                  ) : null}
                   {t.lastMessagePreview ? (
                     <span className="truncate">
                       {t.lastMessageRole === 'teacher' ? 'Você: ' : ''}

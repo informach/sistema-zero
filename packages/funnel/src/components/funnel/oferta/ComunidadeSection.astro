@@ -1,0 +1,255 @@
+---
+import {
+  ICONES_DE_CAPITULO,
+  ICONES_DE_GRUPO,
+} from '../../../funnels/comunidade-dos-criadores/oferta/arte'
+import { DESTAQUES } from '../../../funnels/comunidade-dos-criadores/oferta/destaques'
+import type {
+  ComunidadeGroup,
+  ComunidadeSection,
+} from '../../../funnels/comunidade-dos-criadores/oferta/types'
+import { visualDe } from '../../../funnels/comunidade-dos-criadores/oferta/visuals'
+import ComunidadeComparacao from './ComunidadeComparacao.astro'
+import ComunidadeProsa from './ComunidadeProsa.astro'
+import ComunidadeVisual from './ComunidadeVisual.astro'
+
+interface Props {
+  section: ComunidadeSection
+  imagesBase: string
+  /** Posição da seção na página: decide a cor do capítulo, o fundo e o lado da imagem. */
+  index: number
+  experience?: boolean
+}
+
+const { section, imagesBase, index, experience = false } = Astro.props
+const destaques = DESTAQUES[section.id] ?? []
+const band = section.layout === 'band'
+const cards = section.layout === 'cards' && section.groups.length > 1
+const tools = section.layout === 'tools'
+const cases = section.layout === 'cases'
+
+// O ritmo da página: a cor de unidade de cada capítulo e o fundo, que nunca repete o da vizinha.
+const CORES = ['azul', 'rosa', 'verde', 'roxo', 'laranja'] as const
+const ICONES = [
+  'lightbulb',
+  'extension',
+  'timer',
+  'family_star',
+  'interests',
+  'flag',
+  'share',
+  'hub',
+  'rocket_launch',
+  'palette',
+]
+const FUNDOS = ['chao', 'folha', 'alt'] as const
+const cor = CORES[index % CORES.length]
+// O ícone do chip vem do ASSUNTO quando a direção de arte o declara; senão, da posição.
+const icone =
+  section.layout === 'journey'
+    ? 'route'
+    : (ICONES_DE_CAPITULO[section.id] ?? ICONES[index % ICONES.length])
+const fundo = band ? 'banda' : FUNDOS[index % FUNDOS.length]
+const ICONES_GRUPO = ['sports_esports', 'palette', 'code', 'psychology', 'view_in_ar']
+const ICONES_FERRAMENTA = ['sports_esports', 'palette', 'lightbulb', 'smart_toy', 'view_in_ar']
+const CORES_GRUPO = ['azul', 'rosa', 'verde', 'roxo', 'laranja']
+const LADRILHOS = [
+  '',
+  'kof-ladrilho--rosa',
+  'kof-ladrilho--verde',
+  'kof-ladrilho--roxo',
+  'kof-ladrilho--laranja',
+]
+
+// Os oito postos da Jornada e o NOME da ferramenta que cada um libera (como a copy descreve).
+const journey: [string, string, string[]][] = [
+  ['noob', 'Faísca', []],
+  ['coder', 'Construtor(a)', ['Estúdio', 'Pinta']],
+  ['hacker', 'Inventor(a)', ['Pensa', 'Zappy']],
+  ['explorer', 'Explorador(a) de Mundos', ['Molda']],
+  ['elite', 'Mestre dos Jogos', []],
+  ['architect', 'Arquiteto(a) de Mundos', []],
+  ['champion', 'Gênio da Criação', []],
+  ['god', 'Lenda', []],
+]
+
+// A abertura da seção é o primeiro parágrafo do primeiro grupo sem subtítulo (cartas e ferramentas
+// não têm abertura: ali todo grupo é uma carta).
+const primeiro = section.groups[0]
+const abertura = primeiro && !primeiro.title && !cards && !tools ? primeiro.paragraphs[0] : null
+// Um grupo que é SÓ a abertura não vira bloco, então não recebe imagem.
+const soAbertura = Boolean(abertura) && primeiro?.paragraphs.length === 1 && !primeiro.comparison
+// A imagem i acompanha o i-ésimo grupo que vira bloco; o último fica com as que sobrarem, e `a+b`
+// põe duas no mesmo grupo. As demonstrações sem tela real (`PENDING_VISUALS`) saem DEPOIS do
+// vínculo, para não empurrar a imagem do grupo vizinho.
+const reais = (ids: string[]) => ids.filter((id) => visualDe(id))
+const quadros = (ids: string[]) =>
+  ids.reduce((total, id) => total + (visualDe(id)?.frames.length ?? 0), 0)
+const comBloco = section.groups.map((_, i) => i).filter((i) => !(soAbertura && i === 0))
+const grupos = section.groups.map((group, i) => {
+  const vez = comBloco.indexOf(i)
+  const fatia =
+    vez < 0
+      ? []
+      : vez < comBloco.length - 1
+        ? section.visuals.slice(vez, vez + 1)
+        : section.visuals.slice(vez)
+  const ids = fatia.flatMap((id) => id.split('+'))
+  const paragraphs = abertura && i === 0 ? group.paragraphs.slice(1) : group.paragraphs
+  // O ícone do subtítulo vem do ASSUNTO quando a direção de arte o declara; senão, da posição.
+  const icone = ICONES_DE_GRUPO[section.id]?.[i] ?? null
+  return { group, visuais: reais(ids), paragraphs, icone }
+})
+const bloco = (
+  title: string | null,
+  paragraphs: string[],
+  visuais: string[],
+  icone: string | null = null,
+  comparison?: ComunidadeGroup['comparison'],
+) => {
+  const arranjo = visuais.length === 0 ? 'texto' : quadros(visuais) === 1 ? 'lado' : 'largo'
+  return { title, paragraphs, visuais, arranjo, icone, comparison }
+}
+// Um grupo sem subtítulo com duas ou mais telas REAIS se divide em dois blocos: a leitura alterna
+// texto e tela, em vez de todo o texto e depois todas as telas. Com uma tela só (ou nenhuma), o
+// texto fica inteiro num bloco: dividir deixaria um parágrafo solto, sem imagem.
+const blocos = grupos.flatMap(({ group, visuais, paragraphs, icone }) => {
+  if (!group.title && !group.comparison && visuais.length > 1 && paragraphs.length > 1) {
+    const meio = Math.floor(paragraphs.length / 2)
+    return [
+      bloco(null, paragraphs.slice(0, meio), visuais.slice(0, 1)),
+      bloco(null, paragraphs.slice(meio), visuais.slice(1)),
+    ]
+  }
+  return [bloco(group.title, paragraphs, visuais, icone, group.comparison)]
+})
+// As situações (`cases`): uma carta por grupo com subtítulo, na ordem do percurso.
+const situacoes = grupos.filter(({ group }) => group.title)
+---
+
+<section
+  class:list={['section', 'capitulo', `capitulo--${section.layout}`, `fundo-${fundo}`, `cor-${cor}`, { 'kof-banda': band }]}
+  id={section.id}
+  aria-labelledby={`title-${section.id}`}
+>
+  <div class="folha">
+    <div class="wrap">
+      {experience && <span id="experiencia" class="anchor-target" aria-hidden="true"></span>}
+      <div class="cap-head kof-reveal">
+        {band ? (
+          <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">{icone}</span>{section.eyebrow}</span>
+        ) : (
+          <span class="cap-chip"><span class="material-symbols-rounded cap-chip-icone" aria-hidden="true">{icone}</span><span class="cap-chip-texto">{section.eyebrow}</span></span>
+        )}
+        <h2 id={`title-${section.id}`} class="kof-display">{section.title}</h2>
+        {abertura && <ComunidadeProsa paragraphs={[abertura]} class="cap-lead" />}
+      </div>
+
+      {section.layout === 'journey' && (
+        <ol class="trilha kof-reveal" aria-label="Postos da Jornada do Criador">
+          {journey.map(([slug, name, libera], i) => (
+            <li class:list={['trilha-posto', { 'trilha-posto--libera': libera.length > 0 }]}>
+              <span class="trilha-foto">
+                <img src={`${imagesBase}/jornada-${slug}.webp`} alt="" width="88" height="88" loading="lazy" decoding="async" />
+                <span class="trilha-num" aria-hidden="true">{i + 1}</span>
+              </span>
+              <span class="trilha-nome">{name}</span>
+              {libera.length > 0 && (
+                <span class="trilha-libera">
+                  {libera.map((ferramenta) => <span class="trilha-chip">{ferramenta}</span>)}
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
+
+      {cards ? (
+        <div class="cartas">
+          {grupos.map(({ group, visuais }, i) => (
+            <article class:list={['carta-interesse', 'kof-carta', 'kof-carta--fio', 'kof-reveal', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`]}>
+              {visuais[0] && <ComunidadeVisual visual={visuais[0]} imagesBase={imagesBase} variant="plana" only="last" />}
+              <div class="carta-corpo">
+                {group.title && (
+                  <div class="sub-head">
+                    <span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">{ICONES_GRUPO[i % ICONES_GRUPO.length]}</span></span>
+                    <h3 class="kof-display">{group.title}</h3>
+                  </div>
+                )}
+                <div class="prosa"><ComunidadeProsa paragraphs={group.paragraphs} destaques={destaques} /></div>
+              </div>
+            </article>
+          ))}
+        </div>
+      ) : tools ? (
+        <div class="ferramentas">
+          {grupos.map(({ group, visuais }, i) => (
+            <article class:list={['ferramenta', 'kof-carta', 'kof-carta--fio', 'kof-reveal', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`, { inverso: i % 2 === 1 }]}>
+              <div class="ferramenta-texto">
+                {group.title && (
+                  <div class="sub-head">
+                    <span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">{ICONES_FERRAMENTA[i % ICONES_FERRAMENTA.length]}</span></span>
+                    <h3 class="kof-display">{group.title}</h3>
+                  </div>
+                )}
+                <div class="prosa"><ComunidadeProsa paragraphs={group.paragraphs} destaques={destaques} /></div>
+              </div>
+              {visuais[0] && <ComunidadeVisual visual={visuais[0]} imagesBase={imagesBase} only="first" />}
+            </article>
+          ))}
+        </div>
+      ) : cases ? (
+        <ol class="situacoes">
+          {situacoes.map(({ group, visuais, paragraphs, icone }, i) => (
+            <li class:list={['situacao', 'kof-reveal', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`]}>
+              <span class="situacao-marco kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">{icone ?? ICONES_GRUPO[i % ICONES_GRUPO.length]}</span></span>
+              <article class="situacao-carta kof-carta kof-carta--fio">
+                <div class="situacao-texto">
+                  <h3 class="kof-display">{group.title}</h3>
+                  <div class="prosa"><ComunidadeProsa paragraphs={paragraphs} destaques={destaques} /></div>
+                </div>
+                {visuais[0] && <ComunidadeVisual visual={visuais[0]} imagesBase={imagesBase} only="first" />}
+              </article>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        blocos.map(({ title, visuais, paragraphs, arranjo, icone, comparison }, i) => (
+          (paragraphs.length > 0 || visuais.length > 0 || comparison) && (<>
+            {(paragraphs.length > 0 || visuais.length > 0) && <div class:list={['bloco', `bloco--${arranjo}`, 'kof-reveal', { inverso: (index + i) % 2 === 1, 'kof-carta': arranjo === 'texto' && title && !band, 'kof-carta--fio': arranjo === 'texto' && title && !band }]}>
+              <div class="bloco-texto">
+                {title && (
+                  <div class="sub-head">
+                    <span class:list={['kof-ladrilho', LADRILHOS[(index + i) % LADRILHOS.length]]} aria-hidden="true">
+                      <span class="material-symbols-rounded">{icone ?? ICONES_GRUPO[(index + i) % ICONES_GRUPO.length]}</span>
+                    </span>
+                    <h3 class="kof-display">{title}</h3>
+                  </div>
+                )}
+                {paragraphs.length > 0 && (
+                  <div class:list={['prosa', { 'prosa--colunas': arranjo !== 'lado' && paragraphs.length > 1 }]}>
+                    <ComunidadeProsa paragraphs={paragraphs} destaques={destaques} />
+                  </div>
+                )}
+              </div>
+              {visuais.length > 0 && (
+                <div class="bloco-visuais">
+                  {visuais.map((visual) => (
+                    <ComunidadeVisual visual={visual} imagesBase={imagesBase} />
+                  ))}
+                </div>
+              )}
+            </div>}
+            {comparison && <ComunidadeComparacao comparison={comparison} />}
+          </>)
+        ))
+      )}
+
+      {section.actions.length > 0 && (
+        <div class="section-actions">
+          {section.actions.map((action) => <a class:list={['kof-btn', 'kof-btn--grande', { 'kof-btn--sobre-navy': band }]} href={action.href}>{action.label}</a>)}
+        </div>
+      )}
+    </div>
+  </div>
+</section>

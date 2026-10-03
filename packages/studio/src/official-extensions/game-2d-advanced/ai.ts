@@ -1,3 +1,6 @@
+import { sceneDocumentation, advancedSceneSummary as sceneSummary } from '../scene-2d/docs'
+
+const sceneReference = sceneDocumentation('SZGameKit')
 export const gameKitPromptContext = `Extensão: Jogo 2D Avançado (id: game-2d-advanced)
 
 FILOSOFIA: é a BASE de um jogo profissional (o "starter kit"): máquina de
@@ -587,4 +590,6 @@ REGRAS DE OURO ao gerar código:
 - Vitória: prefira setMission (tela "vitoria" pronta + aviso
   "missao:completa"). Derrota: endGame() (tela "fim").
 - Enxames: SEMPRE parear startSpawner com cullOffscreen no onUpdate.
+${sceneSummary}
+${sceneReference}
 `

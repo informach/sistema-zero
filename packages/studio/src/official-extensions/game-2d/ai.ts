@@ -1,5 +1,7 @@
+import { sceneDocumentation, basicSceneSummary as sceneSummary } from '../scene-2d/docs'
 import { withGameTwoDLifecycleGuidance } from './pedagogy'
 
+const sceneReference = sceneDocumentation('SZGame2D')
 export const gameTwoDPromptContext = withGameTwoDLifecycleGuidance(`Extensão: Jogo 2D (id: game-2d)
 
 CICLO DE VIDA:
@@ -13,7 +15,7 @@ PALCO IMPLÍCITO: o runtime é dono do canvas. As globais 'ctx' (contexto 2D) e
 getContext. Se a página não tiver <canvas>, o runtime cria um. Nos BLOCOS o 'ctx'
 fica escondido; no código gerado ele aparece como argumento (válido e reversível).
 
-PALETA ATUAL: Jogo e telas; Sprites; Movimento; Controles; Colisões; Grupos; Vida e placar; Som; Desenho e efeitos; Tempo; Sorteios; Cenários; Inimigos; Kits prontos. Use o palettePath atual do catálogo ao orientar a criança.
+PALETA ATUAL: Jogo e telas; Sprites; Movimento; Controles; Colisões; Grupos; Vida e placar; Som; Desenho e efeitos; Tempo; Sorteios; Cenários; Camadas e perspectiva; Inimigos; Kits prontos. Use o palettePath atual do catálogo ao orientar a criança.
 
 API global injetada como window.SZGame2D:
 - withCooldown(sprite, quadros, () => {...}, chave): tenta executar agora, no máximo uma vez por intervalo. Exige chave estável por ação. Não é temporizador nem espera bloqueante. A primeira tentativa executa; pausa congela quadros.
@@ -461,4 +463,6 @@ ENTRADA DO MOUSE — pointerDown(): valor (booleano), verdadeiro enquanto o bot�
 LAYOUT DO MAPA: centerTileMap(ctx, mapa, x, y, tamanho) centraliza a geometria naquele instante; tamanho 0 calcula o encaixe. drawTileMap(ctx, mapa) apenas desenha a geometria preparada.
 
 CANVAS NA MÃO (genérico) — novos blocos de ✏️ Traçado úteis para crateras/máscaras: ctx.rect(x,y,w,h) adiciona um retângulo ao traçado; ctx.clip() recorta o desenho pelo traçado atual; ctx.isPointInPath(x,y)/ctx.isPointInStroke(x,y) são perguntas (o ponto está dentro/na linha do traçado?). Para "furar" um buraco: traçado com o retângulo da tela inteira + um arco no sentido anti-horário, depois clip. Há também os eventos "apertar o mouse/dedo"/"soltar o mouse/dedo" (pointerdown/pointerup) na programação normal, para mira por arrastar.
+${sceneSummary}
+${sceneReference}
 `)

@@ -1,0 +1,162 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "studio-playground",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/studio",
+        "dev"
+      ],
+      "port": 5173
+    },
+    {
+      "name": "studio-playground-alt",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/studio",
+        "dev",
+        "--",
+        "--port",
+        "5183",
+        "--strictPort"
+      ],
+      "port": 5183
+    },
+    {
+      "name": "pinta-playground",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/pinta",
+        "dev"
+      ],
+      "port": 5199
+    },
+    {
+      "name": "pinta-playground-alt",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/pinta",
+        "dev",
+        "--",
+        "--port",
+        "5209",
+        "--strictPort"
+      ],
+      "port": 5209
+    },
+    {
+      "name": "molda-playground",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/molda",
+        "dev"
+      ],
+      "port": 5198
+    },
+    {
+      "name": "pensa-playground",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/pensa",
+        "dev"
+      ],
+      "port": 5201
+    },
+    {
+      "name": "kids-conferencia",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "packages/community-kids/tmp/servidor.ts"
+      ],
+      "port": 4801
+    },
+    {
+      "name": "adulto-conferencia",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "packages/community/tmp/servidor.ts"
+      ],
+      "port": 4802
+    },
+    {
+      "name": "community-kids",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/community-kids",
+        "dev"
+      ],
+      "port": 3008
+    },
+    {
+      "name": "funnel",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "--env-file=.env",
+        "run",
+        "--cwd",
+        "packages/funnel",
+        "dev"
+      ],
+      "port": 4321
+    },
+    {
+      "name": "auth",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/auth",
+        "dev"
+      ],
+      "port": 3002
+    },
+    {
+      "name": "api-gateway",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/api-gateway",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "members",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/members",
+        "dev"
+      ],
+      "port": 3004
+    },
+    {
+      "name": "admin",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "packages/admin",
+        "dev"
+      ],
+      "port": 3005
+    }
+  ]
+}

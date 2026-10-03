@@ -100,6 +100,36 @@ export function exampleQaTestTimeoutMs(contract: ExampleQAContract): number {
  */
 export const EXAMPLE_QA_CONTRACTS = [
   {
+    key: 'core:Descida da Neve (Canvas)',
+    name: 'Descida da Neve (Canvas)',
+    experience: 'game',
+    promise:
+      'Descer uma pista em perspectiva feita com contas e Canvas, sem extensão, coletando 12 estrelas e desviando das bandeiras.',
+    scenario:
+      'Enter/toque inicia; setas/A-D e arrasto movem. P pausa. Chegar a 6600 unidades vence; três colisões perdem; R ou Enter no final reinicia.',
+    interactions: ['start', 'arrows', 'drag'],
+  },
+  {
+    key: 'game-2d:Descida da Neve (Jogo 2D)',
+    name: 'Descida da Neve (Jogo 2D)',
+    experience: 'game',
+    promise:
+      'Usar sprites animados e uma pista automática, sem funções nem objetos de dados, no mesmo percurso da versão Canvas.',
+    scenario:
+      'Enter/toque inicia; setas/A-D e arrasto movem. P pausa. Coletar estrelas, evitar bandeiras, vencer ou perder e reiniciar com R.',
+    interactions: ['start', 'arrows', 'drag'],
+  },
+  {
+    key: 'game-2d-advanced:Descida da Neve (Jogo 2D Avançado)',
+    name: 'Descida da Neve (Jogo 2D Avançado)',
+    experience: 'game',
+    promise:
+      'Combinar sprites animados, controles, movimento, vidas, placar e telas nativas; vencer com seis estrelas.',
+    scenario:
+      'Descer a montanha inicia; setas/A-D e arrasto movem. P ou Pausar abre a pausa; Continuar retoma. A tela final oferece um botão para recomeçar.',
+    interactions: ['start', 'arrows', 'drag'],
+  },
+  {
     key: 'game-2d:Chuva de números',
     name: 'Chuva de números',
     experience: 'game',

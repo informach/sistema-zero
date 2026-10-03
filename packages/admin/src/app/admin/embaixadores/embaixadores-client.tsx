@@ -295,6 +295,7 @@ export const CONVERSION_STATUS_LABEL: Record<ConversionStatus, string> = {
   paid: 'Pago',
   canceled: 'Assinatura estornada',
   self_blocked: 'Autoindicação',
+  unrewarded: 'Campanha (sem bônus)',
 }
 
 const SELF_BLOCKED_HINT = 'Sem bônus: quem assinou é o próprio embaixador'
@@ -323,6 +324,10 @@ const CONVERSION_STATUS_BADGE: Record<
   },
   canceled: { variant: 'muted' },
   self_blocked: { variant: 'muted', title: () => SELF_BLOCKED_HINT },
+  unrewarded: {
+    variant: 'muted',
+    title: () => 'Conversão de campanha institucional, sem bônus Pix',
+  },
 }
 
 function ConversionStatusBadge({ c }: { c: ConversionAdminView }) {
@@ -776,6 +781,7 @@ const STAGE_LABEL: Record<ConversionStatus, string> = {
   paid: 'Bônus pago',
   canceled: CONVERSION_STATUS_LABEL.canceled,
   self_blocked: CONVERSION_STATUS_LABEL.self_blocked,
+  unrewarded: CONVERSION_STATUS_LABEL.unrewarded,
 }
 
 /**

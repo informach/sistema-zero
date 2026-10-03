@@ -2,6 +2,8 @@ import { describe, expect, it } from 'bun:test'
 import { spawnSync } from 'node:child_process'
 import { readdirSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
+import ts from 'typescript'
+import { gameTwoDRuntime, gameTwoDRuntimeSource } from '../runtime'
 
 /**
  * ⚠️ Prazo PRÓPRIO, e não o padrão de 5 s do `bun:test`: este caso empacota a
@@ -97,8 +99,15 @@ describe('bundle inicial do Jogo 2D', () => {
 // São ~3,3 KB: o layout que deixa a imagem mandar na medida, o desenho da placa e
 // o agendador de redraw, que saiu do desenho e agora serve aos DOIS donos de
 // imagem (antes era um bloco copiado dentro de `_drawSpriteBody`).
-const RUNTIME_TETO_CRU = 501_000
-const RUNTIME_TETO_GZIP = 147_000
+// Camadas e perspectiva (01/10): 508.274 B crus / 149.547 B gzip.
+// Inclui a fábrica compartilhada e 19 métodos; mantém margem próxima de 2%.
+// 02/10: sprites reais na pista, composição automática e HUD/telas. Depois do full review
+// (folha reaproveitada, poda pela projeção, placar só com placar): 541.383 B / 158.850 B gzip
+// sem compactar, 457.802 B / 122.147 B compactado.
+// A mesma compactação do Mundo 3D tira comentários de linha e linhas vazias.
+// O teste de equivalência abaixo conserva tokens e fronteiras de linha (ASI).
+const RUNTIME_TETO_CRU = 465_000
+const RUNTIME_TETO_GZIP = 124_500
 
 /**
  * Os maiores fragmentos de `runtime/`, por tamanho de FONTE. Não é o tamanho do
@@ -117,6 +126,50 @@ function maioresFragmentos(): string {
 }
 
 describe('payload do runtime do Jogo 2D', () => {
+  it('compacta sem modificar tokens executáveis ou suas quebras de linha', () => {
+    const tokens = (source: string) => {
+      const scanner = ts.createScanner(
+        ts.ScriptTarget.ES2022,
+        true,
+        ts.LanguageVariant.Standard,
+        source,
+      )
+      const result: Array<[ts.SyntaxKind, string, boolean]> = []
+      while (scanner.scan() !== ts.SyntaxKind.EndOfFileToken) {
+        result.push([scanner.getToken(), scanner.getTokenText(), scanner.hasPrecedingLineBreak()])
+      }
+      return result
+    }
+    expect(tokens(gameTwoDRuntime)).toEqual(tokens(gameTwoDRuntimeSource))
+    expect(Buffer.byteLength(gameTwoDRuntime)).toBeLessThan(
+      Buffer.byteLength(gameTwoDRuntimeSource) - 25_000,
+    )
+  })
+  // A compactação apaga linhas por conteúdo e o scanner acima não reanalisa o miolo de um
+  // template: um template literal no runtime passaria pela equivalência sem ser conferido.
+  it('o runtime não tem template literal fora dos comentários', () => {
+    const templates = (source: string) => {
+      const scanner = ts.createScanner(
+        ts.ScriptTarget.ES2022,
+        true,
+        ts.LanguageVariant.Standard,
+        source,
+      )
+      let count = 0
+      for (let kind = scanner.scan(); kind !== ts.SyntaxKind.EndOfFileToken; kind = scanner.scan())
+        if (
+          kind === ts.SyntaxKind.NoSubstitutionTemplateLiteral ||
+          kind === ts.SyntaxKind.TemplateHead
+        )
+          count++
+      return count
+    }
+    // Sem reanalisar o miolo a contagem não é exata, mas qualquer template aparece.
+    expect(templates('var a = 1; /* `comentário` */ var b = 2;')).toBe(0)
+    expect(templates('var b = `x`;')).toBeGreaterThan(0)
+    expect(templates('var c = `y${a}z`;')).toBeGreaterThan(0)
+    expect(templates(gameTwoDRuntimeSource)).toBe(0)
+  })
   it('não cresce sem alguém decidir', async () => {
     const { gameTwoDRuntime } = await import('../runtime')
     const { gzipSync } = await import('node:zlib')

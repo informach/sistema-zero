@@ -57,6 +57,12 @@ import {
   platformGameThreeDStatementSchemas,
 } from '../official-extensions/game-3d/platformIR'
 import { PERSISTENT_EXTENSION_STATEMENT_TYPES } from '../official-extensions/persistentResourceContract'
+import {
+  type SceneExpression,
+  type SceneStatement,
+  sceneExpressionSchemas,
+  sceneStatementSchemas,
+} from '../official-extensions/scene-2d/ir'
 import { CANVAS3D_AUTO_ADDON_MODULE, isCanvas3DAddonImportCanonical } from '../three/canvas3dAddons'
 import {
   isCanvas3DResourceCreatorExpression,
@@ -73,9 +79,9 @@ import {
   isLegacyLoadEvent,
   isLifecycleRootAllowed,
   isLoopStatement,
+  isStartOnlyStatement,
   LEGACY_START_WRAPPER_TYPES,
   type LifecycleArea,
-  START_ONLY_STATEMENT_TYPES,
   validateLifecycleSemantics,
 } from './lifecycle'
 import { cssCommentRejectionReason, cssSelectorRejectionReason } from './outputSafety'
@@ -240,6 +246,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'g2d:campaignValue'; key: string; fallback: JSExpr })
   // A largura e a altura LÓGICAS da tela; os tipos moram na extensão.
   | GameTwoDActionExpression
+  | SceneExpression
   | TextSpriteExpression
   | ClassicGameTwoDStageValue
   | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
@@ -525,7 +532,7 @@ export type JSExpr =
   | (JSExprCommon & { type: 'w3d:knockedCount' })
   // Entrada (caminho "na mão"): tecla apertada (bool) e posição do ponteiro (núm).
   | (JSExprCommon & { type: 'inputKeyPressed'; key: string })
-  | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' })
+  | (JSExprCommon & { type: 'inputPointer'; axis: 'x' | 'y' | 'down' })
   // Função matemática de um valor (Math.round/floor/ceil/abs/sqrt) e
   // trigonometria de um valor em radianos (Math.sin/cos/tan/asin/acos/atan).
   | (JSExprCommon & {
@@ -733,6 +740,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     }),
     z.object({ type: z.literal('g2d:keyDown'), key: irText(), ...idField }),
     ...gameTwoDActionExpressionSchemas(irText, idField),
+    ...sceneExpressionSchemas(JSExprSchema),
     ...textSpriteExpressionSchemas(JSExprSchema, irText, idField),
     ...classicGameTwoDExpressionSchemas(JSExprSchema, irText, idField),
     z.object({
@@ -1139,7 +1147,7 @@ export const JSExprSchema: z.ZodType<JSExpr> = z.lazy(() =>
     z.object({ type: z.literal('g3k:pointerOver'), charVar: irText(), ...idField }),
     z.object({ type: z.literal('g3k:groundPoint'), axis: z.enum(['x', 'y', 'z']), ...idField }),
     z.object({ type: z.literal('inputKeyPressed'), key: irText(), ...idField }),
-    z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y']), ...idField }),
+    z.object({ type: z.literal('inputPointer'), axis: z.enum(['x', 'y', 'down']), ...idField }),
     z.object({ type: z.literal('isFullscreen'), ...idField }),
     z.object({ type: z.literal('systemDark'), ...idField }),
     z.object({ type: z.literal('systemReducedMotion'), ...idField }),
@@ -2820,6 +2828,7 @@ export type JSStatement =
   | TextLabelStatement
   // Desenho de texto/placar em pixel e o esmaecer: os tipos moram na extensão.
   | GameTwoDActionStatement
+  | SceneStatement
   | TextSpriteStatement
   | ClassicGameTwoDStatement
   | (JSStatementCommon & {
@@ -3504,6 +3513,14 @@ export type JSStatement =
       body: JSStatement[]
     })
   // 📊 Barra genérica (vida grande/mana/progresso) — o HUD do P24 em canvas.
+  | (JSStatementCommon & {
+      type: 'gk:drawCounter'
+      label: JSExpr
+      value: JSExpr
+      x: JSExpr
+      y: JSExpr
+    })
+  | (JSStatementCommon & { type: 'gk:setHealth'; charVar: string; lives: JSExpr })
   | (JSStatementCommon & {
       type: 'gk:drawBar'
       current: number | JSExpr
@@ -6196,6 +6213,7 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       ...idField,
     }),
     ...gameTwoDActionStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
+    ...sceneStatementSchemas(JSExprSchema, JSStatementSchema),
     ...textSpriteStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     ...classicGameTwoDStatementSchemas(JSExprSchema, JSStatementSchema, irText, idField),
     z.object({
@@ -8036,6 +8054,20 @@ export const JSStatementSchema: z.ZodType<JSStatement> = z.lazy(() =>
       w: z.union([JSExprSchema, z.number()]),
       h: z.union([JSExprSchema, z.number()]),
       color: irText(),
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:drawCounter'),
+      label: JSExprSchema,
+      value: JSExprSchema,
+      x: JSExprSchema,
+      y: JSExprSchema,
+      ...idField,
+    }),
+    z.object({
+      type: z.literal('gk:setHealth'),
+      charVar: irText(),
+      lives: JSExprSchema,
       ...idField,
     }),
     z.object({
@@ -11381,7 +11413,7 @@ function validateLegacyLifecycle(
         path: [...path, index],
         message: `Mova ${statement.type} para fora do laço; este recurso ou configuração deve ser criado uma vez`,
       })
-    } else if (nested && START_ONLY_STATEMENT_TYPES.has(statement.type)) {
+    } else if (nested && isStartOnlyStatement(statement)) {
       ctx.addIssue({
         code: 'custom',
         path: [...path, index],
@@ -12194,6 +12226,8 @@ export const GK_STATEMENT_TYPES = new Set([
   'gk:setAngle',
   'gk:onGameClick',
   'gk:drawBar',
+  'gk:drawCounter',
+  'gk:setHealth',
   'gk:rpgMoveGrid',
   'gk:rpgBlockCell',
   'gk:rpgCreateNpc',

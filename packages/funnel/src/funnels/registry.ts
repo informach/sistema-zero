@@ -12,15 +12,16 @@ import type { HeroVariacao } from '../content/hero-perfil'
 import type { QuizStep } from '../content/quiz-config'
 import type { ResultProfile } from '../content/result-profiles'
 import type { SalesSections } from '../content/sales-sections'
+import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
+
+export type { QuizAnswers } from '../lib/quiz-types'
+
 import { COMUNIDADE_DOS_CRIADORES } from './comunidade-dos-criadores'
 import { DESAFIO_PRIMEIRO_JOGO } from './desafio-primeiro-jogo'
 import { NO_COMANDO_DA_IA } from './no-comando-da-ia'
 
 export type Audience = 'pro' | 'kids'
 export const AUDIENCES = ['pro', 'kids'] as const
-
-/** Respostas do quiz (chave snake_case → valor). Genérico — cada funil define suas chaves. */
-export type QuizAnswers = Record<string, string | number>
 
 export interface FunnelCopy {
   nome: string
@@ -39,6 +40,8 @@ export interface FunnelLanding {
   tempo: string
 }
 export interface FunnelQuiz {
+  version?: string
+  presentation?: 'comunidade'
   steps: QuizStep[]
   total: number
   /** Validação do valor por chave (server-side). Chaves fora daqui são rejeitadas. */
@@ -46,7 +49,11 @@ export interface FunnelQuiz {
   /** Deriva chaves calculadas (ex.: custo_mensal) a partir das respostas. Opcional. */
   derive?: (answers: QuizAnswers) => QuizAnswers
   /** Calcula o perfil/diagnóstico (string) a partir das respostas. Opcional (quiz sem perfil). */
-  computePerfil?: (answers: QuizAnswers) => string
+  computePerfil?: (answers: QuizAnswers) => string | null
+  /** Conditional journeys validate and reduce their own active branches. */
+  activeSteps?: (answers: QuizAnswers) => QuizStep[]
+  applyAnswer?: (answers: QuizAnswers, key: string, value: QuizAnswerValue) => QuizAnswers | null
+  isComplete?: (answers: QuizAnswers) => boolean
 }
 export interface FunnelHero {
   padrao: HeroVariacao
@@ -219,6 +226,8 @@ export interface AdminFunnelInfo {
   label: string
   /** Rótulo (pergunta) por chave de resposta do quiz — p/ exibir as respostas. */
   answerLabels: Record<string, string>
+  /** Alternativas fechadas, para mostrar seleções múltiplas sem códigos internos. */
+  answerOptions?: Record<string, Record<string, string>>
   /** Rótulo por perfil — p/ a aba Perfis. */
   perfilLabels: Record<string, string>
 }
@@ -244,12 +253,20 @@ export function adminFunnelList(): AdminFunnelInfo[] {
     key: f.key,
     label: `${AUDIENCE_LABEL[f.audience]} · ${f.productName}`,
     answerLabels: quizAnswerLabels(f),
+    answerOptions: Object.fromEntries(
+      (f.content.quiz?.steps ?? []).flatMap((step) =>
+        step.tipo === 'selecao'
+          ? [[step.key, Object.fromEntries(step.opcoes.map((o) => [o.value, o.label]))]]
+          : [],
+      ),
+    ),
     perfilLabels: f.content.result?.perfilLabels ?? {},
   }))
 }
 
 /** True quando todas as respostas exigidas pelos passos do quiz já existem. */
 export function isQuizComplete(quiz: FunnelQuiz, answers: QuizAnswers): boolean {
+  if (quiz.isComplete) return quiz.isComplete(answers)
   return quiz.steps.every((step) => {
     if (step.tipo === 'calculadora' || step.tipo === 'calculadora_prefilled') {
       return (

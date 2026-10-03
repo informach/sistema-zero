@@ -17,6 +17,8 @@ const {
 } = await import('../src/server/zappy-ai')
 const { isStudioZappyAllowed } = await import('../src/server/zappy-access')
 const { resolveStudioTier } = await import('../src/lib/studio-tier')
+const { earnedStudioTier } = await import('../src/server/studio-unlocks')
+const { SERVER_BLOCK_CATALOG } = await import('@sistemazero/studio/server-catalog')
 const { isZappySelfHarmText, redactZappyPii, redactZappySensitiveText } = await import(
   '../src/server/zappy-safety'
 )
@@ -94,6 +96,10 @@ function members(overrides: Record<string, unknown> = {}) {
       body: { access: { 'estudio-completo': true } },
     }),
     getGamification: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+    getStudioUnlocks: async () => ({
+      status: 200,
+      body: { blocks: ['sz_g2d_setup_stage', 'sz_g2d_on_key'] },
+    }),
     zappyReserveQuestion: async () => ({
       status: 200,
       body: { created: true, questionId: QUESTION_ID },
@@ -329,8 +335,9 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(deterministicZappyReply('Como fazer um jogo de futebol?')).toBeNull()
   })
 
-  test('o catálogo do tutor respeita a allowlist estrita da jornada', () => {
-    const tier = resolveStudioTier('coder', 'student')
+  test('o catálogo do tutor é o que os cursos deram, sem corte pelo nível do posto', () => {
+    // Um bloco do Jogo 3D conquistado por um Construtor: acima do nível do posto, mas é dele.
+    const tier = earnedStudioTier('coder', 'student', ['sz_g2d_setup_stage', 'sz_g3d_sky_photo'])
     expect(tier.allowBlocks?.length).toBeGreaterThan(0)
     const prompt = buildStudioZappyPrompt({
       question: 'Como faço o personagem pular?',
@@ -348,6 +355,41 @@ describe('Zappy do Studio — limites determinísticos', () => {
 
     expect(prompt.catalog.length).toBeGreaterThan(0)
     expect(prompt.catalog.every((entry) => tier.allowBlocks?.includes(entry.type))).toBe(true)
+    expect(prompt.catalog.map((entry) => entry.type)).toContain('sz_g3d_sky_photo')
+  })
+
+  test('o manual não leva ao tutor o NOME de um bloco que a criança ainda não tem', () => {
+    // O manual do Jogo 2D cita "Descrever o jogo para leitor de tela" pelo rótulo, e a redação
+    // de ids `sz_*` não alcança nome em prosa.
+    const citado = SERVER_BLOCK_CATALOG.find(
+      (entry) => entry.label === 'Descrever o jogo para leitor de tela',
+    )
+    if (!citado) throw new Error('o manual do Jogo 2D mudou: escolha outro bloco citado')
+    const perguntar = (blocks: string[]) => {
+      const tier = earnedStudioTier('coder', 'student', blocks)
+      return buildStudioZappyPrompt({
+        question: 'Como faço o leitor de tela descrever o jogo?',
+        context: {
+          projectId: PROJECT_ID,
+          mode: 'blocks',
+          kind: 'classic',
+          blocks: [],
+          installedExtensions: ['game-2d'],
+          selectedBlockId: null,
+          lastError: null,
+        },
+        tier,
+      }).system
+    }
+    // Um trecho do manual do Jogo 2D (JSON no prompt) que cita o bloco pelo nome.
+    const trechoQueCita =
+      /"title":"Manual oficial — Jogo 2D","content":"(?:[^"\\]|\\.)*Descrever o jogo para leitor de tela/
+    const semOBloco = perguntar(['sz_g2d_setup_stage'])
+    expect(semOBloco).not.toContain('Descrever o jogo para leitor de tela')
+    // …mas o manual continua lá: só o trecho que cita o bloco saiu.
+    expect(semOBloco).toContain('"title":"Manual oficial — Jogo 2D"')
+    // Anti-vácuo: com o bloco conquistado, o MESMO trecho do manual entra.
+    expect(perguntar(['sz_g2d_setup_stage', citado.type])).toMatch(trechoQueCita)
   })
 
   test('o maior tier mantém o prompt completo dentro de 48 kB', () => {
@@ -635,6 +677,58 @@ describe('BFF do Zappy', () => {
     const response = await routes.studioZappyMessage.POST(request('Como uso este bloco?'))
     expect(response.status).toBe(403)
     expect(calls).toBe(0)
+  })
+
+  // A criança comum (não equipe): o tutor usa os blocos que os cursos dela deram.
+  const INVENTOR = { ...STAFF, role: 'student', activeProfile: { accountId: 'account-1' } }
+  const inventor = {
+    getGamification: async () => ({ status: 200, body: { level: { slug: 'hacker' } } }),
+  }
+
+  test('extensão conquistada acima do nível do posto é aceita (a mesma régua da paleta)', async () => {
+    const routes = createStudioZappyRoutes({
+      session: { getSession: async () => INVENTOR },
+      members: members({
+        ...inventor,
+        getStudioUnlocks: async () => ({
+          status: 200,
+          body: { blocks: ['sz_g2d_setup_stage', 'sz_g3d_sky_photo'] },
+        }),
+      }),
+    } as never)
+    const response = await routes.studioZappyMessage.POST(request('Planeje meu jogo', ['game-3d']))
+    expect(response.status).toBe(200)
+  })
+
+  test('sem bloco conquistado o tutor não abre; blocos indisponíveis = tente de novo', async () => {
+    let reserved = 0
+    const reserve = async () => {
+      reserved += 1
+      return { status: 200, body: { created: true, questionId: QUESTION_ID } }
+    }
+    const semBlocos = createStudioZappyRoutes({
+      session: { getSession: async () => INVENTOR },
+      members: members({
+        ...inventor,
+        zappyReserveQuestion: reserve,
+        getStudioUnlocks: async () => ({ status: 200, body: { blocks: [] } }),
+      }),
+    } as never)
+    const trancado = await semBlocos.studioZappyMessage.POST(request('Dúvida'))
+    expect(trancado.status).toBe(403)
+    expect(((await trancado.json()) as { error: { code: string } }).error.code).toBe(
+      'ZAPPY_NOT_ENABLED',
+    )
+    const fora = createStudioZappyRoutes({
+      session: { getSession: async () => INVENTOR },
+      members: members({
+        ...inventor,
+        zappyReserveQuestion: reserve,
+        getStudioUnlocks: async () => ({ status: 502, body: null }),
+      }),
+    } as never)
+    expect((await fora.studioZappyMessage.POST(request('Dúvida'))).status).toBe(503)
+    expect(reserved).toBe(0)
   })
 
   test('revalida posse do Estúdio antes de reservar pergunta', async () => {

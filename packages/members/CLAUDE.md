@@ -989,6 +989,14 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   410 `CERTIFICATE_REVOKED`; a aula/curso PERMANECEM concluídos, revoke só invalida a credencial).
   `ValidateCertificateService`/`RevokeCertificateService`; helpers PUROS `eligibleForCertificate`/
   `generateSerial` (domain).
+  ⚠️⚠️ **Sem progresso por seção, o certificado entra pelo ESTADO dele (02/10/2026).** A conta da
+  EQUIPE não recebe `sectionProgress` (`get-lesson` com `privileged`) e uma aula de layout antigo
+  também não; os requisitos então saem bloco a bloco, e o bloco `certificate` chegava sem
+  `certificateState`: o "Concluir aula" ficava apagado para sempre, mesmo com o certificado pego.
+  Hoje `SectionProgressionService.certificateIssued(userId, lesson)` (só consulta quando a aula tem
+  o bloco) alimenta `certificateState.issued` no `get-lesson` (só sem `sectionProgress`: com ele,
+  quem decide é a seção) e no `mark-lesson-complete`. Testes em
+  `tests/integration/certificate.test.ts` (equipe e aula legada).
 - Cancelar/expirar assinatura é um **UPDATE atômico set-based** por `subscription_id`
   (sem load-mutate-save por linha → sem lost-update sob corrida com renovação).
 - **Lembrete de RENOVAÇÃO do anual à vista (07/2026, migration `0042` =

@@ -210,7 +210,7 @@ export function buildApp(
     return `AAAA${a[Math.floor(shareCodeSeq / a.length) % a.length]}${a[shareCodeSeq % a.length]}`
   }
   const creations = new InMemoryCreationsRepository()
-  const teacherThreadsRepo = new InMemoryTeacherThreadRepository()
+  const teacherThreadsRepo = new InMemoryTeacherThreadRepository(courses)
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
   const aiUsage = new InMemoryAiUsageRepository()
   const challengeConfig = new InMemoryChallengeConfigRepository()

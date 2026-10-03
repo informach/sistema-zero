@@ -183,7 +183,7 @@ export class SendRenewalRemindersService {
             ? 'challenge-expiry-3d'
             : 'challenge-expiry-7d'
         const link = expired
-          ? `${this.opts.funnelUrl}/kids/comunidade-do-criador/oferta`
+          ? `${this.opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
           : `${this.opts.kidsUrl}/cursos/${encodeURIComponent(first.courseRef)}`
 
         await this.messaging.sendEmail({

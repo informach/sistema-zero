@@ -495,6 +495,7 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       name: string
       email: string
       phone?: string
+      attribution?: import('@sistemazero/core/referrals').GiftAttribution | null
     }): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = '/referrals/internal/redemptions'

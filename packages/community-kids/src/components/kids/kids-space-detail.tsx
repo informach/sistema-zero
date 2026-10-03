@@ -116,7 +116,7 @@ function PlayLinkActions({
   title,
   coverImageUrl = null,
   onRemix = null,
-  remixLock = null,
+  remixLock = false,
   className,
 }: {
   playUrl: string
@@ -125,11 +125,11 @@ function PlayLinkActions({
   /** "Fazer a minha versão" (remix) — presente SÓ com posse do Estúdio + rank com Estúdio livre. */
   onRemix?: (() => void) | null
   /**
-   * Jogo usa ferramentas ALÉM do degrau do viewer → o botão vira o selo "no nível X"
-   * (cadeado; `levelLabel` null = nível irresoluto, selo genérico). O clique continua
-   * vivo — mostra o recado gentil (o handler checa antes de importar).
+   * O jogo usa ferramenta que a criança ainda não conquistou nos cursos → o botão ganha o
+   * cadeado. O clique continua vivo e mostra o recado gentil (o handler checa antes de
+   * importar).
    */
-  remixLock?: { levelLabel: string | null } | null
+  remixLock?: boolean
   className?: string
 }) {
   const [cardOpen, setCardOpen] = useState(false)
@@ -194,11 +194,16 @@ function PlayLinkActions({
           <button
             type="button"
             onClick={onRemix}
-            title="Continue a sua jornada de criador para remixar este jogo"
             className="sz-btn-gradient sz-btn-suave h-auto min-h-11 w-full gap-2 py-2 text-muted-foreground"
           >
             <Lock className="size-4 shrink-0" aria-hidden /> Fazer a minha versão
-            {remixLock.levelLabel ? ` · no nível ${remixLock.levelLabel}` : ''}
+            {/* O cadeado é só ícone: sem este texto, quem usa leitor de tela ouviria um botão igual
+                ao liberado. `title` não serve (não é anunciado com segurança e não aparece no
+                toque); o clique continua vivo e mostra o recado. */}
+            <span className="sr-only">
+              {' '}
+              (trancado: conclua mais cursos para ter as ferramentas deste jogo)
+            </span>
           </button>
         ) : (
           <button
@@ -227,14 +232,14 @@ export function ShowcaseCard({
   viewerId,
   onOpen,
   onRemix = null,
-  remixLock = null,
+  remixLock = false,
 }: {
   thread: HubThreadView
   viewerId: string
   onOpen: () => void
   onRemix?: ((thread: HubThreadView) => void) | null
-  /** Selo "no nível X" do remix (jogo além do degrau do viewer) — ver `PlayLinkActions`. */
-  remixLock?: { levelLabel: string | null } | null
+  /** Cadeado do remix: o jogo usa ferramentas que os cursos ainda não deram — ver `PlayLinkActions`. */
+  remixLock?: boolean
 }) {
   const playUrl = playPathFor(thread)
   const plays = thread.playsCount ?? 0
@@ -435,7 +440,7 @@ export function ThreadDetail({
   onReport,
   authorLabel,
   onRemix = null,
-  remixLock = null,
+  remixLock = false,
   canReply,
   canInteract = true,
 }: {
@@ -461,8 +466,8 @@ export function ThreadDetail({
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (item: AuthorItem) => ReactNode
   onRemix?: ((thread: HubThreadView) => void) | null
-  /** Selo "no nível X" do remix (jogo além do degrau do viewer) — ver `PlayLinkActions`. */
-  remixLock?: { levelLabel: string | null } | null
+  /** Cadeado do remix: o jogo usa ferramentas que os cursos ainda não deram — ver `PlayLinkActions`. */
+  remixLock?: boolean
 }) {
   // memo: o corpo do tópico não muda quando um comentário recebe reação.
   const threadBody = useMemo(() => renderUgcMarkdown(thread.body), [thread.body])

@@ -4,6 +4,12 @@ import type { CoreExampleSummary } from './coreCatalog'
 
 export const CORE_EXAMPLE_SUMMARIES: readonly CoreExampleSummary[] = [
   {
+    name: 'Descida da Neve (Canvas)',
+    description:
+      'Perspectiva feita na mão com Canvas, contas e listas, sem extensão. Desça a montanha, pegue estrelas e desvie das bandeiras. Setas ou A/D para virar; arraste na neve no celular. Enter ou toque começa. P ou o botão no canto pausa. Chegue ao fim com pelo menos uma das três vidas. R reinicia.',
+    experience: 'game',
+  },
+  {
     name: 'Reino Zero Ultra (na mão)',
     description:
       'Plataforma autoral profissional feita só com HTML, CSS, Canvas, Programação e Som: 32 fases desenhadas individualmente, solo, turnos ou cooperativo, natação, escadas, portais, inimigos e guardiões distintos, save v2 recuperável e replay isolado. Todo visual e áudio são procedurais.',

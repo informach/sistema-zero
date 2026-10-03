@@ -45,7 +45,6 @@ export function SceneReadoutBand({
   activity,
   state,
   children,
-  colada = false,
   relogioAndando = false,
   valoresEscondidos = false,
   placa,
@@ -54,11 +53,6 @@ export function SceneReadoutBand({
   state: SceneState
   /** O medidor de descobertas, quando há. */
   children?: ReactNode
-  /**
-   * A faixa é a tira de CIMA do palco, dentro da mesma moldura (review do lote 2): com borda e
-   * cantos próprios ela era mais uma caixa numa tela que passava de quatro superfícies.
-   */
-  colada?: boolean
   /** O ▶ está rodando: nas cenas de quadro longo, a faixa mostra o quadro em andamento. */
   relogioAndando?: boolean
   /**
@@ -105,67 +99,72 @@ export function SceneReadoutBand({
    * responde o palpite e os números voltam — o pulo que o `LugarReservado` existe para impedir.
    */
   const lista = (rows: readonly SceneReading[], escondidos = valoresEscondidos) => (
-    /* ⭐⭐ A pele é a do HUD do JOGO (`drawScore`, `game-2d/runtime/arcadeKitsHud.ts`): rótulo
-       pequeno em versalete e número GORDO na fonte de display, sem caixa. Era a queixa dela de
-       18/09: "o placar você fez de um jeito que não tem nada a ver com o estilo do jogo".
-       ⚠️ O separador vem do CSS (`after:content`), e não de um caractere no `dt`: sem ele, a
-       leitura corrida dizia "o Dino nos bastidores ainda não desenho desligado", e com um
-       caractere no texto o `dt` deixaria de ser o nome da medida.
+    /* ⭐⭐ LADRILHOS (console v2, 30/09/2026): um por leitura, rótulo em versalete e valor GORDO,
+       escuro. A cor do par (`text-scene-a`, `text-scene-b-ink`, `alert`, `leaf`) fica na CLASSE do
+       `dd` — é o contrato dos testes e o que pinta a bolinha antes do valor (`scene.css`); a tinta
+       do valor é a do texto, porque "cada número de uma cor" lia como carnaval (relato dela).
        ⚠️ A faixa NÃO é `aria-hidden`: quem anuncia a mudança é o `role="status"` da frase, mas
        estes números são conteúdo e continuam sendo lidos. */
-    <dl className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-foreground">
-      {rows.map((r) => (
-        <div key={r.label} className="flex items-baseline gap-1.5">
-          <dt className="sz-scene-hud-rotulo text-muted-foreground after:content-[':']">
-            {r.label}
-          </dt>
-          <dd
-            className={`sz-scene-hud-valor tabular-nums ${
-              r.tone === 'a'
-                ? 'text-scene-a'
-                : r.tone === 'b'
-                  ? 'text-scene-b-ink'
-                  : r.tone === 'alert'
-                    ? 'text-scene-alert'
-                    : // ⚠️ O verde do eixo y da `axis-z` (consertos do review da onda B do lote 5).
-                      r.tone === 'leaf'
-                      ? 'text-scene-leaf'
-                      : ''
-            }`}
+    <dl className="sz-scene-hud">
+      {rows.map((r) => {
+        const texto = escondidos ? '?' : r.value
+        return (
+          <div
+            key={r.label}
+            className="sz-scene-hud-tile"
+            data-tone={r.tone}
+            // Valor longo ("4 quadros por segundo", "tocando · 8 por segundo"): o CSS o põe num degrau
+            // menor e, muito longo, na linha toda (review visual de 30/09: quebrava em 2-3 linhas).
+            data-medida={texto.length > 15 ? 'longa' : texto.length > 10 ? 'media' : undefined}
           >
-            {escondidos ? '?' : r.value}
-          </dd>
-        </div>
-      ))}
+            <dt className="sz-scene-hud-rotulo">{r.label}</dt>
+            <dd
+              className={`sz-scene-hud-valor tabular-nums ${
+                r.tone === 'a'
+                  ? 'text-scene-a'
+                  : r.tone === 'b'
+                    ? 'text-scene-b-ink'
+                    : r.tone === 'alert'
+                      ? 'text-scene-alert'
+                      : // ⚠️ O verde do eixo y da `axis-z` (consertos do review da onda B do lote 5).
+                        r.tone === 'leaf'
+                        ? 'text-scene-leaf'
+                        : ''
+              }`}
+            >
+              {texto}
+            </dd>
+          </div>
+        )
+      })}
     </dl>
   )
-  const linha = 'flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-3 py-2'
+  /* A linha de cima da faixa: a placa do momento à esquerda, o medidor à direita; os ladrilhos
+     vêm embaixo. A mesma estrutura no molde e no que está à vista. */
+  const cabeca = (
+    <div className="sz-scene-faixa">
+      {placa}
+      {children}
+    </div>
+  )
   return (
     <LugarReservado
       marca="faixa"
-      // ⚠️ O fundo e a linha moram no lugar de FORA: a altura reservada é dele, e a tira continua inteira.
-      // ⚠️⚠️ A linha é SOMBRA por dentro, e não `border`: a altura mínima que o lugar reserva é a do
-      // conteúdo, e com `border-box` a borda de 1px saía dela (medido: a faixa ia de 69 para 68 no toque).
-      className={`bg-card ${
-        colada
-          ? 'shadow-[inset_0_-1px_0_var(--color-border)]'
-          : 'mb-2 rounded-2xl ring-1 ring-border ring-inset'
-      }`}
+      className="sz-scene-faixa-lugar"
       molde={
         <div className="grid" aria-hidden>
           {candidatos.map((rows, i) => (
             // biome-ignore lint/suspicious/noArrayIndexKey: cada candidato é um lugar fixo do molde
-            <div key={i} className={`${linha} [grid-area:1/1]`}>
-              {placa}
+            <div key={i} className="[grid-area:1/1]">
+              {cabeca}
               {lista(rows, false)}
-              {children}
             </div>
           ))}
         </div>
       }
       chave={chave}
     >
-      <div className={linha}>
+      <div>
         {/* ⚠️⚠️ O quadro EM ANDAMENTO nas cenas de 1 ou 2 quadros por segundo (review do lote 4). Com o
             ▶, a primeira mudança da `pool`, da `score` e da `diagonal` vinha 1,1 s depois do clique, e na
             `diagonal` o passo de cada segundo é igual ao anterior: nada na tela dizia que o tempo estava
@@ -187,9 +186,8 @@ export function SceneReadoutBand({
             />
           </div>
         )}
-        {placa}
+        {cabeca}
         {lista(atual)}
-        {children}
       </div>
     </LugarReservado>
   )

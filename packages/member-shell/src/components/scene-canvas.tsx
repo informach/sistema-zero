@@ -225,6 +225,29 @@ const desenhar = (desenho: DesenhoDoPalco, palco: Palco) =>
 /** A borda de 2px que separa os dois lados da comparação lado a lado (fica no lado da esquerda). */
 const DIVISORIA = 2
 
+/** Largura ÷ altura de um enquadramento, ou `undefined` quando não dá para encaixar por ela. */
+const proporcaoDe = (view: number | Enquadramento): number | undefined =>
+  typeof view !== 'number' && view.w > 0 && view.h > 0 ? view.w / view.h : undefined
+
+/**
+ * A proporção EFETIVA da comparação, para o encaixe pela altura: lado a lado as duas colunas dividem
+ * a largura e a mais alta manda (2 × a menor proporção); empilhada, as alturas se somam.
+ */
+function proporcaoDaComparacao(
+  views: readonly (number | Enquadramento)[],
+  ladoALado: boolean,
+): number | undefined {
+  const proporcoes: number[] = []
+  for (const v of views) {
+    const p = proporcaoDe(v)
+    if (p === undefined) return undefined
+    proporcoes.push(p)
+  }
+  return ladoALado
+    ? 2 * Math.min(...proporcoes)
+    : 1 / proporcoes.reduce((soma, p) => soma + 1 / p, 0)
+}
+
 /**
  * A MOLDURA, sozinha. Interna de propósito: quem desenha uma cena usa o `SceneCanvas`.
  *
@@ -241,6 +264,8 @@ function SceneFrame({
   refDaMoldura,
   largura,
   proporcao,
+  larguraMinima,
+  larguraMaxima,
 }: {
   children: ReactNode
   className?: string
@@ -248,15 +273,44 @@ function SceneFrame({
   refDaMoldura: RefObject<HTMLDivElement | null>
   /** A largura que o palco está usando (a medida, ou a conhecida antes de medir). */
   largura: number
-  /** Palcos simples podem caber também pela altura disponível no modo ampliado. */
+  /**
+   * A proporção do que ESCALA com a largura (largura ÷ altura do desenho; na comparação, a efetiva),
+   * para o palco caber pela ALTURA no console ampliado. Ela vai na variável
+   * `--sz-scene-aspect-desenho` e na classe `sz-scene-frame--fit`; quem faz a conta é o
+   * `ConsoleMundo` (`lib/scene-encaixe.ts`: mede as bordas, a legenda desenhada, o texto do rodapé
+   * e o que mais houver na raiz do palco) e escreve `--sz-scene-encaixe`, que o CSS da moldura lê.
+   * ⚠️ Em linha a moldura ignora tudo isto (a largura é a da coluna): foi assim que o full review
+   * de 30/09 julgou a regra morta e a apagou, e o e2e do ampliado a 1920×600 caiu (o palco passava
+   * da linha do grid). Desde 01/10/2026 vale para TODO palco, não só o simples: com legenda,
+   * rodapé ou recorte estreito a conta é a mesma, porque o que não escala é medido.
+   */
   proporcao?: number
+  /**
+   * A menor largura de CONTEÚDO que o palco aceita no encaixe pela altura (px). A comparação lado
+   * a lado declara a largura em que os dois lados ainda cabem lado a lado: abaixo dela o palco
+   * EMPILHA, a altura dobra e a conta espirala (medido: a `world` foi parar em 117px). Daqui para
+   * baixo o encaixe para, e quem rola é o cartão do mundo.
+   */
+  larguraMinima?: number
+  /**
+   * A maior largura de CONTEÚDO que o palco aceita no encaixe (px). O palco com recorte ESTREITO
+   * declara, enquanto está estreito, a largura logo abaixo do limiar: o recorte é mais largo que o
+   * desenho inteiro, então o encaixe pela altura o deixaria crescer, ele sairia do estreito, ficaria
+   * mais alto, encolheria e voltaria ao estreito, sem fim (medido na `variable` a 1280×600). O estado
+   * em que o palco está é o que fica.
+   */
+  larguraMaxima?: number
 }) {
+  const vars: Record<string, string | number> = {}
+  if (proporcao) vars['--sz-scene-aspect-desenho'] = proporcao
+  if (larguraMinima) vars['--sz-scene-largura-minima'] = `${Math.ceil(larguraMinima)}px`
+  if (larguraMaxima) vars['--sz-scene-largura-maxima'] = `${Math.floor(larguraMaxima)}px`
   return (
     <div
       ref={refDaMoldura}
       // ⚠️ `data-largura-do-palco`: a largura com que a letra foi calculada, para os e2e conferirem.
       data-largura-do-palco={Math.round(largura)}
-      style={proporcao ? ({ '--sz-scene-aspect': proporcao } as CSSProperties) : undefined}
+      style={Object.keys(vars).length ? (vars as CSSProperties) : undefined}
       // `sz-scene-frame`: gancho para o PLAYER colar a faixa de estado na mesma moldura (review do
       // lote 2). Sem regra aqui.
       // ⚠️⚠️ `sz-scene-espaco` (Raio-X, lote 3) REDECLARA a paleta inteira da cena para o escuro
@@ -310,6 +364,11 @@ export function ladosCabemLadoALado(
   return views.every((v, i) => (largura / 2 - (i === 0 ? DIVISORIA : 0)) / v.w >= ESCALA_ESTREITA)
 }
 
+/** A menor largura de conteúdo em que `ladosCabemLadoALado` ainda é verdadeiro (o inverso dele). */
+function larguraMinimaLadoALado(views: readonly Enquadramento[]): number {
+  return Math.max(...views.map((v, i) => 2 * (ESCALA_ESTREITA * v.w + (i === 0 ? DIVISORIA : 0))))
+}
+
 export function SceneCanvas({
   children,
   titulo,
@@ -327,6 +386,7 @@ export function SceneCanvas({
   empilhar = false,
   legenda,
   viewEstreito,
+  encaixe = true,
 }: {
   /** O desenho, ou uma função do `Palco` (a escala medida) que decide o que cabe. */
   children?: DesenhoDoPalco
@@ -414,6 +474,13 @@ export function SceneCanvas({
    * celular"). O desenho de dentro lê o enquadramento em uso em `palco.view`.
    */
   viewEstreito?: Enquadramento
+  /**
+   * Se o palco pode ENCAIXAR pela altura no console ampliado (`lib/scene-encaixe.ts`): a moldura
+   * ganha a proporção do desenho e encolhe até caber inteira no mundo. `false` para o palco que
+   * não pode encolher (o `tilemap`, cujas casas têm os 44px do alvo de toque): aí quem rola é o
+   * cartão do mundo.
+   */
+  encaixe?: boolean
 }) {
   const id = useId()
   const moldura = useRef<HTMLDivElement>(null)
@@ -431,7 +498,14 @@ export function SceneCanvas({
       palcoDe(ladoALado ? largura / 2 - (i === 0 ? DIVISORIA : 0) : largura, v),
     )
     return (
-      <SceneFrame className={className} mundo={mundo} refDaMoldura={moldura} largura={largura}>
+      <SceneFrame
+        className={className}
+        mundo={mundo}
+        refDaMoldura={moldura}
+        largura={largura}
+        proporcao={encaixe ? proporcaoDaComparacao(emUso, ladoALado) : undefined}
+        larguraMinima={encaixe && !empilhar ? larguraMinimaLadoALado(views) : undefined}
+      >
         <div
           role="group"
           aria-label={castText(titulo, cast)}
@@ -496,13 +570,23 @@ export function SceneCanvas({
   const deFabrica = palcoDe(largura, view)
   const palco =
     deFabrica.estreito && viewEstreito ? palcoDe(largura, viewEstreito, true) : deFabrica
+  // A largura de conteúdo em que o palco vira estreito: abaixo dela o recorte muda e, com ele, a
+  // proporção. O encaixe pela altura não pode atravessá-la (ver `larguraMaxima` da moldura).
+  const limiarDoEstreito =
+    viewEstreito && typeof view !== 'number' ? ESCALA_ESTREITA * view.w : undefined
   return (
     <SceneFrame
       className={className}
       mundo={mundo}
       refDaMoldura={moldura}
       largura={largura}
-      proporcao={!legenda && !rodape && !viewEstreito ? view.w / view.h : undefined}
+      proporcao={encaixe ? proporcaoDe(palco.view) : undefined}
+      larguraMinima={
+        encaixe && limiarDoEstreito && !deFabrica.estreito ? limiarDoEstreito : undefined
+      }
+      larguraMaxima={
+        encaixe && limiarDoEstreito && deFabrica.estreito ? limiarDoEstreito - 1 : undefined
+      }
     >
       <svg
         ref={svgRef}

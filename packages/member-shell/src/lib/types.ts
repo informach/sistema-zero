@@ -926,8 +926,8 @@ export interface MissionsMeView {
 /**
  * Paleta do Estúdio livre conquistada pelo CURRÍCULO (08/2026) — mirror do
  * `StudioUnlocksView` do members. É a UNIÃO dos blocos declarados pelos cursos que a
- * criança concluiu E publicou no Mural. Vazio = nenhum curso liberou nada ainda; nesse
- * caso o `resolveStudioTier` cai no perfil do NÍVEL (fail-open do rollout).
+ * criança concluiu E publicou no Mural. Vazio = nenhum curso liberou nada ainda, e o
+ * Estúdio livre fica trancado com o recado de concluir um curso (`StudioTier.hasPalette`).
  */
 export interface StudioUnlocksView {
   blocks: string[]
@@ -1387,6 +1387,11 @@ export interface LessonBlockView {
   studioState?: StudioStateView | null
   /** Presente só em blocos de Pinta (mesma forma; campo separado — ver `PintaStateView`). */
   pintaState?: PintaStateView | null
+  /**
+   * Presente só em blocos de certificado de aula SEM progresso por seção (equipe, layout antigo):
+   * os requisitos são recalculados aqui bloco a bloco e o certificado pego libera a conclusão.
+   */
+  certificateState?: { issued: boolean } | null
 }
 
 /**

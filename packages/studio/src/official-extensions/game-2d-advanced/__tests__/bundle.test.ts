@@ -69,8 +69,9 @@ describe('bundle inicial do Jogo 2D Avançado', () => {
       // Medido 186.253 / 45.941 depois da migração do manual. A folga é de ~2%,
       // apertada de propósito: teto largo é teto que não cobra, e o do irmão
       // envelheceu justamente assim (mede 152k contra um teto de 183k).
-      expect(metrics.rawBytes, evidencia).toBeLessThan(190_000)
-      expect(metrics.gzipBytes, evidencia).toBeLessThan(47_000)
+      // 02/10: comandos separados de perspectiva, contador nativo e vida; docs completas continuam lazy.
+      expect(metrics.rawBytes, evidencia).toBeLessThan(192_000)
+      expect(metrics.gzipBytes, evidencia).toBeLessThan(48_000)
       expect(metrics.chunks, evidencia).toBeGreaterThanOrEqual(6)
       // ⚠️ Os três marcadores são EXCLUSIVOS do módulo que vigiam, e isso foi
       // conferido: `window.SZGameKit` NÃO serve para o runtime (o `aiSummary`,

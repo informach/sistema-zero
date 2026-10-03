@@ -20,23 +20,28 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
 ## Conceito central (decisões travadas com a usuária)
 
-1. **Indicação = curso Kids Cadê Todo Mundo? por 7 dias + visita permanente ao Mural só nos
-   novos resgates** (`SCHOLARSHIP_COURSE_SLUG`, default `cade-todo-mundo`). O curso usa grant
-   `mode:'course'` com `expiresAt = createdAt + 7 dias`; a visita usa outro grant manual
-   `mode:'mural_visitor'`, com chave `mural-dos-criadores-visitante` e sem vencimento.
-   Resgates antigos mantêm sua política gravada e não recebem visita por backfill.
+1. **Indicação = curso Kids Cadê Todo Mundo? e participação no Mural por 7 dias + visita
+   permanente depois** (`SCHOLARSHIP_COURSE_SLUG`, default `cade-todo-mundo`; decisão de 03/10/2026).
+   O curso usa `mode:'course'` com `expiresAt = createdAt + 7 dias`. Novos resgates gravam
+   `muralVisitorPolicy:'trial'`; `mode:'mural_trial'` concede o Mural completo com o mesmo vencimento
+   e a visita sem vencimento, em lote atômico no Members. O checkpoint `muralVisitorGrantedAt`
+   registra a conclusão dessa etapa, com delivery `scholarship:mural-trial:<id>`.
+   Resgates antigos conservam a política; `gifts:upgrade-mural` simula a atualização dos resgates
+   concluídos com política visitante e prazo restante. `--apply` libera a participação apenas
+   pelo prazo restante, sem estendê-lo e sem e-mail.
    O curso segue bloqueado para quem apenas cria conta. Antes de registrar o resgate,
    o serviço verifica se ele está publicado; falha/rascunho fecha o fluxo sem criar conta.
    **1 resgate por E-MAIL, global** (UNIQUE em `scholarship_redemptions.email`).
 2. **Embaixador não precisa de conta** — a página dele é uma capability-URL
-   (`/embaixador/<page_token>`, 32 bytes base64url). Sem ganho financeiro ao embaixador.
-3. **`codes` é GENÉRICA desde a F1**: `owner_kind ∈ {ambassador, account}` com UNIQUEs parciais e
+   (`/embaixador/<page_token>`, 32 bytes base64url). Bônus Pix segue a extensão abaixo;
+   campanhas institucionais não geram bônus.
+3. **`codes` é GENÉRICA desde a F1**: `owner_kind ∈ {ambassador, account, campaign}` com UNIQUEs parciais e
    CHECK de exatamente-um-owner. Na F2 o MESMO código do membro serve à landing `/bolsa/<code>` e à
    atribuição `?ref` — é "a liga" (bolsista que assinar depois credita 20% ao membro na F3).
    `owner_email` (lower) já nasce aqui — base do anti-autoindicação da F3, sem backfill.
 4. **Sem WhatsApp automático** (decisão de produto): disparo da plataforma é E-MAIL único;
    o embaixador compartilha o link no próprio WhatsApp.
-5. **Ordem do resgate: DISPONIBILIDADE → CONTA → CURSO → VISITA (se nova) → E-MAIL** — se o e-mail falhar, o acesso já existe; se um
+5. **Ordem do resgate: DISPONIBILIDADE → CONTA → CURSO → MURAL (conforme política) → E-MAIL** — se o e-mail falhar, o acesso já existe; se um
    grant falhar, nenhum e-mail mentiroso sai. As duas concessões têm delivery IDs e checkpoints
    distintos, então um retry não reinicia o curso nem duplica a visita. O e-mail é best-effort (fallback do usuário =
    "esqueci minha senha").
@@ -148,7 +153,7 @@ O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-p
   quem perde re-busca (por conta ou por e-mail) e devolve retomada, nunca 500 nem "pendente".
   Devolve `{enrolled, ambassador: {pageUrl, shareUrl ABSOLUTOS via `viewOf` do service, pixKeySet,
   status}, stats (`getAmbassadorStats` — 2 counts numa ida, sem re-buscar pelo token), bonus:
-  {counts, amountCents}}` + `created` no POST (true = o e-mail do link SAIU). `bonus.amountCents`
+  {counts, amountCents}}` + `created` no POST (true = cadastro criado); `linkEmailSent` informa a aceitação do e-mail separadamente. `bonus.amountCents`
   = env `BONUS_AMOUNT_CENTS` — a copy dos apps NUNCA hardcoda o valor.
 
 ## Borda HTTP (tudo VIA GATEWAY, exceto o consumer)
@@ -271,3 +276,15 @@ promise do drizzle (thenable preguiçoso) — try/catch; Date em SQL cru do post
 - [ ] `bun run typecheck` limpo · `bun test` verde · `bun run check` sem erros.
 - [ ] Mudou schema? `db:generate` + commit da migration (confira o `when` no journal).
 - [ ] Mudou contrato/fluxo? Atualize este CLAUDE.md.
+
+## Campanhas de presente (02/10/2026)
+
+- Contrato client-safe: `@sistemazero/core/referrals`. `CampaignAdminService` e rotas `/referrals/admin/campaigns` usam os guards existentes (leitura staff+, escrita admin+).
+- Tabelas `campaigns`/`campaign_history`; `codes.campaign_id` exclusivo e CHECK de exatamente uma origem. `previa` é reservado à prévia do funil. Não editar código existente: duplicar cria nova edição.
+- Datas de campanha regulam NOVOS cadastros. Aceitação válida: início inclusivo, encerramento exclusivo. O repositório revalida sob lock da campanha, na mesma ordem do editor. Grants e S2S ficam fora da transação.
+- Resgate novo guarda snapshot público, curso e UTM sanitizada. Retomada conserva origem, duração e curso; histórico não recebe direitos por backfill. `welcome_accepted_at` significa aceitação pelo messaging, não entrega na caixa postal.
+- Campanha converte como `unrewarded` (bônus zero), fora da fila Pix. Estorno cancela essa conversão. Pagamento anterior ao cadastro não é atribuído ao presente.
+- Migration `0004_material_hellion` gerada pelo script Drizzle, revisada e validada em PostgreSQL local. Aplicar pelo deploy antes das consultas às novas colunas. Ver `docs/marketing/kids/cade-todo-mundo/implementacao.md` e `revisao-implementacao.md` na mesma pasta.
+- PATCH de campanha exige `expectedUpdatedAt`; conferência sob lock recusa edição antiga com 409 `CAMPAIGN_CHANGED`. O admin deve reler antes de tentar novamente. O identificador do operador é preservado mesmo com nome longo.
+- Conversões de assinatura consultam `GET /payments/internal/subscriptions/:id` com token interno; assinatura criada antes do resgate não é atribuída por uma renovação posterior. Falha/404 na consulta pede reentrega. A conferência de estorno após INSERT também pede retry quando indisponível e funciona quando o INSERT já existe.
+- `welcome_accepted_at` é recibo local: falhar ao gravá-lo não transforma aceitação confirmada pelo messaging em falha de envio nem libera a emissão de outro token.

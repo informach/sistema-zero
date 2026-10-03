@@ -555,6 +555,21 @@ describe('RouteRegistry', () => {
   })
 
   test('referrals: admin wildcard por método; internas não caem no wildcard; grant-manual ≠ grant', () => {
+    expect(registry.resolve('GET', '/referrals/admin/campaigns', 'v1')?.route.id).toBe(
+      'referrals-admin-read',
+    )
+    expect(registry.resolve('GET', '/referrals/admin/campaigns/abc', 'v1')?.route.id).toBe(
+      'referrals-admin-read',
+    )
+    expect(registry.resolve('POST', '/referrals/admin/campaigns', 'v1')?.route.id).toBe(
+      'referrals-admin-write',
+    )
+    expect(registry.resolve('PATCH', '/referrals/admin/campaigns/abc', 'v1')?.route.id).toBe(
+      'referrals-admin-write',
+    )
+    expect(
+      registry.resolve('POST', '/referrals/admin/campaigns/abc/duplicate', 'v1')?.route.id,
+    ).toBe('referrals-admin-write')
     // Admin: o MESMO wildcard separado por método (leitura staff+ × escrita admin+).
     expect(registry.resolve('GET', '/referrals/admin/ambassadors', 'v1')?.route.id).toBe(
       'referrals-admin-read',

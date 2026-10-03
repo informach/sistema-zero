@@ -3,10 +3,11 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { COMUNIDADE_DOS_CRIADORES } from '../../src/funnels/comunidade-dos-criadores'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../src/funnels/comunidade-dos-criadores/content'
+import { PAGE_A } from '../../src/funnels/comunidade-dos-criadores/oferta/tempo-de-tela'
 import { FUNNELS, getFunnel, getFunnelByKey, isFunnelKey } from '../../src/funnels/registry'
 
-// Funil de ASSINATURA sem quiz: o def precisa manter os invariantes que dirigem
-// os 404 (quiz/resultado), o dispatch do body próprio (sem `sales`) e o rodapé
+// Funil de ASSINATURA com quiz: o def precisa manter os invariantes que dirigem
+// o dispatch do quiz e do body próprio (sem `sales`) e o rodapé
 // sem o disclaimer de vitalício.
 describe('registro do funil Comunidade dos Criadores', () => {
   test('resolve pela URL e pela chave', () => {
@@ -15,7 +16,7 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(isFunnelKey('kids/comunidade-dos-criadores')).toBe(true)
   })
 
-  test('def coerente: kids, assinatura, sem quiz e com body próprio', () => {
+  test('def coerente: kids, assinatura, quiz e body próprios', () => {
     const f = COMUNIDADE_DOS_CRIADORES
     expect(f.key).toBe('kids/comunidade-dos-criadores')
     expect(f.basePath).toBe('/kids/comunidade-dos-criadores')
@@ -23,11 +24,10 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(f.theme).toBe('kids')
     // Assinatura: o Footer NÃO deve exibir o disclaimer de acesso vitalício.
     expect(f.lifetimeAccess).toBe(false)
-    // Sem quiz/resultado/upsell/downsell: as rotas dão 404 sozinhas.
-    expect(f.steps).toEqual({ quiz: false, resultado: false, upsell: false, downsell: false })
-    expect(f.content.quiz).toBeUndefined()
+    expect(f.steps).toEqual({ quiz: true, resultado: true, upsell: false, downsell: false })
+    expect(f.content.quiz?.presentation).toBe('comunidade')
     expect(f.content.hero).toBeUndefined()
-    expect(f.content.result).toBeUndefined()
+    expect(f.content.result).toBeDefined()
     // Sem `sales`: a /oferta despacha o ComunidadeOfertaBody pela chave.
     expect(f.content.sales).toBeUndefined()
     // Capa dedicada do checkout/og.
@@ -50,12 +50,26 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(o.passos.map((p) => p.titulo)).toContain('Mostre a Jornada do Criador')
   })
 
-  test('metadados mantêm a promessa de desenvolver ideias criando jogos', () => {
+  test('metadados espelham a página padrão, sem preço estático', () => {
     const f = COMUNIDADE_DOS_CRIADORES
-    expect(f.content.landing.h1).toContain('transformar as próprias ideias em jogos')
-    expect(f.seoTitle).toContain('Ideias que viram jogos')
-    expect(f.seoDescription).toContain('Projetos guiados')
+    expect(f.content.landing.h1).toBe(PAGE_A.hero.title)
+    expect(f.seoTitle).toBe(PAGE_A.seoTitle)
+    expect(f.seoTitle).not.toMatch(/—|·/)
+    expect(f.seoDescription).toContain('aulas guiadas')
     expect(f.seoDescription).not.toContain('parte do tempo digital')
+    // Preço é dinâmico no catálogo: nunca fixo em metadado estático.
+    expect(f.seoDescription).not.toContain('R$')
+  })
+
+  test('obrigado não promete aviso prévio de renovação (só existe para o anual à vista)', () => {
+    const o = COMUNIDADE_DOS_CRIADORES.content.obrigado
+    const texto = [
+      o.intro ?? '',
+      ...o.entrega,
+      ...o.passos.map((p) => `${p.titulo} ${p.texto}`),
+    ].join(' ')
+    expect(texto).not.toMatch(/aviso por e-mail/i)
+    expect(texto).toContain('cancelar quando quiser')
   })
 
   test('checkout de assinatura mantém a copy pública sem travessão', () => {

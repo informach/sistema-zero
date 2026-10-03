@@ -5,6 +5,8 @@ import {
   BEHAVIOR_AREAS_STATE_KEY,
   BEHAVIOR_AREAS_STATE_VERSION,
 } from '../blockly/blocksStateVersion'
+import { importRefusalKey } from '../components/projects/importRefusal'
+import { ProjectDocumentError, ProjectTooLargeError } from '../core/projectDocument'
 import { invadersNaMaoExample } from '../examples/core'
 import {
   MAX_BLOCKSTATE_BLOCKS,
@@ -261,6 +263,16 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
     expect(() => sanitizeImportedBlocksState(blocksState, [])).toThrow(
       'blocksState excede o tamanho ou a complexidade máxima',
     )
+    // Recusa PERMANENTE: na importação a criança lê "grande demais", nunca "tente de novo".
+    let refusal: unknown
+    try {
+      sanitizeImportedBlocksState(blocksState, [])
+    } catch (error) {
+      refusal = error
+    }
+    expect(refusal).toBeInstanceOf(ProjectTooLargeError)
+    expect(refusal).not.toBeInstanceOf(ProjectDocumentError)
+    expect(importRefusalKey(refusal)).toBe('projects.importRefused.tooBig')
 
     expect(() =>
       sanitizeProjectForHost({

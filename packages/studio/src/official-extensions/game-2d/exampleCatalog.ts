@@ -36,6 +36,7 @@ import {
   valeEnsolaradoExample,
   vilaNinjaExample,
 } from './examples'
+import { snowDescentExample } from './examples/snowDescent'
 
 interface GameTwoDExampleMetadata {
   difficulty: ExtensionExampleDifficulty
@@ -56,6 +57,7 @@ function withMetadata(
 }
 
 export const gameTwoDExamples = [
+  snowDescentExample,
   withMetadata(numberRainExample, {
     difficulty: 'intermediate',
     concepts: ['sprites de texto', 'números', 'laços', 'grupos', 'par e ímpar'],

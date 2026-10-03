@@ -44,6 +44,18 @@ describe('AmbassadorAdminService.selfEnroll (auto-cadastro do pai)', () => {
     expect(gateway.callsOf('sendEmail')).toHaveLength(1)
   })
 
+  test('falha no e-mail é informada sem perder o painel recém-criado', async () => {
+    gateway.sendEmailResult = { status: 502, body: {} }
+    const result = await service.selfEnroll({
+      accountUserId: ACCOUNT,
+      email: 'pai@example.com',
+      name: 'João',
+    })
+    expect(result).toMatchObject({ kind: 'ok', created: true, emailSent: false })
+    if (result.kind !== 'ok') throw new Error('esperava ok')
+    expect(result.ambassador.pageUrl).toContain('/embaixador/')
+  })
+
   test('⚠️ e-mail já é embaixador EXTERNO: NÃO vincula — manda o link p/ a caixa do dono', async () => {
     // A plataforma não verifica e-mail (`/auth/register` é público e a conta
     // nasce ativa): vincular pelo e-mail entregaria a capability-URL — e a

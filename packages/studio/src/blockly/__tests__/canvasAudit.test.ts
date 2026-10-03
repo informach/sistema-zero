@@ -42,8 +42,8 @@ function canvasToolboxTypes(level?: LearningProfile['level']): Set<string> {
 }
 
 describe('Auditoria Canvas — inventário e experiência infantil', () => {
-  it('mantém os 55 blocos em um único grupo cada', () => {
-    expect(CANVAS_BLOCKS).toHaveLength(55)
+  it('mantém os 56 blocos em um único grupo cada', () => {
+    expect(CANVAS_BLOCKS).toHaveLength(56)
     const grouped = CANVAS_GROUPS.flatMap((group) => group.types)
     const counts = new Map<string, number>()
     for (const type of grouped) counts.set(type, (counts.get(type) ?? 0) + 1)

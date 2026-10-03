@@ -62,7 +62,9 @@ const CSP = [
 function applySecurityHeaders(headers: Headers): void {
   headers.set('x-content-type-options', 'nosniff')
   headers.set('x-frame-options', 'DENY')
-  headers.set('referrer-policy', 'strict-origin-when-cross-origin')
+  // A página pode pedir uma política mais estrita (o painel do embaixador leva o token na URL).
+  if (!headers.has('referrer-policy'))
+    headers.set('referrer-policy', 'strict-origin-when-cross-origin')
   headers.set('permissions-policy', 'geolocation=(), microphone=(), camera=()')
   headers.set('content-security-policy', CSP)
   if (import.meta.env.PROD) {

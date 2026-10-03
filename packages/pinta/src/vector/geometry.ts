@@ -15,6 +15,7 @@ import {
   type VectorShape,
   type VectorTextAlign,
 } from './model'
+import { type RectCornerRadii, rectCornerFields } from './rectCorners'
 
 export interface Bounds {
   x: number
@@ -421,16 +422,23 @@ export function scaleShape(
     ? { x: sx(shape.rotationPivot.x), y: sy(shape.rotationPivot.y) }
     : undefined
   switch (shape.type) {
-    case 'rect':
-      return {
-        ...shape,
-        ...rotationPivotPatch(pivot),
-        x: sx(shape.x),
-        y: sy(shape.y),
-        w: shape.w * fx,
-        h: shape.h * fy,
-        rx: shape.rx * Math.min(fx, fy),
-      }
+    case 'rect': {
+      const k = Math.min(fx, fy)
+      const w = shape.w * fx
+      const h = shape.h * fy
+      const geometry = { ...rotationPivotPatch(pivot), x: sx(shape.x), y: sy(shape.y), w, h }
+      if (!shape.corners) return { ...shape, ...geometry, rx: shape.rx * k }
+      // Cantos diferentes: cada um encolhe pelo menor fator (como o `rx`), e o normalizador
+      // decide se continuam diferentes ou colapsam em `rx` (o clamp pode igualá-los).
+      const { corners, ...rest } = shape
+      const scaled: RectCornerRadii = [
+        corners[0] * k,
+        corners[1] * k,
+        corners[2] * k,
+        corners[3] * k,
+      ]
+      return { ...rest, ...geometry, ...rectCornerFields(scaled, w, h) }
+    }
     // A figura é um retângulo sem raio (o `preserveAspectRatio="none"` deixa
     // ela preencher a caixa, então as 8 alças dizem a verdade).
     case 'image':
@@ -606,7 +614,19 @@ export function flipShape(shape: VectorShape, axis: 'h' | 'v', center: Vec2): Ve
   const my = (y: number) => (axis === 'v' ? round2(2 * center.y - y) : y)
   const flip = (): VectorShape => {
     switch (shape.type) {
-      case 'rect':
+      case 'rect': {
+        const flipped = {
+          ...shape,
+          x: axis === 'h' ? round2(2 * center.x - shape.x - shape.w) : shape.x,
+          y: axis === 'v' ? round2(2 * center.y - shape.y - shape.h) : shape.y,
+        }
+        if (!shape.corners) return flipped
+        // Espelhar troca os cantos de lado: na horizontal tl↔tr e bl↔br; na vertical tl↔bl
+        // e tr↔br. O canto redondo tem que continuar no mesmo lugar do DESENHO.
+        const [tl, tr, br, bl] = shape.corners
+        const corners: RectCornerRadii = axis === 'h' ? [tr, tl, bl, br] : [bl, br, tr, tl]
+        return { ...flipped, corners }
+      }
       case 'image':
         return {
           ...shape,

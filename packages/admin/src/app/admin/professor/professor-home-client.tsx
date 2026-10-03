@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useProfessorOverview } from '@/components/admin/professor-counts-store'
 import { formatDate } from '@/lib/format'
+import { threadSubject } from '@/lib/teacher-thread-subject'
 import type { StudioSubmissionQueueRow, TeacherThreadRow } from '@/lib/types'
 
 /**
@@ -166,7 +167,7 @@ function RecentThreads({ items, loading }: { items: TeacherThreadRow[]; loading:
                   </span>
                 </div>
                 <p className="mt-1 truncate text-xs text-muted-foreground">
-                  {t.title ?? 'Recado'}
+                  {threadSubject(t) ?? 'Recado'}
                   {t.lastMessagePreview ? ` — ${t.lastMessagePreview}` : ''}
                 </p>
               </Link>

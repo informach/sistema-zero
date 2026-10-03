@@ -82,7 +82,8 @@ type KidsSpaceDiscussion = {
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (item: AuthorItem) => ReactNode
   onRemix: ((thread: HubThreadView) => void) | null
-  remixLockFor: (thread: HubThreadView) => { levelLabel: string | null } | null
+  /** O jogo usa ferramenta que a criança ainda não conquistou nos cursos? */
+  remixLockFor: (thread: HubThreadView) => boolean
   canReply: boolean
 }
 

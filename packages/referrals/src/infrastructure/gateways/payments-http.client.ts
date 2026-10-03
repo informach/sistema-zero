@@ -11,6 +11,23 @@ export class PaymentsHttpClient implements PaymentsClient {
     private readonly opts: { baseUrl: string; internalToken?: string; timeoutMs: number },
   ) {}
 
+  async getSubscriptionCreatedAt(subscriptionId: string): Promise<Date | null> {
+    const res = await fetch(
+      `${this.opts.baseUrl}/payments/internal/subscriptions/${encodeURIComponent(subscriptionId)}`,
+      {
+        headers: this.opts.internalToken ? { 'x-internal-token': this.opts.internalToken } : {},
+        signal: AbortSignal.timeout(this.opts.timeoutMs),
+      },
+    )
+    if (res.status === 404) return null
+    if (!res.ok) throw new Error(`payments respondeu ${res.status}`)
+    const body = (await res.json()) as Record<string, unknown>
+    const createdAt = new Date(expectString(body, 'createdAt'))
+    if (!Number.isFinite(createdAt.getTime()))
+      throw new Error('payments: data da assinatura inválida')
+    return createdAt
+  }
+
   async getPayment(paymentId: string): Promise<PaymentSnapshot | null> {
     const res = await fetch(
       `${this.opts.baseUrl}/payments/internal/payments/${encodeURIComponent(paymentId)}`,

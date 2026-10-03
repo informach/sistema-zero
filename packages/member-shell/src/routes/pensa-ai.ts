@@ -15,18 +15,19 @@ import { hasAiAppsLevel } from '../server/creative-apps-access'
 import { auditPlan } from '../server/pensa-agents/plan-audit'
 import {
   availablePlannerCatalog,
+  buildTaskPlan,
   GameDesignArtifactSchema,
   IdeaArtifactSchema,
   jsonSchemaFor,
   PensaCatalogDriftError,
   type PlanReviewArtifact,
   plannerCatalogPrompt,
-  resolveTaskPlan,
-  stripPintaArtFromStudioTasks,
+  type ResolvedPlanTask,
   TaskPlanArtifactSchema,
+  type TaskPlanDraft,
   TaskPlanDraftSchema,
   VisualDirectionArtifactSchema,
-  validateVisualTaskCoverage,
+  visualCardChecklist,
 } from '../server/pensa-agents/planner-contract'
 import { getPensaCapabilities } from '../server/pensa-capabilities'
 
@@ -122,10 +123,44 @@ function latest(stage: PensaStageView, type: PensaArtifactType): PensaArtifactVi
   return stage.artifacts.find((artifact) => artifact.type === type) ?? null
 }
 
+/** Recado de etapa que a CRIANÇA pode ler; todo outro erro da geração vai ao log, não à tela. */
+class PensaStepError extends Error {}
+
+const PLAN_OUT_OF_PLACE =
+  'O plano saiu com algumas peças fora do lugar. Tente gerar de novo que a IA monta outro.'
+const NOT_SAVED = 'Não deu para guardar agora. Espere um pouquinho e tente de novo.'
+
+/**
+ * Passado este tempo na 1ª geração do plano, a 2ª não acontece: a criança já esperou demais, e
+ * cada geração pode levar 3 minutos (o corpo do task_plan chega inteiro no fim).
+ */
+const PLAN_RETRY_DEADLINE_MS = 150_000
+
+/** Os nomes que a tela do Pensa dá a cada artefato (`ARTIFACT_LABELS` do pacote). */
+const ARTIFACT_NAMES: Record<PensaArtifactType, string> = {
+  idea: 'a Carta da Ideia',
+  game_design: 'a Visão do Jogo',
+  visual_direction: 'a Bíblia Visual',
+  task_plan: 'o Plano de Tarefas',
+  plan_review: 'a Revisão do Plano',
+}
+
 function requireValidated(stage: PensaStageView, type: PensaArtifactType): PensaArtifactView {
   const artifact = latest(stage, type)
-  if (artifact?.status !== 'validated') throw new Error(`O artefato ${type} ainda não foi aprovado`)
+  if (artifact?.status !== 'validated')
+    throw new PensaStepError(`Aprove ${ARTIFACT_NAMES[type]} antes de seguir.`)
   return artifact
+}
+
+/**
+ * O artefato aprovado, conferido pelo schema de hoje. Um guardado que não passa mais não melhora
+ * tentando de novo (e o ZodError cru não é frase para a tela): a saída é refazer aquela etapa.
+ */
+function validatedContent<T>(stage: PensaStageView, type: PensaArtifactType, schema: z.ZodType<T>) {
+  const parsed = schema.safeParse(requireValidated(stage, type).content)
+  if (!parsed.success)
+    throw new PensaStepError(`Gere ${ARTIFACT_NAMES[type]} de novo e aprove para seguir.`)
+  return parsed.data
 }
 
 const json = (value: unknown) => JSON.stringify(value, null, 2)
@@ -139,15 +174,19 @@ function plannerSystem(label: string) {
   ].join('\n\n')
 }
 
-async function generateJson<T>(input: {
-  schema: z.ZodType<T>
-  schemaName: string
-  label: string
-  user: string
-  maxTokens?: number
-  bodyTimeoutMs?: number
-}) {
-  return completePensaJson({
+async function generateJson<T>(
+  complete: typeof completePensaJson,
+  input: {
+    schema: z.ZodType<T>
+    schemaName: string
+    label: string
+    user: string
+    maxTokens?: number
+    bodyTimeoutMs?: number
+    maxAttempts?: 1 | 2
+  },
+) {
+  return complete({
     system: plannerSystem(input.label),
     user: input.user,
     schema: input.schema,
@@ -156,11 +195,20 @@ async function generateJson<T>(input: {
     maxTokens: input.maxTokens ?? 2400,
     temperature: 0.25,
     bodyTimeoutMs: input.bodyTimeoutMs,
+    ...(input.maxAttempts ? { maxAttempts: input.maxAttempts } : {}),
   })
 }
 
-export function createPensaAiRoutes(deps: { members: MembersClient; session: SessionModule }) {
+export function createPensaAiRoutes(deps: {
+  members: MembersClient
+  session: SessionModule
+  /** Só os testes trocam: é a chamada ao modelo. */
+  completeJson?: typeof completePensaJson
+}) {
   const { members, session } = deps
+  const complete = deps.completeJson ?? completePensaJson
+  const generate = <T>(input: Parameters<typeof generateJson<T>>[1]) =>
+    generateJson(complete, input)
 
   const pensaChat = {
     POST: async (req: Request) => {
@@ -328,7 +376,8 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
       }
       const getStage = async (stage: 'z' | 'e' | 'r' | 'o') => {
         const result = await members.pensaGetStage(cycleId, stage)
-        if (result.status !== 200 || !result.body) throw new Error('Não consegui carregar o plano')
+        if (result.status !== 200 || !result.body)
+          throw new PensaStepError('Não consegui abrir o plano agora. Tente de novo.')
         return result.body
       }
       // Mesmo envelope do error(), como objeto plano — o miolo da geração roda
@@ -337,6 +386,30 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         status,
         body: { error: { code, ...(message ? { message } : {}) } },
       })
+      // Recusa do members: as de REGRA (403, 409, 429: plano de outro dono, tarefa já começada,
+      // teto) já vêm escritas para a criança. O resto (validação que cita ids, plano que sumiu,
+      // servidor fora) vira frase, e o detalhe vai ao log.
+      const membersFailure = (
+        result: { status: number; body: unknown },
+        code: string,
+        invalid: string,
+      ): GenerateReply => {
+        if (
+          (result.status === 403 || result.status === 409 || result.status === 429) &&
+          result.body
+        )
+          return { status: result.status, body: result.body }
+        if (result.status === 404)
+          return fail('PENSA_NOT_FOUND', 404, 'Esse plano não está mais aqui.')
+        console.error('[pensa-ai] o members recusou', {
+          code,
+          status: result.status,
+          body: result.body,
+        })
+        return result.status === 400 || result.status === 422
+          ? fail(code, 422, invalid)
+          : fail(code, 502, NOT_SAVED)
+      }
       const runGenerate = async (): Promise<GenerateReply> => {
         let content: unknown
         if (body.type === 'idea') {
@@ -344,7 +417,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           const state = zStage.state as unknown as Partial<PensaZState>
           if (!state.ready)
             return fail('PENSA_GATE_NOT_READY', 409, 'Conclua as cinco decisões da etapa Z.')
-          content = await generateJson({
+          content = await generate({
             schema: IdeaArtifactSchema,
             schemaName: 'pensa_idea_v2',
             label: 'a Carta da Ideia',
@@ -353,7 +426,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
         } else if (body.type === 'game_design') {
           const zStage = await getStage('z')
           const idea = requireValidated(zStage, 'idea').content
-          content = await generateJson({
+          content = await generate({
             schema: GameDesignArtifactSchema,
             schemaName: 'pensa_game_design_v1',
             label: 'o loop, cenas, telas e câmera do jogo',
@@ -363,8 +436,8 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           const [zStage, eStage] = await Promise.all([getStage('z'), getStage('e')])
           const idea = requireValidated(zStage, 'idea').content
           const design = latest(eStage, 'game_design')
-          if (!design) throw new Error('Crie o game design antes da Bíblia Visual')
-          content = await generateJson({
+          if (!design) throw new PensaStepError('Crie a Visão do Jogo antes da Bíblia Visual.')
+          content = await generate({
             schema: VisualDirectionArtifactSchema,
             schemaName: 'pensa_visual_direction_v1',
             label: 'uma Bíblia Visual executável',
@@ -374,11 +447,15 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           })
         } else if (body.type === 'task_plan') {
           const [zStage, eStage] = await Promise.all([getStage('z'), getStage('e')])
-          const idea = IdeaArtifactSchema.parse(requireValidated(zStage, 'idea').content)
+          const idea = validatedContent(zStage, 'idea', IdeaArtifactSchema)
           const design = requireValidated(eStage, 'game_design').content
-          const visual = VisualDirectionArtifactSchema.parse(
-            requireValidated(eStage, 'visual_direction').content,
-          )
+          const visual = validatedContent(eStage, 'visual_direction', VisualDirectionArtifactSchema)
+          // Item repetido na Bíblia reprova QUALQUER plano: conferir antes poupa as gerações, e o
+          // conserto é refazer a Bíblia, não gerar de novo.
+          if (new Set(visual.assets.map((asset) => asset.id)).size !== visual.assets.length)
+            throw new PensaStepError(
+              'A Bíblia Visual tem itens repetidos. Gere a Bíblia Visual de novo e aprove para seguir.',
+            )
           const gamification = await members.getGamification()
           if (gamification.status !== 200) return fail('PENSA_TIER_UNAVAILABLE', 503)
           const capabilities = await getPensaCapabilities(
@@ -400,40 +477,67 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
               403,
               'Este plano precisa de ferramentas que ainda não estão disponíveis para seu perfil. Seu planejamento continua guardado.',
             )
-          const catalog = plannerCatalogPrompt(tier, idea.dimension)
-          const raw = await generateJson({
-            schema: TaskPlanDraftSchema,
-            schemaName: 'pensa_task_plan_v1',
-            label: 'Cartões de Criação pequenos, ordenados e com dependências',
-            user: [
-              `IDEIA:\n${json(idea)}`,
-              `GAME DESIGN:\n${json(design)}`,
-              `BÍBLIA VISUAL:\n${json(visual)}`,
-              'Gere o plano completo na ordem de execução.',
-              'Crie uma tarefa Pinta para CADA sprite/background/tileset/tilemap usando assetId. A tarefa do Estúdio que usa uma arte apenas DEPENDE da tarefa que a cria; não repete seu ID em visualAssetIds.',
-              moldaAvailable
-                ? 'Molda disponível: crie tarefas molda para model, material e sky da Bíblia Visual, com artKind model, texture e sky respectivamente. World continua no studio. Cada criação tem um cartão; a tarefa studio que a usa depende desse cartão, sem repetir a cobertura em visualAssetIds.'
-                : 'Molda indisponível: use apenas Pinta e Estúdio. Modelos, mundo e materiais são tarefas studio com visualAssetIds. Não proponha criação de céu HDR no Molda.',
-              'Tarefas studio devem usar somente IDs do catálogo abaixo. IDs de steps e criteria precisam ser estáveis e únicos por tarefa.',
-              `PEDIDO: ${body.feedback ?? 'nenhum'}`,
-              catalog,
-            ].join('\n\n'),
-            maxTokens: 8000,
-            // O plano inteiro sai numa geração só (sem stream): o corpo chega no
-            // FIM — 30s derrubava o task_plan real ("pendurou o corpo", 08/2026).
-            bodyTimeoutMs: 180_000,
-          })
-          const tasks = stripPintaArtFromStudioTasks(
-            resolveTaskPlan(raw, tier, idea.dimension, moldaAvailable),
-            visual,
-          )
-          validateVisualTaskCoverage(tasks, visual)
+          // Num jogo 2D o Molda nunca é destino, mesmo liberado: o `resolveTaskPlan` recusa.
+          const moldaUsable = moldaAvailable && idea.dimension === '3d'
+          const prompt = [
+            `IDEIA:\n${json(idea)}`,
+            `GAME DESIGN:\n${json(design)}`,
+            `BÍBLIA VISUAL:\n${json(visual)}`,
+            'Gere o plano completo na ordem de execução.',
+            'Crie uma tarefa Pinta para CADA sprite/background/tileset/tilemap usando assetId. A tarefa do Estúdio que usa uma arte apenas DEPENDE da tarefa que a cria; não repete seu ID em visualAssetIds.',
+            moldaUsable
+              ? 'Molda disponível: crie tarefas molda para model, material e sky da Bíblia Visual, com artKind model, texture e sky respectivamente. World continua no studio. Cada criação tem um cartão; a tarefa studio que a usa depende desse cartão, sem repetir a cobertura em visualAssetIds.'
+              : 'Molda indisponível: use apenas Pinta e Estúdio. Modelos, mundo e materiais são tarefas studio com visualAssetIds. Não proponha criação de céu HDR no Molda.',
+            visualCardChecklist(visual, moldaUsable),
+            'Tarefas studio devem usar somente IDs do catálogo abaixo. IDs de steps e criteria precisam ser estáveis e únicos por tarefa.',
+            `PEDIDO: ${body.feedback ?? 'nenhum'}`,
+            plannerCatalogPrompt(tier, idea.dimension),
+          ]
+          const generatePlan = (problem: string | null) =>
+            generate({
+              schema: TaskPlanDraftSchema,
+              schemaName: 'pensa_task_plan_v1',
+              label: 'Cartões de Criação pequenos, ordenados e com dependências',
+              user: [
+                ...prompt,
+                ...(problem
+                  ? [
+                      `O PLANO ANTERIOR FOI RECUSADO: ${problem}.\nGere o plano completo de novo, sem esse problema, seguindo a lista de CARTÕES DA BÍBLIA VISUAL.`,
+                    ]
+                  : []),
+              ].join('\n\n'),
+              maxTokens: 8000,
+              // O plano inteiro sai numa geração só (sem stream): o corpo chega no
+              // FIM — 30s derrubava o task_plan real ("pendurou o corpo", 08/2026).
+              bodyTimeoutMs: 180_000,
+              // A 2ª geração não ganha, por dentro, o reparo de JSON (outra chamada de 3 min).
+              ...(problem ? { maxAttempts: 1 as const } : {}),
+            })
+          const build = (raw: TaskPlanDraft, switchTools = false) =>
+            buildTaskPlan(raw, {
+              visual,
+              tier,
+              dimension: idea.dimension,
+              moldaAvailable,
+              switchTools,
+            })
+          const startedAt = Date.now()
+          let tasks: ResolvedPlanTask[]
+          try {
+            tasks = build(await generatePlan(null))
+          } catch (cause) {
+            // Uma segunda chance, com o motivo: sabendo o que errou, o modelo costuma acertar.
+            // Só para plano recusado pela validação (falha da IA, timeout ou JSON não repete) e
+            // só se a 1ª não demorou demais.
+            if (!(cause instanceof PensaCatalogDriftError)) throw cause
+            if (Date.now() - startedAt > PLAN_RETRY_DEADLINE_MS) throw cause
+            console.warn('[pensa-ai] plano recusado, gerando de novo', { problem: cause.message })
+            // Na 2ª o cartão na ferramenta errada troca de ferramenta (último recurso).
+            tasks = build(await generatePlan(cause.message), true)
+          }
           const written = await members.pensaReplaceTasks(cycleId, tasks)
           if (written.status !== 200 || !written.body)
-            return {
-              status: written.status,
-              body: written.body ?? { error: { code: 'PENSA_TASKS_NOT_SAVED' } },
-            }
+            return membersFailure(written, 'PENSA_TASKS_NOT_SAVED', PLAN_OUT_OF_PLACE)
           content = TaskPlanArtifactSchema.parse({
             taskIds: written.body.tasks.map((task) => task.id),
             generatedAt: new Date().toISOString(),
@@ -447,12 +551,8 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             members.getGamification(),
           ])
           if (gamification.status !== 200) return fail('PENSA_TIER_UNAVAILABLE', 503)
-          const gameDimension = IdeaArtifactSchema.parse(
-            requireValidated(zStage, 'idea').content,
-          ).dimension
-          const visual = VisualDirectionArtifactSchema.parse(
-            requireValidated(eStage, 'visual_direction').content,
-          )
+          const gameDimension = validatedContent(zStage, 'idea', IdeaArtifactSchema).dimension
+          const visual = validatedContent(eStage, 'visual_direction', VisualDirectionArtifactSchema)
           const capabilities = await getPensaCapabilities(
             members,
             gamification.body?.level?.slug,
@@ -480,42 +580,41 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
                 : 'o'
         const saved = await members.pensaSaveArtifact(cycleId, { stage, type: body.type, content })
         if (saved.status !== 200 || !saved.body)
-          return {
-            status: saved.status,
-            body: saved.body ?? { error: { code: 'PENSA_ARTIFACT_NOT_SAVED' } },
-          }
+          return membersFailure(saved, 'PENSA_ARTIFACT_NOT_SAVED', NOT_SAVED)
         if (body.type === 'plan_review' && (content as PlanReviewArtifact).approved) {
           const validated = await members.pensaValidateArtifact(cycleId, 'plan_review')
-          return { status: validated.status, body: validated.body ?? saved.body }
+          if (validated.status !== 200)
+            return membersFailure(validated, 'PENSA_ARTIFACT_NOT_VALIDATED', NOT_SAVED)
+          return { status: 200, body: validated.body ?? saved.body }
         }
         return { status: 200, body: saved.body }
       }
+      // A mensagem do erro vai INTEIRA para a tela da criança. Só o `PensaStepError` foi escrito
+      // para ela; todo o resto (provider, parser, validação do plano, Zod) vai ao LOG e a tela
+      // recebe uma frase gentil. Antes a validação do plano chegava crua ("A tarefa
+      // molda_tela_vitoria_background não corresponde à criação 3D da Bíblia Visual", QA 02/10).
       const mapGenerateError = (cause: unknown): GenerateReply => {
-        if (cause instanceof PensaCatalogDriftError) return fail(cause.code, 422, cause.message)
-        if (cause instanceof PensaLlmError) {
-          // O detalhe técnico (400 do provider, timeout etc.) vai ao LOG; a
-          // criança recebe uma frase gentil — o banner mostrava o erro cru.
-          console.error('[pensa-ai] geração falhou', { type: body.type, cause })
+        if (cause instanceof PensaStepError)
+          return fail('PENSA_GENERATION_FAILED', 409, cause.message)
+        console.error('[pensa-ai] geração falhou', { type: body.type, cause })
+        if (cause instanceof PensaCatalogDriftError) return fail(cause.code, 422, PLAN_OUT_OF_PLACE)
+        if (cause instanceof PensaLlmError)
           return fail(
             'PENSA_AI_UNAVAILABLE',
             cause.status ?? 502,
             'A IA demorou ou tropeçou agora. Espere um pouquinho e tente de novo.',
           )
-        }
-        if (cause instanceof SyntaxError) {
-          // JSON quebrado do modelo (mesmo após o nudge de reparo) — a criança
-          // via o erro cru do parser ("Expected ',' or '}'…", QA 08/2026).
-          console.error('[pensa-ai] geração falhou', { type: body.type, cause })
+        if (cause instanceof SyntaxError)
+          // JSON quebrado do modelo, mesmo após o pedido de reparo.
           return fail(
             'PENSA_GENERATION_FAILED',
             409,
             'A IA se atrapalhou com o plano agora. Espere um pouquinho e tente de novo.',
           )
-        }
         return fail(
           'PENSA_GENERATION_FAILED',
           409,
-          cause instanceof Error ? cause.message : 'Não foi possível gerar o artefato',
+          'Não deu para criar isso agora. Espere um pouquinho e tente de novo.',
         )
       }
 

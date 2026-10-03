@@ -236,7 +236,8 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
   })
 
   it('a contagem de blocos está travada (remoção acidental salta aqui)', () => {
-    expect(gameTwoDBlocks.length).toBe(285)
+    // 02/10: substituição dos 19 controles manuais e posição por lado para a primeira atividade.
+    expect(gameTwoDBlocks.length).toBe(309)
   })
 
   it('o bloco de virar oferece as quatro direções cardeais', () => {
@@ -803,6 +804,7 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
       'Tempo',
       'Sorteios',
       'Cenários',
+      'Camadas e perspectiva',
       'Inimigos',
       'Kits prontos',
     ])

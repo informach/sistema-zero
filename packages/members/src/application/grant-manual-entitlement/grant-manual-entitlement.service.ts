@@ -11,6 +11,8 @@ import type { EntitlementSnapshot } from '../../domain/entitlement/entitlement-s
 import type { AccessType } from '../../domain/entitlement/fulfillment'
 import {
   createMuralVisitorSnapshot,
+  MURAL_FULL_REF,
+  MURAL_TRIAL_PRODUCT_ID,
   MURAL_VISITOR_PRODUCT_ID,
   MURAL_VISITOR_REF,
 } from '../../domain/entitlement/mural-visitor'
@@ -48,6 +50,7 @@ export type GrantManualCommand =
   | { mode: 'all_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
   | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
   | { mode: 'mural_visitor'; userId: string; sourceId: string }
+  | { mode: 'mural_trial'; userId: string; courseRef: string; sourceId: string; expiresAt: Date }
 
 /**
  * `product_id` sintético das chaves-mestra MANUAIS (a coluna é uuid NOT NULL e não há
@@ -60,6 +63,7 @@ export const MANUAL_ALL_KIDS_COURSES_PRODUCT_ID = '00000000-0000-0000-0000-00000
 export { MURAL_VISITOR_PRODUCT_ID, MURAL_VISITOR_REF } from '../../domain/entitlement/mural-visitor'
 
 const MANUAL_SAVE_MAX_ATTEMPTS = 2
+const MURAL_TRIAL_MAX_MS = 7 * 86_400_000
 
 export interface GrantManualResult {
   granted: AdminEntitlementView[]
@@ -121,6 +125,8 @@ export class GrantManualEntitlementService {
         return this.grantAllKidsCourses(cmd.userId, expiresAt, now, cmd.sourceId)
       case 'mural_visitor':
         return this.grantMuralVisitor(cmd.userId, now, cmd.sourceId)
+      case 'mural_trial':
+        return this.grantMuralTrial(cmd, now)
     }
   }
 
@@ -309,6 +315,75 @@ export class GrantManualEntitlementService {
     })
     this.deps.logger?.info('grant.manual.mural_visitor', { userId })
     return { granted: [view] }
+  }
+
+  private async grantMuralTrial(
+    cmd: Extract<GrantManualCommand, { mode: 'mural_trial' }>,
+    now: Date,
+  ): Promise<GrantManualResult> {
+    // O prazo é o do curso já concedido por ESTE resgate, nunca sete dias a partir do retry.
+    const course = await this.deps.courses.findCourseBySlug(cmd.courseRef)
+    const enrollment = course
+      ? await this.deps.entitlements.findByIdempotencyKey(
+          `manual:${cmd.userId}:${course.id}:${cmd.sourceId}`,
+        )
+      : null
+    if (
+      !cmd.sourceId.startsWith('scholarship:') ||
+      course?.audience !== 'kids' ||
+      !enrollment?.isActiveAt(now) ||
+      enrollment.toSnapshot().sourceKind !== 'manual' ||
+      enrollment.toSnapshot().sourceId !== cmd.sourceId ||
+      enrollment.toSnapshot().accessType !== 'course' ||
+      enrollment.toSnapshot().courseRef !== cmd.courseRef ||
+      !enrollment.expiresAt ||
+      enrollment.expiresAt.getTime() !== cmd.expiresAt.getTime() ||
+      cmd.expiresAt.getTime() > enrollment.toSnapshot().grantedAt.getTime() + MURAL_TRIAL_MAX_MS
+    ) {
+      throw new EntitlementConflictError(
+        'O Mural temporário exige a matrícula ativa do presente, o mesmo vencimento e no máximo sete dias',
+      )
+    }
+    const visitorSnapshot = createMuralVisitorSnapshot('', '', now)
+    const trialSnapshot: EntitlementSnapshot = {
+      ...visitorSnapshot,
+      productId: MURAL_TRIAL_PRODUCT_ID,
+      sku: MURAL_FULL_REF,
+      name: 'Participação no Mural durante o presente',
+      courseRef: MURAL_FULL_REF,
+      fulfillment: { accessType: 'community', courseRef: MURAL_FULL_REF },
+      // A data efetiva é a mesma da matrícula do curso, preservada em expiresAt.
+      accessPolicy: { mode: 'fixed', durationValue: 7, durationUnit: 'days' },
+    }
+    const common = {
+      userId: cmd.userId,
+      productKind: 'community',
+      accessType: 'community' as const,
+      offerId: null,
+      now,
+      sourceId: cmd.sourceId,
+    }
+    const granted = await this.grantMany([
+      {
+        ...common,
+        productId: MURAL_TRIAL_PRODUCT_ID,
+        courseRef: MURAL_FULL_REF,
+        snapshot: trialSnapshot,
+        expiresAt: cmd.expiresAt,
+      },
+      {
+        ...common,
+        productId: MURAL_VISITOR_PRODUCT_ID,
+        courseRef: MURAL_VISITOR_REF,
+        snapshot: visitorSnapshot,
+        expiresAt: null,
+      },
+    ])
+    this.deps.logger?.info('grant.manual.mural_trial', {
+      userId: cmd.userId,
+      courseRef: cmd.courseRef,
+    })
+    return { granted }
   }
 
   private async grantOne(p: GrantOneInput): Promise<AdminEntitlementView> {

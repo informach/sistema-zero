@@ -34,6 +34,9 @@ const CHOICE_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
  */
 export function KidsQuiz({ blockId, content, quizState }: Props) {
   const player = useLessonPlayer()
+  const helpReturnPath = player
+    ? `/cursos/${encodeURIComponent(player.courseSlug)}/aulas/${encodeURIComponent(player.lessonId)}`
+    : undefined
   const [phase, setPhase] = useState<'intro' | 'steps'>('intro')
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -62,8 +65,8 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
   // mas não re-parseia o enunciado/opções (só muda ao avançar de pergunta).
   const activeQuestion = questions[step]
   const promptNode = useMemo(
-    () => (activeQuestion ? renderMarkdown(activeQuestion.prompt) : null),
-    [activeQuestion],
+    () => (activeQuestion ? renderMarkdown(activeQuestion.prompt, { helpReturnPath }) : null),
+    [activeQuestion, helpReturnPath],
   )
   const choiceNodes = useMemo(
     () =>
@@ -165,7 +168,14 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
             </div>
           ) : null}
         </div>
-        {result ? <QuizReview questions={questions} result={result} answers={answers} /> : null}
+        {result ? (
+          <QuizReview
+            questions={questions}
+            result={result}
+            answers={answers}
+            helpReturnPath={helpReturnPath}
+          />
+        ) : null}
       </div>
     )
   }
@@ -188,7 +198,12 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
             </p>
           </div>
         </div>
-        <QuizReview questions={questions} result={result} answers={answers} />
+        <QuizReview
+          questions={questions}
+          result={result}
+          answers={answers}
+          helpReturnPath={helpReturnPath}
+        />
         {cooldownLeft !== null ? (
           <div className="flex flex-col gap-1">
             <p className="text-sm">

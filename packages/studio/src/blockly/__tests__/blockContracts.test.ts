@@ -519,7 +519,8 @@ describe('contrato central de posicionamento', () => {
         const ir = buildIRFromWorkspace(workspace)
         const statement = (ir.behavior[exclusiveArea] ?? [])[0]
         if (!statement) throw new Error(`${definition.type}: não gerou statement`)
-        derivedStatementTypes.add(statement.type)
+        if (statement.type !== 'g2d:sceneCommand' && statement.type !== 'gk:sceneCommand')
+          derivedStatementTypes.add(statement.type)
 
         const nestedInEvent = {
           ...ir,

@@ -127,7 +127,15 @@ export const en: Record<string, string> = {
   'projects.newModal.create': 'Create and open',
   'projects.newModal.cancel': 'Cancel',
   'projects.newModal.duplicate': 'A project with this name already exists. Choose another one.',
-  'projects.importError': 'Could not import: {reason}',
+  'projects.importRefused.newer':
+    'This project was made in a newer version of the Studio. Reload the page and try again. Nothing changed in your list.',
+  'projects.importRefused.blocks':
+    'This project uses blocks this Studio does not know yet, so it was not imported. Nothing changed in your list.',
+  'projects.importRefused.parts':
+    'This project has parts this Studio cannot open yet, so it was not imported. Nothing changed in your list.',
+  'projects.importRefused.tooBig': 'This file is too big to import. Nothing changed in your list.',
+  'projects.importRefused.generic':
+    'Could not import this project right now. Nothing changed in your list. Try again in a moment.',
   'projects.importNotJson':
     'This file does not look like a Studio project. Choose a .json file exported from here.',
   'projects.importWarn.title': 'Project imported, but please note:',
@@ -137,13 +145,15 @@ export const en: Record<string, string> = {
   'projects.importWarn.extensions':
     '{count} extension(s) were ignored because they request unavailable permissions.',
   'projects.importWarn.blocks':
-    'This project uses a block feature this version does not know yet ({reason}), so its blocks are hidden. The code is still safe.',
+    'This project uses a block feature this version does not know yet, so its blocks are hidden. The code is still safe.',
   'projects.importWarn.unknownBlocks':
-    'This project uses blocks that are not available here yet: {types}. The blocks are hidden, but the code is still safe.',
+    'This project uses blocks that are not available here yet, so they are hidden. The code is still safe.',
   'projects.importWarn.program':
     'Part of the saved program could not be read, so the project opened empty.',
   'projects.importWarn.proDowngrade':
     'The professional project was opened as a classic project because its folder structure could not be read.',
+  'projects.importWarn.locked':
+    'This project uses tools you will unlock in the courses: {names}. It was saved and will open once you unlock them.',
   'kits.title': 'What game do you want to create?',
   'kits.subtitle': 'Choose a ready-made game to open, play, and make your own.',
   'kits.show': 'Show ready-made games',

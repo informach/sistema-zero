@@ -22,6 +22,11 @@ const CONFIG: RecordConversionConfig = {
 class FakePaymentsClient implements PaymentsClient {
   byId = new Map<string, PaymentSnapshot>()
   fail = false
+  subscriptionCreatedAt: Date | null = new Date('2026-09-01T11:00:00Z')
+  async getSubscriptionCreatedAt() {
+    if (this.fail) throw new Error('ECONNREFUSED')
+    return this.subscriptionCreatedAt
+  }
   async getPayment(paymentId: string): Promise<PaymentSnapshot | null> {
     if (this.fail) throw new Error('ECONNREFUSED')
     return this.byId.get(paymentId) ?? null
@@ -74,6 +79,7 @@ describe('RecordConversionService', () => {
       phone: null,
     })
     await repo.markRedemptionGranted(redemption.id, PAID_AT)
+    redemption.createdAt = new Date(PAID_AT.getTime() - 86_400_000)
     return { code: created.code, ambassador: created.ambassador, redemption }
   }
 
@@ -94,6 +100,26 @@ describe('RecordConversionService', () => {
     deliveryId: `d-${paymentId}`,
     eventName: 'payment.paid',
     payload: { paymentId },
+  })
+
+  test('renovação de assinatura anterior ao presente não atribui conversão nem bônus', async () => {
+    const { redemption, code } = await seedRedeemedScholarship()
+    payments.subscriptionCreatedAt = new Date(redemption.createdAt.getTime() - 1)
+    expect(await service.execute(paidDelivery())).toEqual({ kind: 'ok' })
+    expect(repo.conversions).toHaveLength(0)
+    code.ownerKind = 'campaign'
+    expect(await service.execute(paidDelivery())).toEqual({ kind: 'ok' })
+    expect(repo.conversions).toHaveLength(0)
+  })
+
+  test('data da assinatura indisponível pede reentrega e não inventa atribuição', async () => {
+    await seedRedeemedScholarship()
+    payments.subscriptionCreatedAt = null
+    expect((await service.execute(paidDelivery())).kind).toBe('retryable')
+    expect(repo.conversions).toHaveLength(0)
+    payments.subscriptionCreatedAt = PAID_AT
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(1)
   })
 
   test('bolsista completed + oferta da Comunidade → conversão pending com bônus fixo', async () => {
@@ -126,6 +152,33 @@ describe('RecordConversionService', () => {
     expect(repo.conversions).toHaveLength(1)
     expect(repo.conversions[0]!.offerSlug).toBe('comunidade-dos-criadores-anual')
     expect(repo.conversions[0]!.bonusCents).toBe(3000) // fixo, qualquer plano
+  })
+
+  test('compra anterior ao cadastro não é atribuída à indicação', async () => {
+    const { redemption } = await seedRedeemedScholarship()
+    redemption.createdAt = new Date(PAID_AT.getTime() + 1)
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions).toHaveLength(0)
+  })
+
+  test('campanha registra conversão sem bônus, não entra no Pix e estorno a cancela', async () => {
+    const { code } = await seedRedeemedScholarship()
+    code.ownerKind = 'campaign'
+    code.ambassadorId = null
+    code.campaignId = 'campaign-1'
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions[0]).toMatchObject({
+      status: 'unrewarded',
+      bonusCents: 0,
+      ambassadorId: null,
+    })
+    expect((await repo.listConversions({ limit: 25, offset: 0 })).total).toBe(0)
+    await service.execute({
+      deliveryId: 'refund-campaign',
+      eventName: 'payment.refunded',
+      payload: { paymentId: 'pay-1' },
+    })
+    expect(repo.conversions[0]?.status).toBe('canceled')
   })
 
   test('oferta fora da allowlist (ex.: Desafio avulso) → skip sem conversão', async () => {
@@ -168,6 +221,7 @@ describe('RecordConversionService', () => {
     })
     await repo.markRedemptionGranted(redemption.id, PAID_AT)
 
+    redemption.createdAt = new Date(PAID_AT.getTime() - 86_400_000)
     expect((await service.execute(paidDelivery())).kind).toBe('ok')
     expect(repo.conversions).toHaveLength(1)
     expect(repo.conversions[0]!.status).toBe('self_blocked')
@@ -180,6 +234,21 @@ describe('RecordConversionService', () => {
     payments.byId.set('pay-ciclo', paymentSnapshot({ id: 'pay-ciclo' }))
     expect((await service.execute(paidDelivery('pay-ciclo'))).kind).toBe('ok')
     expect(repo.conversions).toHaveLength(1) // "só a primeira" por construção
+  })
+
+  test('falha ao conferir estorno após INSERT pede retry; reentrega estornada cancela a conversão', async () => {
+    await seedRedeemedScholarship()
+    const originalGet = payments.getPayment.bind(payments)
+    let calls = 0
+    payments.getPayment = async (id) => {
+      if (++calls === 2) throw new Error('Conexão caiu na conferência')
+      return originalGet(id)
+    }
+    expect((await service.execute(paidDelivery())).kind).toBe('retryable')
+    expect(repo.conversions).toHaveLength(1)
+    payments.byId.set('pay-1', paymentSnapshot({ status: 'REFUNDED' }))
+    expect((await service.execute(paidDelivery())).kind).toBe('ok')
+    expect(repo.conversions[0]?.status).toBe('canceled')
   })
 
   test('payments/catalog indisponíveis ou oferta 404 → retryable (502 re-entrega)', async () => {

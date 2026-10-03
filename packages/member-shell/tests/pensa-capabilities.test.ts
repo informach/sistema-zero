@@ -35,6 +35,37 @@ describe('capacidades reais do Pensa', () => {
       ),
     ).toBeNull()
   })
+  test('bloco conquistado acima do nível do posto entra no plano, como na paleta', async () => {
+    const caps = await getPensaCapabilities(
+      {
+        ...members,
+        getStudioUnlocksReadonly: async () => ({
+          status: 200,
+          body: { blocks: ['sz_g2d_setup_stage', 'sz_g2d_top_down'] },
+        }),
+      },
+      'coder',
+      'customer',
+    )
+    if (!caps) throw new Error('Missing capabilities')
+    // `sz_g2d_top_down` é do degrau iniciante-3d e o Construtor é iniciante-2d.
+    expect(caps.tier.level).toBe('iniciante-2d')
+    expect(availablePlannerCatalog(caps.tier, '2d').blocks.map((block) => block.type)).toEqual([
+      'sz_g2d_setup_stage',
+      'sz_g2d_top_down',
+    ])
+    // Sem nada conquistado, nenhum bloco do Estúdio entra no plano.
+    const semNada = await getPensaCapabilities(
+      { ...members, getStudioUnlocksReadonly: async () => ({ status: 200, body: { blocks: [] } }) },
+      'god',
+      'customer',
+    )
+    expect(semNada && availablePlannerCatalog(semNada.tier, '2d').blocks).toEqual([])
+    // …e o Estúdio não entra como destino: a porta do /estudio estaria trancada, e gerar o
+    // plano com o catálogo vazio gastaria a chamada paga para nada.
+    expect(semNada?.studioAvailable).toBe(false)
+    expect(caps.studioAvailable).toBe(true)
+  })
   test('o draft do Molda exige capacidade e dimensão 3D; referências ficam intactas', () => {
     const raw = TaskPlanDraftSchema.parse({
       tasks: [

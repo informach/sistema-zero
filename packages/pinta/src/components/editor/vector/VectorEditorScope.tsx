@@ -92,6 +92,7 @@ import {
   splitOpenPathAt,
   toEditablePath,
 } from '../../../vector/pathNodes'
+import { ALL_CORNERS, type RectCornerMask } from '../../../vector/rectCorners'
 import { DEFAULT_STYLE, type ShapeStyle } from '../../../vector/shapes'
 import { usePintaApp } from '../../appContext'
 import { useToast } from '../../ui/Toast'
@@ -184,6 +185,9 @@ export interface VectorEditorContextValue {
   setStarTips: (value: number) => void
   rectRadius: number
   setRectRadius: (value: number) => void
+  /** Quais cantos do PRÓXIMO retângulo ficam redondos (a grade 2x2; todos, por padrão). */
+  rectCorners: RectCornerMask
+  setRectCorners: (mask: RectCornerMask) => void
   /** Alinhamento do texto: arma o PRÓXIMO e reescreve o selecionado. */
   textAlign: VectorTextAlign
   setTextAlign: (value: VectorTextAlign) => void
@@ -362,8 +366,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // Lados do polígono / pontas da estrela (configuráveis quando a ferramenta ativa).
   const [polygonSides, setPolygonSides] = useState(6)
   const [starTips, setStarTips] = useState(5)
-  // Raio dos cantos do PRÓXIMO retângulo (o slider também edita o selecionado).
+  // Raio dos cantos do PRÓXIMO retângulo (o slider também edita o selecionado) e QUAIS
+  // cantos ficam redondos (a grade 2x2; o toggle também edita o selecionado).
   const [rectRadius, setRectRadius] = useState(0)
+  const [rectCorners, setRectCorners] = useState<RectCornerMask>(ALL_CORNERS)
   const [textAlign, setTextAlignState] = useState<VectorTextAlign>('left')
   const [fontFamily, setFontFamilyState] = useState<VectorFontFamily>(DEFAULT_VECTOR_FONT_FAMILY)
   // Canal de cor SELECIONADO (espelho do activeSlot do pixel): a próxima cor
@@ -1565,6 +1571,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     setFontFamily,
     insertFromAsset,
     setRectRadius,
+    rectCorners,
+    setRectCorners,
     svgRef,
     stageRef,
     currentRef,

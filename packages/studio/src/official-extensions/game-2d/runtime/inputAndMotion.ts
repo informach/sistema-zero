@@ -68,6 +68,10 @@ export const gameTwoDInputAndMotionRuntime = `  // ---- Ponteiro (mouse/toque, P
       try { target.setPointerCapture(e.pointerId); } catch (ignored) {}
     }
     var generation = _driverGeneration;
+    if (_spriteScene) {
+      _spriteScene.input(_spriteScenePointerAction(p.x, p.y, stageWidth(), stageHeight()));
+      if (_runGenerationChanged(generation)) return;
+    }
     var handlers = pointerHandlerOrder.slice();
     for (var i = 0; i < handlers.length; i++) {
       var id = handlers[i];

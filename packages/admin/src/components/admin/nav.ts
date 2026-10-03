@@ -90,7 +90,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: 'Painel', href: '/admin', icon: LayoutDashboard },
       { label: 'Usuários', href: '/admin/usuarios', icon: Users },
-      { label: 'Embaixadores', href: '/admin/embaixadores', icon: Gift },
+      { label: 'Convites e campanhas', href: '/admin/embaixadores', icon: Gift },
       {
         label: 'Pagamentos',
         href: '/admin/pagamentos/transacoes',

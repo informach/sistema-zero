@@ -69,6 +69,8 @@ const VARIABLE_DECLARATION_FIELDS: Readonly<Record<string, string>> = {
   physicsLiteBodyState: 'result',
   physicsLiteStats: 'result',
   'g2d:createSprite': 'varName',
+  'gk:createCharacter': 'varName',
+  'gk:spawnNamed': 'varName',
   'g2d:createImageSprite': 'varName',
   'g2d:createShapeSprite': 'varName',
 

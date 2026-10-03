@@ -13,12 +13,12 @@ import {
 } from '../registry'
 
 describe('registry dos codecs web', () => {
-  it('registra exatamente os 154 blocos aprovados, por categoria', () => {
+  it('registra exatamente os 155 blocos aprovados, por categoria', () => {
     expect(WEB_BLOCK_TYPES_BY_CATEGORY.html).toHaveLength(24)
     expect(WEB_BLOCK_TYPES_BY_CATEGORY.css).toHaveLength(54)
     expect(WEB_BLOCK_TYPES_BY_CATEGORY.svg).toHaveLength(21)
-    expect(WEB_BLOCK_TYPES_BY_CATEGORY.canvas).toHaveLength(55)
-    expect(WEB_BLOCK_CODECS).toHaveLength(154)
+    expect(WEB_BLOCK_TYPES_BY_CATEGORY.canvas).toHaveLength(56)
+    expect(WEB_BLOCK_CODECS).toHaveLength(155)
 
     const definitions = {
       html: HTML_BLOCKS,

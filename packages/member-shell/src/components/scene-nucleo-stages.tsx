@@ -1583,6 +1583,9 @@ export function TilemapStage({
             <SceneCanvas
               className="relative"
               view={TILEMAP_VIEW}
+              // ⚠️ Sem encaixe pela altura no ampliado: as casas têm os 44px do alvo de toque e a
+              // caixa é fixa; se não couber, o cartão do mundo rola (`lib/scene-encaixe.ts`).
+              encaixe={false}
               interativo={Boolean(dispatch)}
               cast={cast}
               mundo={mundo}

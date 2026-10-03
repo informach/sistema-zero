@@ -66,32 +66,44 @@
           {
             "id": "jornada",
             "title": "Abra a Jornada",
-            "body": "Toque em **Jornada** no menu da esquerda. No celular, ela fica na barra de baixo. Você verá o mapa das trilhas."
+            "body": "Toque em **Jornada** no menu da esquerda. No celular, ela fica na barra de baixo. Você verá o mapa das trilhas.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/jornada-ba6ee11ac0268543.webp",
+            "imageAlt": "Tela inicial da plataforma com o item Jornada destacado no menu da esquerda."
           },
           {
             "id": "trilha",
             "title": "Escolha uma trilha",
-            "body": "Toque no nível da trilha que você quer abrir. Agora aparecem os cursos daquela trilha."
+            "body": "Toque no nível da trilha que você quer abrir. Agora aparecem os cursos daquela trilha.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/trilha-512015b0c3f2a313.webp",
+            "imageAlt": "Mapa da Jornada do Criador com o nível Construtor(a) destacado para abrir a trilha."
           },
           {
             "id": "curso",
             "title": "Abra o curso",
-            "body": "Escolha um curso liberado e toque em **Acessar curso**. Na página do curso, toque na aula disponível no caminho das aulas."
+            "body": "Escolha um curso liberado e toque em **Acessar curso**. Na página do curso, toque na aula disponível no caminho das aulas.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/curso-a9481083bf0d1f4c.webp",
+            "imageAlt": "Trilha Construtor(a) com o botão Acessar curso do curso Nave Contra Asteroides destacado."
           },
           {
             "id": "secoes",
             "title": "Siga as partes da aula",
-            "body": "Cada seção é uma parte da aula. Faça o que ela pede e toque em **Próxima seção**. Use **Anterior** para voltar. Se houver só uma seção, faça as atividades dela."
+            "body": "Cada seção é uma parte da aula. Faça o que ela pede e toque em **Próxima seção**. Use **Anterior** para voltar. Se houver só uma seção, faça as atividades dela.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/secoes-3cd6f74053e71e6a.webp",
+            "imageAlt": "Rodapé de uma aula com os botões Próxima seção e Anterior destacados."
           },
           {
             "id": "trancada",
             "title": "Confira o que falta",
-            "body": "Se a próxima seção ou aula tiver um cadeado, termine as atividades anteriores. Confira também o quiz, os materiais obrigatórios e o envio ao professor, quando a aula pedir."
+            "body": "Se a próxima seção ou aula tiver um cadeado, termine as atividades anteriores. Confira também o quiz, os materiais obrigatórios e o envio ao professor, quando a aula pedir.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/trancada-9d14f463874fc6a8.webp",
+            "imageAlt": "Rodapé da aula com o aviso Para seguir, que diz o que falta fazer, e o botão Próxima seção ainda bloqueado."
           },
           {
             "id": "concluir",
             "title": "Conclua a aula",
-            "body": "Na última seção, toque em **Concluir aula** quando terminar. Se aparecer um aviso, faça o que falta e tente de novo."
+            "body": "Na última seção, toque em **Concluir aula** quando terminar. Se aparecer um aviso, faça o que falta e tente de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/concluir-58c0811333a0a30f.webp",
+            "imageAlt": "Última seção de uma aula com o rodapé mostrando Anterior e o botão Concluir aula destacado."
           }
         ],
         "related": [
@@ -124,22 +136,30 @@
           {
             "id": "perfil",
             "title": "Confira seu perfil",
-            "body": "Use o mesmo perfil de criança em que você começou a aula. Cada perfil tem seu próprio progresso e seus trabalhos."
+            "body": "Use o mesmo perfil de criança em que você começou a aula. Cada perfil tem seu próprio progresso e seus trabalhos.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/perfil-4c1f7ce11493830b.webp",
+            "imageAlt": "Menu da esquerda com o nome e o avatar do perfil que está usando a plataforma destacados."
           },
           {
             "id": "jornada",
             "title": "Encontre o curso",
-            "body": "Toque em **Jornada**, escolha a trilha no mapa e depois toque em **Acessar curso** no curso que você estava fazendo."
+            "body": "Toque em **Jornada**, escolha a trilha no mapa e depois toque em **Acessar curso** no curso que você estava fazendo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/jornada-a9481083bf0d1f4c.webp",
+            "imageAlt": "Trilha da Jornada com o botão Acessar curso destacado no curso que estava sendo feito."
           },
           {
             "id": "aula",
             "title": "Abra a aula",
-            "body": "No caminho das aulas, toque na aula que quer continuar. A plataforma tenta abrir a última seção que ficou guardada. Use **Anterior** ou **Próxima seção** se precisar."
+            "body": "No caminho das aulas, toque na aula que quer continuar. A plataforma tenta abrir a última seção que ficou guardada. Use **Anterior** ou **Próxima seção** se precisar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/aula-8226bbba432e2513.webp",
+            "imageAlt": "Caminho das aulas do curso com a aula em andamento destacada para continuar."
           },
           {
             "id": "trabalho",
             "title": "Confira sua atividade",
-            "body": "Se você mudou de aparelho, um trabalho que ficou só no navegador pode não aparecer. No Estúdio da aula, você pode [trazer a última versão enviada ao professor](/como-fazer/estudio-recuperar-atividade-enviada)."
+            "body": "Se você mudou de aparelho, um trabalho que ficou só no navegador pode não aparecer. No Estúdio da aula, você pode [trazer a última versão enviada ao professor](/como-fazer/estudio-recuperar-atividade-enviada).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/trabalho-e398a1d846420a02.webp",
+            "imageAlt": "Estúdio da aula com o menu Mais opções aberto e Trazer o que eu enviei destacado, para recuperar a versão enviada ao professor."
           }
         ],
         "related": ["plataforma-abrir-uma-aula", "estudio-recuperar-atividade-enviada"]
@@ -165,22 +185,30 @@
           {
             "id": "menu",
             "title": "Procure Mostrar menu",
-            "body": "Nas telas que escondem o menu da esquerda, use a setinha **Mostrar menu**, quando ela aparecer. Toque em **Esconder menu** para dar mais espaço à atividade."
+            "body": "Nas telas que escondem o menu da esquerda, use a setinha **Mostrar menu**, quando ela aparecer. Toque em **Esconder menu** para dar mais espaço à atividade.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/menu-e260069df411d509.webp",
+            "imageAlt": "Página da aula com o menu escondido e a setinha Mostrar menu destacada na borda esquerda."
           },
           {
             "id": "lista",
             "title": "Abra a lista de aulas",
-            "body": "Dentro da aula, use **Mostrar lista de aulas** na borda direita. Escolha uma aula liberada. **Esconder lista de aulas** fecha a lista."
+            "body": "Dentro da aula, use **Mostrar lista de aulas** na borda direita. Escolha uma aula liberada. **Esconder lista de aulas** fecha a lista.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/lista-4fd6802085e1d353.webp",
+            "imageAlt": "Página da aula com o botão Mostrar lista de aulas destacado na borda direita."
           },
           {
             "id": "editor",
             "title": "Volte à galeria da ferramenta",
-            "body": "Com um projeto aberto, a setinha do menu pode sumir. No Estúdio, use **Mais opções** → **Estúdio** → **Meus projetos**. No Pinta, use **Voltar**. No modelo 3D do Molda, use **Meus projetos** e **Guardar e voltar**."
+            "body": "Com um projeto aberto, a setinha do menu some para dar espaço à criação. No Estúdio, toque na seta de voltar, no canto de cima, ou use **Mais opções** → **Estúdio** → **Meus projetos**. No Pinta, use **Voltar**. No modelo 3D do Molda, use **Meus projetos** e **Guardar e voltar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/editor-1a5b21f48b35f444.webp",
+            "imageAlt": "Projeto aberto no Estúdio, sem a setinha do menu da plataforma, com a seta de voltar à lista de projetos destacada no canto de cima."
           },
           {
             "id": "ampliada",
             "title": "Saia da atividade ampliada",
-            "body": "Se a atividade ocupa a tela toda, use **Reduzir** ou **Voltar à aula**, conforme o botão que aparece. No celular, volte à tela da plataforma para usar a barra de navegação."
+            "body": "Se a atividade ocupa a tela toda, use **Reduzir** ou **Voltar à aula**, conforme o botão que aparece. No celular, volte à tela da plataforma para usar a barra de navegação.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-mostrar-o-menu/ampliada-2b49fedb94db3d7e.webp",
+            "imageAlt": "Atividade ampliada ocupando a tela, com o botão Voltar à aula destacado."
           }
         ],
         "related": ["plataforma-ampliar-a-atividade"]
@@ -208,22 +236,30 @@
           {
             "id": "abrir",
             "title": "Abra o pedido de ajuda",
-            "body": "Na parte de baixo da seção da aula, toque em **Preciso de ajuda**."
+            "body": "Na parte de baixo da seção da aula, toque em **Preciso de ajuda**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pedir-ajuda/abrir-223c6469882693ad.webp",
+            "imageAlt": "Rodapé da seção da aula com o botão Preciso de ajuda destacado."
           },
           {
             "id": "escrever",
             "title": "Conte onde ficou com dúvida",
-            "body": "Escreva o que tentou fazer e o que apareceu. Por exemplo: “Meu personagem não pula quando aperto a tecla”. O professor recebe também o nome da aula e da seção."
+            "body": "Escreva o que tentou fazer e o que apareceu. Por exemplo: “Meu personagem não pula quando aperto a tecla”. O professor recebe também o nome do curso, da aula e da seção.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pedir-ajuda/escrever-db2f4937024e4af7.webp",
+            "imageAlt": "Caixa Em qual parte você ficou com dúvida? aberta embaixo da aula, com a dúvida escrita no campo destacado."
           },
           {
             "id": "enviar",
             "title": "Envie a pergunta",
-            "body": "Toque em **Enviar ao professor** e espere a confirmação. Se aparecer um erro, tente novamente."
+            "body": "Toque em **Enviar ao professor** e espere a confirmação. Se aparecer um erro, tente novamente.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pedir-ajuda/enviar-d3a7b4bee926eea7.webp",
+            "imageAlt": "Dúvida escrita com o botão Enviar ao professor destacado."
           },
           {
             "id": "resposta",
             "title": "Acompanhe a conversa",
-            "body": "Toque em **Ver conversa** após o envio. Você também pode abrir **Recados do professor**, no sino da plataforma, para ler e responder."
+            "body": "Toque em **Ver conversa** depois do envio. Você também pode abrir **Recados do professor**, no menu da esquerda, para ler e responder. No celular, use o sino na barra de cima.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pedir-ajuda/resposta-1637919233219fce.webp",
+            "imageAlt": "Aviso Pedido enviado, a resposta aparecerá nos seus recados, com o link Ver conversa destacado."
           }
         ],
         "related": ["plataforma-ler-recados"]
@@ -250,17 +286,23 @@
           {
             "id": "perfil",
             "title": "Abra seu perfil",
-            "body": "No menu, toque em **Meu espaço** e depois em **Meu perfil**."
+            "body": "No menu, toque em **Meu espaço** e depois em **Meu perfil**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/perfil-2dcbd99cb8136249.webp",
+            "imageAlt": "Menu da esquerda com o grupo Meu espaço aberto e o item Meu perfil destacado."
           },
           {
             "id": "cor",
             "title": "Escolha uma cor",
-            "body": "Procure **Cor do seu perfil** e toque na cor que você mais gosta. A tela muda para você ver como ficou."
+            "body": "Procure **Cor do seu perfil** e toque na cor que você mais gosta. A tela muda para você ver como ficou.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/cor-6e62c576785baf1c.webp",
+            "imageAlt": "Seção Cor do seu perfil com as bolinhas de cor e uma delas destacada para escolher."
           },
           {
             "id": "guardar",
             "title": "Espere guardar",
-            "body": "A escolha é guardada sem apertar Salvar. Se aparecer uma falha, toque em **Tentar de novo**. A cor vale para este perfil."
+            "body": "A escolha é guardada sem apertar Salvar. Quando aparecer **Cor escolhida** embaixo das cores, ela já está guardada. Se aparecer uma falha, toque em **Tentar de novo**. A cor vale para este perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/guardar-edb01cb01b7ff674.webp",
+            "imageAlt": "Cor do seu perfil com a nova cor marcada e o aviso Cor escolhida logo abaixo, sem botão de salvar."
           }
         ],
         "related": ["plataforma-montar-o-avatar"]
@@ -287,17 +329,23 @@
           {
             "id": "abrir",
             "title": "Abra Meu avatar",
-            "body": "No menu, toque em **Meu espaço** e depois em **Meu avatar**. Você também pode tocar em **Personalizar avatar** no seu perfil."
+            "body": "No menu, toque em **Meu espaço** e depois em **Meu avatar**. Você também pode tocar em **Personalizar avatar** no seu perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/abrir-fde6d1d78a1af444.webp",
+            "imageAlt": "Menu da esquerda com o grupo Meu espaço aberto e o item Meu avatar destacado."
           },
           {
             "id": "montar",
             "title": "Escolha o visual",
-            "body": "Toque nas categorias e nas peças para experimentar o visual. Para salvar, escolha peças que já estejam liberadas para você."
+            "body": "Toque nas categorias e nas peças para experimentar o visual. Para salvar, escolha peças que já estejam liberadas para você.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/montar-c4c2fe58a22fd34a.webp",
+            "imageAlt": "Editor Meu avatar com a categoria Cabelo aberta e uma peça destacada para experimentar."
           },
           {
             "id": "salvar",
             "title": "Guarde seu avatar",
-            "body": "Toque em **Salvar** e espere terminar. Se o botão não estiver liberado, confira se ficou alguma peça bloqueada no visual."
+            "body": "Toque em **Salvar** e espere terminar. Se o botão não estiver liberado, confira se ficou alguma peça bloqueada no visual.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/salvar-fcb4cc197e028551.webp",
+            "imageAlt": "Editor Meu avatar com o botão Salvar destacado no canto de cima."
           }
         ],
         "related": ["plataforma-escolher-a-minha-cor"]
@@ -324,42 +372,58 @@
           {
             "id": "preparar",
             "title": "Teste o jogo",
-            "body": "Abra o projeto no Estúdio e confira se ele funciona. Se estiver dentro de uma aula, primeiro [envie a atividade ao professor](/como-fazer/plataforma-enviar-atividade)."
+            "body": "Abra o projeto no Estúdio e confira se ele funciona. Se estiver dentro de uma aula, primeiro [envie a atividade ao professor](/como-fazer/plataforma-enviar-atividade).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/preparar-b4472055892c15d4.webp",
+            "imageAlt": "Atividade do Estúdio na Aula 2 do Cadê Todo Mundo? com a Pré-visualização do jogo aberta e o botão de enviar ao professor destacados."
           },
           {
             "id": "compartilhar",
             "title": "Abra Compartilhar",
-            "body": "Toque em **Compartilhar**, quando esse botão estiver disponível. No Cadê Todo Mundo?, ele fica disponível depois do envio da atividade da Aula 2. Abre a janela **Compartilhar no Mural dos Criadores**."
+            "body": "Toque em **Compartilhar**, o botão com a setinha para cima no canto da barra do Estúdio, quando ele estiver disponível. No Cadê Todo Mundo?, ele fica disponível depois do envio da atividade da Aula 2. Abre a janela **Compartilhar no Mural dos Criadores**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/compartilhar-8a0472ec664c9513.webp",
+            "imageAlt": "Barra do Estúdio na aula com o botão Compartilhar destacado, liberado depois do envio ao professor."
           },
           {
             "id": "texto",
-            "title": "Dê um nome e conte como é",
-            "body": "Confira **Título** e **Resumo do projeto**. Na Aula 2 do Cadê Todo Mundo?, deixe os textos que já estão preenchidos. Nos outros projetos, você pode manter ou ajustar os textos prontos. Se estiverem vazios, escreva o nome do jogo e uma frase contando como jogar."
+            "title": "Confira o nome e o resumo",
+            "body": "Confira o **Resumo do projeto**. Na Aula 2 do Cadê Todo Mundo?, o nome do jogo e o resumo já vêm prontos: pode deixar como está. Nos outros projetos, a janela também mostra o **Título**, e você pode manter ou ajustar os textos prontos. Se estiverem vazios, escreva o nome do jogo e uma frase contando como jogar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/texto-b0bc73017bc1fdb6.webp",
+            "imageAlt": "Janela Compartilhar no Mural dos Criadores com o Resumo do projeto já preenchido destacado."
           },
           {
             "id": "capa",
             "title": "Escolha a capa",
-            "body": "Em **Capa do projeto**, toque em **Gerar capa** e espere a imagem aparecer. Ela já fica incluída na publicação, sem precisar baixar e enviar um arquivo. Confira a capa antes de seguir. Para usar outra imagem, toque em **Enviar uma imagem** e escolha uma imagem PNG ou JPG."
+            "body": "Em **Capa do projeto**, toque em **Gerar capa** e espere a imagem aparecer. Ela já fica incluída na publicação, sem precisar baixar e enviar um arquivo. Confira a capa antes de seguir. Para usar outra imagem, toque em **Enviar uma imagem** e escolha uma imagem PNG ou JPG.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/capa-885365388ae81804.webp",
+            "imageAlt": "Janela Compartilhar com a parte Capa do projeto e o botão Gerar capa destacado ao lado de Enviar uma imagem."
           },
           {
             "id": "publicar",
             "title": "Publique",
-            "body": "Com título, resumo e capa prontos, toque em **Publicar** e espere a confirmação."
+            "body": "Com título, resumo e capa prontos, toque em **Publicar** e espere a confirmação.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/publicar-b73455a2325c9cd3.webp",
+            "imageAlt": "Janela Compartilhar com a capa gerada e o botão Publicar destacado."
           },
           {
             "id": "link",
             "title": "Copie o link para jogar",
-            "body": "Toque em **Copiar link de jogar** para mostrar seu jogo a alguém. Você pode pedir ajuda a um responsável para mandar o link. Não precisa abrir o mural para usar esse link."
+            "body": "Toque em **Copiar link de jogar** para mostrar seu jogo a alguém. Você pode pedir ajuda a um responsável para mandar o link. Não precisa abrir o mural para usar esse link.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/link-9ce446e1dccb24b5.webp",
+            "imageAlt": "Comemoração Seu jogo está no Mural! com o botão Copiar link de jogar destacado."
           },
           {
             "id": "copia",
             "title": "Lembre da versão publicada",
-            "body": "O mural guarda uma cópia daquele momento. Mudar o projeto no editor não muda essa cópia. Na aula, o jogo só pode ser compartilhado uma vez."
+            "body": "O mural guarda uma cópia daquele momento. Mudar o projeto no editor não muda essa cópia. Na aula, o jogo só pode ser compartilhado uma vez.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/copia-1434b0e354413158.webp",
+            "imageAlt": "Janela Compartilhar com o aviso de que a versão publicada no Mural é uma cópia separada do projeto destacado."
           },
           {
             "id": "opcional",
             "title": "Conclua a aula",
-            "body": "Na última seção da Aula 2 do Cadê Todo Mundo?, a tarefa é publicar seu jogo. Quando aparecer **Seu jogo está no Mural!**, toque em **Fechar** e depois em **Concluir aula**."
+            "body": "Na última seção da Aula 2 do Cadê Todo Mundo?, a tarefa é publicar seu jogo. Quando aparecer **Seu jogo está no Mural!**, toque em **Fechar** e depois em **Concluir aula**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/opcional-672773ea9b38e2a3.webp",
+            "imageAlt": "Comemoração Seu jogo está no Mural! com o botão Fechar destacado, antes de concluir a aula."
           }
         ],
         "related": ["plataforma-jogar-no-mural", "plataforma-enviar-atividade"]
@@ -388,22 +452,30 @@
           {
             "id": "mapa",
             "title": "Abra o mapa",
-            "body": "Toque em **Jornada**. O mapa mostra os níveis da Jornada do Criador e indica onde você está."
+            "body": "Toque em **Jornada**. O mapa mostra os níveis da Jornada do Criador e indica onde você está.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/mapa-f5f8ee6f6f4e0531.webp",
+            "imageAlt": "Página Jornada aberta pelo menu, com o mapa dos níveis da Jornada do Criador."
           },
           {
             "id": "trilha",
             "title": "Veja os cursos da trilha",
-            "body": "Toque em um nível do mapa para abrir a trilha dele. É nessa página que fica a lista de cursos da trilha."
+            "body": "Toque em um nível do mapa para abrir a trilha dele. É nessa página que fica a lista de cursos da trilha.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/trilha-e5af3d7c93320785.webp",
+            "imageAlt": "Mapa da Jornada com o nível Construtor(a) destacado, marcado como o lugar onde você está."
           },
           {
             "id": "curso",
             "title": "Confira o que está liberado",
-            "body": "Um curso disponível mostra **Acessar curso**. Se estiver bloqueado, leia o recado do cartão para saber o que vem antes."
+            "body": "Um curso disponível mostra **Acessar curso**. Se estiver bloqueado, leia o recado do cartão para saber o que vem antes.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/curso-1a429e409dddf5fd.webp",
+            "imageAlt": "Trilha com um curso liberado mostrando Acessar curso e um curso bloqueado com o recado de qual curso fazer antes."
           },
           {
             "id": "progresso",
             "title": "Acompanhe suas aulas",
-            "body": "Abra um curso liberado. No caminho das aulas, as concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Volte ao mapa para escolher outra trilha."
+            "body": "Abra um curso liberado. No caminho das aulas, as concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Volte ao mapa para escolher outra trilha.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/progresso-74aac99020a8a8f6.webp",
+            "imageAlt": "Caminho das aulas do curso com uma aula concluída, marcada com confirmação, e uma aula bloqueada com cadeado."
           }
         ],
         "related": ["plataforma-abrir-uma-aula"]
@@ -432,22 +504,30 @@
           {
             "id": "dividir",
             "title": "Ajuste a divisão da tela",
-            "body": "Nas seções com conteúdo de um lado e atividade do outro, arraste a divisão entre eles para mudar o espaço de cada lado."
+            "body": "Nas seções com conteúdo de um lado e atividade do outro, arraste a divisão entre eles para mudar o espaço de cada lado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/dividir-caebf43c8bd5a558.webp",
+            "imageAlt": "Seção com conteúdo de um lado e atividade do outro, com a divisão do meio destacada para arrastar."
           },
           {
             "id": "ampliar",
             "title": "Amplie a experiência",
-            "body": "Se aparecer **Ampliar experiência**, toque nele para ocupar mais espaço. Use **Voltar à aula** para ver o conteúdo junto novamente."
+            "body": "Se aparecer **Ampliar experiência**, toque nele para ocupar mais espaço. Use **Voltar à aula** para ver o conteúdo junto novamente.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/ampliar-3e14325db6774c8d.webp",
+            "imageAlt": "Experiência da aula com o botão Ampliar experiência destacado."
           },
           {
             "id": "editor",
             "title": "Amplie o editor da aula",
-            "body": "O Estúdio e o Pinta dentro da aula também podem mostrar **Expandir**. Toque nele e use **Reduzir** para voltar."
+            "body": "O Estúdio e o Pinta dentro da aula também podem mostrar **Expandir**. Toque nele e use **Reduzir** para voltar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/editor-0ac11fb30bb65970.webp",
+            "imageAlt": "Estúdio dentro da aula com o botão Expandir destacado."
           },
           {
             "id": "celular",
             "title": "Alterne no celular",
-            "body": "Quando a tela mostrar **Ver exemplo** e **Criar**, toque em **Ver exemplo** para ler a orientação e em **Criar** para fazer a atividade."
+            "body": "Quando a tela mostrar **Ver exemplo** e **Criar**, toque em **Ver exemplo** para ler a orientação e em **Criar** para fazer a atividade.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ampliar-a-atividade/celular-7db79f1aa09f9fd2.webp",
+            "imageAlt": "Aula na tela do celular com as abas Ver exemplo e Criar destacadas no alto da seção."
           }
         ],
         "related": ["plataforma-mostrar-o-menu"]
@@ -476,22 +556,30 @@
           {
             "id": "previa",
             "title": "Mostre o jogo",
-            "body": "Com o projeto aberto, procure o botão do olhinho **Mostrar pré-visualização**. Se o jogo já aparece ao lado dos blocos, a pré-visualização está aberta."
+            "body": "Com o projeto aberto, procure o botão do olhinho **Mostrar pré-visualização**. Se o jogo já aparece ao lado dos blocos, a pré-visualização está aberta.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-pre-visualizacao/previa-184f94e09171abde.webp",
+            "imageAlt": "Editor do Estúdio com o botão do olhinho destacado e o jogo aparecendo na pré-visualização, ao lado dos blocos."
           },
           {
             "id": "pequena",
             "title": "Encontre a aba na tela pequena",
-            "body": "Quando o editor mostrar abas, toque em **Pré-visualização**. Para voltar à programação, toque em **Blocos** ou **Código**."
+            "body": "Quando o editor mostrar abas, toque em **Pré-visualização**. Para voltar à programação, toque em **Blocos** ou **Código**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-pre-visualizacao/pequena-b7c5828c56f72d4b.webp",
+            "imageAlt": "Estúdio estreito dentro da aula, com as abas Blocos e Pré-visualização destacadas e o toque em Pré-visualização."
           },
           {
             "id": "testar",
             "title": "Teste sua mudança",
-            "body": "Mude um bloco e espere o jogo atualizar. Toque no jogo antes de usar as teclas de controle."
+            "body": "Mude um bloco e espere o jogo atualizar. Toque no jogo antes de usar as teclas de controle.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-pre-visualizacao/testar-8b40a12c191d4428.webp",
+            "imageAlt": "Pré-visualização do jogo destacada para tocar nela antes de usar as teclas de controle."
           },
           {
             "id": "erro",
             "title": "Veja o que deu errado",
-            "body": "Se o jogo não funcionar, abra **Mais opções** → **Mostrar** → **Console**. Quando aparecer **Ver o bloco que causou o erro**, toque nele para encontrar o bloco."
+            "body": "Se o jogo não funcionar, abra **Mais opções** → **Mostrar** → **Console**. Quando aparecer **Ver o bloco que causou o erro**, toque nele para encontrar o bloco.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-pre-visualizacao/erro-e0ab88f672452237.webp",
+            "imageAlt": "Menu Mais opções aberto com Console destacado na parte Mostrar."
           }
         ],
         "related": ["estudio-salvar-e-reabrir"],
@@ -519,22 +607,30 @@
           {
             "id": "abrir",
             "title": "Abra o Estúdio",
-            "body": "No menu da plataforma, toque em **Criar** e depois em **Estúdio**, se ele já estiver liberado para você."
+            "body": "No menu da plataforma, toque em **Criar** e depois em **Estúdio**, se ele já estiver liberado para você.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/abrir-3c5b308ccc031bde.webp",
+            "imageAlt": "Menu da esquerda com o grupo Criar aberto e o item Estúdio destacado."
           },
           {
             "id": "novo",
             "title": "Comece um projeto",
-            "body": "Na tela **Meus Jogos**, toque em **Novo projeto**."
+            "body": "Na tela **Meus Jogos**, toque em **Novo projeto**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/novo-1c0d4a18b5ddb7ce.webp",
+            "imageAlt": "Tela Meus Jogos do Estúdio com o botão Novo projeto destacado no alto."
           },
           {
             "id": "nome",
             "title": "Dê um nome",
-            "body": "Preencha **Nome do projeto** e toque em **Criar e abrir**. Se esse nome já existir, escolha outro."
+            "body": "Preencha **Nome do projeto** e toque em **Criar e abrir**. Se esse nome já existir, escolha outro.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/nome-991857f0e314ad9e.webp",
+            "imageAlt": "Janela Novo projeto com o nome do projeto escrito e o botão Criar e abrir destacado."
           },
           {
             "id": "blocos",
             "title": "Comece a programar",
-            "body": "O editor abre com os blocos disponíveis. Para criar um jogo 2D, veja [como instalar a extensão Jogo 2D](/como-fazer/estudio-instalar-jogo-2d), quando ela estiver liberada."
+            "body": "O editor abre com os blocos disponíveis. Para criar um jogo 2D, veja [como instalar a extensão Jogo 2D](/como-fazer/estudio-instalar-jogo-2d), quando ela estiver liberada.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/blocos-c1acb234732f34c3.webp",
+            "imageAlt": "Projeto novo aberto no Estúdio, com a caixa de blocos destacada à esquerda e a área de montar ao lado."
           }
         ],
         "related": ["estudio-instalar-jogo-2d", "estudio-salvar-e-reabrir"],
@@ -563,22 +659,30 @@
           {
             "id": "menu",
             "title": "Abra as extensões",
-            "body": "No Estúdio completo, abra um projeto. Toque em **Mais opções** → **O meu jogo** → **Extensões**."
+            "body": "No Estúdio completo, abra um projeto. Toque em **Mais opções** → **O meu jogo** → **Extensões**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-instalar-jogo-2d/menu-3abab60774d240be.webp",
+            "imageAlt": "Menu Mais opções aberto com Extensões destacado na parte O meu jogo."
           },
           {
             "id": "instalar",
             "title": "Escolha Jogo 2D",
-            "body": "Em **Extensões oficiais**, procure **Jogo 2D** e toque em **Instalar**, se estiver disponível para você."
+            "body": "Em **Extensões oficiais**, procure **Jogo 2D** e toque em **Instalar**, se estiver disponível para você.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-instalar-jogo-2d/instalar-3648b65a1568b11a.webp",
+            "imageAlt": "Janela Extensões oficiais com a extensão Jogo 2D e o botão Instalar destacado."
           },
           {
             "id": "usar",
             "title": "Confira os novos blocos",
-            "body": "Espere aparecer **Instalada**. Os blocos dessa extensão ficam disponíveis neste projeto. Em outro projeto, você precisa instalar de novo."
+            "body": "Espere aparecer **Instalada** e toque em **Fechar**. A gaveta **Jogo 2D** aparece na caixa de blocos deste projeto. Em outro projeto, você precisa instalar de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-instalar-jogo-2d/usar-8cee128bf126fe48.webp",
+            "imageAlt": "Caixa de blocos do projeto com a nova gaveta Jogo 2D destacada, depois de instalar a extensão."
           },
           {
             "id": "aula",
             "title": "Se estiver dentro de uma aula",
-            "body": "Na aula, as extensões são preparadas pelo professor e esse menu pode não aparecer. Use os blocos que a atividade já trouxe."
+            "body": "Na aula, as extensões são preparadas pelo professor e esse menu pode não aparecer. Use os blocos que a atividade já trouxe.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-instalar-jogo-2d/aula-6a799bd8a2caad8b.webp",
+            "imageAlt": "Estúdio dentro da aula com a caixa de blocos destacada, já trazendo os blocos de Jogo 2D que a atividade usa."
           }
         ],
         "related": ["estudio-criar-um-projeto", "estudio-materiais-do-jogo"],
@@ -609,22 +713,30 @@
           {
             "id": "salvar",
             "title": "Confira o salvamento",
-            "body": "O Estúdio guarda o projeto enquanto você cria. Se aparecer **Alterações não salvas**, espere ou use **Mais opções** → **O meu jogo** → **Salvar**. Confira se apareceu **Salvo**."
+            "body": "O Estúdio guarda o projeto enquanto você cria. Se aparecer **Alterações não salvas**, espere ou use **Mais opções** → **O meu jogo** → **Salvar**. Confira se apareceu **Salvo**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-salvar-e-reabrir/salvar-623fd86228c81966.webp",
+            "imageAlt": "Menu Mais opções com Salvar destacado e o aviso Salvo, no alto, também destacado."
           },
           {
             "id": "conta",
             "title": "Confira a cópia na conta",
-            "body": "No Estúdio completo, espere também **Guardado na sua conta** antes de trocar de aparelho. Se aparecer **Sem internet agora** ou **Não consegui guardar**, confira a conexão."
+            "body": "No Estúdio completo, espere também **Guardado na sua conta** antes de trocar de aparelho. Se aparecer **Sem internet agora** ou **Não consegui guardar**, confira a conexão.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-salvar-e-reabrir/conta-a133fd1987b8eeb2.webp",
+            "imageAlt": "Tela Meus Jogos com o aviso Guardado na sua conta destacado no alto."
           },
           {
             "id": "reabrir",
             "title": "Volte ao seu jogo",
-            "body": "Use **Mais opções** → **Estúdio** → **Meus projetos**. Na tela **Meus Jogos**, toque no projeto que quer continuar. Use o mesmo perfil de criança."
+            "body": "Toque na seta de voltar, no canto de cima, ou use **Mais opções** → **Estúdio** → **Meus projetos**. Na tela **Meus Jogos**, toque em **Abrir** no projeto que quer continuar. Use o mesmo perfil de criança.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-salvar-e-reabrir/reabrir-dde8a5ab9642455e.webp",
+            "imageAlt": "Tela Meus Jogos com o cartão de um projeto destacado e o botão Abrir em evidência."
           },
           {
             "id": "aula",
             "title": "Se for uma atividade da aula",
-            "body": "Abra a própria aula para continuar. **Salvar** guarda o rascunho no navegador. Para o professor receber uma cópia, use [Enviar para o professor](/como-fazer/plataforma-enviar-atividade)."
+            "body": "Abra a própria aula para continuar. **Salvar** guarda o rascunho no navegador. Para o professor receber uma cópia, use [Enviar para o professor](/como-fazer/plataforma-enviar-atividade).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-salvar-e-reabrir/aula-8cd403a071fe9cc3.webp",
+            "imageAlt": "Estúdio dentro da aula com Salvar destacado no menu e o botão de enviar ao professor destacado no alto do cartão."
           }
         ],
         "related": ["estudio-baixar-o-projeto", "estudio-recuperar-atividade-enviada"],
@@ -654,27 +766,37 @@
           {
             "id": "abrir",
             "title": "Abra os materiais",
-            "body": "Com um projeto de blocos aberto, toque em **Mais opções** → **Materiais**. Escolha **Imagens** ou **Sons**."
+            "body": "Com um projeto de blocos aberto, toque em **Mais opções** → **Materiais**. Escolha **Imagens** ou **Sons**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-materiais-do-jogo/abrir-0a7b5692ed6ce08f.webp",
+            "imageAlt": "Menu Mais opções com Imagens e Sons destacados na parte Materiais."
           },
           {
             "id": "arquivo",
             "title": "Traga um arquivo",
-            "body": "Em **Imagens**, toque em **Enviar imagem** e escolha o arquivo. Em **Sons**, use **Enviar som**. Esses botões aparecem quando o projeto permite enviar arquivos."
+            "body": "Em **Imagens**, toque em **Enviar imagem** e escolha o arquivo. Em **Sons**, use **Enviar som**. Esses botões aparecem quando o projeto permite enviar arquivos.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-materiais-do-jogo/arquivo-56e8d2f9cc7636c2.webp",
+            "imageAlt": "Janela Materiais do jogo na aba Imagens com o botão Enviar imagem destacado."
           },
           {
             "id": "pinta",
             "title": "Traga um desenho seu",
-            "body": "No Estúdio completo, use **Trazer do Pinta**, encontre o desenho e toque em **Adicionar ao projeto**. Veja o [passo a passo do Pinta](/como-fazer/pinta-usar-no-estudio) para o caminho dentro das aulas."
+            "body": "No Estúdio completo, use **Trazer do Pinta**, encontre o desenho e toque em **Adicionar ao projeto**. Veja o [passo a passo do Pinta](/como-fazer/pinta-usar-no-estudio) para o caminho dentro das aulas.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-materiais-do-jogo/pinta-e0b064095315c7d8.webp",
+            "imageAlt": "Janela Trazer do Pinta com os desenhos da galeria e o botão Adicionar ao projeto destacado."
           },
           {
             "id": "usar",
             "title": "Escolha o material no bloco",
-            "body": "Feche a janela e procure o bloco que usa a imagem ou o som. No campo do material, escolha o nome que você adicionou. Só adicionar o arquivo não faz ele aparecer no jogo."
+            "body": "Feche a janela e procure o bloco que usa a imagem ou o som. No campo do material, escolha o nome que você adicionou. Só adicionar o arquivo não faz ele aparecer no jogo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-materiais-do-jogo/usar-99ca3b80fce06273.webp",
+            "imageAlt": "Bloco Criar sprite com o campo com imagem aberto, mostrando as imagens do projeto para escolher uma."
           },
           {
             "id": "modelo",
             "title": "Para criações 3D",
-            "body": "Os modelos ficam em **Modelos 3D**, quando essa opção estiver disponível. Veja [como trazer uma criação do Molda](/como-fazer/molda-usar-no-estudio)."
+            "body": "Os modelos ficam em **Modelos 3D**, quando essa opção estiver disponível. Veja [como trazer uma criação do Molda](/como-fazer/molda-usar-no-estudio).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-materiais-do-jogo/modelo-b829f95bec103132.webp",
+            "imageAlt": "Janela Materiais do jogo do Estúdio com a aba Modelos 3D destacada."
           }
         ],
         "related": ["pinta-usar-no-estudio", "molda-usar-no-estudio"],
@@ -702,7 +824,9 @@
           {
             "id": "baixar",
             "title": "Baixe o projeto",
-            "body": "Com o jogo aberto, toque em **Mais opções** → **Levar o jogo** → **Baixar o projeto**. O navegador baixa um arquivo .json."
+            "body": "Com o jogo aberto, toque em **Mais opções** → **Levar o jogo** → **Baixar o projeto**. O navegador baixa um arquivo .json.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-baixar-o-projeto/baixar-53e357514065d605.webp",
+            "imageAlt": "Menu Mais opções com Baixar o projeto destacado na parte Levar o jogo."
           },
           {
             "id": "guardar",
@@ -712,17 +836,23 @@
           {
             "id": "importar",
             "title": "Traga a cópia de volta",
-            "body": "No Estúdio completo, vá à tela **Meus Jogos**, toque em **Importar** e escolha o arquivo .json que baixou. Um novo projeto será criado."
+            "body": "No Estúdio completo, vá à tela **Meus Jogos**, toque em **Importar** e escolha o arquivo .json que baixou. Um novo projeto será criado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-baixar-o-projeto/importar-aaa0bd0ce3bdcec0.webp",
+            "imageAlt": "Tela Meus Jogos com o botão Importar destacado no alto."
           },
           {
             "id": "abrir",
             "title": "Leia os avisos",
-            "body": "Se aparecer um aviso sobre a importação, leia e toque em **Entendi**. Se estiver tudo certo, o projeto abre para você continuar."
+            "body": "Se aparecer a janela **Importação**, leia o aviso e toque em **Entendi**. Se o arquivo não for um projeto do Estúdio, escolha o arquivo .json que você baixou. Se estiver tudo certo, o projeto abre para você continuar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-baixar-o-projeto/abrir-d6aa81b50948ee35.webp",
+            "imageAlt": "Janela Importação explicando que o arquivo escolhido não é um projeto do Estúdio, com o botão Entendi destacado."
           },
           {
             "id": "formatos",
             "title": "Escolha o download certo",
-            "body": "**Baixar o código** e **Baixar para publicar** geram arquivos .zip para outros usos. Para reabrir o trabalho no Estúdio, escolha **Baixar o projeto**."
+            "body": "**Baixar o código** e **Baixar para publicar** geram arquivos .zip para outros usos. Para reabrir o trabalho no Estúdio, escolha **Baixar o projeto**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-baixar-o-projeto/formatos-94c57db0dd5e4c6e.webp",
+            "imageAlt": "Parte Levar o jogo do menu com as três opções de download destacadas e Baixar o projeto em primeiro."
           }
         ],
         "related": ["estudio-salvar-e-reabrir"],
@@ -752,27 +882,37 @@
           {
             "id": "painel",
             "title": "Encontre Camadas",
-            "body": "Abra seu desenho e procure **Camadas**. Em telas pequenas, abra **Cores e camadas** no Vetor ou **Prévia e animações** no Pixel art."
+            "body": "Abra seu desenho e procure **Camadas**. Em telas pequenas, abra **Cores e camadas** no Vetor ou **Prévia e animações** no Pixel art.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-uma-camada/painel-7f222486ef966e4a.webp",
+            "imageAlt": "Editor do Pinta com o painel Camadas destacado na coluna da direita."
           },
           {
             "id": "nova",
             "title": "Separe as partes do desenho",
-            "body": "No Pixel art, toque em **Nova camada**. Selecione a camada antes de desenhar. No Vetor, cada forma desenhada aparece na lista de camadas. Toque na linha da forma para escolher."
+            "body": "No Pixel art, toque em **Nova camada**. Selecione a camada antes de desenhar. No Vetor, cada forma desenhada aparece na lista de camadas. Toque na linha da forma para escolher.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-uma-camada/nova-6c1b1cb95535c45c.webp",
+            "imageAlt": "Painel Camadas com o botão Nova camada destacado."
           },
           {
             "id": "olho",
             "title": "Confira o olho e o cadeado",
-            "body": "O olhinho mostra ou esconde a camada. O cadeado trava as mudanças. Se não conseguir desenhar nela, confira se está visível e destrancada."
+            "body": "O olhinho mostra ou esconde a camada. O cadeado trava as mudanças. Se não conseguir desenhar nela, confira se está visível e destrancada.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-uma-camada/olho-a3030f470059309d.webp",
+            "imageAlt": "Painel Camadas com o olho e o cadeado de uma camada destacados."
           },
           {
             "id": "ordem",
             "title": "Mude o que fica na frente",
-            "body": "Arraste a alça de pontinhos da camada ou da forma para outra posição na lista. O que fica mais acima aparece na frente do desenho."
+            "body": "Arraste a alça de pontinhos da camada ou da forma para outra posição na lista. O que fica mais acima aparece na frente do desenho.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-uma-camada/ordem-adf06e6da4218466.webp",
+            "imageAlt": "Painel Camadas com a alça de pontinhos de uma camada destacada para arrastar."
           },
           {
             "id": "apagar",
             "title": "Apague uma camada do Pixel art",
-            "body": "Selecione a camada e use **Apagar esta camada**. Confirme em **Apagar camada**. Tudo o que estiver nela sai do desenho. O desenho precisa manter pelo menos uma camada."
+            "body": "Selecione a camada e use **Apagar esta camada**. Confirme em **Apagar camada**. Tudo o que estiver nela sai do desenho. O desenho precisa manter pelo menos uma camada.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-uma-camada/apagar-b0b60d2498b1f5e6.webp",
+            "imageAlt": "Janela de confirmação com o botão Apagar camada destacado."
           }
         ],
         "related": ["pinta-desfazer", "pinta-ferramentas"],
@@ -802,32 +942,44 @@
           {
             "id": "abrir",
             "title": "Abra o Pinta",
-            "body": "No menu, toque em **Criar** → **Pinta**, se ele já estiver liberado. Em **Meus desenhos**, toque em **Criar novo**."
+            "body": "No menu, toque em **Criar** → **Pinta**, se ele já estiver liberado. Em **Meus desenhos**, toque em **Criar novo**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-criar-um-desenho/abrir-a85a3df8f6acd039.webp",
+            "imageAlt": "Galeria Meus desenhos do Pinta com o botão Criar novo destacado no alto."
           },
           {
             "id": "estilo",
             "title": "Escolha como desenhar",
-            "body": "Use **Pixel art** para desenhar com quadradinhos ou **Vetor** para desenhar com formas e linhas lisas. Se escolher **Modelos prontos**, toque em um modelo e siga direto para o nome."
+            "body": "Use **Pixel art** para desenhar com quadradinhos ou **Vetor** para desenhar com formas e linhas lisas. Se escolher **Modelos prontos**, toque em um modelo e siga direto para o nome.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-criar-um-desenho/estilo-9edb4490771046e9.webp",
+            "imageAlt": "Janela Como você quer desenhar? com as opções Pixel art e Vetor destacadas e o toque em Pixel art."
           },
           {
             "id": "tipo",
             "title": "Escolha o que criar",
-            "body": "Escolha **Personagem**, **Cenário de fundo** ou **Peças do cenário**. Para criar um **Mapa**, primeiro tenha um conjunto de peças guardado."
+            "body": "Escolha **Personagem**, **Cenário de fundo** ou **Peças do cenário**. Para criar um **Mapa**, primeiro tenha um conjunto de peças guardado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-criar-um-desenho/tipo-3264d0e697908c7b.webp",
+            "imageAlt": "Janela de criar desenho com as opções Personagem, Cenário de fundo e Peças do cenário, e Personagem destacado."
           },
           {
             "id": "tamanho",
             "title": "Escolha o tamanho",
-            "body": "Escolha o tamanho e toque em **Avançar**. Se for um mapa, escolha também o conjunto de peças que ele vai usar."
+            "body": "Escolha o tamanho e toque em **Avançar**. Se for um mapa, escolha também o conjunto de peças que ele vai usar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-criar-um-desenho/tamanho-7c81ad04e2eb0a7c.webp",
+            "imageAlt": "Janela de criar desenho com os tamanhos para escolher e o botão Avançar destacado."
           },
           {
             "id": "nome",
             "title": "Dê um nome e comece",
-            "body": "Use um nome como “meu-heroi”, com letras minúsculas e hífen no lugar dos espaços. Toque em **Começar a desenhar**."
+            "body": "Use um nome como “meu-heroi”, com letras minúsculas e hífen no lugar dos espaços. Toque em **Começar a desenhar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-criar-um-desenho/nome-01b75c487e1e07f3.webp",
+            "imageAlt": "Janela de criar desenho com o nome meu-heroi escrito e o botão Começar a desenhar destacado."
           },
           {
             "id": "guardar",
             "title": "Espere guardar",
-            "body": "Enquanto você desenha, o Pinta salva sozinho. Antes de trocar de aparelho, espere **Guardado na sua conta**. Se aparecer um erro, confira a conexão antes de sair."
+            "body": "Enquanto você desenha, o Pinta salva sozinho e mostra **Salvo**. Antes de trocar de aparelho, espere a nuvem verde ao lado, que quer dizer **Guardado na sua conta**. Se aparecer um erro, confira a conexão antes de sair.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-criar-um-desenho/guardar-6ad9fd921ecddd0e.webp",
+            "imageAlt": "Barra de cima do Pinta com os avisos Salvo e Guardado na sua conta destacados."
           }
         ],
         "related": ["pinta-ferramentas", "pinta-usar-uma-camada"],
@@ -859,27 +1011,37 @@
           {
             "id": "guardar",
             "title": "Guarde o desenho",
-            "body": "Termine o desenho no Pinta e espere salvar. Use o mesmo perfil de criança no Pinta e no Estúdio."
+            "body": "Termine o desenho no Pinta e espere salvar. Use o mesmo perfil de criança no Pinta e no Estúdio.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-no-estudio/guardar-6ad9fd921ecddd0e.webp",
+            "imageAlt": "Barra de cima do Pinta com os avisos Salvo e Guardado na sua conta destacados, mostrando que o desenho está guardado."
           },
           {
             "id": "projeto",
             "title": "Abra seu jogo",
-            "body": "No Estúdio completo, abra o projeto e vá a **Mais opções** → **Materiais** → **Imagens**."
+            "body": "No Estúdio completo, abra o projeto e vá a **Mais opções** → **Materiais** → **Imagens**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-no-estudio/projeto-0a7b5692ed6ce08f.webp",
+            "imageAlt": "Projeto aberto no Estúdio com o menu Mais opções e o item Imagens destacado na parte Materiais."
           },
           {
             "id": "trazer",
             "title": "Escolha o desenho",
-            "body": "Toque em **Trazer do Pinta**. Procure o desenho e toque em **Adicionar ao projeto**. Quando ele entrar, aparece a marca **no projeto**."
+            "body": "Toque em **Trazer do Pinta**. Procure o desenho e toque em **Adicionar ao projeto**. Quando ele entrar, aparece a marca **no projeto**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-no-estudio/trazer-e0b064095315c7d8.webp",
+            "imageAlt": "Janela Trazer do Pinta com os desenhos da galeria e o botão Adicionar ao projeto destacado."
           },
           {
             "id": "aula",
             "title": "Se estiver no Estúdio de uma aula",
-            "body": "Nesse caso, o caminho pode ser **Meus desenhos**, dentro de **Imagens**. Primeiro abra o desenho no Pinta e toque em **Usar no Estúdio**. Depois volte à aula e use **Adicionar ao projeto** no desenho."
+            "body": "Na aula, a janela de materiais não mostra os desenhos do Pinta. No Pinta, abra o desenho, toque em **Baixar** e escolha **Imagem (PNG)**. Depois volte à aula, abra **Mais opções** → **Imagens** e toque em **Enviar imagem**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-no-estudio/aula-ffaf09eab9b44294.webp",
+            "imageAlt": "Estúdio de uma aula com a janela Materiais do jogo aberta na aba Imagens e o botão Enviar imagem destacado."
           },
           {
             "id": "bloco",
             "title": "Use o desenho no jogo",
-            "body": "Feche os materiais e escolha o desenho no campo de imagem do bloco que você está usando. Confira o resultado na pré-visualização."
+            "body": "Feche os materiais e escolha o desenho no campo de imagem do bloco que você está usando. Confira o resultado na pré-visualização.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-usar-no-estudio/bloco-99ca3b80fce06273.webp",
+            "imageAlt": "Bloco Criar sprite com o campo com imagem aberto, mostrando as imagens do projeto para escolher o desenho."
           }
         ],
         "related": ["estudio-materiais-do-jogo", "estudio-pre-visualizacao"],
@@ -908,22 +1070,30 @@
           {
             "id": "desfazer",
             "title": "Volte uma mudança",
-            "body": "Com o desenho aberto, toque na seta **Desfazer**, na barra de cima. No teclado, você também pode usar **Ctrl + Z**."
+            "body": "Com o desenho aberto, toque na seta **Desfazer**, na barra de cima. No teclado, você também pode usar **Ctrl + Z**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desfazer/desfazer-78165dc2b69e583f.webp",
+            "imageAlt": "Barra de cima do Pinta com a seta Desfazer destacada."
           },
           {
             "id": "refazer",
             "title": "Traga a mudança de volta",
-            "body": "Se desfez sem querer, toque em **Refazer**. O botão só fica disponível quando há uma mudança para trazer de volta."
+            "body": "Se desfez sem querer, toque em **Refazer**. O botão só fica disponível quando há uma mudança para trazer de volta.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desfazer/refazer-57b506bebc319cf0.webp",
+            "imageAlt": "Barra de cima do Pinta com a seta Refazer destacada, depois de desfazer um traço."
           },
           {
             "id": "tamanho",
             "title": "Se cortou o desenho sem querer",
-            "body": "Ao diminuir o tamanho, uma parte do desenho pode ficar de fora. Use **Desfazer** enquanto o trabalho ainda está aberto."
+            "body": "Ao diminuir o tamanho, uma parte do desenho pode ficar de fora. Use **Desfazer** enquanto o trabalho ainda está aberto.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desfazer/tamanho-00d57ab1c6829494.webp",
+            "imageAlt": "Barra de cima do Pinta com o botão do tamanho do desenho e a seta Desfazer destacados."
           },
           {
             "id": "galeria",
             "title": "Cuide ao apagar da galeria",
-            "body": "Apagar um desenho inteiro em **Meus desenhos** é diferente de desfazer um traço. A janela pede confirmação, e essa exclusão não pode ser desfeita."
+            "body": "Apagar um desenho inteiro em **Meus desenhos** é diferente de desfazer um traço. A janela pede confirmação, e essa exclusão não pode ser desfeita.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desfazer/galeria-c300618083dafb9e.webp",
+            "imageAlt": "Janela de confirmação para apagar um desenho da galeria, com o botão de apagar destacado."
           }
         ],
         "related": ["pinta-baixar-e-restaurar"],
@@ -952,27 +1122,37 @@
           {
             "id": "cor",
             "title": "Escolha a cor",
-            "body": "Abra um desenho e toque em uma cor da paleta. Use **Nova cor** quando quiser escolher outra."
+            "body": "Abra um desenho e toque em uma cor da paleta. Use **Nova cor** quando quiser escolher outra.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-ferramentas/cor-0f26191f833f6b93.webp",
+            "imageAlt": "Paleta de cores do Pinta com uma cor destacada para escolher e o botão Nova cor ao lado."
           },
           {
             "id": "desenhar",
             "title": "Faça um traço",
-            "body": "No Pixel art, escolha **Lápis** e arraste no desenho. No Vetor, escolha **Pincel** e arraste. Solte para terminar o traço."
+            "body": "No Pixel art, escolha **Lápis** e arraste no desenho. No Vetor, escolha **Pincel** e arraste. Solte para terminar o traço.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-ferramentas/desenhar-ae775f9864b710e9.webp",
+            "imageAlt": "Pinta com a ferramenta Lápis destacada e um traço novo no desenho."
           },
           {
             "id": "pixel",
             "title": "Pinte ou apague no Pixel art",
-            "body": "Use **Balde de tinta** para preencher uma área e **Borracha** para apagar. Ajuste **Tamanho do traço** para mudar a grossura do lápis ou da borracha."
+            "body": "Use **Balde de tinta** para preencher uma área e **Borracha** para apagar. Ajuste **Tamanho do traço** para mudar a grossura do lápis ou da borracha.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-ferramentas/pixel-733cb482576892ce.webp",
+            "imageAlt": "Caixa de ferramentas do Pinta com o Balde de tinta, a Borracha e os tamanhos do traço destacados."
           },
           {
             "id": "conta",
             "title": "Pegue uma cor do desenho",
-            "body": "Use **Conta-gotas** e toque na cor que quer copiar. Depois volte à ferramenta de desenhar."
+            "body": "Use **Conta-gotas** e toque na cor que quer copiar. Depois volte à ferramenta de desenhar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-ferramentas/conta-91e5a880cdc79a14.webp",
+            "imageAlt": "Caixa de ferramentas do Pinta com o Conta-gotas destacado."
           },
           {
             "id": "corrigir",
             "title": "Corrija se precisar",
-            "body": "Use **Desfazer** para voltar uma mudança. Se não conseguir pintar, confira a [camada escolhida](/como-fazer/pinta-usar-uma-camada)."
+            "body": "Use **Desfazer** para voltar uma mudança. Se não conseguir pintar, confira a [camada escolhida](/como-fazer/pinta-usar-uma-camada).",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-ferramentas/corrigir-b722cd7206b5c7fc.webp",
+            "imageAlt": "Barra de cima do Pinta com a seta Desfazer destacada."
           }
         ],
         "related": ["pinta-usar-uma-camada", "pinta-desfazer"],
@@ -1000,27 +1180,37 @@
           {
             "id": "abrir",
             "title": "Abra o Pensa",
-            "body": "No menu, toque em **Criar** → **Pensa**, se ele já estiver liberado para você."
+            "body": "No menu, toque em **Criar** → **Pensa**, se ele já estiver liberado para você.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/abrir-9b0281a99a0edd5f.webp",
+            "imageAlt": "Menu da esquerda com o grupo Criar aberto e o item Pensa destacado."
           },
           {
             "id": "novo",
             "title": "Crie um plano",
-            "body": "Toque em **+ Novo plano** ou no cartão **Novo plano**."
+            "body": "Toque em **+ Novo plano** ou no cartão **Novo plano**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/novo-a025306dbd3a949d.webp",
+            "imageAlt": "Lista Meus projetos do Pensa com o botão Novo plano e o cartão Novo plano destacados."
           },
           {
             "id": "nome",
             "title": "Dê um nome ao jogo",
-            "body": "Preencha **Nome do novo jogo** e toque em **Criar meu plano**. A primeira etapa abre."
+            "body": "Preencha **Nome do novo jogo** e toque em **Criar meu plano**. A primeira etapa abre.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/nome-fff210f2fb0729d9.webp",
+            "imageAlt": "Campo Nome do novo jogo com Corrida do Sapo escrito e o botão Criar meu plano destacado."
           },
           {
             "id": "ideia",
             "title": "Conte sua ideia",
-            "body": "Em **Mensagem para o Zappy**, escreva como imagina seu jogo e toque em **Enviar**. Responda às perguntas para preparar a Carta da Ideia."
+            "body": "Na caixa **Conte sua ideia…**, escreva como imagina seu jogo e toque em **Enviar**. Responda às perguntas para preparar a Carta da Ideia.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/ideia-ae55a25bf73d01cc.webp",
+            "imageAlt": "Conversa da etapa Z do Pensa com a ideia do jogo escrita na caixa de mensagem e o botão Enviar destacado."
           },
           {
             "id": "retomar",
             "title": "Continue depois",
-            "body": "Ao voltar à lista de planos, encontre o seu e toque em **Continuar**."
+            "body": "Ao voltar à lista de planos, encontre o seu e toque em **Continuar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/retomar-6f4ec9797fc14880.webp",
+            "imageAlt": "Lista de planos do Pensa com o botão Continuar do plano Corrida do Sapo destacado."
           }
         ],
         "related": ["pensa-etapas-do-metodo"],
@@ -1052,32 +1242,44 @@
           {
             "id": "z",
             "title": "Z: conte a ideia",
-            "body": "Converse com o Zappy usando **Enviar**. Quando as decisões estiverem prontas, toque em **Criar a Carta da Ideia**. Leia o resultado."
+            "body": "Converse com o Zappy usando **Enviar**. Quando as decisões estiverem prontas, toque em **Criar a Carta da Ideia**. Leia o resultado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-etapas-do-metodo/z-f5a47ae65264dcfa.webp",
+            "imageAlt": "Etapa Z do Pensa com a conversa com o Zappy, o botão Enviar e o botão Criar a Carta da Ideia destacados."
           },
           {
             "id": "aprovar",
             "title": "Confira a Carta da Ideia",
-            "body": "Se quiser mudar algo, toque em **Editar** e depois em **Salvar nova versão**. Quando estiver certo, toque em **Está do meu jeito** e em **Ir para Enxergar o Jogo**."
+            "body": "Se quiser mudar algo, toque em **Editar** e depois em **Salvar nova versão**. Quando estiver certo, toque em **Está do meu jeito** e em **Ir para Enxergar o Jogo**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-etapas-do-metodo/aprovar-371fb475a671ad0a.webp",
+            "imageAlt": "Carta da Ideia pronta no Pensa, com os botões Editar e Está do meu jeito destacados."
           },
           {
             "id": "e",
             "title": "E: imagine o jogo",
-            "body": "Use **Criar loop, cenas e telas** e **Cocriar a Bíblia Visual**. Eles ajudam a planejar o que acontece e como o jogo vai parecer. Confira os dois cartões e toque em **Está do meu jeito** em cada um. Depois, use **Roteirizar a criação**."
+            "body": "Use **Criar loop, cenas e telas** e **Cocriar a Bíblia Visual**. Eles ajudam a planejar o que acontece e como o jogo vai parecer. Confira os dois cartões e toque em **Está do meu jeito** em cada um. Depois, use **Roteirizar a criação**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-etapas-do-metodo/e-d16276e2abe1efb0.webp",
+            "imageAlt": "Etapa E do Pensa com os botões Criar loop, cenas e telas e Cocriar a Bíblia Visual destacados."
           },
           {
             "id": "r",
             "title": "R: prepare as tarefas",
-            "body": "Toque em **Criar plano de tarefas**. Leia os Cartões de Criação. Quando o plano estiver certo, confirme **Está do meu jeito** no cartão do plano e toque em **Auditar o plano**."
+            "body": "Toque em **Criar plano de tarefas**. Leia os Cartões de Criação. Quando o plano estiver certo, confirme **Está do meu jeito** no cartão do plano e toque em **Auditar o plano**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-etapas-do-metodo/r-75c7c005261c104f.webp",
+            "imageAlt": "Etapa R do Pensa com o botão Criar plano de tarefas destacado."
           },
           {
             "id": "o",
             "title": "O: confira e aprove",
-            "body": "Toque em **Revisar e aprovar**. Leia os avisos e ajuste o que for pedido. Quando a revisão estiver aprovada, toque em **Aprovar meu plano**."
+            "body": "Toque em **Revisar e aprovar**. Leia os avisos e ajuste o que for pedido. Quando a revisão estiver aprovada, toque em **Aprovar meu plano**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-etapas-do-metodo/o-a2c4801f6b9601b8.webp",
+            "imageAlt": "Etapa O do Pensa com o botão Revisar e aprovar, o resultado da auditoria e o botão Aprovar meu plano destacados."
           },
           {
             "id": "rever",
             "title": "Releia quando precisar",
-            "body": "Você pode tocar em uma etapa concluída para rever o que planejou. Use o botão de voltar à etapa atual ou ao plano para continuar."
+            "body": "Você pode tocar em uma etapa concluída para rever o que planejou. Use o botão de voltar à etapa atual ou ao plano para continuar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-etapas-do-metodo/rever-881d82cbe33f5739.webp",
+            "imageAlt": "Plano do Pensa revendo a etapa Zerar a Bagunça já concluída, com o cartão dela e o botão Voltar para a etapa atual destacados."
           }
         ],
         "related": ["pensa-abrir-a-ferramenta-da-tarefa"],
@@ -1106,22 +1308,30 @@
           {
             "id": "plano",
             "title": "Abra seu plano",
-            "body": "Entre no Pensa e toque em **Continuar** no plano que você quer usar. Procure os **Cartões de Criação**."
+            "body": "Entre no Pensa e toque em **Continuar** no plano que você quer usar. Procure os **Cartões de Criação**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-abrir-a-ferramenta-da-tarefa/plano-22e2c4d8b888e178.webp",
+            "imageAlt": "Plano do Pensa aberto na etapa R, com o título Cartões de Criação destacado acima do primeiro cartão."
           },
           {
             "id": "proxima",
             "title": "Escolha o próximo cartão",
-            "body": "Procure a marca **PRÓXIMA**. Leia o que fazer e o campo **Depois de**, quando houver. Ele mostra quais tarefas vêm antes."
+            "body": "Procure a marca **PRÓXIMA**. Leia o que fazer e o campo **Depois de**, quando houver. Ele mostra quais tarefas vêm antes.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-abrir-a-ferramenta-da-tarefa/proxima-42014ad540eba63c.webp",
+            "imageAlt": "Primeiro cartão de criação do plano com a marca PRÓXIMA e o título da tarefa destacados."
           },
           {
             "id": "abrir",
             "title": "Vá para a ferramenta",
-            "body": "Toque em **Abrir no Pinta**, **Abrir no Estúdio** ou **Abrir no Molda**, conforme o cartão. Espere o guia da tarefa carregar na ferramenta."
+            "body": "Toque em **Abrir no Pinta**, **Abrir no Estúdio** ou **Abrir no Molda**, conforme o cartão. Espere o guia da tarefa carregar na ferramenta.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-abrir-a-ferramenta-da-tarefa/abrir-0e2eb670a40378fb.webp",
+            "imageAlt": "Cartão de criação do Pensa com o botão Abrir no Pinta destacado."
           },
           {
             "id": "bloqueada",
             "title": "Se o botão estiver bloqueado",
-            "body": "Uma tarefa planejada só abre quando chega a vez dela. Se aparecer **Ferramenta não liberada**, essa ferramenta ainda não está disponível para seu perfil."
+            "body": "Uma tarefa planejada só abre quando chega a vez dela. Se aparecer **Ferramenta não liberada**, essa ferramenta ainda não está disponível para seu perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-abrir-a-ferramenta-da-tarefa/bloqueada-ca6edbec073baa41.webp",
+            "imageAlt": "Cartão de criação ainda bloqueado, com o campo Depois de e o botão de abrir desligado destacados."
           }
         ],
         "related": ["pensa-concluir-uma-tarefa"],
@@ -1140,22 +1350,30 @@
           {
             "id": "lista",
             "title": "Volte à lista de planos",
-            "body": "Abra o Pensa e encontre o plano que quer apagar. Confira o nome com cuidado."
+            "body": "Abra o Pensa e encontre o plano que quer apagar. Confira o nome com cuidado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-apagar-um-plano/lista-ebeca3ce03ed9e5f.webp",
+            "imageAlt": "Lista Meus projetos do Pensa com o cartão do plano Corrida do Sapo destacado."
           },
           {
             "id": "lixeira",
             "title": "Toque na lixeira",
-            "body": "No cartão do plano, toque no botão **Apagar**. Abre a pergunta **Apagar este plano?**."
+            "body": "No cartão do plano, toque na lixeira, ao lado de **Continuar**. Abre a pergunta **Apagar este plano?**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-apagar-um-plano/lixeira-a78c6c2e24b47f78.webp",
+            "imageAlt": "Cartão do plano Corrida do Sapo no Pensa com o botão Apagar destacado."
           },
           {
             "id": "confirmar",
             "title": "Leia antes de confirmar",
-            "body": "Apagar remove a conversa com o Zappy, os cartões e o planejamento. Os trabalhos que você já criou no Pinta, no Estúdio e no Molda continuam nessas ferramentas."
+            "body": "Apagar remove a conversa com o Zappy, os cartões e o planejamento. Os trabalhos que você já criou no Pinta, no Estúdio e no Molda continuam nessas ferramentas.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-apagar-um-plano/confirmar-ec76a13e58c5578e.webp",
+            "imageAlt": "Janela Apagar este plano? com o aviso do que é removido e do que continua nas ferramentas destacado."
           },
           {
             "id": "apagar",
             "title": "Confirme sua escolha",
-            "body": "Toque em **Apagar** para remover o plano. Não dá para desfazer. Use **Cancelar** se quiser manter o plano."
+            "body": "Toque em **Apagar** para remover o plano. Não dá para desfazer. Use **Cancelar** se quiser manter o plano.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-apagar-um-plano/apagar-39b31337110c9201.webp",
+            "imageAlt": "Janela Apagar este plano? com o botão Apagar destacado ao lado do Cancelar."
           }
         ],
         "related": ["pensa-criar-um-plano"],
@@ -1174,22 +1392,30 @@
           {
             "id": "abrir",
             "title": "Abra Como fazer",
-            "body": "No computador, toque em **Como fazer**, perto do fim do menu da esquerda. No celular, use o ícone de interrogação na barra de cima."
+            "body": "No computador, toque em **Como fazer**, perto do fim do menu da esquerda. No celular, use o ícone de interrogação na barra de cima.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/abrir-149616874418d74e.webp",
+            "imageAlt": "Menu da esquerda com o atalho Como fazer destacado, perto do fim do menu."
           },
           {
             "id": "buscar",
             "title": "Escreva o que precisa",
-            "body": "Em **O que você quer fazer?**, escreva uma palavra, como “aula”, “salvar” ou “camada”. Os resultados aparecem enquanto você escreve."
+            "body": "Em **O que você quer fazer?**, escreva uma palavra, como “aula”, “salvar” ou “camada”. Os resultados aparecem enquanto você escreve.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/buscar-c653b1e2b69a024b.webp",
+            "imageAlt": "Página Como fazer com a palavra salvar escrita na busca e a lista de tutoriais aparecendo logo abaixo."
           },
           {
             "id": "ler",
             "title": "Escolha um tutorial",
-            "body": "Toque no resultado que combina com sua dúvida. Você também pode escolher uma coleção, como **Plataforma** ou **Pinta**, e ver os tutoriais dela."
+            "body": "Toque no resultado que combina com sua dúvida. Você também pode escolher uma coleção, como **Plataforma** ou **Pinta**, e ver os tutoriais dela.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/ler-ca9a618fc440daaa.webp",
+            "imageAlt": "Resultados da busca no Como fazer com um tutorial destacado para abrir."
           },
           {
             "id": "voltar",
             "title": "Volte ao que estava fazendo",
-            "body": "Se abriu a ajuda por um link da aula, ela aparece em outra aba. Volte à aba da aula ou use **Voltar para a aula**, quando esse botão aparecer."
+            "body": "Se abriu a ajuda por um link da aula, ela aparece em outra aba. Volte à aba da aula ou use **Voltar para a aula**, quando esse botão aparecer.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/voltar-170987130a40aa3c.webp",
+            "imageAlt": "Tutorial aberto a partir de uma aula, com o botão Voltar para a aula destacado."
           }
         ],
         "related": ["plataforma-pedir-ajuda"]
@@ -1207,17 +1433,23 @@
           {
             "id": "escolher",
             "title": "Escolha seu nome",
-            "body": "Na tela **Quem vai aprender hoje?**, toque no seu perfil. Confira o nome e o avatar antes de entrar."
+            "body": "Na tela **Quem vai aprender hoje?**, toque no seu perfil. Confira o nome e o avatar antes de entrar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/escolher-e6d293dcd6e8c820.webp",
+            "imageAlt": "Tela Quem vai aprender hoje? com o avatar e o nome de um perfil destacados para entrar."
           },
           {
             "id": "trocar",
             "title": "Abra a troca de perfil",
-            "body": "Se entrou no perfil de outra pessoa, toque no avatar ou no nome do perfil, no menu da plataforma. No celular, procure o avatar na barra de cima."
+            "body": "Se entrou no perfil de outra pessoa, toque no avatar ou no nome do perfil, no menu da plataforma. No celular, procure o avatar na barra de cima.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/trocar-a7fc8065cc8919c2.webp",
+            "imageAlt": "Menu da esquerda com o nome e o avatar do perfil destacados para abrir as opções da conta."
           },
           {
             "id": "selecionar",
             "title": "Entre no seu perfil",
-            "body": "Toque em **Trocar de perfil** e escolha o seu na lista. Os trabalhos e o progresso de cada criança ficam separados."
+            "body": "Toque em **Trocar de perfil** e escolha o seu na lista. Os trabalhos e o progresso de cada criança ficam separados.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/selecionar-558cad510b4aa773.webp",
+            "imageAlt": "Menu da conta aberto com a opção Trocar de perfil destacada."
           }
         ],
         "related": ["plataforma-voltar-para-a-aula"]
@@ -1247,22 +1479,30 @@
           {
             "id": "encontrar",
             "title": "Procure os materiais",
-            "body": "Abra a aula e a seção indicada pelo professor. Os materiais aparecem junto do conteúdo, no lugar escolhido para aquela atividade."
+            "body": "Abra a aula e a seção indicada pelo professor. Os materiais aparecem junto do conteúdo, no lugar escolhido para aquela atividade.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/encontrar-23d128e35ed1cb9d.webp",
+            "imageAlt": "Seção da aula com o bloco Materiais destacado, mostrando o Caderno do Aluno para baixar."
           },
           {
             "id": "livro",
             "title": "Leia o caderno na tela",
-            "body": "Se o material aparecer como livro, use as setas de **Próxima página** e **Página anterior** para folhear."
+            "body": "Se o material aparecer como livro, use as setas de **Próxima página** e **Página anterior** para folhear.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/livro-6566feb729943f9a.webp",
+            "imageAlt": "Caderno do Aluno aberto como livro, com a seta Próxima página destacada."
           },
           {
             "id": "paginas",
             "title": "Escolha outra forma de leitura",
-            "body": "Para ver uma página por vez, toque em **Ler por páginas**. Nesse modo, use **Anterior** e **Próxima**. Os botões **+** e **−** mudam o tamanho da página."
+            "body": "Para ver uma página por vez, toque em **Ler por páginas**. Nesse modo, use **Anterior** e **Próxima**. Os botões **+** e **−** mudam o tamanho da página.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/paginas-cbede00c1f2f6fd3.webp",
+            "imageAlt": "Caderno do Aluno no modo Ler por páginas, com esse botão destacado e os controles de página logo abaixo."
           },
           {
             "id": "baixar",
             "title": "Baixe o arquivo",
-            "body": "Toque no nome do arquivo ou em **Baixar**. Espere o download e procure o arquivo na pasta de downloads do aparelho."
+            "body": "Toque no nome do arquivo ou em **Baixar**. Espere o download e procure o arquivo na pasta de downloads do aparelho.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/baixar-26fd644095b0f663.webp",
+            "imageAlt": "Material da aula com o botão Baixar destacado ao lado do nome do arquivo."
           },
           {
             "id": "obrigatorio",
@@ -1277,7 +1517,9 @@
           {
             "id": "opcional",
             "title": "Consulte quando precisar",
-            "body": "O Caderno do Aluno do Cadê Todo Mundo? fica na seção **Seu Caderno do Aluno**, na Aula 1. Você pode voltar a ela durante as duas aulas. Não precisa baixar nem imprimir para continuar. Se quiser imprimir, baixe o PDF e peça ajuda a um responsável."
+            "body": "O Caderno do Aluno do Cadê Todo Mundo? fica na seção **Seu Caderno do Aluno**, na Aula 1. Você pode voltar a ela durante as duas aulas. Não precisa baixar nem imprimir para continuar. Se quiser imprimir, baixe o PDF e peça ajuda a um responsável.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-baixar-materiais/opcional-ec321f1b646be7ba.webp",
+            "imageAlt": "Seção Seu Caderno do Aluno com o caderno destacado para consultar durante as aulas."
           }
         ],
         "related": ["plataforma-abrir-uma-aula"]
@@ -1295,27 +1537,37 @@
           {
             "id": "responder",
             "title": "Escolha as respostas",
-            "body": "Na parte **Teste seus conhecimentos**, leia cada pergunta e marque uma resposta. O envio só fica disponível depois de responder todas."
+            "body": "Na atividade **Responda**, toque em **Começar!**. Leia cada pergunta, marque uma resposta e toque em **Próxima** para ir à seguinte.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/responder-2fdb94d1e97efa87.webp",
+            "imageAlt": "Pergunta do quiz com uma das respostas marcada e destacada."
           },
           {
             "id": "enviar",
             "title": "Envie o quiz",
-            "body": "Toque em **Enviar quiz** e espere o resultado."
+            "body": "Na última pergunta, toque em **Responder!** e espere o resultado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/enviar-e824314804970607.webp",
+            "imageAlt": "Última pergunta do quiz respondida, com o botão de enviar as respostas destacado."
           },
           {
             "id": "rever",
             "title": "Leia a correção",
-            "body": "Confira as respostas e as explicações. Se ainda não atingiu a nota pedida, reveja as questões que faltam. As respostas certas ficam guardadas."
+            "body": "Confira as respostas e as explicações na **Correção**. Se ainda não atingiu a nota pedida, veja com calma as perguntas que errou.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/rever-25b16a0625fd99a2.webp",
+            "imageAlt": "Correção do quiz mostrando a resposta errada riscada, a resposta certa e a explicação de por quê."
           },
           {
             "id": "tentar",
-            "title": "Tente de novo quando liberar",
-            "body": "Se aparecer um tempo de espera, aguarde terminar. Depois ajuste as respostas e toque em **Enviar quiz** novamente."
+            "title": "Tente de novo",
+            "body": "Toque em **Tentar de novo!** e depois em **Começar!** para responder outra vez. Se aparecer **Você pode tentar de novo em…**, espere o relógio acabar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/tentar-0616f1ef3e0e9538.webp",
+            "imageAlt": "Resultado do quiz abaixo da nota pedida, com o botão Tentar de novo! destacado."
           },
           {
             "id": "seguir",
             "title": "Continue a aula",
-            "body": "Quando aparecer **Quiz concluído**, avance para a próxima seção. Se for a última, use **Concluir aula** depois de terminar as outras atividades pedidas."
+            "body": "Quando aparecer **Quiz concluído**, avance para a próxima seção. Se for a última, use **Concluir aula** depois de terminar as outras atividades pedidas.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-responder-o-quiz/seguir-5d0b5fbeaf9347a8.webp",
+            "imageAlt": "Quiz aprovado com o aviso Quiz concluído destacado e o botão Próxima seção destacado no rodapé."
           }
         ],
         "related": ["plataforma-abrir-uma-aula", "plataforma-pedir-ajuda"]
@@ -1333,27 +1585,37 @@
           {
             "id": "preparar",
             "title": "Confira seu trabalho",
-            "body": "Na aula, termine a atividade do Estúdio ou do Pinta. Confira o desenho ou teste o jogo antes de enviar. Se houver **Verificar**, use para conferir o que a atividade pede."
+            "body": "Na aula, termine a atividade do Estúdio ou do Pinta. Confira o desenho ou teste o jogo antes de enviar. Se houver **Verificar**, use para conferir o que a atividade pede.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/preparar-cb118ce8119cfc78.webp",
+            "imageAlt": "Atividade do Estúdio na aula com o botão Verificar esta etapa destacado para conferir o que a atividade pede."
           },
           {
             "id": "abrir",
             "title": "Abra o envio",
-            "body": "Na barra da atividade, toque em **Enviar para o professor**. Uma janela pede sua confirmação."
+            "body": "Na barra da atividade, toque em **Enviar para o professor**. Uma janela pede sua confirmação.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/abrir-94ced6f23c988660.webp",
+            "imageAlt": "Barra da atividade no Estúdio com o botão Enviar para o professor destacado."
           },
           {
             "id": "confirmar",
             "title": "Confirme o envio",
-            "body": "Se quiser, escreva um **Recado para o professor**. Depois toque em **Enviar** e espere a confirmação antes de sair."
+            "body": "Se quiser, escreva um **Recado para o professor**. Depois toque em **Enviar** e espere a confirmação antes de sair.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/confirmar-f100f04746409cb7.webp",
+            "imageAlt": "Janela de envio ao professor com um recado escrito e o botão Enviar destacado."
           },
           {
             "id": "nova",
             "title": "Envie outra versão se precisar",
-            "body": "No Estúdio, use **Reenviar ao professor** e confirme em **Reenviar**. No Pinta, use **Enviar de novo** e confirme em **Enviar**. O professor receberá a versão nova no lugar da anterior."
+            "body": "No Estúdio, use **Reenviar ao professor** e confirme em **Reenviar**. No Pinta, use **Enviar de novo** e confirme em **Enviar**. O professor receberá a versão nova no lugar da anterior.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/nova-e906b4f27c30276c.webp",
+            "imageAlt": "Estúdio da aula com o botão Reenviar ao professor destacado, para mandar uma versão nova."
           },
           {
             "id": "acompanhar",
             "title": "Veja a resposta",
-            "body": "Acompanhe **Recados do professor** para ler o retorno. O botão **Salvar** do editor, sozinho, não envia o trabalho."
+            "body": "Acompanhe **Recados do professor** para ler o retorno. O botão **Salvar** do editor, sozinho, não envia o trabalho.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-enviar-atividade/acompanhar-44822167966f19e7.webp",
+            "imageAlt": "Menu da esquerda com Recados do professor destacado, onde chega a resposta do professor."
           }
         ],
         "related": [
@@ -1413,22 +1675,30 @@
           {
             "id": "sino",
             "title": "Abra o sino",
-            "body": "Toque em **Recados do professor**, no menu da esquerda. No celular, use o sino na barra de cima."
+            "body": "Toque em **Recados do professor**, no menu da esquerda. No celular, use o sino na barra de cima.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/sino-a5268d0e1880e3c4.webp",
+            "imageAlt": "Menu da esquerda com o atalho Recados do professor destacado, logo abaixo de Como fazer."
           },
           {
             "id": "conversa",
             "title": "Escolha a conversa",
-            "body": "Abra o recado sobre a aula ou atividade que quer conferir. Leia as mensagens do professor."
+            "body": "Abra o recado sobre a aula ou atividade que quer conferir. Leia as mensagens do professor.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/conversa-dd5de23c7266d946.webp",
+            "imageAlt": "Página Recados do professor com uma conversa sobre uma seção da aula destacada para abrir."
           },
           {
             "id": "responder",
             "title": "Escreva sua resposta",
-            "body": "No campo **Escreva uma resposta…**, conte o que precisa. Toque na setinha **Enviar resposta** e espere a mensagem aparecer na conversa."
+            "body": "No campo **Escreva uma resposta…**, conte o que precisa. Toque na setinha **Enviar resposta** e espere a mensagem aparecer na conversa.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/responder-ae42d0a50e24c11b.webp",
+            "imageAlt": "Conversa com o professor com uma resposta escrita no campo Escreva uma resposta e a setinha Enviar resposta destacada."
           },
           {
             "id": "aula",
             "title": "Continue seu trabalho",
-            "body": "Depois de ler a orientação, volte à aula pela Jornada. Se mudou sua atividade e quer que o professor veja, envie a nova versão."
+            "body": "Na conversa, toque em **Voltar à seção** para abrir a parte da aula de que ela fala. Se mudou sua atividade e quer que o professor veja, envie a nova versão.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/aula-6a7ecb4e83a097c3.webp",
+            "imageAlt": "Conversa com o professor com o link Voltar à seção destacado, acima das mensagens."
           }
         ],
         "related": ["plataforma-enviar-atividade", "plataforma-pedir-ajuda"]
@@ -1446,22 +1716,30 @@
           {
             "id": "mural",
             "title": "Abra o mural",
-            "body": "No menu, toque em **Comunidade** → **Mural dos Criadores**. Se ele ainda estiver bloqueado para você, a tela explica."
+            "body": "No menu, toque em **Comunidade** → **Mural dos Criadores**. Se ele ainda estiver bloqueado para você, a tela explica.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-no-mural/mural-c76efad68ecc2ae8.webp",
+            "imageAlt": "Menu da esquerda com o grupo Comunidade aberto e o item Mural dos Criadores destacado."
           },
           {
             "id": "jogo",
             "title": "Escolha um jogo",
-            "body": "Encontre um jogo no mural e toque em **Jogar**. Ele abre em outra aba. Confira as instruções do criador para saber os controles."
+            "body": "Encontre um jogo no mural e toque em **Jogar**. Ele abre em outra aba. Confira as instruções do criador para saber os controles.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-no-mural/jogo-c6c2f2d57d0c5435.webp",
+            "imageAlt": "Mural dos Criadores com os jogos publicados e o botão Jogar de um deles destacado."
           },
           {
             "id": "link",
             "title": "Mostre o jogo para alguém",
-            "body": "Volte à aba do mural e use **Copiar link**. Em alguns aparelhos, esse botão abre as opções de compartilhar."
+            "body": "Volte à aba do mural e use **Copiar link**. Em alguns aparelhos, esse botão abre as opções de compartilhar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-no-mural/link-1d123ac75f9969f7.webp",
+            "imageAlt": "Jogo aberto no Mural com o botão Copiar link destacado."
           },
           {
             "id": "versao",
             "title": "Crie sua versão, se estiver liberado",
-            "body": "Se aparecer **Fazer a minha versão** e estiver liberado, toque nele. Uma cópia entra no seu Estúdio para você mudar. O jogo original do criador continua igual."
+            "body": "Se aparecer **Fazer a minha versão** e estiver liberado, toque nele. Uma cópia entra no seu Estúdio para você mudar. O jogo original do criador continua igual.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-no-mural/versao-8fe9ccd8714593b3.webp",
+            "imageAlt": "Jogo aberto no Mural com o botão Fazer a minha versão destacado."
           }
         ],
         "related": ["plataforma-publicar-no-mural"]
@@ -1479,27 +1757,37 @@
           {
             "id": "aula",
             "title": "Abra a atividade certa",
-            "body": "Use o mesmo perfil e abra a aula em que enviou o jogo. Vá à seção com o Estúdio. Essa opção só traz uma versão que já foi enviada ao professor."
+            "body": "Use o mesmo perfil e abra a aula em que enviou o jogo. Vá à seção com o Estúdio. Essa opção só traz uma versão que já foi enviada ao professor.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/aula-156ea4aa6708ba1e.webp",
+            "imageAlt": "Seção da aula com o cartão Atividade no Estúdio destacado, onde fica o jogo enviado ao professor."
           },
           {
             "id": "copia",
             "title": "Guarde o que está aberto, se precisar",
-            "body": "Trazer a entrega substitui o rascunho deste navegador. Para guardar as mudanças que estão abertas, use **Mais opções** → **Levar o jogo** → **Baixar o projeto** antes."
+            "body": "Trazer a entrega substitui o rascunho deste navegador. Para guardar as mudanças que estão abertas, use **Mais opções** → **Levar o jogo** → **Baixar o projeto** antes.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/copia-f7fa2b8a35b5a6bf.webp",
+            "imageAlt": "Menu Mais opções do Estúdio da aula com Baixar o projeto destacado na parte Levar o jogo."
           },
           {
             "id": "trazer",
             "title": "Escolha a versão enviada",
-            "body": "Toque em **Mais opções** → **O meu jogo** → **Trazer o que eu enviei**."
+            "body": "Toque em **Mais opções** → **O meu jogo** → **Trazer o que eu enviei**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/trazer-e398a1d846420a02.webp",
+            "imageAlt": "Menu Mais opções do Estúdio da aula com Trazer o que eu enviei destacado na parte O meu jogo."
           },
           {
             "id": "confirmar",
             "title": "Leia e confirme",
-            "body": "Na janela **Trazer o que você enviou?**, toque em **Trazer**. Use **Cancelar** se preferir manter o trabalho que está aberto."
+            "body": "Na janela **Trazer o que você enviou?**, toque em **Trazer**. Use **Cancelar** se preferir manter o trabalho que está aberto.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/confirmar-e30af51979b73f40.webp",
+            "imageAlt": "Janela Trazer o que você enviou? com o aviso de que o rascunho será trocado e o botão Trazer destacado."
           },
           {
             "id": "conferir",
             "title": "Confira o jogo",
-            "body": "Espere carregar e teste o jogo. Se não houver uma entrega ou aparecer uma falha, leia o aviso. Não envie um projeto vazio por cima do seu trabalho."
+            "body": "Espere carregar e teste o jogo. Se não houver uma entrega ou aparecer uma falha, leia o aviso. Não envie um projeto vazio por cima do seu trabalho.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-recuperar-atividade-enviada/conferir-34c2deac3510af33.webp",
+            "imageAlt": "Estúdio da aula com a pré-visualização do jogo trazido destacada para testar."
           }
         ],
         "related": ["estudio-baixar-o-projeto", "plataforma-enviar-atividade"],
@@ -1518,12 +1806,16 @@
           {
             "id": "galeria",
             "title": "Abra Meus desenhos",
-            "body": "Entre no Pinta. Se estiver desenhando, use **Voltar** para abrir a galeria."
+            "body": "Entre no Pinta. Se estiver desenhando, use **Voltar** para abrir a galeria.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-baixar-e-restaurar/galeria-db7f6f80bdc54b96.webp",
+            "imageAlt": "Editor do Pinta com o botão Voltar destacado no canto de cima, para abrir a galeria."
           },
           {
             "id": "baixar",
             "title": "Baixe seus desenhos",
-            "body": "Use **Baixar tudo** para guardar a galeria. Para escolher alguns desenhos, toque em **Selecionar**, marque os que quer e use **Baixar seleção**."
+            "body": "Use **Baixar tudo** para guardar a galeria. Para escolher alguns desenhos, toque em **Selecionar**, marque os que quer e use **Baixar seleção**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-baixar-e-restaurar/baixar-e1818e82f835c923.webp",
+            "imageAlt": "Galeria Meus desenhos com os botões Baixar tudo e Selecionar destacados no fim da página."
           },
           {
             "id": "guardar",
@@ -1533,7 +1825,9 @@
           {
             "id": "restaurar",
             "title": "Traga a cópia de volta",
-            "body": "Na galeria do Pinta, toque em **Trazer de volta** e escolha o arquivo .zip ou .pinta.json que baixou. Espere a confirmação e confira os desenhos na galeria."
+            "body": "Na galeria do Pinta, toque em **Trazer de volta** e escolha o arquivo .zip ou .pinta.json que baixou. Espere a confirmação e confira os desenhos na galeria.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-baixar-e-restaurar/restaurar-8298bb55b553c3d5.webp",
+            "imageAlt": "Galeria Meus desenhos com o botão Trazer de volta destacado no fim da página."
           }
         ],
         "related": ["pinta-desfazer", "pinta-criar-um-desenho"],
@@ -1552,22 +1846,30 @@
           {
             "id": "guia",
             "title": "Abra o guia da tarefa",
-            "body": "[Abra a ferramenta pelo cartão do Pensa](/como-fazer/pensa-abrir-a-ferramenta-da-tarefa). Se só aparecer o título do guia, toque na setinha para mostrar os passos."
+            "body": "[Abra a ferramenta pelo cartão do Pensa](/como-fazer/pensa-abrir-a-ferramenta-da-tarefa). Se só aparecer o título do guia, toque na setinha para mostrar os passos.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-concluir-uma-tarefa/guia-323a5e72e8e13c79.webp",
+            "imageAlt": "Guia do Pensa recolhido no alto do Pinta, mostrando só o título da tarefa, com a setinha para abrir os passos destacada."
           },
           {
             "id": "marcar",
             "title": "Confira cada parte",
-            "body": "Faça a atividade e marque os passos que terminou. Confira também os itens **Pronto quando** ou **Confira sua criação**. Marque só o que seu trabalho já faz."
+            "body": "Faça a atividade e marque os passos que terminou. Confira também os itens **Pronto quando** ou **Confira sua criação**. Marque só o que seu trabalho já faz.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-concluir-uma-tarefa/marcar-93065d2ddc87e24d.webp",
+            "imageAlt": "Guia do Pensa no Pinta com os passos e os itens Pronto quando marcados, e o último sendo marcado."
           },
           {
             "id": "pinta",
             "title": "Se estiver no Pinta",
-            "body": "Crie e guarde o desenho da tarefa. Se o guia pedir usar no Estúdio, toque em **Usar no Estúdio** e espere a confirmação. Depois toque em **Concluir tarefa**."
+            "body": "Crie e guarde o desenho da tarefa. Se o guia pedir usar no Estúdio, toque em **Usar no Estúdio** e espere a confirmação. Depois toque em **Concluir tarefa**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-concluir-uma-tarefa/pinta-4ede96b8e38c3d9c.webp",
+            "imageAlt": "Pinta com o desenho da tarefa pronto, o botão Concluir tarefa do guia e o botão Usar no Estúdio destacados."
           },
           {
             "id": "estudio",
             "title": "Se estiver no Estúdio",
-            "body": "Crie e guarde o projeto da tarefa. Com o trabalho ligado ao cartão e os itens obrigatórios marcados, toque em **Concluir tarefa**."
+            "body": "Crie e guarde o projeto da tarefa. Com o trabalho ligado ao cartão e os itens obrigatórios marcados, toque em **Concluir tarefa**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-concluir-uma-tarefa/estudio-5b83509b3ccbee3a.webp",
+            "imageAlt": "Estúdio com o Guia do Pensa na coluna da esquerda, os itens marcados e o botão Concluir tarefa destacado."
           },
           {
             "id": "molda",
@@ -1577,7 +1879,9 @@
           {
             "id": "voltar",
             "title": "Confira no plano",
-            "body": "Espere a confirmação. No Pinta e no Molda, use **Voltar ao plano**. No Estúdio, volte à lista de projetos e abra **Criar** → **Pensa**. Abra seu plano e confira se o cartão ficou **Concluída**."
+            "body": "Espere a confirmação. No Pinta e no Molda, use **Voltar ao plano**. No Estúdio, volte à lista de projetos e abra **Criar** → **Pensa**. Abra seu plano e confira se o cartão ficou **Concluída**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-concluir-uma-tarefa/voltar-bcbf630d24978729.webp",
+            "imageAlt": "Guia do Pensa no Pinta mostrando a tarefa Concluída, com o selo Concluída e o botão Voltar ao plano destacados."
           }
         ],
         "related": ["pensa-abrir-a-ferramenta-da-tarefa"],
@@ -1596,22 +1900,30 @@
           {
             "id": "abrir",
             "title": "Abra o Molda",
-            "body": "No menu, toque em **Criar** → **Molda**, se ele já estiver liberado. Em **Minhas criações 3D**, toque em **Criar novo**."
+            "body": "No menu, toque em **Criar** → **Molda**, se ele já estiver liberado. Em **Minhas criações 3D**, toque em **Criar novo**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-criar-uma-criacao/abrir-3782ea725d9b5c68.webp",
+            "imageAlt": "Galeria Minhas criações 3D do Molda com o botão Criar novo destacado no alto."
           },
           {
             "id": "tipo",
             "title": "Escolha o que criar",
-            "body": "Escolha **Modelo**, **Textura** ou **Céu**. Você também pode escolher **Modelos prontos** e tocar em uma criação para mudar do seu jeito."
+            "body": "Escolha **Modelo**, **Textura** ou **Céu**. Você também pode escolher **Modelos prontos** e tocar em uma criação para mudar do seu jeito.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-criar-uma-criacao/tipo-22eb543bf12a127c.webp",
+            "imageAlt": "Janela Criar novo do Molda com as opções Modelo, Textura, Céu e Modelos prontos, e o toque em Modelo."
           },
           {
             "id": "opcoes",
             "title": "Escolha como vai ser",
-            "body": "Se começou do zero, escolha as opções que aparecerem para esse tipo de criação e toque em **Continuar**. Para um modelo, você pode manter a opção **Normal**."
+            "body": "Se começou do zero, escolha as opções que aparecerem para esse tipo de criação e toque em **Continuar**. Para um modelo, você pode manter a opção **Normal**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-criar-uma-criacao/opcoes-bf602f9f14fb01a2.webp",
+            "imageAlt": "Passo 2 da janela Criar novo, com a opção Normal escolhida e o botão Continuar destacado."
           },
           {
             "id": "nome",
             "title": "Dê um nome",
-            "body": "Escreva um nome como “minha-nave”, sem espaços, e toque em **Criar**. Sua criação abre para você começar."
+            "body": "Escreva um nome como “minha-nave”, sem espaços, e toque em **Criar**. Sua criação abre para você começar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-criar-uma-criacao/nome-12786d9d5954645d.webp",
+            "imageAlt": "Passo 3 da janela Criar novo com o nome minha-nave escrito e o botão Criar destacado."
           }
         ],
         "related": ["molda-montar-e-pintar", "molda-salvar-e-reabrir"],
@@ -1630,27 +1942,37 @@
           {
             "id": "peca",
             "title": "Adicione uma peça",
-            "body": "Abra um modelo no Molda. Na aba **Modelar**, procure **Adicionar forma** ou **Adicionar forma ou ponto**. Escolha **Caixa** para começar."
+            "body": "Abra um modelo no Molda. Na aba **Modelar**, procure **Adicionar forma** ou **Adicionar forma ou ponto**. Escolha **Caixa** para começar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/peca-e90f595b718917b0.webp",
+            "imageAlt": "Aba Modelar do Molda com o botão Caixa destacado em Adicionar forma ou ponto."
           },
           {
             "id": "mudar",
             "title": "Mude a peça",
-            "body": "Toque na peça para escolher. Use **Mover**, **Girar** ou **Mudar tamanho** e arraste as alças coloridas. **Desfazer** volta uma mudança."
+            "body": "Toque na peça para escolher. Use **Mover**, **Girar** ou **Mudar tamanho** e arraste as alças coloridas. **Desfazer** volta uma mudança.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/mudar-d998e508709c159b.webp",
+            "imageAlt": "Molda com a peça amarela escolhida, as alças coloridas de mover à vista e os botões Mover e Desfazer destacados."
           },
           {
             "id": "pintar",
             "title": "Escolha a cor",
-            "body": "Toque na aba **Pintar** e depois na peça. Escolha uma cor embaixo da área do modelo."
+            "body": "Toque na aba **Pintar** e depois na peça. Escolha uma cor embaixo da área do modelo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/pintar-01e8cbc13316779e.webp",
+            "imageAlt": "Aba Pintar do Molda destacada e, embaixo da área do modelo, a cor vermelha sendo escolhida na paleta."
           },
           {
             "id": "traco",
             "title": "Pinte seu modelo",
-            "body": "Arraste sobre a peça para pintar. Arraste fora dela para girar a câmera e ver outro lado."
+            "body": "Arraste sobre a peça para pintar. Arraste fora dela para girar a câmera e ver outro lado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/traco-4ae6c20c8dbbbf11.webp",
+            "imageAlt": "Molda na aba Pintar com um traço vermelho pintado sobre a peça amarela."
           },
           {
             "id": "dicas",
             "title": "Veja mais dicas",
-            "body": "Use o botão de interrogação **Primeiros passos** na área do modelo. Escolha **Como montar** ou **Como pintar** e avance com **Próxima dica**."
+            "body": "Use o botão de interrogação **Primeiros passos** na área do modelo. Escolha **Como montar** ou **Como pintar** e avance com **Próxima dica**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-montar-e-pintar/dicas-c56512d378919e0c.webp",
+            "imageAlt": "Molda com o painel de dicas aberto pelo botão de interrogação, com Como montar e Próxima dica destacados."
           }
         ],
         "related": ["molda-salvar-e-reabrir", "molda-usar-no-estudio"],
@@ -1669,27 +1991,37 @@
           {
             "id": "salvar",
             "title": "Guarde o modelo",
-            "body": "Com o modelo 3D aberto, use **Guardar agora** e espere **Salvo**. Antes de trocar de aparelho, confira também **Guardado na sua conta**."
+            "body": "Com o modelo 3D aberto, use **Guardar agora** e espere **Salvo**. Antes de trocar de aparelho, confira também a nuvem verde ao lado de **Salvo**: ela quer dizer **Guardado na sua conta**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-salvar-e-reabrir/salvar-1257da85c8f4cc0e.webp",
+            "imageAlt": "Barra do modelo no Molda com o botão Guardar agora, o aviso Salvo e a nuvem de Guardado na sua conta destacados."
           },
           {
             "id": "voltar",
             "title": "Volte à galeria",
-            "body": "Toque em **Meus projetos**, na seta da barra. Leia a janela e toque em **Guardar e voltar**. Ajustes que ainda estão só na prévia serão cancelados, então confirme os que quer manter antes de sair."
+            "body": "Toque em **Meus projetos**, na seta da barra. Leia a janela e toque em **Guardar e voltar**. Ajustes que ainda estão só na prévia serão cancelados, então confirme os que quer manter antes de sair.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-salvar-e-reabrir/voltar-08fcba8b5282895e.webp",
+            "imageAlt": "Janela Voltar aos projetos? do Molda com o botão Guardar e voltar destacado."
           },
           {
             "id": "reabrir",
             "title": "Abra de novo",
-            "body": "Na galeria, encontre sua criação e use **Abrir**. Confira se está no mesmo perfil em que criou o trabalho."
+            "body": "Na galeria, encontre sua criação e toque na figura dela para abrir. Confira se está no mesmo perfil em que criou o trabalho.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-salvar-e-reabrir/reabrir-1d7722bf2aa539e5.webp",
+            "imageAlt": "Galeria do Molda com a figura da criação minha-nave destacada para abrir de novo."
           },
           {
             "id": "copia",
             "title": "Baixe uma cópia do modelo",
-            "body": "Dentro da oficina do modelo, use **Baixar projeto** e guarde o arquivo .molda.json. Na galeria, **Baixar tudo** gera uma cópia das criações em .zip. Leia qualquer aviso sobre itens que ficaram de fora."
+            "body": "Dentro da oficina do modelo, use **Baixar projeto** e guarde o arquivo .molda.json. Na galeria, **Baixar tudo** gera uma cópia das criações em .zip. Leia qualquer aviso sobre itens que ficaram de fora.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-salvar-e-reabrir/copia-f12d248fd30cc378.webp",
+            "imageAlt": "Barra do modelo no Molda com o botão Baixar projeto destacado."
           },
           {
             "id": "restaurar",
             "title": "Traga uma cópia de volta",
-            "body": "Na galeria, use **Trazer de volta** e escolha o .zip ou .molda.json que você baixou do Molda. Espere terminar e confira a criação."
+            "body": "Na galeria, use **Trazer de volta** e escolha o .zip ou .molda.json que você baixou do Molda. Espere terminar e confira a criação.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-salvar-e-reabrir/restaurar-c7eeff831a39792e.webp",
+            "imageAlt": "Fim da galeria do Molda com o botão Trazer de volta destacado no cartão das criações guardadas."
           }
         ],
         "related": ["molda-criar-uma-criacao"],
@@ -1708,27 +2040,37 @@
           {
             "id": "guardar",
             "title": "Guarde a criação no Molda",
-            "body": "Termine e guarde o trabalho. Use o mesmo perfil de criança nas duas ferramentas."
+            "body": "Termine e guarde o trabalho. Use o mesmo perfil de criança nas duas ferramentas.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-usar-no-estudio/guardar-ff072aec34f86535.webp",
+            "imageAlt": "Galeria do Molda com a criação minha-nave e o aviso Guardado na sua conta destacados."
           },
           {
             "id": "preparar",
             "title": "Prepare o projeto no Estúdio",
-            "body": "Abra seu jogo no Estúdio completo. Para usar modelos ou céus, instale uma extensão 3D disponível para você em **Mais opções** → **O meu jogo** → **Extensões**. Texturas podem entrar como imagens."
+            "body": "Abra seu jogo no Estúdio completo. Para usar modelos ou céus, instale uma extensão 3D disponível para você em **Mais opções** → **O meu jogo** → **Extensões**. Texturas podem entrar como imagens.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-usar-no-estudio/preparar-c5535368541a0c59.webp",
+            "imageAlt": "Janela Extensões oficiais do Estúdio com a extensão Jogo 3D e o botão Instalar destacado."
           },
           {
             "id": "materiais",
             "title": "Abra Trazer do Molda",
-            "body": "Vá a **Mais opções** → **Materiais** → **Modelos 3D** e toque em **Trazer do Molda**. Esse caminho é do Estúdio completo, com a ferramenta disponível para seu perfil."
+            "body": "Vá a **Mais opções** → **Materiais** → **Modelos 3D** e toque em **Trazer do Molda**. Esse caminho é do Estúdio completo, com a ferramenta disponível para seu perfil.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-usar-no-estudio/materiais-6b34cb0cd7c1c6da.webp",
+            "imageAlt": "Janela Materiais do jogo na aba Modelos 3D, com o botão Trazer do Molda destacado."
           },
           {
             "id": "adicionar",
             "title": "Escolha a criação",
-            "body": "Encontre sua criação e toque em **Adicionar ao projeto**. Se aparecer **O que muda nesta cópia**, leia antes de escolher **Aceitar mudanças e adicionar** ou **Cancelar**."
+            "body": "Encontre sua criação e toque em **Adicionar ao projeto**. Se aparecer **O que muda nesta cópia**, leia antes de escolher **Aceitar mudanças e adicionar** ou **Cancelar**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-usar-no-estudio/adicionar-1b0ef4aeeefe7142.webp",
+            "imageAlt": "Janela Trazer do Molda com as criações da galeria e o botão Adicionar ao projeto da minha-nave destacado."
           },
           {
             "id": "usar",
             "title": "Escolha a criação nos blocos",
-            "body": "Feche os materiais e escolha o nome da criação no bloco que usa modelo, imagem ou céu. Confira o resultado na pré-visualização. O original continua guardado no Molda."
+            "body": "Feche os materiais e escolha o nome da criação no bloco que usa modelo, imagem ou céu. Confira o resultado na pré-visualização. O original continua guardado no Molda.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/molda-usar-no-estudio/usar-5f17e747c3edff42.webp",
+            "imageAlt": "Bloco Criar o objeto com o modelo no Estúdio, com o campo do modelo aberto e a criação minha-nave destacada para escolher."
           }
         ],
         "related": ["estudio-materiais-do-jogo", "molda-salvar-e-reabrir"],
@@ -1747,22 +2089,30 @@
           {
             "id": "controles",
             "title": "Mostre os controles do vídeo",
-            "body": "Passe o mouse sobre o vídeo ou toque nele para ver os controles. O desenho dos botões pode mudar de um vídeo para outro."
+            "body": "Passe o mouse sobre o vídeo ou toque nele para ver os controles. O desenho dos botões pode mudar de um vídeo para outro.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pausar-e-rever-video/controles-32b29bcff71637d5.webp",
+            "imageAlt": "Vídeo da aula com a barra de controles destacada embaixo: reprodução, tempo, volume e tela cheia."
           },
           {
             "id": "pausar",
             "title": "Pause quando precisar",
-            "body": "Use o botão de pausa, com duas barrinhas, para parar o vídeo enquanto faz a atividade."
+            "body": "Use o botão de pausa, com duas barrinhas, para parar o vídeo enquanto faz a atividade.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pausar-e-rever-video/pausar-e7a9ae749668ec23.webp",
+            "imageAlt": "Vídeo tocando com o botão de pausa, de duas barrinhas, destacado no canto da barra de controles."
           },
           {
             "id": "voltar",
             "title": "Volte ao trecho que quer rever",
-            "body": "Na barra de tempo do vídeo, escolha um ponto antes do trecho que você quer ouvir de novo."
+            "body": "Na barra de tempo do vídeo, escolha um ponto antes do trecho que você quer ouvir de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pausar-e-rever-video/voltar-23218c3f34a1c10d.webp",
+            "imageAlt": "Vídeo parado com a barra de tempo destacada para escolher o trecho que quer rever."
           },
           {
             "id": "continuar",
             "title": "Continue assistindo",
-            "body": "Use o botão de reprodução, com um triângulo, para continuar. Você pode repetir um trecho quantas vezes precisar."
+            "body": "Use o botão de reprodução, com um triângulo, para continuar. Você pode repetir um trecho quantas vezes precisar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pausar-e-rever-video/continuar-59f7d3485143fda7.webp",
+            "imageAlt": "Vídeo parado com o botão de reprodução, com um triângulo, destacado para continuar assistindo."
           }
         ],
         "related": ["plataforma-abrir-uma-aula", "plataforma-ampliar-a-atividade"]
@@ -1780,22 +2130,30 @@
           {
             "id": "jogar",
             "title": "Jogue na própria aula",
-            "body": "Na seção que traz o jogo pronto, siga o convite do vídeo e toque na área do jogo para brincar. No Cadê Todo Mundo?, procure os três personagens escondidos no jardim."
+            "body": "Na seção que traz o jogo pronto, siga o convite do vídeo e toque na área do jogo para brincar. No Cadê Todo Mundo?, procure os três personagens escondidos no jardim.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/jogar-72f6d2465e5b3f36.webp",
+            "imageAlt": "Seção da aula com o jogo pronto do jardim destacado para tocar e procurar os personagens."
           },
           {
             "id": "ampliar",
             "title": "Dê mais espaço ao jogo",
-            "body": "Se quiser, toque em **Ampliar jogo**. Use **Voltar à aula** para ver o conteúdo junto de novo."
+            "body": "Se quiser, toque em **Ampliar jogo**. Use **Voltar à aula** para ver o conteúdo junto de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/ampliar-db2e5159275963b4.webp",
+            "imageAlt": "Jogo pronto da aula com o botão Ampliar jogo destacado."
           },
           {
             "id": "recomecar",
             "title": "Comece outra partida",
-            "body": "Toque em **Jogar de novo** para recomeçar o exemplo. Essa cópia serve para jogar e não altera o projeto que você está construindo."
+            "body": "Toque em **Jogar de novo** para recomeçar o exemplo. Essa cópia serve para jogar e não altera o projeto que você está construindo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/recomecar-ca90d4ccad0b696d.webp",
+            "imageAlt": "Jogo pronto da aula com o botão Jogar de novo destacado."
           },
           {
             "id": "avancar",
             "title": "Continue a aula",
-            "body": "Quando terminar o que a seção pede, toque em **Próxima seção**. No Cadê Todo Mundo?, encontre os três personagens e assista ao vídeo para avançar."
+            "body": "Quando terminar o que a seção pede, toque em **Próxima seção**. No Cadê Todo Mundo?, encontre os três personagens e assista ao vídeo para avançar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-exemplo-da-aula/avancar-84b2220a7e81e118.webp",
+            "imageAlt": "Rodapé da aula com o botão Próxima seção destacado."
           }
         ],
         "related": [
@@ -1817,12 +2175,14 @@
           {
             "id": "abrir",
             "title": "Abra a aula do certificado",
-            "body": "Conclua as aulas anteriores e abra a aula do certificado no curso. Se aparecer um aviso de que faltam aulas, volte ao caminho do curso e termine o que falta."
+            "body": "Conclua as aulas anteriores e abra a aula do certificado no curso. Se aparecer um aviso de que faltam aulas, volte ao caminho do curso e termine o que falta.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/abrir-077727d07aa9b0be.webp",
+            "imageAlt": "Caminho das aulas do curso Nave Contra Asteroides com a aula Seu certificado e próximos passos destacada."
           },
           {
             "id": "pegar",
             "title": "Pegue seu certificado",
-            "body": "Assista ao vídeo e toque em **Pegar meu certificado**. Espere o PDF baixar antes de sair."
+            "body": "Na seção **Seu certificado**, toque em **Pegar meu certificado**. Espere o PDF baixar antes de sair."
           },
           {
             "id": "guardar",
@@ -1832,12 +2192,16 @@
           {
             "id": "concluir",
             "title": "Conclua a aula",
-            "body": "Depois de assistir ao vídeo e pegar o certificado, toque em **Concluir aula**."
+            "body": "Na seção **Próximos passos**, assista ao vídeo com um responsável e toque em **Concluir aula**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/concluir-ee6f7b7bfaa98d6d.webp",
+            "imageAlt": "Última seção da aula do certificado com o botão Concluir aula destacado no rodapé."
           },
           {
             "id": "novamente",
             "title": "Baixe outra vez se precisar",
-            "body": "Volte à mesma aula e toque em **Baixar certificado (PDF)**. Você recebe o mesmo certificado, sem precisar fazer o curso de novo."
+            "body": "Volte à mesma aula e toque em **Baixar certificado (PDF)**. Você recebe o mesmo certificado, sem precisar fazer o curso de novo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/novamente-3f5bcc2ac76c77c7.webp",
+            "imageAlt": "Bloco Certificado de Conclusão na aula do certificado, com o botão Baixar certificado (PDF) destacado."
           }
         ],
         "related": ["plataforma-abrir-uma-aula", "plataforma-baixar-materiais"]

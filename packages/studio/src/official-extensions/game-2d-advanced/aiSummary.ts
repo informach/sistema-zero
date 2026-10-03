@@ -1,3 +1,4 @@
+import { advancedSceneSummary as sceneSummary } from '../scene-2d/docs'
 export const gameKitPromptSummary = `Jogo 2D Avançado expõe window.SZGameKit e usa blocos reais de motor 2D.
 
 ÁREAS: “🧩 Meus moldes” guarda o que só define uma receita (moldes, fichas, visuais,
@@ -48,4 +49,5 @@ REGRAS: não misture com a extensão Jogo 2D, pois ambas controlam o canvas. Use
 estados/telas para menu, pausa, derrota e vitória; objetivo alcançável e feedback
 visual; reinício completo. Prefira os kits prontos de RPG, plataforma, luta,
 monstrinhos, nave, defesa e cartas; só use peças de motor avançadas quando o projeto
-precisar. Velocidade sempre × dt; start uma vez; sem bibliotecas externas.`
+precisar. Velocidade sempre × dt; start uma vez; sem bibliotecas externas.
+${sceneSummary}`

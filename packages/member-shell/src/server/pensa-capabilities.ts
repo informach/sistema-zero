@@ -1,8 +1,8 @@
 import 'server-only'
 import { creativeToolAvailability } from '@sistemazero/core/journey'
-import { isPrivilegedRole, resolveStudioTier } from '../lib/studio-tier'
+import { isPrivilegedRole } from '../lib/studio-tier'
 import type { MembersClient } from './clients'
-import { extensionsForBlocks } from './studio-unlocks'
+import { earnedStudioTier } from './studio-unlocks'
 
 /** Generation and review use the same earned block set as the free Studio. */
 export async function getPensaCapabilities(
@@ -16,8 +16,7 @@ export async function getPensaCapabilities(
     members.checkCreativeToolsAccessReadonly(),
   ])
   if (unlocks.status !== 200 || !unlocks.body || access.status !== 200 || !access.body) return null
-  const blocks = unlocks.body.blocks
-  const tier = resolveStudioTier(level, role, { blocks, extensions: extensionsForBlocks(blocks) })
+  const tier = earnedStudioTier(level, role, unlocks.body.blocks)
   const available = (tool: 'molda' | 'pinta' | 'estudio-completo') =>
     creativeToolAvailability({
       tool,
@@ -29,6 +28,9 @@ export async function getPensaCapabilities(
     tier,
     moldaAvailable: available('molda'),
     pintaAvailable: available('pinta'),
-    studioAvailable: available('estudio-completo'),
+    // Posse e nível não bastam: sem bloco conquistado o Estúdio livre está trancado, e um plano
+    // com tarefas do Estúdio mandaria a criança para uma porta fechada (e gastaria a geração
+    // paga com um catálogo vazio).
+    studioAvailable: available('estudio-completo') && tier.hasPalette,
   }
 }

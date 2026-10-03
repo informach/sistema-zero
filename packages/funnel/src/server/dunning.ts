@@ -27,10 +27,13 @@ export function makeSendChargeFailed(
     if (!lead.email) return
     try {
       const { firstName } = splitName(lead.nome)
-      const baseUrl = lead.funnel?.startsWith('kids/')
-        ? (deps.kidsCommunityUrl ?? deps.communityUrl)
-        : deps.communityUrl
-      const variables = { nome: firstName, link: `${baseUrl}/compras` }
+      // A página de compras/assinatura tem rota DIFERENTE por app: no kids fica em
+      // `/perfis` (não existe `/compras` lá — decisão da v1); no adulto, `/compras`.
+      // O caminho segue o APP escolhido, não o funil: lead kids sem KIDS_COMMUNITY_URL
+      // cai no app adulto e precisa da rota do adulto.
+      const kidsApp = Boolean(lead.funnel?.startsWith('kids/') && deps.kidsCommunityUrl)
+      const baseUrl = kidsApp ? (deps.kidsCommunityUrl as string) : deps.communityUrl
+      const variables = { nome: firstName, link: `${baseUrl}${kidsApp ? '/perfis' : '/compras'}` }
 
       const res = await deps.gateway.sendMessage(
         {

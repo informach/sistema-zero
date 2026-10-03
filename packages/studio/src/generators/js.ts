@@ -21,6 +21,8 @@ import {
   collectTextSpriteIdentifiers,
   textSpriteStatementToCode,
 } from '../official-extensions/game-2d/textCodec'
+import { sceneToCode } from '../official-extensions/scene-2d/codec'
+import { isSceneExpression, isSceneStatement } from '../official-extensions/scene-2d/ir'
 import { canvas3DAddonImport } from '../three/canvas3dAddons'
 import { CANVAS3D_SEMANTIC_STATEMENT_TYPES } from '../three/canvas3dContract'
 import { wrapCanvas3DMacro, wrapCanvas3DRuntime } from '../three/canvas3dMacroCodec'
@@ -765,6 +767,14 @@ function compileStatementCode(
   const base = mapContext?.startLine ?? 1
   const recAt = (line: number): ExprMapContext | undefined =>
     mapContext ? { map: mapContext.map, line, indent } : undefined
+  if (isSceneStatement(stmt))
+    return `${pad}${sceneToCode(
+      stmt,
+      (arg) => compileExpr(arg, 0, identifiers, recAt(base)),
+      (body) =>
+        compileStatements(body, indent + 1, identifiers, childMapContext(mapContext, base + 1)),
+      pad,
+    )};`
   if (isCanvasStatement(stmt)) {
     const canvasCode = canvasStatementToCode(stmt, indent, identifiers, {
       mapContext,
@@ -2855,6 +2865,10 @@ ${pad}});`
         return `${pad}SZGameKit.setAngle(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.degrees), 0, identifiers, recAt(base))});`
       case 'gk:drawBar':
         return `${pad}SZGameKit.drawBar(${compileExpr(valueToExpr(stmt.current), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.max), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.x), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.y), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.w), 0, identifiers, recAt(base))}, ${compileExpr(valueToExpr(stmt.h), 0, identifiers, recAt(base))}, ${JSON.stringify(stmt.color)});`
+      case 'gk:drawCounter':
+        return `${pad}SZGameKit.drawCounter(${[stmt.label, stmt.value, stmt.x, stmt.y].map((value) => compileExpr(value, 0, identifiers, recAt(base))).join(', ')});`
+      case 'gk:setHealth':
+        return `${pad}SZGameKit.setHealth(${identifiers.get(stmt.charVar)}, ${compileExpr(stmt.lives, 0, identifiers, recAt(base))});`
       case 'gk:rpgMoveGrid':
         return `${pad}SZGameKit.rpgMoveGrid(${identifiers.get(stmt.charVar)}, ${compileExpr(valueToExpr(stmt.cell), 0, identifiers, recAt(base))}, ${identifiers.get(stmt.dtVar)});`
       case 'gk:rpgBlockCell':
@@ -4402,6 +4416,12 @@ function collectIdentifierNames(statements: JSStatement[]): Set<string> {
 }
 
 function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): void {
+  if (isSceneStatement(stmt)) {
+    for (const arg of stmt.args) collectExprIdentifiers(arg, names)
+    if ('parameter' in stmt && stmt.parameter) names.add(stmt.parameter)
+    if ('body' in stmt) for (const child of stmt.body) collectStatementIdentifiers(child, names)
+    return
+  }
   if (stmt.type.startsWith('g2d:')) {
     gameTwoDStatementIdentifiers()
     return
@@ -6467,6 +6487,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         collectExprIdentifiers(valueToExpr(stmt.w), names)
         collectExprIdentifiers(valueToExpr(stmt.h), names)
         return
+      case 'gk:drawCounter':
+        for (const value of [stmt.label, stmt.value, stmt.x, stmt.y])
+          collectExprIdentifiers(value, names)
+        return
+      case 'gk:setHealth':
+        names.add(stmt.charVar)
+        collectExprIdentifiers(stmt.lives, names)
+        return
       case 'gk:rpgMoveGrid':
         names.add(stmt.charVar)
         names.add(stmt.dtVar)
@@ -8008,6 +8036,10 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
 }
 
 function collectExprIdentifiers(expr: JSExpr, names: Set<string>): void {
+  if (isSceneExpression(expr)) {
+    for (const arg of expr.args) collectExprIdentifiers(arg, names)
+    return
+  }
   if (expr.type === 'g2d:spriteText' || expr.type === 'g2d:spriteData') {
     names.add(expr.spriteVar)
     if (expr.type === 'g2d:spriteData') collectExprIdentifiers(expr.fallback, names)

@@ -1566,6 +1566,31 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
 })
 
 describe('Rota interna S2S (/payments/internal/payments/:id — leitura p/ o fiscal)', () => {
+  test('data original da assinatura exige token interno e não expõe dados do cartão', async () => {
+    const { app, subscriptionRepo } = buildApp({ internalToken: 'tok-interno-de-teste-16' })
+    const created = await app.handle(
+      new Request('http://localhost/subscriptions', {
+        method: 'POST',
+        headers: postHeaders(SUB_BODY, { key: 'idem-sub-int', path: '/subscriptions' }),
+        body: SUB_BODY,
+      }),
+    )
+    expect(created.status).toBe(201)
+    const { id } = (await created.json()) as { id: string }
+    const url = `http://localhost/payments/internal/subscriptions/${id}`
+    expect((await app.handle(new Request(url))).status).toBe(401)
+    expect(
+      (await app.handle(new Request(url, { headers: { 'x-internal-token': 'errado' } }))).status,
+    ).toBe(401)
+    const result = await app.handle(
+      new Request(url, { headers: { 'x-internal-token': 'tok-interno-de-teste-16' } }),
+    )
+    expect(result.status).toBe(200)
+    expect(await result.json()).toEqual({
+      id,
+      createdAt: subscriptionRepo.byId.get(id)?.createdAt.toISOString(),
+    })
+  })
   async function createBoleto(
     app: ReturnType<typeof buildApp>['app'],
     key: string,

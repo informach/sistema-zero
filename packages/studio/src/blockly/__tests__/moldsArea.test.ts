@@ -13,7 +13,6 @@ import {
   SZIRV2Schema,
 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
-import { ESSENTIAL_2D_ALLOW_BLOCKS } from '../../journey'
 import { gameTwoDBlocks } from '../../official-extensions/game-2d/blocks'
 import { migrateBlocksState as normalizeBlocksStateToFrames } from '../../testing/migrateBlocksState'
 import { SERVER_BLOCK_CATALOG, type ServerBlockCatalogEntry } from '../blockCatalog'
@@ -25,6 +24,29 @@ import { buildIRFromWorkspace } from '../buildIR'
 import { ensureBlocklyInitialized } from '../setup'
 import { buildCoreToolbox } from '../toolbox'
 import { buildWorkspaceStateFromIR } from '../workspaceState'
+
+/** Os blocos de jogo e lógica que o curso de entrada libera (a parte de página fica de fora). */
+const BLOCOS_CONQUISTADOS_NO_PRIMEIRO_CURSO = [
+  'sz_g2d_setup_stage',
+  'sz_g2d_create_image_sprite',
+  'sz_g2d_clear',
+  'sz_g2d_draw_backdrop',
+  'sz_g2d_draw_sprite',
+  'sz_g2d_draw_label',
+  'sz_g2d_update_each_frame',
+  'sz_g2d_enable_classic_controls',
+  'sz_g2d_top_down',
+  'sz_g2d_clamp_to_screen',
+  'sz_g2d_on_overlap',
+  'sz_g2d_destroy_sprite',
+  'sz_g2d_set_image',
+  'sz_js_var_create',
+  'sz_js_var_assign',
+  'sz_js_if_else',
+  'sz_val_compare',
+  'sz_val_number',
+  'sz_val_variable',
+]
 
 const FIGURA: JSStatement = {
   type: 'g2d:defineShape',
@@ -225,11 +247,14 @@ describe('🧩 Meus moldes — a área de definições', () => {
       // conseguia montar jogo nenhum. Ela contou o detalhe que fechou o
       // diagnóstico: "quando criei apareceu, quando saí e voltei sumiu" — ao
       // criar, a extensão vinha junto; ao reabrir, a paleta era montada antes de
-      // a extensão hidratar. A lista do Kit essencial é quase toda de blocos do
-      // Jogo 2D, então sem a extensão carregada não sobrava evento nem laço para
+      // a extensão hidratar. A paleta conquistada nos cursos é quase toda de blocos
+      // do Jogo 2D, então sem a extensão carregada não sobrava evento nem laço para
       // "provar" o direito. ⚠️ Este cenário passa NENHUMA extensão de propósito.
       expect(
-        areasDaPaleta({ level: 'iniciante-2d', allowBlocks: ESSENTIAL_2D_ALLOW_BLOCKS }, []),
+        areasDaPaleta(
+          { level: 'iniciante-2d', allowBlocks: BLOCOS_CONQUISTADOS_NO_PRIMEIRO_CURSO },
+          [],
+        ),
       ).toEqual([FRAME_DE.start, FRAME_DE.events, FRAME_DE.loops])
     })
 

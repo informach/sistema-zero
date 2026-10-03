@@ -9,6 +9,7 @@ import {
   getGamificationReadonly,
   getLeagueReadonly,
   getRankingReadonly,
+  getStudioUnlocksReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 import { RankingHub } from './ranking-hub'
@@ -20,7 +21,7 @@ export default async function RankingPage() {
   if (!session) redirect('/login')
   if (!session.activeProfile) redirect('/perfis')
 
-  const [rankingRes, leagueRes, studioRes, gamRes] = await Promise.all([
+  const [rankingRes, leagueRes, studioRes, gamRes, unlocksRes] = await Promise.all([
     getRankingReadonly({ limit: 20 }).catch(() => null),
     getLeagueReadonly().catch(() => null),
     // O jogo publicado no Mural só aparece como fonte de XP para quem abre o Estúdio
@@ -29,6 +30,7 @@ export default async function RankingPage() {
     // por request) e, num soluço, o cartão só some.
     checkStudioAccessReadonly().catch(() => null),
     getGamificationReadonly({ withRanking: true }).catch(() => null),
+    getStudioUnlocksReadonly().catch(() => null),
   ])
   const ranking = rankingRes?.status === 200 ? (rankingRes.body ?? null) : null
   const league = leagueRes?.status === 200 ? (leagueRes.body ?? null) : null
@@ -36,6 +38,7 @@ export default async function RankingPage() {
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
     gamRes?.status === 200 ? gamRes.body?.level?.slug : undefined,
     session.role,
+    unlocksRes,
   )
 
   return (

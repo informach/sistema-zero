@@ -207,7 +207,7 @@ export async function adminPerfis(request: Request, deps: AdminDeps): Promise<Re
   const labels = result?.perfilLabels ?? {}
   // Com funil selecionado: os perfis DELE (mesmo zerados), na ordem do funil.
   // Sem funil: os perfis presentes nos dados (rótulo = a própria chave).
-  const perfis = result ? Object.keys(result.profiles) : [...byPerfil.keys()]
+  const perfis = result ? Object.keys(labels) : [...byPerfil.keys()]
   const counts = perfis.map((perfil) => ({
     perfil,
     label: labels[perfil] ?? perfil,

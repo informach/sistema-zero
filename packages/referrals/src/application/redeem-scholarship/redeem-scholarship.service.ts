@@ -1,8 +1,16 @@
 import { randomBytes } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
+import {
+  type GiftAttribution,
+  type GiftMuralAccess,
+  type GiftSource,
+  sanitizeGiftAttribution,
+} from '@sistemazero/core/referrals'
+import { CampaignUnavailableError, campaignSource, campaignState } from '../../domain/campaign'
 import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
-import { scholarshipExpiresAt } from '../../domain/gift-policy'
+import { isMuralTrialGranted, scholarshipExpiresAt } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
+import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type { GatewayResult, ReferralsGateway } from '../../domain/ports/gateway.port'
 import type {
   RedemptionRecord,
@@ -14,14 +22,21 @@ export interface RedeemInput {
   name: string
   email: string
   phone?: string
+  attribution?: GiftAttribution | null
 }
 
 export type RedeemResult =
-  | { kind: 'completed' }
+  | {
+      kind: 'completed'
+      expiresAt: string | null
+      emailStatus: 'accepted' | 'failed' | 'unknown'
+      muralAccess: GiftMuralAccess
+    }
   | { kind: 'processing' }
   | { kind: 'code_not_found' }
   | { kind: 'already_redeemed' }
   | { kind: 'gift_unavailable' }
+  | { kind: 'campaign_unavailable'; state: string }
   | { kind: 'failed'; reason: string }
   | { kind: 'upstream_error' }
 
@@ -31,6 +46,7 @@ export interface RedeemOptions {
   /** Base do app kids (a bolsa v1 é kids) p/ o link de senha/cursos. */
   kidsCommunityUrl: string
   leaseMs: number
+  campaigns?: CampaignRepository
 }
 
 /**
@@ -53,8 +69,10 @@ export class RedeemScholarshipService {
     private readonly genPassword: () => string = () => randomBytes(32).toString('base64url'),
   ) {}
 
-  async giftAvailability(): Promise<'available' | 'unavailable' | 'upstream_error'> {
-    const res = await this.gateway.getGiftAvailability(this.opts.courseSlug)
+  async giftAvailability(
+    courseSlug = this.opts.courseSlug,
+  ): Promise<'available' | 'unavailable' | 'upstream_error'> {
+    const res = await this.gateway.getGiftAvailability(courseSlug)
     if (res.status !== 200) {
       this.logger.warn('referrals.gift_availability_failed', { status: res.status })
       return 'upstream_error'
@@ -81,26 +99,57 @@ export class RedeemScholarshipService {
     // Resgate novo só começa quando o curso está publicado. O 409 de um resgate
     // concluído continua reconhecível mesmo se o curso sair do catálogo depois.
     const existing = await this.repo.findRedemptionByEmail(email)
+    let source: GiftSource = { kind: codeRecord.ownerKind, name: codeRecord.displayName }
+    if (!existing && codeRecord.ownerKind === 'campaign') {
+      const campaign = codeRecord.campaignId
+        ? await this.opts.campaigns?.findById(codeRecord.campaignId)
+        : null
+      if (!campaign) return { kind: 'code_not_found' }
+      const state = campaignState(campaign, this.now())
+      if (state === 'draft') return { kind: 'code_not_found' }
+      if (state !== 'active') return { kind: 'campaign_unavailable', state }
+      source = campaignSource(campaign)
+    }
     if (existing?.status !== 'completed') {
-      const availability = await this.giftAvailability()
+      const availability = await this.giftAvailability(existing?.courseSlug ?? this.opts.courseSlug)
       if (availability === 'unavailable') return { kind: 'gift_unavailable' }
       if (availability === 'upstream_error') return { kind: 'upstream_error' }
     }
 
     // Claim da bolsa: 1 por e-mail, GLOBAL. Conflito devolve a linha existente —
     // completed = 409; pending/failed = RETOMADA (o 1º claim vence o code_id).
-    const { created, redemption } = await this.repo.insertRedemption({
-      codeId: codeRecord.id,
-      email,
-      name,
-      phone,
-    })
+    let claim: Awaited<ReturnType<ReferralRepository['insertRedemption']>>
+    try {
+      claim = await this.repo.insertRedemption({
+        codeId: codeRecord.id,
+        email,
+        name,
+        phone,
+        sourceSnapshot: source,
+        courseSlug: this.opts.courseSlug,
+        attribution: sanitizeGiftAttribution(input.attribution),
+      })
+    } catch (error) {
+      if (error instanceof CampaignUnavailableError)
+        return error.state === 'draft'
+          ? { kind: 'code_not_found' }
+          : { kind: 'campaign_unavailable', state: error.state }
+      throw error
+    }
+    const { created, redemption } = claim
+    // A retomada usa a origem original, inclusive nos resgates históricos.
+    const originalCode = redemption.sourceSnapshot
+      ? null
+      : await this.repo.findCodeById(redemption.codeId)
+    const originalSource =
+      redemption.sourceSnapshot ??
+      (originalCode ? { kind: originalCode.ownerKind, name: originalCode.displayName } : source)
     if (!created && redemption.status === 'completed') {
       // Grant já concluiu mas o welcome pode ter ficado pelo caminho (crash entre
       // o completed e o e-mail): retoma SÓ o e-mail. O claim atômico do welcome
       // já é o mutex desta etapa — dispensa o lease (que exclui completed).
       if (!redemption.welcomeSentAt) {
-        await this.sendWelcome(redemption, redemption.buyerCreated === true, codeRecord.displayName)
+        await this.sendWelcome(redemption, redemption.buyerCreated === true, originalSource)
       }
       return { kind: 'already_redeemed' }
     }
@@ -110,7 +159,7 @@ export class RedeemScholarshipService {
     if (!leased) return { kind: 'processing' }
 
     try {
-      return await this.runSteps(leased, codeRecord.displayName)
+      return await this.runSteps(leased, originalSource)
     } catch (error) {
       this.logger.error('referrals.redeem_failed', {
         redemptionId: redemption.id,
@@ -122,10 +171,7 @@ export class RedeemScholarshipService {
     }
   }
 
-  private async runSteps(
-    redemption: RedemptionRecord,
-    referrerName: string,
-  ): Promise<RedeemResult> {
+  private async runSteps(redemption: RedemptionRecord, source: GiftSource): Promise<RedeemResult> {
     let userId = redemption.userId
     let buyerCreated = redemption.buyerCreated
 
@@ -166,12 +212,12 @@ export class RedeemScholarshipService {
       }
       const res = await this.gateway.grantManualCourse({
         userId,
-        courseRef: this.opts.courseSlug,
+        courseRef: redemption.courseSlug ?? this.opts.courseSlug,
         sourceId: `scholarship:${redemption.id}`,
         expiresAt: expiresAt?.toISOString() ?? null,
         // A versão do presente integra a chave: uma entrega antiga da OFERTA
         // não pode deduplicar o novo grant do CURSO no members.
-        deliveryId: `scholarship:course:${this.opts.courseSlug}:${redemption.id}`,
+        deliveryId: `scholarship:course:${redemption.courseSlug ?? this.opts.courseSlug}:${redemption.id}`,
       })
       if (res.status === 409) {
         // Terminal: matrícula manual revogada/expirada do mesmo produto exige
@@ -208,18 +254,45 @@ export class RedeemScholarshipService {
       await this.repo.markCourseGranted(redemption.id, this.now())
     }
 
-    if (redemption.muralVisitorPolicy === 'visitor' && !redemption.muralVisitorGrantedAt) {
-      const res = await this.gateway.grantMuralVisitor({
-        userId,
-        sourceId: `scholarship:${redemption.id}`,
-        deliveryId: `scholarship:mural-visitor:${redemption.id}`,
-      })
+    if (
+      (redemption.muralVisitorPolicy === 'visitor' || redemption.muralVisitorPolicy === 'trial') &&
+      !redemption.muralVisitorGrantedAt
+    ) {
+      const muralExpiresAt = scholarshipExpiresAt(
+        redemption.createdAt,
+        redemption.accessDurationDays,
+      )
+      if (
+        redemption.muralVisitorPolicy === 'trial' &&
+        (!muralExpiresAt || this.now() >= muralExpiresAt)
+      ) {
+        await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
+        return { kind: 'failed', reason: 'gift_window_elapsed' }
+      }
+      const res =
+        redemption.muralVisitorPolicy === 'trial' && muralExpiresAt
+          ? await this.gateway.grantMuralTrial({
+              userId,
+              sourceId: `scholarship:${redemption.id}`,
+              courseRef: redemption.courseSlug ?? this.opts.courseSlug,
+              expiresAt: muralExpiresAt.toISOString(),
+              deliveryId: `scholarship:mural-trial:${redemption.id}`,
+            })
+          : await this.gateway.grantMuralVisitor({
+              userId,
+              sourceId: `scholarship:${redemption.id}`,
+              deliveryId: `scholarship:mural-visitor:${redemption.id}`,
+            })
       if (res.status === 409) {
         await this.repo.markRedemptionFailed(redemption.id, 'mural_grant_conflict', null)
         this.logger.warn('referrals.redeem_mural_grant_conflict', { redemptionId: redemption.id })
         return { kind: 'failed', reason: 'mural_grant_conflict' }
       }
-      if (res.status < 200 || res.status >= 300) {
+      if (
+        res.status < 200 ||
+        res.status >= 300 ||
+        (redemption.muralVisitorPolicy === 'trial' && !isMuralTrialGranted(res))
+      ) {
         await this.repo
           .recordRedemptionError(redemption.id, upstreamErrorSummary('mural-grant', res))
           .catch(() => {})
@@ -243,23 +316,33 @@ export class RedeemScholarshipService {
 
     // 3) E-mail (best-effort — o ACESSO é o produto; fallback = "esqueci minha
     //    senha"). Claim atômico: só uma execução emite token/envia.
-    await this.sendWelcome(redemption, buyerCreated === true, referrerName)
+    const emailStatus = await this.sendWelcome(redemption, buyerCreated === true, source)
 
-    return { kind: 'completed' }
+    const muralAccess =
+      redemption.muralVisitorPolicy === 'trial' || redemption.muralVisitorPolicy === 'visitor'
+        ? redemption.muralVisitorPolicy
+        : 'none'
+    return {
+      kind: 'completed',
+      expiresAt: expiresAt?.toISOString() ?? null,
+      emailStatus,
+      muralAccess,
+    }
   }
 
   private async sendWelcome(
     redemption: RedemptionRecord,
     buyerCreated: boolean,
-    referrerName: string,
-  ): Promise<void> {
+    source: GiftSource,
+  ): Promise<'accepted' | 'failed' | 'unknown'> {
     try {
       const expiresAt = scholarshipExpiresAt(redemption.createdAt, redemption.accessDurationDays)
       if (expiresAt && this.now().getTime() >= expiresAt.getTime()) {
         this.logger.warn('referrals.redeem_welcome_expired', { redemptionId: redemption.id })
-        return
+        return 'unknown'
       }
-      if (!(await this.repo.claimRedemptionWelcome(redemption.id, this.now()))) return
+      if (!(await this.repo.claimRedemptionWelcome(redemption.id, this.now())))
+        return redemption.welcomeAcceptedAt ? 'accepted' : 'unknown'
       const { firstName } = splitName(redemption.name)
       const base = this.opts.kidsCommunityUrl.replace(/\/$/, '')
       const idempotencyKey = `scholarship-welcome:${redemption.id}`
@@ -275,22 +358,33 @@ export class RedeemScholarshipService {
             redemptionId: redemption.id,
             status: tokenRes.status,
           })
-          return
+          return 'failed'
         }
         // Token EMITIDO: a partir daqui NUNCA liberar o claim — reemitir mataria
         // o link entregue (o auth consome tokens pendentes ao emitir um novo).
         send = await this.gateway.sendEmail(
           {
             templateKey:
-              redemption.muralVisitorPolicy === 'visitor'
-                ? 'referrals-scholarship-welcome-7d-mural'
-                : expiresAt
-                  ? 'referrals-scholarship-welcome-7d'
-                  : 'referrals-scholarship-welcome',
+              redemption.muralVisitorPolicy === 'trial'
+                ? source.kind === 'campaign'
+                  ? 'referrals-campaign-welcome-mural-trial'
+                  : 'referrals-scholarship-welcome-mural-trial'
+                : source.kind === 'campaign'
+                  ? 'referrals-campaign-welcome'
+                  : redemption.muralVisitorPolicy === 'visitor'
+                    ? 'referrals-scholarship-welcome-7d-mural'
+                    : expiresAt
+                      ? 'referrals-scholarship-welcome-7d'
+                      : 'referrals-scholarship-welcome',
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
-              indicador: referrerName,
+              ...(source.kind === 'campaign'
+                ? {
+                    campanha: source.name,
+                    validade: expiresAt ? formatValidade(expiresAt) : '',
+                  }
+                : { indicador: source.name }),
               link: `${base}/redefinir-senha?token=${encodeURIComponent(token)}`,
             },
           },
@@ -302,15 +396,28 @@ export class RedeemScholarshipService {
         send = await this.gateway.sendEmail(
           {
             templateKey:
-              redemption.muralVisitorPolicy === 'visitor'
-                ? 'referrals-scholarship-existing-7d-mural'
-                : expiresAt
-                  ? 'referrals-scholarship-existing-7d'
-                  : 'new-access',
+              redemption.muralVisitorPolicy === 'trial'
+                ? source.kind === 'campaign'
+                  ? 'referrals-campaign-existing-mural-trial'
+                  : 'referrals-scholarship-existing-mural-trial'
+                : source.kind === 'campaign'
+                  ? 'referrals-campaign-existing'
+                  : redemption.muralVisitorPolicy === 'visitor'
+                    ? 'referrals-scholarship-existing-7d-mural'
+                    : expiresAt
+                      ? 'referrals-scholarship-existing-7d'
+                      : 'new-access',
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
-              ...(expiresAt ? { indicador: referrerName } : {}),
+              ...(source.kind === 'campaign'
+                ? {
+                    campanha: source.name,
+                    validade: expiresAt ? formatValidade(expiresAt) : '',
+                  }
+                : expiresAt
+                  ? { indicador: source.name }
+                  : {}),
               link: `${base}/cursos`,
             },
           },
@@ -322,12 +429,22 @@ export class RedeemScholarshipService {
           redemptionId: redemption.id,
           status: send.status,
         })
+        return 'failed'
       }
+      // A aceitação já ocorreu. Falhar ao gravar o recibo não desfaz o envio.
+      await this.repo.markWelcomeAccepted(redemption.id, this.now()).catch((error: unknown) => {
+        this.logger.warn('referrals.redeem_welcome_receipt_failed', {
+          redemptionId: redemption.id,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      })
+      return 'accepted'
     } catch (error) {
       this.logger.warn('referrals.redeem_welcome_error', {
         redemptionId: redemption.id,
         error: error instanceof Error ? error.message : String(error),
       })
+      return 'failed'
     }
   }
 }
@@ -368,4 +485,13 @@ function readErrorCode(body: unknown): string | null {
 function upstreamErrorSummary(step: string, res: GatewayResult): string {
   const code = readErrorCode(res.body)
   return (code ? `${step}:${res.status}:${code}` : `${step}:${res.status}`).slice(0, 300)
+}
+
+/** "9 de outubro de 2026 às 14:30": o e-mail completa com "(horário de Brasília)". */
+function formatValidade(date: Date): string {
+  return date.toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    dateStyle: 'long',
+    timeStyle: 'short',
+  })
 }

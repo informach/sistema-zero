@@ -553,11 +553,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
 
     /**
      * Blocos que a criança conquistou nos cursos (paleta do Estúdio livre) —
-     * Server Component. Vazio = nenhum curso liberou nada ainda, e o
-     * `resolveStudioTier` cai no perfil do NÍVEL (fail-open do rollout).
+     * Server Component. Vazio = nenhum curso liberou nada ainda, e o Estúdio
+     * livre fica trancado (`StudioTier.hasPalette`).
      */
     getStudioUnlocksReadonly(): Promise<GatewayResponse<StudioUnlocksView>> {
       return studioUnlocksReadonlyCached()
+    },
+
+    /**
+     * Os mesmos blocos conquistados, para Route Handlers: renova a sessão como as outras
+     * leituras da rota, e por isso pode correr EM PARALELO com elas (o refresh é single-flight).
+     */
+    getStudioUnlocks(): Promise<GatewayResponse<StudioUnlocksView>> {
+      return gw.gatewayFetch('/members/studio/unlocks', { query: { audience } })
     },
 
     /** Desafio do MÊS (game jam): tema global + `entered` — Server Component. */

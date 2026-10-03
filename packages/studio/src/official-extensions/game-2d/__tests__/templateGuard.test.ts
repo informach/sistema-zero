@@ -22,7 +22,11 @@ const DIR = join(import.meta.dir, '..')
  * Linhas (1-indexado) com crase OU `${` NÃO escapados no MIOLO do literal — entre
  * a linha que o abre e a que o fecha. Fora do intervalo é TS normal.
  */
-function rawTemplateHazardsInside(src: string, openerNeedle: string): number[] {
+function rawTemplateHazardsInside(
+  src: string,
+  openerNeedle: string,
+  allowed: ReadonlySet<string> = new Set(),
+): number[] {
   const declaration = src.indexOf(openerNeedle)
   if (declaration < 0) throw new Error(`não achei a declaração: ${openerNeedle}`)
   const opener = src.indexOf('`', declaration)
@@ -38,7 +42,10 @@ function rawTemplateHazardsInside(src: string, openerNeedle: string): number[] {
     }
     const escaped = backslashes % 2 === 1
     if (char === '`' && !escaped) return out
-    if (char === '$' && src[index + 1] === '{' && !escaped) out.push(line)
+    if (char === '$' && src[index + 1] === '{' && !escaped) {
+      const name = src.slice(index).match(/^\$\{([A-Za-z_$][\w$]*)\}/)?.[1]
+      if (!name || !allowed.has(name)) out.push(line)
+    }
   }
   throw new Error(`não achei o fechamento do literal: ${openerNeedle}`)
 }
@@ -48,6 +55,7 @@ function composedTemplateHazards(
   openerNeedle: string,
   /** `null` = não fixar a contagem (a varredura derivada só cobra PARIDADE). */
   expectedBoundaries: number | null,
+  allowed: ReadonlySet<string> = new Set(),
 ): { interpolations: number[]; boundaryCount: number } {
   const start = src.indexOf(openerNeedle)
   if (start < 0) throw new Error(`não achei a composição: ${openerNeedle}`)
@@ -68,7 +76,8 @@ function composedTemplateHazards(
       inTemplate = !inTemplate
       boundaryCount += 1
     } else if (inTemplate && char === '$' && content[index + 1] === '{' && !escaped) {
-      interpolations.push(line)
+      const name = content.slice(index).match(/^\$\{([A-Za-z_$][\w$]*)\}/)?.[1]
+      if (!name || !allowed.has(name)) interpolations.push(line)
     }
   }
   if (expectedBoundaries !== null) expect(boundaryCount).toBe(expectedBoundaries)
@@ -83,10 +92,24 @@ function composedTemplateHazards(
  * arquivo novo entra sozinho, e ninguém precisa lembrar de cadastrá-lo.
  */
 function runtimeFragmentFiles(): string[] {
-  return readdirSync(join(DIR, 'runtime'))
-    .filter((name) => name.endsWith('.ts'))
-    .sort()
-    .map((name) => `runtime/${name}`)
+  return [
+    ...readdirSync(join(DIR, 'runtime'))
+      .filter((name) => name.endsWith('.ts'))
+      .sort()
+      .map((name) => `runtime/${name}`),
+    '../scene-2d/runtime.ts',
+    '../scene-2d/spriteHosts.ts',
+    '../scene-2d/spriteRuntime.ts',
+  ]
+}
+
+/**
+ * Onde a varredura começa: o primeiro literal do arquivo, exportado ou não (o
+ * spriteHosts.ts guarda dois fragmentos privados antes dos adaptadores).
+ */
+function firstTemplateConst(src: string, file: string): string {
+  const literal = src.match(/^(?:export )?const (\w+)\s*=\s*`/m)
+  return literal?.[1] ? `${literal[1]} =` : firstExportedConst(src, file)
 }
 
 /** O nome da constante exportada, para ancorar a varredura no ponto certo. */
@@ -99,7 +122,7 @@ function firstExportedConst(src: string, file: string): string {
 describe('Guarda dos template literals do Jogo 2D', () => {
   it('runtime composto: limites esperados e nenhuma interpolação acidental', () => {
     const src = readFileSync(join(DIR, 'runtime.ts'), 'utf8')
-    expect(composedTemplateHazards(src, 'gameTwoDRuntime =', 6).interpolations).toEqual([])
+    expect(composedTemplateHazards(src, 'gameTwoDRuntimeSource =', 6).interpolations).toEqual([])
 
     const domains = readFileSync(join(DIR, '../runtimeDomains.ts'), 'utf8')
     expect(composedTemplateHazards(domains, 'gameRuntimeDomains =', 2).interpolations).toEqual([])
@@ -112,7 +135,7 @@ describe('Guarda dos template literals do Jogo 2D', () => {
 
     for (const file of arquivos) {
       const fragment = readFileSync(join(DIR, file), 'utf8')
-      const declaration = firstExportedConst(fragment, file)
+      const declaration = firstTemplateConst(fragment, file)
       const { interpolations, boundaryCount } = composedTemplateHazards(fragment, declaration, null)
       // Barril (só concatena importados) tem 0 crases; fragmento tem o par que abre e
       // fecha o literal. ÍMPAR = crase CRUA no meio, que é exatamente o defeito.
@@ -155,12 +178,21 @@ describe('Guarda dos template literals do Jogo 2D', () => {
 
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {
     const src = readFileSync(join(DIR, 'ai.ts'), 'utf8')
-    expect(rawTemplateHazardsInside(src, 'gameTwoDPromptContext =')).toEqual([])
+    expect(
+      rawTemplateHazardsInside(
+        src,
+        'gameTwoDPromptContext =',
+        new Set(['sceneSummary', 'sceneReference']),
+      ),
+    ).toEqual([])
   })
 
   it('docs.ts: o manual escapa a crase (é markdown — a tentação é grande)', () => {
     const src = readFileSync(join(DIR, 'docs.ts'), 'utf8')
-    expect(composedTemplateHazards(src, 'gameTwoDDocs =', 4).interpolations).toEqual([])
+    expect(
+      composedTemplateHazards(src, 'gameTwoDDocs =', 4, new Set(['sceneReference', 'paletteCount']))
+        .interpolations,
+    ).toEqual([])
   })
 
   it('os três módulos avaliam e entregam string não-vazia (a prova final)', () => {

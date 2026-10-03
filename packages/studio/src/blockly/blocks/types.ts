@@ -26,6 +26,7 @@ export type StatementContext =
   | 'draw-hud'
   | 'map-draw'
   | 'map-enter'
+  | 'track-encounter'
   | 'path-builder'
   | 'menu-options'
   | 'cutscene-steps'

@@ -132,8 +132,127 @@ describe('lesson completion requirements', () => {
     expect(result[0]).toMatchObject({
       sectionId: 'first',
       complete: false,
-      action: 'Enviar projeto',
+      action: 'Envie seu projeto para o professor',
     })
+  })
+  test('a copy de cada requisito é a voz da criança, sem ponto final nem travessão (30/09/2026)', () => {
+    const acoes = lessonCompletionRequirements({
+      completed: false,
+      videoBlockIds: ['video'],
+      learningProgress: {
+        sectionId: null,
+        blocks: [
+          {
+            blockId: 'video',
+            revision: 'v1',
+            positionSeconds: null,
+            answers: { videoDuration: 100, videoRanges: ['0:45'] },
+            hintsUsed: 0,
+            attemptsCount: 0,
+            result: null,
+            updatedAt: 'now',
+          },
+        ],
+      },
+      blocks: [
+        { id: 'video', kind: 'video', blockRevision: 'v1', content: { kind: 'video' } },
+        {
+          id: 'exp',
+          kind: 'interactive',
+          blockRevision: 'e1',
+          content: {
+            kind: 'interactive',
+            required: true,
+            activity: { type: 'experimentation', scene: 'world' },
+          },
+        },
+        {
+          id: 'jogo',
+          kind: 'interactive',
+          blockRevision: 'g1',
+          content: {
+            kind: 'interactive',
+            required: true,
+            activity: { type: 'project-play', completion: 'participation' },
+          },
+        },
+        {
+          id: 'alvos',
+          kind: 'interactive',
+          blockRevision: 'g2',
+          content: {
+            kind: 'interactive',
+            required: true,
+            activity: { type: 'project-play', completion: 'targets' },
+          },
+        },
+        { id: 'quiz', kind: 'quiz', content: { passingScore: 70, questions: [{ id: 'q' }] } },
+        {
+          id: 'studio',
+          kind: 'studio',
+          content: { kind: 'studio' },
+          studioState: { submitted: false },
+        },
+        {
+          id: 'studio-nota',
+          kind: 'studio',
+          content: { kind: 'studio', activity: { passingScore: 60 } },
+          studioState: { submitted: true, passed: false },
+        },
+        { id: 'pinta', kind: 'pinta', content: { kind: 'pinta' } },
+        { id: 'cert', kind: 'certificate', content: { kind: 'certificate' } },
+      ],
+    }).map((r) => r.action)
+    expect(acoes).toEqual([
+      'Veja o vídeo até o fim (você já viu 45%)',
+      'Termine o experimento',
+      'Jogue o jogo pronto',
+      'Complete os alvos do jogo',
+      'Passe no quiz (nota mínima 70%)',
+      'Envie seu projeto para o professor',
+      'Alcance a nota mínima do projeto',
+      'Envie seu desenho para o professor',
+      'Pegue seu certificado',
+    ])
+    for (const acao of acoes) {
+      expect(acao.endsWith('.')).toBe(false)
+      expect(acao).not.toContain('—')
+    }
+    // A aula em produção é o único requisito enquanto o bloco "Em breve" existir.
+    expect(
+      lessonCompletionRequirements({
+        completed: false,
+        blocks: [
+          { id: 'cs', kind: 'coming_soon', content: { kind: 'coming_soon' } },
+          { id: 'v', kind: 'video', content: { kind: 'video' } },
+        ],
+      }).map((r) => r.action),
+    ).toEqual(['Espere a aula ficar pronta'])
+    // ⚠️ O gate de seção junta as frases com " · ": sem ponto final, `join(' ')` as colava.
+    expect(
+      lessonCompletionRequirements({
+        completed: false,
+        blocks: [],
+        sectionProgress: {
+          revision: 'r',
+          completed: 0,
+          total: 1,
+          percent: 0,
+          sections: [
+            {
+              id: 's',
+              title: 'S',
+              status: 'available',
+              pending: ['Termine o experimento', 'Passe no quiz (nota mínima 70%)'],
+              pendingItems: [
+                { kind: 'LEARNING_GATE_INCOMPLETE', text: 'Termine o experimento' },
+                { kind: 'QUIZ_GATE_NOT_PASSED', text: 'Passe no quiz (nota mínima 70%)' },
+              ],
+            },
+          ],
+        },
+      })[0]?.action,
+    ).toBe('Termine o experimento · Passe no quiz (nota mínima 70%)')
   })
   test('optional experiments, empty legacy quizzes and video never become completion requirements', () => {
     expect(

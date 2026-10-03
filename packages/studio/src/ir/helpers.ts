@@ -107,6 +107,9 @@ function childStatementBodies(stmt: JSStatement): JSStatement[][] {
     case 'g2d:updateEachFrame':
     case 'g2d:onPointer':
     case 'g2d:onKey':
+    case 'g2d:sceneEvent':
+    case 'gk:sceneEvent':
+    case 'gk:sceneEach':
     case 'g2d:onActionPressed':
     case 'g2d:onOverlap':
     case 'g2d:forEachInGroup':

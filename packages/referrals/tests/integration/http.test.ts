@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { AmbassadorAdminService } from '../../src/application/ambassadors/ambassador-admin.service'
+import { CampaignAdminService } from '../../src/application/campaigns/campaign-admin.service'
 import { CreateInviteService } from '../../src/application/invites/create-invite.service'
 import { RedeemScholarshipService } from '../../src/application/redeem-scholarship/redeem-scholarship.service'
 import { createServer } from '../../src/interfaces/http/server'
+import { InMemoryCampaignRepository } from '../fakes/campaigns'
 import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
 
 const INTERNAL_TOKEN = 'internal-token-32-chars-ok-xxxxx'
@@ -12,6 +14,8 @@ const FUNNEL_URL = 'https://sistemazero.com.br'
 function buildApp(opts: { internalToken?: string; metricsToken?: string } = {}) {
   const repo = new InMemoryReferralRepository()
   const gateway = new FakeReferralsGateway()
+  const campaignRepo = new InMemoryCampaignRepository(repo)
+  const campaigns = new CampaignAdminService(campaignRepo, repo, FUNNEL_URL)
   const redeem = new RedeemScholarshipService(
     repo,
     gateway,
@@ -19,6 +23,7 @@ function buildApp(opts: { internalToken?: string; metricsToken?: string } = {}) 
       courseSlug: 'cade-todo-mundo',
       kidsCommunityUrl: 'https://kids.sistemazero.com.br',
       leaseMs: 90_000,
+      campaigns: campaignRepo,
     },
     silentLogger,
   )
@@ -40,6 +45,7 @@ function buildApp(opts: { internalToken?: string; metricsToken?: string } = {}) 
     redeem,
     invite,
     ambassadors,
+    campaigns,
     funnelPublicUrl: FUNNEL_URL,
     bonusAmountCents: 3000,
     requireAdminEnabled: true,
@@ -56,6 +62,146 @@ const ADMIN_HEADERS = {
   'x-auth-user-status': 'active',
   'content-type': 'application/json',
 }
+
+describe('campanhas no HTTP', () => {
+  test('retomada fora dos sete dias informa vencimento, sem nova concessão', async () => {
+    const { app, repo, gateway } = buildApp({ internalToken: INTERNAL_TOKEN })
+    await repo.createAmbassadorWithCode({
+      name: 'Pessoa',
+      email: 'pessoa@example.com',
+      code: 'convite-teste',
+      pageToken: 't'.repeat(43),
+    })
+    gateway.grantResult = { status: 502, body: {} }
+    const body = JSON.stringify({
+      code: 'convite-teste',
+      name: 'Responsável',
+      email: 'mae@example.com',
+    })
+    await app.handle(
+      req('/referrals/internal/redemptions', { method: 'POST', headers: ADMIN_HEADERS, body }),
+    )
+    repo.redemptions[0]!.createdAt = new Date(Date.now() - 8 * 86_400_000)
+    gateway.grantResult = { status: 200, body: {} }
+    const result = await app.handle(
+      req('/referrals/internal/redemptions', { method: 'POST', headers: ADMIN_HEADERS, body }),
+    )
+    expect(result.status).toBe(410)
+    expect(await result.json()).toMatchObject({ error: { code: 'GIFT_EXPIRED' } })
+    expect(gateway.callsOf('grantManualCourse')).toHaveLength(1)
+  })
+  const input = {
+    name: 'Ação de outubro',
+    publicTitle: 'Um presente para sua família',
+    description: '',
+    context: 'event',
+    code: 'evento-outubro',
+    startsAt: '2026-01-01T00:00:00Z',
+    endsAt: '2099-01-01T00:00:00Z',
+    status: 'draft',
+    channel: 'palestra',
+  }
+  test('admin cria sem e-mail; staff lê, mas não escreve; rascunho é privado', async () => {
+    const { app, repo } = buildApp({ internalToken: INTERNAL_TOKEN })
+    const denied = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: { ...ADMIN_HEADERS, 'x-auth-user-role': 'staff' },
+        body: JSON.stringify(input),
+      }),
+    )
+    expect(denied.status).toBe(403)
+    const created = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: {
+          ...ADMIN_HEADERS,
+          'x-auth-user-name': 'A'.repeat(200),
+          'x-auth-user-id': 'admin-id-auditavel',
+        },
+        body: JSON.stringify(input),
+      }),
+    )
+    expect(created.status).toBe(201)
+    const { campaign } = (await created.json()) as {
+      campaign: { id: string; code: string; updatedAt: string }
+    }
+    expect(repo.ambassadors).toHaveLength(0)
+    const detail = await app.handle(
+      req(`/referrals/admin/campaigns/${campaign.id}`, { headers: ADMIN_HEADERS }),
+    )
+    expect(await detail.json()).toMatchObject({
+      history: [{ actor: `${'A'.repeat(100)} (admin-id-auditavel)` }],
+    })
+    const hidden = await app.handle(
+      req(`/referrals/internal/codes/${campaign.code}`, {
+        headers: { 'x-internal-token': INTERNAL_TOKEN },
+      }),
+    )
+    expect(hidden.status).toBe(404)
+    const listed = await app.handle(
+      req('/referrals/admin/campaigns', {
+        headers: { ...ADMIN_HEADERS, 'x-auth-user-role': 'staff' },
+      }),
+    )
+    expect(listed.status).toBe(200)
+    expect(await listed.json()).toMatchObject({ total: 1 })
+    const updated = await app.handle(
+      req(`/referrals/admin/campaigns/${campaign.id}`, {
+        method: 'PATCH',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, status: 'active', expectedUpdatedAt: campaign.updatedAt }),
+      }),
+    )
+    expect(updated.status).toBe(200)
+    const stale = await app.handle(
+      req(`/referrals/admin/campaigns/${campaign.id}`, {
+        method: 'PATCH',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, status: 'ended', expectedUpdatedAt: campaign.updatedAt }),
+      }),
+    )
+    expect(stale.status).toBe(409)
+    expect(await stale.json()).toMatchObject({ error: { code: 'CAMPAIGN_CHANGED' } })
+    const publicPage = await app.handle(
+      req(`/referrals/internal/codes/${campaign.code}`, {
+        headers: { 'x-internal-token': INTERNAL_TOKEN },
+      }),
+    )
+    expect(await publicPage.json()).toMatchObject({
+      state: 'active',
+      source: { kind: 'campaign', name: input.publicTitle },
+      giftAvailable: true,
+    })
+  })
+  test('datas inválidas retornam 400 e encerramento retorna 410 antes de criar conta', async () => {
+    const { app, gateway } = buildApp({ internalToken: INTERNAL_TOKEN })
+    const bad = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, endsAt: input.startsAt }),
+      }),
+    )
+    expect(bad.status).toBe(400)
+    await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...input, status: 'ended' }),
+      }),
+    )
+    const result = await app.handle(
+      req('/referrals/internal/redemptions', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ code: input.code, name: 'Responsável', email: 'mae@example.com' }),
+      }),
+    )
+    expect(result.status).toBe(410)
+    expect(gateway.callsOf('ensureBuyer')).toHaveLength(0)
+  })
+})
 
 function req(path: string, init: RequestInit = {}) {
   return new Request(`http://referrals.local${path}`, init)
@@ -278,6 +424,10 @@ describe('borda HTTP do referrals', () => {
         ownerKind: 'ambassador',
         displayName: 'Vó Cida',
         giftAvailable: true,
+        source: { kind: 'ambassador', name: 'Vó Cida' },
+        state: 'active',
+        startsAt: null,
+        endsAt: null,
       })
 
       const missing = await app.handle(req('/referrals/internal/codes/nao-existe', { headers }))
@@ -343,7 +493,12 @@ describe('borda HTTP do referrals', () => {
         }),
       )
       expect(redeem.status).toBe(201)
-      expect(await redeem.json()).toEqual({ status: 'completed' })
+      expect(await redeem.json()).toEqual({
+        status: 'completed',
+        expiresAt: expect.any(String),
+        emailStatus: 'accepted',
+        muralAccess: 'trial',
+      })
 
       const again = await app.handle(
         req('/referrals/internal/redemptions', {

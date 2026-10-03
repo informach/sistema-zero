@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 import type { GetAdminPaymentService } from '../../../application/get-admin-payment/get-admin-payment.service'
+import type { GetAdminSubscriptionService } from '../../../application/get-admin-subscription/get-admin-subscription.service'
 import type { Logger } from '../../../infrastructure/logging/logger'
 import { AdminIdParam } from '../dtos'
 import { assertInternalCaller } from '../internal-auth'
@@ -8,6 +9,7 @@ export interface InternalRoutesDeps {
   /** Mesmo INTERNAL_API_TOKEN das rotas admin/my (obrigatório em prod). */
   internalToken?: string
   getPayment: GetAdminPaymentService
+  getSubscription: GetAdminSubscriptionService
   logger: Logger
 }
 
@@ -21,14 +23,25 @@ export interface InternalRoutesDeps {
  * networking. A view devolvida é a AdminPaymentView (sem dados de cartão).
  */
 export function internalRoutes(deps: InternalRoutesDeps) {
-  return new Elysia({ prefix: '/payments/internal' }).get(
-    '/payments/:id',
-    async ({ params, headers }) => {
-      assertInternalCaller(headers['x-internal-token'], deps.internalToken)
-      const view = await deps.getPayment.execute(params.id)
-      deps.logger.info('payments.internal_read', { paymentId: params.id })
-      return view
-    },
-    { params: AdminIdParam },
-  )
+  return new Elysia({ prefix: '/payments/internal' })
+    .get(
+      '/payments/:id',
+      async ({ params, headers }) => {
+        assertInternalCaller(headers['x-internal-token'], deps.internalToken)
+        const view = await deps.getPayment.execute(params.id)
+        deps.logger.info('payments.internal_read', { paymentId: params.id })
+        return view
+      },
+      { params: AdminIdParam },
+    )
+    .get(
+      '/subscriptions/:id',
+      async ({ params, headers }) => {
+        assertInternalCaller(headers['x-internal-token'], deps.internalToken)
+        const view = await deps.getSubscription.execute(params.id)
+        // Origem temporal da compra para atribuição, sem cartão ou dados do cliente.
+        return { id: view.id, createdAt: view.createdAt }
+      },
+      { params: AdminIdParam },
+    )
 }

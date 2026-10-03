@@ -259,6 +259,23 @@ describe('adminLeads', () => {
 })
 
 describe('adminPerfis', () => {
+  test('Comunidade enumera as quatro motivações sem converter empate em A', async () => {
+    const { repo, fg, deps } = setup()
+    const funnel = 'kids/comunidade-dos-criadores'
+    const lead = await repo.createLead(funnel)
+    await repo.updateLead(lead.id, { perfilResultado: 'expressao-visual' })
+    await repo.createLead(funnel)
+    const response = await adminPerfis(
+      new Request(`http://localhost/api/admin?funnel=${encodeURIComponent(funnel)}`, {
+        headers: { cookie: accessCookie(fg) },
+      }),
+      deps,
+    )
+    const body = await response.json()
+    expect(body.counts).toHaveLength(4)
+    expect(body.total).toBe(1)
+    expect(body.counts.find((c: { perfil: string }) => c.perfil === 'tempo-de-tela')?.count).toBe(0)
+  })
   test('401 sem sessão', async () => {
     const { deps } = setup()
     const res = await adminPerfis(getReq(), deps)

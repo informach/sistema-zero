@@ -1200,3 +1200,31 @@ describe('abrir no ponto e cortar em dois (a tesoura)', () => {
     }
   })
 })
+
+describe('retângulo com cantos por canto nos pontos editáveis (30/09/2026)', () => {
+  it('dois cantos redondos = 6 nós e 2 cúbicas; sem edição a forma volta pela MESMA referência', () => {
+    const shape: VectorShape = {
+      ...base,
+      type: 'rect',
+      x: 10,
+      y: 20,
+      w: 80,
+      h: 40,
+      rx: 10,
+      corners: [10, 0, 10, 0],
+    }
+    const editable = toEditablePath(shape)
+    if (!editable) throw new Error('retângulo sem pontos')
+    expect(editable.nodes).toHaveLength(6)
+    // Saída do canto de cima-esquerda, a quina reta de cima-direita, e a entrada do tl no fim.
+    expect(editable.nodes[0]?.p).toEqual({ x: 20, y: 20 })
+    expect(editable.nodes[1]?.p).toEqual({ x: 90, y: 20 })
+    expect(editable.nodes[1]?.in).toBeUndefined()
+    expect(editable.nodes[5]?.p).toEqual({ x: 10, y: 30 })
+    expect(editablePathToD(editable).match(/C /g)).toHaveLength(2)
+    expect(fromEditablePath(shape, editable)).toBe(shape)
+    const changed = fromEditablePath(shape, moveNodes(editable, [1], { x: 0, y: -5 }))
+    expect(changed.type).toBe('path')
+    expect('corners' in changed).toBe(false)
+  })
+})

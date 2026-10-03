@@ -326,6 +326,35 @@ describe('Studio', () => {
       expect(readyIds).toEqual(['project-r1', 'project-r2'])
     })
   })
+
+  it('o projeto trocado pelo host é gravado; o aberto pela prop, não', async () => {
+    // "Trazer o que eu enviei" (aula) troca o projeto e conta com o autosave para gravar por cima
+    // do rascunho do aparelho. Abrir não é editar: o projeto da prop não vira gravação.
+    setAutosaveDelayForTests(10)
+    const saved: string[] = []
+    const handleRef = createRef<StudioHandle>()
+    try {
+      render(
+        <Studio
+          ref={handleRef}
+          initialProject={createEmptyProject('project-open', 'Aberto')}
+          persistence="none"
+          onChange={(project) => saved.push(project.id)}
+        />,
+      )
+      await waitFor(() => expect(handleRef.current?.getProject()?.id).toBe('project-open'))
+      await new Promise((resolve) => setTimeout(resolve, 40))
+      expect(saved).toEqual([])
+
+      act(() =>
+        handleRef.current?.replaceProject(createEmptyProject('project-open', 'Do professor')),
+      )
+      await waitFor(() => expect(saved).toEqual(['project-open']))
+      expect(handleRef.current?.getProject()?.name).toBe('Do professor')
+    } finally {
+      setAutosaveDelayForTests(null)
+    }
+  })
 })
 
 describe('sanitizeProjectForHost — teto combinado de arquivos', () => {

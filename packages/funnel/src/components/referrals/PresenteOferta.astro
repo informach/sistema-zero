@@ -1,0 +1,72 @@
+---
+import type { ReferralGiftView } from '@sistemazero/core/referrals'
+import BolsaResgate from '../../islands/BolsaResgate'
+import type { ReferralGiftPage } from '../../server/referral-gift-page'
+import ComunidadeVisual from '../funnel/oferta/ComunidadeVisual.astro'
+import PresenteDuvidas from './PresenteDuvidas.astro'
+import PresenteExperiencia from './PresenteExperiencia.astro'
+
+interface Props {
+  gift: ReferralGiftView
+  kind: Exclude<ReferralGiftPage['kind'], 'not_found' | 'unavailable'>
+  communityUrl: string
+  preview?: boolean
+}
+const { gift, kind, communityUrl, preview = false } = Astro.props
+const ready = kind === 'ready' && !preview
+const campaign = gift.source.kind === 'campaign'
+const date = (value: string | null) =>
+  value
+    ? new Date(value).toLocaleString('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        dateStyle: 'long',
+        timeStyle: 'short',
+      })
+    : ''
+const context = campaign
+  ? gift.source.context === 'event'
+    ? `Um convite de ${gift.source.name} para continuar a experiência em casa`
+    : gift.source.name
+  : `Um convite de ${gift.source.name} para sua família`
+const states = {
+  preparing: [
+    'Este presente está sendo preparado.',
+    'O curso ainda não está disponível para novos cadastros. Guarde seu link e volte em breve.',
+  ],
+  scheduled: [
+    'Os cadastros ainda não começaram.',
+    `Este convite estará aberto a partir de ${date(gift.startsAt)} (horário de Brasília).`,
+  ],
+  paused: [
+    'Novos cadastros estão pausados.',
+    'Quem já recebeu o presente mantém o prazo informado no cadastro. Você pode entrar na sua conta para continuar.',
+  ],
+  ended: [
+    'Esta campanha foi encerrada.',
+    'O prazo para novos cadastros terminou. Se você recebeu o presente dentro do período, seus sete dias continuam contando a partir do seu cadastro.',
+  ],
+}
+const status = kind === 'ready' ? null : states[kind]
+---
+{preview && <div class="wrap gift-note" role="status"><strong>Prévia da campanha.</strong> Esta página demonstra a apresentação e não aceita cadastros. O link público da campanha respeita o estado e as datas configurados no admin.</div>}
+<section class="hero section" aria-labelledby="hero-title"><div class="wrap hero-grid">
+  <div class="hero-copy">
+    <span class="kof-eyebrow">Cadê Todo Mundo? · Curso gratuito</span>
+    <p class="gift-private">{context}</p>
+    {campaign && gift.source.description && <p class="kof-lead">{gift.source.description}</p>}
+    <h1 id="hero-title" class="kof-display">Seu filho pode aprender a fazer um jogo de procurar personagens <em>funcionar.</em></h1>
+    <p class="kof-lead">O jardim e os personagens já estão preparados. Seu filho acompanha a orientação e monta as regras que fazem os esconderijos sumirem e cada descoberta entrar na contagem. Depois, testa e vê o resultado na própria brincadeira.</p>
+    <ul class="hero-benefits"><li><span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">stadia_controller</span></span><span>Um primeiro projeto, com orientação e atividade juntas.</span></li><li><span class="kof-ladrilho kof-ladrilho--verde" aria-hidden="true"><span class="material-symbols-rounded">schedule</span></span><span>Sete dias de acesso, a partir do cadastro.</span></li><li><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">redeem</span></span><span>Gratuito, sem cartão e sem assinatura automática.</span></li></ul>
+    {ready && <div class="hero-actions"><a class="kof-btn kof-btn--grande" href="#resgatar">Quero o acesso gratuito</a><a class="kof-link" href="#experiencia">Ver o que meu filho vai fazer</a></div>}
+    <div class="gift-prose"><p>Para crianças e adolescentes de 9 a 14 anos que estão começando. Para as atividades, use um <strong>computador com internet, mouse e teclado</strong>. O cadastro pode ser feito pelo celular.</p>{campaign && gift.endsAt && <p><strong>Novos cadastros até {date(gift.endsAt)} (Brasília).</strong> Esse prazo é da campanha; cada família aceita tem seus próprios sete dias de curso.</p>}</div>
+    {status && <div class="gift-status" role="status"><h2>{status[0]}</h2><p>{status[1]}</p><a class="kof-link" href={`${communityUrl}/login`}>Já tenho acesso: entrar na plataforma</a></div>}
+  </div>
+  <ComunidadeVisual visual="aula-estudio" imagesBase="/img/comunidade-dos-criadores" eager />
+</div></section>
+<PresenteExperiencia action={ready ? { href: '#resgatar', label: 'Quero experimentar com meu filho' } : undefined} />
+<section class="section cor-verde fundo-alt"><div class="wrap gift-form-wrap"><span class="kof-eyebrow">O presente da sua família</span><h2 class="kof-h2">Um começo concreto. Condições claras.</h2><div class="gift-prose"><p><strong>Cadê Todo Mundo? por sete dias:</strong> aulas gravadas, atividades guiadas e certificado ao cumprir os requisitos de conclusão. O prazo começa no cadastro aceito pelo link.</p><p><strong>Participação no Mural por sete dias:</strong> publicar o jogo do curso, comentar, reagir e jogar. Depois desse prazo, sua conta continua podendo ver e jogar enquanto existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível. Cópias de projetos não fazem parte do presente.</p><p><strong>Sem pagamento:</strong> não há cartão nem cobrança automática. Os demais cursos e as ferramentas de criação livre fazem parte da assinatura da Comunidade dos Criadores. Contratar essa assinatura depois é uma escolha sua, separada deste presente.</p></div>{ready && <a class="kof-btn" href="#resgatar">Liberar o presente para minha família</a>}</div></section>
+<PresenteDuvidas />
+<section id="resgatar" class="section cor-azul"><div class="wrap gift-form-wrap"><span class="kof-eyebrow">O primeiro passo é do responsável</span><h2 class="kof-h2">Vamos experimentar juntos?</h2><div class="gift-prose"><p>Separe um momento em que seu filho possa usar o computador. Você cadastra sua conta com seus próprios dados, entra na plataforma e acompanha o começo com ele. Os sete dias contam a partir deste cadastro.</p></div>
+  {ready ? <div class="gift-interactive"><BolsaResgate client:load code={gift.code} referrerName={gift.source.name} communityUrl={communityUrl} /></div> : preview ? <div class="gift-note">O formulário aparecerá no link público quando a campanha estiver aberta e o curso disponível. Nesta prévia, nenhum acesso é criado.</div> : <div class="gift-note"><p>{status?.[0]} {status?.[1]}</p></div>}
+  {!preview && (kind === 'ended' || kind === 'paused') && <details class="gift-private"><summary>Já comecei o cadastro, mas a liberação ficou incompleta</summary><p>Reenvie com o mesmo e-mail para retomar um cadastro aceito anteriormente. Isso não abre um novo acesso nem reinicia o prazo.</p><div class="gift-interactive"><BolsaResgate client:load code={gift.code} referrerName={gift.source.name} communityUrl={communityUrl} retryOnly /></div></details>}
+</div></section>

@@ -1,0 +1,26 @@
+---
+import '../../styles/kids-oferta.css'
+import '../../styles/comunidade-oferta.css'
+import '../../styles/comunidade-quiz.css'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import Footer from '../Footer.astro'
+
+// Renderizar Footer fora de .cdc, como nas ofertas: os resets de img/p desse
+// escopo sobrescrevem as dimensões e margens utilitárias do rodapé compartilhado.
+
+interface Props {
+  title: string
+  description: string
+  imagesBase: string
+  ogImage: string
+}
+const { title, description, imagesBase, ogImage } = Astro.props
+---
+<BaseLayout title={title} description={description} ogImage={ogImage} htmlClass="theme-kids" noindex={true}>
+  <div class="cdc cq">
+    <a href="#quiz" class="skip-link">Pular para o conteúdo</a>
+    <header class="topbar"><div class="wrap nav"><img class="logo" src={`${imagesBase}/logo-kids-escuro.svg`} alt="Sistema Zero Kids" width="279" height="26" /><span class="cq-nav-label">Interesses, criação e aprendizagem</span></div></header>
+    <slot />
+  </div>
+  <Footer audience="kids" />
+</BaseLayout>

@@ -163,7 +163,16 @@ export const ptBR: Record<string, string> = {
   'projects.newModal.create': 'Criar e abrir',
   'projects.newModal.cancel': 'Cancelar',
   'projects.newModal.duplicate': 'Já existe um projeto com esse nome. Escolha outro.',
-  'projects.importError': 'Não foi possível importar: {reason}',
+  'projects.importRefused.newer':
+    'Este projeto foi feito numa versão mais nova do Estúdio. Atualize a página e tente de novo. Nada mudou na sua lista.',
+  'projects.importRefused.blocks':
+    'Este projeto usa blocos que o Estúdio daqui ainda não conhece, então ele não foi importado. Nada mudou na sua lista.',
+  'projects.importRefused.parts':
+    'Este projeto tem partes que o Estúdio daqui ainda não sabe abrir, então ele não foi importado. Nada mudou na sua lista.',
+  'projects.importRefused.tooBig':
+    'Este arquivo é grande demais para importar. Nada mudou na sua lista.',
+  'projects.importRefused.generic':
+    'Não deu para importar este projeto agora. Nada mudou na sua lista. Tente de novo daqui a pouco.',
   'projects.importNotJson':
     'Esse arquivo não parece ser um projeto do Studio. Escolha um arquivo .json que você exportou aqui.',
   'projects.importWarn.title': 'Projeto importado, mas fique atento:',
@@ -174,13 +183,15 @@ export const ptBR: Record<string, string> = {
   'projects.importWarn.extensions':
     '{count} extensão(ões) foram ignoradas (pedem permissões não liberadas).',
   'projects.importWarn.blocks':
-    'Os blocos deste projeto usam uma novidade que esta versão ainda não conhece ({reason}), então eles não apareceram. O código continua guardado.',
+    'Os blocos deste projeto usam uma novidade que esta versão ainda não conhece, então eles não apareceram. O código continua guardado.',
   'projects.importWarn.unknownBlocks':
-    'Este projeto usa blocos que ainda não existem aqui: {types}. Por isso os blocos não apareceram — o código continua guardado.',
+    'Este projeto usa blocos que ainda não existem aqui, por isso eles não apareceram. O código continua guardado.',
   'projects.importWarn.program':
     'Parte da programação salva não pôde ser lida e o projeto abriu vazio.',
   'projects.importWarn.proDowngrade':
     'Projeto profissional foi aberto como clássico (a estrutura de pastas não pôde ser lida).',
+  'projects.importWarn.locked':
+    'Este projeto usa ferramentas que você ainda vai ganhar nos cursos: {names}. Ele ficou salvo e vai abrir quando você ganhar essas ferramentas.',
 
   'kits.title': 'Que jogo você quer criar?',
   'kits.subtitle': 'Escolha um jogo pronto para abrir, jogar e mexer do seu jeito.',
@@ -310,7 +321,7 @@ export const ptBR: Record<string, string> = {
   'share.step.confirm.kidsLanguage':
     'Os textos do meu projeto estão em português e são adequados para todo mundo.',
   'share.step.confirm.irreversible':
-    'A versão publicada fica salva no Mural do jeito que está agora. Se você mudar o projeto aqui depois, a do Mural não muda — são cópias separadas.',
+    'A versão publicada fica salva no Mural do jeito que está agora. Se você mudar o projeto aqui depois, a do Mural não muda, porque são cópias separadas.',
   'share.step.describe.heading': 'Conte o que o seu projeto faz',
   'share.step.describe.help':
     'A gente preparou um rascunho para você. Leia, mude o que quiser e deixe do seu jeito (no máximo um parágrafo).',
@@ -359,7 +370,7 @@ export const ptBR: Record<string, string> = {
   // Desafio do mês (game jam) — checkbox opcional; só aparece com adapter.challenge.
   'share.challenge.label': 'Participar do Desafio do mês: {title}',
   'share.challenge.hint': 'Seu jogo entra na prateleira do desafio no Mural. Boa sorte!',
-  'share.ai.capped': 'Você já pediu algumas ideias — agora é só deixar o texto do seu jeito. 😊',
+  'share.ai.capped': 'Você já pediu algumas ideias. Agora é só deixar o texto do seu jeito. 😊',
   'share.ai.quota.day': 'As ideias de hoje acabaram! Escreva você mesmo a descrição. ✍️',
   'share.ai.quota.month': 'As ideias deste mês acabaram! Escreva você mesmo a descrição. ✍️',
   'share.ai.button': 'Gerar resumo com a IA',

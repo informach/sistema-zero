@@ -101,6 +101,9 @@ export function filterKitGroups(
 /** Emoji decorativo por nome de exemplo (novo/renomeado cai no controle 🎮). */
 const KIT_EMOJI: Record<string, string> = {
   'Reino Zero Ultra (na mão)': '👑',
+  'Descida da Neve (Jogo 2D)': '⛷️',
+  'Descida da Neve (Jogo 2D Avançado)': '🏂',
+  'Descida da Neve (Canvas)': '🎿',
   'Pegue a moeda': '💰',
   Pong: '🏓',
   'Pong Profissional': '🎾',

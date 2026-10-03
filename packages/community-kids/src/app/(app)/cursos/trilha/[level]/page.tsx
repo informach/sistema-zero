@@ -12,7 +12,13 @@ import { JOURNEY_REWARD_INFO } from '@/lib/journey-rewards'
 import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import type { StudentLevelSlug } from '@/lib/types'
-import { checkStudioAccessReadonly, getGamificationReadonly, listCatalog } from '@/server/members'
+import {
+  checkStudioAccessReadonly,
+  getGamificationReadonly,
+  getStudioUnlocksReadonly,
+  listCatalog,
+  listMyCourses,
+} from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -85,21 +91,26 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   // (nível `lenda`). Os demais slugs sem tier não existem — 404.
   if (!tier && levelSlug !== 'god') notFound()
 
-  const [{ status, body }, gamification, studioRes, session] = await Promise.all([
-    listCatalog(),
-    getGamificationReadonly(),
-    checkStudioAccessReadonly().catch(() => null),
-    getSession(),
-  ])
+  const [{ status, body }, gamification, studioRes, session, unlocksRes, mineRes] =
+    await Promise.all([
+      listCatalog(),
+      getGamificationReadonly(),
+      checkStudioAccessReadonly().catch(() => null),
+      getSession(),
+      getStudioUnlocksReadonly().catch(() => null),
+      // Aulas concluídas vêm de "Meus cursos"; sem essa resposta, o card mantém o acesso.
+      listMyCourses().catch(() => null),
+    ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const all = body?.courses ?? []
   const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
-  // ⚠️ Posse + `freeStudio`: o Estúdio livre só abre no Construtor, então uma Faísca com o
-  // produto veria um atalho que cai na tela de bloqueio da jornada (clique morto).
+  // ⚠️ Posse + `freeStudio` + algum bloco conquistado: sem os três o atalho cairia na tela
+  // de Estúdio trancado (clique morto).
   const studioOwned = canOpenFreeStudio(
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
     level?.slug,
     session?.role,
+    unlocksRes,
   )
   // Posto acima do HORIZONTE do catálogo = os cursos dele ainda não foram gravados.
   // Não é a criança que está devendo, e a copy tem que dizer isso.
@@ -133,6 +144,9 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   }
 
   const courses = coursesForLevel(levelSlug, all)
+  const mine = new Map(
+    (mineRes?.status === 200 ? (mineRes.body?.courses ?? []) : []).map((c) => [c.courseSlug, c]),
+  )
   const titleBySlug = new Map(all.map((c) => [c.courseSlug, c.title]))
   const owner = levelInfo(levelSlug)
   const isCurrent = level?.slug === levelSlug
@@ -197,6 +211,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
               <CatalogCourseCard
                 key={course.courseSlug}
                 course={course}
+                mine={mine.get(course.courseSlug) ?? null}
                 salesUrl={course.salesPageUrl}
                 foundationTitle={
                   course.careerLock?.foundationCourseSlug

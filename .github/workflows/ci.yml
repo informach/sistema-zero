@@ -426,7 +426,13 @@ jobs:
                   packages/helpdesk-app/*) add_helpdesk_app ;;
                   # Contrato PURO compartilhado: backend + console + member-shell (BFF dos 2 apps de aluno e o admin).
                   packages/helpdesk-contracts/*) add_helpdesk; add_helpdesk_app; add community; add community-kids; add admin ;;
-                  packages/studio/*) add community; add community-kids; add admin ;; # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas, transpilePackages)
+                  # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas,
+                  # transpilePackages). E o Members: ele confere as atividades das aulas no servidor com o
+                  # catálogo de blocos e o avaliador do Estúdio (`@sistemazero/studio/server-project-checks`);
+                  # sem ele aqui, um bloco novo era aceito na autoria (admin) e recusado na correção.
+                  # ⚠️ O watchPatterns de .railway/services/members.json ainda não lista o studio: mexer em
+                  # .railway redeploya a frota inteira, então entra junto de um lote que já faça isso.
+                  packages/studio/*) add community; add community-kids; add admin; add members ;;
                   packages/pensa/*) add community-kids ;; # app de planejamento embarcado (kids v1)
                   # Bloco de aula do Pinta: o renderizador de blocos é COMPARTILHADO (o adulto
                   # compila o pacote mesmo sem usar o bloco) e o admin embute o editor na autoria

@@ -97,9 +97,12 @@ export function meRoutes(deps: MeRoutesDeps) {
         }
       }
       if (result.created) set.status = 201
-      // `created` diz ao app se o e-mail do link SAIU (só o create envia) —
-      // retomada não manda e-mail e o toast não pode prometer um.
+      // Criar o cadastro e aceitar o e-mail são resultados diferentes.
       const view = await enrolledView(id.accountUserId)
-      return { ...view, created: result.created }
+      return {
+        ...view,
+        created: result.created,
+        ...(result.created ? { linkEmailSent: result.emailSent === true } : {}),
+      }
     })
 }

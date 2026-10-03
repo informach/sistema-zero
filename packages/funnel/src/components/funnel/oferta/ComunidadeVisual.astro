@@ -1,0 +1,75 @@
+---
+import { visualDe } from '../../../funnels/comunidade-dos-criadores/oferta/visuals'
+
+interface Props {
+  visual: string
+  imagesBase: string
+  eager?: boolean
+  /** `palco`: a tela sobre o fundo da cor do capítulo. `plana`: só a janela (cartas e dúvidas). */
+  variant?: 'palco' | 'plana'
+  /** Mostra só uma das telas da sequência (as cartas estreitas não comportam a tira). */
+  only?: 'first' | 'last'
+  class?: string
+}
+
+const { visual, imagesBase, eager = false, variant = 'palco', only, class: classe } = Astro.props
+// Demonstração ainda sem tela real (`PENDING_VISUALS`): não renderiza nada.
+const asset = visualDe(visual)
+const todas = asset?.frames ?? []
+const frames = only === 'first' ? todas.slice(0, 1) : only === 'last' ? todas.slice(-1) : todas
+const sequencia = frames.length > 1
+const numerada = sequencia && asset?.mode === 'steps'
+const url = (file: string) => `${imagesBase}/${file}`
+// Recortes (a janela de um diálogo, o cartão do jogo) têm outra proporção: cabem inteiros na moldura.
+const recorte = (w: number, h: number) => Math.abs(w / h - 1.6) > 0.2
+// Uma tela só e quase quadrada (a janela dos combinados): ao lado do texto ela ocupa a coluna menor.
+const estreita = frames.length === 1 && frames.every((frame) => frame.width / frame.height < 1.25)
+---
+
+{asset && (
+  <figure
+    class:list={['visual', `visual--${variant}`, { 'visual--tira': sequencia, 'visual--passos': numerada, 'visual--estreita': estreita }, classe]}
+    data-visual={visual}
+    style={`--quadros: ${frames.length}`}
+  >
+    <div class:list={[{ 'kof-palco': variant === 'palco' }, 'visual-area']}>
+      <ol class="tira">
+        {frames.map((frame, index) => (
+          <li class="quadro">
+            <a
+              class="quadro-link"
+              href={url(frame.retina)}
+              target="_blank"
+              rel="noopener"
+              data-zoom
+              aria-label={`Ampliar a imagem: ${frame.alt}`}
+            >
+              <div class="kof-tela kof-tela--sombra">
+                <div class="kof-tela__barra" aria-hidden="true">
+                  <i></i><i></i><i></i>
+                  <span class="kof-tela__url">
+                    {numerada && <b class="quadro-num">{index + 1}</b>}
+                    {frame.label}
+                  </span>
+                  <span class="material-symbols-rounded quadro-lupa">zoom_in</span>
+                </div>
+                <img
+                  class:list={[{ 'quadro-recorte': recorte(frame.width, frame.height) }]}
+                  src={url(frame.file)}
+                  srcset={`${url(frame.file)} 1x, ${url(frame.retina)} 2x`}
+                  alt={frame.alt}
+                  width={frame.width}
+                  height={frame.height}
+                  loading={eager ? 'eager' : 'lazy'}
+                  decoding="async"
+                  fetchpriority={eager ? 'high' : undefined}
+                />
+              </div>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </div>
+    <figcaption>{asset.caption}</figcaption>
+  </figure>
+)}

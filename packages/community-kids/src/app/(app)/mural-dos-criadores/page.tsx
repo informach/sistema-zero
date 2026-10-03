@@ -1,9 +1,5 @@
-import {
-  isPrivilegedRole,
-  resolveStudioTier,
-  type StudioTier,
-} from '@sistemazero/member-shell/lib/studio-tier'
-import { extensionsForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
+import { isPrivilegedRole, type StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import { earnedStudioTier } from '@sistemazero/member-shell/server/studio-unlocks'
 import { KidsLockedMural } from '@/components/kids/kids-locked-mural'
 import { KidsSpaceViewClient, type RemixTier } from '@/components/kids/kids-space-view-client'
 import {
@@ -38,22 +34,24 @@ export default async function MuralPage() {
   ])
   const ownsStudio =
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true
-  // Remix gated pela JORNADA além da posse: Faísca ainda não tem o Estúdio livre
-  // (o botão importaria um projeto que ela nem consegue abrir). Rank indisponível →
-  // sem tier → botão some (conservador; a EQUIPE resolve como Lenda mesmo sem rank).
+  // Remix gated pela JORNADA além da posse: Faísca ainda não tem o Estúdio livre, e quem
+  // não conquistou bloco nenhum também não o abre (o botão importaria um projeto que ela
+  // nem consegue abrir). Rank ou blocos indisponíveis → sem tier → botão some
+  // (conservador; a EQUIPE resolve como Lenda mesmo sem eles).
   let tier: StudioTier | null = null
   if (ownsStudio) {
     const privileged = isPrivilegedRole(session?.role)
-    if (gamRes?.status === 200 || privileged) {
-      const unlockedBlocks = unlocksRes?.status === 200 ? (unlocksRes.body?.blocks ?? []) : []
-      tier = resolveStudioTier(gamRes?.body?.level?.slug ?? 'noob', session?.role, {
-        blocks: unlockedBlocks,
-        extensions: extensionsForBlocks(unlockedBlocks),
-      })
+    const unlockedBlocks = unlocksRes?.status === 200 ? (unlocksRes.body?.blocks ?? null) : null
+    if ((gamRes?.status === 200 && unlockedBlocks) || privileged) {
+      tier = earnedStudioTier(
+        gamRes?.body?.level?.slug ?? 'noob',
+        session?.role,
+        unlockedBlocks ?? [],
+      )
     }
   }
   const remixTier: RemixTier | null =
-    tier?.freeStudio === true
+    tier?.freeStudio === true && tier.hasPalette
       ? { pro: tier.pro, allowedExtensions: [...tier.allowedExtensions] }
       : null
   const challenge =

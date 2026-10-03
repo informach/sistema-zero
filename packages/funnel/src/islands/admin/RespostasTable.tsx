@@ -16,6 +16,7 @@ import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import type { AdminFunnelInfo } from '../../funnels/registry'
 import { apiGet } from '../../lib/api-fetch'
 import { formatBRLFromCents } from '../../lib/money'
+import type { QuizAnswers, QuizAnswerValue } from '../../lib/quiz-types'
 
 interface LeadRow {
   id: string
@@ -23,7 +24,7 @@ interface LeadRow {
   email: string | null
   telefone: string | null
   // Respostas do quiz em JSON (chave → valor) — genérico por funil; + perfil do diagnóstico.
-  quizAnswers: Record<string, string | number> | null
+  quizAnswers: QuizAnswers | null
   perfilResultado: string | null
   funnel: string | null
   lastStep: string
@@ -60,11 +61,16 @@ const formatCpf = (cpf: string) =>
   cpf.replace(/\D/g, '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') || '—'
 
 /** Valor de resposta para exibição: número em chave de dinheiro (valor/custo/preço) → R$. */
-function answerDisplay(key: string, value: string | number): string {
+function answerDisplay(
+  key: string,
+  value: QuizAnswerValue,
+  options?: Record<string, string>,
+): string {
+  if (Array.isArray(value)) return value.map((v) => options?.[v] ?? v).join(' · ')
   if (typeof value === 'number') {
     return /valor|custo|pre[cç]o/i.test(key) ? formatBRLFromCents(value) : String(value)
   }
-  return value
+  return options?.[value] ?? value
 }
 
 // Status do lead derivado dos dados reais (o `last_step` NÃO avança p/ checkout/
@@ -221,6 +227,9 @@ export default function RespostasTable({
   const selectedAnswerLabels = selected
     ? (funnelMap.get(selected.funnel ?? '')?.answerLabels ?? {})
     : {}
+  const selectedAnswerOptions = selected
+    ? funnelMap.get(selected.funnel ?? '')?.answerOptions
+    : undefined
 
   return (
     <div>
@@ -422,7 +431,7 @@ export default function RespostasTable({
               </DetailItem>
               {Object.entries(selectedAnswers).map(([key, value]) => (
                 <DetailItem key={key} label={selectedAnswerLabels[key] ?? key} wide>
-                  {answerDisplay(key, value)}
+                  {answerDisplay(key, value, selectedAnswerOptions?.[key])}
                 </DetailItem>
               ))}
             </DetailSection>

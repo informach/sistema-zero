@@ -129,7 +129,7 @@ describe('aula por seções', () => {
   test.each([
     false,
     true,
-  ])('vídeo legado só pede 90% se a aula ainda não foi concluída: %s', (completed) => {
+  ])('o vídeo não repete embaixo dele o que falta (isso é da faixa do rodapé): %s', (completed) => {
     globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
       preconnect: () => {},
     })
@@ -147,7 +147,9 @@ describe('aula por seções', () => {
         />
       </LessonPlayerProvider>,
     )
-    expect(screen.queryByText('0% assistido · veja 90% para continuar') !== null).toBe(!completed)
+    // A regra dos 90% saiu de baixo do vídeo (02/10/2026): a faixa do rodapé já diz, na voz
+    // da criança, quanto falta ("Veja o vídeo até o fim (você já viu 0%)").
+    expect(screen.queryByText(/assistido|veja 90%|Você pode continuar/)).toBeNull()
   })
   test.each([
     false,
@@ -393,6 +395,8 @@ describe('aula por seções', () => {
       title: id,
       status: index < completed ? 'completed' : index === completed ? 'available' : 'locked',
       pending: index < completed ? [] : ['Conclua a atividade.'],
+      pendingItems:
+        index < completed ? [] : [{ kind: 'other' as const, text: 'Conclua a atividade.' }],
     })),
   })
   test('a barra conta conclusões e o índice não permite abrir seções futuras', () => {
@@ -517,7 +521,7 @@ describe('aula por seções', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
     const summary = screen.getByText('O que falta para concluir · 1')
     fireEvent.click(summary)
-    fireEvent.click(screen.getByRole('button', { name: /Enviar projeto/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Envie seu projeto/ }))
     expect(screen.getByRole('heading', { name: /Preparar/ })).toBeTruthy()
     expect(document.activeElement?.id).toBe('lesson-block-project')
     expect(summary.closest('details')?.open).toBe(false)
@@ -967,6 +971,119 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     expect(barra?.contains(indice)).toBe(false)
   })
 
+  test('a faixa "o que falta para seguir" mora no rodapé fixo, fala da seção ATUAL e só cai no fallback na última', async () => {
+    globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
+      preconnect: () => {},
+    })
+    const AUTORIA = 'A verificação desta seção precisa ser configurada pelo professor.'
+    const progresso: SectionProgressView = {
+      revision: 'structure',
+      completed: 0,
+      total: 3,
+      percent: 0,
+      sections: ['first', 'second', 'third'].map((id, index) => ({
+        id,
+        title: id,
+        status: 'available' as const,
+        pending: index === 0 ? ['Veja o vídeo até o fim'] : index === 1 ? [AUTORIA] : [],
+        pendingItems:
+          index === 0
+            ? [{ kind: 'VIDEO_GATE_NOT_WATCHED' as const, text: 'Veja o vídeo até o fim' }]
+            : index === 1
+              ? [{ kind: 'authoring' as const, text: AUTORIA }]
+              : [],
+      })),
+    }
+    const { container, unmount } = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: progresso }}
+          kids
+          lessonTitle="Meu jogo"
+          immersive
+          renderBlocks={() => null}
+          completionMessage="Termine as atividades desta aula para concluir"
+        />
+      </LessonPlayerProvider>,
+    )
+    const rodape = container.querySelector('.sz-lesson-nav-immersive')
+    const faixa = () => container.querySelector('.sz-lesson-nav-immersive .sz-lesson-status')
+    expect(faixa()).not.toBeNull()
+    // ⚠️ O rodapé fixo publica a própria altura no `<html>` (a página reserva a partir dela).
+    expect(document.documentElement.style.getPropertyValue('--sz-lesson-nav-height')).toMatch(
+      /^\d+px$/,
+    )
+    // Dentro do rodapé, ANTES dos botões, e centrada na coluna deles.
+    const botoes = rodape?.querySelector('.sz-lesson-nav-inner')
+    expect(botoes).not.toBeNull()
+    expect(
+      faixa()!.compareDocumentPosition(botoes!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(faixa()?.className).toContain('max-w-7xl')
+    // A seção atual tem item próprio: é ele que aparece, com o prefixo; o fallback da aula, não.
+    expect(faixa()?.textContent).toContain('Para seguir:')
+    expect(faixa()?.textContent).toContain('Veja o vídeo até o fim')
+    expect(faixa()?.textContent).not.toContain('Termine as atividades desta aula')
+    expect(faixa()?.querySelector('[data-kind="VIDEO_GATE_NOT_WATCHED"]')).not.toBeNull()
+
+    // ⚠️⚠️ A segunda seção tem a mensagem de AUTORIA: com o player de verdade (fora do ensaio) a
+    // criança lê "Esta parte ainda está sendo preparada", nunca "professor" (full review de 30/09:
+    // a troca só era guardada na unidade, não na fiação).
+    fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Observar'),
+    )
+    expect(faixa()?.textContent).toContain('Esta parte ainda está sendo preparada')
+    expect(faixa()?.textContent).not.toContain('professor')
+    expect(faixa()?.textContent).not.toContain('Para seguir:')
+
+    // A última, sem item próprio, mostra o fallback da aula (sem "Para seguir:", é um estado).
+    fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
+    await waitFor(() => expect(faixa()).not.toBeNull())
+    expect(faixa()?.textContent).toContain('Termine as atividades desta aula para concluir')
+    expect(faixa()?.textContent).not.toContain('Para seguir:')
+    expect(faixa()?.querySelector('[data-kind="lesson"]')).not.toBeNull()
+    // Ao desmontar, a variável sai do `<html>` (a página seguinte não herda a reserva).
+    unmount()
+    expect(document.documentElement.style.getPropertyValue('--sz-lesson-nav-height')).toBe('')
+  })
+
+  test('a faixa "o que falta para seguir" também existe no ADULTO (sem a flag `kids`)', () => {
+    globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
+      preconnect: () => {},
+    })
+    const progresso: SectionProgressView = {
+      revision: 'structure',
+      completed: 0,
+      total: 3,
+      percent: 0,
+      sections: ['first', 'second', 'third'].map((id, index) => ({
+        id,
+        title: id,
+        status: 'available' as const,
+        pending: index === 0 ? ['Passe no quiz (nota mínima 70%)'] : [],
+        pendingItems:
+          index === 0
+            ? [{ kind: 'QUIZ_GATE_NOT_PASSED' as const, text: 'Passe no quiz (nota mínima 70%)' }]
+            : [],
+      })),
+    }
+    const { container } = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: progresso }}
+          lessonTitle="Meu jogo"
+          immersive
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    const faixa = container.querySelector('.sz-lesson-nav-immersive .sz-lesson-status')
+    expect(faixa).not.toBeNull()
+    expect(faixa?.textContent).toContain('Passe no quiz (nota mínima 70%)')
+    expect(faixa?.querySelector('[data-kind="QUIZ_GATE_NOT_PASSED"]')).not.toBeNull()
+  })
+
   test('trocar de seção leva o FOCO ao cabeçalho, que é a âncora do conteúdo novo', async () => {
     // ⚠️ Sem isto, quem usa teclado ou leitor de tela avança de seção e continua no
     // meio da página anterior: o cabeçalho é o alvo do `focus()` e do scroll.
@@ -984,6 +1101,7 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
         title: id,
         status: 'available' as const,
         pending: [],
+        pendingItems: [],
       })),
     }
     render(
@@ -999,9 +1117,14 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
     await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Observar')
+      const heading = screen.getByRole('heading', { level: 1 })
+      expect(heading.textContent).toContain('Observar')
+      // ⚠️ O foco vem num EFEITO, depois do commit que troca o texto: sob CPU disputada (o CI
+      // roda os pacotes juntos) ele chega um tique depois, e conferir fora do `waitFor` reprovou
+      // em 02/10/2026. Compara por booleano: um `toBe` entre elementos imprime a árvore DOM
+      // inteira na falha (foram 11 milhões de linhas de log e 468 s num teste só).
+      expect(document.activeElement === heading).toBe(true)
     })
-    expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
   })
 })
 

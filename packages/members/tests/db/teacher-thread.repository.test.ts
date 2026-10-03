@@ -86,6 +86,13 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
         add column if not exists author_name text,
         add column if not exists body varchar(8000) not null default '',
         add column if not exists created_at timestamptz not null default now();
+      -- A leitura junta com courses para devolver o título do curso. Outros arquivos da
+      -- pasta criam esta tabela com colunas diferentes (alguns com slug/title NOT NULL sem
+      -- default): por isso o insert do teste sempre manda slug e title.
+      create table if not exists members.courses (id uuid primary key, slug text, title text);
+      alter table members.courses
+        add column if not exists slug text,
+        add column if not exists title text;
     `)
   })
 
@@ -159,6 +166,56 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
       expect(afterFirst?.lastMessageAt).not.toEqual(beforeDuplicate?.lastMessageAt)
     } finally {
       await conn.sql`delete from members.teacher_threads where id = ${threadId}`
+    }
+  })
+
+  test('devolve o título ATUAL do curso na conversa e na caixa do professor', async () => {
+    const repo = new DrizzleTeacherThreadRepository(conn.db)
+    const userId = randomUUID()
+    const courseId = randomUUID()
+    const semCursoId = randomUUID()
+    const now = new Date('2027-06-02T12:00:00.000Z')
+    await conn.sql`
+      insert into members.courses (id, slug, title)
+      values (${courseId}, ${`curso-${courseId}`}, 'Cadê Todo Mundo?')`
+    const threadId = await repo.ensureThread({
+      userId,
+      accountId: userId,
+      audience: 'kids',
+      contextType: 'general',
+      contextRef: null,
+      courseId,
+      title: 'Aula 1 · Seção 2',
+      now,
+    })
+    // Curso que não existe mais (snapshot sem FK): o título vem null, sem quebrar a leitura.
+    const orfaId = await repo.ensureThread({
+      userId,
+      accountId: userId,
+      audience: 'kids',
+      contextType: 'general',
+      contextRef: null,
+      courseId: semCursoId,
+      now: new Date(now.getTime() + 1_000),
+    })
+    try {
+      expect((await repo.findById(threadId))?.courseTitle).toBe('Cadê Todo Mundo?')
+      expect((await repo.findById(orfaId))?.courseTitle).toBeNull()
+
+      const caixa = await repo.listForAdmin({
+        staffUserId: randomUUID(),
+        userIds: [userId],
+        limit: 10,
+        offset: 0,
+      })
+      expect(caixa.find((t) => t.id === threadId)?.courseTitle).toBe('Cadê Todo Mundo?')
+      expect(caixa.find((t) => t.id === orfaId)?.courseTitle).toBeNull()
+
+      await conn.sql`update members.courses set title = 'Curso renomeado' where id = ${courseId}`
+      expect((await repo.findById(threadId))?.courseTitle).toBe('Curso renomeado')
+    } finally {
+      await conn.sql`delete from members.teacher_threads where id in (${threadId}, ${orfaId})`
+      await conn.sql`delete from members.courses where id = ${courseId}`
     }
   })
 })

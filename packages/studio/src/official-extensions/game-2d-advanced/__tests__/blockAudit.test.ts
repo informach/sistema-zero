@@ -11,6 +11,7 @@ import { buildIRFromWorkspace } from '../../../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../../../blockly/setup'
 import { buildWorkspaceStateFromIR } from '../../../blockly/workspaceState'
 import { parseJS } from '../../../parsers/js'
+import { isSceneNameBlock, SCENE_METHODS, sceneBlockType } from '../../scene-2d/catalog'
 import { gameKitBlocks, gameKitToolboxCategory } from '../blocks'
 import { gameKitRuntime } from '../runtime'
 
@@ -32,6 +33,11 @@ const EXPR_HOST = 'sz_gk_place_character'
 
 const statementDefs = gameKitBlocks.filter((def) => !def.output)
 const exprDefs = gameKitBlocks.filter((def) => Boolean(def.output))
+// Os blocos-lista de nome (camada, pista, objeto) moram DENTRO de um soquete e, para
+// o programa, são texto puro: não geram nó `gk:` nem chamam o runtime. A cadeia
+// deles (paleta, Ponte, salvar e reabrir, lista de nomes) é provada em
+// `scene-2d/names.test.ts`.
+const pipelineExprDefs = exprDefs.filter((def) => !isSceneNameBlock(def.type))
 
 function loadRuntimeKeys(): Set<string> {
   const win = {
@@ -50,6 +56,13 @@ function loadRuntimeKeys(): Set<string> {
 function buildIrFor(type: string, kind: 'statement' | 'expr'): JSStatement[] {
   const ws = new Blockly.Workspace()
   try {
+    const scene = SCENE_METHODS.find((entry) => sceneBlockType('gk', entry) === type)
+    if (scene?.args.some((arg) => arg.field === 'sprite') || scene?.method === 'collectTrackItem') {
+      const frame = ws.newBlock('sz_frame_start')
+      const sprite = ws.newBlock('sz_gk_create_character')
+      sprite.setFieldValue('jogador', 'NAME')
+      frame.getInput('CHILDREN')?.connection?.connect(sprite.previousConnection!)
+    }
     attachBlockInContractContext({
       workspace: ws,
       type,
@@ -88,7 +101,8 @@ beforeAll(() => {
 describe('Auditoria Jogo 2D Avançado — inventário', () => {
   it('todo def é statement (previousStatement) ou reporter (output)', () => {
     expect(statementDefs.length + exprDefs.length).toBe(gameKitBlocks.length)
-    expect(gameKitBlocks.length).toBe(364)
+    // Inclui os dois blocos-lista de nome (cenário e pista), ocultos na paleta.
+    expect(gameKitBlocks.length).toBe(388)
     for (const def of statementDefs) expect(def.previousStatement).toBe('JSStmt')
     for (const def of exprDefs) expect(def.output).toBe('JSValue')
   })
@@ -161,7 +175,7 @@ describe('Auditoria Jogo 2D Avançado — pipeline completo por bloco', () => {
     ...statementDefs
       .filter((definition) => inferBlockContract(definition).migration === 'keep')
       .map((d) => ({ type: d.type, kind: 'statement' as const })),
-    ...exprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
+    ...pipelineExprDefs.map((d) => ({ type: d.type, kind: 'expr' as const })),
   ]
 
   for (const { type, kind } of cases) {

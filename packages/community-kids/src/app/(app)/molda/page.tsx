@@ -12,7 +12,12 @@ import {
   moldaToolAccessRestricted,
 } from '@/lib/molda-tool-access'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
-import { checkMoldaAccessReadonly, getGamificationReadonly, listCatalog } from '@/server/members'
+import {
+  checkMoldaAccessReadonly,
+  getGamificationReadonly,
+  getStudioUnlocksReadonly,
+  listCatalog,
+} from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -68,9 +73,11 @@ export default async function MoldaPage({
   // corre junto com as outras sem segurar a página: ver `catalogWithin`.
   const catalog =
     isPrivilegedRole(session?.role) && !preview ? null : listCatalog().catch(() => null)
-  const [res, gam] = await Promise.all([
+  const [res, gam, unlocksRes] = await Promise.all([
     checkMoldaAccessReadonly(),
     getGamificationReadonly().catch(() => null),
+    // Só decide o "Levar ao Estúdio": sem bloco conquistado o Estúdio livre está trancado.
+    getStudioUnlocksReadonly().catch(() => null),
   ])
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsMoldaUnavailable} />
@@ -84,6 +91,7 @@ export default async function MoldaPage({
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,
     levelSlug: gam.body?.level?.slug,
     role: session?.role,
+    unlocks: unlocksRes,
   })
   const levelSlug = preview ?? gam.body?.level?.slug
   const role = preview ? undefined : session?.role

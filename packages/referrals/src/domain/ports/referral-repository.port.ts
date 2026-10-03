@@ -1,5 +1,7 @@
+import type { GiftAttribution, GiftSource } from '@sistemazero/core/referrals'
+
 export type AmbassadorStatus = 'active' | 'disabled'
-export type CodeOwnerKind = 'ambassador' | 'account'
+export type CodeOwnerKind = 'ambassador' | 'account' | 'campaign'
 export type RedemptionStatus = 'pending' | 'completed' | 'failed'
 export type InviteStatus = 'pending' | 'sent' | 'failed'
 
@@ -24,6 +26,7 @@ export interface CodeRecord {
   ownerKind: CodeOwnerKind
   ambassadorId: string | null
   accountUserId: string | null
+  campaignId?: string | null
   displayName: string
   ownerEmail: string | null
   status: string
@@ -35,6 +38,10 @@ export interface RedemptionRecord {
   email: string
   name: string
   phone: string | null
+  sourceSnapshot?: GiftSource | null
+  courseSlug?: string | null
+  attribution?: GiftAttribution | null
+  welcomeAcceptedAt?: Date | null
   userId: string | null
   buyerCreated: boolean | null
   grantedAt: Date | null
@@ -89,6 +96,7 @@ export const CONVERSION_STATUSES = [
   'paid',
   'canceled',
   'self_blocked',
+  'unrewarded',
 ] as const
 export type ConversionStatus = (typeof CONVERSION_STATUSES)[number]
 
@@ -205,6 +213,7 @@ export interface ReferralRepository {
 
   // ── Códigos ───────────────────────────────────────────────────────────────
   findCodeByCode(code: string): Promise<CodeRecord | null>
+  findCodeById(id: string): Promise<CodeRecord | null>
 
   // ── Resgates de bolsa ─────────────────────────────────────────────────────
   /**
@@ -216,6 +225,9 @@ export interface ReferralRepository {
     email: string
     name: string
     phone: string | null
+    sourceSnapshot?: GiftSource
+    courseSlug?: string
+    attribution?: GiftAttribution | null
   }): Promise<{ created: boolean; redemption: RedemptionRecord }>
   /**
    * Lease atômico: só vence quem encontra `processing_until` NULL/expirado e a
@@ -235,6 +247,7 @@ export interface ReferralRepository {
   claimRedemptionWelcome(id: string, when: Date): Promise<boolean>
   /** Libera o claim SÓ quando nada foi emitido (falha na emissão do token). */
   releaseRedemptionWelcome(id: string): Promise<void>
+  markWelcomeAccepted(id: string, when: Date): Promise<void>
   findRedemptionByEmail(email: string): Promise<RedemptionRecord | null>
   listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]>
 
@@ -270,7 +283,7 @@ export interface ReferralRepository {
     offerSlug: string
     amountCents: bigint
     bonusCents: number
-    status: 'pending' | 'self_blocked'
+    status: 'pending' | 'self_blocked' | 'unrewarded'
     paidAt: Date
     maturesAt: Date
   }): Promise<{ created: boolean }>

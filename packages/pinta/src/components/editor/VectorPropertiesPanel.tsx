@@ -21,8 +21,20 @@ import {
   VECTOR_FONT_FAMILIES,
   VECTOR_FONT_FAMILY_INFO,
 } from '../../vector/model'
-import { Button, ToolButton } from '../ui/Button'
-import { AlignCenter, AlignLeft, AlignRight } from '../ui/icons'
+import {
+  ALL_CORNERS,
+  maskFromRadii,
+  RECT_CORNERS,
+  type RectCorner,
+  type RectCornerMask,
+  radiiForMask,
+  radiiFromMask,
+  rectCornerRadii,
+  toggleCornerMask,
+  withRectCorners,
+} from '../../vector/rectCorners'
+import { Button, IconButton, ToolButton } from '../ui/Button'
+import { AlignCenter, AlignLeft, AlignRight, SquareRoundCorner } from '../ui/icons'
 import { Panel, type PanelDisclosure, usePanelLook } from '../ui/Panel'
 import { useVectorEditor } from './vector/VectorEditorScope'
 import {
@@ -31,6 +43,19 @@ import {
   STROKE_WIDTHS,
   strokeWidthIndex,
 } from './vector/vectorTools'
+
+/**
+ * A grade 2x2 dos cantos, na ordem VISUAL (cima-esquerda, cima-direita, baixo-esquerda,
+ * baixo-direita). O glifo do lucide arredonda o canto de cima-direita; a rotação por classe o
+ * leva a cada canto. Rótulo FIXO + `aria-pressed` (a régua do cadeado das guias): alternar o
+ * rótulo junto leria "pressionado" duas vezes no leitor de tela.
+ */
+const CORNER_BUTTONS: ReadonlyArray<{ corner: RectCorner; label: string; rotate: string }> = [
+  { corner: 'tl', label: COPY.vector.cornerTopLeft, rotate: '-rotate-90' },
+  { corner: 'tr', label: COPY.vector.cornerTopRight, rotate: '' },
+  { corner: 'bl', label: COPY.vector.cornerBottomLeft, rotate: 'rotate-180' },
+  { corner: 'br', label: COPY.vector.cornerBottomRight, rotate: 'rotate-90' },
+]
 
 /** Painel lateral de aparência da seleção/ferramenta vetorial. */
 export function VectorPropertiesPanel({
@@ -46,6 +71,8 @@ export function VectorPropertiesPanel({
     starTips,
     rectRadius,
     setRectRadius,
+    rectCorners,
+    setRectCorners,
     textAlign,
     setTextAlign,
     fontFamily,
@@ -65,6 +92,37 @@ export function VectorPropertiesPanel({
   const selectedText = singleShape?.type === 'text' ? singleShape : null
   // Mesma fonte da janela do Degradê: a forma selecionada, ou o estilo sem seleção.
   const working = currentGradient()
+  // A grade dos cantos mostra os cantos do retângulo REDONDO selecionado; sem seleção, ou com
+  // o selecionado todo reto, mostra a máscara armada para o próximo retângulo.
+  const cornerMask: RectCornerMask =
+    selectedRect && selectedRect.rx > 0 ? maskFromRadii(rectCornerRadii(selectedRect)) : rectCorners
+
+  // Retângulo TRANCADO selecionado: nem a máscara do próximo retângulo arma (a régua do
+  // `freeForStyle`: com a seleção trancada a paleta também não arma a cor da próxima forma). O
+  // `updateSelected` com a identidade só leva ao toast do cadeado, que explica, sem commit.
+  const lockedOnly = selectedRect?.locked === true
+  function armCorners(mask: RectCornerMask): void {
+    if (mask.some((on, i) => on !== rectCorners[i])) setRectCorners(mask)
+  }
+
+  function toggleCorner(corner: RectCorner): void {
+    if (lockedOnly) {
+      updateSelected((s) => s)
+      return
+    }
+    const mask = toggleCornerMask(cornerMask, corner)
+    armCorners(mask)
+    if (!selectedRect) return
+    // Canto que liga ganha o raio da forma (o maior dela) ou, com tudo reto (`rx` 0), o raio já
+    // armado no slider; os já redondos ficam, o que desliga vai a zero. Sem raio nenhum a forma
+    // não muda e só a máscara arma: o `withRectCorners` devolve a mesma referência e o
+    // `updateFree` não grava desfazer vazio.
+    updateSelected((s) =>
+      s.type === 'rect'
+        ? withRectCorners(s, radiiForMask(rectCornerRadii(s), mask, s.rx || rectRadius))
+        : s,
+    )
+  }
   // Na coluna branca as sub-seções empilham coladas (a divisória separa); no cartão, com vão.
   const stack = `flex w-68 shrink-0 flex-col ${usePanelLook() === 'card' ? 'gap-2' : ''}`
 
@@ -163,7 +221,9 @@ export function VectorPropertiesPanel({
       ) : null}
 
       {tool === 'rect' || selectedRect ? (
-        // Vale para o PRÓXIMO retângulo e edita o selecionado na hora.
+        // Vale para o PRÓXIMO retângulo e edita o selecionado na hora. O slider é o raio dos
+        // cantos LIGADOS na grade; canto desligado fica reto (decisão dela: um raio só + quais
+        // cantos, em vez de um raio por canto).
         <Panel
           title={`${COPY.vector.cornerRadius}: ${selectedRect ? Math.round(selectedRect.rx) : rectRadius}`}
           ariaLabel={COPY.vector.cornerRadius}
@@ -177,16 +237,47 @@ export function VectorPropertiesPanel({
             step={1}
             value={selectedRect ? Math.round(selectedRect.rx) : rectRadius}
             onChange={(event) => {
+              if (lockedOnly) {
+                updateSelected((s) => s)
+                return
+              }
               const radius = Number(event.target.value)
               setRectRadius(radius)
+              // Com os quatro cantos desligados o raio não teria onde cair e o slider ficaria
+              // morto (o polegar voltaria a 0 sem explicação): mexer nele religa os quatro. E a
+              // máscara da FORMA arma o escopo: passar por 0 colapsa os cantos em `rx` (a grade
+              // passa a ler o escopo), e voltar a 1 devolve o mesmo padrão em vez de os quatro.
+              const mask = cornerMask.some(Boolean) ? cornerMask : ALL_CORNERS
+              armCorners(mask)
               if (selectedRect) {
                 updateSelected((s) =>
-                  s.type === 'rect' ? { ...s, rx: Math.min(radius, Math.min(s.w, s.h) / 2) } : s,
+                  s.type === 'rect' ? withRectCorners(s, radiiFromMask(mask, radius)) : s,
                 )
               }
             }}
             className="w-full accent-pin-accent"
           />
+          <fieldset className="m-0 mt-2 min-w-0 border-0 p-0">
+            <legend className="text-sm font-bold text-pin-muted">{COPY.vector.corners}</legend>
+            <div className="mt-1 grid w-fit grid-cols-2 gap-1">
+              {CORNER_BUTTONS.map(({ corner, label, rotate }) => {
+                const on = cornerMask[RECT_CORNERS.indexOf(corner)] === true
+                return (
+                  <IconButton
+                    key={corner}
+                    tone="quiet"
+                    active={on}
+                    aria-pressed={on}
+                    aria-label={label}
+                    title={label}
+                    onClick={() => toggleCorner(corner)}
+                  >
+                    <SquareRoundCorner aria-hidden="true" className={`size-5 ${rotate}`} />
+                  </IconButton>
+                )
+              })}
+            </div>
+          </fieldset>
         </Panel>
       ) : null}
 

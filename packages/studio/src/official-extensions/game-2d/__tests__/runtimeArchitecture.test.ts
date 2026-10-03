@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { basicSceneAdapter } from '../../scene-2d/runtime'
 import { gameTwoDRuntime } from '../runtime'
 import { gameTwoDArcadeKitsRuntime } from '../runtime/arcadeKits'
 import { gameTwoDAudioRuntime } from '../runtime/audio'
@@ -28,6 +29,7 @@ function registeredDomains(source: string): string[] {
 describe('gameTwoDRuntime — arquitetura dos domínios', () => {
   it('cada domínio com estado registra seu próprio reset', () => {
     const domains = [
+      [basicSceneAdapter, 'scene-2d'],
       [gameTwoDLifecycleRuntime, 'lifecycle'],
       [gameTwoDPhysicsRuntime, 'physics'],
       [gameTwoDAudioRuntime, 'audio'],
@@ -59,6 +61,8 @@ describe('gameTwoDRuntime — arquitetura dos domínios', () => {
       'input-and-motion',
       'lifecycle',
       'physics',
+      'scene-2d',
+      'sprite-scene',
       'sprites',
       'stage-accessibility',
       'stage-backdrop',

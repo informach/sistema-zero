@@ -26,4 +26,15 @@ describe('i18n t()', () => {
   it('mantém os dicionários com as mesmas chaves', () => {
     expect(Object.keys(en).sort()).toEqual(Object.keys(ptBR).sort())
   })
+
+  it('nenhuma frase em português tem travessão', () => {
+    const comTravessao = (dict: Record<string, string>) =>
+      Object.entries(dict)
+        .filter(([, texto]) => texto.includes('—'))
+        .map(([chave]) => chave)
+    // Anti-vácuo: a régua acha o travessão quando ele existe, e o dicionário veio inteiro.
+    expect(comTravessao({ ok: 'Pronto.', ruim: 'Pronto — feito.' })).toEqual(['ruim'])
+    expect(Object.keys(ptBR).length).toBeGreaterThan(100)
+    expect(comTravessao(ptBR)).toEqual([])
+  })
 })

@@ -4,13 +4,15 @@ import { resolve } from 'node:path'
 import { loadExtensionExamples } from '#extensions'
 import { OFFICIAL_CATALOG } from './index'
 
+// 02/10: the two snow examples use animated sprites and the new automatic scene blocks.
 const goldenCatalogs = {
   'game-2d': {
     // ⚠️ 33 até 13/09/2026: a fatia de SPRITES DE TEXTO somou "Chuva de números" e "Quiz de
     // números", os dois no TOPO da lista — então mudam a contagem E a ordem, e o hash muda por
     // causa das duas coisas. Conferido recalculando os cinco catálogos: os outros quatro
     // bateram com o golden que já estava aqui, o que prova que o cálculo é o mesmo do teste.
-    count: 35,
+    // 01/10: Descida da Neve entra no topo; o hash dos exemplos anteriores é idêntico.
+    count: 36,
     // ⚠️ Mudou em 09/08: os exemplos de plataforma passaram a usar os contratos
     // explícitos de terreno, Mundo e Fase em vez dos encaixes de tela legados; Reino Zero
     // agora documenta a seleção de jogadores e preserva o sobrevivente após uma morte.
@@ -62,10 +64,16 @@ const goldenCatalogs = {
     // 22/09: no Reino Zero, "jornada" virou "volta" — a palavra passou a ser
     // do conceito de produto (Jornada do Criador), e duas coisas com o mesmo
     // nome na mesma tela do Estúdio confundem a criança.
-    sha256: 'b3ac17345c5a934fbad33bf441bf3705c2e57b6e81d2da998297b415795fb271',
+    // 01/10, full review das camadas: na Descida da Neve cada tecla virou uma
+    // pergunta só (os motores já ignoram maiúsculas; a fonte perguntava "p" e "P"
+    // e a criança via dois blocos idênticos lado a lado), e o brilho da batida
+    // passou a apagar também nas telas de pausa e de fim.
+    sha256: 'b99ca30043c1e8631cea8a7bc8574c7aaa6149a272090d50d58f555a1437bd39',
   },
   'game-2d-advanced': {
-    count: 37,
+    // 01/10: Descida da Neve entra no FIM da vitrine ("Meu primeiro jogo" continua
+    // abrindo); os demais exemplos permanecem idênticos.
+    count: 38,
     // Reino Zero Pro passou a carregar a campanha validada de 32 fases.
     // 14/08: as 32 grades deixaram de ser geradas por resto de divisão e viraram
     // plantas escritas à mão (`examples/reinoZeroProLevels.ts`), com o tema
@@ -78,7 +86,8 @@ const goldenCatalogs = {
     // poço largo eram intransponíveis. Mexe em toda fase, logo mexe no hash.
     // ⚠️ Ainda em 15/08: as fases aquáticas ganharam piscinas de quatro células,
     // alinhadas ao piso das margens, em vez de uma película no fundo do palco.
-    sha256: '82699b017326f980b02ddf6b27e2e4c0689498022cc646cadd4445594068def0',
+    // 02/10 revisão: neve intermediária com movimento, controles, vida, HUD e telas nativas separados.
+    sha256: 'f9f220d10a203c12d0d6df0b4634007f40e3621891c6315f66a37831d0d27841',
   },
   'game-3d': {
     count: 19,

@@ -64,7 +64,7 @@ describe('loadExtensionDocs', () => {
   })
 
   it('rejeita documentação completa acima do teto do manifest', async () => {
-    const extension = extensionWith(defineExtensionDocumentation(async () => 'x'.repeat(60_001)))
+    const extension = extensionWith(defineExtensionDocumentation(async () => 'x'.repeat(70_001)))
 
     await expect(loadExtensionDocs(extension)).rejects.toThrow()
   })

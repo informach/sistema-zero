@@ -1,0 +1,560 @@
+/*
+ * kids-oferta.css: as RECEITAS da identidade kids para as páginas de oferta do funil (30/09/2026).
+ *
+ * O funil recebe da plataforma só os TOKENS (`@sistemazero/ui/theme-kids.css`), nunca as receitas
+ * (`.kids-carta`, `.sz-btn-gradient`, `.kids-3d` moram no `globals.css` do community-kids). Este
+ * arquivo é a tradução delas para cá, por token, sem nenhum valor de cor repetido: a paleta muda
+ * na fonte canônica (`packages/ui/src/tokens`) e chega aqui sozinha.
+ *
+ * Regras (as do Pen, que a plataforma segue): cartão branco e liso de raio 24, o 3D do Brilliant só
+ * no que é clicável, a única sombra difusa é a do herói, eyebrow e selo de recompensa em amarelo,
+ * azul claro só sobre o navy, cores de unidade só em ladrilho e chip, títulos Baloo 800, corpo
+ * Nunito, botão em pílula de 44px, foco em contorno, `color-mix` sempre `in oklab`.
+ *
+ * Cascata: nada aqui usa `@layer` (regra sem camada vence utilitária). Os seletores levam dois elos
+ * (`.theme-kids .kof-*`) para vencerem as regras `.theme-kids h1`/`.theme-kids a` do `global.css`.
+ * As variáveis `--k3d-*` são declaradas DENTRO de cada receita clicável, nunca no wrapper: um
+ * cartão em hover em volta de um botão mexeria no degrau dele.
+ */
+
+.theme-kids {
+  --kof-chao: var(--sz-community-ground);
+  --kof-chao-alt: var(--sz-community-ground-alt);
+  --kof-carta: var(--sz-community-card);
+  --kof-sup2: var(--sz-community-surface-2);
+  --kof-linha: var(--sz-community-line);
+  --kof-tinta: var(--sz-community-ink);
+  --kof-tinta-suave: var(--sz-community-ink-muted);
+  --kof-campo: var(--sz-community-field);
+  --kof-acao: var(--sz-community-action);
+  --kof-acao-degrau: var(--sz-community-action-step);
+  --kof-acao-hover: var(--sz-community-action-hover);
+  --kof-acao-clara: var(--sz-community-action-light);
+  --kof-sobre-acao: var(--sz-community-on-action);
+  --kof-sobre-acao-suave: var(--sz-community-over-action);
+  --kof-degrau-branco: var(--sz-community-white-step);
+  --kof-carta-degrau: var(--sz-community-card-step);
+  --kof-navy: var(--sz-community-menu);
+  --kof-navy-2: var(--sz-community-menu-2);
+  --kof-navy-texto: var(--sz-community-menu-text);
+  --kof-navy-icone: var(--sz-community-menu-icon);
+  --kof-navy-vidro: var(--sz-community-menu-glass);
+  --kof-amarelo: var(--sz-community-yellow);
+  --kof-amarelo-fundo: var(--sz-community-yellow-surface);
+  --kof-rosa: var(--sz-community-pink);
+  --kof-rosa-clara: var(--sz-community-pink-light);
+  --kof-rosa-fundo: var(--sz-community-pink-surface);
+  --kof-roxo: var(--sz-community-purple);
+  --kof-lilas: var(--sz-community-lilac);
+  --kof-verde: var(--sz-community-green);
+  --kof-menta: var(--sz-community-mint);
+  --kof-laranja: var(--sz-community-orange);
+  --kof-azul: var(--sz-community-blue);
+  --kof-azul-fundo: color-mix(in oklab, var(--sz-community-blue) 10%, var(--sz-community-card));
+  --kof-vermelho: var(--sz-community-red);
+  --kof-display: "Baloo 2", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --kof-corpo: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --kof-raio-carta: 24px;
+  --kof-raio-heroi: 28px;
+  --kof-raio-tela: 16px;
+  --kof-sombra-heroi: 0 10px 24px color-mix(in oklab, var(--sz-community-action) 20%, transparent);
+  --kof-mobar-altura: 4.5rem;
+}
+
+/* ── Tipografia ──────────────────────────────────────────────────────────────── */
+.theme-kids .kof-display {
+  font-family: var(--kof-display);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: 0;
+  text-wrap: balance;
+  color: var(--kof-tinta);
+}
+.theme-kids .kof-display em {
+  font-style: normal;
+  color: var(--kof-acao);
+}
+.theme-kids .kof-lead {
+  font-family: var(--kof-corpo);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--kof-tinta-suave);
+}
+.theme-kids .kof-sobretitulo {
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--kof-tinta-suave);
+}
+
+/* ── Botão: pílula de 44px, Nunito 800, o 3D do Brilliant ─────────────────────── */
+.theme-kids .kof-btn {
+  --k3d-altura: 4px;
+  --k3d-degrau: var(--kof-acao-degrau);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.375rem;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  font-family: var(--kof-corpo);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 var(--k3d-altura) 0 0 var(--k3d-degrau);
+  translate: 0 0;
+  transition:
+    translate 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.theme-kids .kof-btn:hover {
+  --k3d-altura: 5px;
+  translate: 0 -1px;
+  background: var(--kof-acao-hover);
+}
+.theme-kids .kof-btn:active {
+  --k3d-altura: 1px;
+  translate: 0 3px;
+}
+.theme-kids .kof-btn:focus-visible {
+  outline: 2px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+/* ⚠️ Sobre o azul da marca (o plano anual) e sobre o navy das bandas o anel azul sumia: 1:1 no
+ * cartão azul, ~3:1 no navy. O botão de COMPRA ficava sem foco visível. */
+.theme-kids .kof-marca .kof-btn:focus-visible,
+.theme-kids .kof-banda .kof-btn:focus-visible {
+  outline-color: var(--kof-carta);
+}
+.theme-kids .kof-btn .material-symbols-rounded {
+  font-size: 1.25rem;
+}
+.theme-kids .kof-btn--grande {
+  min-height: 3.25rem;
+  padding: 0 1.75rem;
+  font-size: 1.0625rem;
+}
+.theme-kids .kof-btn--compacta {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+}
+/* Branca sobre o azul da marca (o plano anual) e branca sobre o navy: as duas com o degrau que a
+ * plataforma dá ao botão branco. */
+.theme-kids .kof-btn--inversa {
+  --k3d-degrau: var(--kof-degrau-branco);
+  background: var(--kof-carta);
+  color: var(--kof-acao);
+}
+.theme-kids .kof-btn--inversa:hover {
+  background: var(--kof-carta);
+}
+.theme-kids .kof-btn--sobre-navy {
+  --k3d-degrau: var(--kof-degrau-branco);
+  background: var(--kof-carta);
+  color: var(--kof-acao);
+}
+.theme-kids .kof-btn--sobre-navy:hover {
+  background: var(--kof-carta);
+}
+.theme-kids .kof-btn--contorno {
+  --k3d-degrau: var(--kof-carta-degrau);
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  box-shadow:
+    inset 0 0 0 2px var(--kof-linha),
+    0 var(--k3d-altura) 0 0 var(--k3d-degrau);
+}
+.theme-kids .kof-btn--contorno:hover {
+  background: var(--kof-carta);
+}
+.theme-kids .kof-btn--cheia {
+  width: 100%;
+}
+/* Link de texto, com o traço da ação. */
+.theme-kids .kof-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  padding: 0 0.5rem;
+  color: var(--kof-acao);
+  font-family: var(--kof-corpo);
+  font-weight: 800;
+  font-size: 0.9375rem;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  border-radius: 0.5rem;
+}
+.theme-kids .kof-link:focus-visible {
+  outline: 2px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+/* O link dentro de um parágrafo (a garantia): sem a altura de alvo, no fluxo do texto. */
+.theme-kids .kof-link--inline {
+  display: inline;
+  min-height: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* ── Carta: branca, lisa, raio 24; o 3D só na clicável ───────────────────────── */
+.theme-kids .kof-carta {
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  border-radius: var(--kof-raio-carta);
+}
+.theme-kids .kof-carta--fio {
+  box-shadow: 0 0 0 1px var(--kof-linha);
+}
+.theme-kids .kof-carta--3d {
+  box-shadow:
+    0 0 0 2px var(--kof-linha),
+    0 4px 0 2px var(--kof-carta-degrau);
+}
+/* O herói (e o plano em destaque): a cor de ação com a única sombra difusa. */
+.theme-kids .kof-marca {
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  border-radius: var(--kof-raio-heroi);
+  box-shadow: var(--kof-sombra-heroi);
+}
+.theme-kids .kof-marca .kof-display,
+.theme-kids .kof-marca .kof-lead,
+.theme-kids .kof-marca .kof-sobretitulo {
+  color: inherit;
+}
+
+/* ── Ícone ao lado do texto: ajuste óptico (02/10/2026) ──────────────────────────
+ * Centrar as CAIXAS não centra o que se vê: a Nunito e a Baloo desenham as letras acima do meio
+ * da linha, e o ícone (desenhado no meio da caixa dele) ficava 1,5 a 3 px ABAIXO do texto.
+ * Medido na tinta, em Chromium, nas cinco páginas (a dona viu primeiro). Os acertos abaixo
+ * sobem o ícone até o meio das letras; o `translate` não mexe no layout nem no foco. */
+
+/* ── Eyebrow (pílula amarela) e selo de recompensa ───────────────────────────── */
+.theme-kids .kof-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 1.875rem;
+  padding: 0 0.875rem;
+  border-radius: 9999px;
+  background: var(--kof-amarelo);
+  color: var(--kof-tinta);
+  font-family: var(--kof-corpo);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.theme-kids .kof-eyebrow .material-symbols-rounded {
+  font-size: 1rem;
+  translate: 0 -0.1em;
+}
+/* ⚠️ Numa coluna de grade `1fr` (= minmax(auto, 1fr)) o `nowrap` vira a largura MÍNIMA da coluna:
+ * a 390px a pílula de 400px empurrava o herói inteiro para fora da margem. No celular ela quebra. */
+@media (max-width: 760px) {
+  .theme-kids .kof-eyebrow {
+    white-space: normal;
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+    line-height: 1.25;
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+  }
+  /* Com a letra menor, o acerto também é menor (medido a 390 px nas pílulas de uma linha). */
+  .theme-kids .kof-eyebrow .material-symbols-rounded {
+    translate: 0 -0.05em;
+  }
+}
+
+/* ── Chip: benefício, atributo, filtro (tinta na cor, fundo de apoio) ────────── */
+.theme-kids .kof-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 9999px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  font-family: var(--kof-corpo);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  box-shadow: 0 0 0 1px var(--kof-linha);
+}
+.theme-kids .kof-chip .material-symbols-rounded {
+  font-size: 1.125rem;
+  color: var(--kof-acao);
+  translate: 0 -0.07em;
+}
+.theme-kids .kof-chip--azul {
+  background: var(--kof-azul-fundo);
+  box-shadow: none;
+}
+.theme-kids .kof-chip--azul .material-symbols-rounded {
+  color: var(--kof-azul);
+}
+.theme-kids .kof-chip--verde {
+  background: var(--kof-menta);
+  box-shadow: none;
+}
+.theme-kids .kof-chip--verde .material-symbols-rounded {
+  color: var(--kof-verde);
+}
+.theme-kids .kof-chip--rosa {
+  background: var(--kof-rosa-fundo);
+  box-shadow: none;
+}
+.theme-kids .kof-chip--rosa .material-symbols-rounded {
+  color: var(--kof-rosa);
+}
+.theme-kids .kof-chip--laranja {
+  background: var(--kof-amarelo-fundo);
+  box-shadow: none;
+}
+.theme-kids .kof-chip--laranja .material-symbols-rounded {
+  color: var(--kof-laranja);
+}
+.theme-kids .kof-chip--roxo {
+  background: var(--kof-lilas);
+  box-shadow: none;
+}
+.theme-kids .kof-chip--roxo .material-symbols-rounded {
+  color: var(--kof-roxo);
+}
+
+/* ── Ladrilho: o quadrado colorido com o ícone (cores de unidade, tinta branca) ─ */
+.theme-kids .kof-ladrilho {
+  display: inline-grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+  border-radius: 14px;
+  background: var(--kof-azul);
+  color: var(--kof-sobre-acao);
+}
+.theme-kids .kof-ladrilho .material-symbols-rounded {
+  font-size: 1.5rem;
+}
+.theme-kids .kof-ladrilho--verde {
+  background: var(--kof-verde);
+}
+.theme-kids .kof-ladrilho--laranja {
+  background: var(--kof-laranja);
+}
+.theme-kids .kof-ladrilho--rosa {
+  background: var(--kof-rosa);
+}
+.theme-kids .kof-ladrilho--roxo {
+  background: var(--kof-roxo);
+}
+.theme-kids .kof-ladrilho--amarelo {
+  background: var(--kof-amarelo);
+  color: var(--kof-tinta);
+}
+.theme-kids .kof-ladrilho--grande {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 16px;
+}
+
+/* ── Selo de garantia (linha com o check verde) ──────────────────────────────── */
+.theme-kids .kof-selo {
+  display: inline-flex;
+  /* Centrado no BLOCO de texto, com uma linha ou com duas (decisão dela, 02/10/2026: preso à
+   * primeira linha, o check parecia alto quando o texto quebrava). */
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--kof-tinta-suave);
+  font-family: var(--kof-corpo);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.theme-kids .kof-selo .material-symbols-rounded {
+  flex: none;
+  font-size: 1.125rem;
+  color: var(--kof-verde);
+  translate: 0 -0.07em;
+}
+
+/* ── Banda navy: a âncora escura (prova, convite final) ─────────────────────── */
+.theme-kids .kof-banda {
+  background: linear-gradient(180deg, var(--kof-navy), var(--kof-navy-2));
+  color: var(--kof-carta);
+}
+.theme-kids .kof-banda .kof-display {
+  color: var(--kof-carta);
+}
+.theme-kids .kof-banda .kof-display em {
+  color: var(--kof-acao-clara);
+}
+.theme-kids .kof-banda .kof-lead {
+  color: var(--kof-navy-texto);
+}
+.theme-kids .kof-banda .kof-sobretitulo {
+  color: var(--kof-acao-clara);
+}
+/* ── Moldura de tela (a plataforma de verdade) ──────────────────────────────── */
+.theme-kids .kof-tela {
+  overflow: hidden;
+  border-radius: var(--kof-raio-tela);
+  background: var(--kof-carta);
+  box-shadow: 0 0 0 1px var(--kof-linha);
+}
+.theme-kids .kof-tela--sombra {
+  box-shadow:
+    0 0 0 1px var(--kof-linha),
+    var(--kof-sombra-heroi);
+}
+.theme-kids .kof-tela__barra {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 1.75rem;
+  padding: 0 0.75rem;
+  background: var(--kof-sup2);
+  border-bottom: 1px solid var(--kof-linha);
+}
+.theme-kids .kof-tela__barra i {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  background: var(--kof-vermelho);
+}
+.theme-kids .kof-tela__barra i:nth-child(2) {
+  background: var(--kof-amarelo);
+}
+.theme-kids .kof-tela__barra i:nth-child(3) {
+  background: var(--kof-verde);
+}
+.theme-kids .kof-tela__url {
+  margin-left: 0.5rem;
+  font-family: var(--kof-corpo);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--kof-tinta-suave);
+}
+.theme-kids .kof-tela img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+/* ── Palco: o fundo da cor do capítulo onde a tela real se apoia ──────────────── */
+.theme-kids .kof-palco {
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+  border-radius: var(--kof-raio-heroi);
+  background: var(--kof-palco-fundo, var(--kof-azul-fundo));
+}
+/* ── Decorações (as estrelinhas do Desafio): fora do fluxo, sem clique ────────── */
+.theme-kids .kof-decor {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  color: var(--kof-amarelo);
+}
+.theme-kids .kof-decor--rosa {
+  color: var(--kof-rosa-clara);
+}
+/* ⚠️ A fonte de ícones do layout é a instância estática 400 (sem eixo FILL): as estrelas saem
+ * vazadas, de propósito. */
+.theme-kids .kof-decor .material-symbols-rounded {
+  font-size: inherit;
+}
+
+/* ── Reveal ao rolar: só com JS, e parado com menos movimento ────────────────── */
+html.kof-js .theme-kids .kof-reveal {
+  opacity: 0;
+  translate: 0 14px;
+  transition:
+    opacity 0.5s ease,
+    translate 0.5s ease;
+}
+html.kof-js .theme-kids .kof-reveal.is-visible {
+  opacity: 1;
+  translate: 0 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  html.kof-js .theme-kids .kof-reveal {
+    opacity: 1;
+    translate: 0 0;
+    transition: none;
+  }
+  .theme-kids .kof-btn,
+  .theme-kids .kof-btn:hover,
+  .theme-kids .kof-btn:active {
+    translate: 0 0;
+    transition: none;
+  }
+}
+
+/* ── Barra fixa no celular: preço + CTA para os planos ───────────────────────── */
+.theme-kids .kof-mobar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: var(--kof-mobar-altura);
+  padding: 0.625rem 1rem calc(0.625rem + env(safe-area-inset-bottom));
+  background: var(--kof-carta);
+  border-top: 1px solid var(--kof-linha);
+  box-shadow: 0 -8px 24px color-mix(in oklab, var(--kof-tinta) 10%, transparent);
+  translate: 0 100%;
+  /* Escondida, ela também some para a pintura: fora da tela a sombra ainda vazava 20px acima. */
+  visibility: hidden;
+  transition:
+    translate 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+.theme-kids .kof-mobar.is-visible {
+  translate: 0 0;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.theme-kids .kof-mobar__preco {
+  font-family: var(--kof-corpo);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--kof-tinta-suave);
+}
+.theme-kids .kof-mobar__preco strong {
+  display: block;
+  font-family: var(--kof-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  line-height: 1.1;
+  color: var(--kof-tinta);
+}
+@media (max-width: 760px) {
+  .theme-kids .kof-mobar {
+    display: flex;
+  }
+}
+@media print {
+  html.kof-js .theme-kids .kof-reveal {
+    opacity: 1;
+    translate: 0 0;
+  }
+  .theme-kids .kof-mobar {
+    display: none;
+  }
+}

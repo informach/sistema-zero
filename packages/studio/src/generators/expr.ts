@@ -10,6 +10,8 @@ import {
 } from '../official-extensions/game-2d/classicCodec'
 import { textSpriteExpressionToCode } from '../official-extensions/game-2d/textCodec'
 import { isTextSpriteExpression } from '../official-extensions/game-2d/textIR'
+import { sceneToCode } from '../official-extensions/scene-2d/codec'
+import { isSceneExpression } from '../official-extensions/scene-2d/ir'
 import { normalizeIdentifier, safeIdent } from './identifier'
 import type { SourceMapBuilder } from './sourceMap'
 
@@ -223,6 +225,8 @@ export function compileExpr(
   }
   if (expr.type === 'g2d:circleTouches')
     return `SZGame2D.circleCollides(${identifiers.get(expr.aVar)}, ${identifiers.get(expr.bVar)})`
+  if (isSceneExpression(expr))
+    return sceneToCode(expr, (arg) => compileExpr(arg, 0, identifiers, rec))
   if (isTextSpriteExpression(expr))
     return textSpriteExpressionToCode(
       expr,

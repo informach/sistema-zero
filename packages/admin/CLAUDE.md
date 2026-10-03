@@ -1485,6 +1485,16 @@ o teste dele, a rota `/api/media/module-illustrations` e a dependência
   exige `Access-Control-Allow-Origin` correto; remove o objeto em seguida. Falha nessa prova deixa o
   deploy vermelho. `--check` não altera a configuração, mas repete a prova pública. O `<img>` de antes
   não fazia CORS; o runtime do Rive faz.
+- **Subir um `.riv` solto ao bucket público** (01/10/2026, o `.riv` do baú da trilha do kids, que
+  não passa pelo Admin): `bun run r2:put:public <arquivo> --prefix=kids/chest` grava em
+  `<prefixo>/<nome>-<sha256>.riv` (chave ENDEREÇADA PELO CONTEÚDO: arquivo novo = objeto novo e
+  URL nova, com `Cache-Control` longo e `immutable`; o script recusa sobrescrever), confere o
+  cabeçalho do `.riv`, e PROVA a leitura pelo `R2_PUBLIC_URL` com o `Origin` do Kids. Imprime a
+  URL, que vai para `NEXT_PUBLIC_KIDS_CHEST_RIVE_URL` do kids (Railway, por ambiente). ⚠️ Sem
+  `s3:ListBucket` o HEAD de chave inexistente volta 403, e o script confere a existência pelo
+  endereço público. ⚠️ O `.env` local pode ter as credenciais do R2 VENCIDAS (rotação de 09/2026):
+  o sintoma é `SignatureDoesNotMatch` até no `r2:cors:public:check`; pegue as vigentes do serviço
+  no Railway (`railway variables --service admin --environment staging --json`) só para a execução.
 - ⚠️ **Testes:** os mocks parciais de `@/server/media`/`@/server/r2` em
   `zappy-backfill` e `hub-route-handlers` passaram a ESPALHAR o módulo real. O
   `mock.module` do bun é global ao run, e manter à mão "a superfície que as outras
@@ -1570,3 +1580,11 @@ gera o mesmo arquivo para levar de staging a produção) e `/admin/como-fazer/[i
   que aqui não existe). A pele do `HelpTutorialView` mora em `member-shell/src/styles/help.css`,
   importada pelo `globals.css` do admin e do kids (sem ela a prévia saía sem numeração).
   `/admin/como-fazer/<não-uuid>` → `notFound()`.
+
+## Convites e campanhas (02/10/2026)
+
+A rota `/admin/embaixadores` usa `ConvitesClient`: campanhas na aba inicial; o painel existente de pessoas e bônus permanece na outra. BFF `/api/admin/referrals/campaigns` passa pelo gateway com sessão e RBAC. O relatório inicial conta resgates e conversões, não confunde cadastro com atividade da criança. A ficha da conta permite examinar o progresso dos perfis.
+
+Datas do formulário são explicitamente de Brasília (`campaign-dates.ts`). Título público difere de nome interno. Código não muda após criar; duplicar exige outro. Prévia é somente leitura no funil. O QR é gerado localmente pelo member-shell com o link público retornado pelo serviço; jamais usar a capability privada do embaixador. Migração e pendências em `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
+
+Edição envia `expectedUpdatedAt` da versão exibida: o serviço recusa outra aba desatualizada com 409. Não reenviar automaticamente com versão nova, pois isso apagaria a proteção de conflito. Lista/detalhe ignoram respostas antigas; falha limpa resultados e oferece atualização. Regressão em `tests/campaigns-client.test.tsx`.

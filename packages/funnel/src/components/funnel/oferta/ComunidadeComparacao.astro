@@ -1,0 +1,32 @@
+---
+import type { ComunidadeGroup } from '../../../funnels/comunidade-dos-criadores/oferta/types'
+
+interface Props {
+  comparison: NonNullable<ComunidadeGroup['comparison']>
+}
+const { comparison } = Astro.props
+// A primeira coluna é o que a família já tem; as seguintes, o que a assinatura acrescenta. Cada
+// linha é um par lido de um lado para o outro (no celular, de cima para baixo), e não uma grade.
+// Os papéis de tabela ficam em ARIA porque o desenho é de cartas: `<table>` em grid perde a semântica.
+const lado = (coluna: number) => (coluna === 0 ? 'antes' : 'depois')
+const icone = (coluna: number) => (coluna === 0 ? 'check' : 'add')
+---
+
+<div class="comparacao kof-reveal" role="table" aria-label="O acesso inicial e a assinatura da Comunidade">
+  <div class="comparacao-cabeca" role="row">
+    {comparison.headers.map((header, coluna) => (
+      <div class:list={['comparacao-titulo', `comparacao-titulo--${lado(coluna)}`]} role="columnheader">{header}</div>
+    ))}
+  </div>
+  {comparison.rows.map((row) => (
+    <div class="comparacao-par kof-carta kof-carta--fio" role="row">
+      {row.map((cell, coluna) => (
+        <div class:list={['comparacao-celula', `comparacao-celula--${lado(coluna)}`]} role="cell">
+          <span class="comparacao-rotulo" aria-hidden="true">{comparison.headers[coluna]}</span>
+          <span class="comparacao-marca" aria-hidden="true"><span class="material-symbols-rounded comparacao-icone">{icone(coluna)}</span></span>
+          <p>{cell}</p>
+        </div>
+      ))}
+    </div>
+  ))}
+</div>

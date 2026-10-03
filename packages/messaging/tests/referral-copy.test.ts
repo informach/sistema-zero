@@ -16,9 +16,10 @@ test('templates de indicação prometem o novo curso sem falsificar resgates his
     referralTemplates.indexOf("key: 'referrals-scholarship-invite'"),
     referralTemplates.indexOf("key: 'referrals-scholarship-welcome'"),
   )
-  expect(invite).toContain('8 a 15 anos')
+  expect(invite).toContain('9 a 14 anos')
   expect(invite).toContain('Não pedimos cartão')
-  expect(invite).toContain('apenas este curso')
+  expect(invite).toContain('este curso e a participação no Mural')
+  expect(invite).toContain('publicar o jogo do curso, comentar e reagir')
   expect(invite).toContain('7 dias')
   expect(invite).toContain('cadastro')
   expect(invite).toContain('Mural dos Criadores')
@@ -51,6 +52,18 @@ test('templates de indicação prometem o novo curso sem falsificar resgates his
   expect(visitorWelcome).toContain("key: 'referrals-scholarship-existing-7d-mural'")
   expect(visitorWelcome).toContain('Mural dos Criadores')
   expect(visitorWelcome).toContain('enquanto a conta existir')
+  for (const key of [
+    'referrals-scholarship-welcome-mural-trial',
+    'referrals-scholarship-existing-mural-trial',
+    'referrals-campaign-welcome-mural-trial',
+    'referrals-campaign-existing-mural-trial',
+  ]) {
+    expect(source).toContain(`key: '${key}'`)
+  }
+  expect(source).toContain('A aula 2 ensina como publicar')
+  expect(source).toContain(
+    'O link do jogo publicado continua funcionando enquanto a publicação estiver disponível',
+  )
 
   const existingAccountEmail = source.slice(
     source.indexOf("key: 'new-access'"),

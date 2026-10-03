@@ -36,6 +36,7 @@ import { InteractiveLessonBlock } from './learning-activity'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
 import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { LessonSectionStatus, textoDoItem } from './lesson-section-status'
 
 function dialogueText(content: unknown): string | null {
   return content !== null &&
@@ -108,10 +109,6 @@ function BlockScope({
     videoWatchedFraction(saved?.answers ?? {}) >= VIDEO_WATCH_THRESHOLD,
   )
   const [saveError, setSaveError] = useState(false)
-  const [watchSaved, setWatchSaved] = useState(confirmedWatched.current)
-  const [watchedPercent, setWatchedPercent] = useState(
-    Math.floor(videoWatchedFraction(saved?.answers ?? {}) * 100),
-  )
   const required = parent?.videoWatchRequiredBlockIds?.includes(block.id) ?? false
   const savedAt = useRef(0)
   const queue = useRef<Promise<void>>(Promise.resolve())
@@ -160,7 +157,6 @@ function BlockScope({
           const reached = videoWatchedFraction(value.answers) >= VIDEO_WATCH_THRESHOLD
           if (required && reached && !confirmedWatched.current) refresh.current?.()
           confirmedWatched.current = reached
-          setWatchSaved(reached)
         } catch {
           savedSeconds.current = -1
           setSaveError(true)
@@ -225,7 +221,6 @@ function BlockScope({
             value,
           )
           const fraction = videoWatchedFraction(videoCoverageAnswers(coverage.current))
-          setWatchedPercent(Math.floor(fraction * 100))
           if (
             (before < VIDEO_WATCH_THRESHOLD && fraction >= VIDEO_WATCH_THRESHOLD) ||
             Date.now() - savedAt.current >= 10000
@@ -235,15 +230,10 @@ function BlockScope({
       }}
     >
       {children}
-      {required && (
-        <p className="text-sm text-muted-foreground">
-          {watchSaved
-            ? 'Vídeo assistido. Você pode continuar!'
-            : watchedPercent >= 90
-              ? 'Salvando seu progresso…'
-              : `${watchedPercent}% assistido · veja 90% para continuar`}
-        </p>
-      )}
+      {/* O que falta para seguir (inclusive o vídeo) mora na faixa do rodapé da aula, na voz
+          da criança. A linha "N% assistido · veja 90% para continuar" que ficava aqui repetia a
+          faixa sem formatação e saiu a pedido dela (02/10/2026). O aviso de falha fica: ele
+          pede uma ação que só existe aqui. */}
       {saveError && block.kind === 'video' && (
         <p role="alert" className="text-sm">
           Não foi possível salvar seu progresso.{' '}
@@ -330,6 +320,30 @@ function LessonSectionsContent({
   const player = useLessonPlayer()
   const rehearsal = useLessonPreview()
   const preview = player === null
+  /**
+   * ⚠️⚠️ O rodapé FIXO diz à página quanto ele mede (`--sz-lesson-nav-height`, no `<html>`): com a
+   * faixa "o que falta para seguir" ele cresceu (uma ou duas linhas, o "+N" aberto) e uma reserva
+   * fixa de padding deixava o fim do último cartão para sempre sob o rodapé (review do lote 2).
+   * Cada app reserva `calc(var(--sz-lesson-nav-height) + …)` no `<main>` da aula.
+   */
+  const rodapeRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const rodape = rodapeRef.current
+    if (!immersive || !rodape || typeof ResizeObserver === 'undefined') return
+    const raiz = document.documentElement
+    const publicar = () =>
+      raiz.style.setProperty(
+        '--sz-lesson-nav-height',
+        `${Math.ceil(rodape.getBoundingClientRect().height)}px`,
+      )
+    publicar()
+    const observador = new ResizeObserver(publicar)
+    observador.observe(rodape)
+    return () => {
+      observador.disconnect()
+      raiz.style.removeProperty('--sz-lesson-nav-height')
+    }
+  }, [immersive])
   const sections = useMemo(
     () =>
       lesson.sections?.length &&
@@ -716,9 +730,6 @@ function LessonSectionsContent({
         rows={3}
         className="w-full rounded-lg border border-border bg-background p-3"
       />
-      <p className="text-sm text-muted-foreground">
-        O professor receberá o nome desta aula e desta seção.
-      </p>
       <Button type="submit" disabled={sending || !help.trim()}>
         {sending ? 'Enviando…' : 'Enviar ao professor'}
       </Button>
@@ -777,6 +788,35 @@ function LessonSectionsContent({
       Preciso de ajuda
     </Button>
   ) : null
+  /**
+   * A faixa do rodapé: os itens tipados da seção ATUAL (`pendingItems`, do members), o estado
+   * "pronto" quando ela fechou e, sem itens (aula legada, conta de equipe), a razão de o "Concluir
+   * aula" estar travado que o player passa em `completionMessage`. No ensaio (`preview`) as
+   * mensagens de autoria saem inteiras.
+   */
+  /**
+   * ⚠️ A barra "O que falta para concluir" (adulto e ensaio) lia a `action` do
+   * `SECTION_GATE_INCOMPLETE`, que junta as frases CRUAS de `pending`: a mensagem de autoria chegava
+   * ao aluno adulto por ali (full review de 30/09). Os itens tipados passam pela troca da faixa.
+   */
+  const acaoDoRequisito = (r: { sectionId: string | null; action: string; reason: string }) => {
+    if (r.reason !== 'SECTION_GATE_INCOMPLETE') return r.action
+    const itens = state?.sections.find((s) => s.id === r.sectionId)?.pendingItems
+    return itens?.length ? itens.map((item) => textoDoItem(item, preview)).join(' · ') : r.action
+  }
+  const secaoAtual = state?.sections.find((s) => s.id === section.id)
+  // Aula CONCLUÍDA: toda seção está fechada e o botão já diz "Aula concluída"; a faixa verde em
+  // cada parte seria ruído (review do lote 2, B3).
+  const statusDaSecao = lesson.completed ? null : (
+    <LessonSectionStatus
+      items={secaoAtual?.pendingItems ?? []}
+      completed={secaoAtual?.status === 'completed'}
+      fallback={index === sections.length - 1 ? completionMessage : undefined}
+      preview={preview}
+      className={immersive ? 'mx-auto w-full max-w-7xl' : undefined}
+      ultima={index === sections.length - 1}
+    />
+  )
   const nextButton = (
     <Button
       className="sz-lesson-nav-next"
@@ -899,7 +939,7 @@ function LessonSectionsContent({
                           {r.title}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {r.complete ? 'Concluído' : r.action}
+                          {r.complete ? 'Concluído' : acaoDoRequisito(r)}
                         </span>
                       </button>
                     ))
@@ -1151,16 +1191,14 @@ function LessonSectionsContent({
                 )}
             </Panel>
           </PanelGroup>
-          {state?.sections
-            .find((s) => s.id === section.id)
-            ?.pending.map((message) => (
-              <p key={message} className="text-sm text-muted-foreground">
-                {message}
-              </p>
-            ))}
+          {/* ⭐⭐ "O que falta para seguir" (30/09/2026): os `<p>` soltos do que faltava viraram UMA
+            faixa com ícone e estado, ao lado do botão que ela explica. No modo imersivo ela mora
+            DENTRO do rodapé fixo, acima dos botões; no ensaio do admin, logo acima do cartão. */}
+          {!immersive && statusDaSecao}
           {/* `sz-lesson-nav`: gancho ESTÁVEL, mesmo espírito do `sz-lesson-toolbar`.
             Sem ele o kids teria de mirar por estrutura ("a div com border-t"). */}
           <div
+            ref={rodapeRef}
             className={cn(
               'sz-lesson-nav border-t border-border',
               immersive
@@ -1175,6 +1213,7 @@ function LessonSectionsContent({
                 {navigationError}
               </div>
             ) : null}
+            {immersive && statusDaSecao}
             {immersive ? (
               <div className="sz-lesson-nav-inner mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
@@ -1197,20 +1236,10 @@ function LessonSectionsContent({
                 {nextButton}
               </>
             )}
-            {immersive && index === sections.length - 1 && completionMessage ? (
-              <div className="sz-lesson-nav-message mx-auto w-full max-w-7xl pt-1 text-sm text-muted-foreground">
-                {completionMessage}
-              </div>
-            ) : null}
           </div>
           {!immersive && helpForm}
           {!immersive && helpNotice}
           {!immersive && navigationError}
-          {!immersive && index === sections.length - 1 && !lesson.completed && (
-            <p className="text-center text-sm text-muted-foreground">
-              Quando terminar as atividades e a criação desta aula, use o botão de concluir abaixo.
-            </p>
-          )}
         </div>
       </LessonSectionProvider>
     </LessonPlayerProvider>

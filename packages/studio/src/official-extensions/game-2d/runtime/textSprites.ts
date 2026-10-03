@@ -371,12 +371,15 @@ export const gameTwoDTextSpritesRuntime = `
   function _spriteContainsPointer(sprite, x, y) {
     if (!sprite || _isDestroyedSprite(sprite) || sprite._paintEpoch !== _spritePaintEpoch || !sprite._paintOrder || (sprite.opacity !== undefined && sprite.opacity <= 0)) return false;
     _layoutSpriteText(sprite);
-    var dx = x + camera.x - sprite.x - sprite.w / 2;
-    var dy = y + camera.y - sprite.y - sprite.h / 2;
+    var projected = _spriteScene && _spriteScene.owns(sprite) ? _spriteScene.bounds(sprite) : null;
+    if (_spriteScene && _spriteScene.owns(sprite) && !projected) return false;
+    var box = projected || sprite;
+    var dx = x + (projected ? 0 : camera.x) - box.x - box.w / 2;
+    var dy = y + (projected ? 0 : camera.y) - box.y - box.h / 2;
     var angle = _finiteNumber(sprite.angle, 0) + (sprite.direction === 'up' ? -Math.PI / 2 : sprite.direction === 'down' ? Math.PI / 2 : 0);
     var localX = dx * Math.cos(angle) + dy * Math.sin(angle);
     var localY = -dx * Math.sin(angle) + dy * Math.cos(angle);
-    return Math.abs(localX) <= sprite.w / 2 && Math.abs(localY) <= sprite.h / 2;
+    return Math.abs(localX) <= box.w / 2 && Math.abs(localY) <= box.h / 2;
   }
   /** @param {import('./runtimeContract').GameTwoDSprite} sprite @param {() => void} fn @param {string} [id] */
   function onSpriteClick(sprite, fn, id) {

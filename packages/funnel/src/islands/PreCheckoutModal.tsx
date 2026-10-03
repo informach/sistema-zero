@@ -15,9 +15,16 @@ export interface PreCheckoutModalProps {
   funnel: string
   /** Código recebido na oferta; o checkout volta a validá-lo no servidor. */
   couponCode?: string | null
+  /** Convite para continuar usando a conta que a família já conhece. */
+  continuidade?: boolean
 }
 
-export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCheckoutModalProps) {
+export default function PreCheckoutModal({
+  basePath,
+  funnel,
+  couponCode,
+  continuidade = false,
+}: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
   // Oferta ESCOLHIDA no CTA que abriu o modal (`data-checkout-oferta="<slug>"`,
   // opcional — usado pelos funis de assinatura pra pré-selecionar o plano no
@@ -185,14 +192,14 @@ export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCh
                   {isChallenge
                     ? 'O primeiro jogo está a um passo de começar'
                     : isCommunity
-                      ? 'Vamos começar o primeiro projeto?'
+                      ? 'Informe os dados do responsável'
                       : 'Falta um passo'}
                 </h2>
                 <p className="mt-1 text-sm text-muted">
                   {isChallenge
                     ? 'Confirme os dados do responsável. Na próxima tela, você revisa o valor, aplica o cupom se tiver um e escolhe como pagar.'
                     : isCommunity
-                      ? 'Seu filho começa com projetos guiados para aprender a criar jogos. Informe os dados do responsável para revisar o plano, o valor e a renovação na próxima tela.'
+                      ? 'Na próxima tela, você confere o plano escolhido, o valor e como funciona a renovação antes de pagar.'
                       : isKids
                         ? 'Confirme os dados do responsável para ir ao pagamento seguro.'
                         : 'Confirme seus dados para ir pro pagamento seguro.'}
@@ -217,8 +224,19 @@ export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCh
 
             {isKids && (
               <p className="mt-4 rounded-xl border border-cyan/30 bg-cyan/10 px-4 py-3 text-sm text-ink">
-                <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da
-                criança (nome e idade) você cria depois, já dentro da plataforma.
+                {isCommunity && continuidade ? (
+                  <>
+                    <strong>Se sua família já tem conta, use o mesmo e-mail do responsável.</strong>{' '}
+                    Assim, o acesso continua ligado ao perfil que a criança utiliza. Se ainda não
+                    tem conta, informe os dados do responsável e siga as orientações de acesso após
+                    a contratação.
+                  </>
+                ) : (
+                  <>
+                    <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da
+                    criança (nome e idade) você cria depois, já dentro da plataforma.
+                  </>
+                )}
               </p>
             )}
 
@@ -291,7 +309,7 @@ export default function PreCheckoutModal({ basePath, funnel, couponCode }: PreCh
                   : isChallenge
                     ? 'Continuar para o pagamento'
                     : isCommunity
-                      ? 'Escolher o plano e continuar'
+                      ? 'Continuar para o pagamento'
                       : 'Ir pro pagamento seguro →'}
               </button>
               <button

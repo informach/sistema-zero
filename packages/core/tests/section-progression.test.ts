@@ -146,7 +146,47 @@ describe('section progression', () => {
     )
     expect(state.percent).toBeCloseTo(100 / 3)
     expect(state.sections.map((s) => s.status)).toEqual(['completed', 'available', 'locked'])
-    expect(state.sections[2]?.pending).toEqual(['Conclua a seção anterior.'])
+    expect(state.sections[2]?.pending).toEqual(['Conclua a seção anterior'])
+    // Os itens TIPADOS (30/09/2026): a seção travada é `locked`; texto cru vira `other`.
+    expect(state.sections[2]?.pendingItems).toEqual([
+      { kind: 'locked', text: 'Conclua a seção anterior' },
+    ])
+    expect(state.sections[1]?.pendingItems).toEqual([])
+    expect(state.sections[0]?.pendingItems).toEqual([])
+    const tipado = sectionProgressView(
+      'revision',
+      sections,
+      new Set(),
+      new Map([
+        ['a', [{ kind: 'VIDEO_GATE_NOT_WATCHED' as const, text: 'Veja o vídeo' }, 'Solto']],
+      ]),
+    )
+    expect(tipado.sections[0]?.pendingItems).toEqual([
+      { kind: 'VIDEO_GATE_NOT_WATCHED', text: 'Veja o vídeo' },
+      { kind: 'other', text: 'Solto' },
+    ])
+    expect(tipado.sections[0]?.pending).toEqual(['Veja o vídeo', 'Solto'])
+    // ⚠️ Sem repetidos: um requisito nasce por bloco, e três descobertas obrigatórias viravam três
+    // "Termine o experimento" na faixa (review do lote 2).
+    const repetido = sectionProgressView(
+      'revision',
+      sections,
+      new Set(),
+      new Map([
+        [
+          'a',
+          [
+            { kind: 'LEARNING_GATE_INCOMPLETE' as const, text: 'Termine o experimento' },
+            { kind: 'LEARNING_GATE_INCOMPLETE' as const, text: 'Termine o experimento' },
+            { kind: 'other' as const, text: 'Termine o experimento' },
+          ],
+        ],
+      ]),
+    )
+    expect(repetido.sections[0]?.pendingItems).toEqual([
+      { kind: 'LEARNING_GATE_INCOMPLETE', text: 'Termine o experimento' },
+      { kind: 'other', text: 'Termine o experimento' },
+    ])
   })
   test('publication rejects missing, foreign and participation-only criteria', () => {
     const section = {

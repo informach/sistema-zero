@@ -1,5 +1,9 @@
 # Design — instrução junto dos controles nas experiências
 
+> **Atualizado em 30/09/2026 (console v2):** a ordem passou a ser faixa → cena → situação (sob o
+> mundo) → instrução → pista → controles → lista de descobertas → retorno. Ver §"O CONSOLE v2" no
+> `packages/member-shell/CLAUDE.md`.
+
 ## Objetivo
 
 Organizar todas as experiências interativas na ordem em que a criança compreende e age: primeiro ela reconhece a cena; depois lê uma instrução curta; por fim encontra os controles que executam essa instrução.

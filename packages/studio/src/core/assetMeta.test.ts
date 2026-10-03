@@ -296,12 +296,14 @@ describe('assetMetaManifest (manifesto de metadados p/ o preview)', () => {
       ),
     )
     const meta = assetMetaManifest(assets)
-    // Só a CAIXA viaja: quadro e animações o runtime lê da própria imagem, e o
-    // orçamento de caracteres do srcdoc é compartilhado com as folhas de peças.
-    expect(meta.nave).toEqual({ hitbox: { x: 0, y: 0.375, w: 1, h: 0.25 } })
+    // A caixa e as animações nomeadas viajam; o motor resolve os quadros pelo nome.
+    expect(meta.nave).toEqual({
+      hitbox: { x: 0, y: 0.375, w: 1, h: 0.25 },
+      sprite: assets[0]?.sprite,
+    })
   })
 
-  it('sprite SEM caixa não cria entrada (payload igual ao de antes)', () => {
+  it('animações nomeadas chegam ao runtime mesmo sem caixa', () => {
     const assets = sanitizeProjectAssets(
       JSON.parse(
         JSON.stringify([
@@ -320,7 +322,7 @@ describe('assetMetaManifest (manifesto de metadados p/ o preview)', () => {
         ]),
       ),
     )
-    expect(assetMetaManifest(assets)).toEqual({})
+    expect(assetMetaManifest(assets)).toEqual({ heroi: { sprite: assets[0]?.sprite } })
   })
 })
 

@@ -69,10 +69,8 @@ export class RecordConversionService {
       this.logger.error('referrals.paid_payment_not_found', { paymentId })
       return { kind: 'ok' }
     }
-    if (snapshot.status !== 'PAID' || !snapshot.paidAt) {
-      // Corrida paid→refunded antes de processarmos: nada a registrar.
-      return { kind: 'ok' }
-    }
+    if (snapshot.status === 'REFUNDED') return this.onRefunded(paymentId)
+    if (snapshot.status !== 'PAID' || !snapshot.paidAt) return { kind: 'ok' }
 
     // FILTRO BARATO PRIMEIRO: o fan-out entrega TODO pagamento da plataforma e
     // quase nenhum é de bolsista — um SELECT local em índice UNIQUE descarta a
@@ -83,6 +81,7 @@ export class RecordConversionService {
 
     const match = await this.repo.findRedemptionWithCodeByEmail(email)
     if (match?.redemption.status !== 'completed') return { kind: 'ok' }
+    if (snapshot.paidAt < match.redemption.createdAt) return { kind: 'ok' }
 
     const offerId = typeof snapshot.metadata.offerId === 'string' ? snapshot.metadata.offerId : null
     if (!offerId) return { kind: 'ok' } // sem oferta não há como classificar — skip
@@ -102,10 +101,23 @@ export class RecordConversionService {
     }
     if (!this.config.conversionOfferSlugs.includes(offer.slug)) return { kind: 'ok' }
 
+    if (snapshot.subscriptionId) {
+      let createdAt: Date | null
+      try {
+        createdAt = await this.payments.getSubscriptionCreatedAt(snapshot.subscriptionId)
+      } catch (error) {
+        return { kind: 'retryable', reason: `assinatura indisponível: ${msg(error)}` }
+      }
+      if (!createdAt || !Number.isFinite(createdAt.getTime()))
+        return { kind: 'retryable', reason: 'Não foi possível comprovar a data da assinatura.' }
+      if (createdAt < match.redemption.createdAt) return { kind: 'ok' }
+    }
+
     // Anti-autoindicação: o dono do código assinando com o MESMO e-mail do
     // resgate não premia a si mesmo — registra a etapa, sem bônus.
     const selfBlocked =
       match.code.ownerEmail !== null && normalizeEmail(match.code.ownerEmail) === email
+    const unrewarded = match.code.ownerKind === 'campaign'
 
     const { created } = await this.repo.insertConversion({
       redemptionId: match.redemption.id,
@@ -115,8 +127,8 @@ export class RecordConversionService {
       subscriptionId: snapshot.subscriptionId,
       offerSlug: offer.slug,
       amountCents: snapshot.amountInCents,
-      bonusCents: selfBlocked ? 0 : this.config.bonusAmountCents,
-      status: selfBlocked ? 'self_blocked' : 'pending',
+      bonusCents: selfBlocked || unrewarded ? 0 : this.config.bonusAmountCents,
+      status: unrewarded ? 'unrewarded' : selfBlocked ? 'self_blocked' : 'pending',
       paidAt: snapshot.paidAt,
       maturesAt: new Date(snapshot.paidAt.getTime() + this.config.matureHours * 3600_000),
     })
@@ -127,35 +139,30 @@ export class RecordConversionService {
         offerSlug: offer.slug,
         selfBlocked,
       })
-      // ⚠️ TOCTOU do estorno: entre o `getPayment` e este INSERT passaram 2 S2S
-      // (payments + catalog). Um `payment.refunded` que chegue nessa janela não
-      // acha conversão nenhuma para cancelar e é consumido — a conversão nasce
-      // DEPOIS do estorno e vira Pix pago sobre venda devolvida. Re-verificamos
-      // o pagamento só aqui (caminho raro: bolsista que assinou de verdade) e
-      // cancelamos o que acabamos de criar. Mesma régua do fiscal, que
-      // re-verifica o pagamento no momento de emitir.
-      await this.cancelIfNoLongerPaid(paymentId)
     }
-    return { kind: 'ok' }
+    // Um estorno entre a consulta ao Payments e o INSERT pode ter sido consumido
+    // sem conversão para cancelar. Reconfere aqui, inclusive na reentrega após
+    // falha de rede: o INSERT anterior já pode ter concluído.
+    return this.cancelIfNoLongerPaid(paymentId)
   }
 
-  private async cancelIfNoLongerPaid(paymentId: string): Promise<void> {
+  private async cancelIfNoLongerPaid(paymentId: string): Promise<HandleResult> {
     let fresh: Awaited<ReturnType<PaymentsClient['getPayment']>>
     try {
       fresh = await this.payments.getPayment(paymentId)
     } catch (error) {
-      // Não dá para afirmar que estornou — a conversão fica e o estorno, se
-      // vier, cancela pelo caminho normal (ou aflora no alerta pós-garantia).
+      // A falta de confirmação não prova estorno nem encerra o processamento.
       this.logger.warn('referrals.conversion_recheck_failed', { paymentId, error: msg(error) })
-      return
+      return { kind: 'retryable', reason: `conferência do pagamento indisponível: ${msg(error)}` }
     }
-    if (fresh && fresh.status === 'PAID') return
+    if (fresh && fresh.status === 'PAID') return { kind: 'ok' }
     const outcome = await this.repo.cancelPendingConversionByPayment(paymentId)
     this.logger.error('referrals.conversion_canceled_refund_race', {
       paymentId,
       paymentStatus: fresh?.status ?? 'not_found',
       outcome: outcome.kind,
     })
+    return { kind: 'ok' }
   }
 
   private async onRefunded(paymentId: string): Promise<HandleResult> {
