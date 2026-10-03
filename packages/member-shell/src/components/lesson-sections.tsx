@@ -730,9 +730,6 @@ function LessonSectionsContent({
         rows={3}
         className="w-full rounded-lg border border-border bg-background p-3"
       />
-      <p className="text-sm text-muted-foreground">
-        O professor receberá o nome desta aula e desta seção.
-      </p>
       <Button type="submit" disabled={sending || !help.trim()}>
         {sending ? 'Enviando…' : 'Enviar ao professor'}
       </Button>
