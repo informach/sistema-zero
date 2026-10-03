@@ -19,16 +19,14 @@ import {
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
 } from '../../../application/content-admin/content-admin.service'
+import { certificateLessonIssues } from '../../../domain/course/certificate-lesson'
 import {
   ContentNotFoundError,
   LessonNotFoundError,
   NoPublishedLessonError,
   NoShowcaseBlockError,
 } from '../../../domain/course/course.errors'
-import {
-  isCompletionGatingBlock,
-  type LessonBlockContent,
-} from '../../../domain/course/lesson-block'
+import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import { importedLearningId } from '../../../domain/learning/learning-import'
 import { LessonDraftConflictError } from '../../../domain/learning/lesson-draft.errors'
 import { publishedLessonRevisions } from '../../../domain/learning/published-lesson-revisions'
@@ -490,11 +488,8 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         })
       }
     }
-    if (
-      blocks.some((b) => b.content.kind === 'certificate') &&
-      blocks.some((b) => isCompletionGatingBlock(b.content))
-    )
-      issues.push({ message: 'A aula de certificado não pode conter atividades obrigatórias.' })
+    for (const message of certificateLessonIssues(document.sections, blocks))
+      issues.push({ message })
     for (const video of document.plannedVideos) {
       const content = document.blocks.find((b) => b.id === video.blockId)?.content
       if (

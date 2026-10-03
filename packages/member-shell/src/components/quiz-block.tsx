@@ -22,9 +22,9 @@ interface Props {
 
 /**
  * Quiz validado NO SERVIDOR: o GET da aula não traz gabarito; o submit devolve
- * score + correções/explicações. Reprovou → cooldown de 5 min com countdown
- * regressivo (espelha o legado). Quiz com `passingScore` bloqueia o "Concluir
- * aula" até aprovar (o gate é do backend — aqui só refletimos o estado).
+ * score + correções/explicações. O servidor informa eventual espera no retry;
+ * quizzes selecionados como critério de seção permitem corrigir imediatamente.
+ * A conclusão respeita o critério publicado; aqui apenas refletimos esse estado.
  */
 export function QuizBlockView({ blockId, content, quizState }: Props) {
   const player = useLessonPlayer()

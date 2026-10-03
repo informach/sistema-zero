@@ -1,12 +1,15 @@
 import { expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
-import { changeDraft, readDraft } from '../draft-authoring-helpers'
+import { changeDraft, publishDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
 
-test('importar a aula final preserva a arte e as assinaturas do certificado existente', async () => {
+test.each([
+  ['desafio', 'desafio-primeiro-jogo'],
+  ['cade-todo-mundo', 'cade-todo-mundo'],
+])('%s: importa e publica quiz antes do certificado preservando arte e assinaturas', async (prefix, courseSlug) => {
   const env = buildApp({ requireAdmin: true })
-  const course = seedSampleCourse(env.courses, 'desafio-primeiro-jogo', 'published', 'kids')
+  const course = seedSampleCourse(env.courses, courseSlug!, 'published', 'kids')
   const lessonId = course.lessonIds[1]!
   env.courses.lessons.find((lesson) => lesson.id === lessonId)!.slug = 'certificado'
   const certificateId = randomUUID()
@@ -25,7 +28,7 @@ test('importar a aula final preserva a arte e as assinaturas do certificado exis
   const manifest = await Bun.file(
     resolve(
       import.meta.dir,
-      '../../../../docs/aulas-interativas/aulas/desafio-certificado.manifesto.json',
+      `../../../../docs/aulas-interativas/aulas/${prefix}-certificado.manifesto.json`,
     ),
   ).json()
   const request = (action: string, body: unknown) =>
@@ -61,9 +64,42 @@ test('importar a aula final preserva a arte e as assinaturas do certificado exis
   })
   const video = draft.document.blocks.find((block) => block.content.kind === 'video')
   expect(video).toBeDefined()
-  if (!video) throw new Error('O vídeo de pitch não foi importado')
-  // A aula final é uma celebração curta numa seção só (03/10/2026): vídeo e certificado juntos.
+  if (!video) throw new Error('O vídeo do certificado não foi importado')
+  // A revisão sem vídeo antecede a celebração; identidade e arte do certificado permanecem.
+  const quiz = draft.document.blocks.find((block) => block.content.kind === 'quiz')
+  expect(quiz).toBeDefined()
   expect(draft.document.sections.map((section) => section.completion?.blockIds)).toEqual([
+    [quiz!.id],
     [video.id, certificateId],
   ])
+  // Simula mídia pronta no ambiente de teste; nenhum vídeo remoto é alterado.
+  expect(
+    (
+      await changeDraft(env.app, lessonId, {
+        type: 'block',
+        block: {
+          id: video.id,
+          content: { kind: 'video', provider: 'vimeo', src: 'https://vimeo.com/123456789' },
+        },
+      })
+    ).status,
+  ).toBe(200)
+  expect(
+    (await changeDraft(env.app, lessonId, { type: 'planned-videos', plannedVideos: [] })).status,
+  ).toBe(200)
+  const published = await publishDraft(env.app, lessonId)
+  expect(published.status, await published.clone().text()).toBe(200)
+  // Uma reordenação que deixa a revisão para depois do certificado é recusada.
+  const current = await readDraft(env.app, lessonId)
+  expect(
+    (
+      await changeDraft(env.app, lessonId, {
+        type: 'structure',
+        sections: [...current.document.sections].reverse(),
+      })
+    ).status,
+  ).toBe(200)
+  const invalid = await publishDraft(env.app, lessonId)
+  expect(invalid.status).toBe(400)
+  expect(await invalid.text()).toContain('seção anterior')
 })

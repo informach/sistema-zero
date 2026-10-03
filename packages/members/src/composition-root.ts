@@ -596,7 +596,13 @@ export async function createApplication(env: Env): Promise<Application> {
     sectionProgression,
   )
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions, clock)
-  const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)
+  const getCertificate = new GetCertificateService(
+    checkAccess,
+    courses,
+    progress,
+    certificates,
+    sectionProgression,
+  )
   const issueCertificate = new IssueCertificateService(
     checkAccess,
     courses,
@@ -605,6 +611,7 @@ export async function createApplication(env: Env): Promise<Application> {
     awardGamification,
     clock,
     learningRepository,
+    sectionProgression,
   )
   const validateCertificate = new ValidateCertificateService(certificates)
   const revokeCertificate = new RevokeCertificateService(certificates, clock)

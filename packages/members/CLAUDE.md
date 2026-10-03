@@ -1,5 +1,8 @@
 # CLAUDE.md — @sistemazero/members
 
+> **Quiz antes do certificado (03/10/2026):** o rascunho pode publicar quiz obrigatório em seção anterior à emissão, com o quiz e o certificado selecionados nos respectivos critérios. `certificateLessonIssues` mantém a restrição para outros blocos obrigatórios e recusa quiz misturado, posterior ou sem critério. A primeira emissão verifica a seção no servidor; o GET informa `eligible: false` enquanto ela estiver trancada. Certificados já emitidos seguem acessíveis sem reavaliar requisitos novos. Quiz selecionado como critério permite corrigir imediatamente. O CRUD legado sem estrutura mantém a restrição antiga.
+
+
 > **Contrato vigente das aulas (26/09/2026):** rascunho e publicação aceitam
 > `experimentation`, `html` e `project-play` como atividades interativas. O DTO preserva o
 > snapshot do jogo, o palco, os alvos e `completion?: 'participation' | 'targets'`;

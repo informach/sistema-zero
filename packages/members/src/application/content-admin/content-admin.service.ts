@@ -583,7 +583,9 @@ async function assertSingleCertificateBlock(
   }
 }
 
-// A aula do certificado pode ter conteúdo livre (vídeo/texto/imagem de encerramento),
+// No CRUD legado sem estrutura de seções, a aula do certificado pode ter conteúdo livre
+// (vídeo/texto/imagem de encerramento). O editor por rascunho usa certificateLessonIssues,
+// que permite revisão por quiz em seção anterior. Aqui seguem as restrições legadas:
 // mas NÃO blocos que travam a conclusão (quiz com nota de corte / estúdio / "em breve"):
 // a emissão conclui essa aula DIRETO, sem passar pelos gates de mark-lesson-complete — um
 // gate ali seria pulado (o aluno emitiria o diploma sem fazer a atividade, ou com a aula

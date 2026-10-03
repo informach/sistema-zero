@@ -16,13 +16,13 @@ import {
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
 } from '../../src/application/content-admin/content-admin.service'
+import { certificateLessonIssues } from '../../src/domain/course/certificate-lesson'
 import {
   ContentNotFoundError,
   LessonNotFoundError,
   NoPublishedLessonError,
   NoShowcaseBlockError,
 } from '../../src/domain/course/course.errors'
-import { isCompletionGatingBlock } from '../../src/domain/course/lesson-block'
 import { LessonDraftConflictError } from '../../src/domain/learning/lesson-draft.errors'
 import type { LessonDraftRepository } from '../../src/domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../src/domain/shared/stable-json'
@@ -228,11 +228,8 @@ export class InMemoryLessonDraftRepository implements LessonDraftRepository {
     try {
       if ((await this.courses.countCertificateBlocks(lesson.courseId)) > 1)
         throw new ValidationError('O curso já possui um bloco de certificado.')
-      if (
-        blocks.some((b) => b.kind === 'certificate') &&
-        blocks.some((b) => isCompletionGatingBlock(b.content))
-      )
-        throw new ValidationError('A aula de certificado não pode conter atividades obrigatórias.')
+      const certificateIssues = certificateLessonIssues(draft.document.sections, blocks)
+      if (certificateIssues.length) throw new ValidationError(certificateIssues.join('\n'))
       for (const block of blocks)
         if (block.content.kind === 'pinta' && block.content.chain)
           await assertPintaChainTypeMatches(this.courses, lesson.courseId, block.content, block.id)

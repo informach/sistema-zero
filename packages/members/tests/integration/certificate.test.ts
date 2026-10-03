@@ -87,6 +87,111 @@ const updateBlock = (app: App, lessonId: string, blockId: string, content: { kin
   publishBlock(app, lessonId, { content: { ...content } }, {}, blockId)
 
 describe('Certificado — elegibilidade, emissão idempotente e validação', () => {
+  test.each([
+    'cade-todo-mundo',
+    'desafio',
+  ])('%s: quiz final impede emissão antecipada, permite corrigir e preserva certificado emitido', async (prefix) => {
+    const { app, courses, entitlements, learningRepository } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const { lessonId, blockId } = seedCertificateLesson(courses, courseId, moduleId)
+    const manifest = await Bun.file(
+      new URL(
+        `../../../../docs/aulas-interativas/aulas/${prefix}-certificado.manifesto.json`,
+        import.meta.url,
+      ),
+    ).json()
+    const content = manifest.blocks.find(
+      (b: { content?: { kind: string } }) => b.content?.kind === 'quiz',
+    ).content
+    const quizId = randomUUID(),
+      dialogueId = randomUUID(),
+      revision = 'a'.repeat(32)
+    courses.blocks.find((b) => b.id === blockId)!.contentRevision = revision
+    courses.blocks.push(
+      {
+        id: dialogueId,
+        lessonId,
+        kind: 'dialogue',
+        sortOrder: 0,
+        contentRevision: revision,
+        content: { kind: 'dialogue', text: 'Confira as regras do seu jogo.' },
+      },
+      { id: quizId, lessonId, kind: 'quiz', sortOrder: 1, contentRevision: revision, content },
+    )
+    learningRepository.structures.set(lessonId, {
+      revision: randomUUID(),
+      sections: [
+        {
+          ...defaultLessonSection(randomUUID(), 'Revisão', [dialogueId, quizId]),
+          completion: { version: 1, blockIds: [quizId] },
+        },
+        {
+          ...defaultLessonSection(randomUUID(), 'Certificado', [blockId]),
+          completion: { version: 1, blockIds: [blockId] },
+        },
+      ],
+    })
+    for (const id of lessonIds) expect((await complete(app, id)).status).toBe(200)
+    expect(await getState(app, lessonId, blockId).then(readJson)).toMatchObject({
+      eligible: false,
+      issued: false,
+    })
+    const blocked = await issue(app, lessonId, blockId)
+    expect(blocked.status).toBe(423)
+    expect((await readJson(blocked)).error.code).toBe('SECTION_LOCKED')
+    const answers = Object.fromEntries(
+      content.questions.map((q: { id: string; correctChoiceIds: string[] }) => [
+        q.id,
+        q.correctChoiceIds,
+      ]),
+    )
+    const attempt = (value: typeof answers) =>
+      app.handle(
+        new Request(`http://localhost/members/lessons/${lessonId}/blocks/${quizId}/quiz-attempts`, {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({ answers: value }),
+        }),
+      )
+    const first = content.questions[0]
+    const wrong = first.choices.find((c: { id: string }) => !first.correctChoiceIds.includes(c.id))
+    const failed = await attempt({ ...answers, [first.id]: [wrong.id] })
+    expect(failed.status).toBe(200)
+    expect(await readJson(failed)).toMatchObject({ passed: false, retryAvailableAt: null })
+    expect((await issue(app, lessonId, blockId)).status).toBe(423)
+    const corrected = await attempt(answers)
+    expect(corrected.status).toBe(200)
+    expect(await readJson(corrected)).toMatchObject({ passed: true, retryAvailableAt: null })
+    expect(await getState(app, lessonId, blockId).then(readJson)).toMatchObject({
+      eligible: true,
+      issued: false,
+    })
+    const issued = await issue(app, lessonId, blockId)
+    expect(issued.status).toBe(200)
+    const saved = await readJson(issued)
+    // Conteúdo revisto não revoga conquista: não há novas respostas à revisão nova.
+    courses.blocks.find((b) => b.id === quizId)!.contentRevision = 'b'.repeat(32)
+    const newQuizId = randomUUID()
+    courses.blocks.push({
+      id: newQuizId,
+      lessonId,
+      kind: 'quiz',
+      sortOrder: 3,
+      contentRevision: revision,
+      content,
+    })
+    const structure = learningRepository.structures.get(lessonId)!
+    structure.revision = randomUUID()
+    structure.sections.unshift({
+      ...defaultLessonSection(randomUUID(), 'Nova revisão', [newQuizId]),
+      completion: { version: 1, blockIds: [newQuizId] },
+    })
+    expect(await getState(app, lessonId, blockId).then(readJson)).toMatchObject({ issued: true })
+    const replay = await issue(app, lessonId, blockId)
+    expect(replay.status).toBe(200)
+    expect((await readJson(replay)).certificate.id).toBe(saved.certificate.id)
+  })
   test('aula com certificado e vídeo só conclui após emissão, 90% do vídeo e botão final', async () => {
     const { app, courses, entitlements, progress, learningRepository } = buildApp()
     const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
