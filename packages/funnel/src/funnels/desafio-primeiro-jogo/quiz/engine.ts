@@ -1,7 +1,7 @@
 import type { QuizAnswers, QuizAnswerValue } from '../../../lib/quiz-types'
 import { DESAFIO_QUESTIONS, type DesafioQuestion } from './questions'
 
-export const DESAFIO_QUIZ_VERSION = 'desafio-farol-v2'
+export const DESAFIO_QUIZ_VERSION = 'desafio-farol-v3'
 export const DESAFIO_BASE = '/kids/desafio-primeiro-jogo'
 export const DESAFIO_PROFILE_IDS = {
   A: 'tempo-de-tela',
@@ -66,7 +66,7 @@ export function activeDesafioSteps(answers: QuizAnswers): DesafioQuestion[] {
         },
       ]
     }
-    if (step.key === 'desencontro' && answers.interesse_no_projeto !== 'outra_atividade') return []
+    if (step.key === 'desencontro' && answers.abertura_criacao !== 'outra_atividade') return []
     return [step]
   })
 }
@@ -121,14 +121,14 @@ export function desafioDecision(answers: QuizAnswers): DesafioDecision | null {
   if (answers.equipamento === 'a_conferir') pending.push('computador')
   if (answers.formato === 'exige_ao_vivo') unmet.push('formato')
   if (answers.formato === 'a_conferir') pending.push('formato')
-  if (answers.interesse_no_projeto === 'outra_atividade') unmet.push('projeto')
+  if (answers.abertura_criacao === 'outra_atividade') unmet.push('projeto')
   if (answers.experiencia === 'independente') pending.push('nivel')
   const next =
-    answers.interesse_no_projeto === 'outra_atividade'
+    answers.abertura_criacao === 'outra_atividade'
       ? 'outra_atividade'
       : unmet.length || pending.length
         ? 'conferir_condicoes'
-        : answers.interesse_no_projeto === 'conversar' || !principal
+        : answers.abertura_criacao === 'conversar' || !principal
           ? 'conversar_com_filho'
           : answers.experiencia === 'interrompida'
             ? 'retomar_com_apoio'

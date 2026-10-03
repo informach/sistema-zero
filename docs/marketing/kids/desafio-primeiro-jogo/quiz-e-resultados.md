@@ -1,6 +1,6 @@
-# Proposta do quiz e dos resultados
+# Quiz e resultados: direção vigente
 
-03/10/2026. Versão proposta: `desafio-farol-v2`. Complementa a [proposta do funil](proposta-funil-2026-10-03.md). Perguntas e textos abaixo são propostas para revisão, sem alteração do quiz existente. A [pesquisa aprofundada](pesquisa-aprofundada-v2-2026-10-03.md) explica as mudanças.
+03/10/2026. Versão implementada: `desafio-farol-v3`. A revisão para tráfego frio substitui a apresentação antecipada do produto na proposta v2. Complementa a [proposta do funil](proposta-funil-2026-10-03.md); a [revisão de entrada e posicionamento](revisao-quiz-frio-e-bio.md) registra a aplicação do comando `lt-quiz`, as mudanças e o uso de cada resposta.
 
 ## Função do quiz
 
@@ -8,9 +8,9 @@ Para a família: encontrar uma forma de apresentar a criação de jogos ao filho
 
 Para o Sistema Zero: reconhecer a prioridade da família, conferir o encaixe no Farol e conduzir à apresentação pertinente da oferta. Não medir personalidade, talento, estilo de aprendizagem, inteligência ou probabilidade de sucesso. Gostar de jogar não prova vontade de programar.
 
-Oito perguntas principais. Uma pergunta adicional quando há dois motivos e outra quando a família rejeita o projeto apresentado: máximo de dez no percurso completo. Faixa etária fora do recorte pode encerrar antes, com orientação informativa. Duração só será anunciada depois de medida. Uma resposta por criança, com opção de refazer para outro filho.
+Oito perguntas principais. Uma pergunta adicional quando há dois motivos e outra quando a família procura outro tipo de atividade: máximo de dez no percurso completo. Faixa etária fora do recorte pode encerrar antes, com orientação informativa. Duração só será anunciada depois de medida. Uma resposta por criança, com opção de refazer para outro filho.
 
-**Ordem de apresentação na versão 2:** Q1 → Q6 → Q2 → Q4 → Q3 → Q3P, quando necessária → Q5 → Q7 → Q8 → Q8B, quando necessária. Os IDs permanecem estáveis para revisão documental; os números não aparecem ao usuário. Conferir computador cedo evita solicitar todas as respostas antes de revelar esse requisito. As quatro etapas de progresso são “Para quem”, “O começo”, “O que vocês procuram” e “Sua orientação”, com ramificações previstas; não exibir um percentual que retrocede.
+**Ordem de apresentação na versão 3:** Q1 → Q6 → Q2 → Q4 → Q3 → Q3P, quando necessária → Q5 → Q7 → Q8 → Q8B, quando necessária. Os IDs permanecem estáveis para revisão documental; os números não aparecem ao usuário. Conferir o equipamento cedo permite considerar as condições da família; requisitos de um produto específico aparecem somente no resultado. As quatro etapas de progresso são “Para quem”, “O começo”, “O que vocês procuram” e “Sua orientação”, com ramificações previstas; não exibir um percentual que retrocede.
 
 Quando não houver computador, entregar imediatamente uma explicação curta e a opção de continuar a orientação para planejar um começo futuro. Não bloquear o conteúdo informativo nem continuar qualificando como se o equipamento estivesse disponível. A criança não precisa estar presente para o adulto responder.
 
@@ -18,19 +18,17 @@ Quando não houver computador, entregar imediatamente uma explicação curta e a
 
 **Sistema Zero Kids · Para mães, pais e responsáveis**
 
-### Descubra por onde seu filho pode começar a criar jogos
+### Encontre um jeito de seu filho aprender com o que já gosta
 
-Talvez ele goste de jogar, desenhe personagens ou ainda não tenha pensado em criar um jogo. Conte o que você observa em casa e o que gostaria de experimentar com ele.
+Os jogos que ele escolhe, os desenhos que faz e as histórias que inventa podem ser um ponto de partida. Conte o que você observa em casa e o que gostaria que ele aprendesse.
 
-Você recebe um próximo passo explicado para a situação de vocês: como apresentar a ideia ao seu filho, o que observar na primeira tentativa e que apoio procurar. Ao final, mostramos também uma aventura de programação e se o nosso Desafio do Primeiro Jogo corresponde ao que vocês querem conhecer.
+Ao terminar, você recebe uma sugestão de por onde começar, uma ideia de conversa para fazer com ele e o que observar antes de escolher uma atividade.
 
 **Botão:** Encontrar um primeiro passo
 
 **Apoio:** Resultado gratuito na tela, sem cadastro. Orientação voltada à faixa de 9 a 14 anos.
 
-**Link secundário:** Já quero conhecer o Desafio → `/kids/desafio-primeiro-jogo/oferta`
-
-Identificar a marca sem pressupor conhecimento da Comunidade. Não mostrar formulário de contato, contagem fictícia, “analisando o cérebro” ou promessa de avaliação científica. A ilustração pode mostrar uma família e uma ideia de jogo; não sugerir liberação gratuita do curso pago.
+Identificar a marca como Sistema Zero Kids. O visual usa cartões sobre interesses, prioridades e rotina, com o mascote existente. A abertura, as perguntas, a revisão, as saídas informativas e os metadados não apresentam produtos, prints de curso, preço, prazo de acesso ou atalhos de oferta. O produto aparece no resultado, como uma possibilidade explicada a partir das respostas. Não mostrar formulário de contato, contagem fictícia ou promessa de avaliação científica.
 
 ## Perguntas e uso das respostas
 
@@ -64,7 +62,7 @@ Os identificadores abaixo são técnicos; aparecem apenas na documentação. Uma
 
 ### Q3 · Prioridade da família
 
-**O que mais pesa para você ao procurar uma atividade como essa?**
+**O que mais importa para você ao buscar uma atividade com tecnologia para seu filho?**
 
 *Escolha até duas opções.*
 
@@ -83,7 +81,7 @@ Os identificadores abaixo são técnicos; aparecem apenas na documentação. Uma
 
 ### Q4 · Experiência em programação de jogos
 
-**Até onde seu filho já chegou ao tentar programar um jogo?**
+**Seu filho já tentou programar um jogo?**
 
 - Ainda não tentou. `primeira_vez`
 - Começou, mas ainda não conseguiu fazer uma versão funcionar. `interrompida`
@@ -95,13 +93,13 @@ Os identificadores abaixo são técnicos; aparecem apenas na documentação. Uma
 
 ### Q5 · Dúvida principal
 
-**O que você mais gostaria de esclarecer antes de escolher?**
+**Ao pensar em uma atividade nova para ele, qual é sua maior dúvida?**
 
 - Se ele vai querer participar da atividade. `interesse`
 - Se vai precisar de mim ao lado o tempo todo. `companhia`
 - Como recebe ajuda quando uma parte não funciona. `ajuda`
 - Como encaixar as atividades na nossa rotina. `rotina`
-- O que recebemos pelo valor pago. `valor`
+- Como saber se vale investir nessa atividade. `valor`
 - Ainda não tenho uma dúvida específica. `sem_duvida`
 
 **Uso:** ordenar e desenvolver um argumento do resultado, sem criar outro avatar. Companhia e ajuda são opções distintas. Cada resposta altera uma passagem concreta; não reaparece como uma lista de “dores do perfil”.
@@ -119,49 +117,43 @@ Os identificadores abaixo são técnicos; aparecem apenas na documentação. Uma
 
 ### Q7 · Formato de acompanhamento
 
-**Que acompanhamento vocês procuram para esse começo?**
+**Quando seu filho aprende algo novo, que tipo de acompanhamento você procura?**
 
-- Podemos considerar aulas gravadas. `gravado`
-- Prefiro ao vivo, mas gostaria de conhecer como funciona uma atividade gravada. `prefere_ao_vivo`
+- Explicações que ele possa pausar e rever, com ajuda por mensagem se precisar. `gravado`
+- Prefiro um professor ao vivo, mas posso avaliar explicações gravadas. `prefere_ao_vivo`
 - Preciso de um professor ao vivo acompanhando a atividade. `exige_ao_vivo`
 - Ainda preciso entender a diferença para escolher. `a_conferir`
 
 **Uso:** preferência não é exigência. O resultado explica pausa, repetição e ajuda que pode exigir espera, inclusive para quem marcou gravado. Não afirmar que qualquer criança consegue sozinha. Quem exige ao vivo não recebe o Desafio nem a Comunidade assíncrona como solução equivalente.
 
-### Q8 · A experiência que está sendo considerada
+### Q8 · Abertura para uma atividade de criação
 
-Antes da pergunta, apresentar uma imagem ou sequência real do Farol e este texto curto:
+**Como você se sente sobre apresentar a ele uma primeira experiência de programação de jogos?**
 
-> No jogo A Chave do Farol, o personagem precisa encontrar uma chave e acender a luz para um barco chegar. O cenário e os desenhos já vêm preparados. A criança acompanha explicações gravadas, monta as regras com blocos e testa no Estúdio da aula. Pode pausar e rever; as dúvidas seguem por mensagens. O curso é feito no computador e custa R$ 67, uma compra, com 30 dias de curso e Mural completo. Depois, permanece o Mural visitante para ver e jogar.
+- Quero conhecer uma atividade guiada, começando pelo básico. `conhecer`
+- Quero conversar com ele antes de escolher uma atividade. `conversar`
+- Estamos procurando outro tipo de atividade. `outra_atividade`
 
-**Você gostaria de apresentar esse primeiro projeto guiado ao seu filho?**
+**Uso:** distinguir abertura para conhecer uma iniciação, necessidade de conversar com o filho e busca por outra atividade. A pergunta não mostra um produto e não equivale a aceitação do Farol, intenção de compra ou vontade já confirmada da criança. O campo é `abertura_criacao`, substituindo `interesse_no_projeto` da versão 2; respostas históricas não são convertidas. Mesmo sem apresentar o produto, este continua sendo um quiz comercial, e suas respostas não comprovam demanda ou disposição para pagar.
 
-- Sim, gostaria de conhecer como ele faria. `conhecer`
-- Quero conversar com ele antes de escolher. `conversar`
-- Esse projeto não corresponde ao que estamos procurando. `outra_atividade`
-
-**Uso:** qualificar a expectativa após mostrar o escopo. Interesse do responsável não é aceitação já obtida da criança. A resposta não libera compra, muda motivo nem representa compromisso.
-
-A prova nesta tela deve mostrar uma regra sendo montada e seu efeito, além da arte do jogo. Não usar um trailer que esconda como é a atividade. É apresentação comercial identificada, não uma pergunta neutra de pesquisa de mercado; não usar suas respostas para alegar demanda independente pela ideia.
-
-**Q8B, somente para `outra_atividade`: “O que vocês gostariam de encontrar no lugar desse projeto?”**
+**Q8B, somente para `outra_atividade`: “Que tipo de atividade vocês estão procurando?”**
 
 - Uma atividade centrada em desenhar. `desenho`
 - Um curso feito no Roblox ou Minecraft. `ferramenta_especifica`
 - Um projeto mais avançado de programação. `avancado`
 - Outro tipo de atividade. `outro`
 
-**Uso:** explicar o desencontro e permitir um próximo passo pertinente. É uma pergunta de escopo; a exigência de ao vivo já foi registrada em Q7. Se o interesse por desenho apareceu em qualquer combinação, o resultado explica os desenhos preparados, independentemente do motivo principal.
+**Uso:** explicar a diferença entre a procura e a entrega somente no resultado. Não tratar essa escolha como recusa de um produto que a pessoa ainda não conheceu. A exigência de ao vivo já foi registrada em Q7. Interesse por desenho, mesmo secundário, pede explicação sobre a arte preparada quando o Farol for apresentado.
 
 ## Regras de orientação e destinos
 
-Não usar soma de pontos. Guardar separadamente `motivos`, `principal`, `interesses`, `experiencia`, `duvida`, `equipamento`, `formato`, `interesse_no_projeto` e eventual motivo de desencontro. O resultado computado tem versão e estado de adequação; o endereço de destino é outro campo. Acrescentar o próximo passo recomendado: `conhecer_projeto`, `retomar_com_apoio`, `conversar_com_filho`, `conferir_condicoes` ou `outra_atividade`. São ações, não novos avatares.
+Não usar soma de pontos. Guardar separadamente `motivos`, `principal`, `interesses`, `experiencia`, `duvida`, `equipamento`, `formato`, `abertura_criacao` e eventual motivo de desencontro. O resultado computado tem versão e estado de adequação; o endereço de destino é outro campo. Acrescentar o próximo passo recomendado: `conhecer_projeto`, `retomar_com_apoio`, `conversar_com_filho`, `conferir_condicoes` ou `outra_atividade`. São ações, não novos avatares.
 
 ### Precedência
 
 1. Respostas incompletas, inválidas ou de versão anterior não produzem resultado novo por aproximação. Voltar à pergunta necessária.
 2. Faixa fora do recorte: orientação informativa, sem recomendação personalizada de compra.
-3. Exigência de ao vivo, projeto recusado ou ausência de computador: registrar todos os obstáculos e oferecer orientação correspondente antes de qualquer convite comercial.
+3. Exigência de ao vivo, procura por outra atividade ou ausência de computador: registrar todos os obstáculos e oferecer orientação correspondente antes de qualquer convite comercial.
 4. Equipamento/formato a conferir, conversa pendente ou experiência independente: recomendação com ressalva explícita, sem “ideal para ele”.
 5. Condições compatíveis: desenvolver a recomendação conforme motivo e interesse observado, com a mesma clareza sobre escopo e preço.
 

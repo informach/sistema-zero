@@ -12,14 +12,15 @@ interface Props {
   title: string
   description: string
   ogImage: string
+  showExperienceLink?: boolean
 }
-const { title, description, ogImage } = Astro.props
+const { title, description, ogImage, showExperienceLink = false } = Astro.props
 const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
 ---
 <BaseLayout title={title} description={description} ogImage={ogImage} htmlClass="theme-kids" noindex={true}>
   <div class="cdc cq df">
     <a href="#quiz" class="skip-link">Pular para o conteúdo</a>
-    <header class="topbar"><div class="wrap nav"><a href={link('/')} aria-label="Página inicial do Sistema Zero Kids"><img class="logo" src="/img/comunidade-dos-criadores/logo-kids-escuro.svg" alt="Sistema Zero Kids" width="279" height="26"/></a><a class="kof-link" href={link('/como-funciona/')} data-analytics-id="desafio-quiz-como-funciona">Como funciona</a></div></header>
+    <header class="topbar"><div class="wrap nav"><a href={link('/')} aria-label="Página inicial do Sistema Zero Kids"><img class="logo" src="/img/comunidade-dos-criadores/logo-kids-escuro.svg" alt="Sistema Zero Kids" width="279" height="26"/></a>{showExperienceLink ? <a class="kof-link" href={link('/como-funciona/')} data-analytics-id="desafio-quiz-como-funciona">Como funciona</a> : <span class="cq-nav-label">Interesses, rotina e aprendizagem</span>}</div></header>
     <slot/>
     <ComunidadeImageZoom/>
   </div>

@@ -66,10 +66,11 @@ export const DESAFIO_SECTIONS = {
     ],
   },
   continuidade: {
-    title: 'Depois do primeiro jogo, vocês podem escolher o próximo passo',
+    title: 'Um primeiro jogo para conhecer nosso jeito de aprender',
     paragraphs: [
-      'O Desafio é uma forma de conhecer como seu filho acompanha uma explicação, monta uma regra e testa o que fez. Se quiserem continuar, a Comunidade dos Criadores reúne outros cursos e ferramentas de criação, com liberações conforme a Jornada.',
-      'Vocês continuam na mesma conta, com o que foi registrado no perfil. A assinatura é uma nova escolha da família. Quem já sabe que quer o conjunto pode conhecer os planos da Comunidade diretamente; não precisa comprar o Desafio antes.',
+      'Escolher uma atividade fica mais concreto quando vocês conseguem vivê-la. No Desafio, seu filho entra na plataforma da Comunidade dos Criadores, acompanha uma aula e coloca a mão na construção de um jogo. Você pode observar o que desperta a curiosidade dele, como lida com uma parte que não funciona e de que ajuda precisa.',
+      'Essa primeira experiência dá a vocês algo para considerar além da apresentação de uma página: como foi aprender por aqui, na rotina da sua família. Se quiserem continuar, a Comunidade dos Criadores reúne outros cursos e ferramentas de criação, com liberações conforme a Jornada. O Desafio inclui o curso do Farol e o Mural pelo prazo informado; os demais recursos fazem parte da assinatura.',
+      'A continuidade é uma escolha de vocês, com uma contratação separada. Vocês seguem na mesma conta, com o que foi registrado no perfil. Quem já quer conhecer o conjunto pode ir direto aos planos da Comunidade; o Desafio é uma opção para experimentar primeiro.',
     ],
   },
   convite: {
@@ -193,7 +194,8 @@ export const DESAFIO_FAQ = [
     id: 'duvida-16',
     title: 'Posso ir direto para a Comunidade?',
     paragraphs: [
-      'Sim. A Comunidade inclui o Desafio enquanto a assinatura estiver ativa, além dos demais recursos do plano. O Desafio avulso existe para quem prefere começar por essa experiência delimitada. Ele não é uma compra obrigatória antes da assinatura. Se já tiver acesso incluído, entre pela sua conta para evitar comprar o mesmo curso outra vez.',
+      'Sim. A Comunidade inclui o Desafio enquanto a assinatura estiver ativa, além dos demais recursos do plano. O Desafio avulso é uma opção para conhecer nosso jeito de aprender primeiro: seu filho experimenta uma construção guiada, e vocês observam como a plataforma funciona na rotina da família antes de escolher a continuidade.',
+      'Você pode contratar a Comunidade diretamente se já quiser seguir com o conjunto. Se já tiver acesso ao Desafio incluído na sua conta, entre por ela para evitar comprar o mesmo curso outra vez.',
     ],
   },
   {

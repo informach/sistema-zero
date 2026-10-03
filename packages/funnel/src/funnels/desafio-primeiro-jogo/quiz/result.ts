@@ -77,7 +77,7 @@ export function buildDesafioResult(answers: QuizAnswers) {
     )
   else if (decision.state === 'outra_procura')
     intro.push(
-      'Você contou que o que procura não aparece nas opções. Por isso, esta orientação não pode afirmar que o Desafio atende ao seu objetivo. Podemos mostrar o projeto e suas condições para você comparar com o que tem em mente.',
+      'Você contou que o que procura não aparece nas opções. Por isso, vale esclarecer que tipo de atividade tem em mente antes de escolher. A sugestão abaixo é uma possibilidade para vocês compararem com essa procura, e não uma confirmação de que ela corresponde ao seu objetivo.',
     )
   else
     intro.push(
@@ -93,7 +93,7 @@ export function buildDesafioResult(answers: QuizAnswers) {
     )
   else if (interests.includes('desenha'))
     intro.push(
-      'Você contou que ele gosta de desenhar. Reconheça esse interesse no convite e mostre a diferença entre desenhar um personagem e programar o que ele faz. O Farol trabalha a segunda parte, com os desenhos já preparados.',
+      'Você contou que ele gosta de desenhar. Reconheça esse interesse na conversa: ele quer aprender a desenhar um personagem ou também tem curiosidade de programar o que esse personagem faz? Entender essa diferença ajuda a escolher uma atividade que corresponda ao que ele imaginou.',
     )
   else if (interests.includes('joga'))
     intro.push(
@@ -101,14 +101,17 @@ export function buildDesafioResult(answers: QuizAnswers) {
     )
   else if (interests.includes('nao_observei'))
     intro.push(
-      'Você quer apresentar algo novo, porque ainda não observou essas situações em casa. Pode mostrar a cena do Farol e conversar sobre uma regra. Seu filho pode se interessar pela montagem, fazer perguntas ou preferir outra atividade; qualquer uma dessas respostas ajuda na escolha.',
+      'Você quer apresentar algo novo, porque ainda não observou essas situações em casa. Pode mostrar um exemplo de criação e ouvir o que ele percebe. Seu filho pode querer experimentar, fazer perguntas ou preferir outra atividade; qualquer uma dessas respostas ajuda na escolha.',
     )
   else
     intro.push(
       'Você ainda não sabe dizer quais desses interesses aparecem no dia a dia. Mostrar uma atividade e ouvir o que ele percebe pode ajudar a conhecer essa preferência. Não saber informar agora não significa que ele não tenha interesses.',
     )
 
-  const refused = answers.interesse_no_projeto === 'outra_atividade'
+  const refused = answers.abertura_criacao === 'outra_atividade'
+  const presentation = refused
+    ? 'Você está procurando outro tipo de atividade, e essa escolha precisa orientar o próximo passo. O Desafio do Primeiro Jogo, do Sistema Zero, é uma iniciação guiada em programação de jogos. Abaixo, explico as diferenças para você não escolher uma experiência esperando encontrar outra.'
+    : 'Uma possibilidade para conhecer esse jeito de aprender é o Desafio do Primeiro Jogo. É uma primeira experiência dentro da plataforma da Comunidade dos Criadores, do Sistema Zero: seu filho aprende a programar a aventura A Chave do Farol, fazendo o personagem andar, encontrar uma chave e abrir uma porta. Os desenhos já vêm preparados; ele monta e testa as regras que fazem o jogo funcionar.'
   const invitation = refused
     ? 'Quero conhecer melhor o que você tem vontade de criar. Você pode me mostrar uma ideia, um desenho ou um jogo que tenha a ver com isso? Vamos conversar sobre o que você gostaria de aprender a fazer?'
     : interests.includes('quer_criar')
@@ -141,7 +144,7 @@ export function buildDesafioResult(answers: QuizAnswers) {
     conditions.push(
       'Você contou que seu filho já monta jogos por conta própria. O Farol é introdutório: movimento, coleta e uma decisão com a chave. Ele pode servir para conhecer a plataforma, mas compare esse nível com o que seu filho já faz antes de comprar.',
     )
-  if (answers.interesse_no_projeto === 'outra_atividade') {
+  if (answers.abertura_criacao === 'outra_atividade') {
     const mismatch: Record<string, string> = {
       desenho:
         'Vocês procuram uma atividade centrada em desenhar. No Farol, os desenhos já vêm preparados, e a tarefa é programar as regras. Por isso, eu não indicaria esse curso como se ele atendesse ao que você quer. A proposta de expressão visual da Comunidade pode ser conhecida separadamente: ela liga desenho a projetos interativos e tem condições próprias.',
@@ -150,12 +153,12 @@ export function buildDesafioResult(answers: QuizAnswers) {
       avancado:
         'Vocês querem um projeto mais avançado. O Farol foi organizado como iniciação guiada e pode ser simples para o momento do seu filho. A Comunidade tem um percurso mais amplo, mas é preciso conferir o catálogo e a Jornada antes de esperar dela um curso avançado específico.',
       outro:
-        'Você procura outro tipo de atividade. O Farol oferece uma construção guiada de programação com arte preparada. Como esse projeto não corresponde ao que você contou, o próximo passo é esclarecer a atividade que vocês querem encontrar; não insistir nesta compra.',
+        'Você procura outro tipo de atividade. O Farol oferece uma construção guiada de programação com arte preparada. O próximo passo é esclarecer a atividade que vocês querem encontrar e comparar o que ela permite fazer com essa procura.',
     }
     conditions.push(mismatch[String(answers.desencontro)] ?? '')
   } else if (interests.includes('desenha') || decision.motivos.includes('C'))
     conditions.push(
-      'No Farol, os desenhos já vêm preparados. Seu filho programa o movimento, a coleta e a porta; não aprende a desenhar personagens neste curso. Como você quer conhecer essa programação, vale comparar a atividade com o que ele tem vontade de fazer. O interesse por desenho continua sendo considerado.',
+      'No Farol, os desenhos já vêm preparados. Seu filho programa o movimento, a coleta e a porta; não aprende a desenhar personagens neste curso. Vale mostrar essa diferença antes de escolher: ele quer desenhar ou também gostaria de descobrir como fazer um personagem responder? O interesse por desenho continua sendo considerado.',
     )
   const format =
     answers.formato === 'prefere_ao_vivo'
@@ -171,6 +174,7 @@ export function buildDesafioResult(answers: QuizAnswers) {
   return {
     decision,
     intro,
+    presentation,
     invitation,
     refused,
     conditions,
@@ -182,7 +186,11 @@ export function buildDesafioResult(answers: QuizAnswers) {
           ? TITLES[decision.principal]
           : 'Vale conhecer uma construção e conversar sobre ela com seu filho',
     doubt: DOUBTS[String(answers.duvida)] ?? DOUBTS.sem_duvida!,
-    bridge: [format, experience],
+    bridge: [
+      format,
+      experience,
+      'Enquanto ele experimenta, você pode observar o que desperta sua curiosidade, como acompanha a explicação e de que ajuda precisa. Assim, vocês conhecem a plataforma na rotina da família e têm essa experiência para decidir se querem continuar com os cursos e recursos da Comunidade dos Criadores. O Desafio é uma compra única para esse primeiro percurso; a assinatura é uma escolha separada.',
+    ],
     showBridge: !blocked,
     copyFirst: decision.next === 'conversar_com_filho',
     primary: refused

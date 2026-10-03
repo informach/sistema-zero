@@ -1,6 +1,6 @@
 # Proposta do novo funil do Desafio do Primeiro Jogo
 
-**Versão 2 · 03/10/2026 · Proposta aprovada.** A implementação local posterior está registrada em [implementacao.md](implementacao.md); as descrições de escopo documental abaixo se referem ao momento da proposta. A [segunda pesquisa](pesquisa-aprofundada-v2-2026-10-03.md) fundamenta esta revisão; a [revisão de decisões](revisao-v2.md) registra o que mudou.
+**Versão 2 · 03/10/2026 · Proposta aprovada.** A implementação local posterior está registrada em [implementacao.md](implementacao.md); as descrições de escopo documental abaixo se referem ao momento da proposta. A [segunda pesquisa](pesquisa-aprofundada-v2-2026-10-03.md) fundamenta esta revisão; a [revisão de decisões](revisao-v2.md) registra o que mudou. Na tarde do mesmo dia o quiz foi revisto para tráfego frio, sem produto antes do resultado: ver a [revisão do quiz e da bio](revisao-quiz-frio-e-bio.md).
 
 ## A decisão central
 
@@ -144,7 +144,7 @@ São oito perguntas principais, até duas ramificações e saídas antecipadas p
 
 O resultado se desenvolve como conversa: o que você contou; por onde começar com seu filho; o que observar; como o Farol oferece esse começo; o que conferir antes de comprar. Mostra duas ou três provas relevantes, e não uma coleção de cartões com frases soltas.
 
-Faixa etária e computador são conferidos cedo. Depois vêm interesse observado, experiência, prioridade do responsável e dúvida. O formato é apresentado com benefícios e limites; uma previsão do adulto nunca será registrada como vontade confirmada da criança. O quiz informa que pode apresentar um curso, sem exigir conhecimento prévio da marca ou da Comunidade.
+Faixa etária e computador são conferidos cedo. Depois vêm interesse observado, experiência, prioridade do responsável e dúvida. O formato é apresentado com benefícios e limites; uma previsão do adulto nunca será registrada como vontade confirmada da criança. Desde a revisão para tráfego frio (`desafio-farol-v3`), o quiz não apresenta curso, preço nem oferta antes do resultado: o Desafio aparece no resultado, como a primeira experiência na plataforma da Comunidade ([revisão](revisao-quiz-frio-e-bio.md)).
 
 Responder sem cadastro produz uma sessão orientada, não um contato autorizado para campanhas. A identificação comercial continua no pré-checkout. Não condicionar o resultado a e-mail nem interpretar resposta como consentimento para mensagens. Para levar o convite ao filho, propor copiar apenas o texto do convite, sem gerar URL pública com respostas da família.
 

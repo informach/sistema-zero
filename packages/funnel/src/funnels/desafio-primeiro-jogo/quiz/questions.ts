@@ -104,7 +104,7 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
   {
     key: 'experiencia',
     stage: 'comeco',
-    titulo: 'Até onde seu filho já chegou ao tentar programar um jogo?',
+    titulo: 'Seu filho já tentou programar um jogo?',
     tipo: 'selecao',
     etapa: 'filho',
     lastStep: 'desafio_experiencia',
@@ -136,7 +136,7 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
   {
     key: 'motivos',
     stage: 'procura',
-    titulo: 'O que mais pesa para você ao procurar uma atividade como essa?',
+    titulo: 'O que mais importa para você ao buscar uma atividade com tecnologia para seu filho?',
     tipo: 'selecao',
     etapa: 'filho',
     lastStep: 'desafio_motivos',
@@ -208,7 +208,7 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
   {
     key: 'duvida',
     stage: 'procura',
-    titulo: 'O que você mais gostaria de esclarecer antes de escolher?',
+    titulo: 'Ao pensar em uma atividade nova para ele, qual é sua maior dúvida?',
     tipo: 'selecao',
     etapa: 'filho',
     lastStep: 'desafio_duvida',
@@ -232,7 +232,7 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
       },
       {
         value: 'valor',
-        label: 'O que recebemos pelo valor pago.',
+        label: 'Como saber se vale investir nessa atividade.',
       },
       {
         value: 'sem_duvida',
@@ -244,7 +244,7 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
   {
     key: 'formato',
     stage: 'orientacao',
-    titulo: 'Que acompanhamento vocês procuram para esse começo?',
+    titulo: 'Quando seu filho aprende algo novo, que tipo de acompanhamento você procura?',
     tipo: 'selecao',
     etapa: 'filho',
     lastStep: 'desafio_formato',
@@ -252,11 +252,11 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
     opcoes: [
       {
         value: 'gravado',
-        label: 'Podemos considerar aulas gravadas.',
+        label: 'Explicações que ele possa pausar e rever, com ajuda por mensagem se precisar.',
       },
       {
         value: 'prefere_ao_vivo',
-        label: 'Prefiro ao vivo, mas gostaria de conhecer como funciona uma atividade gravada.',
+        label: 'Prefiro um professor ao vivo, mas posso avaliar explicações gravadas.',
       },
       {
         value: 'exige_ao_vivo',
@@ -270,25 +270,26 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
     id: 8,
   },
   {
-    key: 'interesse_no_projeto',
+    key: 'abertura_criacao',
     stage: 'orientacao',
-    titulo: 'Você gostaria de apresentar esse primeiro projeto guiado ao seu filho?',
+    titulo:
+      'Como você se sente sobre apresentar a ele uma primeira experiência de programação de jogos?',
     tipo: 'selecao',
     etapa: 'filho',
-    lastStep: 'desafio_interesse_no_projeto',
-    eventName: 'desafio_resposta_interesse_no_projeto',
+    lastStep: 'desafio_abertura_criacao',
+    eventName: 'desafio_resposta_abertura_criacao',
     opcoes: [
       {
         value: 'conhecer',
-        label: 'Sim, gostaria de conhecer como ele faria.',
+        label: 'Quero conhecer uma atividade guiada, começando pelo básico.',
       },
       {
         value: 'conversar',
-        label: 'Quero conversar com ele antes de escolher.',
+        label: 'Quero conversar com ele antes de escolher uma atividade.',
       },
       {
         value: 'outra_atividade',
-        label: 'Esse projeto não corresponde ao que estamos procurando.',
+        label: 'Estamos procurando outro tipo de atividade.',
       },
     ],
     id: 9,
@@ -296,7 +297,7 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
   {
     key: 'desencontro',
     stage: 'orientacao',
-    titulo: 'O que vocês gostariam de encontrar no lugar desse projeto?',
+    titulo: 'Que tipo de atividade vocês estão procurando?',
     tipo: 'selecao',
     etapa: 'filho',
     lastStep: 'desafio_desencontro',

@@ -21,7 +21,7 @@ export const fixture = (override: QuizAnswers = {}): QuizAnswers => ({
   motivos: ['B'],
   duvida: 'ajuda',
   formato: 'gravado',
-  interesse_no_projeto: 'conhecer',
+  abertura_criacao: 'conhecer',
   ...override,
 })
 const result = (override: QuizAnswers = {}) => buildDesafioResult(fixture(override))!
@@ -54,7 +54,7 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
     expect(r.decision.offerPath).toEndWith('/iniciacao-tecnologica')
     expect(r.bridge.join(' ')).toContain('espera')
   })
-  test('C preservado ao aceitar o Farol, com limite de arte explícito', () => {
+  test('C preservado ao considerar programação, com limite de arte explícito no resultado', () => {
     const r = result({ motivos: ['C'], interesses: ['desenha'] })
     expect(r.decision.principal).toBe('C')
     expect(funnel.content.quiz!.computePerfil!(fixture({ motivos: ['C'] }))).toBe(
@@ -97,7 +97,7 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
   test('exigir ao vivo não encaminha a assinatura como solução', () => {
     const r = result({
       formato: 'exige_ao_vivo',
-      interesse_no_projeto: 'outra_atividade',
+      abertura_criacao: 'outra_atividade',
       desencontro: 'desenho',
     })
     expect(r.decision.unmet).toContain('formato')
@@ -109,8 +109,8 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
     'ferramenta_especifica',
     'avancado',
     'outro',
-  ])('projeto recusado por %s não volta a ser recomendado', (mismatch) => {
-    const r = result({ interesse_no_projeto: 'outra_atividade', desencontro: mismatch })
+  ])('busca por outra atividade de %s não vira recomendação do Farol', (mismatch) => {
+    const r = result({ abertura_criacao: 'outra_atividade', desencontro: mismatch })
     expect(r.decision.next).toBe('outra_atividade')
     expect(r.decision.unmet).toContain('projeto')
     expect(r.showBridge).toBe(false)
@@ -125,7 +125,7 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
     expect(activeDesafioSteps(a)).toHaveLength(1)
     expect(buildDesafioResult(a)).toBeNull()
   })
-  test('trocar motivos limpa prioridade; editar aceitação limpa recusa', () => {
+  test('trocar motivos limpa prioridade; considerar iniciação limpa busca alternativa', () => {
     const a = applyDesafioAnswer(fixture({ motivos: ['A', 'D'], prioridade: 'A' }), 'motivos', [
       'B',
       'C',
@@ -133,8 +133,8 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
     expect(a.prioridade).toBeUndefined()
     expect(isDesafioQuizComplete(a)).toBe(false)
     const b = applyDesafioAnswer(
-      fixture({ interesse_no_projeto: 'outra_atividade', desencontro: 'desenho' }),
-      'interesse_no_projeto',
+      fixture({ abertura_criacao: 'outra_atividade', desencontro: 'desenho' }),
+      'abertura_criacao',
       'conhecer',
     )!
     expect(b.desencontro).toBeUndefined()
@@ -160,7 +160,7 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
     expect(r.intro.join(' ')).not.toContain('não tem interesses')
   })
   test('conversa pendente prevalece sobre tentativa interrompida', () => {
-    const r = result({ experiencia: 'interrompida', interesse_no_projeto: 'conversar' })
+    const r = result({ experiencia: 'interrompida', abertura_criacao: 'conversar' })
     expect(r.decision.next).toBe('conversar_com_filho')
     expect(r.copyFirst).toBe(true)
   })
@@ -189,7 +189,7 @@ describe('Desafio Farol: orientação e encaminhamento', () => {
       expect(applyDesafioAnswer(fixture(), 'motivos', motives)).toBeNull()
     expect(applyDesafioAnswer(fixture({ motivos: ['A', 'D'] }), 'prioridade', 'C')).toBeNull()
     expect(
-      activeDesafioSteps(fixture({ motivos: ['A', 'D'], interesse_no_projeto: 'outra_atividade' })),
+      activeDesafioSteps(fixture({ motivos: ['A', 'D'], abertura_criacao: 'outra_atividade' })),
     ).toHaveLength(10)
   })
 })

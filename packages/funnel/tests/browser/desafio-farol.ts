@@ -20,7 +20,7 @@ const answers: Record<string, string[]> = {
   motivos: ['B'],
   duvida: ['ajuda'],
   formato: ['gravado'],
-  interesse_no_projeto: ['conhecer'],
+  abertura_criacao: ['conhecer'],
 }
 async function consent(page: Page, accept = false) {
   const button = page.getByRole('button', {
@@ -55,7 +55,7 @@ async function complete(page: Page, overrides: Record<string, string[]> = {}) {
     'prioridade',
     'duvida',
     'formato',
-    'interesse_no_projeto',
+    'abertura_criacao',
     'desencontro',
   ]) {
     if (!sequence[key]) continue
@@ -221,7 +221,7 @@ try {
       override: {
         motivos: ['C'],
         interesses: ['desenha'],
-        interesse_no_projeto: ['outra_atividade'],
+        abertura_criacao: ['outra_atividade'],
         desencontro: ['desenho'],
       },
       text: 'Vocês procuram uma atividade centrada em desenhar',

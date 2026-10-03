@@ -23,6 +23,7 @@
 Arquivos: `src/funnels/desafio-primeiro-jogo/quiz/{questions,engine,result}.ts`, `quiz/definition.ts`, `index.ts`; testes unitários e integração próprios.
 
 - [x] Oito questões principais, desempate declarado e recusa condicional; idade/equipamento cedo; versão `desafio-farol-v2`.
+- [x] Revisão para tráfego frio (03/10/2026): versão `desafio-farol-v3`, sem produto antes do resultado; `abertura_criacao` no lugar de `interesse_no_projeto` (ver `docs/marketing/kids/desafio-primeiro-jogo/revisao-quiz-frio-e-bio.md`).
 - [x] Preservar motivo, interesses, restrições e próximo passo separadamente; limpar ramos inativos ao editar.
 - [x] Integrar `FunnelQuiz.activeSteps/applyAnswer/isComplete`, validação, revisão/sessão, snapshots analíticos e perfil nullable.
 - [x] Conferir os 27 cenários documentados e falhas de sessão/versão/reinício no servidor.

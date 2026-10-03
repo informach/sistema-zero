@@ -199,8 +199,15 @@ R$ 67 é a referência editorial: preço/cupom vêm do catálogo e da cotação.
 vitalícios históricos e ao fluxo de bolsas. Não mudar direitos históricos para fazer a oferta passar.
 
 `src/funnels/desafio-primeiro-jogo/quiz/` contém perguntas, motor, definição e resultado.
-Versão `desafio-farol-v2`: oito perguntas principais, prioridade condicional entre dois motivos
-e motivo de recusa; idade/equipamento cedo, sem pontuação por personalidade. Motivo adulto,
+Versão `desafio-farol-v3` (tráfego frio, 03/10/2026): o quiz qualifica e aquece, e NENHUMA tela
+antes do resultado cita o Desafio, o Farol, preço, prazo ou oferta (decisão da dona; a entrada
+mora em `quiz/entry-copy.ts` e a régua é `tests/browser/desafio-quiz-frio.ts`). O Desafio aparece
+no resultado (`presentation`) como a primeira experiência na plataforma da Comunidade. A pergunta
+final `abertura_criacao` (era `interesse_no_projeto`) mede abertura para o tipo de atividade, não
+aceitação do produto; a justificativa de cada pergunta está em
+`docs/marketing/kids/desafio-primeiro-jogo/revisao-quiz-frio-e-bio.md`. Oito perguntas principais,
+prioridade condicional entre dois motivos e motivo de recusa; idade/equipamento cedo, sem
+pontuação por personalidade. Motivo adulto,
 interesse observado, condição prática e destino são campos distintos. Empate não força perfil;
 C continua expressão visual, com limite de arte preparada explicado. O registry usa
 `activeSteps/applyAnswer/isComplete`; API mantém revisão, sessão e definição analítica.
@@ -211,7 +218,7 @@ Ofertas: `/kids/desafio-primeiro-jogo/oferta` (primeiro jogo), `/oferta/tempo-de
 `/oferta/iniciacao-tecnologica`. Mesma entrega/checkout, argumentos e ordem próprios em
 `offer.ts`/`offer-copy.ts`. O alias `/oferta/primeiro-jogo` redireciona ao padrão. As ofertas
 usam `no-store` e conferem o contrato antes de vender; indisponibilidade não recebe preço fictício.
-Quiz continua informativo quando não consegue consultar o preço.
+O quiz não mostra preço; o resultado continua informativo quando não consegue consultar o preço.
 
 A raiz é a bio, `/como-funciona/` apresenta a plataforma e a Comunidade continua sendo a
 opção ampla, que pode ser contratada diretamente. Links usam `funnelLinkWithAttribution`.

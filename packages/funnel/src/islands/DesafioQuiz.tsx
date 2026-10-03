@@ -8,6 +8,7 @@ import {
   quizRevision,
   validChoice,
 } from '../funnels/desafio-primeiro-jogo/quiz/engine'
+import { DESAFIO_QUIZ_ENTRY as ENTRY } from '../funnels/desafio-primeiro-jogo/quiz/entry-copy'
 import type { DesafioQuestion as SelecaoStep } from '../funnels/desafio-primeiro-jogo/quiz/questions'
 import { ApiError, apiPatch, apiPost } from '../lib/api-fetch'
 import { funnelLinkWithAttribution, leadAttributionFromLocation } from '../lib/lead-attribution'
@@ -17,7 +18,6 @@ interface Props {
   funnel: string
   basePath: string
   imagesBase: string
-  priceLabel: string | null
   quizDefinitionId?: string
 }
 interface Session {
@@ -35,7 +35,7 @@ const STAGE_CHIP = {
   familia: { cor: 'cor-azul', icone: 'family_star', texto: 'Uma criança de cada vez' },
   comeco: { cor: 'cor-verde', icone: 'sports_esports', texto: 'O que você observa em casa' },
   procura: { cor: 'cor-rosa', icone: 'favorite', texto: 'O que importa para você' },
-  orientacao: { cor: 'cor-roxo', icone: 'explore', texto: 'Uma experiência para conhecer' },
+  orientacao: { cor: 'cor-roxo', icone: 'explore', texto: 'O apoio e o começo que vocês procuram' },
 } as const
 
 function Eyebrow({ icon, children }: { icon: string; children: string }) {
@@ -49,13 +49,7 @@ function Eyebrow({ icon, children }: { icon: string; children: string }) {
   )
 }
 
-export default function DesafioQuiz({
-  funnel,
-  basePath,
-  imagesBase,
-  quizDefinitionId,
-  priceLabel,
-}: Props) {
+export default function DesafioQuiz({ funnel, basePath, imagesBase, quizDefinitionId }: Props) {
   const [session, setSession] = useState<Session | null>(null)
   const [cursor, setCursor] = useState('intro')
   const [busy, setBusy] = useState(false)
@@ -201,22 +195,15 @@ export default function DesafioQuiz({
         <div className="cq-intro-copy">
           <Eyebrow icon="family_star">Para mães, pais e responsáveis · 9 a 14 anos</Eyebrow>
           <h1 className="kof-display">
-            Descubra por onde seu filho pode <em>começar a criar jogos</em>
+            {ENTRY.titleStart}
+            <em>{ENTRY.emphasis}</em>
           </h1>
-          <p className="kof-lead">
-            Talvez ele goste de jogar, desenhe personagens ou ainda não tenha pensado em criar um
-            jogo. Conte o que você observa em casa e o que gostaria de experimentar com ele.
-          </p>
-          <p>
-            Você recebe um próximo passo explicado para a situação de vocês: como apresentar a ideia
-            ao seu filho, o que observar na primeira tentativa e que apoio procurar. Ao final,
-            mostramos também uma aventura de programação e se o nosso Desafio do Primeiro Jogo
-            corresponde ao que vocês querem conhecer.
-          </p>
+          <p className="kof-lead">{ENTRY.lead}</p>
+          <p>{ENTRY.delivery}</p>
           <ul className="cq-intro-points">
-            <li>Resultado gratuito na tela, sem cadastro.</li>
-            <li>Responda pensando em um filho de cada vez.</li>
-            <li>Você pode responder pelo celular, sem ele estar junto.</li>
+            {ENTRY.points.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
           </ul>
           {errorView}
           <div className="cq-actions">
@@ -237,7 +224,7 @@ export default function DesafioQuiz({
                   ? 'Ver minha orientação'
                   : quizRevision(current) > 0
                     ? 'Continuar de onde parei'
-                    : 'Encontrar um primeiro passo'}
+                    : ENTRY.cta}
               <span aria-hidden="true">→</span>
             </button>
             {session && quizRevision(current) > 0 && (
@@ -245,32 +232,32 @@ export default function DesafioQuiz({
                 Rever respostas
               </button>
             )}
-            <a className="kof-link" href={link(`${basePath}/oferta`)}>
-              Já quero conhecer o Desafio
-            </a>
           </div>
         </div>
-        <figure className="df-quiz-art">
-          <div className="kof-tela kof-tela--sombra">
-            <div className="kof-tela__barra" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-              <span className="kof-tela__url">A Chave do Farol</span>
-            </div>
-            <img
-              src={`${imagesBase}/farol-jogo.png`}
-              alt="Jogo A Chave do Farol, com o personagem, a chave e o farol na costa."
-              width="1280"
-              height="720"
-              fetchPriority="high"
-            />
-          </div>
-          <figcaption>
-            Um projeto para conhecer: descobrir como os blocos fazem o personagem andar e a porta
-            responder. A orientação do quiz é gratuita; o curso é uma compra separada.
-          </figcaption>
-        </figure>
+        <div className="cq-hero-art">
+          <Eyebrow icon="explore">Um começo que faça sentido para vocês</Eyebrow>
+          <ul className="cq-possibilities">
+            {ENTRY.possibilities.map((item) => (
+              <li key={item.icon}>
+                <span className="material-symbols-rounded" aria-hidden="true">
+                  {item.icon}
+                </span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <span>{item.detail}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p>Vamos partir do que você conhece do seu filho.</p>
+          <img
+            className="cq-mascot"
+            src={`${imagesBase}/zappy-fala.webp`}
+            alt=""
+            width="360"
+            height="458"
+          />
+        </div>
       </main>
     )
   if (cursor === 'equipment')
@@ -279,17 +266,16 @@ export default function DesafioQuiz({
         <div className="cq-panel">
           <Eyebrow icon="computer">Antes de continuar</Eyebrow>
           <h1 className="kof-display" ref={heading} tabIndex={-1}>
-            Para montar o jogo, vocês vão precisar de um computador.
+            Vamos considerar o equipamento que vocês têm hoje.
           </h1>
           <p>
-            Você pode responder a este quiz no celular. Para fazer o curso, porém, seu filho precisa
-            de computador ou notebook com internet, mouse e teclado. Celular e tablet não substituem
-            esse equipamento na montagem.
+            Você contou que hoje só têm celular ou tablet para essa atividade. Isso importa na
+            escolha: algumas ferramentas de criação precisam de computador, mouse e teclado. Antes
+            de escolher uma atividade, vale conferir onde seu filho poderá fazê-la.
           </p>
           <p>
-            Se quiser, podemos continuar a orientação para planejar um começo futuro. Vamos manter
-            essa condição nas sugestões; continuar não significa que o equipamento já está
-            disponível.
+            Você pode continuar respondendo pelo celular. No resultado, vamos explicar como essa
+            condição muda o próximo passo, para vocês poderem se planejar com o que têm disponível.
           </p>
           {errorView}
           <div className="cq-actions">
@@ -305,9 +291,6 @@ export default function DesafioQuiz({
             <button className="cq-link" type="button" onClick={() => go('equipamento')}>
               Corrigir minha resposta
             </button>
-            <a className="cq-link" href={link(`${basePath}/oferta#requisitos`)}>
-              Conferir os requisitos
-            </a>
           </div>
         </div>
       </main>
@@ -459,46 +442,6 @@ export default function DesafioQuiz({
             {step.subtitulo}
           </p>
         )}
-        {step.key === 'interesse_no_projeto' && (
-          <div className="df-project-intro prosa">
-            <figure>
-              <img
-                src={`${imagesBase}/farol-jogo.png`}
-                alt="Personagem a caminho da chave no jogo do Farol."
-                width="1280"
-                height="720"
-              />
-              <figcaption>A aventura que ele vai conhecer antes de montar.</figcaption>
-            </figure>
-            <p>
-              No jogo A Chave do Farol, o personagem precisa encontrar uma chave e acender a luz
-              para um barco chegar. O cenário, os desenhos e o movimento do barco já vêm preparados.
-              Seu filho acompanha explicações gravadas, monta as regras com blocos e testa no
-              Estúdio da aula.
-            </p>
-            <figure>
-              <img
-                src={`${imagesBase}/farol-blocos.png`}
-                alt="Esquema do Caderno do Aluno: conferir a informação da chave na porta."
-                width="1280"
-                height="1276"
-              />
-              <figcaption>
-                Esquema do Caderno do Aluno, com as cores dos blocos do Estúdio. A aula orienta a
-                montar e testar essa regra.
-              </figcaption>
-            </figure>
-            <p>
-              Ele pode pausar e rever; as dúvidas seguem por mensagens, com possível espera. O curso
-              é feito no computador.{' '}
-              {priceLabel
-                ? `A compra custa ${priceLabel}, pagamento único.`
-                : 'O valor está temporariamente indisponível; confira o preço na oferta antes de decidir.'}{' '}
-              São 30 dias de curso e Mural completo a partir da aprovação do pagamento. Depois,
-              permanece o Mural visitante para ver e jogar. O Desafio é uma oferta do Sistema Zero.
-            </p>
-          </div>
-        )}
         <Question
           key={`${step.key}:${session?.id}:${quizRevision(answers)}`}
           step={step}
@@ -506,7 +449,7 @@ export default function DesafioQuiz({
           busy={busy}
           blocked={conflict}
           submitLabel={
-            (step.key === 'interesse_no_projeto' || step.key === 'desencontro') &&
+            (step.key === 'abertura_criacao' || step.key === 'desencontro') &&
             steps.every((s) => s.key === step.key || validChoice(s, current[s.key]))
               ? 'Ver minha orientação'
               : 'Continuar'

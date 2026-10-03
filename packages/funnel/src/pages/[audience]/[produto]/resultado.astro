@@ -102,7 +102,7 @@ const fecho = rc(result.fecho)
 ---
 
 {desafioResult ? (
-  <DesafioQuizLayout title="Seu primeiro passo com jogos | Sistema Zero" description={f.seoDescription} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}>
+  <DesafioQuizLayout title="Seu primeiro passo com jogos | Sistema Zero" description={f.seoDescription} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} showExperienceLink>
     <DesafioResultado result={desafioResult} basePath={f.basePath} priceLabel={desafioPrice}/>
   </DesafioQuizLayout>
 ) : communityResult ? (

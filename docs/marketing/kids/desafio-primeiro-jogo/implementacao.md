@@ -20,20 +20,22 @@ As três ofertas desenvolvem os mesmos assuntos essenciais, com aberturas, ordem
 
 ## Quiz e resultado
 
-- Versão `desafio-farol-v2`: oito questões principais e até duas ramificações. Equipamento aparece logo depois da idade; quem só dispõe de celular pode continuar a orientação com essa restrição mantida.
+- Versão `desafio-farol-v3`: oito questões principais e até duas ramificações. Equipamento aparece logo depois da idade; quem só dispõe de celular pode continuar a orientação com essa restrição mantida.
 - Motivos do adulto, interesses observados na criança, experiência, preocupação, equipamento e formato permanecem separados. Não há pontuação por personalidade nem inferência de que gostar de jogar significa querer programar.
-- Dois motivos abrem uma pergunta explícita de prioridade. Empate, exploração e outra procura não recebem um perfil forçado. O motivo da recusa do projeto abre uma explicação correspondente.
-- O resultado combina orientação, convite copiável, apoio para a dúvida principal e demonstrações. Para quem recusa o projeto, o convite ajuda a esclarecer outra atividade, sem voltar a recomendar o Farol.
+- Dois motivos abrem uma pergunta explícita de prioridade. Empate, exploração e outra procura não recebem um perfil forçado. A busca por outro tipo de atividade abre uma explicação correspondente.
+- O resultado combina orientação, convite copiável, apoio para a dúvida principal e demonstrações. Para quem procura outra atividade, o convite ajuda a esclarecer essa procura, sem voltar a recomendar o Farol.
 - É possível rever respostas e responder por outro filho. Alterações limpam ramos que deixaram de valer. A API confirma cada gravação, protege a revisão contra duas abas e impede que a aba de um filho escreva nas respostas de outro.
 - Definições antigas abrem uma nova sessão; não se traduzem os antigos perfis de personalidade em motivos novos. Idade fora da faixa recebe orientação informativa, sem resultado comercial presumido.
 
 ## Preço, compra e continuidade
 
+A [revisão para tráfego frio](revisao-quiz-frio-e-bio.md) registra a função de cada pergunta e o posicionamento da bio. `abertura_criacao` registra abertura para o tipo de atividade, não aceitação do produto. Sessões v2 permanecem históricas. O Desafio aparece pela primeira vez no resultado, como uma experiência na plataforma para conhecer o jeito de aprender antes de decidir sobre a continuidade na Comunidade.
+
 A referência editorial é **R$ 67, pagamento único, sem renovação automática**. O valor mostrado vem do catálogo, com desconto somente depois de cotação válida. O contrato continua exigindo `one_time/fixed/30/days` e garantia de sete dias. Os 30 dias começam na aprovação do pagamento; depois, o Mural é visitante para ver e jogar. A continuidade na Comunidade é opcional e separada.
 
-O serviço compartilhado de catálogo mantém seu cache visual de 60 segundos e pode usar o último valor conhecido numa falha transitória. A cotação de cupom atualiza preço cheio e final imediatamente. A cobrança continua sendo cotada e validada no servidor; valor enviado pelo navegador não é fonte de preço. Sem oferta conhecida válida, as páginas devolvem 503. O quiz continua informativo e explica quando não consegue consultar o preço.
+O serviço compartilhado de catálogo mantém seu cache visual de 60 segundos e pode usar o último valor conhecido numa falha transitória. A cotação de cupom atualiza preço cheio e final imediatamente. A cobrança continua sendo cotada e validada no servidor; valor enviado pelo navegador não é fonte de preço. Sem oferta conhecida válida, as páginas de oferta devolvem 503. A abertura e as perguntas do quiz não consultam o catálogo nem apresentam produtos. A consulta de preço fica no resultado e nas ofertas.
 
-Capa do checkout, metadados de compartilhamento e confirmação agora acompanham o Farol. O pré-checkout identifica os dados como sendo do responsável. A confirmação respeita o pagamento e o prazo calculado a partir do snapshot da compra. A página de agradecimento também rejeita a sessão de outro produto.
+Capa do checkout, metadados das ofertas e confirmação acompanham o Farol. Os metadados do quiz usam orientação familiar e o mascote, sem antecipar o produto. O pré-checkout identifica os dados como sendo do responsável. A confirmação respeita o pagamento e o prazo calculado a partir do snapshot da compra. A página de agradecimento também rejeita a sessão de outro produto.
 
 Os textos locais de `challenge-access-approved`, lembretes de início, conclusão e encerramento foram alinhados em `packages/messaging/scripts/seed-templates.ts`. A introdução apresenta o jogo pronto; depois vêm três etapas de construção. Conclusão técnica não é descrita como prova de compreensão ou publicação. O encerramento explica o Mural visitante. **Nenhum seed, disparo ou nova automação foi executado.** As chaves, variáveis e regras de envio existentes foram preservadas.
 

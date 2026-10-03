@@ -171,21 +171,6 @@
 .df .df-visual--compact {
   max-width: 42rem;
 }
-.df .df-quiz-art {
-  display: grid;
-  gap: 1rem;
-}
-.df .df-project-intro {
-  margin-block: 1.5rem 2rem;
-}
-.df .df-project-intro figure {
-  max-width: 42rem;
-  margin-inline: auto;
-}
-.df .df-project-intro img {
-  width: 100%;
-  border-radius: var(--kof-raio-tela);
-}
 .df .df-copy-invite {
   display: grid;
   gap: 1rem;

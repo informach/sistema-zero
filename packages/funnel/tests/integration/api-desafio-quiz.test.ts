@@ -21,7 +21,7 @@ const fixture = (): QuizAnswers => ({
   motivos: ['B'],
   duvida: 'ajuda',
   formato: 'gravado',
-  interesse_no_projeto: 'conhecer',
+  abertura_criacao: 'conhecer',
 })
 const request = (method: string, body: Record<string, unknown>, id?: string) =>
   new Request('http://localhost/api/leads', {
@@ -75,7 +75,7 @@ describe('API do Desafio Farol', () => {
     expect(saved).toHaveLength(8)
     expect(saved.at(-1)?.metadata).toMatchObject({
       quiz_definition_id: definition.id,
-      question_id: 'interesse_no_projeto',
+      question_id: 'abertura_criacao',
     })
     expect(new Set(saved.map((e) => e.eventKey)).size).toBe(8)
   })
@@ -103,10 +103,10 @@ describe('API do Desafio Farol', () => {
     expect(lead?.quizAnswers?.prioridade).toBeUndefined()
     expect(lead?.quizAnswers?.duvida).toBe('ajuda')
   })
-  test('motivo da recusa é obrigatório e sai ao voltar a conhecer o projeto', async () => {
+  test('outra atividade exige esclarecimento, que sai ao considerar a iniciação', async () => {
     const { deps, id, repo } = await setup(fixture())
     const response = await patchLead(
-      request('PATCH', { key: 'interesse_no_projeto', value: 'outra_atividade', revision: 8 }, id),
+      request('PATCH', { key: 'abertura_criacao', value: 'outra_atividade', revision: 8 }, id),
       deps,
     )
     expect((await response.json()).complete).toBe(false)
@@ -115,7 +115,7 @@ describe('API do Desafio Farol', () => {
       deps,
     )
     await patchLead(
-      request('PATCH', { key: 'interesse_no_projeto', value: 'conhecer', revision: 10 }, id),
+      request('PATCH', { key: 'abertura_criacao', value: 'conhecer', revision: 10 }, id),
       deps,
     )
     expect((await repo.getLead(id))?.quizAnswers?.desencontro).toBeUndefined()
@@ -139,6 +139,27 @@ describe('API do Desafio Farol', () => {
     expect(next.id).not.toBe(id)
     expect(next.answers).toEqual({})
     expect((await repo.getLead(id))?.quizAnswers).toEqual(old)
+  })
+  test('a exposição ao produto na v2 não vira abertura espontânea na v3', async () => {
+    const { deps, repo, id } = await setup()
+    const { abertura_criacao: _, ...otherAnswers } = fixture()
+    const old = {
+      ...otherAnswers,
+      _quiz_version: 'desafio-farol-v2',
+      interesse_no_projeto: 'conhecer',
+    }
+    await repo.updateLead(id, { quizAnswers: old })
+    const response = await createLead(request('POST', {}, id), deps)
+    expect(response.status).toBe(201)
+    const next = await response.json()
+    expect(next.id).not.toBe(id)
+    expect(next.answers).toEqual({})
+    expect((await repo.getLead(id))?.quizAnswers).toEqual(old)
+    const invalid = await patchLead(
+      request('PATCH', { key: 'interesse_no_projeto', value: 'conhecer', revision: 0 }, next.id),
+      deps,
+    )
+    expect(invalid.status).toBe(400)
   })
   test('outro filho tem sessão própria, e uma aba anterior não pode sobrescrevê-la', async () => {
     const { deps, id, repo } = await setup(fixture())

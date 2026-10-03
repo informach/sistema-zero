@@ -11,7 +11,7 @@ export const DESAFIO_OFFERS = {
     emphasis: 'chamar você para jogar',
     lead: 'Na aventura A Chave do Farol, ele aprende a fazer o personagem andar, recolher uma chave e decidir quando a porta pode abrir. As explicações acompanham a montagem dentro da aula, e cada parte pode ser testada antes de seguir.',
     detail:
-      'O cenário e os desenhos já estão preparados para ele se concentrar nas regras do jogo. Ao concluir a montagem, aprende a publicar a criação no Mural e compartilhar o link com a família.',
+      'Esse primeiro jogo é uma forma de conhecer por dentro a plataforma da Comunidade dos Criadores. Vocês acompanham como ele aprende e usa a ajuda disponível antes de decidir se querem continuar com outros projetos.',
     sections: ['aventura', 'experiencia', 'construcoes', 'ajuda', 'familia', 'mural'],
     faqFirst: ['duvida-1', 'duvida-3', 'duvida-5', 'duvida-9'],
   },
@@ -21,7 +21,7 @@ export const DESAFIO_OFFERS = {
     emphasis: 'o primeiro jogo do seu filho',
     lead: 'O Desafio oferece uma atividade para ele montar e testar, dentro do tempo que vocês já permitem. A criança aprende as regras de A Chave do Farol e você pode acompanhar a construção pelo que ela mostra no jogo.',
     detail:
-      'A explicação fica junto da prática: seu filho pode pausar, fazer uma parte e rever o trecho quando precisar. O projeto tem um começo delimitado e uma criação para apresentar à família.',
+      'É uma primeira experiência na plataforma da Comunidade dos Criadores. Vocês podem observar como essa atividade cabe na rotina e como seu filho participa, antes de escolher se querem continuar aprendendo por aqui.',
     sections: ['familia', 'aventura', 'experiencia', 'ajuda', 'construcoes', 'mural'],
     faqFirst: ['duvida-6', 'duvida-7', 'duvida-4', 'duvida-5'],
   },
@@ -31,7 +31,7 @@ export const DESAFIO_OFFERS = {
     emphasis: 'pelo jogo que seu filho constrói',
     lead: 'No Farol, movimento, memória e decisão aparecem em tarefas concretas: fazer andar, guardar que a chave foi encontrada e conferir se a porta pode abrir. Seu filho acompanha a explicação, monta os blocos e testa o resultado.',
     detail:
-      'O Desafio permite conhecer esse modo de aprender em um projeto guiado. Você pode pedir que ele mostre uma regra e explique o que ela faz, antes de escolher um percurso de continuidade.',
+      'Com esse projeto guiado, vocês conhecem o jeito de aprender da Comunidade dos Criadores por dentro. Você pode pedir que ele mostre uma regra e explique o que faz, e usar essa primeira experiência para decidir sobre a continuidade.',
     sections: ['construcoes', 'aventura', 'experiencia', 'ajuda', 'familia', 'mural'],
     faqFirst: ['duvida-3', 'duvida-10', 'duvida-11', 'duvida-1'],
   },
