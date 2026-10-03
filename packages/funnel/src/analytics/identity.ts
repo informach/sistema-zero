@@ -27,9 +27,18 @@ export const visitorCookie = (id: string, secret: string, secure: boolean) =>
 export const clearVisitorCookie = (secure: boolean) =>
   analyticsCookie(VISITOR_COOKIE, '', secure, 0)
 
+/**
+ * Mesmo site que serviu a página. Compara o HOST, não o esquema: atrás do proxy do Railway o TLS
+ * termina na borda e o servidor enxerga a própria URL como http:// enquanto o navegador manda
+ * `Origin: https://` (a coleta respondia 403 em staging por isso, 03/10/2026).
+ */
 export function sameOrigin(request: Request): boolean {
-  return (
-    request.headers.get('origin') === new URL(request.url).origin &&
-    request.headers.get('sec-fetch-site') !== 'cross-site'
-  )
+  const origin = request.headers.get('origin')
+  if (!origin || request.headers.get('sec-fetch-site') === 'cross-site') return false
+  try {
+    const parsed = new URL(origin)
+    return /^https?:$/.test(parsed.protocol) && parsed.host === new URL(request.url).host
+  } catch {
+    return false
+  }
 }

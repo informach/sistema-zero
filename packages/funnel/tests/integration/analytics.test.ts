@@ -6,7 +6,7 @@ import {
   analyticsSession,
   linkAnalyticsLead,
 } from '../../src/analytics/handlers'
-import { visitorCookie, visitorId } from '../../src/analytics/identity'
+import { sameOrigin, visitorCookie, visitorId } from '../../src/analytics/identity'
 import { quizDefinition } from '../../src/analytics/quiz-definition'
 import type {
   AnalyticsRepo,
@@ -98,6 +98,26 @@ function fixture() {
   }
   return { deps, session, stored, request, event, started: () => started }
 }
+test('mesma origem atrás do proxy: compara o host, aceita http interno × https público', () => {
+  const at = (headers: Record<string, string>) =>
+    sameOrigin(
+      new Request('http://funnel-staging.up.railway.app/api/analytics/session', {
+        method: 'POST',
+        headers,
+      }),
+    )
+  // O TLS termina na borda: o servidor vê http:// e o navegador manda https://.
+  expect(at({ origin: 'https://funnel-staging.up.railway.app' })).toBe(true)
+  expect(at({ origin: 'http://funnel-staging.up.railway.app' })).toBe(true)
+  expect(at({ origin: 'https://outro.test' })).toBe(false)
+  expect(at({ origin: 'https://funnel-staging.up.railway.app.outro.test' })).toBe(false)
+  expect(
+    at({ origin: 'https://funnel-staging.up.railway.app', 'sec-fetch-site': 'cross-site' }),
+  ).toBe(false)
+  expect(at({ origin: 'null' })).toBe(false)
+  expect(at({})).toBe(false)
+})
+
 describe('coleta automática com preferência de desativação', () => {
   test('cria sessão sem preferência e sem fabricar aceite; bloqueia desativação, outra origem e assinatura adulterada', async () => {
     const f = fixture()
