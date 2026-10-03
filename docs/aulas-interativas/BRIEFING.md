@@ -11,8 +11,8 @@
 > precedido apenas por uma fala curta do Zappy. Palpite é seletivo, nunca automático.
 
 > **Revisão de linguagem em 27/09/2026, após duas crianças assistirem ao Cadê Todo Mundo?.**
-> A primeira fala diz o que fazer agora. A criança precisa reconhecer a atividade, saber como
-> começar e saber quando terminou. Contexto, analogias, recapitulações e promessas da próxima
+> A abertura situa a tarefa atual. A criança precisa reconhecer a atividade, saber como
+> começar e saber quando terminou. Analogias, recapitulações longas e promessas da próxima
 > aula não são etapas obrigatórias da fala. O passo a passo de construção continua completo.
 > Tours de interface ficam no Como Fazer. Esta revisão prevalece sobre orientações anteriores
 > de roteiro, inclusive os moldes externos. Foi aplicada primeiro às nove seções de Cadê Todo
@@ -23,6 +23,12 @@
 > esperar a confirmação, Fechar e Concluir aula. Personalização e alternativas ficam no
 > Como fazer, acessível por ajuda com link direto. A fala termina na ação de saída da seção,
 > sem antecipar certificado ou outra tarefa da próxima seção ou aula.
+
+> **Complemento em 03/10/2026, orientação do usuário.** Toda seção começa com um contexto
+> curto e pertinente antes do convite à ação. Na abertura do curso, anunciar qual jogo será
+> criado e sua situação antes de convidar a jogar a versão pronta. Nas demais seções, situar
+> o que já funciona e a necessidade do próximo gesto. Retirar o tour não significa começar
+> com uma ordem solta. O contexto prepara a tarefa; não é uma agenda de conceitos ou teaser.
 
 ## 1. O que estamos fazendo e por quê
 
@@ -57,7 +63,8 @@ Onde fica o bloco, em que categoria e subcategoria, onde encaixa, o que escrever
 Aqui a narração conduz do primeiro ao último gesto. A criança **nunca** é mandada descobrir sozinha
 onde está uma peça nem montar sozinha uma mecânica.
 
-Comece com uma ação concreta: "Faça um personagem aparecer quando você tocar no esconderijo".
+Situe a necessidade e encaminhe para uma ação concreta: "Os personagens estão escondidos.
+Vamos fazer um personagem aparecer quando você tocar no esconderijo".
 Depois, conduza cada gesto em voz falada: categoria, subcategoria e seção quando
 existirem, nome exato do bloco, destino do encaixe, campo e valor. Ao pegar outro bloco, repita o
 caminho necessário, mesmo que a categoria já esteja aberta na tela: **"Ainda na categoria Áreas

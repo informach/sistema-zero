@@ -4,18 +4,21 @@ Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas c
 Esta especificação e o BRIEFING.md prevalecem sobre os moldes antigos e os roteiros já gravados.
 A primeira aplicação cobre as nove seções desse curso. Os demais cursos serão revistos depois.
 
-## 1. A primeira fala diz o que fazer
+## 1. A abertura situa a tarefa e convida à ação
 
-A criança precisa entender a tarefa sem traduzir a intenção do professor.
+A criança precisa entender a tarefa sem traduzir a intenção do professor. Conforme orientação
+do usuário em 03/10/2026, toda seção tem um contexto inicial curto e pertinente. Primeiro situar
+o jogo, seu estado atual ou a necessidade; depois dizer o que fazer.
 
-- Apresentação: "Vamos construir este jogo. Jogue a versão pronta aqui na aula."
-- Experiência: "Toque no arbusto. Depois ligue a reação e toque de novo."
-- Construção: "Faça cada personagem encontrado somar um em Achados."
-- Material: "Este caderno tem os passos para montar o jogo. Consulte quando precisar."
+- Apresentação: anunciar o jogo e sua situação; então convidar a jogar a versão pronta.
+- Experiência: "O esconderijo ainda não responde ao toque. Toque no arbusto. Depois ligue a reação e toque de novo."
+- Construção: "Os personagens já aparecem. Agora vamos contar cada achado."
+- Material: "Para acompanhar a montagem, este caderno reúne os passos do jogo. Consulte quando precisar."
 - Encerramento: nomear o resultado e dar a próxima ação.
 
 Não começar por uma lista do que será aprendido, a importância do conceito ou uma promessa da
-próxima aula. O contexto entra somente quando ajuda a executar a tarefa atual. A intenção
+próxima aula. O contexto precisa ajudar a entender ou executar a tarefa atual, sem virar tour
+ou recapitulação longa. Não começar com uma ordem solta. A intenção
 pedagógica e a justificativa ficam na proposta da aula, para o adulto que a prepara.
 
 ## 2. Instruções completas, com palavras simples

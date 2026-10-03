@@ -1,45 +1,21 @@
-# Roteiro de gravação · Desafio do Primeiro Jogo · Introdução
+# Roteiro de gravação · A Chave do Farol · Introdução
 
-Três vídeos, um por seção. Fala dirigida à criança; as indicações **Na tela** são para a gravação, não para serem lidas. Gravar com a aula e o Estúdio atuais. O jogo mostrado pronto é uma prévia, não o projeto que ela já construiu. Não ensinar blocos, salvamento ou entrega antes do primeiro uso no Dia 1.
+Duas seções, dois vídeos curtos. O jogo pronto é uma atividade da criança, separada do projeto que ela construirá. Não gravar uma partida resolvida, tour da plataforma nem tutorial do leitor. Conferir o PDF anexado antes de gravar a segunda seção. Só a narração é falada.
 
 ## Seção 1. A Chave do Farol
 
-### Vídeo `video-intro-farol` · Seu primeiro jogo
+### Vídeo `video-intro-farol` · Seu primeiro jogo: A Chave do Farol
 
-**Na tela:** abrir uma gravação do jogo completo. Mostrar o personagem no caminho, a chave, o farol apagado e o barco longe. Mover pelo direcional de quatro setas visíveis; repetir dois movimentos pelo teclado. Pegar a chave e acender o farol. Em seguida, mostrar a aula de verdade com o vídeo e o botão **Próxima seção**.
-
-**Narração:**
-> "Oi! Vê esse farol? O barco está vindo pelo mar, mas a luz dele está apagada. Neste desafio, você vai criar as regras para ajudar um personagem a encontrar a chave, entrar no farol e acender a luz. O desenho do lugar e os personagens já vão estar preparados. Quem vai fazer o jogo responder é você. Dá para andar usando estas quatro setas na tela, com o dedo, ou usando as setas do teclado. Assim a aventura funciona dos dois jeitos."
-
-**Na tela:** voltar à página da aula. Pausar o vídeo, arrastar a barra um pouco para trás e retomar. Apontar **Seção 1 de 3** e **Próxima seção**. Em uma captura da seção seguinte, mostrar **Anterior** disponível; não apontar um botão desativado. Mostrar rapidamente uma captura da experiência do Dia 3 e o Estúdio numa aula de construção, identificando essas imagens como exemplos do que virá.
+**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar personagem, chave e farol sem percorrer o caminho nem mostrar o barco chegando. Duração estimada: 35 a 45 segundos.
 
 **Narração:**
-> "A aula acontece aqui mesmo. Ela é dividida em seções, e as seções em que a gente aprende e constrói o jogo têm um vídeo como este. Se eu falar rápido demais, pode pausar. Se quiser ver um pedacinho de novo, volta o vídeo. Quando terminar o que esta seção pede, aperte Próxima seção. Se precisar rever uma seção por onde já passou, é só apertar Anterior. Em algumas seções você vai assistir e experimentar uma ideia. Em outras, vai montar o jogo no Estúdio que aparece dentro da aula. Eu vou mostrar cada bloco na hora de usar. Você não precisa decorar tudo agora."
+> "Neste desafio, você vai programar A Chave do Farol. Um barco precisa chegar à costa, mas o farol está apagado. Antes de montar as regras, conheça a aventura jogando esta versão pronta. Use as setas da tela para mover o personagem. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. Explore o mapa e tente encontrar a chave para chegar ao farol. Quando quiser seguir, aperte Próxima seção. Você não precisa terminar a partida para continuar."
 
-**Na tela:** demonstrar a divisória entre vídeo e uma atividade de exemplo; arrastar uma vez. Mostrar **Ampliar experiência** e **Voltar à aula**, depois o **Expandir** e **Reduzir** do Estúdio. Em largura pequena, mostrar que a ferramenta aparece abaixo ou na aba **Criar**, sem dizer "ao lado" como única posição.
+## Seção 2. Seu Caderno do Aluno
 
-**Narração:**
-> "Quer mais espaço para mexer? Quando aparecer a atividade, você pode aumentar a área dela arrastando esta divisão ou tocar em Ampliar experiência. Depois, Voltar à aula traz o vídeo de volta. No Estúdio, o botão se chama Expandir; Reduzir volta ao tamanho normal. Se a tela for menor, talvez apareçam as abas Ver exemplo e Criar. É o mesmo trabalho, só organizado para caber no aparelho."
+### Vídeo `video-intro-caderno` · Seu Caderno do Aluno
 
-**Na tela:** apontar o bloco **Para rever depois, no Como fazer**, logo abaixo do vídeo, sem abrir nenhum link.
-
-**Narração:**
-> "Se esquecer algum desses botões, não precisa rever o vídeo inteiro: logo aqui embaixo tem o passo a passo escrito, no Como fazer. Ele abre em outra aba e tem um botão para voltar para a aula."
-
-## Seção 2. Seu mapa da aventura
-
-### Vídeo `video-intro-caderno` · Um apoio para lembrar
-
-**Na tela:** mostrar o bloco **Caderno e mapa da aventura** com os dois arquivos anexados no admin antes da gravação. Abrir o caderno e o mapa dos responsáveis. Não exigir download.
+**Na tela:** capa e uma página interna do Caderno do Aluno anexado a `materiais-farol`. Mostrar os passos de montagem sem ensinar controles do leitor. Não apresentar um mapa como material adicional nem simular arquivo disponível se o PDF ainda não estiver anexado. Duração estimada: 25 a 35 segundos.
 
 **Narração:**
-> "Tem uma ajudinha aqui para quando você quiser lembrar o caminho. Este caderno mostra o que você vai construir em cada dia: primeiro o movimento, depois a chave e, por último, a luz do farol. Você pode olhar quando quiser. O outro arquivo é um mapa para quem cuida de você acompanhar a aventura. Se não quiser baixar agora, tudo bem. Eles ficam aqui, e o jogo também acontece sem imprimir nada."
-
-## Seção 3. Como voltar e pedir ajuda
-
-### Vídeo `video-intro-voltar` · Continue de onde parou
-
-**Na tela:** sair da aula para **Mostrar lista de aulas**; mostrar o cartão do Desafio na página do curso; reabrir a aula. Mostrar o botão **Preciso de ajuda**, preencher um exemplo concreto curto e cancelar sem enviar uma mensagem real.
-
-**Narração:**
-> "E se você fechar a página e quiser continuar amanhã? Volte para a sua lista de aulas, procure o Desafio do Primeiro Jogo e abra o dia em que parou. Você também pode voltar a uma seção anterior para rever o vídeo. Se um bloco não encaixar ou o personagem não se mexer, não precisa ficar adivinhando sozinho. Aperte Preciso de ajuda e conte onde travou. Por exemplo: ‘No Dia 1, coloquei o bloco de movimento, mas as setas não fizeram o personagem andar.’ Assim eu consigo entender o que você viu e ajudar melhor. E o caminho de volta fica escrito aqui embaixo, no Como fazer, para o dia em que você esquecer. Pronto para começar? Na próxima aula, a primeira regra do jogo vai ser sua."
+> "Para acompanhar a montagem da sua aventura, você tem este Caderno do Aluno. Ele segue as partes das aulas: os blocos que vamos usar, onde encaixar cada um, como testar e como publicar o jogo. Se esquecer um passo, pode consultar o caderno e voltar ao seu projeto. Você pode ler aqui, baixar ou imprimir se quiser. Não precisa imprimir nem preencher nada para fazer as aulas. Para começar a montagem do jogo, aperte Concluir aula."

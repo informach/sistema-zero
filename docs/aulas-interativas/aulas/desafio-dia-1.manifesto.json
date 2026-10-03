@@ -3,25 +3,18 @@
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-1",
   "title": "O personagem ganha movimento",
+  "retireBlockKeys": ["video-d1-chegada", "video-d1-movimento"],
   "blocks": [
     {
-      "key": "video-d1-chegada",
-      "plannedVideo": "Título: Uma luz precisa acender\n\nMostrar o jogo concluído, o personagem, a chave, o farol apagado e o barco. Não atribuir à criança a arte já preparada.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
-    },
-    {
-      "key": "video-d1-movimento",
-      "plannedVideo": "Título: Como o personagem vai andar?\n\nExplicar movimento em quatro direções e o cuidado com as bordas usando o mapa pronto, sem mostrar ainda os blocos.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
-    },
-    {
       "key": "video-d1-borda",
-      "plannedVideo": "Título: Faça o personagem andar dentro do mapa\n\nMostrar o caminho exato dos três blocos: controles só direções, mover em quatro direções e manter dentro da tela. Testar toque e teclado. Ensinar Salvo e Enviar para o professor no primeiro uso.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Faça o personagem andar dentro do mapa\n\nSituar o projeto com cenário pronto e personagem parado antes da tarefa. Mostrar paleta, encaixe, campos e valores dos três blocos: controles só direções, movimento e borda. Testar, Verificar esta etapa, conferir Objetivo da etapa cumprido!, Salvo, Enviar para o professor e confirmação Enviar. Encerrar em Concluir aula.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d1-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você já viu para onde o personagem pode ir. Agora faça o jogo ouvir suas direções."
+        "text": "Faça o personagem andar nas quatro direções sem sair da tela."
       }
     },
     {
@@ -117,7 +110,7 @@
               "name": "farol-apagado",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgZGF0YS1wb3J0YT0iZmVjaGFkYSIgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
               "width": 100,
               "height": 154
             },
@@ -126,7 +119,7 @@
               "name": "farol-aceso",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiM2NzRmNjMiLz48cGF0aCBkPSJNMzAgNDVWMjBINzBWNDVaIiBmaWxsPSIjZmZkZTczIiBzdHJva2U9IiM5ZTc4NDYiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yMyAyMEw1MCA1TDc3IDIwWiIgZmlsbD0iI2RjNjg2NCIgc3Ryb2tlPSIjOTg1MjVhIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiNmZmU2YTAiIHN0cm9rZT0iIzY3NGY2MyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZGF0YS1wb3J0YT0iYWJlcnRhIiBkPSJNNDAgMTE0TDI4IDEyMVYxNTBMNDAgMTUxWiIgZmlsbD0iIzY3NGY2MyIgc3Ryb2tlPSIjNGEzYjUyIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIzMyIgY3k9IjEzNSIgcj0iMS41IiBmaWxsPSIjZmZlNmEwIi8+PHBhdGggZD0iTTMwIDQ1VjIwSDcwVjQ1WiIgZmlsbD0iI2ZmZGU3MyIgc3Ryb2tlPSIjOWU3ODQ2IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjMgMjBMNTAgNUw3NyAyMFoiIGZpbGw9IiNkYzY4NjQiIHN0cm9rZT0iIzk4NTI1YSIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+",
               "width": 100,
               "height": 154
             },
@@ -921,43 +914,36 @@
           ]
         }
       }
+    },
+    {
+      "key": "ajuda-d1",
+      "content": {
+        "kind": "materials",
+        "title": "Se precisar de ajuda",
+        "items": [
+          {
+            "id": "link-plataforma-ampliar-a-atividade",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-ampliar-a-atividade",
+            "label": "Como dar mais espaço para a atividade"
+          },
+          {
+            "id": "link-plataforma-pedir-ajuda",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-pedir-ajuda",
+            "label": "Como pedir ajuda ao professor"
+          }
+        ]
+      }
     }
   ],
   "sections": [
     {
-      "key": "chegada",
-      "title": "A aventura começa no farol",
-      "intent": "presentation",
-      "objective": "Conhecer o jogo e distinguir o cenário preparado da primeira regra que a criança construirá.",
-      "blockKeys": ["video-d1-chegada"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-d1-chegada"]
-      }
-    },
-    {
-      "key": "movimento",
-      "title": "Quatro caminhos para seguir",
-      "intent": "explanation",
-      "objective": "Entender as quatro direções do mapa e por que o personagem deve ficar dentro da cena.",
-      "blockKeys": ["video-d1-movimento"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-d1-movimento"]
-      }
-    },
-    {
       "key": "borda",
-      "title": "O mapa tem uma borda",
+      "title": "Faça o personagem andar pelo mapa",
       "intent": "delivery",
       "objective": "Perceber o problema de sair da cena, manter o personagem dentro dela e enviar a atividade.",
-      "blockKeys": ["video-d1-borda", "ponte-d1-borda", "projeto"],
+      "blockKeys": ["video-d1-borda", "ponte-d1-borda", "projeto", "ajuda-d1"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

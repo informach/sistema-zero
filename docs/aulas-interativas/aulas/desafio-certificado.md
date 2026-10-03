@@ -1,14 +1,23 @@
-# Desafio do Primeiro Jogo · Certificado e próximos passos
+# A Chave do Farol · Certificado
 
-## Objetivo
+## Resultado e diagnóstico
 
-Reconhecer a autoria real da criança em **A Chave do Farol** e emitir o certificado. Depois, oferecer informação sobre a Comunidade dos Criadores ao adulto, sem transformar a criança em vendedora nem fazer da compra um requisito de conclusão.
+A criança reconhece o que programou e emite seu certificado. A aula anterior tinha uma seção obrigatória de apresentação comercial ao responsável. A revisão segue a celebração do Cadê Todo Mundo: encerramento curto, autoria verdadeira e ação de guardar a conquista.
 
-## Seções
+## Seção final
 
-1. **Seu certificado:** conservar o bloco `certificado` e sua emissão. Zappy aponta o gesto **Pegar meu certificado**. Texto do documento: movimento, coleta da chave e decisão que acende o farol. Não mencionar nave, tiro, asteroide ou cinco dias.
-2. **Uma conversa com a família:** um vídeo, iniciado com pedido para chamar um responsável. O conteúdo seguinte se dirige ao adulto. Mostrar cursos e ferramentas como possibilidades condicionadas ao acesso e ao avanço, com preço e condições somente na página externa da oferta. O link é opcional; conclusão requer assistir ao vídeo, não clicar nem comprar.
+| Seção | Vídeo | Atividade e conclusão |
+| --- | --- | --- |
+| Comemore sua criação | `video-certificado-farol` | Vídeo, diálogo curto `fala-certificado` e emissão pelo bloco existente `certificado`. |
 
-## Cuidados de produção
+## Argumento da celebração
 
-Preservar a chave `certificado`, para manter a emissão e os campos de personalização ligados ao bloco existente. A mídia antiga de pitch da nave recebe retirada explícita; a nova tem chave própria. Conferir o link da página pública, os nomes das ferramentas e o estado bloqueado/liberado em staging antes de gravar.
+Reconhecer as três construções: movimento, coleta e decisão. Dizer que desenhos e movimento do barco já estavam preparados. Não atribuir toda a arte à criança nem pedir que convença a família a comprar outro produto.
+
+Orientar **Pegar meu certificado** e depois **Concluir aula**. Para quem já emitiu, o botão é **Baixar certificado (PDF)**. Usar conta de ensaio adequada na gravação e conferir que certificados existentes continuam acessíveis.
+
+## Preservação e produção
+
+Manter `lessonSlug: certificado`, a seção `certificado`, a chave e o conteúdo de emissão do certificado. Acrescentar o vídeo curto de celebração; retirar a seção `proximos-passos`. Aposentar explicitamente `fala-pitch`, `video-pitch-farol`, `link-comunidade` e a chave histórica `video-pitch`.
+
+Compra, visita à oferta e chamada de responsável não são requisitos da aula. Os links de continuidade já disponíveis na plataforma permanecem fora da tarefa infantil. Gravar o novo vídeo e reconciliar progresso e emissão de quem já concluiu antes de atualizar o curso no admin.

@@ -7,11 +7,11 @@
   "blocks": [
     {
       "key": "video-d2-contexto",
-      "plannedVideo": "Título: A chave precisa fazer diferença\n\nRetomar o mesmo jogo. Mostrar que encostar na chave ainda não a recolhe; explicar acontecimento e memória com analogia cotidiana, sem antecipar o teste.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: A chave precisa fazer diferença\n\nRetomar o mesmo jogo e mostrar a necessidade da tarefa: encostar ainda não recolhe a chave. Explicar evento e variável pelo próprio jogo, sem analogia obrigatória ou chamada para outra aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "video-d2-programar",
-      "plannedVideo": "Título: Faça o jogo guardar a chave\n\nGuiar, sem pular gesto, Criar variável temChave com falso em Ao iniciar e o evento Quando o sprite personagem começar a encostar no sprite chave; destruir chave e alterar temChave para verdadeiro.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Faça o jogo guardar a chave\n\nGuiar variável temChave falso, encontro personagem/chave, retirada da chave, temChave verdadeiro e aviso. Incluir teste, verificação, Salvo, envio com confirmação e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d2-programar",
@@ -114,7 +114,7 @@
               "name": "farol-apagado",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgZGF0YS1wb3J0YT0iZmVjaGFkYSIgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
               "width": 100,
               "height": 154
             },
@@ -123,7 +123,7 @@
               "name": "farol-aceso",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiM2NzRmNjMiLz48cGF0aCBkPSJNMzAgNDVWMjBINzBWNDVaIiBmaWxsPSIjZmZkZTczIiBzdHJva2U9IiM5ZTc4NDYiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yMyAyMEw1MCA1TDc3IDIwWiIgZmlsbD0iI2RjNjg2NCIgc3Ryb2tlPSIjOTg1MjVhIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiNmZmU2YTAiIHN0cm9rZT0iIzY3NGY2MyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZGF0YS1wb3J0YT0iYWJlcnRhIiBkPSJNNDAgMTE0TDI4IDEyMVYxNTBMNDAgMTUxWiIgZmlsbD0iIzY3NGY2MyIgc3Ryb2tlPSIjNGEzYjUyIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIzMyIgY3k9IjEzNSIgcj0iMS41IiBmaWxsPSIjZmZlNmEwIi8+PHBhdGggZD0iTTMwIDQ1VjIwSDcwVjQ1WiIgZmlsbD0iI2ZmZGU3MyIgc3Ryb2tlPSIjOWU3ODQ2IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjMgMjBMNTAgNUw3NyAyMFoiIGZpbGw9IiNkYzY4NjQiIHN0cm9rZT0iIzk4NTI1YSIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+",
               "width": 100,
               "height": 154
             },

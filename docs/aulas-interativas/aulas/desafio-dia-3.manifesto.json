@@ -6,14 +6,14 @@
   "blocks": [
     {
       "key": "video-d3-condicao",
-      "plannedVideo": "Título: Quando a porta pode abrir?\n\nExplicar uma condição com exemplo próximo da criança e o objetivo do jogo. Não narrar a sequência de botões ou o resultado da experiência.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Quando a porta pode abrir?\n\nExplicar condição brevemente. Orientar Testar a porta sem chave, Levar a chave e Testar a porta de novo. Não executar nem revelar os resultados antes de a criança experimentar. Encerrar em Próxima seção.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d3-condicao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "No vídeo, você ouviu falar de uma condição. Agora veja o que a chave muda na porta do farol."
+        "text": "Teste a mesma porta sem a chave e depois com a chave. Observe o que muda."
       }
     },
     {
@@ -22,7 +22,8 @@
         "kind": "interactive",
         "required": true,
         "title": "A porta precisa da chave",
-        "instructions": "Teste a porta com e sem a chave. O que muda?",
+        "semPerguntaFinal": true,
+        "instructions": "Aperte Testar a porta sem a chave. Depois escolha Levar a chave e aperte Testar a porta outra vez. Observe o que mudou.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -33,7 +34,7 @@
     },
     {
       "key": "video-d3-decisao",
-      "plannedVideo": "Título: Faça a porta decidir\n\nGuiar o evento de contato personagem/farol, Se temChave, ganhou verdadeiro e trocar imagem do farol. Testar sem chave e com chave; ver barco chegar, salvar e enviar.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Faça a porta decidir\n\nGuiar encontro personagem/farol, Se temChave, ramos então e senão, imagem e avisos. Testar sem e com chave, verificar a etapa e enviar com confirmação antes de Próxima seção. A prévia atualiza automaticamente; Atualizar reinicia os testes.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d3-decisao",
@@ -45,7 +46,7 @@
     },
     {
       "key": "video-d3-fecho",
-      "plannedVideo": "Título: O barco encontrou o caminho\n\nCelebrar as três regras que a criança montou sem atribuir a ela cenário ou barco preparados. Apontar o certificado.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Publique seu jogo\n\nUsar o mesmo projeto da seção anterior. Compartilhar, manter título e resumo, Gerar capa, conferir, Publicar, esperar Seu jogo está no Mural!, Fechar e Concluir aula. Personalização e cópia do link ficam no Como Fazer.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "projeto",
@@ -93,6 +94,11 @@
           "sz_val_text",
           "sz_val_variable"
         ],
+        "showcase": {
+          "enabled": true,
+          "title": "A Chave do Farol",
+          "summary": "Uma aventura para encontrar a chave e acender o farol para um barco chegar."
+        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
@@ -140,7 +146,7 @@
               "name": "farol-apagado",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTE5IDE1MUwzMSA0NUg2OUw4MSAxNTFaIiBmaWxsPSIjZjllZWUxIiBzdHJva2U9IiM4MTY0NzQiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yNiA4NEg3NEw3MCAxMDFIMzBaIiBmaWxsPSIjZGY2OTYyIi8+PHJlY3QgZGF0YS1wb3J0YT0iZmVjaGFkYSIgeD0iNDAiIHk9IjExMyIgd2lkdGg9IjIwIiBoZWlnaHQ9IjM4IiByeD0iMyIgZmlsbD0iIzY3NGY2MyIvPjxwYXRoIGQ9Ik0zMCA0NVYyMEg3MFY0NVoiIGZpbGw9IiM2YzgxOTYiIHN0cm9rZT0iIzU0NjI3MyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHBhdGggZD0iTTIzIDIwTDUwIDVMNzcgMjBaIiBmaWxsPSIjZGM2ODY0IiBzdHJva2U9IiM5ODUyNWEiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==",
               "width": 100,
               "height": 154
             },
@@ -149,7 +155,7 @@
               "name": "farol-aceso",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiM2NzRmNjMiLz48cGF0aCBkPSJNMzAgNDVWMjBINzBWNDVaIiBmaWxsPSIjZmZkZTczIiBzdHJva2U9IiM5ZTc4NDYiIHN0cm9rZS13aWR0aD0iNCIvPjxwYXRoIGQ9Ik0yMyAyMEw1MCA1TDc3IDIwWiIgZmlsbD0iI2RjNjg2NCIgc3Ryb2tlPSIjOTg1MjVhIiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4=",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTU0IiB2aWV3Qm94PSIwIDAgMTAwIDE1NCI+PHBhdGggZD0iTTUwIDMwTDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik01MCAzMEwxMDAgMFY2OFoiIGZpbGw9IiNmZmU3OWUiIG9wYWNpdHk9Ii42NSIvPjxwYXRoIGQ9Ik0xOSAxNTFMMzEgNDVINjlMODEgMTUxWiIgZmlsbD0iI2Y5ZWVlMSIgc3Ryb2tlPSIjODE2NDc0IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYgODRINzRMNzAgMTAxSDMwWiIgZmlsbD0iI2RmNjk2MiIvPjxyZWN0IHg9IjQwIiB5PSIxMTMiIHdpZHRoPSIyMCIgaGVpZ2h0PSIzOCIgcng9IjMiIGZpbGw9IiNmZmU2YTAiIHN0cm9rZT0iIzY3NGY2MyIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZGF0YS1wb3J0YT0iYWJlcnRhIiBkPSJNNDAgMTE0TDI4IDEyMVYxNTBMNDAgMTUxWiIgZmlsbD0iIzY3NGY2MyIgc3Ryb2tlPSIjNGEzYjUyIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIzMyIgY3k9IjEzNSIgcj0iMS41IiBmaWxsPSIjZmZlNmEwIi8+PHBhdGggZD0iTTMwIDQ1VjIwSDcwVjQ1WiIgZmlsbD0iI2ZmZGU3MyIgc3Ryb2tlPSIjOWU3ODQ2IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjMgMjBMNTAgNUw3NyAyMFoiIGZpbGw9IiNkYzY4NjQiIHN0cm9rZT0iIzk4NTI1YSIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+",
               "width": 100,
               "height": 154
             },
@@ -1108,6 +1114,21 @@
           ]
         }
       }
+    },
+    {
+      "key": "ajuda-publicar",
+      "content": {
+        "kind": "materials",
+        "title": "Para consultar ao publicar",
+        "items": [
+          {
+            "id": "link-plataforma-publicar-no-mural",
+            "kind": "link",
+            "url": "/como-fazer/plataforma-publicar-no-mural",
+            "label": "Como publicar seu jogo no Mural e copiar o link"
+          }
+        ]
+      }
     }
   ],
   "sections": [
@@ -1227,11 +1248,11 @@
     },
     {
       "key": "fecho",
-      "title": "Você guiou o barco",
+      "title": "Publique seu jogo",
       "intent": "closing",
-      "objective": "Reconhecer as regras que construiu e seguir ao certificado.",
-      "blockKeys": ["video-d3-fecho"],
-      "workspaceKey": null,
+      "objective": "Publicar o projeto construído no Mural e concluir a aula.",
+      "blockKeys": ["video-d3-fecho", "ajuda-publicar"],
+      "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
