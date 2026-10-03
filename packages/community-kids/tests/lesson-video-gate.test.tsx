@@ -355,6 +355,8 @@ describe('o vídeo flutuante', () => {
     expect(flutuante.className).toContain('invisible')
     expect(flutuante.hasAttribute('inert')).toBe(true)
     expect(flutuante.hasAttribute('data-sz-modal-companion')).toBe(false)
+    // O coletor de lixo no meio é o que derrubava este teste no CI: ver o observador no test-setup.
+    Bun.gc(true)
     await act(async () => {
       dialogo.remove()
       await new Promise((r) => setTimeout(r, 0))
