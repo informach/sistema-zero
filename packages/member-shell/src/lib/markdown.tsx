@@ -42,7 +42,10 @@ const HELP_LINK = /^\[([^\]]+)\]\((\/como-fazer\/[a-z0-9]+(?:-[a-z0-9]+)*)\)$/
  * mesmo href.
  */
 export function helpLinkHref(path: string, returnPath?: string): string {
-  return returnPath ? `${path}?voltar=${encodeURIComponent(returnPath)}` : path
+  if (!returnPath) return path
+  const url = new URL(path, 'https://sistemazero.invalid')
+  url.searchParams.set('voltar', returnPath)
+  return `${url.pathname}${url.search}${url.hash}`
 }
 
 /** Opções de renderização inline (compartilhadas por `renderMarkdown`). */
@@ -289,8 +292,7 @@ export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNo
     } else {
       const link = token.match(/^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/)
       // Link INTERNO para um tutorial do "Como fazer": só esse prefixo (allowlist), com o slug
-      // no formato do core. Abre em outra aba como os externos (decisão da dona: a ajuda não
-      // atrapalha o andamento da aula) e leva o caminho de volta.
+      // no formato do core. Abre na mesma aba e leva o caminho de volta à aula.
       const help = link ? null : token.match(HELP_LINK)
       if (link?.[1] && link[2]) {
         // Dentro de conteúdo interativo / UGC, só o texto (não aninhar <a> em <button>;
@@ -308,14 +310,10 @@ export function renderInline(text: string, opts: RenderInlineOpts = {}): ReactNo
         if (opts.plainLinks || opts.helpLinks === false) {
           parts.push(help[1])
         } else {
-          // Nova aba SÓ de dentro da aula (`helpReturnPath`): a ajuda não pode atrapalhar o
-          // curso. Já dentro do Como fazer (um passo citando outro tutorial), a mesma aba.
-          const dentroDaAula = Boolean(opts.helpReturnPath)
           parts.push(
             <a
               key={`a-${key++}`}
               href={helpLinkHref(help[2], opts.helpReturnPath)}
-              {...(dentroDaAula ? { target: '_blank', rel: 'noopener' } : {})}
               data-sz-help-link=""
             >
               {help[1]}

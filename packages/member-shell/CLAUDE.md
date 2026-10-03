@@ -2476,11 +2476,13 @@ ao aluno). O que vive AQUI:
   mas não tem retomada nem exigência de assistir. `parseVimeo`/`youtubeId` saíram de
   `lesson-video.tsx` para **`lib/video-ids.ts`**, que os dois consomem.
 - **Link interno no markdown:** `renderInline` aceita `[texto](/como-fazer/<slug>)` (o ÚNICO
-  caminho interno; allowlist por prefixo + slug do core), em outra aba e com `data-sz-help-link`.
+  caminho interno; allowlist por prefixo + slug do core), na mesma aba e com `data-sz-help-link`.
   `RenderInlineOpts.helpReturnPath` acrescenta `?voltar=<caminho da aula>` (`helpLinkHref`), e a
   página do tutorial no kids oferece "Voltar para a aula". O item `link` do bloco de materiais
   aceita o mesmo caminho (o DTO do members também) e monta o `voltar` pelo `useLessonPlayer()`.
-  ⚠️ Decisão da dona: abre em NOVA ABA, para não atrapalhar o andamento da aula.
+  Decisão de 03/10/2026: todos os links do Como fazer dentro das aulas abrem na MESMA ABA,
+  preservando o retorno. Vale para texto, links e texto dos materiais; links externos mantêm
+  nova aba. A regra substitui a decisão anterior de abrir a ajuda em outra aba.
 - **Zappy:** `ZappyKnowledgeHitView` virou união (`isZappyLessonHit`/`isZappyHelpHit`); os hits
   de tutorial entram no prompt como `ajudaComoFazer` e o modelo cita slugs em `helpReferences`
   (≤2, validados contra os hits em `validatedStudioZappyResponse`, como `lessonReferences`).

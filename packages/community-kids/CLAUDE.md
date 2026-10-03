@@ -3109,7 +3109,8 @@ atualiza quando a interface muda sem obrigar ninguém a refazer aula. Rotas em
 - **Volta para a aula:** `?voltar=` allowlistado por `lib/help-return.ts` (`LESSON_PATH`, mesma
   régua do `resolveAvatarReturnPath`). Quem escreve o `voltar` é o link da aula (materiais ou
   `rich_text`, que agora passa `helpReturnPath` ao `renderMarkdown` quando está numa aula); o
-  link abre em outra aba (decisão dela).
+  link abre na mesma aba (decisão de 03/10/2026, substitui a orientação anterior). Textos,
+  materiais e enunciados/correções do quiz conservam o caminho de retorno.
 - **Zappy:** os hosts do Estúdio passam `openHelp: openStudioZappyHelp`
   (`lib/studio-zappy-navigation.ts`), e o chip "Passo a passo: …" abre `/como-fazer/<slug>`.
 - O guia "Como funciona?" ganhou o passo final `ajuda` com link (é onboarding; a biblioteca é

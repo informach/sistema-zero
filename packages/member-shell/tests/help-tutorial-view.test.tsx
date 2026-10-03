@@ -9,7 +9,7 @@ import { helpLinkHref, renderInline } from '../src/lib/markdown'
  * 1. o vídeo do Vimeo entra pelo `VimeoPlayer` com a MARCA D'ÁGUA (decisão da dona) e o `src`
  *    cru nunca vai para o HTML;
  * 2. os passos saem numerados, com o texto alternativo da imagem;
- * 3. o link interno do markdown para `/como-fazer/<slug>` abre em outra aba e leva o `voltar`.
+ * 3. o link interno do markdown para `/como-fazer/<slug>` abre na mesma aba e leva o `voltar`.
  */
 const doc: HelpTutorialDocument = {
   title: 'Como ver meu jogo na Pré-visualização',
@@ -76,33 +76,32 @@ describe('HelpTutorialView', () => {
 })
 
 describe('link interno do "Como fazer" no markdown', () => {
-  test('só o prefixo /como-fazer/<slug> vira link, em outra aba, com o voltar da aula', () => {
+  test('só o prefixo /como-fazer/<slug> vira link, na mesma aba, com o voltar da aula', () => {
     const html = renderToStaticMarkup(
-      <>
-        {renderInline('[ajuda](/como-fazer/estudio-salvar)', {
-          helpReturnPath: '/cursos/corre-dino/aulas/abc',
-        })}
-      </>,
+      renderInline('[ajuda](/como-fazer/estudio-salvar)', {
+        helpReturnPath: '/cursos/corre-dino/aulas/abc',
+      }),
     )
     expect(html).toContain(
       'href="/como-fazer/estudio-salvar?voltar=%2Fcursos%2Fcorre-dino%2Faulas%2Fabc"',
     )
-    expect(html).toContain('target="_blank"')
+    expect(html).not.toContain('target="_blank"')
     expect(html).toContain('data-sz-help-link')
     // Outro caminho interno continua texto puro (não é allowlist).
-    const outro = renderToStaticMarkup(<>{renderInline('[x](/perfil)')}</>)
+    const outro = renderToStaticMarkup(renderInline('[x](/perfil)'))
     expect(outro).not.toContain('<a')
     expect(outro).toContain('[x](/perfil)')
     // Slug fora do formato também não vira link.
-    expect(renderToStaticMarkup(<>{renderInline('[x](/como-fazer/Maiusculo)')}</>)).not.toContain(
-      '<a',
-    )
+    expect(renderToStaticMarkup(renderInline('[x](/como-fazer/Maiusculo)'))).not.toContain('<a')
   })
 
   test('helpLinkHref sem caminho de volta devolve o próprio caminho', () => {
     expect(helpLinkHref('/como-fazer/x')).toBe('/como-fazer/x')
     expect(helpLinkHref('/como-fazer/x', '/cursos/a/aulas/b')).toBe(
       '/como-fazer/x?voltar=%2Fcursos%2Fa%2Faulas%2Fb',
+    )
+    expect(helpLinkHref('/como-fazer/x?modo=passos#publicar', '/cursos/a/aulas/b')).toBe(
+      '/como-fazer/x?modo=passos&voltar=%2Fcursos%2Fa%2Faulas%2Fb#publicar',
     )
   })
 })
