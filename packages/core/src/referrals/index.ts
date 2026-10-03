@@ -2,6 +2,8 @@
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'ended'
 export type CampaignState = CampaignStatus | 'scheduled'
 export type CampaignContext = 'ad' | 'event' | 'other'
+/** Direito efetivamente concedido pelo resgate, incluindo versões históricas. */
+export type GiftMuralAccess = 'trial' | 'visitor' | 'none'
 export interface GiftAttribution {
   utmSource: string | null
   utmMedium: string | null

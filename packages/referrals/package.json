@@ -10,6 +10,7 @@
     "start": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
+    "gifts:upgrade-mural": "bun run scripts/upgrade-mural-trials.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "check": "biome check .",

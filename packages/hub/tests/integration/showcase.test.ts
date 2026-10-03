@@ -372,6 +372,33 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(res.status).toBe(403)
   })
 
+  test('presente com Mural completo publica; depois volta a visitante e mantém o jogo público', async () => {
+    const accountId = randomUUID()
+    const playId = randomUUID()
+    ctx.members.communitiesByUser.set(
+      accountId,
+      new Set(['mural-dos-criadores-visitante', 'mural-dos-criadores']),
+    )
+    const publish = () =>
+      ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+          headers: child(accountId),
+          body: studioBody({ playId }),
+        }),
+      )
+    expect((await publish()).status).toBe(200)
+    // O Members deixa de retornar o direito completo quando seu prazo acaba.
+    ctx.members.communitiesByUser.set(accountId, new Set(['mural-dos-criadores-visitante']))
+    expect((await publish()).status).toBe(403)
+    const play = await ctx.app.handle(
+      jsonRequest('GET', `/hub/internal/studio-play/${playId}`, {
+        headers: { 'x-internal-token': INTERNAL },
+      }),
+    )
+    expect(play.status).toBe(200)
+    expect(await play.json()).toMatchObject({ visible: true, authorDisplayName: 'Sofia' })
+  })
+
   test('studio: studioMeta persiste saneado (dedupe) e volta na view; ausente → null', async () => {
     const withMeta = await ctx.app.handle(
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {

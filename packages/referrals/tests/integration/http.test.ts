@@ -497,6 +497,7 @@ describe('borda HTTP do referrals', () => {
         status: 'completed',
         expiresAt: expect.any(String),
         emailStatus: 'accepted',
+        muralAccess: 'trial',
       })
 
       const again = await app.handle(

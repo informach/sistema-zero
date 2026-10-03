@@ -333,7 +333,8 @@ export const GrantWebhookBody = t.Object({
 /**
  * Corpo de `POST /members/webhooks/grant-manual` — concessão manual S2S (referrals
  * → gateway → members). O fluxo legado aceita `mode:'offer'`; indicações novas
- * usam `mode:'course'`. Os demais modos seguem só no admin JWT.
+ * usam `mode:'course'` e `mode:'mural_trial'` (prazo igual ao curso da mesma origem).
+ * `mural_visitor` preserva o contrato histórico. As chaves-mestra seguem só no admin JWT.
  * `sourceId` = procedência auditável (ex.: `scholarship:<redemptionId>`); o
  * `sourceKind` fica `'manual'` (enum intocado). `expiresAt` ausente/null = vitalícia.
  */
@@ -359,6 +360,13 @@ export const GrantManualWebhookBody = t.Union([
     mode: t.Literal('mural_visitor'),
     sourceId: t.String({ pattern: '^scholarship:', minLength: 13, maxLength: 120 }),
     expiresAt: t.Optional(t.Null()),
+  }),
+  t.Object({
+    ...ManualGrantBase,
+    mode: t.Literal('mural_trial'),
+    courseRef: t.String({ minLength: 1, maxLength: 200 }),
+    sourceId: t.String({ pattern: '^scholarship:', minLength: 13, maxLength: 120 }),
+    expiresAt: t.String({ format: 'date-time', maxLength: 40 }),
   }),
 ])
 

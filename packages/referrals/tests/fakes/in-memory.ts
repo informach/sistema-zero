@@ -287,7 +287,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
       attemptCount: 0,
       completedAt: null,
       accessDurationDays: 7,
-      muralVisitorPolicy: 'visitor',
+      muralVisitorPolicy: 'trial',
       muralVisitorGrantedAt: null,
       createdAt: new Date(),
     }
@@ -597,6 +597,7 @@ export interface RecordedCall {
     | 'createPasswordToken'
     | 'grantManualCourse'
     | 'grantMuralVisitor'
+    | 'grantMuralTrial'
     | 'sendEmail'
   input: unknown
   idempotencyKey?: string
@@ -613,6 +614,7 @@ export class FakeReferralsGateway implements ReferralsGateway {
   }
   grantResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
   muralVisitorResult: GatewayResult = { status: 200, body: { ok: true, granted: 1 } }
+  muralTrialResult: GatewayResult = { status: 200, body: { ok: true, granted: 2 } }
   sendEmailResult: GatewayResult = { status: 202, body: {} }
 
   async getGiftAvailability(courseRef: string): Promise<GatewayResult> {
@@ -638,6 +640,13 @@ export class FakeReferralsGateway implements ReferralsGateway {
   async grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult> {
     this.calls.push({ kind: 'grantMuralVisitor', input })
     return this.muralVisitorResult
+  }
+
+  async grantMuralTrial(
+    input: Parameters<ReferralsGateway['grantMuralTrial']>[0],
+  ): Promise<GatewayResult> {
+    this.calls.push({ kind: 'grantMuralTrial', input })
+    return this.muralTrialResult
   }
 
   async sendEmail(input: SendEmailInput, idempotencyKey: string): Promise<GatewayResult> {

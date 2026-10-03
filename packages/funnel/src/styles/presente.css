@@ -9,6 +9,16 @@
 .presente .gift-prose strong {
   color: var(--kof-tinta);
 }
+.presente .hero-actions + .gift-prose {
+  margin-top: 1.5rem;
+}
+.presente .gift-share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 1.5rem;
+  margin-top: 1.25rem;
+}
 .presente .gift-note {
   padding: 1.25rem;
   margin-block: 1.5rem;

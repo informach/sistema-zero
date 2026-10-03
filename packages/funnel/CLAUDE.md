@@ -439,7 +439,7 @@ via gateway com o HMAC de borda de sempre (`gateway-client.ts`: `resolveReferral
 que o código não existe). Em `/bolsa`, `resolveReferralGiftPage` exige `giftAvailable:boolean`
 na resposta do referrals: `false` mantém o link, mas mostra "em preparação" sem formulário;
 resposta incompleta/erro do gateway falha fechada. A página apresenta somente o curso
-**Cadê Todo Mundo?** (8–15 anos), não o Desafio ou a assinatura. Quando disponível, passa
+**Cadê Todo Mundo?** (9–14 anos), não o Desafio ou a assinatura. Quando disponível, passa
 os dados por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
 mesmo aviso kids do pré-checkout; telefone OPCIONAL, não reusar `ContactSchema`; estados
 completed/processing/409s por `ApiError.code`; o resgate é RETOMÁVEL no servidor — re-enviar após
@@ -970,7 +970,7 @@ config-hash → re-otimização automática).
 
 ## Presente por convite e campanha (02/10/2026)
 
-`/bolsa/[codigo]`, `/embaixador/[token]` e `/kids/embaixadores` usam `components/referrals`, o CSS das ofertas e `content/presente.ts`. O rodapé fica fora de `.cdc`. Os prints atuais são reutilizados; capturas de assinante no Mural têm explicação do acesso de visitante. O presente mantém a faixa comunicada de 8–15 anos (não altera a recomendação da assinatura).
+`/bolsa/[codigo]`, `/embaixador/[token]` e `/kids/embaixadores` usam `components/referrals`, o CSS das ofertas e `content/presente.ts`. O rodapé fica fora de `.cdc`. Os prints atuais são reutilizados. Por decisão de 03/10/2026, o presente libera publicar o jogo do curso, comentar e reagir no Mural durante os sete dias. Depois fica a visita para ver e jogar; o link publicado continua enquanto a publicação estiver disponível. Cópias e ferramentas livres não estão incluídas. A faixa comunicada é **9–14 anos**, igual à oferta, inclusive nas perguntas e nos convites de WhatsApp/e-mail.
 
 `/bolsa/previa` é pública, noindex e sem formulário: somente apresentação escapada e datas, sem buscar campanha ou aceitar cadastro. O código `previa` é reservado no serviço. A resolução pública distingue scheduled/paused/ended/preparing; o backend revalida a janela no envio. Encerrada/pausada oferece retomada de cadastro previamente aceito, sem novos direitos.
 

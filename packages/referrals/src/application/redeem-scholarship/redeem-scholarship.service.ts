@@ -2,12 +2,13 @@ import { randomBytes } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import {
   type GiftAttribution,
+  type GiftMuralAccess,
   type GiftSource,
   sanitizeGiftAttribution,
 } from '@sistemazero/core/referrals'
 import { CampaignUnavailableError, campaignSource, campaignState } from '../../domain/campaign'
 import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
-import { scholarshipExpiresAt } from '../../domain/gift-policy'
+import { isMuralTrialGranted, scholarshipExpiresAt } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type { GatewayResult, ReferralsGateway } from '../../domain/ports/gateway.port'
@@ -25,7 +26,12 @@ export interface RedeemInput {
 }
 
 export type RedeemResult =
-  | { kind: 'completed'; expiresAt: string | null; emailStatus: 'accepted' | 'failed' | 'unknown' }
+  | {
+      kind: 'completed'
+      expiresAt: string | null
+      emailStatus: 'accepted' | 'failed' | 'unknown'
+      muralAccess: GiftMuralAccess
+    }
   | { kind: 'processing' }
   | { kind: 'code_not_found' }
   | { kind: 'already_redeemed' }
@@ -248,18 +254,45 @@ export class RedeemScholarshipService {
       await this.repo.markCourseGranted(redemption.id, this.now())
     }
 
-    if (redemption.muralVisitorPolicy === 'visitor' && !redemption.muralVisitorGrantedAt) {
-      const res = await this.gateway.grantMuralVisitor({
-        userId,
-        sourceId: `scholarship:${redemption.id}`,
-        deliveryId: `scholarship:mural-visitor:${redemption.id}`,
-      })
+    if (
+      (redemption.muralVisitorPolicy === 'visitor' || redemption.muralVisitorPolicy === 'trial') &&
+      !redemption.muralVisitorGrantedAt
+    ) {
+      const muralExpiresAt = scholarshipExpiresAt(
+        redemption.createdAt,
+        redemption.accessDurationDays,
+      )
+      if (
+        redemption.muralVisitorPolicy === 'trial' &&
+        (!muralExpiresAt || this.now() >= muralExpiresAt)
+      ) {
+        await this.repo.markRedemptionFailed(redemption.id, 'gift_window_elapsed', null)
+        return { kind: 'failed', reason: 'gift_window_elapsed' }
+      }
+      const res =
+        redemption.muralVisitorPolicy === 'trial' && muralExpiresAt
+          ? await this.gateway.grantMuralTrial({
+              userId,
+              sourceId: `scholarship:${redemption.id}`,
+              courseRef: redemption.courseSlug ?? this.opts.courseSlug,
+              expiresAt: muralExpiresAt.toISOString(),
+              deliveryId: `scholarship:mural-trial:${redemption.id}`,
+            })
+          : await this.gateway.grantMuralVisitor({
+              userId,
+              sourceId: `scholarship:${redemption.id}`,
+              deliveryId: `scholarship:mural-visitor:${redemption.id}`,
+            })
       if (res.status === 409) {
         await this.repo.markRedemptionFailed(redemption.id, 'mural_grant_conflict', null)
         this.logger.warn('referrals.redeem_mural_grant_conflict', { redemptionId: redemption.id })
         return { kind: 'failed', reason: 'mural_grant_conflict' }
       }
-      if (res.status < 200 || res.status >= 300) {
+      if (
+        res.status < 200 ||
+        res.status >= 300 ||
+        (redemption.muralVisitorPolicy === 'trial' && !isMuralTrialGranted(res))
+      ) {
         await this.repo
           .recordRedemptionError(redemption.id, upstreamErrorSummary('mural-grant', res))
           .catch(() => {})
@@ -285,7 +318,16 @@ export class RedeemScholarshipService {
     //    senha"). Claim atômico: só uma execução emite token/envia.
     const emailStatus = await this.sendWelcome(redemption, buyerCreated === true, source)
 
-    return { kind: 'completed', expiresAt: expiresAt?.toISOString() ?? null, emailStatus }
+    const muralAccess =
+      redemption.muralVisitorPolicy === 'trial' || redemption.muralVisitorPolicy === 'visitor'
+        ? redemption.muralVisitorPolicy
+        : 'none'
+    return {
+      kind: 'completed',
+      expiresAt: expiresAt?.toISOString() ?? null,
+      emailStatus,
+      muralAccess,
+    }
   }
 
   private async sendWelcome(
@@ -323,13 +365,17 @@ export class RedeemScholarshipService {
         send = await this.gateway.sendEmail(
           {
             templateKey:
-              source.kind === 'campaign'
-                ? 'referrals-campaign-welcome'
-                : redemption.muralVisitorPolicy === 'visitor'
-                  ? 'referrals-scholarship-welcome-7d-mural'
-                  : expiresAt
-                    ? 'referrals-scholarship-welcome-7d'
-                    : 'referrals-scholarship-welcome',
+              redemption.muralVisitorPolicy === 'trial'
+                ? source.kind === 'campaign'
+                  ? 'referrals-campaign-welcome-mural-trial'
+                  : 'referrals-scholarship-welcome-mural-trial'
+                : source.kind === 'campaign'
+                  ? 'referrals-campaign-welcome'
+                  : redemption.muralVisitorPolicy === 'visitor'
+                    ? 'referrals-scholarship-welcome-7d-mural'
+                    : expiresAt
+                      ? 'referrals-scholarship-welcome-7d'
+                      : 'referrals-scholarship-welcome',
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
@@ -350,13 +396,17 @@ export class RedeemScholarshipService {
         send = await this.gateway.sendEmail(
           {
             templateKey:
-              source.kind === 'campaign'
-                ? 'referrals-campaign-existing'
-                : redemption.muralVisitorPolicy === 'visitor'
-                  ? 'referrals-scholarship-existing-7d-mural'
-                  : expiresAt
-                    ? 'referrals-scholarship-existing-7d'
-                    : 'new-access',
+              redemption.muralVisitorPolicy === 'trial'
+                ? source.kind === 'campaign'
+                  ? 'referrals-campaign-existing-mural-trial'
+                  : 'referrals-scholarship-existing-mural-trial'
+                : source.kind === 'campaign'
+                  ? 'referrals-campaign-existing'
+                  : redemption.muralVisitorPolicy === 'visitor'
+                    ? 'referrals-scholarship-existing-7d-mural'
+                    : expiresAt
+                      ? 'referrals-scholarship-existing-7d'
+                      : 'new-access',
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,

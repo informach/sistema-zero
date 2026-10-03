@@ -86,6 +86,28 @@ describe('createReferralsGatewayClient — corpo e headers no fio', () => {
     expect(headers['x-signature']).toMatch(/^t=\d+,v1=[0-9a-f]{64}$/)
   })
 
+  test('grantMuralTrial envia curso, prazo original e delivery-id próprio', async () => {
+    const { client, seen } = capture()
+    const input = {
+      userId: 'u-1',
+      sourceId: 'scholarship:r-1',
+      courseRef: 'cade-todo-mundo',
+      expiresAt: '2026-10-10T12:00:00.000Z',
+      deliveryId: 'scholarship:mural-trial:r-1',
+    }
+    expect((await client.grantMuralTrial(input)).status).toBe(200)
+    const call = seen[0]!
+    expect(JSON.parse(String(call.init.body))).toEqual({
+      mode: 'mural_trial',
+      userId: input.userId,
+      sourceId: input.sourceId,
+      courseRef: input.courseRef,
+      expiresAt: input.expiresAt,
+    })
+    expect(new Headers(call.init.headers).get('x-delivery-id')).toBe(input.deliveryId)
+    expect(new Headers(call.init.headers).get('x-signature')).toMatch(/^t=\d+,v1=[0-9a-f]{64}$/)
+  })
+
   test('sendEmail leva Idempotency-Key e o envelope de canal', async () => {
     const { client, seen } = capture()
     await client.sendEmail(

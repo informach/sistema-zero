@@ -187,6 +187,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
               status: 'completed',
               expiresAt: result.expiresAt,
               emailStatus: result.emailStatus,
+              muralAccess: result.muralAccess,
             }
           case 'processing':
             set.status = 202

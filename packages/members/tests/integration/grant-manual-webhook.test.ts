@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
+import { EntitlementAggregate } from '../../src/domain/entitlement/entitlement.aggregate'
 import {
   buildApp,
   offerWithCourse,
@@ -38,6 +39,176 @@ function getGiftAvailability(app: ReturnType<typeof buildApp>['app'], slug: stri
 }
 
 describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
+  test('Mural de sete dias recusa curso da mesma origem com prazo maior que sete dias', async () => {
+    const { app, courses, entitlements, clockRef } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+    const base = {
+      userId: USER,
+      sourceId: 'scholarship:too-long',
+      courseRef: 'cade-todo-mundo',
+      expiresAt: new Date(clockRef.now.getTime() + 30 * 86_400_000).toISOString(),
+    }
+    expect(
+      (await post(app, JSON.stringify({ ...base, mode: 'course' }), 'long-course')).status,
+    ).toBe(200)
+    expect(
+      (await post(app, JSON.stringify({ ...base, mode: 'mural_trial' }), 'long-mural')).status,
+    ).toBe(409)
+    expect(await entitlements.listByUserId(USER)).toHaveLength(1)
+  })
+
+  test('Mural do presente acompanha o prazo do curso e conserva a visita após vencer', async () => {
+    const { app, courses, entitlements, clockRef } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+    const expiresAt = new Date(clockRef.now.getTime() + 7 * 86_400_000)
+    const origin = {
+      userId: USER,
+      sourceId: 'scholarship:trial-1',
+      courseRef: 'cade-todo-mundo',
+      expiresAt: expiresAt.toISOString(),
+    }
+    expect(
+      (await post(app, JSON.stringify({ ...origin, mode: 'course' }), 'trial-course')).status,
+    ).toBe(200)
+    const raw = JSON.stringify({ ...origin, mode: 'mural_trial' })
+    expect((await post(app, raw, 'trial-mural')).status).toBe(200)
+    expect((await post(app, raw, 'trial-mural-retry')).status).toBe(200)
+    const during = await entitlements.listActiveByUser(USER, new Date(expiresAt.getTime() - 1))
+    expect(during.map((e) => e.toSnapshot().courseRef).sort()).toEqual([
+      'cade-todo-mundo',
+      'mural-dos-criadores',
+      'mural-dos-criadores-visitante',
+    ])
+    expect(
+      during.find((e) => e.toSnapshot().courseRef === 'mural-dos-criadores')?.expiresAt,
+    ).toEqual(expiresAt)
+    const after = await entitlements.listActiveByUser(USER, expiresAt)
+    expect(after.map((e) => e.toSnapshot().courseRef)).toEqual(['mural-dos-criadores-visitante'])
+    expect(after[0]?.expiresAt).toBeNull()
+    expect(await entitlements.listByUserId(USER)).toHaveLength(3)
+    const trial = during.find((e) => e.toSnapshot().courseRef === 'mural-dos-criadores')!
+    const paid = EntitlementAggregate.grant({
+      ...trial.toSnapshot(),
+      id: crypto.randomUUID(),
+      sourceKind: 'payment',
+      sourceId: 'independent-payment',
+      idempotencyKey: 'independent-payment:mural',
+      expiresAt: null,
+      snapshot: {
+        ...trial.snapshot,
+        accessPolicy: { mode: 'lifetime', durationValue: null, durationUnit: null },
+      },
+    })
+    await entitlements.save(paid)
+    // O vencimento do presente não retira um acesso adquirido por outra origem.
+    expect(
+      (await entitlements.listActiveByUser(USER, expiresAt))
+        .map((e) => e.toSnapshot().courseRef)
+        .sort(),
+    ).toEqual(['mural-dos-criadores', 'mural-dos-criadores-visitante'])
+  })
+
+  test('Mural temporário exige prazo e matrícula do curso da mesma origem', async () => {
+    const { app, courses, entitlements, clockRef } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+    const expiresAt = new Date(clockRef.now.getTime() + 7 * 86_400_000).toISOString()
+    const base = {
+      userId: USER,
+      sourceId: 'scholarship:trial-2',
+      courseRef: 'cade-todo-mundo',
+      expiresAt,
+    }
+    const raw = JSON.stringify({ ...base, mode: 'mural_trial' })
+    expect((await post(app, raw, 'trial-missing')).status).toBe(409)
+    expect(await entitlements.listByUserId(USER)).toHaveLength(0)
+    expect(
+      (await post(app, JSON.stringify({ ...base, mode: 'course' }), 'trial-existing')).status,
+    ).toBe(200)
+    for (const override of [
+      { sourceId: 'scholarship:another' },
+      { expiresAt: new Date(Date.now() + 8 * 86_400_000).toISOString() },
+    ]) {
+      expect(
+        (
+          await post(
+            app,
+            JSON.stringify({ ...base, mode: 'mural_trial', ...override }),
+            'trial-invalid-origin',
+          )
+        ).status,
+      ).toBe(409)
+    }
+    for (const override of [
+      { expiresAt: null },
+      { expiresAt: undefined },
+      { sourceId: 'manual:other' },
+    ]) {
+      expect(
+        (
+          await post(
+            app,
+            JSON.stringify({ ...base, mode: 'mural_trial', ...override }),
+            'trial-invalid-body',
+          )
+        ).status,
+      ).toBe(400)
+    }
+    // Falha não consome a entrega; retomar agora concede ambos os direitos.
+    expect((await post(app, raw, 'trial-missing')).status).toBe(200)
+    expect(await entitlements.listByUserId(USER)).toHaveLength(3)
+  })
+
+  test('Mural temporário recusa matrícula revogada ou vencida sem reativar o curso', async () => {
+    for (const state of ['revoked', 'expired']) {
+      const { app, courses, entitlements, clockRef } = buildApp()
+      seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+      const expiresAt = new Date(clockRef.now.getTime() + 7 * 86_400_000)
+      const base = {
+        userId: USER,
+        sourceId: `scholarship:trial-${state}`,
+        courseRef: 'cade-todo-mundo',
+        expiresAt: expiresAt.toISOString(),
+      }
+      expect(
+        (await post(app, JSON.stringify({ ...base, mode: 'course' }), `course-${state}`)).status,
+      ).toBe(200)
+      if (state === 'revoked') {
+        const enrollment = (await entitlements.listByUserId(USER))[0]!
+        enrollment.revoke(clockRef.now)
+        await entitlements.update(enrollment)
+      } else {
+        clockRef.now = expiresAt
+      }
+      expect(
+        (await post(app, JSON.stringify({ ...base, mode: 'mural_trial' }), `mural-${state}`))
+          .status,
+      ).toBe(409)
+      expect(await entitlements.listByUserId(USER)).toHaveLength(1)
+    }
+  })
+
+  test('falha ao salvar o lote não deixa participação sem visita; retry completa sem duplicar', async () => {
+    const { app, courses, entitlements, clockRef } = buildApp()
+    seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')
+    const base = {
+      userId: USER,
+      sourceId: 'scholarship:trial-atomic',
+      courseRef: 'cade-todo-mundo',
+      expiresAt: new Date(clockRef.now.getTime() + 7 * 86_400_000).toISOString(),
+    }
+    expect(
+      (await post(app, JSON.stringify({ ...base, mode: 'course' }), 'course-atomic')).status,
+    ).toBe(200)
+    const saveMany = entitlements.saveMany.bind(entitlements)
+    entitlements.saveMany = async () => false
+    const raw = JSON.stringify({ ...base, mode: 'mural_trial' })
+    expect((await post(app, raw, 'mural-atomic')).status).toBe(502)
+    expect(await entitlements.listByUserId(USER)).toHaveLength(1)
+    entitlements.saveMany = saveMany
+    expect((await post(app, raw, 'mural-atomic')).status).toBe(200)
+    expect(await entitlements.listByUserId(USER)).toHaveLength(3)
+  })
+
   test('consulta assinada só libera curso kids publicado', async () => {
     const { app, courses } = buildApp()
     seedSampleCourse(courses, 'cade-todo-mundo', 'published', 'kids')

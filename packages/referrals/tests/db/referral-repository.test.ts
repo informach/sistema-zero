@@ -106,6 +106,79 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     return created
   }
 
+  test('atualização de convites antigos: simula, exige concessão confirmada e preserva prazo e e-mail', async () => {
+    const { code } = await seedCode()
+    const { redemption } = await repo.insertRedemption({
+      codeId: code.id,
+      email: 'trial-upgrade@example.com',
+      name: 'Responsável',
+      phone: null,
+      courseSlug: 'cade-todo-mundo',
+    })
+    const started = new Date(Date.now() - 2 * 86_400_000)
+    await connection.sql`update referrals.scholarship_redemptions set status = 'completed', mural_visitor_policy = 'visitor', user_id = ${crypto.randomUUID()}, granted_at = ${started.toISOString()}, created_at = ${started.toISOString()}, welcome_sent_at = ${started.toISOString()} where id = ${redemption.id}`
+    const calls: unknown[] = []
+    let upstreamStatus = 202
+    const server = Bun.serve({
+      hostname: '127.0.0.1',
+      port: 0,
+      async fetch(request) {
+        calls.push(await request.json())
+        return Response.json(upstreamStatus === 200 ? { ok: true, granted: 2 } : { ok: true }, {
+          status: upstreamStatus,
+        })
+      },
+    })
+    async function run(apply = false) {
+      const process = Bun.spawn(
+        [Bun.which('bun')!, 'scripts/upgrade-mural-trials.ts', ...(apply ? ['--apply'] : [])],
+        {
+          cwd: path.join(import.meta.dir, '../..'),
+          env: {
+            ...Bun.env,
+            NODE_ENV: 'test',
+            DATABASE_URL: testDatabaseUrl!,
+            GATEWAY_URL: `http://127.0.0.1:${server.port}`,
+            REFERRALS_HMAC_SECRET: 'local-test-secret-0001',
+          },
+          stdout: 'pipe',
+          stderr: 'pipe',
+        },
+      )
+      const [exitCode, output, errors] = await Promise.all([
+        process.exited,
+        new Response(process.stdout).text(),
+        new Response(process.stderr).text(),
+      ])
+      return { exitCode, output, errors }
+    }
+    try {
+      expect((await run()).exitCode).toBe(0)
+      expect(calls).toHaveLength(0)
+      expect((await run(true)).exitCode).toBe(1)
+      expect((await repo.findRedemptionByEmail(redemption.email))?.muralVisitorPolicy).toBe(
+        'visitor',
+      )
+      upstreamStatus = 200
+      expect((await run(true)).exitCode).toBe(0)
+      expect(calls).toHaveLength(2)
+      expect(calls[1]).toMatchObject({
+        mode: 'mural_trial',
+        sourceId: `scholarship:${redemption.id}`,
+        courseRef: 'cade-todo-mundo',
+        expiresAt: new Date(started.getTime() + 7 * 86_400_000).toISOString(),
+      })
+      const upgraded = await repo.findRedemptionByEmail(redemption.email)
+      expect(upgraded?.muralVisitorPolicy).toBe('trial')
+      expect(upgraded?.createdAt).toEqual(started)
+      expect(upgraded?.welcomeSentAt).toEqual(started)
+      expect((await run(true)).exitCode).toBe(0)
+      expect(calls).toHaveLength(2)
+    } finally {
+      server.stop(true)
+    }
+  }, 20_000)
+
   test('campanha: snapshot vem da política travada; fim barra novos claims e preserva retomadas', async () => {
     const campaigns = new DrizzleCampaignRepository(connection.db)
     const input: CampaignInput = {
@@ -220,7 +293,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     const created = results.filter((r) => r.created)
     expect(created).toHaveLength(1)
     expect(created[0]?.redemption.accessDurationDays).toBe(7)
-    expect(created[0]?.redemption.muralVisitorPolicy).toBe('visitor')
+    expect(created[0]?.redemption.muralVisitorPolicy).toBe('trial')
     expect(created[0]?.redemption.muralVisitorGrantedAt).toBeNull()
     const ids = new Set(results.map((r) => r.redemption.id))
     expect(ids.size).toBe(1) // todos veem a MESMA linha

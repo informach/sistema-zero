@@ -546,7 +546,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
           attribution: input.attribution,
           createdAt: acceptedAt,
           accessDurationDays: SCHOLARSHIP_ACCESS_DURATION_DAYS,
-          muralVisitorPolicy: 'visitor',
+          muralVisitorPolicy: 'trial',
         })
         .onConflictDoNothing({ target: scholarshipRedemptions.email })
         .returning()

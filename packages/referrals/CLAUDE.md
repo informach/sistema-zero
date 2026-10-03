@@ -20,11 +20,15 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
 ## Conceito central (decisões travadas com a usuária)
 
-1. **Indicação = curso Kids Cadê Todo Mundo? por 7 dias + visita permanente ao Mural só nos
-   novos resgates** (`SCHOLARSHIP_COURSE_SLUG`, default `cade-todo-mundo`). O curso usa grant
-   `mode:'course'` com `expiresAt = createdAt + 7 dias`; a visita usa outro grant manual
-   `mode:'mural_visitor'`, com chave `mural-dos-criadores-visitante` e sem vencimento.
-   Resgates antigos mantêm sua política gravada e não recebem visita por backfill.
+1. **Indicação = curso Kids Cadê Todo Mundo? e participação no Mural por 7 dias + visita
+   permanente depois** (`SCHOLARSHIP_COURSE_SLUG`, default `cade-todo-mundo`; decisão de 03/10/2026).
+   O curso usa `mode:'course'` com `expiresAt = createdAt + 7 dias`. Novos resgates gravam
+   `muralVisitorPolicy:'trial'`; `mode:'mural_trial'` concede o Mural completo com o mesmo vencimento
+   e a visita sem vencimento, em lote atômico no Members. O checkpoint `muralVisitorGrantedAt`
+   registra a conclusão dessa etapa, com delivery `scholarship:mural-trial:<id>`.
+   Resgates antigos conservam a política; `gifts:upgrade-mural` simula a atualização dos resgates
+   concluídos com política visitante e prazo restante. `--apply` libera a participação apenas
+   pelo prazo restante, sem estendê-lo e sem e-mail.
    O curso segue bloqueado para quem apenas cria conta. Antes de registrar o resgate,
    o serviço verifica se ele está publicado; falha/rascunho fecha o fluxo sem criar conta.
    **1 resgate por E-MAIL, global** (UNIQUE em `scholarship_redemptions.email`).
@@ -37,7 +41,7 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    `owner_email` (lower) já nasce aqui — base do anti-autoindicação da F3, sem backfill.
 4. **Sem WhatsApp automático** (decisão de produto): disparo da plataforma é E-MAIL único;
    o embaixador compartilha o link no próprio WhatsApp.
-5. **Ordem do resgate: DISPONIBILIDADE → CONTA → CURSO → VISITA (se nova) → E-MAIL** — se o e-mail falhar, o acesso já existe; se um
+5. **Ordem do resgate: DISPONIBILIDADE → CONTA → CURSO → MURAL (conforme política) → E-MAIL** — se o e-mail falhar, o acesso já existe; se um
    grant falhar, nenhum e-mail mentiroso sai. As duas concessões têm delivery IDs e checkpoints
    distintos, então um retry não reinicia o curso nem duplica a visita. O e-mail é best-effort (fallback do usuário =
    "esqueci minha senha").

@@ -743,11 +743,11 @@ const seeds = [
           '<strong>{{indicador}}</strong> pensou na sua família e convidou você para receber o curso <strong>Cadê Todo Mundo?</strong>, do Sistema Zero, sem custo.',
         ),
         p(
-          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 8 a 15 anos montam, passo a passo, um jogo de procurar personagens e concluem a jornada com um certificado. O convite libera apenas este curso e o Mural dos Criadores em modo visitante — não a assinatura da Comunidade dos Criadores.',
+          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 9 a 14 anos montam, passo a passo, um jogo de procurar personagens e concluem a jornada com um certificado. O convite libera este curso e a participação no Mural dos Criadores por sete dias. A assinatura da Comunidade dos Criadores é uma contratação separada.',
         ),
         p('O acesso ao curso dura 7 dias a partir do cadastro pelo link, não da primeira aula.'),
         p(
-          'O convite também dá acesso ao <strong>Mural dos Criadores</strong> para ver e jogar criações de outras crianças enquanto a conta existir. Publicar, comentar e copiar jogos não fazem parte do presente.',
+          'Durante os sete dias, seu filho também pode <strong>publicar o jogo do curso, comentar e reagir no Mural dos Criadores</strong>. Depois, vocês continuam podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível, para compartilhar com a família e os amigos. Ferramentas de criação livre e cópias de jogos não estão incluídas.',
         ),
         p(
           'Para receber o curso, confirme seus dados de responsável no link abaixo. Não pedimos cartão:',
@@ -957,6 +957,59 @@ const seeds = [
       footerNote: 'Você recebeu este e-mail porque cadastrou sua família nesta campanha.',
     }),
   },
+  ...[
+    { key: 'referrals-scholarship-welcome-mural-trial', campaign: false, newAccount: true },
+    { key: 'referrals-scholarship-existing-mural-trial', campaign: false, newAccount: false },
+    { key: 'referrals-campaign-welcome-mural-trial', campaign: true, newAccount: true },
+    { key: 'referrals-campaign-existing-mural-trial', campaign: true, newAccount: false },
+  ].map(({ key, campaign, newAccount }) => ({
+    key,
+    channel: 'email' as const,
+    name: `Presente com participação no Mural (${campaign ? 'campanha' : 'indicação'}, conta ${newAccount ? 'nova' : 'existente'})`,
+    subject: 'Seu curso e a participação no Mural estão liberados, {{nome}}',
+    variables: campaign ? ['nome', 'campanha', 'validade', 'link'] : ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'Sete dias para criar o jogo, publicar no Mural e compartilhar com a família.',
+      title: 'Seu presente está pronto, {{nome}}',
+      content: [
+        p(
+          campaign
+            ? 'Seu cadastro na campanha <strong>{{campanha}}</strong> liberou o curso <strong>Cadê Todo Mundo?</strong> para sua família.'
+            : '<strong>{{indicador}}</strong> indicou sua família para receber o curso <strong>Cadê Todo Mundo?</strong> gratuitamente.',
+        ),
+        p(
+          campaign
+            ? 'O curso e a participação no Mural ficam disponíveis até <strong>{{validade}} (horário de Brasília)</strong>. São sete dias contados do cadastro pelo link. Criar ou recuperar a senha depois não reinicia esse prazo.'
+            : 'O curso e a participação no Mural ficam disponíveis por <strong>7 dias a partir do cadastro pelo link</strong>. Criar ou recuperar a senha depois não reinicia esse prazo.',
+        ),
+        p(
+          'Em um computador com internet, seu filho acompanha as aulas e cria um jogo de procurar personagens a partir de um projeto preparado. Durante os sete dias, pode <strong>publicar o jogo do curso, comentar e reagir no Mural dos Criadores</strong>, seguindo as atividades. A aula 2 ensina como publicar.',
+        ),
+        p(
+          'Depois da publicação, vocês recebem um link para convidar familiares e amigos para jogar, sem que eles precisem de uma conta. É uma oportunidade de seu filho mostrar o que criou e explicar como a brincadeira funciona.',
+        ),
+        ctaButton(newAccount ? 'Criar minha senha e começar' : 'Acessar meu presente', '{{link}}'),
+        p(
+          'Depois dos sete dias, o curso e as ações de publicar, comentar e reagir deixam de estar liberados por este convite. Sua conta continua podendo <strong>ver e jogar no Mural</strong> enquanto existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
+        ),
+        p(
+          'O presente não inclui outros cursos, ferramentas de criação livre ou cópias dos jogos. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
+        ),
+        divider,
+        ...(newAccount
+          ? [
+              small(
+                'O link para criar a senha expira em 14 dias e pode ser usado uma vez. Esse prazo é diferente dos sete dias do presente. Se precisar, use “Esqueci minha senha” no login.',
+              ),
+            ]
+          : []),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: campaign
+        ? 'Você recebeu este e-mail porque cadastrou sua família nesta campanha.'
+        : 'Você recebeu este e-mail porque resgatou um presente por indicação.',
+    }),
+  })),
   {
     key: 'referrals-bonus-eligible',
     channel: 'email' as const,

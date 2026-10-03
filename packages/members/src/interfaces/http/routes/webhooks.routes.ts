@@ -198,11 +198,19 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
                     sourceId: body.sourceId,
                     requirePublishedKids: true,
                   }
-                : {
-                    mode: 'mural_visitor',
-                    userId: body.userId,
-                    sourceId: body.sourceId,
-                  },
+                : body.mode === 'mural_trial'
+                  ? {
+                      mode: 'mural_trial',
+                      userId: body.userId,
+                      courseRef: body.courseRef,
+                      sourceId: body.sourceId,
+                      expiresAt: new Date(body.expiresAt),
+                    }
+                  : {
+                      mode: 'mural_visitor',
+                      userId: body.userId,
+                      sourceId: body.sourceId,
+                    },
           )
           if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant-manual')
           await deps.hub.notifyAccessChanged(body.userId, 'grant')

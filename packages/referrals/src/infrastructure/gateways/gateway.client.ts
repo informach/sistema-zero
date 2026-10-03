@@ -141,6 +141,17 @@ export function createReferralsGatewayClient(opts: GatewayClientOptions): Referr
       })
     },
 
+    async grantMuralTrial(input): Promise<GatewayResult> {
+      const { deliveryId, ...rest } = input
+      const rawBody = JSON.stringify({ mode: 'mural_trial', ...rest })
+      const path = '/members/webhooks/grant-manual'
+      return requestJson(`${opts.baseUrl}${path}`, {
+        method: 'POST',
+        headers: buildHeaders('POST', path, rawBody, undefined, deliveryId),
+        body: rawBody,
+      })
+    },
+
     async sendEmail(input: SendEmailInput, idempotencyKey: string): Promise<GatewayResult> {
       const rawBody = JSON.stringify({
         channel: 'email',
@@ -170,6 +181,7 @@ export function createNullReferralsGateway(): ReferralsGateway {
     createPasswordToken: async () => unavailable,
     grantManualCourse: async () => unavailable,
     grantMuralVisitor: async () => unavailable,
+    grantMuralTrial: async () => unavailable,
     sendEmail: async () => unavailable,
   }
 }

@@ -72,12 +72,13 @@ export const GIFT_SECTIONS = [
   ),
   section(
     'mural',
-    'Uma visita que continua',
-    'Depois dos sete dias, vocês ainda podem ver e jogar no Mural.',
+    'Um jogo para compartilhar',
+    'Ele cria o jogo. Depois, pode convidar a família para jogar.',
     [
-      'O presente também libera uma visita ao Mural dos Criadores enquanto a conta existir. Seu filho pode conhecer os jogos disponíveis e brincar com criações de outras crianças, inclusive depois do prazo do curso.',
-      'Essa visita pode render uma conversa: qual ideia chamou a atenção? Como aquele jogo funciona? O que ele gostaria de aprender a criar depois? O acesso de visitante permite ver e jogar; publicar, comentar, reagir e fazer cópias dos projetos fazem parte da participação completa na Comunidade, contratada separadamente.',
-      'A captura abaixo mostra o Mural em uma conta da Comunidade. Alguns controles visíveis são de assinantes; no presente, vocês terão acesso para ver e jogar.',
+      'Durante os sete dias, seu filho pode publicar no Mural dos Criadores o jogo que fez no Cadê Todo Mundo?, seguindo as orientações e atividades do curso. A aula 2 ensina esse caminho. Depois de publicar, ele recebe um link para convidar você, os avós ou os amigos para jogar, sem que eles precisem de uma conta.',
+      'Nesse período, ele também pode conhecer os jogos de outras crianças, jogar, comentar e reagir. Você pode acompanhar esse momento: pedir que ele mostre uma regra que criou, experimentar o jogo e conversar sobre o que achou interessante em outra criação.',
+      'Quando os sete dias terminam, o curso e as ações de publicar, comentar e reagir deixam de estar liberados por este convite. Sua conta continua podendo ver e jogar no Mural enquanto existir. O link do jogo que ele já publicou continua funcionando enquanto a publicação estiver disponível.',
+      'O print mostra o Mural da plataforma. Fazer cópias dos jogos e usar ferramentas de criação livre depende dos acessos e das etapas da Comunidade; esses recursos não fazem parte do presente.',
     ],
     ['mural'],
   ),
@@ -86,7 +87,7 @@ export const GIFT_SECTIONS = [
     'Conheça nosso jeito de ensinar',
     'É gratuito para sua família experimentar de verdade.',
     [
-      'O Sistema Zero é uma plataforma de aprendizagem criativa. Crianças acompanham orientações, fazem atividades e testam suas ideias. Este convite oferece um começo concreto: o curso Cadê Todo Mundo? por sete dias e a visita ao Mural.',
+      'O Sistema Zero é uma plataforma de aprendizagem criativa. Crianças acompanham orientações, fazem atividades e testam suas ideias. Este convite oferece um começo concreto: o curso Cadê Todo Mundo? e a participação no Mural por sete dias, com visita ao Mural depois desse prazo.',
       'Queremos que você veja como seu filho participa dessa experiência antes de decidir se deseja continuar. O cadastro não pede cartão e não cria uma assinatura. Ao fim dos sete dias, o curso deixa de estar disponível por este presente; não começa uma cobrança.',
       'Se depois vocês quiserem seguir com outros cursos e recursos, existe a Comunidade dos Criadores. Essa assinatura é uma escolha separada do responsável. Você pode conhecer o presente agora sem assumir esse compromisso.',
     ],
@@ -118,7 +119,7 @@ export const GIFT_FAQ = [
     question: 'Como saber se meu filho está pronto para experimentar?',
     visual: 'aula',
     paragraphs: [
-      'O Cadê Todo Mundo? é apresentado para crianças e adolescentes de 8 a 15 anos que estão começando. Além da idade, observe se seu filho consegue acompanhar uma instrução curta e usar mouse e teclado, sozinho ou com sua ajuda.',
+      'O Cadê Todo Mundo? é apresentado para crianças e adolescentes de 9 a 14 anos que estão começando. Além da idade, observe se seu filho consegue acompanhar uma instrução curta e usar mouse e teclado, sozinho ou com sua ajuda.',
       'Se ele ainda precisa de companhia para ler ou encontrar os controles, reserve esse primeiro momento para fazerem juntos. Não é preciso chegar com experiência em criação de jogos.',
     ],
   },
@@ -143,10 +144,12 @@ export const GIFT_FAQ = [
   {
     id: 'ajuda',
     question: 'E se meu filho travar em uma atividade?',
-    visual: 'aula-estudio',
+    visual: 'recados',
     paragraphs: [
-      'Comece pedindo que ele mostre o que tentou fazer e o que aconteceu na tela. Voltem ao passo da explicação e comparem com a montagem dele: às vezes é um comando fora do lugar ou uma instrução que precisa ser revista.',
-      'Você não precisa saber programar para ajudá-lo a localizar esse ponto. Se precisarem de ajuda da equipe com o acesso ou com uma dificuldade no curso, escrevam para contato@sistemazero.com.br, usando o e-mail do responsável e dizendo em qual aula estão. Não há professor ao vivo acompanhando cada clique nem promessa de resposta imediata.',
+      'Durante os sete dias de acesso ao curso, seu filho pode pedir orientação pelo botão “Preciso de ajuda”, no rodapé de cada aula. Ao clicar, abre um campo para contar em que parte ficou com dúvida. Se ele precisar de companhia para escrever, vocês podem fazer isso juntos.',
+      'Ajude-o a contar o que tentou e o que aconteceu na tela. Por exemplo: “Cliquei no arbusto, mas o personagem não apareceu. O que preciso conferir?”. Depois, é só clicar em “Enviar ao professor”. A plataforma envia junto a identificação da aula e da etapa em que ele está, para o professor saber de onde veio a dúvida.',
+      'A resposta chega nos Recados, dentro da própria plataforma. É ali que vocês acompanham a orientação e continuam a conversa se ainda tiverem dúvidas. Esse atendimento acontece por mensagens e pode haver espera pela resposta.',
+      'Você não precisa saber programar para participar desse momento. Pode ajudá-lo a mostrar onde parou, rever um trecho da explicação e organizar a pergunta. A dúvida sobre a atividade vai para o professor; você pode acompanhar seu filho sem ter que descobrir a resposta por conta própria.',
     ],
   },
   {
@@ -168,12 +171,22 @@ export const GIFT_FAQ = [
     ],
   },
   {
+    id: 'publicar',
+    question: 'Meu filho pode publicar o jogo dele e compartilhar com a família?',
+    visual: 'mural',
+    paragraphs: [
+      'Sim. Durante os sete dias do presente, ele pode publicar o jogo que está criando no Cadê Todo Mundo?, cumprindo as atividades e seguindo a orientação da aula 2. A publicação faz parte dessa experiência de criar algo que outras pessoas podem jogar.',
+      'Depois de publicar, vocês podem compartilhar o link com familiares e amigos. Quem recebe abre o jogo no navegador, sem precisar se cadastrar. Nesse período, seu filho também pode comentar e reagir às criações no Mural.',
+      'O fim dos sete dias encerra a participação liberada pelo convite, mas não faz o link do jogo publicado vencer. Vocês continuam podendo jogar e compartilhar esse link enquanto a publicação estiver disponível.',
+    ],
+  },
+  {
     id: 'inclui',
     question: 'O que fica disponível depois do curso?',
     visual: 'mural',
     paragraphs: [
-      'Sua conta continua podendo ver e jogar os jogos disponíveis no Mural dos Criadores enquanto ela existir. Publicar, comentar, reagir ou fazer cópias dos projetos não faz parte dessa visita.',
-      'A imagem mostra uma conta com participação completa no Mural. Esses controles adicionais, os demais cursos e as ferramentas de criação livre pertencem à Comunidade dos Criadores, contratada separadamente.',
+      'Depois dos sete dias, sua conta continua podendo ver e jogar os jogos disponíveis no Mural dos Criadores enquanto ela existir. Publicar, comentar e reagir ficam liberados pelo convite somente durante os sete dias. Se seu filho publicou o jogo nesse período, o link continua funcionando enquanto a publicação estiver disponível, para vocês e para quem receber o link.',
+      'Para continuar publicando, comentando e reagindo depois desse prazo, existe a assinatura da Comunidade dos Criadores, contratada separadamente. Ela também oferece outros cursos e ferramentas de criação, conforme os acessos e as etapas da plataforma.',
     ],
   },
   {
@@ -213,7 +226,7 @@ export const AMBASSADOR_SECTIONS = [
     'Um convite claro desde o começo',
     'A família recebe um presente. Continuar é uma escolha dela.',
     [
-      'O curso fica disponível por sete dias contados do cadastro, e a visita ao Mural permite ver e jogar enquanto a conta existir. O presente não libera os demais cursos, o uso livre das ferramentas nem a publicação no Mural.',
+      'Durante os sete dias contados do cadastro, a criança pode fazer o curso, publicar o jogo que criou nele, comentar e reagir no Mural. Depois, continua podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível. Outros cursos, ferramentas de criação livre e cópias de jogos não fazem parte do presente.',
       'Não há cartão nem assinatura automática. Se a família quiser conhecer a Comunidade dos Criadores depois, decide por conta própria. Essa clareza ajuda você a indicar com confiança e a família a saber exatamente o que está recebendo.',
     ],
     ['mural'],

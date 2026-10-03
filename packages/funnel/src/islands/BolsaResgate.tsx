@@ -1,3 +1,4 @@
+import type { GiftMuralAccess } from '@sistemazero/core/referrals'
 import { formatTelefone } from '@sistemazero/ui/phone'
 import { useEffect, useId, useRef, useState } from 'react'
 import { ApiError, apiPost } from '../lib/api-fetch'
@@ -37,6 +38,7 @@ export default function BolsaResgate({
     email: string
     expiresAt: string | null
     emailStatus: 'accepted' | 'failed' | 'unknown'
+    muralAccess?: GiftMuralAccess
   } | null>(null)
   const [alreadyRedeemed, setAlreadyRedeemed] = useState(false)
   const uid = useId()
@@ -74,6 +76,7 @@ export default function BolsaResgate({
         status: 'completed' | 'processing'
         expiresAt: string | null
         emailStatus: 'accepted' | 'failed' | 'unknown'
+        muralAccess?: GiftMuralAccess
       }>('/api/bolsa/resgatar', {
         code,
         nome: nome.trim(),
@@ -91,6 +94,7 @@ export default function BolsaResgate({
           email: email.trim(),
           expiresAt: res.expiresAt,
           emailStatus: res.emailStatus,
+          muralAccess: res.muralAccess,
         })
       setPhase(res.status === 'completed' ? 'done' : 'processing')
     } catch (err) {
@@ -184,9 +188,10 @@ export default function BolsaResgate({
           </a>
         </div>
         <p className="mt-4 text-xs text-muted">
-          O prazo conta do cadastro e não reinicia ao trocar a senha. A visita ao Mural continua
-          para ver e jogar enquanto sua conta existir. Este presente não gera cobrança.
+          O prazo conta do cadastro e não reinicia ao trocar a senha. Este presente não gera
+          cobrança.
         </p>
+        <GiftMuralConfirmation access={confirmation?.muralAccess} />
       </div>
     )
   }
@@ -332,8 +337,10 @@ export default function BolsaResgate({
       </button>
       <p className="text-center text-xs text-muted">
         Presente de {referrerName}: acesso ao curso Cadê Todo Mundo? sem custo e sem cartão, por 7
-        dias a partir do cadastro pelo link. O Mural dos Criadores fica disponível para ver e jogar
-        enquanto a conta existir; publicar, comentar e copiar jogos não estão incluídos.
+        dias a partir do cadastro pelo link. Nesse período, seu filho pode publicar o jogo do curso,
+        comentar e reagir no Mural dos Criadores. Depois, continua podendo ver e jogar enquanto a
+        conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver
+        disponível. Ferramentas de criação livre e cópias de jogos não estão incluídas.
       </p>
       <p className="text-center text-xs text-muted">
         Ao continuar, você confirma que é o responsável pela criança e aceita os{' '}
@@ -348,4 +355,25 @@ export default function BolsaResgate({
       </p>
     </form>
   )
+}
+
+/** Evita anunciar a participação nova para resgates antigos retomados. */
+export function GiftMuralConfirmation({ access }: { access?: GiftMuralAccess }) {
+  if (access === 'trial')
+    return (
+      <p className="mt-3 text-sm text-muted">
+        Até o vencimento informado acima, seu filho também pode publicar o jogo do curso, comentar e
+        reagir no Mural. A aula 2 ensina como publicar. Depois, vocês continuam podendo ver e jogar
+        enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a
+        publicação estiver disponível.
+      </p>
+    )
+  if (access === 'visitor')
+    return (
+      <p className="mt-3 text-sm text-muted">
+        Seu resgate inclui a visita ao Mural para ver e jogar enquanto a conta existir. Essa
+        modalidade não libera publicar, comentar ou reagir.
+      </p>
+    )
+  return null
 }

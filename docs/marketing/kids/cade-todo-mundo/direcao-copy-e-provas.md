@@ -62,8 +62,8 @@ O visitante pode chegar frio por anúncio, por um amigo ou por uma palestra. O c
 | 4 | Mostrar aula e atividade juntas. | Vídeo ao lado da montagem no Estúdio. | Ver como acontece a prática. |
 | 5 | Relacionar a experiência à rotina. | Vídeo pausado e retomada da atividade. | Reconhecer como encaixar o curso. |
 | 6 | Explicar as etapas até a conclusão. | Experimento, montagem, contagem e certificado. | Saber o que esperar. |
-| 7 | Orientar a participação do adulto e a ajuda disponível. | Primeiro acesso e, se confirmado para o presente, ajuda/Recados. | Reduzir insegurança prática. |
-| 8 | Apresentar o Mural como visitante. | Nova captura com esse direito de acesso. | Entender o que permanece depois. |
+| 7 | Orientar a participação do adulto e a ajuda disponível. | Primeiro acesso, botão “Preciso de ajuda” na aula e conversa nos Recados. | Reduzir insegurança prática. |
+| 8 | Mostrar a publicação do jogo e a participação no Mural durante sete dias, com visita depois. | Mural, publicação e link público do jogo. | Compartilhar a criação e entender o que permanece depois. |
 | 9 | Explicar quem oferece o curso e por que ele é gratuito. | Apresentação real da pessoa responsável pelo ensino, se já documentada. | Construir confiança sem números inventados. |
 | 10 | Reunir as condições do presente. | Quadro simples: curso por sete dias, visita ao Mural, assinatura separada. | Aceitar o convite com clareza. |
 | 11 | Responder às dúvidas práticas. | Print apropriado perto das respostas de uso. | Resolver a dificuldade específica. |
@@ -147,11 +147,11 @@ Não é necessário ampliar o tempo de tela que sua família já permite para da
 
 ### Mural: exemplo de argumento
 
-**Depois do curso, sua família ainda pode conhecer criações no Mural.**
+**Ele cria o jogo. Depois, pode convidar a família para jogar.**
 
-O presente também dá acesso de visitante ao Mural dos Criadores enquanto sua conta existir. Vocês podem abrir os jogos disponíveis e brincar com o que outras crianças criaram, inclusive depois dos sete dias de acesso ao curso.
+Durante os sete dias do presente, seu filho pode publicar no Mural o jogo criado no Cadê Todo Mundo?, seguindo as atividades e a orientação da aula 2. Também pode jogar, comentar e reagir às criações das outras crianças. Depois de publicar, recebe um link para convidar familiares e amigos para jogar, sem que eles precisem de uma conta.
 
-Essa visita pode render uma conversa em casa: o que chamou a atenção, como aquele jogo funciona e que ideia seu filho gostaria de experimentar no futuro. O acesso de visitante permite ver e jogar. Publicar, comentar, reagir e fazer cópias dos projetos são recursos da participação completa na Comunidade, contratada separadamente.
+Ao fim dos sete dias, o curso e as ações de publicar, comentar e reagir deixam de estar liberados pelo convite. A conta conserva a visita para ver e jogar enquanto existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível. Ferramentas de criação livre e cópias de jogos dependem dos acessos e etapas da Comunidade e não fazem parte do presente.
 
 **Prova pendente:** Mural aberto com conta que tenha somente os direitos do presente.
 
@@ -233,9 +233,15 @@ Nota editorial: explicar recuperação de projetos e acesso ao certificado após
 
 ### E se meu filho tiver uma dúvida na atividade?
 
-**Pendência de entrega antes de fechar a redação:** a interface tem ajuda e Recados, mas precisamos conferir esses recursos com a matrícula gratuita e confirmar a operação de atendimento. Se estiverem disponíveis, explicar o percurso real: abrir “Preciso de ajuda” na atividade, descrever o ponto em que parou e acompanhar a conversa nos Recados. Explicar que é por mensagens e pode haver espera. Não prometer professor ao vivo ou resposta imediata.
+Durante os sete dias de acesso ao curso, seu filho pode pedir orientação pelo botão “Preciso de ajuda”, no rodapé de cada aula. Ao clicar, abre um campo para contar em que parte ficou com dúvida. Se ele precisar de companhia para escrever, vocês podem fazer isso juntos.
 
-Esse texto é uma nota de revisão e não deve aparecer na página pública. A resposta final precisa nomear o apoio efetivamente oferecido ao convidado.
+Ajude-o a contar o que tentou e o que aconteceu na tela. Por exemplo: “Cliquei no arbusto, mas o personagem não apareceu. O que preciso conferir?”. Depois, é só clicar em “Enviar ao professor”. A plataforma envia junto a identificação da aula e da etapa em que ele está, para o professor saber de onde veio a dúvida.
+
+A resposta chega nos Recados, dentro da própria plataforma. É ali que vocês acompanham a orientação e continuam a conversa se ainda tiverem dúvidas. Esse atendimento acontece por mensagens e pode haver espera pela resposta.
+
+Você não precisa saber programar para participar desse momento. Pode ajudá-lo a mostrar onde parou, rever um trecho da explicação e organizar a pergunta. A dúvida sobre a atividade vai para o professor; você pode acompanhar seu filho sem ter que descobrir a resposta por conta própria.
+
+**Evidência editorial, 03/10/2026:** `LearningService.help` usa o acesso à aula por matrícula ativa do curso (`CheckAccessService.requireById`), aceitando a matrícula específica do presente durante sua validade. O envio inclui aula e seção; `TeacherThreadsService` permite ler e responder às conversas do próprio aluno. `lesson-sections.tsx` apresenta “Preciso de ajuda”, “Enviar ao professor” e a confirmação de resposta nos Recados. Conferência pelo código local e pelo print existente, sem ensaio integrado com conta de resgate. Não foi definido prazo de resposta. A copy compartilhada está em `packages/funnel/src/content/presente.ts`.
 
 ## 5. Página do embaixador: completa e útil no retorno
 
@@ -320,7 +326,7 @@ O envio de um convite por e-mail permanece secundário. A interface deve indicar
 | Preciso produzir conteúdo ou ter seguidores? | O fluxo se baseia em compartilhar um link com famílias para quem a atividade faça sentido; não estabelecer meta que o produto não exige. |
 | Qual endereço devo compartilhar? | O link público do presente. O painel particular permite administrar sua indicação e deve ficar com você. Mostrar ambos com rótulos inequívocos. |
 | Tenho que cadastrar a família? | Ela preenche seus próprios dados de responsável. O embaixador compartilha o convite. |
-| O que a família recebe? | Curso por sete dias e visita ao Mural; mostrar o curso e as condições, sem copiar a lista de benefícios da assinatura. |
+| O que a família recebe? | Curso e participação no Mural por sete dias; visita depois. Mostrar a publicação da atividade e o link público, sem prometer ferramentas livres. |
 | Quando recebo um bônus? | Depois de conversão elegível e validação; explicar status, chave Pix e processamento manual com a regra vigente. |
 | Posso continuar indicando depois? | Enquanto seu link e o programa estiverem ativos; o prazo de cada resgate é próprio. Não confundir com data de uma campanha institucional. |
 | Onde acompanho minhas indicações? | Contagens e bônus no painel, sem dados privados das crianças. |
@@ -339,8 +345,8 @@ Todos os arquivos existentes abaixo pertencem a `packages/funnel/public/img/comu
 | V04 | Pausar e rever. | `tela-pausa.webp` | Existe no mapa; não usar como prova de autonomia garantida. |
 | V05 | Jardim e personagens preparados. | Nova captura do projeto inicial do curso. | Necessária. A imagem genérica de materiais contém outro contexto. |
 | V06 | Reconhecer a conclusão. | `tela-certificado.webp` | Existe e foi inspecionado. Conferir curso, versão, regra de conclusão e período de acesso. |
-| V07 | Ver e jogar no Mural como visitante. | Nova captura com conta do presente. | Necessária. `tela-mural.webp` atual mostra função de assinante. |
-| V08 | Receber orientação por mensagem. | `tela-ajuda.webp` e `tela-recados-conversa.webp` | Recurso e arquivos existem; uso como benefício depende da confirmação do suporte ao presente. |
+| V07 | Publicar o jogo, comentar e reagir durante sete dias; ver e jogar depois. | `tela-mural.webp`; complementar com publicação da aula 2 e link público. | Captura atual reutilizada. Cópia de jogos e ferramentas livres não estão incluídas. |
+| V08 | Enviar a dúvida na aula e acompanhar a orientação por mensagem. | `tela-ajuda.webp` e `tela-recados-conversa.webp` | Acesso por matrícula do curso conferido no código. FAQ usa o print do campo de ajuda; a conversa continua nos Recados. Sem promessa de resposta imediata. |
 | V09 | Entrar depois de resgatar. | Nova confirmação, login e seleção/criação do perfil. | Capturar depois de implementar o fluxo revisado. |
 | V10 | Indicar com clareza. | Novo painel do embaixador com link público e prévia. | Capturar com conta de teste; ocultar token privado e chave Pix. |
 | V11 | Acompanhar a criança. | Captura da Área dos pais com direitos do presente. | Não reutilizar benefícios exclusivos de assinatura como promessa de presente. |

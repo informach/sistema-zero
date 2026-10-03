@@ -93,9 +93,9 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
 
   const [shareMessage, setShareMessage] = useState(() =>
     [
-      `Oi! Quero presentear sua família com o curso Cadê Todo Mundo?, do Sistema Zero. Nele, crianças de 8 a 15 anos criam um jogo de procurar personagens, passo a passo. 🎮`,
+      `Oi! Quero presentear sua família com o curso Cadê Todo Mundo?, do Sistema Zero. Nele, crianças de 9 a 14 anos criam um jogo de procurar personagens, passo a passo. 🎮`,
       ``,
-      `O acesso ao curso dura 7 dias a partir do cadastro pelo link. O Mural dos Criadores continua disponível para ver e jogar enquanto a conta existir.`,
+      `Nos 7 dias a partir do cadastro pelo link, a criança pode fazer o curso, publicar o jogo dela, comentar e reagir no Mural dos Criadores. Depois, continua podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.`,
       ``,
       `Para as atividades, é preciso um computador com internet, mouse e teclado. É gratuito e não pede cartão. A página explica o que está incluído:`,
       shareUrl,
@@ -159,8 +159,10 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
         <p className="mt-2 text-sm text-muted">
           Quem entrar por ele recebe 7 dias de acesso ao curso{' '}
           <strong className="text-ink">Cadê Todo Mundo?</strong>, sem custo. O prazo começa no
-          cadastro pelo link. O Mural dos Criadores fica disponível para ver e jogar enquanto a
-          conta existir, sem publicar, comentar, reagir ou copiar jogos. Os demais cursos não estão
+          cadastro pelo link. Nesses sete dias, a criança pode publicar o jogo do curso, comentar e
+          reagir no Mural dos Criadores. Depois, continua podendo ver e jogar enquanto a conta
+          existir. O link do jogo publicado continua funcionando enquanto a publicação estiver
+          disponível. Os demais cursos, ferramentas de criação livre e cópias de jogos não estão
           incluídos.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -197,21 +199,23 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
           rows={7}
           className="mt-3 w-full rounded-xl border border-line bg-card p-4 text-sm leading-relaxed text-ink"
         />
-        <a
-          href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
-          target="_blank"
-          rel="noreferrer"
-          className="btn btn-primary mt-3 inline-flex"
-        >
-          Abrir meu WhatsApp com o convite
-        </a>
-        <button
-          type="button"
-          onClick={() => void copy(shareMessage, 'message')}
-          className="mt-3 text-sm font-semibold text-cyan underline-offset-2 hover:underline"
-        >
-          {copied === 'message' ? 'Mensagem copiada! ✓' : 'Copiar mensagem pronta pro WhatsApp'}
-        </button>
+        <div className="gift-share-actions">
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(shareMessage)}`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn btn-primary inline-flex"
+          >
+            Abrir meu WhatsApp com o convite
+          </a>
+          <button
+            type="button"
+            onClick={() => void copy(shareMessage, 'message')}
+            className="text-sm font-semibold text-cyan underline-offset-2 hover:underline"
+          >
+            {copied === 'message' ? 'Mensagem copiada! ✓' : 'Copiar mensagem pronta pro WhatsApp'}
+          </button>
+        </div>
         {manualCopy && (
           <div role="status" className="mt-4">
             <p className="text-sm">

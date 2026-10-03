@@ -12,7 +12,9 @@ Data: 02/10/2026. Proposta aprovada na conversa. **Código e páginas implementa
 
 ## Restrições confirmadas
 
+- Faixa etária comunicada: **9 a 14 anos**, igual às ofertas, por decisão de 03/10/2026. Vale para hero, perguntas e convites de WhatsApp/e-mail; substitui a faixa usada na análise inicial.
 - Sete dias de curso a partir do cadastro; encerramento da campanha afeta somente novos resgates.
+- **Atualização de 03/10:** o presente também libera publicar o jogo do curso, comentar e reagir no Mural durante esses sete dias. Depois permanece a visita; o link do jogo não vence com a matrícula. Implementação, testes e atualização dos convites antigos em [Mural durante os sete dias](mural-sete-dias.md).
 - Links de evento podem ser encaminhados, sem validação de presença.
 - Usar os prints atuais nesta versão, com legendas que explicam os direitos do presente; registrar substituições futuras.
 - Campanha institucional não gera bônus Pix.
@@ -51,7 +53,7 @@ Dentro de admin, community-kids, messaging e api-gateway: executar os scripts co
 
 ## Capturas a substituir posteriormente
 
-- Mural com direitos de visitante, no lugar da captura atual de assinante.
+- Mural durante o presente, publicação ensinada na aula 2 e modo visitante após o prazo.
 - Projeto inicial do Cadê Todo Mundo, quando diferir do enquadramento disponível.
 - Novo painel do embaixador, confirmação de cadastro e acesso do convidado.
 

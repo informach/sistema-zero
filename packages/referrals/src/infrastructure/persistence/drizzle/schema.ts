@@ -159,7 +159,7 @@ export const scholarshipRedemptions = referralsSchema.table(
     completedAt: timestamp({ withTimezone: true }),
     /** Null nos resgates históricos; novos inserts gravam sete dias na aplicação. */
     accessDurationDays: integer(),
-    /** Null nos resgates anteriores ao presente com visita ao Mural. */
+    /** Null legado; visitor = só visita; trial = participação no prazo do curso + visita depois. */
     muralVisitorPolicy: varchar({ length: 16 }),
     muralVisitorGrantedAt: timestamp({ withTimezone: true }),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

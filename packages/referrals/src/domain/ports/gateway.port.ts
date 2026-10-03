@@ -37,6 +37,11 @@ export interface GrantMuralVisitorInput {
   deliveryId: string
 }
 
+export interface GrantMuralTrialInput extends GrantMuralVisitorInput {
+  courseRef: string
+  expiresAt: string
+}
+
 /** Corpo de `POST /messaging/send` (gateway → messaging). */
 export interface SendEmailInput {
   templateKey: string
@@ -52,6 +57,7 @@ export interface ReferralsGateway {
   createPasswordToken(email: string): Promise<GatewayResult>
   grantManualCourse(input: GrantManualCourseInput): Promise<GatewayResult>
   grantMuralVisitor(input: GrantMuralVisitorInput): Promise<GatewayResult>
+  grantMuralTrial(input: GrantMuralTrialInput): Promise<GatewayResult>
   /** Enfileira e-mail transacional (202). Idempotente por consumer+chave. */
   sendEmail(input: SendEmailInput, idempotencyKey: string): Promise<GatewayResult>
 }

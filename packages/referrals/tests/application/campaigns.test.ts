@@ -110,7 +110,7 @@ describe('campanhas institucionais', () => {
     const grant = gateway.callsOf('grantManualCourse')[0]!.input as GrantManualCourseInput
     expect(grant.expiresAt).toBe(new Date(row.createdAt.getTime() + 7 * 86_400_000).toISOString())
     expect((gateway.callsOf('sendEmail')[0]!.input as SendEmailInput).templateKey).toBe(
-      'referrals-campaign-welcome',
+      'referrals-campaign-welcome-mural-trial',
     )
     expect((gateway.callsOf('sendEmail')[0]!.input as SendEmailInput).variables.campanha).toBe(
       input.publicTitle,
