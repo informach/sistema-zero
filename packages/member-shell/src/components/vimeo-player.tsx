@@ -5,6 +5,7 @@ import Player from '@vimeo/player'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
+import type { LessonVideoControls } from './lesson-player-context'
 
 interface VimeoPlayerProps {
   /** ID numérico já extraído da URL (nunca o `src` cru). */
@@ -24,6 +25,10 @@ interface VimeoPlayerProps {
   onReachedThreshold?: () => void
   /** Vídeo TERMINOU (evento `ended` do SDK) — p/ o host celebrar no fim de verdade. */
   onEnded?: () => void
+  /** Começou (`play`) ou parou (`pause`/`ended`) de tocar. */
+  onPlayingChange?: (playing: boolean) => void
+  /** Como dar play e pausa neste player a pedido de fora; `null` quando ele some. */
+  onControls?: (controls: LessonVideoControls | null) => void
   /** Fração assistida que conta como "viu a aula" (default 0.9). */
   thresholdPercent?: number
 }
@@ -51,6 +56,8 @@ export function VimeoPlayer({
   onCoverage,
   onReachedThreshold,
   onEnded,
+  onPlayingChange,
+  onControls,
   thresholdPercent = 0.9,
 }: VimeoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -61,8 +68,24 @@ export function VimeoPlayer({
   const [trackingFailed, setTrackingFailed] = useState(false)
 
   // Callbacks em refs: o Player é criado uma vez por vídeo; sem stale closures.
-  const callbacksRef = useRef({ onProgress, onFlush, onCoverage, onReachedThreshold, onEnded })
-  callbacksRef.current = { onProgress, onFlush, onCoverage, onReachedThreshold, onEnded }
+  const callbacksRef = useRef({
+    onProgress,
+    onFlush,
+    onCoverage,
+    onReachedThreshold,
+    onEnded,
+    onPlayingChange,
+    onControls,
+  })
+  callbacksRef.current = {
+    onProgress,
+    onFlush,
+    onCoverage,
+    onReachedThreshold,
+    onEnded,
+    onPlayingChange,
+    onControls,
+  }
   const reachedRef = useRef(false)
   const lastSecondsRef = useRef(0)
 
@@ -99,6 +122,16 @@ export function VimeoPlayer({
     const unregisterAudio = registerLessonMedia(audioOwner, () => player.pause())
     player.on('play', () => {
       void requestLessonMediaFocus(audioOwner)
+      callbacksRef.current.onPlayingChange?.(true)
+    })
+    // O navegador pode recusar o play sem gesto: a promessa rejeita e a criança aperta.
+    callbacksRef.current.onControls?.({
+      play: () => {
+        player.play().catch(() => {})
+      },
+      pause: () => {
+        player.pause().catch(() => {})
+      },
     })
     let disposed = false
     let sampledAt = 0
@@ -148,10 +181,12 @@ export function VimeoPlayer({
       }
     })
     player.on('pause', (data: { seconds: number }) => {
+      callbacksRef.current.onPlayingChange?.(false)
       callbacksRef.current.onFlush?.(data.seconds)
       void sampleCoverage(data.seconds)
     })
     player.on('ended', (data: { duration: number }) => {
+      callbacksRef.current.onPlayingChange?.(false)
       callbacksRef.current.onFlush?.(data.duration)
       void sampleCoverage(data.duration)
       callbacksRef.current.onEnded?.()
@@ -160,6 +195,8 @@ export function VimeoPlayer({
     return () => {
       disposed = true
       unregisterAudio()
+      callbacksRef.current.onPlayingChange?.(false)
+      callbacksRef.current.onControls?.(null)
       // `destroy()` remove o iframe que o PRÓPRIO SDK criou dentro do host —
       // o React nunca soube dele, então o próximo run cria um novo limpo.
       if (playerRef.current === player) playerRef.current = null

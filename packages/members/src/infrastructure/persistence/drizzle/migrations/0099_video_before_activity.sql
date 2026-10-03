@@ -1,0 +1,1 @@
+ALTER TABLE "members"."courses" ADD COLUMN "video_before_activity" boolean DEFAULT false NOT NULL;

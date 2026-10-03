@@ -23,6 +23,7 @@ function makeCourse(over: Partial<Course> & { slug: string; title: string }): Co
     status: 'published' as CourseStatus,
     audience: 'adult',
     sequentialLock: true,
+    videoBeforeActivity: false,
     level: 'iniciante',
     track: '2d',
     careerSlot: null,

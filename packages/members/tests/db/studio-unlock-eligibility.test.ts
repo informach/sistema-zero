@@ -44,6 +44,7 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
       "track text not null default '2d'",
       'career_slot smallint',
       'sequential_lock boolean not null default true',
+      'video_before_activity boolean not null default false',
       'metadata jsonb',
       'created_at timestamptz not null default now()',
       'updated_at timestamptz not null default now()',

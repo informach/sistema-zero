@@ -66,6 +66,8 @@ const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
   audience: b.audience ?? null,
   // `null` = não informado (create → true; update → preserva). `false` é mantido.
   sequentialLock: b.sequentialLock ?? null,
+  // `null` = não informado (create → false; update → preserva). `true`/`false` são mantidos.
+  videoBeforeActivity: b.videoBeforeActivity ?? null,
   // `null` = não informado (create → iniciante; update → preserva).
   level: b.level ?? null,
   // `null` = não informado (create → 2d; update → preserva).

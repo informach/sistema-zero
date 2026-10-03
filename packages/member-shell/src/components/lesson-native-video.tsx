@@ -8,9 +8,24 @@ import { useLessonPlayer } from './lesson-player-context'
 
 export function LessonNativeVideo({ content }: { content: VideoBlock }) {
   const player = useLessonPlayer()
+  // O contexto muda de identidade a cada render do bloco; o registro é uma vez por montagem.
+  const context = useRef(player)
+  context.current = player
   const element = useRef<HTMLVideoElement>(null)
   const audioOwner = useRef(Symbol('lesson-video'))
   useEffect(() => registerLessonMedia(audioOwner.current, () => element.current?.pause()), [])
+  useEffect(() => {
+    context.current?.registerVideoControls?.({
+      play: () => {
+        element.current?.play().catch(() => {})
+      },
+      pause: () => element.current?.pause(),
+    })
+    return () => {
+      context.current?.onVideoPlayingChange?.(false)
+      context.current?.registerVideoControls?.(null)
+    }
+  }, [])
   const coverage = (video: HTMLVideoElement) => {
     if (!Number.isFinite(video.duration) || video.duration <= 0) return
     const ranges: VideoWatchCoverage['ranges'] = []
@@ -24,6 +39,7 @@ export function LessonNativeVideo({ content }: { content: VideoBlock }) {
       ref={element}
       onPlay={() => {
         void requestLessonMediaFocus(audioOwner.current)
+        player?.onVideoPlayingChange?.(true)
       }}
       controls
       // Sem isto o Safari do iPhone ARRANCA o vídeo para a tela cheia nativa no
@@ -46,10 +62,12 @@ export function LessonNativeVideo({ content }: { content: VideoBlock }) {
         )
       }}
       onPause={(e) => {
+        player?.onVideoPlayingChange?.(false)
         coverage(e.currentTarget)
         player?.onVideoFlush?.(e.currentTarget.currentTime)
       }}
       onEnded={(e) => {
+        player?.onVideoPlayingChange?.(false)
         coverage(e.currentTarget)
         player?.onVideoFlush?.(e.currentTarget.currentTime)
       }}

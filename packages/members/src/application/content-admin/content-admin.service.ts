@@ -148,6 +148,7 @@ export class CourseAdminService {
       ...fields,
       audience: fields.audience ?? 'adult',
       sequentialLock: fields.sequentialLock ?? true,
+      videoBeforeActivity: fields.videoBeforeActivity ?? false,
       level: fields.level ?? 'iniciante',
       track: fields.track ?? '2d',
       careerSlot: fields.careerSlot ?? null,
@@ -179,6 +180,7 @@ export class CourseAdminService {
     // `audience` AUSENTE preserva a atual (≠ do salesPageUrl, que limpa): um
     // PATCH de build antigo do admin sem o campo não rebaixa curso kids → adult.
     // `sequentialLock` AUSENTE também PRESERVA a atual (mesma régua do audience).
+    // `videoBeforeActivity` AUSENTE idem.
     // `level` AUSENTE idem (build antigo do admin sem o campo não rebaixa a dificuldade).
     // `track` AUSENTE idem (build antigo sem o eixo 2D/3D não re-tagueia o curso).
     const {
@@ -186,6 +188,7 @@ export class CourseAdminService {
       studioUnlockBlocks,
       audience,
       sequentialLock,
+      videoBeforeActivity,
       level,
       track,
       careerSlot,
@@ -198,6 +201,7 @@ export class CourseAdminService {
       ...rest,
       audience: audience ?? existing.audience,
       sequentialLock: sequentialLock ?? existing.sequentialLock,
+      videoBeforeActivity: videoBeforeActivity ?? existing.videoBeforeActivity,
       level: level ?? existing.level,
       track: track ?? existing.track,
       careerSlot: careerSlot === undefined ? existing.careerSlot : careerSlot,

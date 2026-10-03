@@ -1753,6 +1753,35 @@ e assim por diante. `lenda` → trilha da Lenda; curso sem `level` válido → m
 tela sem saída. A página não precisa mais buscar gamificação para desempatar a volta. Testes:
 `tests/course-return.test.ts`.
 
+## "Primeiro, assista ao vídeo" + o vídeo flutuante na aula (03/10/2026)
+
+A régua e a estrutura moram no member-shell (§"Vídeo antes da atividade + o vídeo flutuante"
+de lá); aqui mora a PELE e o Zappy.
+- O `lesson-player-client.tsx` passa `videoGateMascot` no contexto (`KidsMascotAnimated`
+  `happy`, mudo: o aviso é estado, não acontecimento).
+- `globals.css` (FORA de `@layer`, como os outros `sz-lesson-*`) veste o aviso como a carta
+  das telas-modelo: véu no céu do tema a 78% (`color-mix in oklab`, a atividade segue à vista),
+  cartão branco com `--sombra-carta-sm`, título no Baloo, a pílula do quanto já viu na menta (é
+  progresso) e "Ver o vídeo" na pílula azul de sempre; o "Pronto!" na menta. O cartão gruda a
+  5.5rem do topo (abaixo da barra de progresso da aula).
+- O vídeo flutuante: cartão branco com a barra no céu e o fio `--linha-carta`; a pílula "Vídeo"
+  é a ação azul com o degrau 3D. Os dois são `fixed`, mas continuam dentro de
+  `.sz-lesson-sections` no DOM, e é por isso que as regras os alcançam.
+- Testes: `tests/lesson-video-gate.test.tsx` (a aula de verdade com um player e uma atividade de
+  mentira que falam o contrato de produção: tranca, abre ao vivo, "Ver o vídeo", sem opção/sem
+  player, o MESMO nó do vídeo flutuando, pílula, minimizar, Tab com a tela ampliada modal e o
+  canto guardado por perfil) e, no Chromium, `e2e-scenes/lesson-video.spec.ts`: a página
+  `/lesson-video` do harness monta a aula de verdade com um vídeo nativo de 6 s
+  (`e2e-scenes/fixtures/video.webm`, gerado com `ffmpeg -f lavfi -i testsrc`) e o jogo pronto do
+  Cadê à direita, no modo IMERSIVO (rodapé fixo, como a página de aula); o servidor do ensaio
+  devolve o progresso que recebe, então a tranca abre AO VIVO aos 90%. Cobre 1366×768, 390×844 e
+  844×340 (celular deitado): o flutuante por cima da tela ampliada (o centro dele é ele mesmo), a
+  conferência EXPLÍCITA de que ele não cobre o "Voltar à aula", o lugar do vídeo guardando a
+  altura, o `<video>` sendo o mesmo e o tempo andando, pílula, arrastar encaixando no canto, a alça
+  de tamanho, o Tab e o canto guardado após recarregar. Lacuna aceita: Estúdio, Pinta, Vimeo e
+  YouTube no flutuante, e a pele do cartão de vídeo do kids, se conferem em staging.
+- O "Pronto!" é um aviso fixo acima do rodapé (o `--sz-lesson-nav-height`), na menta, com sombra.
+
 ## Bloco "Em breve" na aula (`coming_soon`, 08/2026)
 
 Quando a autora cria a aula mas ainda não terminou de montá-la, a criança abria, via blocos pela

@@ -10,6 +10,7 @@ interface YouTubePlayer {
   getDuration(): number
   getPlaybackRate(): number
   seekTo(seconds: number, allowSeekAhead: boolean): void
+  playVideo(): void
   pauseVideo(): void
   destroy(): void
 }
@@ -111,10 +112,17 @@ export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
               const initial = callbacks.current?.initialPositionSeconds
               if (initial && initial < target.getDuration()) target.seekTo(initial, true)
               setError(false)
+              callbacks.current?.registerVideoControls?.({
+                play: () => target.playVideo(),
+                pause: () => target.pauseVideo(),
+              })
             },
             onStateChange: ({ data, target }) => {
               if (timer) clearInterval(timer)
               timer = undefined
+              // 1 = tocando; 3 = carregando no meio do play, que para a criança ainda é tocar.
+              if (data === 1) callbacks.current?.onVideoPlayingChange?.(true)
+              else if (data !== 3) callbacks.current?.onVideoPlayingChange?.(false)
               if (data === 1) {
                 void requestLessonMediaFocus(audioOwner)
                 previous = { seconds: target.getCurrentTime(), at: performance.now() }
@@ -135,6 +143,8 @@ export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
     return () => {
       disposed = true
       unregisterAudio()
+      callbacks.current?.onVideoPlayingChange?.(false)
+      callbacks.current?.registerVideoControls?.(null)
       if (timer) clearInterval(timer)
       player?.destroy()
       container.replaceChildren()

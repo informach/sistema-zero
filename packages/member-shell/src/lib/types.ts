@@ -1449,6 +1449,12 @@ export interface LessonDetailView {
   completed: boolean
   /** Posição de reprodução salva (segundos) — `null` se nunca assistiu. */
   positionSeconds: number | null
+  /**
+   * O curso pede o vídeo ANTES da atividade: em cada seção com vídeo e atividade na direita,
+   * a atividade abre depois que o aluno vê o vídeo uma vez. O members manda `false` para a
+   * equipe. Opcional: members mais antigo que o app não manda o campo, e aí nada tranca.
+   */
+  videoBeforeActivity?: boolean
   blocks: LessonBlockView[]
   attachments: LessonAttachmentView[]
 }

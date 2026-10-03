@@ -11,6 +11,9 @@ import { Button } from '@sistemazero/ui/button'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Expand, Minimize2, RotateCcw } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { inertOutside } from '../lib/inert-outside'
+import { useReportActivityExpanded } from '../lib/lesson-activity-expansion'
+import { EXPANDED_EXIT_ATTR, LESSON_FLOAT_ROOT_ATTR } from './lesson-video-float'
 
 export function clickedProjectPlayTarget(
   activity: ProjectPlayActivity,
@@ -58,6 +61,8 @@ export function ProjectPlayActivityView({
   const workspace = useModalA11y<HTMLElement>({
     open: expanded,
     onClose: () => setInlineHeight(null),
+    // O vídeo flutuante da aula (e a pílula) entram no Tab da tela ampliada.
+    companions: true,
   })
   const current = useRef({ answers, onChange })
   current.current = { answers, onChange }
@@ -129,24 +134,13 @@ export function ProjectPlayActivityView({
     return () => window.removeEventListener('message', receive)
   }, [activity, sendPointer, round])
 
+  useReportActivityExpanded(expanded)
   useEffect(() => {
-    if (!expanded) return
+    if (!expanded || !workspace.current) return
     // O iframe tem navegação de teclado própria. Inert impede que o Tab saia
     // dele e alcance controles da aula que ficaram escondidos sob o modo ampliado.
-    const siblings = new Map<HTMLElement, boolean>()
-    let node: HTMLElement | null = workspace.current
-    while (node?.parentElement) {
-      for (const sibling of node.parentElement.children) {
-        if (sibling instanceof HTMLElement && sibling !== node) {
-          siblings.set(sibling, sibling.inert)
-          sibling.inert = true
-        }
-      }
-      node = node.parentElement
-    }
-    return () => {
-      for (const [sibling, inert] of siblings) sibling.inert = inert
-    }
+    // O lugar do vídeo da seção fica de fora: é ele que flutua por cima do jogo.
+    return inertOutside(workspace.current, `[${LESSON_FLOAT_ROOT_ATTR}]`)
   }, [expanded, workspace])
 
   function restart() {
@@ -193,6 +187,8 @@ export function ProjectPlayActivityView({
               type="button"
               variant="outline"
               aria-expanded={expanded}
+              // O vídeo flutuante da aula começa abaixo da saída, nunca por cima dela.
+              {...(expanded ? { [EXPANDED_EXIT_ATTR]: '' } : {})}
               onClick={(event) => {
                 event.currentTarget.focus({ preventScroll: true })
                 setInlineHeight(expanded ? null : (workspace.current?.offsetHeight ?? 0))

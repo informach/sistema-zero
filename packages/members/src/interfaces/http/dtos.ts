@@ -1026,6 +1026,9 @@ const CourseBodyProperties = {
   // Trava sequencial (estilo Duolingo). AUSENTE: create → `true` (padrão LIGADO);
   // update → PRESERVA a atual (mesma régua do audience).
   sequentialLock: t.Optional(t.Union([t.Boolean(), t.Null()])),
+  // Vídeo antes da atividade. AUSENTE: create → `false` (padrão DESLIGADO); update →
+  // PRESERVA a atual (mesma régua do sequentialLock).
+  videoBeforeActivity: t.Optional(t.Union([t.Boolean(), t.Null()])),
   // Dificuldade. AUSENTE: create → `iniciante`; update → PRESERVA a atual
   // (mesma régua do audience/sequentialLock).
   level: t.Optional(t.Union([COURSE_LEVEL, t.Null()])),

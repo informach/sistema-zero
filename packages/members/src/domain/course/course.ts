@@ -96,6 +96,11 @@ export interface Course {
    * concluídas. Default LIGADO; desligável por curso no admin.
    */
   sequentialLock: boolean
+  /**
+   * Vídeo antes da atividade: nas seções com vídeo e atividade, a atividade abre depois que
+   * o aluno assiste ao vídeo uma vez. Default DESLIGADO; a autora liga por curso no admin.
+   */
+  videoBeforeActivity: boolean
   /** Extras livres (ex.: `salesPageUrl` — URL da página de vendas no funil). */
   metadata: Record<string, unknown> | null
   createdAt: Date

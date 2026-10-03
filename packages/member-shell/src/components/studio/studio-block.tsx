@@ -19,12 +19,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
+import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
 import { resolveStudioLessonSeed } from '../../lib/studio-lesson-seed'
 import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
+import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR } from '../lesson-video-float'
 import { SectionProjectCheck } from './section-project-check'
 
 // "Compartilhar" da AULA = UMA vez só. O projeto da aula tem começo/meio/fim: a
@@ -278,6 +280,8 @@ export function StudioBlockView({
   // mas nada se move). Trava o scroll do body enquanto expandido (refcontada com o <Dialog>,
   // p/ fechar o "Enviar?" por cima não destravar cedo e a barra fantasma não voltar).
   useBodyScrollLock(expanded)
+  // O vídeo da seção sai de baixo do editor expandido (o flutuante da aula).
+  useReportActivityExpanded(expanded)
 
   const submit = useCallback(async () => {
     const project = handleRef.current?.getProject()
@@ -476,7 +480,14 @@ export function StudioBlockView({
             <RotateCcw className="size-4" />
             Recomeçar
           </Button>
-          <Button variant="outline" size="sm" onClick={toggleExpanded} disabled={!ready}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleExpanded}
+            disabled={!ready}
+            // O vídeo flutuante da aula nunca cobre a saída; num editor ele nasce embaixo (a barra de ferramentas mora logo abaixo daqui).
+            {...(expanded ? { [EXPANDED_EXIT_ATTR]: EXPANDED_EXIT_EDITOR } : {})}
+          >
             {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
             {expanded ? 'Reduzir' : 'Expandir'}
           </Button>

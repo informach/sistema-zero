@@ -46,6 +46,11 @@ export interface CourseFields {
    */
   sequentialLock: boolean | null
   /**
+   * Vídeo antes da atividade. `null` = "não informado": no CREATE vira `false` (padrão
+   * DESLIGADO); no UPDATE **preserva a atual** (mesma régua do `sequentialLock`).
+   */
+  videoBeforeActivity: boolean | null
+  /**
    * Nível (dificuldade) do curso. `null` = "não informado": no CREATE vira
    * `iniciante`; no UPDATE **preserva a atual** (mesma régua do `audience`).
    */

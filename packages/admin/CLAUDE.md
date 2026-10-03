@@ -1180,6 +1180,14 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   sequencial estilo Duolingo): checkbox "Trava sequencial das aulas" no dialog, **sempre enviado**
   (members PRESERVA quando ausente; default `true` no curso novo); `CourseView.sequentialLock`
   devolvido. Ligada, o aluno só abre a próxima aula após concluir a anterior (gate no members → 423).
+  Body de curso também aceita **`videoBeforeActivity`** (boolean, 03/10/2026): checkbox "Assistir
+  ao vídeo antes da atividade" logo abaixo da trava sequencial, **desligado por padrão** (é para
+  os cursos de quem está começando) e **sempre enviado** (o members preserva quando ausente).
+  Ligado, em cada seção com vídeo e atividade, o player do aluno tranca a atividade até o vídeo
+  ser visto uma vez (90%), nos DOIS públicos (o texto da dica é neutro por isso); a equipe e a
+  prévia do admin veem tudo liberado (para conferir a tranca é preciso uma conta de aluno: o
+  "Ver como aluno" usa a conta da equipe). Trava: `tests/course-form-default.test.tsx`. `CourseView.videoBeforeActivity`
+  é OPCIONAL (members antigo sem o campo → checkbox nasce desmarcado). ⚠️ Deploy: members antes.
   Body de curso também aceita **`level`** (`iniciante`|`intermediario`|`avancado`) **+ `track`**
   (`2d`|`3d`, reforma 2D/3D 07/2026 — o PAR é o DEGRAU pedagógico): o select "Nível do curso" no
   dialog virou UM select de **6 opções** ("Iniciante 2D"…"Avançado 3D", value composto

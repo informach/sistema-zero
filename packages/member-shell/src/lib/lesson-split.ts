@@ -102,7 +102,7 @@ export function ehEditorDeSecao(block: SplitBlock): boolean {
  * ⚠️ `interactive` NÃO basta: a experiência em HTML também é `interactive` e fica na
  * coluna do CONTEÚDO. A cena é bancada, como o editor.
  */
-function ehAtividadeDeSecao(block: SplitBlock): boolean {
+export function ehAtividadeDeSecao(block: SplitBlock): boolean {
   return (
     block.kind === 'interactive' &&
     isPublicInteractiveBlock(block.content) &&

@@ -187,6 +187,11 @@ export function LessonPlayer({
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
       renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
+      // O Zappy do aviso "Primeiro, assista ao vídeo" (curso com a opção ligada). Mudo: é um
+      // estado que fica na tela, não um acontecimento.
+      videoGateMascot: (
+        <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" sound={false} />
+      ),
       renderInstruction: (text, pose = 'speaking', speech) => (
         <DialogueBlockView
           content={{ kind: 'dialogue', text, pose }}

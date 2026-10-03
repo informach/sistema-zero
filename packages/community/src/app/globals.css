@@ -245,6 +245,29 @@ main:has(.sz-aula-adulto) {
   background: var(--card);
   padding: 1.5rem;
 }
+/* "ASSISTA AO VÍDEO PRIMEIRO" (03/10/2026, opção do curso) e o VÍDEO FLUTUANTE sobre a atividade
+   ampliada. O member-shell dá a estrutura; aqui eles ganham o cartão do Pen, sóbrio, sem o
+   mascote do kids. */
+.sz-aula-adulto .sz-lesson-video-gate-veil {
+  border-radius: 1.5rem;
+  background: color-mix(in oklab, var(--background-alt) 80%, transparent);
+}
+.sz-aula-adulto .sz-lesson-video-gate-card {
+  border: 0;
+  border-radius: 1.5rem;
+  background: var(--card);
+  box-shadow: 0 8px 22px rgba(28, 48, 90, 0.1);
+}
+.sz-aula-adulto .sz-lesson-video-gate-done {
+  border: 0;
+  background: var(--card);
+}
+.sz-aula-adulto .sz-lesson-video-float {
+  border-radius: 1rem;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 18px 40px rgba(28, 48, 90, 0.24);
+}
 /* MATERIAIS COMPLEMENTARES. O bloco também ganha cartão, como o texto e a cena — ele é uma
    lista, e sem moldura ela se mistura ao parágrafo de cima. O desenho é o mesmo componente do
    kids (`MaterialsBlockView`, sem cor por dentro); aqui ele sai sóbrio. */

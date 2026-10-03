@@ -113,17 +113,21 @@ export class GetLessonService {
       })
     }
 
-    const view = toLessonDetailView(
-      lesson,
-      course.slug,
-      completedIds.includes(lessonId),
-      positionSeconds,
-      quizStates,
-      studioStates,
-      // Aula "em breve" esconde o resto do conteúdo do ALUNO; a equipe vê tudo
-      // (é assim que a autoria confere a aula pelo "Ver como aluno").
-      privileged,
-    )
+    const view = {
+      ...toLessonDetailView(
+        lesson,
+        course.slug,
+        completedIds.includes(lessonId),
+        positionSeconds,
+        quizStates,
+        studioStates,
+        // Aula "em breve" esconde o resto do conteúdo do ALUNO; a equipe vê tudo
+        // (é assim que a autoria confere a aula pelo "Ver como aluno").
+        privileged,
+      ),
+      // A equipe confere a aula inteira sem esperar vídeo nenhum.
+      videoBeforeActivity: course.videoBeforeActivity && !privileged,
+    }
     if (hasComingSoonBlock(lesson.blocks) && !privileged)
       return { ...view, requirements: lessonCompletionRequirements(view) }
     const structure = await this.learning.read({ userId, accountId: accountId ?? userId }, lesson)

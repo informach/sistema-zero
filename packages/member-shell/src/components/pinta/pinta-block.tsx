@@ -22,11 +22,13 @@ import { CheckCheck, CheckCircle2, Download, Maximize2, Minimize2, Send } from '
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
+import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
 import { resolvePintaSeed } from '../../lib/pinta-seed'
 import { preparePintaSubmission } from '../../lib/pinta-submission'
 import type { PintaBlock, PintaStateView, PintaSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
+import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR } from '../lesson-video-float'
 import { loadPintaLessonModule, type PintaLessonModule } from './pinta-loader'
 
 /** O módulo do Pinta é carregado só no client (IndexedDB/canvas não existem no SSR). */
@@ -143,6 +145,8 @@ export function PintaBlockView({
   }, [blockId, expanded])
 
   useBodyScrollLock(expanded)
+  // O vídeo da seção sai de baixo do Pinta expandido (o flutuante da aula).
+  useReportActivityExpanded(expanded)
 
   const submit = useCallback(async () => {
     const handle = handleRef.current
@@ -215,7 +219,13 @@ export function PintaBlockView({
           <Download className="size-4" />
           Baixar o desenho
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setExpanded((v) => !v)}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setExpanded((v) => !v)}
+          // O vídeo flutuante da aula nunca cobre a saída; num editor ele nasce embaixo (a barra de ferramentas mora logo abaixo daqui).
+          {...(expanded ? { [EXPANDED_EXIT_ATTR]: EXPANDED_EXIT_EDITOR } : {})}
+        >
           {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           {expanded ? 'Reduzir' : 'Expandir'}
         </Button>

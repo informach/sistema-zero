@@ -1929,7 +1929,7 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
   aulas/blocos [com `contentRevision`]/anexos, sortOrders preservados; anexos apontam para os
   MESMOS storageRefs do R2 — nada é apagado por cascade do clone). O clone é um FORK independente:
   nasce `draft`, `audience` = destino, `careerSlot: null` (ela etiqueta depois),
-  `sequentialLock`/`level`/`track` copiados, `metadata.clonedFrom = <slug de origem>`
+  `sequentialLock`/`videoBeforeActivity`/`level`/`track` copiados, `metadata.clonedFrom = <slug de origem>`
   (a `CourseView` devolve `clonedFrom` — badge no painel), `is_published` das aulas copiado (o
   draft do curso segura a visibilidade). NÃO copia dados de aluno (completions/ratings/
   submissions/threads). Slug default = `<slug>-adulto|-kids`; colisão → 409 `DUPLICATE_SLUG`.
@@ -2276,6 +2276,30 @@ listado ali.
 ## Aulas por seções (09/2026)
 
 `lesson_structures` organiza os blocos existentes da aula. Progresso e tentativas são por perfil, conta, bloco e revisão; gabaritos nunca entram na view do aluno. Conclusão exige atividades essenciais e entregas, mantendo jornada e quizzes. Experimentos não produzem entregas. Importação é transacional em rascunhos, com prévia e controle de concorrência. `mode: preserve` continua sendo o padrão e recoloca no fechamento os blocos omitidos; `mode: replace` trata o manifesto como o documento completo, enumera blocos e seções removidos na prévia e não conserva conteúdo omitido. Nos dois modos, chaves mantidas preservam IDs; o `initialProject` do Estúdio vem sempre do manifesto, sem alterar entregas ou rascunhos dos alunos, e a versão publicada não muda. Mídias pendentes impedem publicação. As migrations 0078–0080 acrescentam o modelo, removem a antiga prática e agrupam aulas legadas em uma seção sem mudar IDs. A migration histórica 0076 permanece aplicada.
+
+## Assistir ao vídeo antes da atividade (03/10/2026, migration `0099`)
+
+Opção por curso, `courses.video_before_activity boolean NOT NULL DEFAULT false` (decisão da
+dona: ligada só nos cursos de quem está começando). Ligada, em cada seção com vídeo e atividade
+na direita, o player do aluno tranca a atividade até o vídeo ser visto uma vez (90%).
+
+- **O members só guarda e entrega.** Não há checagem no servidor: é guia de interface, e a régua
+  da tranca mora no member-shell (`lib/video-gate.ts`). Nenhuma rota recusa nada por causa dela.
+- Molde do `sequential_lock`: `CourseBody.videoBeforeActivity` opcional — ausente no CREATE →
+  `false`; no UPDATE **PRESERVA** a atual; o `courseFields` da rota copia o campo (sem isso o
+  Elysia o derruba calado); o clone leva a opção junto. `CourseView.videoBeforeActivity`.
+- **O que chega à aula:** `LessonDetailView.videoBeforeActivity = course.videoBeforeActivity &&
+  !privileged` (`get-lesson.service.ts`): a EQUIPE nunca vê a tranca (o "Ver como aluno" confere
+  a aula inteira). O campo é opcional no espelho do member-shell, então app novo tolera members
+  antigo.
+- **Ordem de deploy: members antes do admin** — o members antigo NÃO recusa o campo novo: o
+  `normalize` do Elysia o DESCARTA calado (medido no full review). Com o admin na frente, a
+  autora marcaria a caixa, leria "Curso atualizado." e nada seria guardado.
+- O SQL das três escritas (`createCourse`, `cloneCourseTree`, `updateCourse`) só é alcançado em
+  `tests/db/journey-readiness.test.ts` ("a opção vídeo antes da atividade…"): o fake copia o
+  objeto inteiro e por isso o teste de integração não pegaria uma linha esquecida no Drizzle.
+- Testes: `tests/integration/video-before-activity.test.ts` (create/PATCH preserva/clone/aluno ×
+  equipe × opção desligada). DDL à mão dos `tests/db` ganhou a coluna (`add column if not exists`).
 
 ## Materiais complementares (19/09/2026, migrations `0090` e `0091`)
 

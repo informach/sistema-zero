@@ -34,12 +34,44 @@ if (!authoringBundle.success) throw new Error(authoringBundle.logs.join('\n'))
 const authoringScript = authoringBundle.outputs.find((output) => output.path.endsWith('.js'))
 if (!authoringScript) throw new Error('Bundle da autoria do jogo não foi gerado')
 const authoringStyles = authoringBundle.outputs.find((output) => output.path.endsWith('.css'))
+const lessonVideoBundle = await Bun.build({
+  entrypoints: [resolve(import.meta.dir, 'lesson-video-client.tsx')],
+  target: 'browser',
+  define: { 'process.env.NODE_ENV': JSON.stringify('production') },
+})
+if (!lessonVideoBundle.success) throw new Error(lessonVideoBundle.logs.join('\n'))
+const lessonVideoScript = lessonVideoBundle.outputs.find((output) => output.path.endsWith('.js'))
+if (!lessonVideoScript) throw new Error('Bundle da aula com vídeo não foi gerado')
+
+/** O progresso que a aula grava volta como o members devolveria (sem banco). */
+async function echoProgress(request: Request, path: string) {
+  const blockId = path.split('/blocks/')[1]?.split('/')[0] ?? ''
+  const body = (await request.json()) as Record<string, unknown>
+  return Response.json({
+    blockId,
+    revision: body.revision,
+    answers: body.answers ?? {},
+    hintsUsed: body.hintsUsed ?? 0,
+    positionSeconds: body.positionSeconds ?? null,
+    attemptsCount: 0,
+    result: null,
+    updatedAt: new Date().toISOString(),
+  })
+}
 
 Bun.serve({
   hostname: '127.0.0.1',
   port: Number(process.env.SCENE_E2E_PORT ?? 5198),
-  fetch(request) {
+  async fetch(request) {
     const path = new URL(request.url).pathname
+    if (request.method === 'POST' && path.endsWith('/learning-progress'))
+      return echoProgress(request, path)
+    if (request.method === 'POST' && path.startsWith('/api/')) return Response.json({})
+    if (path === '/video.webm')
+      return new Response(Bun.file(resolve(import.meta.dir, 'video.webm')), {
+        headers: { 'Content-Type': 'video/webm' },
+      })
+    if (path === '/lesson-video.js') return new Response(lessonVideoScript)
     if (path === '/client.js') return new Response(script)
     if (path === '/project-play.js') return new Response(projectPlayScript)
     if (path === '/project-play-authoring.js') return new Response(authoringScript)
@@ -52,7 +84,9 @@ Bun.serve({
         ? '/project-play-authoring.js'
         : path === '/project-play'
           ? '/project-play.js'
-          : '/client.js'
+          : path === '/lesson-video'
+            ? '/lesson-video.js'
+            : '/client.js'
     const extraStyles =
       path === '/project-play-authoring'
         ? '<link rel="stylesheet" href="/project-play-authoring.css">'

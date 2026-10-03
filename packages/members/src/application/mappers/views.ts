@@ -818,6 +818,12 @@ export interface LessonDetailView {
   structureRevision?: string | null
   sectionProgress?: SectionProgressView
   learningProgress?: LessonLearningProgress
+  /**
+   * O curso pede o vídeo antes da atividade (`courses.video_before_activity`). Já vem `false`
+   * para a equipe. É guia de interface: o player tranca a atividade da seção até o vídeo dela
+   * chegar a 90%; o servidor não confere.
+   */
+  videoBeforeActivity?: boolean
   id: string
   slug: string
   title: string

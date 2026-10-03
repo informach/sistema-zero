@@ -9,6 +9,9 @@ import type {
 import { createContext, type ReactNode, useContext } from 'react'
 import type { DialogueSpeech } from './dialogue-block'
 
+/** O que um player de vídeo da aula sabe fazer a pedido de fora (o flutuante e o aviso). */
+export type LessonVideoControls = { play: () => void; pause: () => void }
+
 /**
  * Contexto provido pelo `LessonPlayer` aos blocos da aula (evita prop-drilling
  * por `LessonBlocks` → `BlockRenderer`). Fora do player (não acontece hoje) os
@@ -55,6 +58,18 @@ export interface LessonPlayerContextValue {
   /** Flush imediato da posição (pause/ended). */
   onVideoFlush?: (seconds: number) => void
   onVideoCoverage?: (coverage: VideoWatchCoverage) => void
+  /**
+   * O vídeo começou ou parou de tocar. Quem liga é o `LessonSections`, POR BLOCO (o `BlockScope`
+   * amarra o id): é o que decide se, ao ampliar a atividade, o vídeo vira o flutuante.
+   */
+  onVideoPlayingChange?: (playing: boolean) => void
+  /** O player entrega como dar play e pausa nele (`null` ao desmontar). Mesmo dono do anterior. */
+  registerVideoControls?: (controls: LessonVideoControls | null) => void
+  /**
+   * O mascote do aviso "assista ao vídeo primeiro". O shell não conhece o Zappy: o kids passa o
+   * dele, o adulto e o admin ficam sem.
+   */
+  videoGateMascot?: ReactNode
   videoWatchRequiredBlockIds?: string[]
   materialRequiredBlockIds?: string[]
   materialRequiredItems?: { blockId: string; itemIds: string[] }[]

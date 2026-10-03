@@ -740,6 +740,7 @@ export function seedSampleCourse(
     status,
     audience,
     sequentialLock,
+    videoBeforeActivity: false,
     level,
     track,
     careerSlot,

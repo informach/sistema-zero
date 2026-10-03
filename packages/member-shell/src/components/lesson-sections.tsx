@@ -17,10 +17,20 @@ import {
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { ArrowLeft, ArrowRight, Check, ExternalLink, List, Lock, MessageCircle } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
+import { useAnyActivityExpanded } from '../lib/lesson-activity-expansion'
 import {
   ehEditorDeSecao,
   ehPreviaDeLivro,
@@ -31,12 +41,37 @@ import {
   type SplitBlock,
 } from '../lib/lesson-split'
 import type { LessonBlockView, LessonDetailView, MaterialsBlock } from '../lib/types'
+import { isPlayableVideo, type LocalWatched, videoGateFor } from '../lib/video-gate'
 import { MaterialsBookPreview } from './ebook/materials-book-preview'
 import { InteractiveLessonBlock } from './learning-activity'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
-import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
+import {
+  LessonPlayerProvider,
+  type LessonVideoControls,
+  useLessonPlayer,
+} from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { LessonSectionStatus, textoDoItem } from './lesson-section-status'
+import {
+  LessonVideoFloatContext,
+  type VideoFloatMode,
+  type VideoFloatSlot,
+} from './lesson-video-float'
+import { LessonVideoGate, LessonVideoGateDone } from './lesson-video-gate'
+
+/**
+ * A ligação entre os vídeos da seção e o `LessonSectionsContent` (vídeo flutuante e aviso "assista
+ * primeiro"). Interna: o `BlockScope` amarra o id do bloco e entrega aos players o
+ * `onVideoPlayingChange`/`registerVideoControls` do `LessonPlayerContext`.
+ */
+type LessonVideoBus = {
+  setPlaying: (blockId: string, playing: boolean) => void
+  setControls: (blockId: string, controls: LessonVideoControls | null) => void
+  /** O quanto o player mediu (a tranca e a pílula de progresso, antes de o servidor confirmar). */
+  setWatched: (blockId: string, revision: string, fraction: number) => void
+  slotFor: (blockId: string) => VideoFloatSlot
+}
+const LessonVideoBusContext = createContext<LessonVideoBus | null>(null)
 
 function dialogueText(content: unknown): string | null {
   return content !== null &&
@@ -95,6 +130,8 @@ function BlockScope({
   children: ReactNode
 }) {
   const parent = useLessonPlayer()
+  const bus = useContext(LessonVideoBusContext)
+  const videoBus = block.kind === 'video' ? bus : null
   const saved = parent?.learningProgress?.blocks.find(
     (p) => p.blockId === block.id && p.revision === block.blockRevision,
   )
@@ -221,15 +258,28 @@ function BlockScope({
             value,
           )
           const fraction = videoWatchedFraction(videoCoverageAnswers(coverage.current))
+          if (block.blockRevision) videoBus?.setWatched(block.id, block.blockRevision, fraction)
           if (
             (before < VIDEO_WATCH_THRESHOLD && fraction >= VIDEO_WATCH_THRESHOLD) ||
             Date.now() - savedAt.current >= 10000
           )
             save(seconds.current)
         },
+        onVideoPlayingChange: videoBus
+          ? (playing) => videoBus.setPlaying(block.id, playing)
+          : undefined,
+        registerVideoControls: videoBus
+          ? (controls) => videoBus.setControls(block.id, controls)
+          : undefined,
       }}
     >
-      {children}
+      {videoBus ? (
+        <LessonVideoFloatContext.Provider value={videoBus.slotFor(block.id)}>
+          {children}
+        </LessonVideoFloatContext.Provider>
+      ) : (
+        children
+      )}
       {/* O que falta para seguir (inclusive o vídeo) mora na faixa do rodapé da aula, na voz
           da criança. A linha "N% assistido · veja 90% para continuar" que ficava aqui repetia a
           faixa sem formatação e saiu a pedido dela (02/10/2026). O aviso de falha fica: ele
@@ -466,6 +516,71 @@ function LessonSectionsContent({
   useEffect(() => {
     if (totalSecoes > 0) avisarSecao.current?.({ index, total: totalSecoes })
   }, [index, totalSecoes])
+  // ⭐⭐ O VÍDEO FLUTUANTE (03/10/2026). Com uma atividade ampliada, o vídeo da seção sai de
+  // baixo dela: tocando, flutua por cima; parado, vira a pílula "Vídeo". Os players avisam
+  // "tocando/parado" e entregam o play pelo `LessonVideoBusContext`.
+  const anyExpanded = useAnyActivityExpanded()
+  const [playingVideoId, setPlayingVideoId] = useState<string | null>(null)
+  const videoControls = useRef(new Map<string, LessonVideoControls>())
+  const [floatChoice, setFloatChoice] = useState<VideoFloatMode>(null)
+  // O PRIMEIRO vídeo da seção COM player é o que acompanha a atividade (`isPlayableVideo`, a
+  // mesma régua da tranca).
+  const floatVideoId =
+    section?.blockIds.find((id) => lesson.blocks.some((b) => b.id === id && isPlayableVideo(b))) ??
+    null
+  const playingNow = useRef(playingVideoId)
+  playingNow.current = playingVideoId
+  // Só a TRANSIÇÃO de ampliar decide: o vídeo que estava tocando flutua, o parado vira pílula.
+  useEffect(() => {
+    setFloatChoice(
+      anyExpanded && floatVideoId
+        ? playingNow.current === floatVideoId
+          ? 'floating'
+          : 'pill'
+        : null,
+    )
+  }, [anyExpanded, floatVideoId])
+  // ⚠️ DERIVADO no render (full review de 03/10/2026): fechar a tela ampliada devolve o vídeo e
+  // esconde o painel do conteúdo no MESMO render, sem um quadro de layout trocado embaixo da
+  // devolução do foco. Sem player (prévia e ensaio do admin) nada flutua.
+  const floatMode: VideoFloatMode = player && anyExpanded && floatVideoId ? floatChoice : null
+  const setVideoPlaying = useCallback((blockId: string, playing: boolean) => {
+    setPlayingVideoId((current) => (playing ? blockId : current === blockId ? null : current))
+  }, [])
+  const setVideoControls = useCallback((blockId: string, controls: LessonVideoControls | null) => {
+    if (controls) videoControls.current.set(blockId, controls)
+    else videoControls.current.delete(blockId)
+  }, [])
+  // O quanto foi visto, medido pelo player. Só re-renderiza a aula a cada 5 pontos ou ao cruzar
+  // os 90%: o player mede várias vezes por segundo.
+  const [localWatched, setLocalWatched] = useState<LocalWatched>({})
+  const setVideoWatched = useCallback((blockId: string, revision: string, fraction: number) => {
+    setLocalWatched((all) => {
+      const before = all[blockId]
+      const was = before?.revision === revision ? before.fraction : 0
+      const crossed = was < VIDEO_WATCH_THRESHOLD && fraction >= VIDEO_WATCH_THRESHOLD
+      if (fraction <= was || (fraction - was < 0.05 && !crossed)) return all
+      return { ...all, [blockId]: { revision, fraction } }
+    })
+  }, [])
+  const viewerId = player?.viewerId ?? null
+  const videoBus = useMemo<LessonVideoBus>(
+    () => ({
+      setPlaying: setVideoPlaying,
+      setControls: setVideoControls,
+      setWatched: setVideoWatched,
+      slotFor: (blockId) => ({
+        mode: blockId === floatVideoId ? floatMode : null,
+        viewerId,
+        onMinimize: () => setFloatChoice('pill'),
+        onOpen: () => {
+          setFloatChoice('floating')
+          videoControls.current.get(blockId)?.play()
+        },
+      }),
+    }),
+    [setVideoPlaying, setVideoControls, setVideoWatched, floatVideoId, floatMode, viewerId],
+  )
   if (!section) return null
   const blockById = new Map(lesson.blocks.map((b) => [b.id, b]))
   // `gallery` é contexto da AULA (o mesmo Estúdio é bancada numa seção e entrega noutra), por
@@ -509,6 +624,24 @@ function LessonSectionsContent({
   const mostraAbas = podeDividir && !arrastavel && temEditor
   const editorIds = new Set(editores.map((b) => b.id))
   const cenasAtivas = toolIds.filter((id) => !editorIds.has(id))
+  // "Assistir ao vídeo antes da atividade" (opção do curso, 03/10/2026). Sem player (prévia e
+  // ensaio do admin) nada tranca; a equipe recebe a opção desligada do members.
+  const videoGate = videoGateFor({
+    blocks: ativos.map((b) => ({ ...paraSplit(b), blockRevision: b.blockRevision })),
+    learningProgress: player?.learningProgress ?? lesson.learningProgress,
+    localWatched,
+    enabled: lesson.videoBeforeActivity === true && player !== null,
+    sectionCompleted:
+      lesson.completed ||
+      state?.sections.some((s) => s.id === section.id && s.status === 'completed') === true,
+  })
+  // "Ver o vídeo" do aviso: volta à aba do exemplo, leva o foco ao vídeo e tenta dar play (o
+  // navegador pode recusar; aí a criança aperta).
+  const watchVideo = (videoBlockId: string) => {
+    setToolMode('example')
+    setDestination(videoBlockId)
+    videoControls.current.get(videoBlockId)?.play()
+  }
   async function navigate(target: number, blockId?: string) {
     const next = sections[target]
     if (!next || locked(next.id) || navigationBusy.current) return
@@ -891,64 +1024,65 @@ function LessonSectionsContent({
       {/* ⚠️ O que a SEÇÃO já disse, para o bloco não repetir: o título do cabeçalho e se já há
           um balão de fala num bloco próprio. Sem isto a Aula 1 do Corre Dino mostrava o mesmo
           título duas vezes e dois Zappys na mesma tela. */}
-      <LessonSectionProvider
-        value={{
-          titulo: section?.title ?? '',
-          temDialogo: (section?.blockIds ?? []).some((bid) =>
-            Boolean(dialogueText(blockById.get(bid)?.content)),
-          ),
-        }}
-      >
-        <div
-          ref={container}
-          data-layout={immersive ? (podeDividir ? 'wide' : 'reading') : undefined}
-          className={cn(
-            'space-y-5',
-            kids && 'sz-lesson-sections',
-            immersive && 'sz-lesson-immersive relative mx-auto w-full',
-            immersive && !podeDividir && 'max-w-[860px]',
-          )}
+      <LessonVideoBusContext.Provider value={player ? videoBus : null}>
+        <LessonSectionProvider
+          value={{
+            titulo: section?.title ?? '',
+            temDialogo: (section?.blockIds ?? []).some((bid) =>
+              Boolean(dialogueText(blockById.get(bid)?.content)),
+            ),
+          }}
         >
-          {/* A barra de requisitos permanece no ensaio do admin. Nos dois players
+          <div
+            ref={container}
+            data-layout={immersive ? (podeDividir ? 'wide' : 'reading') : undefined}
+            className={cn(
+              'space-y-5',
+              kids && 'sz-lesson-sections',
+              immersive && 'sz-lesson-immersive relative mx-auto w-full',
+              immersive && !podeDividir && 'max-w-[860px]',
+            )}
+          >
+            {/* A barra de requisitos permanece no ensaio do admin. Nos dois players
               imersivos, o progresso do topo e o motivo junto à conclusão bastam. */}
-          {!kids && !immersive && (
-            <div className="sz-lesson-toolbar flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
-              <details ref={requirementsMenu} className="relative">
-                <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
-                  O que falta para concluir · {pending.length}
-                </summary>
-                <div className="absolute left-0 z-30 mt-2 max-h-96 w-80 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg">
-                  {requirements.length === 0 ? (
-                    <p className="p-2 text-sm text-muted-foreground">
-                      Explore o conteúdo e conclua a aula quando terminar.
-                    </p>
-                  ) : (
-                    requirements.map((r) => (
-                      <button
-                        key={r.blockId}
-                        type="button"
-                        disabled={navigating || Boolean(r.sectionId && locked(r.sectionId))}
-                        className="flex min-h-12 w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
-                        onClick={() => {
-                          const target = sections.findIndex((s) => s.id === r.sectionId)
-                          if (target >= 0) navigate(target, r.blockId)
-                        }}
-                      >
-                        <span className="text-sm font-medium">
-                          {r.complete ? '✓ ' : ''}
-                          {r.title}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {r.complete ? 'Concluído' : acaoDoRequisito(r)}
-                        </span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              </details>
-            </div>
-          )}
-          {/* ⚠️ Era um grid `0.8fr/1.2fr`. Foi ELE que derrubou a largura do vídeo de
+            {!kids && !immersive && (
+              <div className="sz-lesson-toolbar flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
+                <details ref={requirementsMenu} className="relative">
+                  <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+                    O que falta para concluir · {pending.length}
+                  </summary>
+                  <div className="absolute left-0 z-30 mt-2 max-h-96 w-80 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg">
+                    {requirements.length === 0 ? (
+                      <p className="p-2 text-sm text-muted-foreground">
+                        Explore o conteúdo e conclua a aula quando terminar.
+                      </p>
+                    ) : (
+                      requirements.map((r) => (
+                        <button
+                          key={r.blockId}
+                          type="button"
+                          disabled={navigating || Boolean(r.sectionId && locked(r.sectionId))}
+                          className="flex min-h-12 w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+                          onClick={() => {
+                            const target = sections.findIndex((s) => s.id === r.sectionId)
+                            if (target >= 0) navigate(target, r.blockId)
+                          }}
+                        >
+                          <span className="text-sm font-medium">
+                            {r.complete ? '✓ ' : ''}
+                            {r.title}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {r.complete ? 'Concluído' : acaoDoRequisito(r)}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </details>
+              </div>
+            )}
+            {/* ⚠️ Era um grid `0.8fr/1.2fr`. Foi ELE que derrubou a largura do vídeo de
             ~900-1290px para ~350-505px, e o Vimeo escolhe a rendition pelo tamanho
             renderizado do iframe — daí o "vídeo ruim em tela cheia" que a dona
             reportou. Agora a criança decide onde fica a divisória.
@@ -956,138 +1090,140 @@ function LessonSectionsContent({
             só liga com coluna confortável, e o piso da ferramenta (380px) existe
             para o VÍDEO poder crescer — o editor não precisa dele (ele vira abas
             por dentro abaixo de 1024px, ou seja já virava com o piso antigo). */}
-          {/* No player real, o cabeçalho continua como H1 acessível e alvo do foco
+            {/* No player real, o cabeçalho continua como H1 acessível e alvo do foco
               ao avançar, mas não ocupa espaço visual. No ensaio do admin, segue
               visível como H2 com o índice ao lado. */}
-          <header
-            className={cn(
-              'sz-lesson-section-head flex items-start justify-between gap-3 px-1',
-              immersive && 'sr-only',
-            )}
-          >
-            <Heading
-              ref={heading}
-              tabIndex={-1}
+            <header
               className={cn(
-                // `[overflow-wrap:anywhere]`: com `min-w-0` o heading perde o piso de
-                // min-content, e uma palavra maior que a coluna pintava POR BAIXO do
-                // índice ("acontecimentos" a 24px mede ~185px contra 150px de coluna).
-                'min-w-0 flex-1 scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl [overflow-wrap:anywhere]',
-                kids && 'sz-display',
+                'sz-lesson-section-head flex items-start justify-between gap-3 px-1',
+                immersive && 'sr-only',
               )}
             >
-              {lessonTitle && lessonTitle !== section.title ? (
-                // A aula é o contexto e a seção é a novidade: ela é que puxa o olho.
-                // ⚠️ `lessonTitle !== section.title` não é zelo: numa aula LEGADA o
-                // nome da seção É o título da aula (`legacyLessonSections`), e o
-                // cabeçalho saía "Certificado do curso · Certificado do curso" —
-                // justamente nas aulas de certificado e nas "em breve".
-                <span className="font-normal text-muted-foreground text-lg sm:text-xl">
-                  {lessonTitle}
-                  {/* O ponto é só visual. Para quem ouve, a vírgula é o que separa
+              <Heading
+                ref={heading}
+                tabIndex={-1}
+                className={cn(
+                  // `[overflow-wrap:anywhere]`: com `min-w-0` o heading perde o piso de
+                  // min-content, e uma palavra maior que a coluna pintava POR BAIXO do
+                  // índice ("acontecimentos" a 24px mede ~185px contra 150px de coluna).
+                  'min-w-0 flex-1 scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl [overflow-wrap:anywhere]',
+                  kids && 'sz-display',
+                )}
+              >
+                {lessonTitle && lessonTitle !== section.title ? (
+                  // A aula é o contexto e a seção é a novidade: ela é que puxa o olho.
+                  // ⚠️ `lessonTitle !== section.title` não é zelo: numa aula LEGADA o
+                  // nome da seção É o título da aula (`legacyLessonSections`), e o
+                  // cabeçalho saía "Certificado do curso · Certificado do curso" —
+                  // justamente nas aulas de certificado e nas "em breve".
+                  <span className="font-normal text-muted-foreground text-lg sm:text-xl">
+                    {lessonTitle}
+                    {/* O ponto é só visual. Para quem ouve, a vírgula é o que separa
                       os dois nomes: sem ela o leitor de tela emenda as palavras
                       ("Dino" + "Um lugar" = "DinoUm"), porque o nó `aria-hidden`
                       sai inteiro do nome acessível e não sobra nem o espaço. */}
-                  <span aria-hidden> · </span>
-                  <span className="sr-only">, </span>
-                </span>
-              ) : null}
-              {section.title}
-            </Heading>
-            {!immersive && indiceDaAula}
-          </header>
-          {mostraAbas && (
-            <div className="flex gap-2" role="group" aria-label="Orientação e criação">
-              <Button
-                variant={toolMode === 'example' ? 'default' : 'outline'}
-                aria-pressed={toolMode === 'example'}
-                onClick={() => setToolMode('example')}
-              >
-                Ver exemplo
-              </Button>
-              <Button
-                variant={toolMode === 'create' ? 'default' : 'outline'}
-                aria-pressed={toolMode === 'create'}
-                onClick={() => setToolMode('create')}
-              >
-                Criar
-              </Button>
-            </div>
-          )}
-          {mostraAbas &&
-            toolMode === 'create' &&
-            section.blockIds
-              .map((id) => dialogueText(blockById.get(id)?.content))
-              .filter(Boolean)
-              .slice(0, 1)
-              .map((text) =>
-                text ? (
-                  <div key={text} className="text-sm">
-                    {player?.renderInstruction?.(text) ?? text}
-                  </div>
-                ) : null,
-              )}
-          <PanelGroup
-            direction="horizontal"
-            // Por PERFIL, não por aula: a criança ajusta a divisória uma vez e ela vale
-            // para as próximas. Na prévia do admin (`preview`) não persiste nada.
-            // A chave é versionada porque a lib guarda o layout por
-            // (autoSaveId, ids dos Panel) e o que está guardado VENCE o `defaultSize` —
-            // e ele é gravado na MONTAGEM, sem ninguém arrastar (o estado nasce `[]`, o
-            // primeiro layout já difere e cai no autosave). Ou seja: o padrão anterior
-            // está no localStorage de todo mundo que abriu uma aula. Mudou o padrão?
-            // Suba a versão, senão o valor novo é letra morta. Os painéis nascem 50/50
-            // desde a `v4` (eram 30/70, e a seção com vídeo abria com o vídeo espremido).
-            autoSaveId={player?.viewerId ? `${SPLIT_LAYOUT_KEY}:${player.viewerId}` : null}
-            className={cn(
-              // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
-              // de aula é fluxo de documento (quem rola é a janela) e os painéis têm popover
-              // e `sticky` dentro, então os três precisam ser desfeitos.
-              'h-auto! items-start overflow-visible!',
-              arrastavel ? 'flex!' : 'block!',
+                    <span aria-hidden> · </span>
+                    <span className="sr-only">, </span>
+                  </span>
+                ) : null}
+                {section.title}
+              </Heading>
+              {!immersive && indiceDaAula}
+            </header>
+            {mostraAbas && (
+              <div className="flex gap-2" role="group" aria-label="Orientação e criação">
+                <Button
+                  variant={toolMode === 'example' ? 'default' : 'outline'}
+                  aria-pressed={toolMode === 'example'}
+                  onClick={() => setToolMode('example')}
+                >
+                  Ver exemplo
+                </Button>
+                <Button
+                  variant={toolMode === 'create' ? 'default' : 'outline'}
+                  aria-pressed={toolMode === 'create'}
+                  onClick={() => setToolMode('create')}
+                >
+                  Criar
+                </Button>
+              </div>
             )}
-          >
-            <Panel
-              id="lesson-content"
-              order={1}
-              defaultSize={SPLIT_DEFAULT_SIZE}
-              minSize={contentMinimum}
-              maxSize={100 - toolMinimum}
+            {mostraAbas &&
+              toolMode === 'create' &&
+              section.blockIds
+                .map((id) => dialogueText(blockById.get(id)?.content))
+                .filter(Boolean)
+                .slice(0, 1)
+                .map((text) =>
+                  text ? (
+                    <div key={text} className="text-sm">
+                      {player?.renderInstruction?.(text) ?? text}
+                    </div>
+                  ) : null,
+                )}
+            <PanelGroup
+              direction="horizontal"
+              // Por PERFIL, não por aula: a criança ajusta a divisória uma vez e ela vale
+              // para as próximas. Na prévia do admin (`preview`) não persiste nada.
+              // A chave é versionada porque a lib guarda o layout por
+              // (autoSaveId, ids dos Panel) e o que está guardado VENCE o `defaultSize` —
+              // e ele é gravado na MONTAGEM, sem ninguém arrastar (o estado nasce `[]`, o
+              // primeiro layout já difere e cai no autosave). Ou seja: o padrão anterior
+              // está no localStorage de todo mundo que abriu uma aula. Mudou o padrão?
+              // Suba a versão, senão o valor novo é letra morta. Os painéis nascem 50/50
+              // desde a `v4` (eram 30/70, e a seção com vídeo abria com o vídeo espremido).
+              autoSaveId={player?.viewerId ? `${SPLIT_LAYOUT_KEY}:${player.viewerId}` : null}
               className={cn(
-                'min-w-0 space-y-6 overflow-visible!',
-                mostraAbas && toolMode === 'create' && 'hidden!',
+                // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
+                // de aula é fluxo de documento (quem rola é a janela) e os painéis têm popover
+                // e `sticky` dentro, então os três precisam ser desfeitos.
+                'h-auto! items-start overflow-visible!',
+                arrastavel ? 'flex!' : 'block!',
               )}
             >
-              {contentIds
-                .map((id) => blockById.get(id))
-                .filter((b): b is LessonBlockView => Boolean(b))
-                .map(render)}
-              {section.completion?.platformAction && (
-                <SectionPlatformAction
-                  key={`${player?.viewerId}:${section.id}`}
-                  action={section.completion.platformAction}
-                  sectionId={section.id}
-                  revision={state?.revision ?? lesson.structureRevision ?? null}
-                  preview={preview}
-                  completed={
-                    state?.sections.find((s) => s.id === section.id)?.status === 'completed'
-                  }
-                />
-              )}
-              {section.externalTool && (
-                <a
-                  href={`/${section.externalTool}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-primary/25 bg-primary/5 px-5 py-4 font-medium text-primary"
-                >
-                  Abrir {section.externalTool === 'pinta' ? 'meu Pinta' : 'meu Estúdio'}
-                  <ExternalLink className="size-5" />
-                  <span className="sr-only">em outra aba</span>
-                </a>
-              )}
-            </Panel>
-            {/* SEMPRE montado, como os dois Panel: tirar e pôr um filho do PanelGroup
+              <Panel
+                id="lesson-content"
+                order={1}
+                defaultSize={SPLIT_DEFAULT_SIZE}
+                minSize={contentMinimum}
+                maxSize={100 - toolMinimum}
+                className={cn(
+                  'min-w-0 space-y-6 overflow-visible!',
+                  // ⚠️ Com o vídeo flutuando (ou na pílula) o painel do vídeo precisa existir: um
+                  // `fixed` dentro de `display: none` não aparece. A tela ampliada cobre o resto.
+                  mostraAbas && toolMode === 'create' && floatMode === null && 'hidden!',
+                )}
+              >
+                {contentIds
+                  .map((id) => blockById.get(id))
+                  .filter((b): b is LessonBlockView => Boolean(b))
+                  .map(render)}
+                {section.completion?.platformAction && (
+                  <SectionPlatformAction
+                    key={`${player?.viewerId}:${section.id}`}
+                    action={section.completion.platformAction}
+                    sectionId={section.id}
+                    revision={state?.revision ?? lesson.structureRevision ?? null}
+                    preview={preview}
+                    completed={
+                      state?.sections.find((s) => s.id === section.id)?.status === 'completed'
+                    }
+                  />
+                )}
+                {section.externalTool && (
+                  <a
+                    href={`/${section.externalTool}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-primary/25 bg-primary/5 px-5 py-4 font-medium text-primary"
+                  >
+                    Abrir {section.externalTool === 'pinta' ? 'meu Pinta' : 'meu Estúdio'}
+                    <ExternalLink className="size-5" />
+                    <span className="sr-only">em outra aba</span>
+                  </a>
+                )}
+              </Panel>
+              {/* SEMPRE montado, como os dois Panel: tirar e pôr um filho do PanelGroup
               reordena a árvore e REMONTA o editor da direita (Blockly caro, rascunho
               re-semeado). Só as classes mudam.
               ⚠️ Mas montado E escondido não basta: a lib registra a área de arrasto no
@@ -1098,150 +1234,162 @@ function LessonSectionsContent({
               a criança encostava no canto do tablet, o `pointerdown` morria na captura
               do body e um arrasto invisível gravava lixo na divisória do perfil. Por
               isso `disabled`, que a lib respeita pulando o registro sem desmontar. */}
-            <PanelResizeHandle
-              disabled={!arrastavel}
-              // Parada de Tab só onde ela ARRASTA: a lib mantém `tabIndex` 0 mesmo
-              // desabilitada, mas o teclado dela é gateado por `disabled` — seria um
-              // foco que não faz nada.
-              tabIndex={arrastavel ? 0 : -1}
-              // `role="separator"` focável precisa de NOME: a lib põe `aria-controls` e
-              // `aria-valuemin/max/now` por JS, mas nenhum rótulo (o leitor dizia só
-              // "separador, 50"). A seção pode ter Estúdio OU Pinta, então o texto não
-              // nomeia a ferramenta.
-              aria-label={
-                kids
-                  ? 'Mudar o tamanho dos dois lados'
-                  : 'Ajustar a divisão entre o conteúdo e a ferramenta'
-              }
-              // 24px de traço + 20 de folga de cada lado = alvo bem acima dos 44px da casa.
-              hitAreaMargins={{ coarse: 20, fine: 6 }}
-              className={cn(
-                // `sz-lesson-split-handle`/`-grip`: ganchos ESTÁVEIS do tema (invariante
-                // 8). Sem regra aqui — cada app veste no CSS dele.
-                'sz-lesson-split-handle group/split relative hidden w-6 shrink-0 cursor-col-resize rounded-full',
-                // ⚠️⚠️ `self-stretch`: o PanelGroup é `items-start`, então filho sem
-                // altura PRÓPRIA mede zero no eixo cruzado — e o traço daqui é
-                // `inset-y-0` DENTRO dele. A divisória tinha 24x0: invisível, e
-                // agarrável só numa tira no alto da coluna (a lib acha a zona de
-                // arrasto por `getBoundingClientRect()` + a folga). Era por isso que
-                // "não tinha resize".
-                'self-stretch',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-                // `flex` + centro: CENTRA a pega que o tema desenhar, sem o app ter de
-                // repetir o limiar de largura num `@media` próprio.
-                arrastavel && 'flex! items-center justify-center',
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className="sz-lesson-split-grip pointer-events-none absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-border transition-colors group-hover/split:bg-primary group-data-[resize-handle-state=drag]/split:bg-primary"
-              />
-            </PanelResizeHandle>
-            <Panel
-              id="lesson-tool"
-              order={2}
-              defaultSize={SPLIT_DEFAULT_SIZE}
-              minSize={toolMinimum}
-              maxSize={100 - contentMinimum}
-              className={cn(
-                // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
-                'overflow-visible!',
-                // ⚠️ `toolIds.length > 0` e não `podeDividir`: a seção cujo ÚNICO bloco é a
-                // ferramenta não divide, e nem por isso ela pode sumir — ela ocupa a largura
-                // toda (o `PanelGroup` vira `block!` quando não arrasta).
-                toolIds.length > 0 && (arrastavel || !mostraAbas || toolMode === 'create')
-                  ? 'min-w-0 space-y-6'
-                  : 'hidden!',
-              )}
-            >
-              {/* ⚠️⚠️ Os editores são da AULA, não da seção (por decisão explícita lá em
+              <PanelResizeHandle
+                disabled={!arrastavel}
+                // Parada de Tab só onde ela ARRASTA: a lib mantém `tabIndex` 0 mesmo
+                // desabilitada, mas o teclado dela é gateado por `disabled` — seria um
+                // foco que não faz nada.
+                tabIndex={arrastavel ? 0 : -1}
+                // `role="separator"` focável precisa de NOME: a lib põe `aria-controls` e
+                // `aria-valuemin/max/now` por JS, mas nenhum rótulo (o leitor dizia só
+                // "separador, 50"). A seção pode ter Estúdio OU Pinta, então o texto não
+                // nomeia a ferramenta.
+                aria-label={
+                  kids
+                    ? 'Mudar o tamanho dos dois lados'
+                    : 'Ajustar a divisão entre o conteúdo e a ferramenta'
+                }
+                // 24px de traço + 20 de folga de cada lado = alvo bem acima dos 44px da casa.
+                hitAreaMargins={{ coarse: 20, fine: 6 }}
+                className={cn(
+                  // `sz-lesson-split-handle`/`-grip`: ganchos ESTÁVEIS do tema (invariante
+                  // 8). Sem regra aqui — cada app veste no CSS dele.
+                  'sz-lesson-split-handle group/split relative hidden w-6 shrink-0 cursor-col-resize rounded-full',
+                  // ⚠️⚠️ `self-stretch`: o PanelGroup é `items-start`, então filho sem
+                  // altura PRÓPRIA mede zero no eixo cruzado — e o traço daqui é
+                  // `inset-y-0` DENTRO dele. A divisória tinha 24x0: invisível, e
+                  // agarrável só numa tira no alto da coluna (a lib acha a zona de
+                  // arrasto por `getBoundingClientRect()` + a folga). Era por isso que
+                  // "não tinha resize".
+                  'self-stretch',
+                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+                  // `flex` + centro: CENTRA a pega que o tema desenhar, sem o app ter de
+                  // repetir o limiar de largura num `@media` próprio.
+                  arrastavel && 'flex! items-center justify-center',
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="sz-lesson-split-grip pointer-events-none absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-border transition-colors group-hover/split:bg-primary group-data-[resize-handle-state=drag]/split:bg-primary"
+                />
+              </PanelResizeHandle>
+              <Panel
+                id="lesson-tool"
+                order={2}
+                defaultSize={SPLIT_DEFAULT_SIZE}
+                minSize={toolMinimum}
+                maxSize={100 - contentMinimum}
+                className={cn(
+                  // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
+                  'overflow-visible!',
+                  // ⚠️ `toolIds.length > 0` e não `podeDividir`: a seção cujo ÚNICO bloco é a
+                  // ferramenta não divide, e nem por isso ela pode sumir — ela ocupa a largura
+                  // toda (o `PanelGroup` vira `block!` quando não arrasta).
+                  toolIds.length > 0 && (arrastavel || !mostraAbas || toolMode === 'create')
+                    ? 'min-w-0 space-y-6'
+                    : 'hidden!',
+                )}
+              >
+                {/* ⚠️ O aviso "assista ao vídeo primeiro" embrulha SEMPRE o painel (desligado, só
+                  passa os filhos): ligar e desligar o invólucro remontaria os editores. */}
+                <LessonVideoGate
+                  gate={videoGate}
+                  kids={kids}
+                  mascot={player?.videoGateMascot}
+                  onWatch={watchVideo}
+                >
+                  {/* ⚠️⚠️ Os editores são da AULA, não da seção (por decisão explícita lá em
                   cima: remontar o Blockly é caro e re-semeia o rascunho). Quem fica montado
                   atravessando as seções não pode herdar o título nem o "já tem Zappy" da seção
                   em que a criança está agora — o contexto aqui é o VAZIO, e o bloco desenha
                   como sempre. */}
-              <LessonSectionProvider value={null}>
-                {editores.map((block) => (
-                  <div
-                    key={block.id}
-                    style={{ display: activeIds.has(block.id) ? undefined : 'none' }}
-                  >
-                    {(visited.has(block.id) || activeIds.has(block.id)) && render(block)}
-                  </div>
-                ))}
-              </LessonSectionProvider>
-              {/* A cena monta e desmonta com a seção — ao contrário do editor, ela é barata de
+                  <LessonSectionProvider value={null}>
+                    {editores.map((block) => (
+                      <div
+                        key={block.id}
+                        style={{ display: activeIds.has(block.id) ? undefined : 'none' }}
+                      >
+                        {(visited.has(block.id) || activeIds.has(block.id)) && render(block)}
+                      </div>
+                    ))}
+                  </LessonSectionProvider>
+                  {/* A cena monta e desmonta com a seção — ao contrário do editor, ela é barata de
                 montar e cara de manter viva (controlador, rascunho local e gravação de 1s).
                 ⚠️ EMPILHADO (coluna estreita) a bancada cai para o FIM da seção, como sempre foi
                 com o Estúdio: trocar a cena de painel conforme a largura a REMONTARIA, e como a
                 medição começa em zero isso aconteceria na abertura de toda aula larga. A ordem
                 autoral sobrevive porque o padrão de autoria já põe a cena por último ("vídeo
                 curto, missão do Zappy e cena manipulável", em `section-templates`). */}
-              {cenasAtivas
-                .map((id) => blockById.get(id))
-                .filter((b): b is LessonBlockView => Boolean(b))
-                .map((block) =>
-                  ehPreviaDeLivro(paraSplit(block)) ? (
-                    <MaterialsBookPreview
-                      key={block.id}
-                      content={block.content as MaterialsBlock}
-                    />
-                  ) : (
-                    render(block)
-                  ),
-                )}
-            </Panel>
-          </PanelGroup>
-          {/* ⭐⭐ "O que falta para seguir" (30/09/2026): os `<p>` soltos do que faltava viraram UMA
+                  {cenasAtivas
+                    .map((id) => blockById.get(id))
+                    .filter((b): b is LessonBlockView => Boolean(b))
+                    .map((block) =>
+                      ehPreviaDeLivro(paraSplit(block)) ? (
+                        <MaterialsBookPreview
+                          key={block.id}
+                          content={block.content as MaterialsBlock}
+                        />
+                      ) : (
+                        render(block)
+                      ),
+                    )}
+                </LessonVideoGate>
+              </Panel>
+            </PanelGroup>
+            {/* ⭐⭐ "O que falta para seguir" (30/09/2026): os `<p>` soltos do que faltava viraram UMA
             faixa com ícone e estado, ao lado do botão que ela explica. No modo imersivo ela mora
             DENTRO do rodapé fixo, acima dos botões; no ensaio do admin, logo acima do cartão. */}
-          {!immersive && statusDaSecao}
-          {/* `sz-lesson-nav`: gancho ESTÁVEL, mesmo espírito do `sz-lesson-toolbar`.
+            {!immersive && statusDaSecao}
+            {/* O "Pronto!" da tranca que abriu: fora dos painéis (ver o componente). */}
+            <LessonVideoGateDone gate={videoGate} sectionId={section.id} kids={kids} />
+            {/* `sz-lesson-nav`: gancho ESTÁVEL, mesmo espírito do `sz-lesson-toolbar`.
             Sem ele o kids teria de mirar por estrutura ("a div com border-t"). */}
-          <div
-            ref={rodapeRef}
-            className={cn(
-              'sz-lesson-nav border-t border-border',
-              immersive
-                ? 'sz-lesson-nav-immersive'
-                : 'flex flex-wrap items-center justify-between gap-3 pt-5',
-            )}
-          >
-            {immersive && helpForm}
-            {immersive && (helpNotice || navigationError) ? (
-              <div className="mx-auto w-full max-w-7xl space-y-1 pb-2">
-                {helpNotice}
-                {navigationError}
-              </div>
-            ) : null}
-            {immersive && statusDaSecao}
-            {immersive ? (
-              <div className="sz-lesson-nav-inner mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
+            <div
+              ref={rodapeRef}
+              className={cn(
+                'sz-lesson-nav border-t border-border',
+                immersive
+                  ? 'sz-lesson-nav-immersive'
+                  : 'flex flex-wrap items-center justify-between gap-3 pt-5',
+              )}
+            >
+              {immersive && helpForm}
+              {immersive && (helpNotice || navigationError) ? (
+                <div className="mx-auto w-full max-w-7xl space-y-1 pb-2">
+                  {helpNotice}
+                  {navigationError}
+                </div>
+              ) : null}
+              {immersive && statusDaSecao}
+              {immersive ? (
+                <div className="sz-lesson-nav-inner mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-3">
+                    {previousButton}
+                    <span className="hidden max-w-64 truncate text-sm text-muted-foreground sm:block">
+                      {section.title}
+                    </span>
+                  </div>
+                  <div className="ml-auto flex items-center gap-2">
+                    {helpButton}
+                    {index === sections.length - 1 && completionAction
+                      ? completionAction
+                      : nextButton}
+                  </div>
+                </div>
+              ) : (
+                <>
                   {previousButton}
-                  <span className="hidden max-w-64 truncate text-sm text-muted-foreground sm:block">
-                    {section.title}
-                  </span>
-                </div>
-                <div className="ml-auto flex items-center gap-2">
                   {helpButton}
-                  {index === sections.length - 1 && completionAction
-                    ? completionAction
-                    : nextButton}
-                </div>
-              </div>
-            ) : (
-              <>
-                {previousButton}
-                {helpButton}
-                {nextButton}
-              </>
-            )}
+                  {nextButton}
+                </>
+              )}
+            </div>
+            {!immersive && helpForm}
+            {!immersive && helpNotice}
+            {!immersive && navigationError}
           </div>
-          {!immersive && helpForm}
-          {!immersive && helpNotice}
-          {!immersive && navigationError}
-        </div>
-      </LessonSectionProvider>
+        </LessonSectionProvider>
+      </LessonVideoBusContext.Provider>
     </LessonPlayerProvider>
   )
 }
