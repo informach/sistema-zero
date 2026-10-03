@@ -6,6 +6,7 @@ import {
   type SectionProjectCheck,
   sectionCompletionIssues,
 } from '../../../packages/core/src/learning/section-progression'
+import { resolveBlockLevel } from '../../../packages/studio/src/blockly/blockLevels'
 import {
   evaluateStudioSectionProject,
   projectCheckAuthoring,
@@ -91,7 +92,12 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     const { blocks } = JSON.parse(
       readFileSync(resolve(import.meta.dir, '../blocos-desafio-primeiro-jogo.json'), 'utf8'),
     ) as { blocks: string[] }
-    for (const day of ['dia-1', 'dia-2', 'dia-3']) {
+    expect(
+      blocks.filter(
+        (type) => !type.startsWith('sz_g2d_') && resolveBlockLevel(type) !== 'iniciante-2d',
+      ),
+    ).toEqual([])
+    for (const day of ['dia-1', 'dia-2', 'dia-3'] as const) {
       const studio = manifesto(day).blocks.find((block) => block.key === 'projeto')?.content
       if (studio?.kind !== 'studio') throw new Error(`Estúdio ausente: ${day}`)
       expect([...(studio.allowBlocks ?? [])].sort()).toEqual(blocks)
@@ -109,6 +115,14 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
         /sz_(?:html|css|canvas|frame_structure|frame_appearance)/,
       )
       const project = studio.initialProject as ReturnType<typeof montarProjetoFarol>
+      expect(project).toEqual(montarProjetoFarol(day))
+      // Todas as peças da versão final precisam estar disponíveis durante a montagem.
+      const completedTypes = [
+        ...JSON.stringify(montarProjetoFarol('concluido').blocksState).matchAll(
+          /"type":"(sz_[^"]+)"/g,
+        ),
+      ].map((match) => match[1]!)
+      for (const type of completedTypes) expect(studio.allowBlocks).toContain(type)
       expect(project.ir.html).toEqual([])
       expect(project.ir.css).toEqual([])
       expect(JSON.stringify(project.blocksState)).not.toMatch(

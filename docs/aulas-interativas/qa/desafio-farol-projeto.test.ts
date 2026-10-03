@@ -4,9 +4,46 @@ import { FAROL_LAYOUT, farolSvg } from '../../../packages/studio/src/arte/farol-
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/project'
 import { SZIRV2Schema } from '../../../packages/studio/src/ir/schema'
 import { exampleHarness } from '../../../packages/studio/src/official-extensions/game-2d/__tests__/examplePlaythroughHarness'
+import { gameTwoDBlocks } from '../../../packages/studio/src/official-extensions/game-2d/blockCatalog'
 import { montarProjetoFarol } from './desafio-farol-projeto'
 
 describe('projeto preparado A Chave do Farol', () => {
+  test.each([
+    'dia-1',
+    'dia-2',
+    'dia-3',
+    'concluido',
+  ] as const)('%s usa Jogo 2D e somente variáveis, valores e condições simples', (etapa) => {
+    const project = montarProjetoFarol(etapa)
+    const gameTypes = new Set(gameTwoDBlocks.map((block) => block.type))
+    const simpleTypes = new Set([
+      'sz_frame_start',
+      'sz_frame_events',
+      'sz_frame_loops',
+      'sz_js_var_create',
+      'sz_js_var_assign',
+      'sz_js_if_else',
+      'sz_val_bool',
+      'sz_val_compare',
+      'sz_val_number',
+      'sz_val_text',
+      'sz_val_variable',
+    ])
+    const types = [...JSON.stringify(project.blocksState).matchAll(/"type":"(sz_[^"]+)"/g)].map(
+      (match) => match[1]!,
+    )
+    expect(types.length).toBeGreaterThan(0)
+    expect([
+      ...new Set(types.filter((type) => !gameTypes.has(type) && !simpleTypes.has(type))),
+    ]).toEqual([])
+    const commands = types.filter(
+      (type) => !type.startsWith('sz_val_') && !type.startsWith('sz_frame_'),
+    )
+    expect(commands.filter((type) => gameTypes.has(type)).length).toBeGreaterThan(
+      commands.length / 2,
+    )
+  })
+
   test('usa os SVGs originais, incluindo as duas versões da porta e o cenário sem atores', () => {
     const files = {
       cenario: 'cenario-farol-limpo',

@@ -56,14 +56,14 @@
           "sz_g2d_on_overlap",
           "sz_g2d_destroy_sprite",
           "sz_g2d_set_image",
+          "sz_g2d_sprite_x",
+          "sz_g2d_set_velocity",
+          "sz_g2d_apply_velocity",
           "sz_js_var_create",
           "sz_js_var_assign",
           "sz_js_if_else",
-          "sz_js_member_set",
-          "sz_math_arithmetic",
           "sz_val_bool",
           "sz_val_compare",
-          "sz_val_member_get",
           "sz_val_number",
           "sz_val_text",
           "sz_val_variable"
@@ -79,7 +79,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A Chave do Farol</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 360, \"#94d5f5\");\n  const personagem = SZGame2D.createSprite({ x: 21, y: 141, w: 64, h: 64, image: \"personagem\" });\n  const chave = SZGame2D.createSprite({ x: 211, y: 53, w: 32, h: 32, image: \"chave\" });\n  const farol = SZGame2D.createSprite({ x: 328, y: 40, w: 152, h: 152, image: \"farol-apagado\" });\n  const barco = SZGame2D.createSprite({ x: 492, y: 240, w: 88, h: 88, image: \"barco\" });\n  const fundoAviso = SZGame2D.createSprite({ x: 8, y: 8, w: 464, h: 28, color: \"#143d35\" });\n  let aviso = \"Encontre a chave e vá ao farol.\";\n  let ganhou = false;\n  SZGame2D.enableClassicControls(\"directions\");\n  // Quando acontecer\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"cenario\");\n    SZGame2D.topDown(personagem, 3);\n    SZGame2D.clampToScreen(personagem, ctx);\n    if (ganhou) {\n      if (barco.x > 387) {\n        barco.x = barco.x - 1.5;\n      }\n    }\n    SZGame2D.drawSprite(ctx, chave);\n    SZGame2D.drawSprite(ctx, farol);\n    SZGame2D.drawSprite(ctx, barco);\n    SZGame2D.drawSprite(ctx, personagem);\n    SZGame2D.drawSprite(ctx, fundoAviso);\n    SZGame2D.drawLabel(ctx, aviso, 20, 28, \"#ffffff\", 16, \"left\");\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 360, \"#94d5f5\");\n  const personagem = SZGame2D.createSprite({ x: 21, y: 141, w: 64, h: 64, image: \"personagem\" });\n  const chave = SZGame2D.createSprite({ x: 211, y: 53, w: 32, h: 32, image: \"chave\" });\n  const farol = SZGame2D.createSprite({ x: 328, y: 40, w: 152, h: 152, image: \"farol-apagado\" });\n  const barco = SZGame2D.createSprite({ x: 492, y: 240, w: 88, h: 88, image: \"barco\" });\n  barco.vx = -1.5; barco.vy = 0;\n  const fundoAviso = SZGame2D.createSprite({ x: 8, y: 8, w: 464, h: 28, color: \"#143d35\" });\n  let aviso = \"Encontre a chave e vá ao farol.\";\n  let ganhou = false;\n  SZGame2D.enableClassicControls(\"directions\");\n  // Quando acontecer\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"cenario\");\n    SZGame2D.topDown(personagem, 3);\n    SZGame2D.clampToScreen(personagem, ctx);\n    if (ganhou) {\n      if (SZGame2D.spriteX(barco) > 387) {\n        SZGame2D.applyVelocity(barco);\n      }\n    }\n    SZGame2D.drawSprite(ctx, chave);\n    SZGame2D.drawSprite(ctx, farol);\n    SZGame2D.drawSprite(ctx, barco);\n    SZGame2D.drawSprite(ctx, personagem);\n    SZGame2D.drawSprite(ctx, fundoAviso);\n    SZGame2D.drawLabel(ctx, aviso, 20, 28, \"#ffffff\", 16, \"left\");\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -263,6 +263,18 @@
                   "image": "barco"
                 },
                 {
+                  "type": "g2d:setVelocity",
+                  "spriteVar": "barco",
+                  "vx": {
+                    "type": "num",
+                    "value": -1.5
+                  },
+                  "vy": {
+                    "type": "num",
+                    "value": 0
+                  }
+                },
+                {
                   "type": "g2d:createSprite",
                   "varName": "fundoAviso",
                   "x": 8,
@@ -328,12 +340,8 @@
                             "type": "binop",
                             "op": ">",
                             "left": {
-                              "type": "memberGet",
-                              "object": {
-                                "type": "var",
-                                "name": "barco"
-                              },
-                              "name": "x"
+                              "type": "g2d:spriteX",
+                              "spriteVar": "barco"
                             },
                             "right": {
                               "type": "num",
@@ -342,28 +350,8 @@
                           },
                           "then": [
                             {
-                              "type": "memberSet",
-                              "object": {
-                                "type": "var",
-                                "name": "barco"
-                              },
-                              "name": "x",
-                              "value": {
-                                "type": "binop",
-                                "op": "-",
-                                "left": {
-                                  "type": "memberGet",
-                                  "object": {
-                                    "type": "var",
-                                    "name": "barco"
-                                  },
-                                  "name": "x"
-                                },
-                                "right": {
-                                  "type": "num",
-                                  "value": 1.5
-                                }
-                              }
+                              "type": "g2d:applyVelocity",
+                              "spriteVar": "barco"
                             }
                           ],
                           "else": []
@@ -616,57 +604,65 @@
                                         },
                                         "next": {
                                           "block": {
-                                            "type": "sz_g2d_create_sprite",
+                                            "type": "sz_g2d_set_velocity",
                                             "fields": {
-                                              "NAME": "fundoAviso",
-                                              "COLOR": "#143d35"
+                                              "SPRITE": "barco"
                                             },
                                             "inputs": {
-                                              "X": {
+                                              "VX": {
                                                 "shadow": {
                                                   "type": "sz_val_number",
                                                   "fields": {
-                                                    "NUM": 8
+                                                    "NUM": -1.5
                                                   }
                                                 }
                                               },
-                                              "Y": {
+                                              "VY": {
                                                 "shadow": {
                                                   "type": "sz_val_number",
                                                   "fields": {
-                                                    "NUM": 8
-                                                  }
-                                                }
-                                              },
-                                              "W": {
-                                                "shadow": {
-                                                  "type": "sz_val_number",
-                                                  "fields": {
-                                                    "NUM": 464
-                                                  }
-                                                }
-                                              },
-                                              "H": {
-                                                "shadow": {
-                                                  "type": "sz_val_number",
-                                                  "fields": {
-                                                    "NUM": 28
+                                                    "NUM": 0
                                                   }
                                                 }
                                               }
                                             },
                                             "next": {
                                               "block": {
-                                                "type": "sz_js_var_create",
+                                                "type": "sz_g2d_create_sprite",
                                                 "fields": {
-                                                  "NAME": "aviso"
+                                                  "NAME": "fundoAviso",
+                                                  "COLOR": "#143d35"
                                                 },
                                                 "inputs": {
-                                                  "VALUE": {
-                                                    "block": {
-                                                      "type": "sz_val_text",
+                                                  "X": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
                                                       "fields": {
-                                                        "TEXT": "Encontre a chave e vá ao farol."
+                                                        "NUM": 8
+                                                      }
+                                                    }
+                                                  },
+                                                  "Y": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 8
+                                                      }
+                                                    }
+                                                  },
+                                                  "W": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 464
+                                                      }
+                                                    }
+                                                  },
+                                                  "H": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 28
                                                       }
                                                     }
                                                   }
@@ -675,23 +671,41 @@
                                                   "block": {
                                                     "type": "sz_js_var_create",
                                                     "fields": {
-                                                      "NAME": "ganhou"
+                                                      "NAME": "aviso"
                                                     },
                                                     "inputs": {
                                                       "VALUE": {
                                                         "block": {
-                                                          "type": "sz_val_bool",
+                                                          "type": "sz_val_text",
                                                           "fields": {
-                                                            "VALUE": "false"
+                                                            "TEXT": "Encontre a chave e vá ao farol."
                                                           }
                                                         }
                                                       }
                                                     },
                                                     "next": {
                                                       "block": {
-                                                        "type": "sz_g2d_enable_classic_controls",
+                                                        "type": "sz_js_var_create",
                                                         "fields": {
-                                                          "MODE": "directions"
+                                                          "NAME": "ganhou"
+                                                        },
+                                                        "inputs": {
+                                                          "VALUE": {
+                                                            "block": {
+                                                              "type": "sz_val_bool",
+                                                              "fields": {
+                                                                "VALUE": "false"
+                                                              }
+                                                            }
+                                                          }
+                                                        },
+                                                        "next": {
+                                                          "block": {
+                                                            "type": "sz_g2d_enable_classic_controls",
+                                                            "fields": {
+                                                              "MODE": "directions"
+                                                            }
+                                                          }
                                                         }
                                                       }
                                                     }
@@ -763,55 +777,9 @@
                                                     "inputs": {
                                                       "THEN": {
                                                         "block": {
-                                                          "type": "sz_js_member_set",
+                                                          "type": "sz_g2d_apply_velocity",
                                                           "fields": {
-                                                            "NAME": "x"
-                                                          },
-                                                          "inputs": {
-                                                            "OBJ": {
-                                                              "block": {
-                                                                "type": "sz_val_variable",
-                                                                "fields": {
-                                                                  "NAME": "barco"
-                                                                }
-                                                              }
-                                                            },
-                                                            "VALUE": {
-                                                              "block": {
-                                                                "type": "sz_math_arithmetic",
-                                                                "fields": {
-                                                                  "OP": "-"
-                                                                },
-                                                                "inputs": {
-                                                                  "A": {
-                                                                    "block": {
-                                                                      "type": "sz_val_member_get",
-                                                                      "fields": {
-                                                                        "NAME": "x"
-                                                                      },
-                                                                      "inputs": {
-                                                                        "OBJ": {
-                                                                          "block": {
-                                                                            "type": "sz_val_variable",
-                                                                            "fields": {
-                                                                              "NAME": "barco"
-                                                                            }
-                                                                          }
-                                                                        }
-                                                                      }
-                                                                    }
-                                                                  },
-                                                                  "B": {
-                                                                    "shadow": {
-                                                                      "type": "sz_val_number",
-                                                                      "fields": {
-                                                                        "NUM": 1.5
-                                                                      }
-                                                                    }
-                                                                  }
-                                                                }
-                                                              }
-                                                            }
+                                                            "SPRITE": "barco"
                                                           }
                                                         }
                                                       },
@@ -824,19 +792,9 @@
                                                           "inputs": {
                                                             "LEFT": {
                                                               "block": {
-                                                                "type": "sz_val_member_get",
+                                                                "type": "sz_g2d_sprite_x",
                                                                 "fields": {
-                                                                  "NAME": "x"
-                                                                },
-                                                                "inputs": {
-                                                                  "OBJ": {
-                                                                    "block": {
-                                                                      "type": "sz_val_variable",
-                                                                      "fields": {
-                                                                        "NAME": "barco"
-                                                                      }
-                                                                    }
-                                                                  }
+                                                                  "SPRITE": "barco"
                                                                 }
                                                               }
                                                             },

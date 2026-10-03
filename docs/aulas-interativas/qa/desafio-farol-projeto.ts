@@ -67,6 +67,12 @@ const saida: JSStatement[] = [
     image: 'farol-apagado',
   },
   { type: 'g2d:createImageSprite', varName: 'barco', ...FAROL_LAYOUT.barco, image: 'barco' },
+  {
+    type: 'g2d:setVelocity',
+    spriteVar: 'barco',
+    vx: { type: 'num', value: -1.5 },
+    vy: { type: 'num', value: 0 },
+  },
   { type: 'g2d:createSprite', varName: 'fundoAviso', x: 8, y: 8, w: 464, h: 28, color: '#143d35' },
   { type: 'var', name: 'aviso', value: { type: 'str', value: 'Encontre a chave e vá ao farol.' } },
   { type: 'var', name: 'ganhou', value: { type: 'bool', value: false } },
@@ -122,7 +128,7 @@ const porta: JSStatement = {
   ],
 }
 
-/** O efeito do barco é preparado; a criança constrói a regra que o dispara. */
+/** O efeito do barco também usa blocos do Jogo 2D; a criança constrói a regra que o dispara. */
 const barcoChega: JSStatement = {
   type: 'if',
   cond: { type: 'var', name: 'ganhou' },
@@ -132,22 +138,10 @@ const barcoChega: JSStatement = {
       cond: {
         type: 'binop',
         op: '>',
-        left: { type: 'memberGet', object: { type: 'var', name: 'barco' }, name: 'x' },
+        left: { type: 'g2d:spriteX', spriteVar: 'barco' },
         right: { type: 'num', value: FAROL_LAYOUT.chegadaBarcoX },
       },
-      then: [
-        {
-          type: 'memberSet',
-          object: { type: 'var', name: 'barco' },
-          name: 'x',
-          value: {
-            type: 'binop',
-            op: '-',
-            left: { type: 'memberGet', object: { type: 'var', name: 'barco' }, name: 'x' },
-            right: { type: 'num', value: 1.5 },
-          },
-        },
-      ],
+      then: [{ type: 'g2d:applyVelocity', spriteVar: 'barco' }],
       else: [],
     },
   ],
