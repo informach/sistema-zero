@@ -482,6 +482,16 @@ Quatro guardas ortogonais ao sandbox do iframe, todas testadas (`src/preview/__t
   **tudo-ou-nada** (`sanitizeImportedBlocksState`): um bloco fora de `CORE_BLOCKLY_BLOCK_TYPES` (ou da
   allowlist da extensão) zera TODOS os blocos — todo bloco novo PRECISA entrar no allowlist (guardado pelo
   drift `blockAllowlist.test.ts`).
+  **A recusa fala com a criança (02/10/2026):** `components/projects/importRefusal.ts` escolhe a
+  FRASE (`projects.importRefused.*`: mais nova, blocos, partes, grande demais, genérica) e o
+  detalhe técnico vai só ao console. Os tetos de tamanho lançam **`ProjectTooLargeError`**
+  (`core/projectDocument.ts`), que NÃO estende `ProjectDocumentError` de propósito: o `/jogar` e a
+  migração local leem aquela classe como "aguardando conversão", e grande demais é permanente.
+  Depois do `importProjectFromJSON` o projeto já está gravado: o aviso de ferramenta bloqueada usa
+  o NOME (`extensionDisplayName`, exportado pela store) e um tropeço do host ao abrir não vira
+  "Nada mudou na sua lista". ⚠️ O botão mora na lista INICIAL: um `import()` novo ali (a primeira
+  versão buscava o catálogo de extensões por conta própria) parte o pacote em mais um arquivo e
+  reprova o teto de 20 do `initialBundleBudget.test.ts`. Use o que a store já carrega.
 - **Virar profissional** (`src/state/convertToPro.ts` → `convertClassicToProTree`, ação `convertToPro`
   no `projectStore`): graduação **one-way** do básico (3 arquivos) p/ a árvore Vite — reusa
   `buildClassicFileMap` SEM minificar (é código que o aluno vai editar), index.html na raiz, assets p/
@@ -4037,6 +4047,14 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
   `getProject()` e o próprio `PersistenceService` descarregam os buffers síncronos registrados
   pelos editores (o Blockly agrupa eventos por 120 ms), portanto enviar, salvar, desmontar ou
   fechar a página imediatamente nunca captura o frame anterior.
+- ⭐ **Abrir não é editar (02/10/2026).** Na carga (`force`) com os mesmos blocos que estão
+  salvos, o `BlocklyPanel` completa só o que DERIVA deles (a IR, que a casca do projeto não traz)
+  por `hydrateProjectState`, que não carimba `updatedAt` nem acorda o autosave. Antes ia por
+  `applyProjectState`, e só abrir um jogo mudava o "Atualizado em" do card e o subia para a nuvem
+  como versão nova. Efeito colateral consertado junto: o projeto trocado pelo HOST
+  (`handle.replaceProject`, o "Trazer o que eu enviei") só era gravado por causa daquela
+  regravação; hoje o `StudioCore` o marca sujo de propósito (`Studio.test.tsx`, "o projeto trocado
+  pelo host é gravado; o aberto pela prop, não").
 - **Sanitizador da partição** une as extensões do META persistido (`loadProjectMetaById`) às do
   chamador — lista defasada não descarta mais um jogo inteiro (tudo-ou-nada continua).
 - ⭐ **Canvas VAZIO não é estado rejeitado** (15/08). `Blockly.serialization.workspaces.save()` num

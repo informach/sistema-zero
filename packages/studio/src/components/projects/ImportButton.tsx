@@ -3,6 +3,12 @@ import { useImperativeHandle, useRef, useState } from 'react'
 import { Button, IconUpload, Modal } from '#ui'
 import { MAX_PROJECT_IMPORT_CHARS } from '../../state/projectLimits'
 import { useT } from '../../studio/i18n'
+import {
+  ImportTooBigError,
+  importRefusalDetail,
+  importRefusalKey,
+  looksLikeStudioProject,
+} from './importRefusal'
 
 /**
  * Abre o seletor de arquivo de fora do botão. É o que deixa um SEGUNDO gatilho (o "Importar um
@@ -44,18 +50,18 @@ export function ImportButton({
       // bytes contra `MAX_PROJECT_IMPORT_CHARS * 4` evita rejeitar por engano
       // conteúdo multi-byte que cabe dentro do limite de caracteres.
       if (file.size > MAX_PROJECT_IMPORT_CHARS * 4) {
-        throw new Error('arquivo excede o tamanho máximo permitido')
+        throw new ImportTooBigError()
       }
       const text = await file.text()
       if (text.length > MAX_PROJECT_IMPORT_CHARS) {
-        throw new Error('arquivo excede o tamanho máximo permitido')
+        throw new ImportTooBigError()
       }
       // O JSON.parse fica no SEU PRÓPRIO try/catch: um arquivo que não é JSON
       // (ex.: uma imagem, um .txt) estoura um SyntaxError com texto em inglês
       // ("Unexpected token o in JSON") que não diz nada a uma criança. Aqui
       // trocamos por uma frase fixa em português que aponta o próximo passo.
-      // Erros de JSON-válido-mas-projeto-inválido continuam vindo do store (já
-      // em português) e NÃO são engolidos por este catch.
+      // Erros de JSON-válido-mas-projeto-inválido vêm do store e NÃO são engolidos
+      // por este catch: o catch de fora troca o texto técnico por uma frase.
       let parsed: unknown
       try {
         parsed = JSON.parse(text)
@@ -63,19 +69,27 @@ export function ImportButton({
         setError(t('projects.importNotJson'))
         return
       }
-      const { useProjectStore } = await import('../../state/projectStore')
+      // JSON sem a forma de projeto (nem nome, nem arquivos) é "não é um projeto do
+      // Estúdio", a mesma frase de cima. O store recusaria do mesmo jeito.
+      if (!looksLikeStudioProject(parsed)) {
+        setError(t('projects.importNotJson'))
+        return
+      }
+      const { useProjectStore, extensionDisplayName } = await import('../../state/projectStore')
       const { project, warnings: importWarnings } = await useProjectStore
         .getState()
         .importProjectFromJSON(parsed)
+      // ⚠️ Daqui em diante o projeto JÁ está gravado e aparece na lista: nenhum tropeço pode
+      // cair no catch de baixo, que diria à criança "Nada mudou na sua lista".
       const warns = [...importWarnings]
       if (allowedExtensions) {
         const unavailable = project.installedExtensions
           .map((extension) => extension.id)
           .filter((id) => !allowedExtensions.includes(id))
         if (unavailable.length > 0) {
-          warns.push(
-            `Este projeto usa ferramentas que ainda serão liberadas na sua jornada: ${unavailable.join(', ')}. Ele ficou salvo e poderá ser aberto quando você conquistar essas ferramentas.`,
-          )
+          // A criança lê o NOME da ferramenta (Jogo 2D), nunca o id interno (game-2d).
+          const names = unavailable.map(extensionDisplayName).join(', ')
+          warns.push(t('projects.importWarn.locked', { names }))
         }
       }
       if (warns.length > 0) {
@@ -83,11 +97,22 @@ export function ImportButton({
         setWarnings(warns)
         setPendingId(project.id)
       } else {
-        onImported(project.id)
+        openImported(project.id)
       }
     } catch (err) {
-      const reason = err instanceof Error ? err.message : 'arquivo inválido'
-      setError(t('projects.importError', { reason }))
+      // A criança lê uma frase; o motivo técnico (caminho no documento, tipo de bloco,
+      // código da recusa) fica no console para quem investiga.
+      console.warn('[studio] importação recusada', importRefusalDetail(err))
+      setError(t(importRefusalKey(err)))
+    }
+  }
+
+  // O projeto já foi gravado: um tropeço do host ao abri-lo não é recusa da importação.
+  const openImported = (id: string) => {
+    try {
+      onImported(id)
+    } catch (err) {
+      console.warn('[studio] projeto importado, mas não abriu', err)
     }
   }
 
@@ -97,7 +122,7 @@ export function ImportButton({
     const id = pendingId
     setWarnings(null)
     setPendingId(null)
-    if (id) onImported(id)
+    if (id) openImported(id)
   }
 
   const open = error !== null || warnings !== null

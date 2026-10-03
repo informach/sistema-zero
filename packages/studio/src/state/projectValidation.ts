@@ -41,6 +41,7 @@ import {
   isDocumentRecord,
   MAX_PROJECT_BLOCKS,
   ProjectDocumentError,
+  ProjectTooLargeError,
   prepareProjectDocument,
   projectFormatVersion,
   retainProjectTools,
@@ -661,12 +662,14 @@ function sanitizeImportedIR(raw: unknown): SZIRV2 | null {
     maxStringChars: MAX_FILE_CHARS,
   })
   if (!isSmallEnough) {
-    throw new Error('Arquivo inválido: IR excede o tamanho ou a complexidade máxima permitida.')
+    throw new ProjectTooLargeError(
+      'Arquivo inválido: IR excede o tamanho ou a complexidade máxima permitida.',
+    )
   }
   const parsed = SZIRV2Schema.safeParse(raw)
   if (!parsed.success) return null
   if (countIRNodes(parsed.data) > MAX_IR_NODES) {
-    throw new Error('Arquivo inválido: IR excede a complexidade máxima permitida.')
+    throw new ProjectTooLargeError('Arquivo inválido: IR excede a complexidade máxima permitida.')
   }
   return parsed.data
 }
@@ -694,7 +697,7 @@ function sanitizeBlocksState(
       maxStringChars: MAX_BLOCKSTATE_FIELD_CHARS,
     })
     if (limitFailure) {
-      throw new Error(
+      throw new ProjectTooLargeError(
         `Arquivo inválido: blocksState excede o tamanho ou a complexidade máxima permitida (${limitFailure}).`,
       )
     }
