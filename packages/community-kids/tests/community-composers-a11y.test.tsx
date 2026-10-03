@@ -193,7 +193,12 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
       // ⚠️ indBy (assíncrono), como o irmão logo abaixo: o conteúdo do diálogo não
       // está no DOM no mesmo tique do clique. Com getBy síncrono o teste passava na
       // máquina rápida e reprovava no CI (2 de 3 runs em 18/08) — flake por corrida.
-      const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
+      // O prazo é o do EDITOR: o título nasce no mesmo diálogo que ele (ver o caso da pílula).
+      const title = await screen.findByRole(
+        'textbox',
+        { name: 'Título da conversa' },
+        ESPERA_EDITOR,
+      )
       expect(title.getAttribute('name')).toBe('threadTitle')
     },
     TETO_DO_CASO_MS,
@@ -213,7 +218,14 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
         ESPERA,
       )
       fireEvent.click(pilula)
-      const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
+      // ⚠️ O prazo é o do EDITOR, não o `ESPERA`: o título nasce no mesmo diálogo que o editor, e
+      // em 03/10/2026 o CI caiu aqui com o diálogo já aberto (o `body` travado) e o campo ainda
+      // por chegar depois de 5 s. Passava 3 de 3 vezes no Windows.
+      const title = await screen.findByRole(
+        'textbox',
+        { name: 'Título da conversa' },
+        ESPERA_EDITOR,
+      )
       expect(document.activeElement).toBe(title)
     },
     TETO_DO_CASO_MS,
