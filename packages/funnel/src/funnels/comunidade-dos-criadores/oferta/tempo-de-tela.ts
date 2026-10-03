@@ -1,19 +1,19 @@
 import type { ComunidadePage } from './types'
 
-// Texto integral da revisão de 01/10/2026 em docs/marketing/kids/comunidade-dos-criadores/copy/.
+// Copy em docs/marketing/kids/comunidade-dos-criadores/copy/, com abertura revista em 03/10/2026.
 export const PAGE_A = {
   id: 'tempo-de-tela',
   label: 'Aprender criando',
   seoTitle: 'Comunidade dos Criadores: aprender criando jogos | Sistema Zero',
   description:
-    'Uma atividade de criação de jogos para crianças de 9 a 14 anos, com aulas guiadas, ferramentas integradas e acompanhamento da família no tempo de tela permitido.',
-  emphasis: 'dentro do tempo de tela que vocês já permitem',
+    'Seu filho aprende criando jogos, da primeira experiência às próprias ideias. Aulas guiadas, ferramentas e comunidade para crianças de 9 a 14 anos.',
+  emphasis: 'da primeira experiência às próprias ideias',
   heroVisual: 'aula',
   heroChip: 'Aprender criando',
   hero: {
-    title: 'Seu filho aprende criando jogos, dentro do tempo de tela que vocês já permitem',
+    title: 'Seu filho aprende criando jogos, da primeira experiência às próprias ideias.',
     description:
-      'Ele acompanha uma explicação, monta uma parte do jogo e testa o que fez. A Comunidade reúne aulas guiadas, ferramentas de criação e ajuda por mensagens para apoiar esse começo. Você conhece o aprendizado nas produções e nas escolhas que seu filho consegue explicar.',
+      'Ele começa jogando o que vai construir, experimenta os conceitos ao lado da explicação e programa o jogo passo a passo. Conforme avança, encontra novas ferramentas e orientações para desenvolver seus projetos, além de uma comunidade para trocar ideias e compartilhar suas criações.',
     benefits: [
       'Um começo explicado passo a passo, em português.',
       'Aulas e ferramentas de criação reunidas na mesma plataforma.',
@@ -33,7 +33,7 @@ export const PAGE_A = {
   sections: [
     {
       id: 'a02',
-      title: 'Uma parte do tempo no computador pode render uma conversa assim',
+      title: 'Uma criação para mostrar e escolhas para explicar',
       eyebrow: 'Como ele aprende',
       layout: 'story',
       visuals: ['regra'],

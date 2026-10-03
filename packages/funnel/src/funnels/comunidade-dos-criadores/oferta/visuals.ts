@@ -19,6 +19,16 @@ const tela = (
 })
 
 export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
+  'como-fazer': {
+    frames: [
+      tela(
+        'como-fazer',
+        'Como fazer',
+        'Biblioteca de ajuda Como fazer, com os tutoriais por assunto.',
+      ),
+    ],
+    caption: 'Os tutoriais ficam disponíveis para consultar o uso das ferramentas.',
+  },
   'jogo-pronto': {
     frames: [
       tela(

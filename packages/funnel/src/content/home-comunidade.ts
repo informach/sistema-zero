@@ -102,11 +102,54 @@ export const HOME_RESOURCES = [
   },
 ] as const
 
+export const HOME_SUPPORT = [
+  {
+    title: 'Entender e experimentar',
+    icon: 'experiment',
+    visual: 'aula-estudio',
+    text: 'A explicação fica ao lado da atividade. Seu filho acompanha uma ação, pausa para fazê-la e testa o resultado. Os materiais preparados dão um ponto de partida para a construção.',
+  },
+  {
+    title: 'Consultar um passo',
+    icon: 'menu_book',
+    visual: 'como-fazer',
+    text: 'No Como fazer, ele encontra tutoriais organizados por assunto para consultar o uso das ferramentas. Pode rever um procedimento e voltar ao projeto para experimentar.',
+  },
+  {
+    title: 'Organizar uma ideia',
+    icon: 'lightbulb',
+    visual: 'pensa',
+    text: 'O Pensa ajuda a transformar uma ideia de jogo em decisões e tarefas: o objetivo, os controles e o que precisa ser construído. Seu filho faz as escolhas e usa o plano como referência.',
+    access:
+      'Liberado no posto Inventor, conforme os requisitos da Jornada, a disponibilidade do serviço e os créditos de inteligência artificial (IA) da família.',
+  },
+  {
+    title: 'Investigar um ajuste',
+    icon: 'search',
+    visual: 'zappy',
+    text: 'O Zappy oferece orientação com IA no Estúdio, considerando os comandos e as dificuldades do projeto. Pode sugerir o que conferir; seu filho faz a mudança e testa o resultado.',
+    access:
+      'Liberado no posto Inventor, conforme os requisitos da Jornada, a disponibilidade do serviço e os créditos de IA da família.',
+  },
+  {
+    title: 'Encontrar referências e trocar ideias',
+    icon: 'forum',
+    visual: 'clube',
+    text: 'No Mural, seu filho conhece e joga criações de outros alunos. No Clube, conversa sobre projetos e troca sugestões. Essas referências podem ajudar a pensar em outra tentativa ou numa próxima criação.',
+  },
+  {
+    title: 'Conversar com a equipe',
+    icon: 'chat',
+    visual: 'recados',
+    text: 'Na aula, seu filho pode usar “Preciso de ajuda” para contar o que tentou e onde encontrou dificuldade. A conversa continua nos Recados, com histórico para consultar. A equipe responde por mensagens, e pode ser necessário aguardar o retorno.',
+  },
+] as const
+
 export const HOME_FAQ = [
   {
     question: 'As aulas são ao vivo?',
     answer:
-      'As aulas são gravadas, com atividades para experimentar e construir. Seu filho pode pausar e rever os trechos. A ajuda da equipe acontece por mensagens na plataforma.',
+      'As aulas são gravadas, com explicação e prática juntas. Seu filho acompanha uma tarefa, pausa para experimentar e pode rever o trecho antes de continuar. A plataforma reúne tutoriais, orientações nas ferramentas, espaços de troca e contato com a equipe.',
   },
   {
     question: 'Meu filho precisa saber programar?',
@@ -131,7 +174,7 @@ export const HOME_FAQ = [
   {
     question: 'Como meu filho recebe ajuda?',
     answer:
-      'Ele envia a dúvida pela plataforma e consulta a resposta nos Recados. A equipe responde em outro momento; não é uma chamada ao vivo.',
+      'A orientação começa na própria atividade: explicação junto da prática, materiais preparados e trechos para rever. O Como fazer reúne tutoriais; o Mural e o Clube permitem conhecer criações e trocar ideias. Conforme a Jornada, o Pensa ajuda a planejar e o Zappy orienta no Estúdio, com condições de acesso e créditos de IA. Para falar com a equipe, ele usa “Preciso de ajuda” na aula e acompanha a conversa nos Recados. As respostas humanas chegam por mensagens, em outro momento.',
   },
   {
     question: 'Posso acompanhar dois filhos?',

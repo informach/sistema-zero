@@ -5,7 +5,13 @@ import '../styles/comunidade-home.css'
 import Footer from '../components/Footer.astro'
 import ComunidadeImageZoom from '../components/funnel/oferta/ComunidadeImageZoom.astro'
 import ComunidadeVisual from '../components/funnel/oferta/ComunidadeVisual.astro'
-import { HOME_CONTINUITY, HOME_FAQ, HOME_RESOURCES, HOME_STEPS } from '../content/home-comunidade'
+import {
+  HOME_CONTINUITY,
+  HOME_FAQ,
+  HOME_RESOURCES,
+  HOME_STEPS,
+  HOME_SUPPORT,
+} from '../content/home-comunidade'
 import { COMUNIDADE_DOS_CRIADORES } from '../funnels/comunidade-dos-criadores'
 import { DESAFIO_PRIMEIRO_JOGO } from '../funnels/desafio-primeiro-jogo'
 import BaseLayout from '../layouts/BaseLayout.astro'
@@ -41,6 +47,7 @@ Astro.response.headers.set('Cache-Control', 'no-store')
         <nav class="nav-links" aria-label="Partes da página">
           <a href="#como-aprende">Como aprende</a>
           <a href="#criar-mais">Criações</a>
+          <a href="#orientacao">Orientação</a>
           <a href="#duvidas">Dúvidas</a>
         </nav>
         <a class="kof-btn kof-btn--compacta home-header-cta" href={ofertaUrl} data-home-cta="nav-planos">Ver planos</a>
@@ -54,8 +61,8 @@ Astro.response.headers.set('Cache-Control', 'no-store')
             <p class="home-byline">Helena e Júlio · Sistema Zero</p>
             <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span>Comunidade dos Criadores · 9 a 14 anos</span>
             <h1 class="kof-display" id="hero-title">Seu filho aprende criando jogos, <em>da primeira experiência às próprias ideias.</em></h1>
-            <p class="kof-lead">Primeiro, ele joga o que vai construir. Depois, experimenta os conceitos ao lado do vídeo e usa o que aprendeu para programar o jogo. Ao avançar, libera ferramentas para criar seus próprios projetos.</p>
-            <p class="home-promise"><span class="material-symbols-rounded" aria-hidden="true">hub</span>Aulas, experiências, criação e ajuda na mesma plataforma.</p>
+            <p class="kof-lead">Ele começa jogando o que vai construir, experimenta os conceitos ao lado da explicação e programa o jogo passo a passo. Conforme avança, encontra novas ferramentas e orientações para desenvolver seus projetos, além de uma comunidade para trocar ideias e compartilhar suas criações.</p>
+            <p class="home-promise"><span class="material-symbols-rounded" aria-hidden="true">hub</span>Aulas, ferramentas e comunidade acompanham a criação.</p>
             <div class="hero-actions">
               <a class="kof-btn kof-btn--grande" href="#como-aprende" data-home-cta="B01">Ver como meu filho aprende<span class="material-symbols-rounded" aria-hidden="true">arrow_downward</span></a>
               <a class="kof-link" href={ofertaUrl} data-home-cta="B02">Conhecer a Comunidade e os planos<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
@@ -166,7 +173,28 @@ Astro.response.headers.set('Cache-Control', 'no-store')
         </div>
       </section>
 
-      <section class="section capitulo fundo-alt cor-verde" id="na-rotina" aria-labelledby="title-na-rotina">
+      <section class="section capitulo fundo-alt cor-azul" id="orientacao" aria-labelledby="title-orientacao">
+        <div class="wrap">
+          <div class="cap-head">
+            <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">explore</span>Apoio durante a criação</span>
+            <h2 class="kof-display" id="title-orientacao">Orientação para começar, experimentar <em>e continuar criando.</em></h2>
+            <p class="cap-lead">Cada momento pede um apoio: entender a tarefa, relembrar um passo, planejar uma ideia ou investigar o que aconteceu no jogo. Veja onde seu filho encontra essas orientações.</p>
+          </div>
+          <div class="home-resource-grid home-support-grid">
+            {HOME_SUPPORT.map((support) => (
+              <article class="home-resource">
+                <h3 class="kof-display"><span class="material-symbols-rounded" aria-hidden="true">{support.icon}</span>{support.title}</h3>
+                <p>{support.text}</p>
+                {'access' in support && <p class="home-support-access">{support.access}</p>}
+                <ComunidadeVisual visual={support.visual} imagesBase={f.imagesBase} variant="plana" only="first" />
+              </article>
+            ))}
+          </div>
+          <p class="home-note home-access-note">Os recursos e espaços acompanham as liberações da Jornada. A família pode ajudar a criança a conhecer esses caminhos nas primeiras atividades.</p>
+        </div>
+      </section>
+
+      <section class="section capitulo cor-verde" id="na-rotina" aria-labelledby="title-na-rotina">
         <div class="wrap home-routine">
           <div>
             <div class="cap-head">
@@ -175,7 +203,7 @@ Astro.response.headers.set('Cache-Control', 'no-store')
             </div>
             <div class="home-prose">
               <p>As aulas são gravadas. Seu filho pode pausar para fazer uma atividade, voltar ao trecho e continuar a construção. Vocês escolhem o horário dentro dos combinados da casa.</p>
-              <p>Se surgir uma dúvida, ele pode pedir ajuda dentro da plataforma. A equipe responde por mensagens, em outro momento.</p>
+              <p>Durante a criação, ele pode consultar as orientações da atividade, retomar um tutorial e usar os apoios disponíveis na sua etapa da Jornada.</p>
               <p>Você acompanha os registros do percurso e pode pedir que ele mostre o jogo e explique uma escolha.</p>
             </div>
           </div>
@@ -202,13 +230,13 @@ Astro.response.headers.set('Cache-Control', 'no-store')
           <div class="home-offer">
             <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">rocket_launch</span>Aprender e continuar criando</span>
             <h2 class="kof-display" id="title-conhecer">Conheça a <em>Comunidade dos Criadores.</em></h2>
-            <p>A assinatura reúne os cursos publicados, as ferramentas conforme a Jornada, os espaços de criação e troca, a ajuda por mensagens e o acompanhamento da família.</p>
+            <p>A assinatura reúne cursos com prática guiada, tutoriais, ferramentas para planejar e construir conforme a Jornada, espaços para trocar ideias e contato com a equipe. A família acompanha as atividades e os projetos.</p>
             <a class="kof-btn kof-btn--grande kof-btn--sobre-navy" href={ofertaUrl} data-home-cta="B06">Conhecer a Comunidade e os planos<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
             <p class="home-offer-note">Veja os planos, as condições de acesso e renovação e a garantia vigente antes de contratar.</p>
           </div>
           <aside class="kof-carta home-quiz" aria-labelledby="title-quiz">
             <span class="kof-ladrilho kof-ladrilho--roxo" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span>
-            <h3 class="kof-display" id="title-quiz">Comece pelo interesse do seu filho.</h3>
+            <h3 class="kof-display" id="title-quiz">Encontre um caminho na Comunidade.</h3>
             <p>Responda sobre o que ele gosta de fazer e o que sua família procura. Ao final do quiz, você recebe uma orientação e uma ideia para experimentar em casa.</p>
             <a class="kof-btn kof-btn--secundario" href={quizUrl} data-home-cta="B07">Encontrar um caminho para meu filho<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
             <p class="home-note">Você também pode conhecer a Comunidade diretamente pelo botão dos planos.</p>

@@ -1,6 +1,6 @@
 # Página inicial: implementação de 03/10/2026
 
-**Atualização posterior aprovada:** a apresentação completa descrita abaixo foi movida para `/como-funciona/`. A raiz agora é uma bio curta com avatar, posicionamento e quatro botões. A medição foi implementada no painel, com prints e mapas de cliques. Veja [a implementação vigente e a ativação](../../../medicao-funil.md). O restante deste documento registra a primeira entrega.
+**Atualização posterior aprovada:** a apresentação completa descrita abaixo foi movida para `/como-funciona/`. A raiz é uma entrada com avatar, posicionamento e três acessos: Como funciona, quiz do Desafio e planos da Comunidade. Como funciona ganhou a seção de orientação durante a criação. Veja [a retomada e a validação dessa revisão](posicionamento-entrada-2026-10-03.md). A medição foi implementada no painel, com prints e mapas de cliques. Veja [a implementação vigente e a ativação](../../../medicao-funil.md). O restante deste documento registra a primeira entrega.
 
 Implementada localmente na rota `/`, após aprovação da [proposta de copy](copy-home-2026-10-03.md). A raiz continua sendo o endereço usado na bio. Publicação em produção não realizada nesta etapa.
 

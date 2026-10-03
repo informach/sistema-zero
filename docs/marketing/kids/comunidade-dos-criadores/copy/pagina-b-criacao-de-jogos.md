@@ -126,7 +126,7 @@ Na Comunidade, essa proposta toma forma nas aulas guiadas, nas ferramentas conec
 
 A assinatura reúne os cursos publicados, as ferramentas de criação conforme a Jornada, os espaços da comunidade e o acompanhamento da família. Durante o período contratado, seu filho também tem acesso aos cursos que forem acrescentados à assinatura.
 
-Os dois planos permitem até dois perfis de criança, cada um com seus projetos e progresso. As aulas são gravadas, com acesso pelo navegador do computador e apoio por mensagens. O começo e as liberações seguem o mesmo percurso nos dois planos.
+Os dois planos permitem até dois perfis de criança, cada um com seus projetos e progresso. As aulas são gravadas, com explicação e prática juntas, tutoriais para consulta e contato com a equipe. O acesso acontece pelo navegador do computador; o começo e as liberações seguem o mesmo percurso nos dois planos.
 
 ### Plano mensal
 
@@ -188,9 +188,11 @@ As primeiras construções acontecem no Estúdio da Comunidade, com programaçã
 
 #### O que ele faz quando fica com uma dúvida na atividade?
 
-Na seção da aula, seu filho pode usar “Preciso de ajuda” para enviar a dúvida. É útil contar o que estava tentando fazer e o que aconteceu. A conversa continua nos Recados, com histórico para consultar quando voltar à tarefa.
+A orientação começa na própria atividade, com explicação junto da prática, materiais preparados e trechos que seu filho pode rever. Para consultar o uso de uma ferramenta, o Como fazer reúne tutoriais por assunto.
 
-Esse caminho ajuda a relacionar a pergunta à atividade em que a dificuldade apareceu. O atendimento acontece por mensagens, de forma assíncrona: a criança pode precisar aguardar o retorno. Enquanto isso, a explicação da aula continua disponível para revisão. Se a dúvida for sobre usar uma ferramenta, o Como fazer reúne tutoriais para consulta.
+O Mural e o Clube oferecem referências e troca de ideias. A partir do posto Inventor, o Pensa ajuda a organizar um projeto e o Zappy orienta sobre dificuldades no Estúdio, conforme os requisitos da Jornada, a disponibilidade do serviço e os créditos de inteligência artificial (IA) da família.
+
+Para conversar com a equipe, seu filho pode usar “Preciso de ajuda” na aula e contar o que tentou e o que aconteceu. A conversa continua nos Recados, com histórico para consultar. O atendimento humano acontece por mensagens, em outro momento, e pode ser necessário aguardar o retorno.
 
 <a id="duvida-desenho"></a>
 
@@ -216,7 +218,7 @@ No Inventor, entram o Pensa e a ajuda do Zappy no Estúdio. No Explorador de Mun
 
 A aula apresenta uma tarefa que seu filho pode acompanhar por partes. Ele vê a ação, pausa para fazê-la e testa o resultado. Se perdeu onde um comando foi colocado, volta àquele trecho. Nas atividades integradas, a explicação fica junto do editor ou do experimento, para consultar durante a prática.
 
-Isso dá espaço para o tempo de cada tentativa. A criança pode rever o que precisa, conferir a montagem e só então continuar. Quando fica com uma dúvida, tem o caminho dos Recados para pedir ajuda por mensagens.
+Isso dá espaço para o tempo de cada tentativa. A criança pode rever o que precisa, conferir a montagem e só então continuar. Os tutoriais do Como fazer ajudam a consultar o uso das ferramentas, e os Recados permitem conversar com a equipe sobre uma dificuldade.
 
 Vocês podem acompanhar a primeira atividade para conhecer os controles e perceber como ele usa a orientação. A independência é construída no uso; algumas crianças precisam de mais companhia no começo. O formato oferece esses apoios, sem exigir que todas consigam fazer tudo sozinhas desde o primeiro acesso.
 

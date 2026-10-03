@@ -12,7 +12,7 @@ const telas = comunidade.imagesBase
 // Telas reais SEM o menu lateral de propósito: nas que mostram o menu, o item ainda aparece com o
 // nome antigo ("Jornada"), e esta página é a porta de entrada.
 ---
-<BaseLayout title="Crie com Helena e Júlio | Sistema Zero" description="Programação de jogos e criação de personagens para 9 a 14 anos, com explicação e prática juntas, dentro do tempo de tela que sua família já permite." htmlClass="theme-kids">
+<BaseLayout title="Comunidade dos Criadores | Sistema Zero" description="Seu filho aprende criando jogos, da primeira experiência às próprias ideias. Conheça as aulas, ferramentas e comunidade para crianças de 9 a 14 anos." htmlClass="theme-kids">
   <main class="cdc bio" id="bio">
     <div class="bio-grade">
       <div class="bio-card">
@@ -23,14 +23,13 @@ const telas = comunidade.imagesBase
           <img class="bio-avatar" src={`${desafio.imagesBase}/avatar-helena-julio.webp`} alt="Helena e Júlio" width="360" height="360" fetchpriority="high" />
           <p class="bio-byline">Helena e Júlio · Sistema Zero</p>
         </div>
-        <h1 class="kof-display">Tempo de tela para seu filho <em>aprender a criar.</em></h1>
-        <p class="bio-lead">Na Comunidade dos Criadores, seu filho aprende a programar jogos e criar personagens. A explicação fica ao lado da atividade: ele acompanha, experimenta e pode pedir ajuda ali mesmo, dentro do tempo de tela que vocês já permitem.</p>
+        <h1 class="kof-display">Seu filho aprende criando jogos, <em>da primeira experiência às próprias ideias.</em></h1>
+        <p class="bio-lead">Ele começa jogando o que vai construir, experimenta os conceitos ao lado da explicação e programa o jogo passo a passo. Conforme avança, encontra novas ferramentas e orientações para desenvolver seus projetos, além de uma comunidade para trocar ideias e compartilhar suas criações.</p>
         <p class="kof-chip bio-age"><span class="material-symbols-rounded" aria-hidden="true">sports_esports</span>Comunidade dos Criadores · 9 a 14 anos</p>
         <nav class="bio-links" aria-label="Escolha por onde começar">
-          <a class="kof-btn bio-principal" href={link(`${comunidade.basePath}/oferta`)} data-analytics-id="bio-comunidade">Conhecer a Comunidade e os planos<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
-          <a class="bio-link" href={link('/como-funciona/')} data-analytics-id="bio-como-funciona"><span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">play_circle</span></span><span class="bio-link-texto">Ver como meu filho aprende<small>Veja as aulas e a criação de jogos por dentro</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
-          <a class="bio-link" href={link(`${comunidade.basePath}/quiz`)} data-analytics-id="bio-quiz"><span class="kof-ladrilho kof-ladrilho--amarelo" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span><span class="bio-link-texto">Descobrir um caminho para meu filho<small>Responda ao quiz da Comunidade</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
-          <a class="bio-link" href={link(`${desafio.basePath}/oferta`)} data-analytics-id="bio-desafio"><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">rocket_launch</span></span><span class="bio-link-texto">Conhecer o Desafio do Primeiro Jogo<small>Uma experiência para começar a criar</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
+          <a class="kof-btn bio-principal" href={link('/como-funciona/')} data-analytics-id="bio-como-funciona">Ver como meu filho aprende<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+          <a class="bio-link" href={link(`${desafio.basePath}/quiz`)} data-analytics-id="bio-desafio-quiz"><span class="kof-ladrilho kof-ladrilho--amarelo" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span><span class="bio-link-texto">Encontrar um primeiro passo para meu filho<small>Responda sobre os interesses dele e receba uma orientação, sem cadastro.</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
+          <a class="bio-link" href={link(`${comunidade.basePath}/oferta`)} data-analytics-id="bio-comunidade"><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">rocket_launch</span></span><span class="bio-link-texto">Conhecer a Comunidade e os planos<small>Veja o que a assinatura oferece à sua família</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
         </nav>
       </div>
       <figure class="bio-telas">
@@ -95,7 +94,7 @@ const telas = comunidade.imagesBase
     width: 100%;
     min-height: 3.5rem;
     justify-content: space-between;
-    padding: 0 1.25rem 0 1.5rem;
+    padding: 0.875rem 1.25rem 0.875rem 1.5rem;
     font-size: 1rem;
   }
   .bio-principal .material-symbols-rounded { font-size: 1.375rem; }

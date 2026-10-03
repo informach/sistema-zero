@@ -54,8 +54,9 @@ describe('registro do funil Comunidade dos Criadores', () => {
     const f = COMUNIDADE_DOS_CRIADORES
     expect(f.content.landing.h1).toBe(PAGE_A.hero.title)
     expect(f.seoTitle).toBe(PAGE_A.seoTitle)
+    expect(f.seoDescription).toBe(PAGE_A.description)
     expect(f.seoTitle).not.toMatch(/—|·/)
-    expect(f.seoDescription).toContain('aulas guiadas')
+    expect(f.seoDescription).toMatch(/aulas guiadas/i)
     expect(f.seoDescription).not.toContain('parte do tempo digital')
     // Preço é dinâmico no catálogo: nunca fixo em metadado estático.
     expect(f.seoDescription).not.toContain('R$')
