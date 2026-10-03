@@ -403,9 +403,9 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       tela(
         'certificado-modelo',
         'O certificado',
-        'Certificado do Desafio do Primeiro Jogo com o nome da criança, a data de conclusão e o código para validar.',
+        'Certificado do curso Cadê Todo Mundo? com o nome da criança, a data de conclusão e o código para validar.',
         760,
-        569,
+        538,
       ),
     ],
     caption: 'O certificado, quando oferecido pelo curso, registra a conclusão.',
