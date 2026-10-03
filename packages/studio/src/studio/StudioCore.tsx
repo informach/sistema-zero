@@ -296,6 +296,14 @@ function StudioCoreBody({
   useEffect(() => {
     if (!sanitized || projectAccessBlocked) return
     hydrateProject(sanitized)
+    // Projeto trocado pelo HOST (`handle.replaceProject`, o "Trazer o que eu enviei" da aula) é a
+    // versão que deve ficar guardada: entra como edição, e o autosave grava por cima do rascunho
+    // do aparelho. Antes isso acontecia por acaso, na regravação que o editor fazia ao abrir, e
+    // abrir deixou de regravar (abrir não é editar, e não muda o "Atualizado em").
+    if (replacedProject !== null)
+      projectStoreApi.setState((state) =>
+        state.project ? { project: { ...state.project }, isDirty: true } : {},
+      )
     // Restaura, EM SEGUNDO PLANO, o `blocksState` pesado que a abertura rápida
     // (shell load) omitiu — sem isto o editor abria com o workspace VAZIO (os
     // blocos só voltavam ao forçar um reparse na Ponte). No-op quando o projeto já
@@ -319,6 +327,8 @@ function StudioCoreBody({
     setPreviewRunning,
     checksStoreApi,
     persistence,
+    replacedProject,
+    projectStoreApi,
   ])
 
   useEffect(() => {

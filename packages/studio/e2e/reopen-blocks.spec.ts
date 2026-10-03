@@ -72,6 +72,46 @@ async function expectBlocksVisibleInPanel(page: Page): Promise<void> {
     .toBe('ok')
 }
 
+/** O `updatedAt` gravado no meta do projeto (é ele que o card mostra em "Atualizado em"). */
+async function storedUpdatedAt(page: Page, projectId: string): Promise<number> {
+  return page.evaluate(async (id) => {
+    const db: IDBDatabase = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('sistema-zero-studio')
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+    try {
+      const meta: { updatedAt?: unknown } | undefined = await new Promise((resolve, reject) => {
+        const request = db
+          .transaction('kv', 'readonly')
+          .objectStore('kv')
+          .get(`sz:v2:project-meta:${id}`)
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+      })
+      return typeof meta?.updatedAt === 'number' ? meta.updatedAt : Number.NaN
+    } finally {
+      db.close()
+    }
+  }, projectId)
+}
+
+/** Volta à lista pelo logo da Topbar (sair grava o que estiver pendente). */
+async function exitToList(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Sistema Zero Studio' }).click()
+  await expect(page).toHaveURL('/')
+}
+
+/** Abre pela lista e espera os blocos e o fim da carga (a IR é completada logo depois). */
+async function openFromList(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Abrir' }).first().click()
+  await expect(page).toHaveURL(/\/editor\//)
+  await expectBlocksVisibleInPanel(page)
+  // Folga maior que o debounce do autosave (1 s): se a carga sujasse o projeto, a
+  // gravação sairia aqui ou, no máximo, ao sair.
+  await page.waitForTimeout(1_500)
+}
+
 function collectSanitizerWarns(page: Page): string[] {
   const warns: string[] = []
   page.on('console', (message) => {
@@ -135,6 +175,47 @@ test.describe('Reabrir projeto de blocos — renderiza de primeira', () => {
 
     await expectBlocksVisibleInPanel(page)
   })
+
+  // "Atualizado em é só se realmente for feita alguma mudança." A casca do projeto chega
+  // sem a IR e a carga a completava como EDIÇÃO: o autosave regravava os mesmos bytes com
+  // `updatedAt` novo, o card mudava de data e a nuvem recebia uma versão que não existia.
+  for (const mode of ['Blocos', 'Ponte'] as const) {
+    test(`abrir e sair sem mexer não muda o "Atualizado em" (${mode}); mexer muda`, async ({
+      page,
+    }) => {
+      await createProject(page)
+      const projectId = page.url().split('/editor/')[1] ?? ''
+      expect(projectId).not.toBe('')
+      await pasteBlocks(page, {
+        type: 'sz_js_console_log_text',
+        fields: { VALUE: 'sem mexer' },
+      })
+      await expectBlocksVisibleInPanel(page)
+      if (mode === 'Ponte') await page.getByRole('button', { name: 'Ponte' }).click()
+      await waitForSaved(page)
+      await exitToList(page)
+      const saved = await storedUpdatedAt(page, projectId)
+      expect(Number.isFinite(saved)).toBe(true)
+
+      await openFromList(page)
+      await exitToList(page)
+      expect(await storedUpdatedAt(page, projectId)).toBe(saved)
+
+      // Anti-vácuo: a régua continua andando com uma mudança de verdade.
+      await openFromList(page)
+      await pasteBlocks(page, {
+        type: 'sz_js_console_log_text',
+        fields: { VALUE: 'agora mexi' },
+      })
+      // O "Salvo" já está na tela antes da colagem chegar ao projeto (o Blockly agrupa os
+      // eventos por 120 ms e o autosave espera 1 s): espera a gravação de verdade.
+      await expect
+        .poll(() => storedUpdatedAt(page, projectId), { timeout: 10_000 })
+        .toBeGreaterThan(saved)
+      await exitToList(page)
+      expect(await storedUpdatedAt(page, projectId)).toBeGreaterThan(saved)
+    })
+  }
 
   test('layout salvo LONGE da origem volta para a viewport (scrollCenter pós-load)', async ({
     page,

@@ -315,6 +315,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       })),
     )
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
+  const hydrateProjectState = useProjectStore((s) => s.hydrateProjectState)
   const projectStoreApi = useProjectStoreApi()
   const diagnosticsStoreApi = useDiagnosticsStoreApi()
   const pendingEditorEdits = usePendingEditorEdits()
@@ -484,6 +485,23 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // casca do documento (head/doctype) que os blocos não representam.
       const current = projectStoreApi.getState().project
       const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
+      // ⭐ Abrir não é editar. Na CARGA (force) com os mesmos blocos que estão salvos,
+      // nada do que a criança fez mudou: o que falta completar é só o que DERIVA deles.
+      // A casca do projeto chega SEM a IR (o load não lê essa partição:
+      // `loadProjectShellById` monta `ir: null`), então ela vai pela hidratação, que não
+      // carimba `updatedAt` nem acorda o autosave. Antes ia por `applyProjectState`, e
+      // só abrir um jogo mudava o "Atualizado em" do card e o subia para a nuvem como
+      // uma versão nova (a régua de "quem é mais novo" é esse `updatedAt`).
+      const blocksUnchanged =
+        options.force === true &&
+        current !== null &&
+        JSON.stringify(current.blocksState) === serialized
+      // Comparação ESTRUTURAL do IR (uma só varredura) no lugar de
+      // `JSON.stringify(a) === JSON.stringify(b)` (duas serializações O(N) do
+      // projeto inteiro) — caminho de carga, mas sem desperdiçar duas strings.
+      const hydrateDerivedIR = () => {
+        if (current && !deepEqualIR(current.ir, ir)) hydrateProjectState({ ir })
+      }
       // As mensagens já vêm escritas para a criança; publicá-las é o que permite
       // ao Zappy apontar "o nome X não existe" em vez de adivinhar.
       const collectIssues = (issues: { blockId?: string; message: string }[]) =>
@@ -491,6 +509,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       if (!applySemanticDiagnostics(workspace, ir, collectIssues)) {
         // O desenho inválido continua salvo para a criança poder corrigi-lo, mas
         // o preview fica no último estado válido em vez de virar uma tela vazia.
+        // Na carga, esse desenho JÁ é o que está salvo: regravá-lo seria só carimbo.
+        if (blocksUnchanged) return
         applyProjectState({ blocksState: state })
         return
       }
@@ -515,21 +535,20 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         // (código do aluno pode não ter o cabeçalho canônico) e usa o CSS
         // posicional. Definir o canônico (cabeçalho fixo) aqui sobrescrevia o do
         // BridgeMode e deslocava as linhas do realce/seleção bloco↔código.
+        if (blocksUnchanged) {
+          hydrateDerivedIR()
+          return
+        }
         applyProjectState({ ir, blocksState: state })
         return
       }
       if (
-        options.force &&
-        current &&
-        JSON.stringify(current.blocksState) === serialized &&
-        // Comparação ESTRUTURAL do IR (uma só varredura) no lugar de
-        // `JSON.stringify(a) === JSON.stringify(b)` (duas serializações O(N) do
-        // projeto inteiro) — caminho de carga, mas sem desperdiçar duas strings.
-        deepEqualIR(current.ir, ir) &&
+        blocksUnchanged &&
         current.files['index.html'] === files['index.html'] &&
         current.files['style.css'] === files['style.css'] &&
         current.files['script.js'] === files['script.js']
       ) {
+        hydrateDerivedIR()
         setSourceMap(sourceMap)
         return
       }
@@ -540,7 +559,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const storeState = projectStoreApi.getState()
       storeState.markBridgeBlocksSynced(storeState.bridgeCodeEditEpoch)
     },
-    [applyProjectState, setSourceMap, projectStoreApi, diagnosticsStoreApi],
+    [applyProjectState, hydrateProjectState, setSourceMap, projectStoreApi, diagnosticsStoreApi],
   )
 
   const flushScheduledRegeneration = useCallback(() => {
