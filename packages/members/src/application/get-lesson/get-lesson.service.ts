@@ -145,6 +145,20 @@ export class GetLessonService {
       sectionProgress && !privileged
         ? await this.learning.sections.accessibleBlockIds(lesson, sectionProgress)
         : null
+    // Sem progresso por seção (conta da equipe, aula de layout antigo) os requisitos saem bloco a
+    // bloco, aqui E na tela, que os recalcula a partir de `blocks`. Por isso o estado do
+    // certificado vai DENTRO do bloco: só no `requirements` ele não chegava ao botão, e o
+    // "Concluir aula" ficava apagado mesmo com o certificado pego. Com progresso por seção quem
+    // decide é a seção, que já o consulta.
+    const certificateState = sectionProgress
+      ? null
+      : { issued: await this.learning.sections.certificateIssued(userId, lesson) }
+    const withCertificateState = (blocks: LessonDetailView['blocks']) =>
+      certificateState
+        ? blocks.map((block) =>
+            block.kind === 'certificate' ? { ...block, certificateState } : block,
+          )
+        : blocks
     const sectionState = (id: string) => sectionProgress?.sections.find((s) => s.id === id)
     const savedSection = structure.progress.sectionId
     const sectionId =
@@ -156,7 +170,9 @@ export class GetLessonService {
     return {
       ...view,
       ...(sectionProgress ? { sectionProgress } : {}),
-      blocks: accessible ? view.blocks.filter((b) => accessible.has(b.id)) : view.blocks,
+      blocks: withCertificateState(
+        accessible ? view.blocks.filter((b) => accessible.has(b.id)) : view.blocks,
+      ),
       sections: structure.sections.map(
         ({ id, title, blockIds, workspaceBlockId, externalTool, completion }) => ({
           id,
@@ -175,6 +191,7 @@ export class GetLessonService {
       legacyLayout: structure.legacyLayout,
       requirements: lessonCompletionRequirements({
         ...view,
+        blocks: withCertificateState(view.blocks),
         sections: structure.sections,
         learningProgress: {
           ...structure.progress,

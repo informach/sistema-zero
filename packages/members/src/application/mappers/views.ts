@@ -771,6 +771,12 @@ export interface LessonBlockView {
    * `lastScore`/`passed` chegam nulos/false: não há auto-correção de desenho.
    */
   pintaState?: StudioStateView | null
+  /**
+   * Presente só em blocos de certificado, e só quando a aula NÃO tem progresso por seção (conta
+   * da equipe, layout antigo): aí a tela recalcula os requisitos bloco a bloco e precisa saber se
+   * o certificado já foi pego. Revogado conta como pego (reemitir devolve 410).
+   */
+  certificateState?: { issued: boolean } | null
 }
 
 /**

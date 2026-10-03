@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { defaultLessonSection } from '@sistemazero/core/learning'
+import { defaultLessonSection, lessonCompletionRequirements } from '@sistemazero/core/learning'
 import { SERIAL_RE } from '../../src/domain/certificate/certificate'
 import type { CertificateBlock } from '../../src/domain/course/lesson-block'
 import { publishBlock } from '../draft-authoring-helpers'
@@ -273,6 +273,127 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     const res = await issue(app, lessonId, blockId)
     expect(res.status).toBe(200)
     expect((await readJson(res)).certificate.serial).toBe('SZ-2026-0123456789ABCDEF')
+    expect(await progress.listCompletedLessonIds(USER, courseId)).toContain(lessonId)
+  })
+
+  test('certificado JÁ emitido com a aula aberta: o "Concluir aula" conclui (aula sem critério de seção)', async () => {
+    const { app, courses, entitlements, progress, certificates } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const { lessonId } = seedCertificateLesson(courses, courseId, moduleId)
+    await complete(app, lessonIds[0])
+    await complete(app, lessonIds[1])
+    // O registro existe e a aula não foi concluída (a conclusão da emissão falhou, por exemplo).
+    certificates.rows.push({
+      id: randomUUID(),
+      userId: USER,
+      accountId: USER,
+      courseId,
+      courseRef: slug,
+      serial: 'SZ-2026-00AA11BB22CC33DD',
+      studentName: 'Maria Silva',
+      courseTitle: 'Curso Demo',
+      completedAt: new Date('2026-06-02T12:00:00.000Z'),
+      issuedAt: new Date('2026-06-02T12:00:00.000Z'),
+      revokedAt: null,
+    })
+
+    const res = await complete(app, lessonId)
+    expect(res.status).toBe(200)
+    expect(await progress.listCompletedLessonIds(USER, courseId)).toContain(lessonId)
+  })
+
+  test('na conta da EQUIPE, a aula reconhece o certificado emitido (antes ficava pendente para sempre)', async () => {
+    const { app, courses, entitlements, learningRepository } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const { lessonId, blockId } = seedCertificateLesson(courses, courseId, moduleId)
+    const videoId = randomUUID()
+    const revision = 'b'.repeat(32)
+    courses.blocks.find((block) => block.id === blockId)!.contentRevision = revision
+    courses.blocks.push({
+      id: videoId,
+      lessonId,
+      kind: 'video',
+      sortOrder: 1,
+      contentRevision: revision,
+      content: { kind: 'video', provider: 'vimeo', src: 'https://vimeo.com/123456789' },
+    })
+    learningRepository.structures.set(lessonId, {
+      revision: randomUUID(),
+      sections: [
+        {
+          ...defaultLessonSection(randomUUID(), 'Seu certificado', [blockId]),
+          completion: { version: 1, blockIds: [blockId] },
+        },
+        {
+          ...defaultLessonSection(randomUUID(), 'Próximos passos', [videoId]),
+          completion: { version: 1, blockIds: [videoId] },
+        },
+      ],
+    })
+    const staff = { ...authHeaders, 'x-auth-user-role': 'admin', 'x-auth-user-status': 'active' }
+    const certificateRequirements = async () => {
+      const detail = await app
+        .handle(
+          new Request(`http://localhost/members/courses/${slug}/lessons/${lessonId}`, {
+            headers: staff,
+          }),
+        )
+        .then(readJson)
+      // A equipe não recebe progresso por seção: os requisitos saem bloco a bloco.
+      expect(detail.sectionProgress).toBeUndefined()
+      const certificate = (list: { reason: string; complete: boolean }[]) =>
+        list.find((r) => r.reason === 'CERTIFICATE_GATE_NOT_ISSUED')?.complete
+      // ⚠️ A tela NÃO lê `requirements`: ela recalcula a partir de `blocks`, como aqui. Era por
+      // isso que o servidor dizia "pego" e o botão continuava apagado.
+      return {
+        servidor: certificate(detail.requirements),
+        tela: certificate(
+          lessonCompletionRequirements({ ...detail, learningProgress: detail.learningProgress }),
+        ),
+      }
+    }
+
+    await complete(app, lessonIds[0])
+    await complete(app, lessonIds[1])
+    expect(await certificateRequirements()).toEqual({ servidor: false, tela: false })
+    expect((await issue(app, lessonId, blockId, staff)).status).toBe(200)
+    expect(await certificateRequirements()).toEqual({ servidor: true, tela: true })
+    // E o botão aceso conclui: a equipe é conferida pela MESMA régua bloco a bloco que vê (o
+    // vídeo, que é critério da seção, não aparece para ela e não pode recusar).
+    const done = await app.handle(
+      new Request(`http://localhost/members/lessons/${lessonId}/complete`, {
+        method: 'POST',
+        headers: staff,
+      }),
+    )
+    expect(done.status).toBe(200)
+  })
+
+  test('certificado REVOGADO conta como pego na aula sem critério de seção (reemitir devolve 410)', async () => {
+    const { app, courses, entitlements, progress, certificates } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const { lessonId } = seedCertificateLesson(courses, courseId, moduleId)
+    await complete(app, lessonIds[0])
+    await complete(app, lessonIds[1])
+    certificates.rows.push({
+      id: randomUUID(),
+      userId: USER,
+      accountId: USER,
+      courseId,
+      courseRef: slug,
+      serial: 'SZ-2026-00FF11EE22DD33CC',
+      studentName: 'Maria Silva',
+      courseTitle: 'Curso Demo',
+      completedAt: new Date('2026-06-02T12:00:00.000Z'),
+      issuedAt: new Date('2026-06-02T12:00:00.000Z'),
+      revokedAt: new Date('2026-06-03T12:00:00.000Z'),
+    })
+
+    const res = await complete(app, lessonId)
+    expect(res.status).toBe(200)
     expect(await progress.listCompletedLessonIds(USER, courseId)).toContain(lessonId)
   })
 

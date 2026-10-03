@@ -1387,6 +1387,11 @@ export interface LessonBlockView {
   studioState?: StudioStateView | null
   /** Presente só em blocos de Pinta (mesma forma; campo separado — ver `PintaStateView`). */
   pintaState?: PintaStateView | null
+  /**
+   * Presente só em blocos de certificado de aula SEM progresso por seção (equipe, layout antigo):
+   * os requisitos são recalculados aqui bloco a bloco e o certificado pego libera a conclusão.
+   */
+  certificateState?: { issued: boolean } | null
 }
 
 /**

@@ -74,7 +74,7 @@ export class MarkLessonCompleteService {
         privileged,
       )
 
-      const [learning, quizStates, studioStates] = await Promise.all([
+      const [learning, quizStates, studioStates, certificateIssued] = await Promise.all([
         this.learning.read({ userId, accountId: accountId ?? userId }, lesson),
         this.quizAttempts.summarizeByBlockIds(
           userId,
@@ -84,13 +84,18 @@ export class MarkLessonCompleteService {
           userId,
           lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta').map((b) => b.id),
         ),
+        // Aula sem critério de seção (layout antigo) julga o certificado bloco a bloco.
+        this.learning.sections.certificateIssued(userId, lesson),
       ])
-      const sectionProgress = await this.learning.sections.read(
-        { userId, accountId: accountId ?? userId },
-        lesson,
-      )
+      // A EQUIPE abre a aula sem progresso por seção (`get-lesson` com `privileged`) e vê os
+      // requisitos bloco a bloco; concluir confere a MESMA régua. Com a seção aqui, o botão que a
+      // tela da equipe mostrava aceso devolvia 409 por um vídeo que ninguém pediu na tela.
+      const sectionProgress =
+        privileged || learning.legacyLayout
+          ? undefined
+          : await this.learning.sections.read({ userId, accountId: accountId ?? userId }, lesson)
       const requirements = lessonCompletionRequirements({
-        sectionProgress: learning.legacyLayout ? undefined : sectionProgress,
+        sectionProgress,
         videoBlockIds: learning.legacyLayout
           ? learning.sections
               .filter((s) => isVideoOnlySection(s, lesson.blocks))
@@ -112,6 +117,7 @@ export class MarkLessonCompleteService {
             passed: studioStates.get(b.id)?.passed ?? false,
           },
           pintaState: { submitted: studioStates.has(b.id) },
+          certificateState: { issued: certificateIssued },
         })),
       })
       const missing = requirements.find((r) => !r.complete)

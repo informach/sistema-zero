@@ -58,6 +58,17 @@ export class SectionProgressionService {
       return { id: block.id, revision: block.contentRevision }
     })
   }
+  /**
+   * O certificado do curso já foi emitido para este perfil? Só consulta quando a aula tem o bloco.
+   * Os requisitos calculados BLOCO A BLOCO (equipe, que não tem progresso por seção, e aula sem
+   * critério de seção) precisam disto: sem o estado, o bloco de certificado ficava pendente para
+   * sempre e o "Concluir aula" nunca destravava, mesmo depois de emitido.
+   */
+  async certificateIssued(userId: string, lesson: LessonWithContent): Promise<boolean> {
+    if (!lesson.blocks.some((block) => block.kind === 'certificate')) return false
+    return (await this.certificates.findByUserAndCourse(userId, lesson.courseId)) !== null
+  }
+
   async isCriterion(lessonId: string, blockId: string) {
     const structure = await this.repository.getStructure(lessonId)
     return (
