@@ -1784,6 +1784,10 @@ de lá); aqui mora a PELE e o Zappy.
   altura, o `<video>` sendo o mesmo e o tempo andando, pílula, arrastar encaixando no canto, a alça
   de tamanho, o Tab e o canto guardado após recarregar. Lacuna aceita: Estúdio, Pinta, Vimeo e
   YouTube no flutuante, e a pele do cartão de vídeo do kids, se conferem em staging.
+- ⚠️⚠️ **O `MutationObserver` do happy-dom morre na primeira coleta de lixo** (o ouvinte fica só
+  num `WeakRef`; ver o CLAUDE.md do studio). Foi o que derrubou no CI o "outro diálogo por cima":
+  o diálogo saía e o vídeo seguia escondido. O `test-setup.ts` segura essas funções pelo tempo de
+  vida do observador, e o teste força um `Bun.gc(true)` no meio para provar.
 - O "Pronto!" é um aviso fixo acima do rodapé (o `--sz-lesson-nav-height`), na menta, com sombra.
 
 ## Bloco "Em breve" na aula (`coming_soon`, 08/2026)
