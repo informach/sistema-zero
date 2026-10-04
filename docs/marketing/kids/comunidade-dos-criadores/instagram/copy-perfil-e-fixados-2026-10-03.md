@@ -30,7 +30,9 @@ https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_c
 
 A raiz local apresenta três caminhos: ver como aprende, encontrar um primeiro passo pelo quiz do Desafio e conhecer a Comunidade e os planos. Usar os nomes reais desses caminhos em atendimento. O quiz do Desafio e o quiz da Comunidade têm funções distintas. O [mapa de links](operacao-e-links-2026-10-04.md) define os destinos dos stories.
 
-**Foto:** manter o avatar reconhecível do casal neste ciclo. Conferir legibilidade em miniatura, contraste e ausência de texto miúdo. Reforçar os rostos reais nas apresentações, sem trocar toda a identidade no mesmo momento da mudança de mensagem.
+**Foto recomendada:** uma fotografia real de Helena e Júlio juntos. Usar enquadramento próximo, rostos bem iluminados, fundo simples na cor da identidade e nenhum texto miúdo; conferir os dois rostos no recorte circular em tamanho pequeno. Preparar essa foto para substituir o avatar quando o arquivo estiver pronto. A troca não foi realizada nesta tarefa.
+
+**Papel dos avatares:** manter os personagens nas aulas e nas capturas da plataforma, além de participações em peças sobre a experiência infantil. No Instagram, os rostos e as vozes reais apresentam quem cria a proposta e conversa com os responsáveis. Cores, tipografia e elementos gráficos fazem a ligação entre essas duas apresentações da mesma marca. Esta recomendação atualiza a orientação inicial de manter o avatar no perfil.
 
 **Categoria:** educação, ou a opção equivalente realmente disponível na conta. Não acrescentar credenciais ainda não comprovadas.
 
@@ -172,6 +174,20 @@ Se o projeto escolhido não tiver uma variável de velocidade apropriada, usar a
 **CTA principal:** conferir adequação e planos. **Prova:** player, equipamento, passos de orientação e área da família. **Nota para atendimento:** o contato humano acontece pela plataforma, por mensagens, com possível espera. Explicar essa modalidade ao responder sobre atendimento; ela é um dos apoios do ecossistema. Acesso, cobrança, cancelamento, garantia e número de perfis são conferidos na oferta vigente. Evitar preços na arte permanente do fixado.
 
 ## 4. Direção visual e edição
+
+**Rostos reais como apresentação principal; avatares como parte da experiência do produto.** A escolha considera o perfil identificado pelos nomes dos fundadores, o comprador adulto e o uso dos personagens nas aulas infantis.
+
+| Situação | Imagem recomendada | Aplicação no calendário |
+| --- | --- | --- |
+| Foto do perfil | Fotografia real dos dois, com rostos legíveis | Atualização do perfil quando a foto estiver pronta |
+| Conversa com responsáveis, apresentação e bastidores | Helena e Júlio reais, em foto ou vídeo | Trechos apresentados de F01/F02/F04/F12 e S06 |
+| Demonstração de aula e orientação | Captura fiel, preservando os avatares e o Zappy onde aparecem no produto | F01/F08, S02/S04/S08 |
+| Carrosséis de rotina e comparação | Texto, exemplos e imagens que ajudem a decisão; não é necessário inserir um rosto em todo slide | F03/F05/F07/F09/F11 |
+| Capas dos destaques | Ícones simples e títulos, mantendo a identidade | Os cinco destaques já definidos |
+
+Em uma mesma peça, vocês podem apresentar a ideia e depois mostrar a aula com os avatares. Essa passagem explica visualmente a relação entre os criadores reais e os personagens. Não acrescenta posts ao calendário nem muda as falas já escritas.
+
+**Fundamento e limite:** pesquisas de usabilidade da Nielsen Norman Group observaram atenção a [fotos de pessoas reais da organização](https://www.nngroup.com/articles/photos-as-web-content/) e interesse em conhecer [quem presta o serviço e como ele acontece](https://www.nngroup.com/articles/trustworthy-design/). São estudos de sites, consultados em 04/10/2026; não comparam a conversão deste Instagram com foto e avatar. A recomendação é uma aplicação editorial ao contexto da Comunidade. Conferir reconhecimento e compreensão com responsáveis; não prometer ganho de alcance ou vendas pela troca da foto.
 
 Três templates bastam neste ciclo:
 

@@ -63,7 +63,7 @@ A bio v2 passou a nomear a Comunidade e a idade. Ainda usava boa parte do espaç
 ### Decisão recomendada
 
 - **Nome:** `Helena e Júlio | Programação infantil`.
-- **Arroba e avatar:** manter neste ciclo.
+- **Arroba:** manter. **Imagem do perfil:** após aprofundar com o usuário o papel dos avatares nas aulas, a recomendação passou a ser uma fotografia real de Helena e Júlio juntos, preparada para leitura em miniatura. Preservar os avatares na experiência infantil e em demonstrações do produto. A direção atual está no [documento de perfil e fixados](copy-perfil-e-fixados-2026-10-03.md).
 - **Bio:** a consolidação após a [análise da bio Kodland fornecida pelo usuário](analise-bio-kodland-2026-10-04.md) usa categoria/faixa, benefício de aprender criando jogos e convite para ver como funciona. A orientação integrada é demonstrada nos fixados e no destaque Orientação. A [copy de perfil](copy-perfil-e-fixados-2026-10-03.md) contém a versão final; não reduzir acompanhamento a mensagens.
 - **Link da bio:** raiz com atribuição de Instagram, conforme a entrada local em publicação. Stories podem apontar diretamente a seções de Como funciona ou aos planos, conforme a intenção.
 - **Apresentação falada:** quem somos → o que a criança faz → como se orienta → como a família conhece a oferta.

@@ -43,6 +43,7 @@ Os nomes dos arquivos de perfil e calendário foram mantidos para preservar os l
 | Ponto anterior | Decisão desta revisão | Motivo |
 | --- | --- | --- |
 | Nome do perfil falava só em criar jogos | Acrescentar “Programação infantil” | Ajudar o responsável a identificar a categoria; ganho de busca é hipótese |
+| Avatar do casal como foto do perfil | Preparar fotografia real dos dois; manter avatares nas aulas e demonstrações | Apresentar aos responsáveis as pessoas que criam a proposta, preservando a identidade infantil do produto |
 | Bio resumia jogar, experimentar e criar | Categoria/faixa → aprendizagem criando jogos → veja como funciona | Aproveitar a clareza da estrutura Kodland com benefício e destino próprios; orientação demonstrada nos fixados e destaques |
 | Dois fixados enumeravam quase os mesmos recursos | Uma aula; possibilidades; funcionamento em família | Cada fixado responde a uma decisão distinta |
 | Cadê Todo Mundo aparecia repetidamente | Manter como uma prova, diversificar autoria, desenho, requisitos, ajuda e Jornada | Ampliar situações reconhecíveis e evitar que o perfil pareça um único curso |
