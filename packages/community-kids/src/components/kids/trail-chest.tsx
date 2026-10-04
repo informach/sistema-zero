@@ -150,7 +150,8 @@ export function TrailChest({
         {...semanticaDoBaú}
         className={cn(
           '-ml-14 absolute top-0 flex min-h-11 w-28 flex-col items-center gap-1.5 outline-none',
-          podeAbrir && 'kids-node-link',
+          // Fechado ou já aberto: nada acontece ao toque, o mesmo cursor da aula travada.
+          podeAbrir ? 'kids-node-link' : 'cursor-not-allowed',
         )}
         style={posicao}
       >

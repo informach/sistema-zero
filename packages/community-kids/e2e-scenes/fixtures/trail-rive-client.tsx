@@ -16,6 +16,12 @@ const router = {
 }
 const params = new URLSearchParams(location.search)
 const counts = (params.get('rows') ?? '1,2,5').split(',').map(Number)
+// `?chests=closed,ready,open` mostra um estado do baú por módulo (conferência visual).
+const chestStates = params.get('chests')?.split(',') ?? []
+const chestFor = (index: number) => {
+  const state = chestStates[index] ?? 'closed'
+  return { unlocked: state !== 'closed', claimed: state === 'open', xp: 25, coins: 15 }
+}
 const course: CourseDetailView = {
   slug: 'ensaio-rive',
   title: 'Animações dos módulos',
@@ -38,7 +44,7 @@ const course: CourseDetailView = {
     summary: null,
     sortOrder: index,
     riveUrl: `${location.origin}/zappy/happy.riv`,
-    chest: { unlocked: false, claimed: false, xp: 25, coins: 15 },
+    chest: chestFor(index),
     lessons: Array.from({ length: count }, (_, i) => ({
       id: `m${index}-a${i}`,
       slug: `a${i}`,
