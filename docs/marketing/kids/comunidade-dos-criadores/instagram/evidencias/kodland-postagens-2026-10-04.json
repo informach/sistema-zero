@@ -21,9 +21,7 @@
       "visible_likes": 6,
       "visible_comment_count": null,
       "comment_note": "Comentários não renderizados; não equivale a contagem zero.",
-      "video_durations_seconds": [
-        49.457097
-      ],
+      "video_durations_seconds": [49.457097],
       "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
       "visual_addendum": null
     },
@@ -37,9 +35,7 @@
       "visible_likes": 18,
       "visible_comment_count": 1,
       "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
-      "video_durations_seconds": [
-        24.4
-      ],
+      "video_durations_seconds": [24.4],
       "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
       "visual_addendum": null
     },
@@ -53,10 +49,7 @@
       "visible_likes": 43,
       "visible_comment_count": 3,
       "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
-      "video_durations_seconds": [
-        17.799999,
-        4.999999
-      ],
+      "video_durations_seconds": [17.799999, 4.999999],
       "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
       "visual_addendum": null
     },
@@ -70,9 +63,7 @@
       "visible_likes": 214,
       "visible_comment_count": 1,
       "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
-      "video_durations_seconds": [
-        null
-      ],
+      "video_durations_seconds": [null],
       "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
       "visual_addendum": null
     },
@@ -100,9 +91,7 @@
       "visible_likes": 401,
       "visible_comment_count": 20,
       "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
-      "video_durations_seconds": [
-        62.1
-      ],
+      "video_durations_seconds": [62.1],
       "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
       "visual_addendum": null
     },
@@ -144,9 +133,7 @@
       "visible_likes": "1,4 mil",
       "visible_comment_count": 11,
       "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
-      "video_durations_seconds": [
-        13.210702
-      ],
+      "video_durations_seconds": [13.210702],
       "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
       "visual_addendum": null
     },
@@ -174,9 +161,7 @@
       "visible_likes": 20,
       "visible_comment_count": 10,
       "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
-      "video_durations_seconds": [
-        50.76
-      ],
+      "video_durations_seconds": [50.76],
       "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
       "visual_addendum": "Frames próximos de 5 e 25 segundos inspecionados."
     },
@@ -190,9 +175,7 @@
       "visible_likes": "1,3 mil",
       "visible_comment_count": 57,
       "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
-      "video_durations_seconds": [
-        28.303672
-      ],
+      "video_durations_seconds": [28.303672],
       "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
       "visual_addendum": null
     }
