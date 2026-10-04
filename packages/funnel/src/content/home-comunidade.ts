@@ -1,4 +1,4 @@
-// Entrada da marca: docs/marketing/kids/comunidade-dos-criadores/instagram/copy-home-2026-10-03.md.
+// Entrada da marca: docs/marketing/kids/comunidade-dos-criadores/instagram/historico/copy-home-2026-10-03.md.
 export const HOME_STEPS = [
   {
     id: 'jogar',
