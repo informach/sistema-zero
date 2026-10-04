@@ -1,5 +1,7 @@
 # Calendário editorial e produção do Instagram
 
+> **HISTÓRICO.** Registro anterior preservado para consulta. Para executar o Instagram, use o [guia atual](../README.md), com [Destaques](../01-destaques.md), [Fixados](../02-fixados.md) e [Postagens](../03-postagens.md). As instruções abaixo registram o estado da época.
+
 **Versão 3, 04/10/2026.** Ciclo de **05 a 30/10/2026**, fuso **America/Sao_Paulo (UTC−03:00)**. Três posts e três dias de stories por semana. São **12 posts e 12 sequências**, não 12 dias de publicação adicionais. O produto de referência é o local, em publicação conforme informado pelo usuário.
 
 Proposta de horário inicial: **19h** para feed e **18h30** para stories nos mesmos dias. É uma convenção operacional para caber na rotina de resposta, não um “melhor horário” medido. Ajustar quando houver dados próprios comparáveis. Nenhuma publicação foi cadastrada ou agendada.
@@ -255,7 +257,7 @@ F01 a F03 estão completos no [documento de perfil e fixados](copy-perfil-e-fixa
 
 **Total: 48 telas**, distribuídas no mês. S01 a S05 são os cinco destaques de quatro telas [já escritos](copy-perfil-e-fixados-2026-10-03.md#2-destaques-cinco-sequências-de-quatro-telas). Os primeiros stories constroem o perfil; os seguintes abrem pequenas conversas. Stickers são adicionados no Instagram; não fazem parte de um arquivo de vídeo renderizado.
 
-**Como produzir a copy dos stories:** as frases entre aspas são o texto integral de cada tela. Se houver apresentação em vídeo, usar a mesma frase como fala e legenda sincronizada; não acrescentar uma segunda explicação improvisada. Rótulos de demonstração, complementos e textos de stickers estão especificados junto de cada tela. Os códigos L1–L5 correspondem aos URLs completos no [documento de operação](operacao-e-links-2026-10-04.md).
+**Como produzir a copy dos stories:** as frases entre aspas são o texto integral de cada tela. Se houver apresentação em vídeo, usar a mesma frase como fala e legenda sincronizada; não acrescentar uma segunda explicação improvisada. Rótulos de demonstração, complementos e textos de stickers estão especificados junto de cada tela. Os códigos L1–L5 correspondem aos URLs completos no [documento de operação](../apoio/links-e-publicacao.md).
 
 | Data | Sequência | Reaproveitamento | Ação |
 | --- | --- | --- | --- |
@@ -360,7 +362,7 @@ Não há Insights novos nem dados de vendas fornecidos nesta tarefa. O primeiro 
 | Decisão | Compras confirmadas e receita inicial por origem/coorte | Somente se coleta e vínculo estiverem operantes; não inferir compra de clique |
 | Qualidade posterior | Ativação, dúvidas de acesso, cancelamentos e reembolsos quando disponíveis | Comparar mesma coorte; assinatura não é retenção comprovada |
 
-A [medição do funil](../../../medicao-funil.md) já tem implementação local. Após a publicação, verificar recebimento de eventos no ambiente correto. A atribuição documentada liga compra à primeira sessão associada ao lead, numa janela de sete dias; ela não identifica causalidade nem toda a jornada entre dispositivos. As métricas sociais e as do funil são fontes diferentes.
+A [medição do funil](../../../../medicao-funil.md) já tem implementação local. Após a publicação, verificar recebimento de eventos no ambiente correto. A atribuição documentada liga compra à primeira sessão associada ao lead, numa janela de sete dias; ela não identifica causalidade nem toda a jornada entre dispositivos. As métricas sociais e as do funil são fontes diferentes.
 
 **Rotina:** registrar cada publicação em D+7; revisão operacional semanal de 20 a 30 minutos; balanço preliminar em 30/10 e fechamento comparável em **06/11**. Não marcar dados ausentes como zero.
 

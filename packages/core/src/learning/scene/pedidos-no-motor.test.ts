@@ -1078,6 +1078,42 @@ const CENAS: Record<SceneId, Cena> = {
     },
     mostra: (s) => s.match.points > 0 && s.caption.includes('continua igual'),
   },
+  'collect-and-remember': {
+    pedidos: {
+      'collected-without-memory': {
+        texto: 'Com Guardar a coleta desligado, encoste na chave e acompanhe temChave.',
+        faz: (m) => {
+          m.faz({ type: 'remember-collection', enabled: false })
+          m.faz({ type: 'collect-key' })
+        },
+      },
+      'collected-with-memory': {
+        texto: 'Recomece, ligue Guardar a coleta e encoste na chave.',
+        faz: (m) => {
+          m.faz({ type: 'restart-collection' })
+          m.faz({ type: 'remember-collection', enabled: true })
+          m.faz({ type: 'collect-key' })
+        },
+      },
+      'remembered-after-leaving': {
+        texto: 'Depois de guardar a coleta, aperte Afastar e confira temChave.',
+        faz: (m) => {
+          m.faz({ type: 'remember-collection', enabled: true })
+          m.faz({ type: 'collect-key' })
+          m.faz({ type: 'leave-key' })
+        },
+      },
+      'reset-after-remembering': {
+        texto: 'Depois de guardar a coleta, recomece a partida e confira o valor.',
+        faz: (m) => {
+          m.faz({ type: 'remember-collection', enabled: true })
+          m.faz({ type: 'collect-key' })
+          m.faz({ type: 'restart-collection' })
+        },
+      },
+    },
+    mostra: (s) => !s.collection.keyPresent && !s.collection.hasKey,
+  },
   'lighthouse-key': {
     pedidos: {
       'locked-without-key': {

@@ -246,6 +246,14 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'look-around' },
     { type: 'restart-search' },
   ],
+  'collect-and-remember': [
+    { type: 'collect-key' },
+    { type: 'restart-collection' },
+    { type: 'remember-collection', enabled: true },
+    { type: 'collect-key' },
+    { type: 'leave-key' },
+    { type: 'restart-collection' },
+  ],
   'lighthouse-key': [
     { type: 'try-lighthouse-door' },
     { type: 'key-state', hasKey: true },

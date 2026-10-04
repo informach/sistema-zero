@@ -1,7 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { isLearningManifest, type LearningManifest } from '../../../packages/core/src/learning'
+import {
+  blockCheckpoint,
+  blockPrediction,
+  isLearningManifest,
+  type LearningManifest,
+} from '../../../packages/core/src/learning'
+import { sceneDefaultGoalIds } from '../../../packages/core/src/learning/scene/catalog'
 import {
   type SectionProjectCheck,
   sectionCompletionIssues,
@@ -27,8 +33,8 @@ function manifesto(name: string): LearningManifest {
 
 function checks(name: string): SectionProjectCheck[] {
   return (
-    manifesto(name).sections.find((section) => section.completion?.projectChecks?.length)
-      ?.completion?.projectChecks ?? []
+    manifesto(name).sections.find((section) => section.intent === 'delivery')?.completion
+      ?.projectChecks ?? []
   )
 }
 
@@ -189,6 +195,66 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     ])
   })
 
+  test('a memória é experimentada antes da construção, com quatro descobertas e sem outra pergunta', () => {
+    const m = manifesto('dia-2')
+    expect(m.sections.map((section) => section.key)).toEqual(['contexto', 'programar-chave'])
+    const activity = m.blocks.find((block) => block.key === 'experiencia-memoria')?.content
+    if (activity?.kind !== 'interactive') throw new Error('Experiência de memória ausente')
+    expect(activity.activity.scene).toBe('collect-and-remember')
+    expect(sceneDefaultGoalIds('collect-and-remember')).toEqual([
+      'collected-without-memory',
+      'collected-with-memory',
+      'remembered-after-leaving',
+      'reset-after-remembering',
+    ])
+    expect(blockPrediction(activity)).toBeUndefined()
+    expect(blockCheckpoint(activity)).toBeUndefined()
+    expect(m.sections[0]?.completion?.blockIds).toEqual([
+      'video-d2-contexto',
+      'experiencia-memoria',
+    ])
+    expect(m.sections[0]?.workspaceKey).toBeNull()
+  })
+
+  test('as respostas da porta são etapas do mesmo projeto, com uma entrega só no fim', () => {
+    const m = manifesto('dia-3')
+    expect(m.sections.map((section) => section.key)).toEqual([
+      'condicao',
+      'sem-chave',
+      'decisao',
+      'fecho',
+    ])
+    const intermediate = m.sections[1]!
+    const delivery = m.sections[2]!
+    expect(intermediate.workspaceKey).toBe('projeto')
+    expect(delivery.workspaceKey).toBe(intermediate.workspaceKey)
+    expect(intermediate.blockKeys).not.toContain('projeto')
+    expect(intermediate.completion?.blockIds).toEqual(['video-d3-sem-chave'])
+    expect(intermediate.completion?.projectChecks).toHaveLength(10)
+    expect(delivery.completion?.projectChecks).toHaveLength(14)
+    expect(
+      m.sections
+        .filter((section) => section.completion?.blockIds.includes('projeto'))
+        .map((section) => section.key),
+    ).toEqual(['decisao'])
+    expect(m.blocks.filter((block) => block.content?.kind === 'studio')).toHaveLength(1)
+  })
+
+  test('a pergunta nova não herda a resposta da antiga memória e conserva as outras três', () => {
+    const quiz = manifesto('certificado').blocks.find(
+      (block) => block.key === 'quiz-revisao-final',
+    )?.content
+    if (quiz?.kind !== 'quiz') throw new Error('Revisão final ausente')
+    expect(quiz.questions.map((question) => question.id)).toEqual([
+      'q1',
+      'q-memoria-coleta',
+      'q3',
+      'q4',
+    ])
+    expect(quiz.questions[1]?.correctChoiceIds).toEqual(['b'])
+    expect(quiz.passingScore).toBe(100)
+  })
+
   test('a publicação retoma o mesmo projeto enviado e não bloqueia a conclusão por publicar', () => {
     for (const day of ['dia-1', 'dia-2', 'dia-3']) {
       const content = manifesto(day).blocks.find((block) => block.key === 'projeto')?.content
@@ -226,7 +292,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
         expect(projectCheckAuthoring(studio).issues(item.rule), `${day}/${item.id}`).toEqual([])
       const before = montarProjetoFarol(day)
       expect(
-        evaluateStudioSectionProject(rules, before).every((result) => !result.passed),
+        evaluateStudioSectionProject(rules, before).some((result) => !result.passed),
         day,
       ).toBe(true)
       const next = day === 'dia-1' ? 'dia-2' : day === 'dia-2' ? 'dia-3' : 'concluido'

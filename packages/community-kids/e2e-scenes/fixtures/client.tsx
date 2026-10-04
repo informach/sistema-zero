@@ -4,12 +4,14 @@ import { SceneActivityView } from '@sistemazero/member-shell/components/scene-ac
 import { resolveLessonSplit } from '@sistemazero/member-shell/lib/lesson-split'
 import { createRoot } from 'react-dom/client'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
+import farolDia2 from '../../../../docs/aulas-interativas/aulas/desafio-dia-2.manifesto.json'
+import farolDia3 from '../../../../docs/aulas-interativas/aulas/desafio-dia-3.manifesto.json'
 import manifesto from '../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-1.manifesto.json'
 
 const params = new URLSearchParams(location.search)
-const source = manifesto.blocks.find(
-  (block) => block.key === (params.get('block') ?? 'experiencia-areas'),
-)
+const blocks =
+  params.get('course') === 'farol' ? [...farolDia2.blocks, ...farolDia3.blocks] : manifesto.blocks
+const source = blocks.find((block) => block.key === (params.get('block') ?? 'experiencia-areas'))
 if (!source || !isInteractiveBlock(source.content)) throw new Error('Experiência não encontrada')
 const original = source.content
 const content = publicInteractiveBlock(original)

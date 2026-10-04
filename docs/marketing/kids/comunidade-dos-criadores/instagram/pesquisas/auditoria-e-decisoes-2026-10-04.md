@@ -1,5 +1,7 @@
 # Auditoria do Instagram e decisões editoriais
 
+> **PESQUISA DE REFERÊNCIA.** Observações e recomendações na data do estudo. A execução vigente está no [guia do Instagram](../README.md); este estudo não é uma segunda lista de tarefas.
+
 Data: 04/10/2026, America/Sao_Paulo. Perfil: **@criecomhelenaejulio**. Comprador: responsável por criança de 9 a 14 anos. Oferta principal: Comunidade dos Criadores, do Sistema Zero. Capacidade preservada: **três posts e stories em três dias por semana**.
 
 Este relatório explica o diagnóstico e as escolhas da revisão. A copy para usar e o calendário ficam nos documentos operacionais desta pasta. Não houve alteração do perfil, publicação, agendamento ou contato com seguidores.
@@ -30,7 +32,7 @@ Mostrar a tela de uma conta da equipe comprova a demonstração daquela conta. N
 
 Foram lidos os nove documentos Markdown existentes nesta pasta: estratégia/README, auditoria inicial, pesquisa aprofundada, perfil/fixados, calendário, valor/demonstração, copy da entrada, implementação da home e retomada do posicionamento. Também foram consultados o contexto comercial, o agente revisor de marketing, as skills de conteúdo editorial, revisão de copy e pesquisa, o registro da importação do Fluxo Criativo, a fonte canônica das regras Light Copy, as rotas locais da entrada e de Como funciona e o registro de medição do funil.
 
-As imagens [perfil próprio](evidencias/perfil-proprio.png) e [Kodland](evidencias/perfil-kodland.png) foram abertas e inspecionadas visualmente. A auditoria dos 12 posts próprios e 12 posts da Kodland foi relida no [registro de 03/10](pesquisa-2026-10-03.md). Os 12 posts da Kodland foram também abertos individualmente em 04/10, com leitura de legendas, datas, contagens e comentários renderizados; continuam sendo a mesma amostra. A [análise aprofundada das postagens](analise-postagens-kodland-2026-10-04.md) registra essa reconferência e delimita a inspeção parcial de vídeos e slides.
+As imagens [perfil próprio](../evidencias/perfil-proprio.png) e [Kodland](../evidencias/perfil-kodland.png) foram abertas e inspecionadas visualmente. A auditoria dos 12 posts próprios e 12 posts da Kodland foi relida no [registro de 03/10](pesquisa-2026-10-03.md). Os 12 posts da Kodland foram também abertos individualmente em 04/10, com leitura de legendas, datas, contagens e comentários renderizados; continuam sendo a mesma amostra. A [análise aprofundada das postagens](analise-postagens-kodland-2026-10-04.md) registra essa reconferência e delimita a inspeção parcial de vídeos e slides.
 
 Em 04/10, as primeiras tentativas pelo acesso web falharam. Posteriormente, a navegação pública em Chrome funcionou. A Kodland exibia 213 mil seguidores arredondados; o perfil próprio, 22,4 mil. Isso não permite calcular crescimento exato. No perfil próprio, nome e bio já coincidiam integralmente com a recomendação final; o link visível era `sistemazero.com.br`, e os destaques continuavam Sistema Zero, Comece aqui, Para quem é, Eles criaram e Helena e Júlio. Essa observação não significa que o agente tenha aplicado mudanças nem confirma UTMs no campo de edição. Não houve acesso a Insights, mensagens, composição de audiência, gastos, vendas ou retenção de alunos.
 
@@ -63,8 +65,8 @@ A bio v2 passou a nomear a Comunidade e a idade. Ainda usava boa parte do espaç
 ### Decisão recomendada
 
 - **Nome:** `Helena e Júlio | Programação infantil`.
-- **Arroba:** manter. **Imagem do perfil:** após aprofundar com o usuário o papel dos avatares nas aulas, a recomendação passou a ser uma fotografia real de Helena e Júlio juntos, preparada para leitura em miniatura. Preservar os avatares na experiência infantil e em demonstrações do produto. A direção atual está no [documento de perfil e fixados](copy-perfil-e-fixados-2026-10-03.md).
-- **Bio:** a consolidação após a [análise da bio Kodland fornecida pelo usuário](analise-bio-kodland-2026-10-04.md) usa categoria/faixa, benefício de aprender criando jogos e convite para ver como funciona. A orientação integrada é demonstrada nos fixados e no destaque Orientação. A [copy de perfil](copy-perfil-e-fixados-2026-10-03.md) contém a versão final; não reduzir acompanhamento a mensagens.
+- **Arroba:** manter. **Imagem do perfil:** após aprofundar com o usuário o papel dos avatares nas aulas, a recomendação passou a ser uma fotografia real de Helena e Júlio juntos, preparada para leitura em miniatura. Preservar os avatares na experiência infantil e em demonstrações do produto. A direção atual está no [documento de perfil e fixados](../historico/copy-perfil-e-fixados-2026-10-03.md).
+- **Bio:** a consolidação após a [análise da bio Kodland fornecida pelo usuário](analise-bio-kodland-2026-10-04.md) usa categoria/faixa, benefício de aprender criando jogos e convite para ver como funciona. A orientação integrada é demonstrada nos fixados e no destaque Orientação. A [copy de perfil](../historico/copy-perfil-e-fixados-2026-10-03.md) contém a versão final; não reduzir acompanhamento a mensagens.
 - **Link da bio:** raiz com atribuição de Instagram, conforme a entrada local em publicação. Stories podem apontar diretamente a seções de Como funciona ou aos planos, conforme a intenção.
 - **Apresentação falada:** quem somos → o que a criança faz → como se orienta → como a família conhece a oferta.
 
@@ -207,7 +209,7 @@ Não apagar o histórico em bloco. Uma descrição antiga pode ser corrigida; um
 | Ferramenta gratuita e assinatura | Ajudar a escolher | Explicar organização, atividades, apoio e acompanhamento; respeitar a alternativa gratuita |
 | Bastidor do casal | Criar vínculo e responsabilidade | Uma decisão concreta de construção do produto; evitar repetir todo o método |
 
-As datas e os roteiros finais ficam no [calendário operacional](calendario-2026-10-03.md). O marco 05–30/10 é uma proposta de execução, não conteúdo já agendado. Se a produção começar depois, deslocar o conjunto mantendo a sequência. O gancho de 12/10 é opcional e deve ser removido se a data tiver passado.
+As datas e os roteiros finais ficam no [calendário operacional](../historico/calendario-2026-10-03.md). O marco 05–30/10 é uma proposta de execução, não conteúdo já agendado. Se a produção começar depois, deslocar o conjunto mantendo a sequência. O gancho de 12/10 é opcional e deve ser removido se a data tiver passado.
 
 ### Papel dos stories
 
@@ -253,7 +255,7 @@ Os IDs da oferta e de Como funciona aparecem no código local. Depois do deploy,
 
 Em URLs com atribuição e âncora, a query vem antes do fragmento: `.../como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=reposicionamento_comunidade&utm_content=s08#orientacao`. Os valores finais devem seguir o padrão adotado no documento operacional. Não inserir dados pessoais em UTMs.
 
-O documento [Medição do funil](../../../medicao-funil.md) registra a implementação local. Com o deploy informado pelo usuário, a recomendação é verificar a ativação desse mecanismo e seus dados de produção; não construir um segundo painel nem declarar coleta confirmada antes dessa verificação. O link único da bio não permite identificar com precisão qual Reel motivou cada visita.
+O documento [Medição do funil](../../../../medicao-funil.md) registra a implementação local. Com o deploy informado pelo usuário, a recomendação é verificar a ativação desse mecanismo e seus dados de produção; não construir um segundo painel nem declarar coleta confirmada antes dessa verificação. O link único da bio não permite identificar com precisão qual Reel motivou cada visita.
 
 ## 11. Operação viável e critérios de publicação
 

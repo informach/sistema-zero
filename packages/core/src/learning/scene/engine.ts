@@ -153,6 +153,8 @@ export function openScene(start: SceneStart): SceneState {
  * O mundo é do professor; a história é da criança, e ela começa vazia.
  */
 function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): void {
+  aberto.collection.collectedThisRound = false
+  aberto.lighthouse.checkedKey = null
   // Os fantasmas e os "onde eu estava antes" passam a apontar para onde a cena ABRE.
   aberto.place = { ...aberto.place, fromX: aberto.place.x, fromY: aberto.place.y }
   aberto.drive = {
@@ -347,6 +349,12 @@ export function stepScene(
   action: SceneAction,
 ): SceneState {
   if (!isSceneAction(action, start.scene)) return previous
+  if (
+    (action.type === 'remember-collection' && !previous.collection.keyPresent) ||
+    (action.type === 'collect-key' && !previous.collection.keyPresent) ||
+    (action.type === 'leave-key' && previous.collection.position !== 'touching')
+  )
+    return previous
   // A sequência da cena `world` é intencionalmente guiada: primeiro o personagem existe nos
   // bastidores; só então ele pode aparecer na tela. A bancada fecha o segundo gesto, mas o motor
   // também precisa manter esse limite se uma ação chegar por outra superfície.
@@ -382,21 +390,63 @@ export function stepScene(
   const scene = start.scene
 
   switch (action.type) {
+    case 'remember-collection':
+      s.collection.remember = action.enabled
+      s.caption = action.enabled
+        ? 'Guardar a coleta está ligado.'
+        : 'Guardar a coleta está desligado.'
+      break
+    case 'collect-key':
+      s.collection.keyPresent = false
+      s.collection.position = 'touching'
+      s.collection.collectedThisRound = true
+      s.collection.hasKey = s.collection.remember
+      // Mesmo sumiço e mesmo aviso: só a informação guardada distingue os dois modos.
+      s.caption = 'Você pegou a chave!'
+      if (s.collection.remember)
+        observe(s, 'collected-with-memory', 'O encontro mudou a informação guardada')
+      else
+        observe(
+          s,
+          'collected-without-memory',
+          'A chave saiu do chão, mas a coleta não ficou guardada',
+        )
+      break
+    case 'leave-key':
+      s.collection.position = 'away'
+      s.caption = 'O personagem se afastou do lugar da chave.'
+      if (s.collection.hasKey && s.collection.collectedThisRound)
+        observe(s, 'remembered-after-leaving', 'A informação continuou guardada longe da chave')
+      break
+    case 'restart-collection':
+      if (s.collection.hasKey && s.collection.collectedThisRound)
+        observe(s, 'reset-after-remembering', 'A nova partida começou sem a chave')
+      s.collection = {
+        remember: s.collection.remember,
+        keyPresent: true,
+        hasKey: false,
+        position: 'near',
+        collectedThisRound: false,
+      }
+      s.caption = 'A partida recomeçou. A chave voltou ao chão.'
+      break
     case 'key-state':
       s.lighthouse.hasKey = action.hasKey
       s.lighthouse.door = 'closed'
+      s.lighthouse.checkedKey = null
       s.caption = action.hasKey
         ? 'A chave está com o personagem. O que a porta fará?'
         : 'O personagem está sem a chave. O que a porta fará?'
       break
     case 'try-lighthouse-door':
+      s.lighthouse.checkedKey = s.lighthouse.hasKey
       if (s.lighthouse.hasKey) {
         s.lighthouse.door = 'open'
         s.caption = 'A porta abriu. A luz do farol acendeu!'
         observe(s, 'opened-with-key', 'A porta abriu com a chave')
       } else {
         s.lighthouse.door = 'closed'
-        s.caption = 'A porta continua fechada.'
+        s.caption = 'A porta não abriu. Falta a chave.'
         observe(s, 'locked-without-key', 'A porta ficou fechada sem a chave')
       }
       break

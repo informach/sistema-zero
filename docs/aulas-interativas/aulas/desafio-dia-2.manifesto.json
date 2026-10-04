@@ -7,26 +7,42 @@
   "blocks": [
     {
       "key": "video-d2-contexto",
-      "plannedVideo": "Título: A chave precisa fazer diferença\n\nMostrar o problema real: o personagem atravessa a chave e ela continua no chão. Esta seção apresenta somente a necessidade. Evento, variável e valores entram na seção de montagem, junto do uso concreto. Terminar em Próxima seção.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: O jogo guardou a chave?\n\nSituar a coleta que falta e apresentar a experiência. Explicar variável no mostrador temChave. Orientar coleta sem memória, reinício, Guardar a coleta ligado, novo encontro, afastamento e reinício. Não executar a experiência nem antecipar resultados. Terminar em Próxima seção.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d2-contexto",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você viu que o personagem atravessa a chave sem recolhê-la. Clique em Próxima seção para continuar."
+        "text": "Compare o que some da tela com o que fica guardado no jogo. A experiência mostra a informação temChave durante cada tentativa."
+      }
+    },
+    {
+      "key": "experiencia-memoria",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "O jogo guardou a chave?",
+        "semPerguntaFinal": true,
+        "instructions": "Deixe Guardar a coleta desligado e aperte Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Aperte Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "collect-and-remember",
+          "cenario": "farol"
+        }
       }
     },
     {
       "key": "video-d2-programar",
-      "plannedVideo": "Título: Faça o jogo guardar a chave\n\nExplicar variável ao criar temChave e evento ao programar o encontro. Distinguir falso/verdadeiro de erro/acerto. Guiar declaração falsa, encontro personagem/chave, retirada da chave, memória verdadeira e aviso. Testar, verificar, Salvo, envio confirmado e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Faça o jogo guardar a chave\n\nRetomar a memória observada na experiência. Guiar declaração falsa, encontro personagem/chave, retirada, memória verdadeira e aviso. Oferecer mensagem com palavras próprias, sem exigir a mudança. Testar, verificar inclusive o movimento anterior, Salvo, envio confirmado e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d2-programar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora programe a coleta da chave no seu jogo. Teste se ela sai do chão e se o aviso muda. Use Verificar esta etapa antes de enviar o projeto."
+        "text": "Programe a coleta: tirar a chave do chão, guardar a informação e mostrar o aviso. Teste seu jogo e use Verificar esta etapa antes de enviar."
       }
     },
     {
@@ -944,16 +960,16 @@
   "sections": [
     {
       "key": "contexto",
-      "title": "Encostar ainda não é pegar",
-      "intent": "explanation",
-      "objective": "Observar que o personagem atravessa a chave sem recolhê-la e reconhecer a regra que falta.",
-      "blockKeys": ["video-d2-contexto", "ponte-d2-contexto"],
+      "title": "O jogo guardou a chave?",
+      "intent": "exploration",
+      "objective": "Distinguir retirada, aviso e memória; observar a informação ao afastar e ao recomeçar.",
+      "blockKeys": ["video-d2-contexto", "ponte-d2-contexto", "experiencia-memoria"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-d2-contexto"]
+        "blockIds": ["video-d2-contexto", "experiencia-memoria"]
       }
     },
     {
@@ -969,6 +985,56 @@
         "version": 1,
         "blockIds": ["video-d2-programar", "projeto"],
         "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Mostre somente as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro, mova personagem com velocidade 3, antes de conferir a borda.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "inputs": {
+                    "SPEED": 3
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Mantenha personagem dentro da tela, no corpo de A cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
           {
             "id": "memoria",
             "label": "Crie temChave começando em falso.",
@@ -986,7 +1052,7 @@
           },
           {
             "id": "encontro-chave",
-            "label": "Recolha a chave no encontro certo.",
+            "label": "No encontro com a chave, retire a chave antes de mudar temChave e o aviso.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",

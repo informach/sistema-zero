@@ -2728,9 +2728,9 @@
     "id": "lighthouse-key",
     "grupo": "events",
     "titulo": "O que a porta precisa?",
-    "instrucao": "Teste a porta sem a chave. Depois leve a chave e teste a porta outra vez. O que mudou?",
+    "instrucao": "Teste a porta sem a chave. Depois leve a chave e teste outra vez. Compare temChave e a resposta marcada em cada tentativa.",
     "manipula": "A chave e a tentativa de abrir a porta do farol",
-    "frase_sucesso": "A mesma porta respondeu de outro jeito quando a chave estava com o personagem.",
+    "frase_sucesso": "A porta consultou a mesma informação nas duas tentativas. Quando o valor mudou, ela escolheu outra resposta.",
     "pergunta_extra": "Se você deixar a chave para trás, a porta abriria?",
     "metas": [
       {
@@ -2747,11 +2747,53 @@
       }
     ],
     "pistas": [
-      "O que o personagem leva na primeira tentativa?",
-      "Experimente mudar o que ele carrega e volte à porta.",
+      "Veja qual valor temChave guarda antes de testar a porta.",
+      "Depois da tentativa, acompanhe a resposta que ficou marcada.",
       "Teste sem a chave. Depois escolha Levar a chave e aperte Testar a porta."
     ],
     "roteiro_demonstracao": [],
-    "acoes_usadas": ["key-state", "try-lighthouse-door"]
+    "acoes_usadas": ["try-lighthouse-door", "key-state"]
+  },
+  {
+    "id": "collect-and-remember",
+    "grupo": "events",
+    "titulo": "O jogo guardou a chave?",
+    "instrucao": "Deixe Guardar a coleta desligado e aperte Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Aperte Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.",
+    "manipula": "A regra que guarda a coleta, o encontro com a chave, o afastamento e o reinício",
+    "frase_sucesso": "Você comparou tirar a chave do chão com guardar que ela foi encontrada. Também conferiu o que permanece na partida e o que recomeça.",
+    "pergunta_extra": "Experimente outra vez os dois modos de guardar a coleta.",
+    "metas": [
+      {
+        "id": "collected-without-memory",
+        "rotulo": "A chave saiu do chão, mas a coleta não ficou guardada",
+        "pedido": "Com Guardar a coleta desligado, encoste na chave e acompanhe temChave.",
+        "soNoCaso": false
+      },
+      {
+        "id": "collected-with-memory",
+        "rotulo": "O encontro mudou a informação guardada",
+        "pedido": "Recomece, ligue Guardar a coleta e encoste na chave.",
+        "soNoCaso": false
+      },
+      {
+        "id": "remembered-after-leaving",
+        "rotulo": "A informação continuou guardada longe da chave",
+        "pedido": "Depois de guardar a coleta, aperte Afastar e confira temChave.",
+        "soNoCaso": false
+      },
+      {
+        "id": "reset-after-remembering",
+        "rotulo": "A nova partida começou sem a chave",
+        "pedido": "Depois de guardar a coleta, recomece a partida e confira o valor.",
+        "soNoCaso": false
+      }
+    ],
+    "pistas": [
+      "Olhe a chave, o aviso e temChave. São três coisas diferentes para acompanhar.",
+      "Compare o valor guardado nas duas tentativas, mesmo quando a mensagem for igual.",
+      "Use Recomeçar a partida antes de ligar Guardar a coleta. Depois encoste, afaste-se e recomece novamente."
+    ],
+    "roteiro_demonstracao": [],
+    "acoes_usadas": ["collect-key", "restart-collection", "remember-collection", "leave-key"]
   }
 ]

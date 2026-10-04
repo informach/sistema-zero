@@ -249,6 +249,11 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     label: 'A porta do farol',
     explanation: 'Nesta experiência, você vai testar a mesma porta em duas situações.',
   },
+  'collect-and-remember': {
+    label: 'A coleta e a informação guardada',
+    explanation:
+      'Nesta experiência, você vai comparar a chave, o aviso e temChave ao mudar uma regra da coleta.',
+  },
   restart: {
     label: 'O botão de recomeçar',
     explanation:
@@ -1235,6 +1240,33 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       explanation: 'Achados guarda quantos personagens foram encontrados nesta busca.',
     },
   },
+  // Modelos disponíveis para outros autores. O Farol não ativa palpite nem pergunta final aqui.
+  'collect-and-remember': {
+    prediction: {
+      prompt:
+        'Com Guardar a coleta desligado, a chave sai do chão. O que você espera ver em temChave?',
+      choices: [
+        {
+          id: 'verdadeiro',
+          label: 'Verdadeiro, porque a chave saiu do chão.',
+          shows: 'A chave saiu do chão e temChave continuou falso.',
+        },
+        { id: 'falso', label: 'Falso, mesmo com a chave fora da tela.' },
+      ],
+      correctChoiceId: 'falso',
+      revealOn: 'collected-without-memory',
+    },
+    explain: {
+      prompt: 'O aviso de coleta apareceu nos dois modos. O que fez temChave mudar?',
+      choices: [
+        { id: 'aviso', label: 'A mensagem que apareceu na tela.' },
+        { id: 'guardar', label: 'A regra de guardar a coleta ligada no encontro.' },
+      ],
+      correctChoiceId: 'guardar',
+      explanation:
+        'O aviso mostra uma mensagem. A regra de guardar a coleta é que altera temChave no encontro com a chave.',
+    },
+  },
   'lighthouse-key': {
     prediction: {
       prompt: 'O personagem chega à porta sem a chave. O que você acha que acontece?',
@@ -1248,8 +1280,10 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
     explain: {
       prompt: 'Por que a mesma porta abriu na segunda tentativa?',
       choices: [
-        { id: 'tempo', label: 'Porque passou mais tempo.' },
+        // ⚠️ A certa em primeiro AQUI é a régua do catálogo (`questions-order.test.ts`): com a cena da
+        // coleta entrando antes, a alternância do catálogo inteiro pede esta ordem.
         { id: 'chave', label: 'Porque o personagem estava com a chave.' },
+        { id: 'tempo', label: 'Porque passou mais tempo.' },
       ],
       correctChoiceId: 'chave',
       explanation: 'O jogo conferiu se o personagem tinha a chave antes de abrir a porta.',

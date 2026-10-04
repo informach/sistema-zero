@@ -1,5 +1,7 @@
 # O que posso produzir e operar para as redes sociais
 
+> **APOIO À PRODUÇÃO.** Consultar para aprofundar uma captura ou recurso. Os textos das peças e o calendário vigentes estão no [guia do Instagram](../README.md). Capacidades e condições devem corresponder ao momento da produção.
+
 Inventário verificado em **04/10/2026**, nesta máquina e nesta sessão. Este relatório distingue **capacidade disponível**, **implementação existente** e **serviço que ainda precisa de configuração ou teste**. Não houve geração paga, publicação ou renderização de um vídeo nesta tarefa de pesquisa.
 
 ## 1. Resposta prática
@@ -55,11 +57,11 @@ O código já representa **ideia → roteiro → gravação → edição → cap
 
 Fontes locais:
 
-- [Etapas](../../../../../packages/marketing/src/domain/content/stage.ts) e [checklists por formato](../../../../../packages/marketing/src/domain/pipeline/checklist-templates.ts).
-- [Tipos de publicação e modo manual de stories](../../../../../packages/marketing/src/domain/publication/publication.ts).
-- [Publicador Meta](../../../../../packages/marketing/src/infrastructure/gateways/meta/meta-publisher.ts) e [capacidade da conta](../../../../../packages/marketing/src/domain/social-account/social-account.ts).
-- [Métricas Meta](../../../../../packages/marketing/src/infrastructure/gateways/meta/meta-metrics-source.ts).
-- [Medição do funil](../../../medicao-funil.md).
+- [Etapas](../../../../../../packages/marketing/src/domain/content/stage.ts) e [checklists por formato](../../../../../../packages/marketing/src/domain/pipeline/checklist-templates.ts).
+- [Tipos de publicação e modo manual de stories](../../../../../../packages/marketing/src/domain/publication/publication.ts).
+- [Publicador Meta](../../../../../../packages/marketing/src/infrastructure/gateways/meta/meta-publisher.ts) e [capacidade da conta](../../../../../../packages/marketing/src/domain/social-account/social-account.ts).
+- [Métricas Meta](../../../../../../packages/marketing/src/infrastructure/gateways/meta/meta-metrics-source.ts).
+- [Medição do funil](../../../../medicao-funil.md).
 
 Na implementação lida, feed, carrossel e Reels do Instagram têm caminho de publicação automática condicionado à conta e ao serviço. **Stories são manuais no app atual.** Isso descreve o Sistema Zero; não é uma afirmação de impossibilidade universal em APIs de terceiros. Há comentário antigo no código com essa generalização, que não foi adotado como fato nem alterado nesta tarefa editorial.
 
@@ -73,7 +75,7 @@ As métricas implementadas não garantem que toda informação sugerida no calen
 
 Entrada: tomada de Helena/Júlio, captura da atividade e prova do antes/depois. Entrega: um Reel principal, uma versão curta, capa, legenda, arquivo de legendas e quatro stories derivados. O mesmo argumento ganha versões adequadas ao formato; não se resume a republicar o mesmo vídeo.
 
-Exemplo imediato: F01 mostra a aula; S02 recorta materiais preparados e regra; F04 usa o antes/depois para conversar sobre autoria. Isso reaproveita captação e muda a pergunta respondida.
+Exemplo imediato: F01 mostra a aula; S01 apresenta a sequência de aprendizagem e S04 mostra o projeto oferecido; F04 usa o antes/depois para conversar sobre autoria. Isso reaproveita captação e muda a pergunta respondida.
 
 ### Uma função vira uma demonstração de valor
 
@@ -87,7 +89,7 @@ Entrada: calendário executado, arquivos/URLs, Insights e dados do funil dispon�
 
 Pedidos suficientemente concretos para começar:
 
-- “Edite estas gravações seguindo F01. Entregue Reel vertical, capa, legenda e S02, mantendo a identidade atual.”
+- “Edite estas gravações seguindo F01. Entregue Reel vertical, capa, legenda e os recortes de S01/S04, mantendo a identidade atual.”
 - “Produza o carrossel F08 em sete slides, com capturas da orientação da aula e distinção entre os dois usos do Zappy.”
 - “Transforme a captura deste projeto em duas versões do F10 e nos quatro stories S10.”
 - “Use os dados dos últimos 28 dias para comparar os conteúdos por função e preparar o próximo calendário.”
@@ -98,6 +100,6 @@ Quando faltarem arquivos, acesso, identidade ou uma condição comercial, eu ide
 
 As skills **marketing-sistema-zero, pesquisa-mercado, conteudo-editorial, estrategia-produto e revisao-copy** orientaram a entrega; análise de métricas e criativos complementaram o plano de operação. Os procedimentos de `/marketing`, `/pesquisa-mercado`, `/copy-social` e `/carrossel` foram lidos e aplicados por meio das skills no Codex. Esses comandos são atalhos de método, não executáveis de publicação.
 
-Três frentes delegadas seguiram os perfis locais: pesquisa de mercado, auditoria do produto e revisão do Instagram. A consolidação reescreveu os materiais executáveis e incorporou a correção de posicionamento sobre acompanhamento. O [inventário do pacote](../../../../../.agents/marketing/README.md) explica a equivalência entre os agentes/comandos do Claude e as skills usadas aqui.
+Três frentes delegadas seguiram os perfis locais: pesquisa de mercado, auditoria do produto e revisão do Instagram. A consolidação reescreveu os materiais executáveis e incorporou a correção de posicionamento sobre acompanhamento. O [inventário do pacote](../../../../../../.agents/marketing/README.md) explica a equivalência entre os agentes/comandos do Claude e as skills usadas aqui.
 
 As skills de vídeo, imagens e Pippit foram **avaliadas para este relatório**, sem iniciar seus fluxos de geração. Ter essas instruções amplia o que posso preparar; configuração, mídia fonte e validação continuam parte de cada execução real.

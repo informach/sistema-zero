@@ -588,11 +588,20 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
       ]
     case 'found-counter':
       return [{ label: 'Achados', value: String(state.match.points), tone: 'a' }]
+    case 'collect-and-remember':
+      return [
+        { label: 'temChave', value: state.collection.hasKey ? 'verdadeiro' : 'falso', tone: 'a' },
+        {
+          label: 'chave',
+          value: state.collection.keyPresent ? 'no chão' : 'fora da tela',
+          tone: 'b',
+        },
+      ]
     case 'lighthouse-key':
       return [
         {
-          label: 'chave',
-          value: state.lighthouse.hasKey ? 'com o personagem' : 'não encontrada',
+          label: 'temChave',
+          value: state.lighthouse.hasKey ? 'verdadeiro' : 'falso',
           tone: 'a',
         },
         {
@@ -1183,6 +1192,12 @@ function situacao(scene: SceneId, state: SceneState): string {
         state.caption ||
         `Nesta busca, ${quantos(state.match.points, 'personagem encontrado', 'personagens encontrados')}.`
       )
+    case 'collect-and-remember':
+      return state.collection.keyPresent
+        ? 'A chave está no chão. Encoste nela para testar a coleta.'
+        : state.collection.position === 'away'
+          ? 'O personagem se afastou do lugar da chave.'
+          : 'Você pegou a chave!'
     case 'lighthouse-key':
       return state.lighthouse.door === 'open'
         ? 'A porta abriu e a luz do farol acendeu.'

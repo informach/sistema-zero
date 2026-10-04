@@ -1,5 +1,9 @@
 # Perfil, destaques e posts fixados
 
+> **HISTÓRICO.** Registro anterior preservado para consulta. Para executar o Instagram, use o [guia atual](../README.md), com [Destaques](../01-destaques.md), [Fixados](../02-fixados.md) e [Postagens](../03-postagens.md). As instruções abaixo registram o estado da época.
+
+**Revisão posterior de 04/10:** a [nova proposta de destaques e fixados](proposta-destaques-e-fixados-2026-10-04.md) reavalia as seções 2 e 3 deste documento e entrega outra estrutura, com a copy de cada destaque e dos três fixados. Esta versão 3 fica preservada para comparação. O nome, a bio e a foto não são reabertos pela nova proposta; o responsável informou que já atualizou a foto no Instagram.
+
 **Versão 3, 04/10/2026.** Substitui a copy de 03/10 neste arquivo. Referência de produto: versão local em publicação, conforme orientação do usuário. Textos prontos para produção; gravações são demonstrações da equipe, salvo identificação e autorização de um caso real.
 
 ## 1. Perfil pronto para aplicar
@@ -16,7 +20,7 @@
 👇 Veja como funciona
 ```
 
-Conferir a prévia de quebra de linhas no aplicativo. Nome: 37 caracteres. A bio apresenta categoria e faixa, benefício visível e próximo passo concreto. O primeiro fixado demonstra como funciona, e o destaque Orientação mostra o acompanhamento integrado. A [análise da bio da Kodland](analise-bio-kodland-2026-10-04.md) explica a escolha. “Próprios jogos” inclui construções guiadas com materiais preparados e novas criações conforme o percurso.
+Conferir a prévia de quebra de linhas no aplicativo. Nome: 37 caracteres. A bio apresenta categoria e faixa, benefício visível e próximo passo concreto. O primeiro fixado demonstra como funciona, e o destaque Orientação mostra o acompanhamento integrado. A [análise da bio da Kodland](../pesquisas/analise-bio-kodland-2026-10-04.md) explica a escolha. “Próprios jogos” inclui construções guiadas com materiais preparados e novas criações conforme o percurso.
 
 **Conferência pública final de 04/10:** o [perfil](https://www.instagram.com/criecomhelenaejulio/) já exibia esse nome e essa bio. A observação confirma a apresentação visível; a alteração não foi realizada pelo agente. Os destaques ainda exibiam os títulos anteriores, cuja migração está abaixo.
 
@@ -28,7 +32,7 @@ Conferir a prévia de quebra de linhas no aplicativo. Nome: 37 caracteres. A bio
 https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=bio
 ```
 
-A raiz local apresenta três caminhos: ver como aprende, encontrar um primeiro passo pelo quiz do Desafio e conhecer a Comunidade e os planos. Usar os nomes reais desses caminhos em atendimento. O quiz do Desafio e o quiz da Comunidade têm funções distintas. O [mapa de links](operacao-e-links-2026-10-04.md) define os destinos dos stories.
+A raiz local apresenta três caminhos: ver como aprende, encontrar um primeiro passo pelo quiz do Desafio e conhecer a Comunidade e os planos. Usar os nomes reais desses caminhos em atendimento. O quiz do Desafio e o quiz da Comunidade têm funções distintas. O [mapa de links](../apoio/links-e-publicacao.md) define os destinos dos stories.
 
 **Foto recomendada:** uma fotografia real de Helena e Júlio juntos. Usar enquadramento próximo, rostos bem iluminados, fundo simples na cor da identidade e nenhum texto miúdo; conferir os dois rostos no recorte circular em tamanho pequeno. Preparar essa foto para substituir o avatar quando o arquivo estiver pronto. A troca não foi realizada nesta tarefa.
 
@@ -208,6 +212,6 @@ Manter as cores e fontes da identidade já existente. Uma cor de acento por sér
 - Identificação de demonstrações da equipe e materiais preparados.
 - Legendas, contraste e captura legível em tela pequena.
 - Requisitos, formato, orientação integrada e condições de liberação explicados no contexto apropriado.
-- Destinos conforme o [mapa atual](operacao-e-links-2026-10-04.md), depois da publicação da versão local.
+- Destinos conforme o [mapa atual](../apoio/links-e-publicacao.md), depois da publicação da versão local.
 
 A revisão editorial está pronta. Artes, gravações, aplicação do perfil e publicação são as próximas etapas de produção.

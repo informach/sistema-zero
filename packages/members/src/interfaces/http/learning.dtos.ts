@@ -51,6 +51,10 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('trigger') }),
   t.Object({ type: t.Literal('key-state'), hasKey: t.Boolean() }),
   t.Object({ type: t.Literal('try-lighthouse-door') }),
+  t.Object({ type: t.Literal('remember-collection'), enabled: t.Boolean() }),
+  t.Object({ type: t.Literal('collect-key') }),
+  t.Object({ type: t.Literal('leave-key') }),
+  t.Object({ type: t.Literal('restart-collection') }),
   t.Object({
     type: t.Literal('find-character'),
     id: t.Union([t.Literal(0), t.Literal(1), t.Literal(2)]),

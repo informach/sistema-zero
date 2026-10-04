@@ -72,17 +72,19 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 **Explicação:** Dentro de A cada quadro, primeiro o jogo move o personagem. Logo depois, a regra da borda mantém ele dentro da tela. O jogo repete essa sequência enquanto funciona; conferir a posição somente no começo não cuidaria dos movimentos seguintes.
 
-### 2. Lembrar da chave
+### 2. Conferir a memória da coleta
 
-**Pergunta:** A chave saiu do chão e o personagem já se afastou dela. O que permite ao jogo continuar sabendo que ela foi recolhida?
+Atualizada em 04/10/2026, com id `q-memoria-coleta` no lugar de `q2` do Farol.
 
-- A. A variável temChave, que passou a guardar verdadeiro.
-- B. A mensagem de coleta que apareceu na tela.
-- C. A distância entre o personagem e o lugar da chave.
+**Pergunta:** Em um teste, a chave saiu do chão e apareceu o aviso de coleta, mas o farol ainda disse que faltava a chave. A porta está consultando temChave corretamente. Qual parte da coleta você deve conferir primeiro?
 
-**Correta:** A.
+- A. Se o aviso usa exatamente as mesmas palavras do vídeo.
+- B. Se o encontro com a chave muda temChave para verdadeiro.
+- C. Se a velocidade do personagem está mais alta.
 
-**Explicação:** No encontro com a chave, você mudou temChave de falso para verdadeiro. Essa informação fica guardada durante a partida, mesmo quando a chave desaparece e o personagem vai embora. A mensagem conta o que aconteceu para quem joga, mas é temChave que a porta consulta.
+**Correta:** B.
+
+**Explicação:** Destruir o sprite retira a chave do chão. Alterar aviso muda a mensagem para quem joga. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que a porta consulta depois.
 
 ### 3. A porta confere uma condição
 
@@ -125,9 +127,9 @@ Ler as perguntas com crianças da faixa atendida, sem explicar a resposta antes.
 
 ## Estado da implementação local
 
-- Dois geradores e manifestos atualizados: dez seções e nove vídeos em cada curso. A revisão sem vídeo foi acrescentada à aula do certificado, sem mudar os identificadores existentes.
+- Dois geradores e manifestos atualizados: Cadê Todo Mundo com dez seções e nove vídeos; Farol com onze seções e dez vídeos após a revisão de 04/10. A revisão sem vídeo foi acrescentada à aula do certificado, sem mudar os identificadores existentes.
 - Publicação no Members aceita quiz obrigatório em seção anterior ao certificado. A primeira emissão respeita essa seção; certificados emitidos continuam acessíveis. Os endpoints de correção e retorno à aula conservam a tentativa imediata.
-- Cadernos gerados e conferidos: Cadê Todo Mundo, seis páginas; Farol, quinze. Cores importadas das definições oficiais dos blocos e limites do PDF conferidos no navegador.
+- Cadernos gerados e conferidos: Cadê Todo Mundo, seis páginas; Farol, dezenove após a revisão de 04/10. Cores importadas das definições oficiais dos blocos e limites do PDF conferidos no navegador.
 - Verificação local: 34 manifestos sem avisos; oito roteiros, dezoito vídeos; 42 tutoriais válidos. Suíte do Members: 1.325 testes aprovados, 49 testes de banco sem execução por dependerem de banco descartável. Os testes posteriores de importação/publicação dos dois cursos e preservação após inclusão de uma nova revisão também passaram.
 - Referência das regras: [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md). O briefing, as especificações, a skill de autoria e os relatórios históricos encaminham para ela.
 

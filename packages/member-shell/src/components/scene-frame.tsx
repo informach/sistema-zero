@@ -117,7 +117,13 @@ export function SceneReadoutBand({
             // menor e, muito longo, na linha toda (review visual de 30/09: quebrava em 2-3 linhas).
             data-medida={texto.length > 15 ? 'longa' : texto.length > 10 ? 'media' : undefined}
           >
-            <dt className="sz-scene-hud-rotulo">{r.label}</dt>
+            {/* Rótulo em camelCase é nome de variável: sai como no bloco, sem versalete. */}
+            <dt
+              className="sz-scene-hud-rotulo"
+              data-codigo={/^[a-z]+[A-Z]/.test(r.label) ? '' : undefined}
+            >
+              {r.label}
+            </dt>
             <dd
               className={`sz-scene-hud-valor tabular-nums ${
                 r.tone === 'a'

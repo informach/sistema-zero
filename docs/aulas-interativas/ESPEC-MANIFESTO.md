@@ -144,8 +144,9 @@ Um item `file` precisa do
 `attachmentId` de um arquivo realmente anexado à aula. O manifesto não contém bytes nem URL privada.
 Na introdução do Desafio e na primeira aula de Corre, Dino! e O Jogo do Meu Jeito, os blocos dos
 cadernos já são criados com `items: []`. Os PDFs precisam ser enviados e vinculados no admin;
-eles não existem neste repositório. Gravar os vídeos de apresentação depois de anexar os arquivos
-reais. O Mapa dos Pais do Desafio também depende de vínculo no admin.
+o PDF vigente do Farol está em `output/pdf/desafio-farol-caderno.pdf`. Gravar os vídeos de apresentação
+depois de anexar os arquivos reais. O material atual do Desafio é somente o Caderno do Aluno;
+o antigo Mapa dos Pais não integra essa versão.
 
 **Certificado:** `content` inclui `kind: "certificate"` e o texto que aparece no PDF. Uma imagem
 base e assinaturas podem ser configuradas depois, quando houver arquivos públicos reais.

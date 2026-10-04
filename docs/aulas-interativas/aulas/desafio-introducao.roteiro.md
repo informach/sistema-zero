@@ -9,7 +9,7 @@ Duas seções, dois vídeos curtos. O jogo pronto é uma atividade da criança, 
 **Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar personagem, chave e farol sem percorrer o caminho nem mostrar o barco chegando. Duração estimada: 35 a 45 segundos.
 
 **Narração:**
-> "Neste desafio, você vai programar A Chave do Farol. Um barco precisa chegar à costa, mas o farol está apagado. Antes de montar as regras, conheça a aventura jogando esta versão pronta. Use as setas da tela para mover o personagem. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. Explore o mapa e tente encontrar a chave para chegar ao farol. Quando quiser seguir, aperte Próxima seção. Você não precisa terminar a partida para continuar."
+> "Neste desafio, você vai programar A Chave do Farol. Um barco precisa chegar à costa, mas o farol está apagado. Antes de montar as regras, conheça a aventura jogando esta versão pronta. Use as setas da tela para mover o personagem. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. Explore o mapa e tente encontrar a chave para chegar ao farol. Você pode continuar mesmo sem terminar a partida. Depois de experimentar, aperte Próxima seção."
 
 **Ponte do Zappy na página (não gravar):** Esta é a aventura que você vai programar. Jogue a versão pronta para conhecer o caminho da chave até o farol. Depois de experimentar, clique em Próxima seção.
 

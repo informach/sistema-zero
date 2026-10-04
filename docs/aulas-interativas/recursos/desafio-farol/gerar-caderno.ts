@@ -154,6 +154,7 @@ const door = diagram(
   ),
 )
 function renderItem(item: Item): string {
+  if (item.kind === 'index') return '<!-- course-index -->'
   if (item.kind === 'text') return `<p class="body-text">${item.text}</p>`
   if (item.kind === 'step') {
     const match = item.title?.match(/^(\d+)\.\s*(.*)$/)
@@ -178,15 +179,7 @@ type Sheet = {
 }
 const sheets: Sheet[] = []
 for (const page of pages) {
-  let items = page.items
-  if (page.id === 'p1') {
-    items = items.filter((item) => item.title !== 'Encontre seu passo')
-    items.splice(2, 0, {
-      kind: 'step',
-      title: 'Encontre seu passo',
-      text: '<b>Dia 1:</b> movimento e bordas, páginas 3 e 4.<br><b>Dia 2:</b> coleta e memória, páginas 5 a 8.<br><b>Dia 3:</b> experiência, decisão e testes, páginas 9 a 12.<br><b>Seu jogo no Mural:</b> página 13.<br><b>Revisão das regras:</b> página 14.<br><b>Certificado e ajuda:</b> página 15.',
-    })
-  }
+  const items = page.items
   let body = items
     .map((item) => (item.kind === 'diagram' && page.id === 'p3' ? movement : renderItem(item)))
     .join('')
@@ -202,7 +195,7 @@ for (const page of pages) {
     )
   }
   if (page.id === 'p4') body = items.slice(0, 2).map(renderItem).join('') + memory
-  const theme = ['p4', 'p5'].includes(page.id) ? 'lesson-two' : 'lesson-one'
+  const theme = page.kicker.startsWith('Dia 2') ? 'lesson-two' : 'lesson-one'
   if (page.id === 'p10')
     sheets.push({
       id: 'revisao-final',
@@ -253,6 +246,18 @@ for (const page of pages) {
         '<div class="note">As ações da luz, do barco e da mensagem de chegada ficam em <strong>então</strong>. A mensagem de falta da chave fica em <strong>senão</strong>. Depois da montagem, teste os dois caminhos.</div>',
     })
 }
+// A numeração acompanha as folhas ilustradas inseridas pelo gerador e a capa.
+function pageNumber(id: string): number {
+  const index = sheets.findIndex((sheet) => sheet.id === id)
+  if (index < 0) throw new Error(`Página do índice ausente: ${id}`)
+  return index + 2
+}
+const courseIndex = renderItem({
+  kind: 'step',
+  title: 'Encontre seu passo',
+  text: `<b>Dia 1:</b> movimento, velocidades e bordas, páginas ${pageNumber('p2')} a ${pageNumber('p3')}.<br><b>Dia 2:</b> experiência, coleta e memória, páginas ${pageNumber('memoria-experiencia')} a ${pageNumber('coleta-testes')}.<br><b>Dia 3:</b> experiência, duas respostas e testes, páginas ${pageNumber('porta-experiencia')} a ${pageNumber('p8')}.<br><b>Seu jogo no Mural:</b> página ${pageNumber('p9')}.<br><b>Revisão das regras:</b> página ${pageNumber('revisao-final')}.<br><b>Certificado e ajuda:</b> página ${pageNumber('p10')}.`,
+})
+for (const sheet of sheets) sheet.body = sheet.body.replace('<!-- course-index -->', courseIndex)
 const total = sheets.length + 1
 const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${scene(true)}" alt="Ilustração da aventura com o farol aceso"></div><div class="cover-copy"><span class="badge">Caderno do Aluno</span><h1>A Chave<br>do <em>Farol</em></h1><p>Todos os passos para construir as regras da sua aventura.</p><div class="cover-bottom">Do primeiro movimento<br>à luz que guia o barco.</div></div><img class="zappy" src="${zappy}" alt="Zappy feliz"></section>`
 const body = sheets

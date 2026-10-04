@@ -1085,10 +1085,12 @@ export function SceneActivityView({
       <span className="max-[30rem]:sr-only">Desfazer</span>
     </SceneButton>
   )
-  /* A busca tem seu próprio recomeço, que também registra a descoberta de voltar a zero.
-     Nas outras cenas, o botão geral reinicia o mundo sem apagar o que foi descoberto. */
+  /* A busca e a coleta têm seu próprio recomeço, que também registra a descoberta de voltar ao
+     começo. ⚠️ Na coleta, o geral ainda desligava "Guardar a coleta" em silêncio, e a regra é que
+     recomeçar a PARTIDA conserva o programa. Nas outras cenas, o botão geral reinicia o mundo sem
+     apagar o que foi descoberto. */
   const recomecar =
-    m !== 'found-counter' ? (
+    m !== 'found-counter' && m !== 'collect-and-remember' ? (
       <SceneButton
         tom="ferramenta"
         className="min-w-11"

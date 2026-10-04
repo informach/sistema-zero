@@ -331,6 +331,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   controls: ['hero'],
   'touch-response': [],
   'found-counter': [],
+  'collect-and-remember': [],
   'lighthouse-key': [],
   restart: ['hero', 'obstacle'],
   hitbox: ['hero', 'obstacle'],
@@ -371,6 +372,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
 export const SCENE_FIXED_CENARIOS: Readonly<Partial<Record<SceneId, SceneCenarioId>>> = {
   'touch-response': 'jardim',
   'found-counter': 'jardim',
+  'collect-and-remember': 'farol',
   'lighthouse-key': 'farol',
 }
 

@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-d1-borda",
-      "plannedVideo": "Título: Faça o personagem andar dentro do mapa\n\nSituar o projeto com cenário pronto e personagem parado antes da tarefa. Mostrar paleta, encaixe, campos e valores dos três blocos: controles só direções, movimento e borda. Testar, Verificar esta etapa, conferir Objetivo da etapa cumprido!, Salvo, Enviar para o professor e confirmação Enviar. Encerrar em Concluir aula.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Faça o personagem andar dentro do mapa\n\nSituar o projeto com cenário pronto e personagem parado. Guiar controles, movimento, comparação de velocidade 3 e 1 com retorno a 3, e borda. Mostrar todos os encaixes. Testar, Verificar esta etapa, conferir Objetivo da etapa cumprido!, Salvo, envio com confirmação e Concluir aula.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d1-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora monte o movimento do seu personagem. Teste as quatro direções e as bordas, depois use Verificar esta etapa antes de enviar o projeto."
+        "text": "Monte o movimento e compare as velocidades. Depois teste as quatro direções e as bordas. Use Verificar esta etapa antes de enviar o projeto."
       }
     },
     {
@@ -930,29 +930,39 @@
           },
           {
             "id": "andar",
-            "label": "Faça o personagem andar antes de conferir a borda.",
+            "label": "Dentro de A cada quadro, mova personagem com velocidade 3, antes de conferir a borda.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_top_down",
+              "blockType": "sz_g2d_update_each_frame",
               "area": "loops",
-              "fields": {
-                "SPRITE": "personagem"
-              },
-              "inputs": {
-                "SPEED": 3
-              },
-              "beforeBlock": "sz_g2d_clamp_to_screen"
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "inputs": {
+                    "SPEED": 3
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
             }
           },
           {
             "id": "borda",
-            "label": "Mantenha o personagem dentro da tela.",
+            "label": "Mantenha personagem dentro da tela, no corpo de A cada quadro.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_clamp_to_screen",
+              "blockType": "sz_g2d_update_each_frame",
               "area": "loops",
-              "fields": {
-                "SPRITE": "personagem"
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
               }
             }
           }

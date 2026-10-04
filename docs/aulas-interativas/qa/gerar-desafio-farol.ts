@@ -1,8 +1,8 @@
 /** Regenera os manifestos e o inventário do Desafio do farol. Não importa nem publica aulas. */
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import type { ProjectBlockPattern } from '../../../packages/core/src/learning/section-progression'
 import { FAROL_LAYOUT } from '../../../packages/studio/src/arte/farol-assets'
+import { coleta, movimento, portaCompleta, portaSemChave } from './desafio-farol-criterios'
 import { montarProjetoFarol } from './desafio-farol-projeto'
 
 import { farol } from './quizzes-cursos-curtos'
@@ -90,29 +90,6 @@ const projeto = (etapa: 'dia-1' | 'dia-2' | 'dia-3') => ({
     initialProject: montarProjetoFarol(etapa),
   },
 })
-const check = (id: string, label: string, rule: Record<string, unknown>) => ({ id, label, rule })
-// Vincular a ação ao encontro e ao ramo corretos evita aprovar peças no lugar errado.
-const noEncontro = (target: string, body: ProjectBlockPattern) => ({
-  type: 'usesBlock',
-  blockType: 'sz_g2d_on_overlap',
-  area: 'events',
-  fields: { A: 'personagem', B: target },
-  inputBlocks: { BODY: body },
-})
-const naRespostaDaPorta = (branch: 'THEN' | 'ELSE', action: ProjectBlockPattern) =>
-  noEncontro('farol', {
-    blockType: 'sz_js_if_else',
-    inputBlocks: {
-      COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } },
-      [branch]: action,
-    },
-  })
-const aviso = {
-  blockType: 'sz_js_var_assign',
-  fields: { NAME: 'aviso' },
-  inputBlocks: { VALUE: { blockType: 'sz_val_text' } },
-}
-
 const dia1 = {
   version: 5,
   courseSlug: CURSO,
@@ -124,11 +101,11 @@ const dia1 = {
       'video-d1-borda',
       'Faça o personagem andar dentro do mapa',
       'desafio-dia-1.roteiro.md',
-      'Situar o projeto com cenário pronto e personagem parado antes da tarefa. Mostrar paleta, encaixe, campos e valores dos três blocos: controles só direções, movimento e borda. Testar, Verificar esta etapa, conferir Objetivo da etapa cumprido!, Salvo, Enviar para o professor e confirmação Enviar. Encerrar em Concluir aula.',
+      'Situar o projeto com cenário pronto e personagem parado. Guiar controles, movimento, comparação de velocidade 3 e 1 com retorno a 3, e borda. Mostrar todos os encaixes. Testar, Verificar esta etapa, conferir Objetivo da etapa cumprido!, Salvo, envio com confirmação e Concluir aula.',
     ),
     fala(
       'ponte-d1-borda',
-      'Agora monte o movimento do seu personagem. Teste as quatro direções e as bordas, depois use Verificar esta etapa antes de enviar o projeto.',
+      'Monte o movimento e compare as velocidades. Depois teste as quatro direções e as bordas. Use Verificar esta etapa antes de enviar o projeto.',
     ),
     projeto('dia-1'),
     ajudaComoFazer('ajuda-d1', 'Se precisar de ajuda', [
@@ -145,28 +122,7 @@ const dia1 = {
       ['video-d1-borda', 'ponte-d1-borda', 'projeto', 'ajuda-d1'],
       ['video-d1-borda', 'projeto'],
       'projeto',
-      [
-        check('direcional', 'Mostre somente as quatro direções.', {
-          type: 'usesBlock',
-          blockType: 'sz_g2d_enable_classic_controls',
-          area: 'start',
-          fields: { MODE: 'directions' },
-        }),
-        check('andar', 'Faça o personagem andar antes de conferir a borda.', {
-          type: 'usesBlock',
-          blockType: 'sz_g2d_top_down',
-          area: 'loops',
-          fields: { SPRITE: 'personagem' },
-          inputs: { SPEED: 3 },
-          beforeBlock: 'sz_g2d_clamp_to_screen',
-        }),
-        check('borda', 'Mantenha o personagem dentro da tela.', {
-          type: 'usesBlock',
-          blockType: 'sz_g2d_clamp_to_screen',
-          area: 'loops',
-          fields: { SPRITE: 'personagem' },
-        }),
-      ],
+      movimento,
     ),
   ],
 }
@@ -180,34 +136,47 @@ const dia2 = {
   blocks: [
     video(
       'video-d2-contexto',
-      'A chave precisa fazer diferença',
+      'O jogo guardou a chave?',
       'desafio-dia-2.roteiro.md',
-      'Mostrar o problema real: o personagem atravessa a chave e ela continua no chão. Esta seção apresenta somente a necessidade. Evento, variável e valores entram na seção de montagem, junto do uso concreto. Terminar em Próxima seção.',
+      'Situar a coleta que falta e apresentar a experiência. Explicar variável no mostrador temChave. Orientar coleta sem memória, reinício, Guardar a coleta ligado, novo encontro, afastamento e reinício. Não executar a experiência nem antecipar resultados. Terminar em Próxima seção.',
     ),
     fala(
       'ponte-d2-contexto',
-      'Você viu que o personagem atravessa a chave sem recolhê-la. Clique em Próxima seção para continuar.',
+      'Compare o que some da tela com o que fica guardado no jogo. A experiência mostra a informação temChave durante cada tentativa.',
     ),
+    {
+      key: 'experiencia-memoria',
+      content: {
+        kind: 'interactive',
+        required: true,
+        title: 'O jogo guardou a chave?',
+        semPerguntaFinal: true,
+        instructions:
+          'Deixe Guardar a coleta desligado e aperte Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Aperte Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.',
+        hints: [],
+        activity: { type: 'experimentation', scene: 'collect-and-remember', cenario: 'farol' },
+      },
+    },
     video(
       'video-d2-programar',
       'Faça o jogo guardar a chave',
       'desafio-dia-2.roteiro.md',
-      'Explicar variável ao criar temChave e evento ao programar o encontro. Distinguir falso/verdadeiro de erro/acerto. Guiar declaração falsa, encontro personagem/chave, retirada da chave, memória verdadeira e aviso. Testar, verificar, Salvo, envio confirmado e Concluir aula.',
+      'Retomar a memória observada na experiência. Guiar declaração falsa, encontro personagem/chave, retirada, memória verdadeira e aviso. Oferecer mensagem com palavras próprias, sem exigir a mudança. Testar, verificar inclusive o movimento anterior, Salvo, envio confirmado e Concluir aula.',
     ),
     fala(
       'ponte-d2-programar',
-      'Agora programe a coleta da chave no seu jogo. Teste se ela sai do chão e se o aviso muda. Use Verificar esta etapa antes de enviar o projeto.',
+      'Programe a coleta: tirar a chave do chão, guardar a informação e mostrar o aviso. Teste seu jogo e use Verificar esta etapa antes de enviar.',
     ),
     projeto('dia-2'),
   ],
   sections: [
     secao(
       'contexto',
-      'Encostar ainda não é pegar',
-      'explanation',
-      'Observar que o personagem atravessa a chave sem recolhê-la e reconhecer a regra que falta.',
-      ['video-d2-contexto', 'ponte-d2-contexto'],
-      ['video-d2-contexto'],
+      'O jogo guardou a chave?',
+      'exploration',
+      'Distinguir retirada, aviso e memória; observar a informação ao afastar e ao recomeçar.',
+      ['video-d2-contexto', 'ponte-d2-contexto', 'experiencia-memoria'],
+      ['video-d2-contexto', 'experiencia-memoria'],
     ),
     secao(
       'programar-chave',
@@ -217,50 +186,7 @@ const dia2 = {
       ['video-d2-programar', 'ponte-d2-programar', 'projeto'],
       ['video-d2-programar', 'projeto'],
       'projeto',
-      [
-        check('memoria', 'Crie temChave começando em falso.', {
-          type: 'usesBlock',
-          blockType: 'sz_js_var_create',
-          area: 'start',
-          fields: { NAME: 'temChave' },
-          inputs: { VALUE: false },
-        }),
-        check('encontro-chave', 'Recolha a chave no encontro certo.', {
-          type: 'usesBlock',
-          blockType: 'sz_g2d_on_overlap',
-          area: 'events',
-          fields: { A: 'personagem', B: 'chave' },
-          inputBlocks: {
-            BODY: {
-              blockType: 'sz_g2d_destroy_sprite',
-              fields: { SPRITE: 'chave' },
-              beforeBlock: 'sz_js_var_assign',
-            },
-          },
-        }),
-        check(
-          'recolher',
-          'Retire a chave dentro do encontro entre personagem e chave.',
-          noEncontro('chave', {
-            blockType: 'sz_g2d_destroy_sprite',
-            fields: { SPRITE: 'chave' },
-          }),
-        ),
-        check(
-          'lembrar',
-          'Mude temChave para verdadeiro dentro do encontro com a chave.',
-          noEncontro('chave', {
-            blockType: 'sz_js_var_assign',
-            fields: { NAME: 'temChave' },
-            inputs: { VALUE: true },
-          }),
-        ),
-        check(
-          'aviso-chave',
-          'Altere aviso com um texto dentro do encontro com a chave.',
-          noEncontro('chave', aviso),
-        ),
-      ],
+      coleta,
     ),
   ],
 }
@@ -275,11 +201,11 @@ const dia3 = {
       'video-d3-condicao',
       'Quando a porta pode abrir?',
       'desafio-dia-3.roteiro.md',
-      'Explicar condição brevemente. Orientar Testar a porta sem chave, Levar a chave e Testar a porta de novo. Não executar nem revelar os resultados antes de a criança experimentar. Encerrar em Próxima seção.',
+      'Explicar condição brevemente. Apontar temChave e as respostas ainda sem destaque. Orientar Testar a porta sem chave, Levar a chave e testar outra vez; comparar valor e ramo. Não executar nem revelar os resultados. Encerrar em Próxima seção.',
     ),
     fala(
       'ponte-d3-condicao',
-      'A chave já pode ser recolhida. Experimente a porta e compare o que acontece nas duas situações.',
+      'A coleta já guarda uma informação. Veja como a porta usa essa informação para escolher uma resposta.',
     ),
     {
       key: 'experiencia-porta',
@@ -289,7 +215,7 @@ const dia3 = {
         title: 'A porta precisa da chave',
         semPerguntaFinal: true,
         instructions:
-          'Aperte Testar a porta sem a chave. Depois escolha Levar a chave e aperte Testar a porta outra vez. Observe o que mudou.',
+          'Aperte Testar a porta sem a chave. Depois escolha Levar a chave e aperte Testar a porta outra vez. Compare temChave e a resposta que ficou marcada em cada tentativa.',
         hints: [],
         activity: {
           type: 'experimentation',
@@ -299,14 +225,24 @@ const dia3 = {
       },
     },
     video(
-      'video-d3-decisao',
-      'Faça a porta decidir',
+      'video-d3-sem-chave',
+      'Avise quando faltar a chave',
       'desafio-dia-3.roteiro.md',
-      'Guiar encontro personagem/farol, Se temChave, ramos então e senão, imagem e avisos. Testar sem e com chave, verificar a etapa e enviar com confirmação antes de Próxima seção. A prévia atualiza automaticamente; Atualizar reinicia os testes.',
+      'No projeto enviado no Dia 2, guiar evento separado personagem/farol, Se consultando temChave e aviso em senão. Explicitar então ainda vazio. Testar sem chave, Verificar esta etapa, corrigir pendências, esperar Salvo e Próxima seção. Não enviar nesta etapa intermediária.',
+    ),
+    fala(
+      'ponte-d3-sem-chave',
+      'Monte a resposta sem chave. Vá ao farol sem recolher a chave e confira o aviso. Verifique esta etapa antes de seguir.',
+    ),
+    video(
+      'video-d3-decisao',
+      'Acenda o farol com a chave',
+      'desafio-dia-3.roteiro.md',
+      'Continuar no mesmo Se e projeto da seção anterior. Completar então com ganhou, imagem e aviso. Testar sem chave, buscar e voltar na mesma partida, depois reiniciar e conferir sem chave. Verificação cumulativa, Salvo, envio único com confirmação e Próxima seção.',
     ),
     fala(
       'ponte-d3-decisao',
-      'Agora monte no seu jogo a regra que faz a porta conferir a chave. Teste os dois caminhos e use Verificar esta etapa antes de enviar o projeto.',
+      'Complete a resposta com chave. Teste chegar sem ela, buscar e voltar, e começar outra partida. Depois verifique e envie seu jogo.',
     ),
     video(
       'video-d3-fecho',
@@ -333,70 +269,24 @@ const dia3 = {
       ['video-d3-condicao', 'experiencia-porta'],
     ),
     secao(
+      'sem-chave',
+      'Avise quando faltar a chave',
+      'application',
+      'Programar o encontro com o farol e a resposta sem chave, mantendo então vazio por enquanto.',
+      ['video-d3-sem-chave', 'ponte-d3-sem-chave'],
+      ['video-d3-sem-chave'],
+      'projeto',
+      portaSemChave,
+    ),
+    secao(
       'decisao',
-      'Faça a porta conferir a chave',
+      'Acenda o farol com a chave',
       'delivery',
-      'Criar o encontro com o farol, conferir temChave, acender a luz e concluir o jogo.',
+      'Completar então, testar os dois caminhos e o reinício e enviar o jogo preservando as regras anteriores.',
       ['video-d3-decisao', 'ponte-d3-decisao', 'projeto'],
       ['video-d3-decisao', 'projeto'],
       'projeto',
-      [
-        check('encontro-farol', 'Reaja ao encontro com o farol.', {
-          type: 'usesBlock',
-          blockType: 'sz_g2d_on_overlap',
-          area: 'events',
-          fields: { A: 'personagem', B: 'farol' },
-          inputBlocks: {
-            BODY: {
-              blockType: 'sz_js_if_else',
-              inputBlocks: {
-                COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } },
-                THEN: {
-                  blockType: 'sz_js_var_assign',
-                  fields: { NAME: 'ganhou' },
-                  inputs: { VALUE: true },
-                  beforeBlock: 'sz_g2d_set_image',
-                },
-              },
-            },
-          },
-        }),
-        check(
-          'condicao',
-          'Faça o Se consultar temChave no encontro com o farol.',
-          noEncontro('farol', {
-            blockType: 'sz_js_if_else',
-            inputBlocks: { COND: { blockType: 'sz_val_variable', fields: { NAME: 'temChave' } } },
-          }),
-        ),
-        check(
-          'acender',
-          'Troque a imagem do farol dentro de então, no encontro com o farol.',
-          naRespostaDaPorta('THEN', {
-            blockType: 'sz_g2d_set_image',
-            fields: { SPRITE: 'farol', IMAGE: 'farol-aceso' },
-          }),
-        ),
-        check(
-          'vitoria',
-          'Mude ganhou para verdadeiro dentro de então, no encontro com o farol.',
-          naRespostaDaPorta('THEN', {
-            blockType: 'sz_js_var_assign',
-            fields: { NAME: 'ganhou' },
-            inputs: { VALUE: true },
-          }),
-        ),
-        check(
-          'aviso-sem-chave',
-          'Altere aviso com um texto dentro de senão, no encontro com o farol.',
-          naRespostaDaPorta('ELSE', aviso),
-        ),
-        check(
-          'aviso-vitoria',
-          'Altere aviso com um texto dentro de então, no encontro com o farol.',
-          naRespostaDaPorta('THEN', aviso),
-        ),
-      ],
+      portaCompleta,
     ),
     secao(
       'fecho',

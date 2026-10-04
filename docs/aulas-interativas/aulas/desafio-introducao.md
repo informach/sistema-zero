@@ -42,14 +42,14 @@ O review encontrou falta de link direto para ler e baixar o caderno. A ajuda ago
 
 **Ponte do Zappy na página (não gravar):** Consulte este caderno quando precisar lembrar um passo da montagem. Para continuar, clique em Concluir aula.
 
-Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno pode incluir visão geral, navegação, montagem, testes, publicação e certificado, acompanhando o conteúdo real das aulas. O mapa antigo para responsáveis não integra esta versão. Se ainda constar no bloco publicado, retirar apenas a referência após conferir o novo caderno, preservando a mídia armazenada.
+Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno revisado tem 19 páginas com comparação de velocidades, experiência de memória, montagem da porta em duas etapas, testes, publicação e certificado. O mapa antigo para responsáveis não integra esta versão. Se ainda constar no bloco publicado, retirar apenas a referência após conferir o novo caderno, preservando a mídia armazenada.
 
 ## Experiências e demonstrações desta aula
 
 - **Atividade:** project-play, cópia concluída de A Chave do Farol.
 - **Situação:** recurso existente, com `completion: participation` e targets vazio.
 - **O que faz:** deixa jogar com os controles do jogo original, por toque ou teclado.
-- **Conclusão:** experimentar é suficiente. Não exigir acertar o trajeto.
+- **Conclusão:** experimentar é suficiente. Não exigir acertar o trajeto. A fala primeiro convida a explorar, depois explica que pode continuar sem vencer e termina em Próxima seção.
 - **Preservação:** atividade isolada, sem Estúdio de entrega e sem alimentar a cadeia de criação da criança.
 
 Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstração resolve o jogo pela criança.

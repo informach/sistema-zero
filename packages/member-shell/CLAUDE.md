@@ -2629,6 +2629,42 @@ perfil. Campos aditivos do detalhe do curso: id, milestones e showcaseLessonId.
 
 `createLearningRoutes` atende Kids e Adult, exige perfil ativo e recusa impersonação somente leitura, campos extras e dono enviado no corpo. `x-sz-viewer` deve corresponder à sessão; não concede acesso. `LessonSections` preserva o editor entre seções; `LessonVideo` centraliza Vimeo e retomada. Atividades HTML usam iframe com origem opaca e protocolo validado por instância; checkpoints essenciais são avaliados no members.
 
+## As duas cenas do Farol: o palco é o jogo, a regra é de blocos (04/10/2026)
+
+`collect-and-remember` ("O jogo guardou a chave?", Dia 2) e `lighthouse-key` ("O que a porta
+precisa?", Dia 3) do Desafio do Primeiro Jogo. Pedido dela: olhar de UX e diretor de arte sobre a
+experiência nova. O que ficou de pé:
+
+- **O palco desenha só o JOGO.** A primeira versão tinha, sob o desenho, dois cartões ("Informação
+  guardada temChave = …" e "Aviso do jogo") e uma faixa escura "Chave no chão" sobre o palco: três
+  vezes o que os LADRILHOS do console já mostram, e uma quarta linguagem visual na cena. Pior: o
+  selo "Descoberta N de M" é absoluto no pé do mundo e ficava EM CIMA desses cartões, justo na hora
+  de ler a resposta. Hoje o palco tem o cenário, as figuras e a faixa do aviso; temChave e a chave
+  são os ladrilhos (`sceneReadout` do core).
+- **`AvisoDoFarol` (`scene-farol.tsx`) é a faixa `fundoAviso` do projeto da criança** (8, 8,
+  464 × 28, `#143d35`, texto branco à esquerda), com as MESMAS frases (`AVISOS_DO_FAROL`, espelho de
+  `docs/aulas-interativas/qa/desafio-farol-projeto.ts`). Na porta, o aviso depois da tentativa é o
+  do ramo escolhido ("Você acendeu o farol!…" / "A porta não abriu. Falta a chave.").
+  ⚠️ O texto leva `data-sem-halo`: o halo claro do `scene.css` borrava o branco sobre o verde-escuro.
+- **`RegraDoJogo` mora na BANCADA**: a regra que a cena executa, montada como os blocos do Estúdio
+  nas cores do Caderno (evento dourado, Jogo 2D rosa, Programação laranja; a cor fica na faixa da
+  esquerda e o texto na tinta do app, porque branco sobre essas cores não passa contraste). Na
+  coleta, "Alterar temChave para verdadeiro" vira o ENCAIXE VAZIO tracejado com "(desligado)"
+  quando o interruptor está desligado: é a diferença inteira da experiência, à vista. Na porta, a
+  tentativa marca "✓ escolhido" no `então` ou no `senão` e esmaece o outro (com o estado em
+  palavras para o leitor). O estado nunca é só cor.
+- **"Guardar a coleta" é a `Chave` da bancada** (estado no rótulo, `aria-pressed`, fechada com a
+  nota "Recomece a partida para mudar essa regra."), e não um `role="switch"` próprio.
+- **O azul cheio segue o próximo passo** (encostar → afastar → recomeçar a partida), e
+  "Recomeçar a partida" é contorno, nunca fantasma (a queixa "parece que são três textos").
+- ⚠️ **A coleta não tem o "Recomeçar" geral do rodapé**, como a `found-counter`: ele desligava o
+  interruptor em silêncio e a quarta meta (recomeçar depois de guardar) não caía por ele.
+- **O que anda, anda**: `.sz-scene-anda` (transição de 450 ms, desligada com menos movimento) no
+  personagem, na chave que sobe e some (ela não sai do DOM) e no barco que chega.
+- **Rótulo de ladrilho em camelCase sai como no bloco** (`data-codigo` no `dt`, `scene-frame.tsx`):
+  a versalete transformava `temChave` em "TEMCHAVE".
+- Testes: `tests/scene-collect-and-remember.test.tsx`, `tests/scene-lighthouse-key.test.tsx`.
+
 ## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026)
 
 Tutoriais curtos por TAREFA, separados dos cursos: sem progresso, sem XP, sem conclusão, de todo

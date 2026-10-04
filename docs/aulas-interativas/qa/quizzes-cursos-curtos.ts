@@ -112,26 +112,26 @@ export const farol = {
           'Dentro de A cada quadro, primeiro o jogo move o personagem. Logo depois, a regra da borda mantém ele dentro da tela. O jogo repete essa sequência enquanto funciona; conferir a posição somente no começo não cuidaria dos movimentos seguintes.',
       },
       {
-        id: 'q2',
+        id: 'q-memoria-coleta',
         prompt:
-          'A chave saiu do chão e o personagem já se afastou dela. O que permite ao jogo continuar sabendo que ela foi recolhida?',
+          'Em um teste, a chave saiu do chão e apareceu o aviso de coleta, mas o farol ainda disse que faltava a chave. A porta está consultando temChave corretamente. Qual parte da coleta você deve conferir primeiro?',
         choices: [
           {
             id: 'a',
-            label: 'A variável temChave, que passou a guardar verdadeiro.',
+            label: 'Se o aviso usa exatamente as mesmas palavras do vídeo.',
           },
           {
             id: 'b',
-            label: 'A mensagem de coleta que apareceu na tela.',
+            label: 'Se o encontro com a chave muda temChave para verdadeiro.',
           },
           {
             id: 'c',
-            label: 'A distância entre o personagem e o lugar da chave.',
+            label: 'Se a velocidade do personagem está mais alta.',
           },
         ],
-        correctChoiceIds: ['a'],
+        correctChoiceIds: ['b'],
         explanation:
-          'No encontro com a chave, você mudou temChave de falso para verdadeiro. Essa informação fica guardada durante a partida, mesmo quando a chave desaparece e o personagem vai embora. A mensagem conta o que aconteceu para quem joga, mas é temChave que a porta consulta.',
+          'Destruir o sprite retira a chave do chão. Alterar aviso muda a mensagem para quem joga. Essas duas ações não guardam a coleta em temChave. Dentro do encontro com a chave, o bloco que altera temChave precisa guardar verdadeiro. É essa informação que a porta consulta depois.',
       },
       {
         id: 'q3',

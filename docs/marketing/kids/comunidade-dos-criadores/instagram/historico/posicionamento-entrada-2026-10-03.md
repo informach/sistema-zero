@@ -1,5 +1,7 @@
 # Entrada do funil e orientação: retomada de 03/10/2026
 
+> **HISTÓRICO.** Registro anterior preservado para consulta. Para executar o Instagram, use o [guia atual](../README.md), com [Destaques](../01-destaques.md), [Fixados](../02-fixados.md) e [Postagens](../03-postagens.md). As instruções abaixo registram o estado da época.
+
 Implementação local concluída a partir do plano aprovado na sessão interrompida. A entrada apresenta aprendizagem pela criação de jogos, da primeira experiência às próprias ideias. A explicação dos apoios cobre a estrutura das atividades, tutoriais, ferramentas, comunidade e equipe.
 
 ## Comportamento entregue
@@ -15,10 +17,10 @@ A retomada conferiu as alterações existentes, finalizou a revisão e a formata
 
 ## Evidências visuais
 
-- [Entrada no celular, 390 px](evidencias/entrada-revisada-390-2026-10-03.png).
-- [Entrada no desktop, 1440 px](evidencias/entrada-revisada-1440-2026-10-03.png).
-- [Orientação no celular, 390 px](evidencias/orientacao-revisada-390-2026-10-03.png).
-- [Orientação no desktop, 1440 px](evidencias/orientacao-revisada-1440-2026-10-03.png).
+- [Entrada no celular, 390 px](../evidencias/entrada-revisada-390-2026-10-03.png).
+- [Entrada no desktop, 1440 px](../evidencias/entrada-revisada-1440-2026-10-03.png).
+- [Orientação no celular, 390 px](../evidencias/orientacao-revisada-390-2026-10-03.png).
+- [Orientação no desktop, 1440 px](../evidencias/orientacao-revisada-1440-2026-10-03.png).
 
 Capturas do navegador Chromium local. A barra de desenvolvimento foi ocultada nas capturas; nos recortes da seção, o cabeçalho fixo e o controle flutuante de privacidade foram ocultados apenas durante a captura para não sobrepor o conteúdo. O funcionamento desses elementos na página permanece igual.
 

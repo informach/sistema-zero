@@ -670,9 +670,22 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'Uma nova busca começou. Achados: 0.',
     ],
   },
+  'collect-and-remember': {
+    readouts: [
+      { label: 'temChave', value: 'verdadeiro', tone: 'a' },
+      { label: 'chave', value: 'fora da tela', tone: 'b' },
+    ],
+    situations: [
+      'A chave está no chão. Encoste nela para testar a coleta.',
+      'Você pegou a chave!',
+      'O personagem se afastou do lugar da chave.',
+      'A partida recomeçou. A chave voltou ao chão.',
+      'Guardar a coleta está desligado.',
+    ],
+  },
   'lighthouse-key': {
     readouts: [
-      { label: 'chave', value: 'com o personagem', tone: 'a' },
+      { label: 'temChave', value: 'verdadeiro', tone: 'a' },
       { label: 'porta', value: 'fechada', tone: 'b' },
     ],
     situations: ['A porta do farol está fechada.', 'A porta abriu e a luz do farol acendeu.'],

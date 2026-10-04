@@ -60,6 +60,11 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
   controls: [['missing-touch'], ['start-tap'], ['start-tap', 'start-key']],
   'touch-response': [['no-response'], ['responds'], ['no-response', 'responds']],
   'found-counter': [['first-find'], ['second-find', 'no-find'], ['back-to-zero']],
+  'collect-and-remember': [
+    ['collected-without-memory'],
+    ['collected-with-memory'],
+    ['remembered-after-leaving', 'reset-after-remembering'],
+  ],
   'lighthouse-key': [
     ['locked-without-key'],
     ['opened-with-key'],
