@@ -22,6 +22,17 @@
 > jogo rolavam a tela junto. O e2e `project-play.spec.ts` confere sem rolagem, proporção e mesma
 > linha. As setas que ROLAVAM a página da aula no modo normal são resolvidas DENTRO do iframe,
 > pelo `scrollKeyGuard` do Studio (ver o CLAUDE.md de lá).
+> **⚠️ Guardar o jogo não mexe o layout (04/10/2026, relato dela: "a tela dá uma tremida").** No
+> clique que conclui o jogo, o botão "Tentar guardar descoberta" entrava durante a espera do
+> servidor e saía na resposta (medido: 32px; ampliado, o PALCO encolhia e crescia). Hoje, em
+> `learning-activity.tsx`, nada entra nem sai embaixo do jogo nessa hora: o "tentar de novo" mora
+> DENTRO da linha de status (`min-h-5`, reservada desde o começo) e só aparece depois de uma
+> tentativa que terminou sem guardar (`tentouGuardar`); o `fieldset` não desliga durante a espera
+> (piscava a pista; o `change` já ignora gestos com tentativa em andamento); e sem pista não há
+> linha de botões vazia. Regra para o que vier: estado de espera não abre nem fecha espaço.
+> Testes: `community-kids/tests/project-play-save.test.tsx` e o e2e
+> `e2e-scenes/project-play-save.spec.ts` (`layout-shift` do Chromium, com anti-vácuo; os dois
+> reprovam a versão anterior).
 
 > **Experiências ampliadas (23/09/2026):** `scene-workspace.tsx` amplia o mesmo player, sem portal,
 > remount ou Fullscreen API. `ConsoleVisual` e `ConsoleActions` mantêm HUD/cena antes de

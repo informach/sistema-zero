@@ -87,6 +87,9 @@ function Activity({
   const [busy, setBusy] = useState(false)
   const [status, setStatus] = useState('')
   const [error, setError] = useState('')
+  // Já houve uma tentativa de guardar que TERMINOU: só depois dela o jogo pronto oferece "tentar de
+  // novo". Antes, o botão aparecia durante a espera e sumia na resposta, e a tela tremia.
+  const [tentouGuardar, setTentouGuardar] = useState(false)
   const id = useId()
   const key = player?.viewerId
     ? `sz:learning:${player.viewerId}:${player.lessonId}:${block.id}:${block.blockRevision}`
@@ -222,6 +225,7 @@ function Activity({
       } finally {
         checking.current = false
         setBusy(false)
+        setTentouGuardar(true)
       }
       return
     }
@@ -261,6 +265,7 @@ function Activity({
     } finally {
       checking.current = false
       setBusy(false)
+      setTentouGuardar(true)
     }
   }
   const checkRef = useRef(check)
@@ -300,8 +305,22 @@ function Activity({
         ))}
     </div>
   )
+  // ⭐ O JOGO PRONTO não pode mexer o layout ao se guardar (04/10/2026, relato dela: no clique que
+  // conclui o jogo, "Salvando atividade" aparecia embaixo e a tela dava uma tremida). Medido no
+  // Chromium: o botão "Tentar guardar descoberta" entrava durante a espera do servidor e saía na
+  // resposta, 32px que empurravam a linha de status (e, ampliado, encolhiam o PALCO). Hoje nada
+  // entra nem sai nessa hora: o "tentar de novo" mora DENTRO da linha de status, que tem a altura
+  // reservada desde o começo, e só aparece se a tentativa terminou sem guardar. E o bloco não fica
+  // apagado durante a espera (o `fieldset` desligado piscava a pista); o `change` já ignora gestos
+  // com uma tentativa em andamento.
+  const jogo = a.type === 'project-play'
+  const naoGuardou = jogo && gameComplete && !result?.passed && !busy && tentouGuardar
+  const tentarDeNovo = () => {
+    if (jogo && gameComplete && !result?.passed) void check()
+    else persistRef.current()
+  }
   const body = (
-    <fieldset disabled={busy} className="space-y-5">
+    <fieldset disabled={busy && !jogo} className="space-y-5">
       {a.type === 'html' && (
         <LearningHtml html={a.html} title={content.title} answers={answers} onChange={set} />
       )}
@@ -338,28 +357,27 @@ function Activity({
           )}
         </div>
       ))}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {content.hints.length > 0 && (
-          <Button
-            variant="ghost"
-            disabled={busy || hintsUsed >= content.hints.length}
-            onClick={() => change(answers, hintsUsed + 1)}
-          >
-            <Lightbulb className="size-4" />
-            {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
-          </Button>
-        )}
-        {a.type !== 'project-play' && (
-          <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
-            {busy ? 'Guardando…' : 'Conferir minha descoberta'}
-          </Button>
-        )}
-        {a.type === 'project-play' && gameComplete && !result?.passed && (
-          <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
-            {busy ? 'Guardando…' : 'Tentar guardar descoberta'}
-          </Button>
-        )}
-      </div>
+      {/* Sem pista, o jogo pronto não tem botão nesta linha: uma linha vazia seria um vão fixo
+          embaixo do jogo. */}
+      {(!jogo || content.hints.length > 0) && (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {content.hints.length > 0 && (
+            <Button
+              variant="ghost"
+              disabled={(busy && !jogo) || hintsUsed >= content.hints.length}
+              onClick={() => change(answers, hintsUsed + 1)}
+            >
+              <Lightbulb className="size-4" />
+              {hintsUsed ? 'Outra pista' : 'Quero uma pista'}
+            </Button>
+          )}
+          {!jogo && (
+            <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
+              {busy ? 'Guardando…' : 'Conferir minha descoberta'}
+            </Button>
+          )}
+        </div>
+      )}
       {result && (a.type !== 'project-play' || !result.passed) && (
         <div role="status" className="rounded-xl bg-primary/5 p-4 leading-relaxed">
           {result.passed && <CheckCircle2 className="mr-2 inline size-5 text-primary" />}
@@ -369,15 +387,29 @@ function Activity({
         </div>
       )}
       {error ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="min-h-5 text-sm text-destructive">
           {error}{' '}
-          <button type="button" className="underline" onClick={() => persistRef.current()}>
+          <button type="button" className="underline" onClick={tentarDeNovo}>
             Tentar salvar novamente
           </button>
         </p>
       ) : (
         <p role="status" className="min-h-5 text-xs text-muted-foreground">
-          {status}
+          {naoGuardou ? (
+            <>
+              Sua descoberta ainda não foi guardada.{' '}
+              <button
+                type="button"
+                className="underline"
+                disabled={!base && !previewContent}
+                onClick={tentarDeNovo}
+              >
+                Tentar guardar de novo
+              </button>
+            </>
+          ) : (
+            status
+          )}
         </p>
       )}
     </fieldset>

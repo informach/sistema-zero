@@ -83,6 +83,48 @@ async function echoProgress(request: Request, path: string) {
   })
 }
 
+/**
+ * A tentativa volta APROVADA, como o members devolveria, depois de um atraso de rede: é na
+ * espera que a tela mostra "Guardando…", e é ali que o tremor do jogo pronto acontecia.
+ */
+async function approveAttempt(request: Request, path: string) {
+  const blockId = path.split('/blocks/')[1]?.split('/')[0] ?? ''
+  const body = (await request.json()) as Record<string, unknown>
+  await Bun.sleep(700)
+  const now = new Date().toISOString()
+  return Response.json({
+    attempt: {
+      id: body.id,
+      blockId,
+      revision: body.revision,
+      answers: body.answers ?? {},
+      hintsUsed: body.hintsUsed ?? 0,
+      result: {
+        participated: true,
+        passed: true,
+        feedback: 'Você achou todo mundo!',
+        verifiedBy: 'server',
+      },
+      createdAt: now,
+    },
+    progress: {
+      blockId,
+      revision: body.revision,
+      answers: body.answers ?? {},
+      hintsUsed: body.hintsUsed ?? 0,
+      positionSeconds: null,
+      attemptsCount: 1,
+      result: {
+        participated: true,
+        passed: true,
+        feedback: 'Você achou todo mundo!',
+        verifiedBy: 'server',
+      },
+      updatedAt: now,
+    },
+  })
+}
+
 Bun.serve({
   hostname: '127.0.0.1',
   port: Number(process.env.SCENE_E2E_PORT ?? 5198),
@@ -98,6 +140,8 @@ Bun.serve({
     if (path === '/missing.riv') return new Response(null, { status: 404 })
     if (request.method === 'POST' && path.endsWith('/learning-progress'))
       return echoProgress(request, path)
+    if (request.method === 'POST' && path.endsWith('/learning-attempts'))
+      return approveAttempt(request, path)
     if (request.method === 'POST' && path.startsWith('/api/')) return Response.json({})
     if (path === '/video.webm')
       return new Response(Bun.file(resolve(import.meta.dir, 'video.webm')), {
