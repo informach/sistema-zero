@@ -1,6 +1,8 @@
 # Página inicial: implementação de 03/10/2026
 
-**Atualização posterior aprovada:** a apresentação completa descrita abaixo foi movida para `/como-funciona/`. A raiz é uma entrada com avatar, posicionamento e três acessos: Como funciona, quiz do Desafio e planos da Comunidade. Como funciona ganhou a seção de orientação durante a criação. Veja [a retomada e a validação dessa revisão](posicionamento-entrada-2026-10-03.md). A medição foi implementada no painel, com prints e mapas de cliques. Veja [a implementação vigente e a ativação](../../../medicao-funil.md). O restante deste documento registra a primeira entrega.
+> **HISTÓRICO.** Registro anterior preservado para consulta. Para executar o Instagram, use o [guia atual](../README.md), com [Destaques](../01-destaques.md), [Fixados](../02-fixados.md) e [Postagens](../03-postagens.md). As instruções abaixo registram o estado da época.
+
+**Atualização posterior aprovada:** a apresentação completa descrita abaixo foi movida para `/como-funciona/`. A raiz é uma entrada com avatar, posicionamento e três acessos: Como funciona, quiz do Desafio e planos da Comunidade. Como funciona ganhou a seção de orientação durante a criação. Veja [a retomada e a validação dessa revisão](posicionamento-entrada-2026-10-03.md). A medição foi implementada no painel, com prints e mapas de cliques. Veja [a implementação vigente e a ativação](../../../../medicao-funil.md). O restante deste documento registra a primeira entrega.
 
 Implementada localmente na rota `/`, após aprovação da [proposta de copy](copy-home-2026-10-03.md). A raiz continua sendo o endereço usado na bio. Publicação em produção não realizada nesta etapa.
 
@@ -25,9 +27,9 @@ As imagens abrem ampliadas ao toque ou clique. Escape, botão de fechar e clique
 
 Evidências da prévia:
 
-- [Abertura no desktop](evidencias/home-desktop-2026-10-03.png).
-- [Abertura no celular](evidencias/home-mobile-2026-10-03.png).
-- [Convite para os planos e orientação pelo quiz](evidencias/home-planos-2026-10-03.png).
+- [Abertura no desktop](../evidencias/home-desktop-2026-10-03.png).
+- [Abertura no celular](../evidencias/home-mobile-2026-10-03.png).
+- [Convite para os planos e orientação pelo quiz](../evidencias/home-planos-2026-10-03.png).
 
 ## Navegação e origem
 

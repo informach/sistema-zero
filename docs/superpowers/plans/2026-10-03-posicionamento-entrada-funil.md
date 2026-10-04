@@ -24,4 +24,4 @@ Implementar o escopo aprovado em 03/10/2026: aprendizagem pela criação de jogo
 - [x] Oferta padrão e explicação compartilhada alinhadas; documentação editorial sincronizada.
 - [x] Testes, tipos, Biome, build, navegação com atribuição, teclado, imagens e conferência visual em celular e desktop.
 
-Evidências e limites: [registro da implementação](../../marketing/kids/comunidade-dos-criadores/instagram/posicionamento-entrada-2026-10-03.md). Resultado: 459 testes passaram, um teste PostgreSQL ignorado; build e tipos sem erros. A oferta do Desafio continua com HTTP 503 por indisponibilidade no catálogo local, já registrada antes desta retomada. O novo botão aponta para o quiz, que responde HTTP 200. Sem publicação.
+Evidências e limites: [registro da implementação](../../marketing/kids/comunidade-dos-criadores/instagram/historico/posicionamento-entrada-2026-10-03.md). Resultado: 459 testes passaram, um teste PostgreSQL ignorado; build e tipos sem erros. A oferta do Desafio continua com HTTP 503 por indisponibilidade no catálogo local, já registrada antes desta retomada. O novo botão aponta para o quiz, que responde HTTP 200. Sem publicação.

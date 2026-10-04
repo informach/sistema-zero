@@ -8,7 +8,7 @@
 
 **Stack:** Astro 6, TypeScript, CSS com tokens canônicos kids, HTML nativo para expansão e diálogo.
 
-**Spec:** `docs/marketing/kids/comunidade-dos-criadores/instagram/copy-home-2026-10-03.md`.
+**Spec:** `docs/marketing/kids/comunidade-dos-criadores/instagram/historico/copy-home-2026-10-03.md`.
 
 ## Restrições
 
@@ -39,5 +39,5 @@ Arquivos: `packages/funnel/src/pages/index.astro`, `src/content/home-comunidade.
 
 - [x] Conferir desktop e larguras 375/390 px, overflow, carregamento dos prints, CTA, expansão de recursos, FAQ, zoom, teclado e funcionamento sem JavaScript.
 - [x] Rodar testes, typecheck, Biome e build, corrigindo problemas causados pela mudança.
-- [x] Registrar arquivos, validações e limites em `docs/marketing/kids/comunidade-dos-criadores/instagram/implementacao-home-2026-10-03.md`.
+- [x] Registrar arquivos, validações e limites em `docs/marketing/kids/comunidade-dos-criadores/instagram/historico/implementacao-home-2026-10-03.md`.
 - [x] Entregar implementação local e evidências; publicação não faz parte desta autorização de implementação.

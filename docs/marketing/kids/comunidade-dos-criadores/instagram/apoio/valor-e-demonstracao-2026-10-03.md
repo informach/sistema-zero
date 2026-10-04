@@ -1,6 +1,8 @@
 # Valor da plataforma e roteiro de demonstração
 
-**Versão 3, 04/10/2026.** Documento para argumentação, gravação e revisão. Substitui a versão anterior neste arquivo. Referência de produto: **estado local**, em publicação conforme informado pelo responsável. Base atual: [auditoria da plataforma](../auditoria-plataforma-2026-10-04.md), [pesquisa de mercado](../pesquisa-mercado-2026-10-04.md) e [pesquisa da Kodland](../pesquisa-kodland-2026-10-04.md). A [pesquisa de 03/10](pesquisa-aprofundada-2026-10-03.md) permanece como histórico datado.
+> **APOIO À PRODUÇÃO.** Consultar para aprofundar uma captura ou recurso. Os textos das peças e o calendário vigentes estão no [guia do Instagram](../README.md). Capacidades e condições devem corresponder ao momento da produção.
+
+**Versão 3, 04/10/2026.** Documento para argumentação, gravação e revisão. Substitui a versão anterior neste arquivo. Referência de produto: **estado local**, em publicação conforme informado pelo responsável. Base atual: [auditoria da plataforma](../../auditoria-plataforma-2026-10-04.md), [pesquisa de mercado](../../pesquisa-mercado-2026-10-04.md) e [pesquisa da Kodland](../../pesquisa-kodland-2026-10-04.md). A [pesquisa de 03/10](../pesquisas/pesquisa-aprofundada-2026-10-03.md) permanece como histórico datado.
 
 O acompanhamento é o conjunto de didática, orientações e recursos que ajuda a criança a entender a tarefa, fazer, conferir e continuar. Passos da aula, falas do Zappy, sequência entre vídeo e prática, tutoriais, ferramentas e comunidade precisam aparecer na demonstração. O contato com a equipe é um apoio complementar desse percurso.
 
@@ -71,7 +73,7 @@ Esta é a matriz de produção. Uma peça curta mostra duas ou três camadas lig
 
 **Dois usos do personagem Zappy:** as falas e instruções preparadas nas aulas são parte da didática desde as atividades que as incluem. A assistente de inteligência artificial no Estúdio é uma capacidade posterior, com condições próprias. Uma captura do mascote em um balão não comprova conversa com IA, e a condição de Inventor não se aplica a toda aparição do personagem.
 
-**Sequência entre vídeo e atividade:** `videoBeforeActivity` é configuração do curso. Nas seções elegíveis, a área de prática aguarda a primeira visualização; após o limiar configurado, abre para rever fazendo. O sistema não exige uma segunda reprodução completa. Seção sem vídeo, como o quiz isolado, não recebe essa espera. Na gravação, usar perfil de aluno: a conta da equipe ou o ensaio administrativo pode ignorar essa orientação inicial. Fontes técnicas: [controle da liberação](../../../../../packages/member-shell/src/lib/video-gate.ts), [interface de assistir e praticar](../../../../../packages/member-shell/src/components/lesson-video-gate.tsx), [falas didáticas](../../../../../packages/member-shell/src/components/dialogue-block.tsx) e [acesso à assistente](../../../../../packages/member-shell/src/server/zappy-access.ts).
+**Sequência entre vídeo e atividade:** `videoBeforeActivity` é configuração do curso. Nas seções elegíveis, a área de prática aguarda a primeira visualização; após o limiar configurado, abre para rever fazendo. O sistema não exige uma segunda reprodução completa. Seção sem vídeo, como o quiz isolado, não recebe essa espera. Na gravação, usar perfil de aluno: a conta da equipe ou o ensaio administrativo pode ignorar essa orientação inicial. Fontes técnicas: [controle da liberação](../../../../../../packages/member-shell/src/lib/video-gate.ts), [interface de assistir e praticar](../../../../../../packages/member-shell/src/components/lesson-video-gate.tsx), [falas didáticas](../../../../../../packages/member-shell/src/components/dialogue-block.tsx) e [acesso à assistente](../../../../../../packages/member-shell/src/server/zappy-access.ts).
 
 ## 2. Exemplo completo: “Cadê Todo Mundo?”
 
@@ -107,7 +109,7 @@ O roteiro prevê salvar, enviar a atividade e publicar a criação no Mural. A c
 
 > Ela pode mostrar o jogo e contar como programou o toque e a contagem. Na Comunidade, encontra outros projetos e caminhos para continuar criando.
 
-**Notas de produção:** cenário, personagens e parte da estrutura vêm preparados. Dizer isso e destacar o que o aluno realmente programa. Se a montagem passar deste curso para a Jornada ou o Estúdio livre, usar uma transição como “Em outras etapas do percurso”, com posto e acesso identificados. As novas falas dos roteiros locais exigem regravação segundo o registro de autoria. Pode-se preparar a captação no local; conferir que a aula e a mídia representadas correspondem ao produto disponível ao publicar. Fontes: [configuração do curso extra](../../../../aulas-interativas/modulos-cade-todo-mundo.md), [material do Farol](../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md) e [Nave Contra Asteroides](../../../../aulas-interativas/modulos-nave-contra-asteroides.md).
+**Notas de produção:** cenário, personagens e parte da estrutura vêm preparados. Dizer isso e destacar o que o aluno realmente programa. Se a montagem passar deste curso para a Jornada ou o Estúdio livre, usar uma transição como “Em outras etapas do percurso”, com posto e acesso identificados. As novas falas dos roteiros locais exigem regravação segundo o registro de autoria. Pode-se preparar a captação no local; conferir que a aula e a mídia representadas correspondem ao produto disponível ao publicar. Fontes: [configuração do curso extra](../../../../../aulas-interativas/modulos-cade-todo-mundo.md), [material do Farol](../../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md) e [Nave Contra Asteroides](../../../../../aulas-interativas/modulos-nave-contra-asteroides.md).
 
 ## 3. Como explicar o formato e a orientação
 
@@ -145,35 +147,35 @@ Essa resposta é para atendimento ou FAQ. Nas peças de descoberta, começar mos
 
 ## 4. Todos os grupos de recursos, traduzidos em valor
 
-Mapa baseado nos 90 itens do [inventário](../inventario-plataforma.md), complementado pela [auditoria de 04/10](../auditoria-plataforma-2026-10-04.md) sobre orientação inicial e Zappy didático. A coluna “onde mostrar” segue o [calendário versão 3](calendario-2026-10-03.md) e os [destaques atuais](copy-perfil-e-fixados-2026-10-03.md). Números são referências internas, não contagem promocional de benefícios.
+Mapa baseado nos 90 itens do [inventário](../../inventario-plataforma.md), complementado pela [auditoria de 04/10](../../auditoria-plataforma-2026-10-04.md) sobre orientação inicial e Zappy didático. A coluna “onde mostrar” segue o [calendário vigente](../03-postagens.md) e os [destaques com copy revisada](../01-destaques.md). Números são referências internas, não contagem promocional de benefícios.
 
 | Recursos do inventário | Explicação simples | Onde mostrar e cuidado |
 | --- | --- | --- |
-| R01–R05, R09: início, navegação, retomada, Jornada e foco | Saber por onde começar, encontrar o próximo passo e voltar à atividade | Destaque Comece; F03, F07 e F09. O menu do percurso chama Aprender; modo foco não bloqueia o aparelho |
-| R06–R08, R10–R12 e auditoria atual: aula, falas do Zappy, vídeo/prática, experiência e verificações | Entender a tarefa, conhecer a explicação, experimentar e conferir etapas | F01 e F08; destaque Orientação. Mostrar liberação configurada e distinguir diálogo autorado de assistente de IA |
+| R01–R05, R09: início, navegação, retomada, Jornada e foco | Saber por onde começar, encontrar o próximo passo e voltar à atividade | Destaque Como funciona; F03, F07 e F09. O menu do percurso chama Aprender; modo foco não bloqueia o aparelho |
+| R06–R08, R10–R12 e auditoria atual: aula, falas do Zappy, vídeo/prática, experiência e verificações | Entender a tarefa, conhecer a explicação, experimentar e conferir etapas | F01 e F08; destaque Como funciona. Mostrar liberação configurada e distinguir diálogo autorado de assistente de IA |
 | R13–R14: trabalho da aula, salvamento, envio e restauração | Guardar a construção e retomar uma versão disponível | F03 e stories de rotina. Envio não promete revisão individual de toda atividade |
-| R15–R18: materiais, caderno, conteúdo e Como fazer | Consultar uma orientação quando precisar relembrar um passo | F08 e destaque Orientação; bloco expandido da página |
+| R15–R18: materiais, caderno, conteúdo e Como fazer | Consultar uma orientação quando precisar relembrar um passo | F08 e destaque Como funciona; bloco expandido da página |
 | R19, R58–R59: contato com a equipe e Recados | Enviar uma dúvida com o contexto e consultar a resposta | Detalhe de F08 e FAQ. Canal complementar; não prometer professor online ou contato proativo regular |
-| R20, R89: certificado e avaliação de curso | Registrar conclusão e dar retorno sobre a experiência | Destaque Família. Certificado não prova domínio de todas as habilidades |
-| R21–R30: Estúdio | Montar regras, testar e guardar jogos | F01, F02, F04 e F10. Uso livre e blocos dependem da Jornada |
+| R20, R89: certificado e avaliação de curso | Registrar conclusão e dar retorno sobre a experiência | Pauta futura sobre conclusão, se pertinente. Certificado não prova domínio de todas as habilidades |
+| R21–R30: Estúdio | Montar regras, testar e guardar jogos | F01, F04 e F10. Uso livre e blocos dependem da Jornada |
 | R31–R37: Pinta e biblioteca integrada | Desenhar elementos e utilizá-los em projetos compatíveis | F06. Mostrar passagem real para o Estúdio com acesso elegível |
 | R38–R40: Molda | Explorar criação em 3D quando o recurso estiver liberado | Conteúdo de aprofundamento. Não prometer converter qualquer modelo em personagem de qualquer jogo |
-| R41–R45: Pensa | Organizar ideias e tarefas de uma criação | F08 e F09, com conta elegível. Colaboração no planejamento não significa edição simultânea do mesmo jogo |
-| R46–R47: assistente de IA Zappy | Investigar uma dificuldade com orientação contextual no Estúdio | F08/F09 e aprofundamento. Acesso por etapa/créditos; a criança faz e testa a mudança. Falas didáticas são outra camada |
-| R48, R51–R52: Mural, comentários e remix | Conhecer criações, comentar e explorar versões quando permitido | F02 e destaque Criações. Não prometer audiência, comentários ou remix para todo projeto |
-| R49–R50, R57: publicação, link, cartão e visibilidade | Escolher como mostrar um jogo e convidar alguém para jogar | Destaque Criações e stories complementares. Distinguir visibilidade do perfil e link público do projeto |
-| R53–R55: Clube, regras e denúncia | Trocar ideias e sinalizar problemas | F08 e destaque Orientação. Não prometer ambiente sem qualquer risco |
-| R56: desafio mensal | Receber um tema para transformar em projeto | Destaque Criações e tour de continuidade. Tema e participação conforme configuração e acesso atuais |
+| R41–R45: Pensa | Organizar ideias e tarefas de uma criação | Condições de acesso em F09; demonstração detalhada pode entrar numa pauta futura. Colaboração no planejamento não significa edição simultânea do mesmo jogo |
+| R46–R47: assistente de IA Zappy | Investigar uma dificuldade com orientação contextual no Estúdio | Limites de acesso em F09 e Dúvidas; demonstração em pauta futura. Acesso por etapa/créditos; a criança faz e testa a mudança. Falas didáticas são outra camada |
+| R48, R51–R52: Mural, comentários e remix | Conhecer criações, comentar e explorar versões quando permitido | Pauta futura sobre o Mural e criações de alunos, fora dos fixados. Não prometer audiência, comentários ou remix para todo projeto |
+| R49–R50, R57: publicação, link, cartão e visibilidade | Escolher como mostrar um jogo e convidar alguém para jogar | Dúvidas: participação e visibilidade, S11. Distinguir visibilidade do perfil e link público do projeto |
+| R53–R55: Clube, regras e denúncia | Trocar ideias e sinalizar problemas | Dúvidas, bloco de participação e visibilidade, em S11. Não prometer ambiente sem qualquer risco |
+| R56: desafio mensal | Receber um tema para transformar em projeto | Pauta futura sobre o desafio mensal, conforme o calendário. Tema e participação conforme configuração e acesso atuais |
 | R60–R62: avatar, cores e quarto | Personalizar a presença da criança no ambiente | Stories de bastidor, após explicar aprendizagem e criação |
 | R63–R68: conquistas, experiência, missões, moedas, sequência e férias | Ver marcos da participação e personalizar o percurso | Stories e tour. Pontos não equivalem a competência; férias não suspendem cobrança |
 | R69: ranking | Visualizar uma classificação disponível na plataforma | Recurso secundário; não usá-lo como justificativa pedagógica principal |
-| R70–R74, R76–R77: área da família, perfis, progresso, próximos passos e conversa | Acompanhar atividades de até dois filhos e conhecer as criações | F03/F05 e destaque Família; F09 para liberações. Confirmar condições do plano; registros não são diagnóstico |
+| R70–R74, R76–R77: área da família, perfis, progresso, próximos passos e conversa | Acompanhar atividades de até dois filhos e conhecer as criações | F03/F05 e destaque Dúvidas; F09 para liberações. Confirmar condições do plano; registros não são diagnóstico |
 | R75: resumo por e-mail | Receber um resumo quando o serviço estiver habilitado | Conferir operação antes de incluir na promessa; dispensável na copy principal |
 | R78–R82: suporte da família, gestão da assinatura, planos, garantia e cursos publicados | Entender o que contrata e administrar o acesso | Oferta e FAQ. Condições vêm da página/contrato vigente |
 | R87–R88: continuidade do Desafio e benefícios condicionais | Continuar a experiência de entrada; benefícios específicos quando elegível | Página de oferta pertinente. Não generalizar condição de embaixadores ou acesso promocional |
 | R83–R86, R90: computador/navegador, estados, recursos de acesso, português e recuperação | Acessar o ambiente e recuperar a conta | FAQ/requisitos. Não prometer funcionamento integral no celular ou conformidade ampla de acessibilidade sem auditoria |
 
-**F11** organiza critérios de escolha entre ferramenta e curso guiado; usar este mapa para mostrar sequência, orientação e continuidade, sem listar todos os recursos. **F12** mostra uma decisão real de aula do casal; a revisão da tarefa e da orientação inicial oferece uma pauta verificável.
+**F11** organiza critérios de escolha entre ferramenta e curso guiado; usar este mapa para mostrar sequência, orientação e continuidade, sem listar todos os recursos. **F12** mostra a preparação da experiência de memória da chave no Farol, conforme o roteiro atual; distinguir esse bastidor de uma oferta de curso incluído na assinatura.
 
 ## 5. Dúvidas que a comunicação deve resolver
 
@@ -209,7 +211,7 @@ Objetivo: o adulto conseguir contar o percurso e reconhecer como a orientação 
 
 As capturas de etapas diferentes precisam de transições identificadas. Não editar como se Cadê Todo Mundo? liberasse Construtor, nem como se todas as ferramentas fossem abertas pela primeira aula. A cena de assistir primeiro exige conta de aluno e configuração elegível. Mostrar a liberação com corte de tempo identificado; não fingir que ocorre após poucos segundos. Pensa, assistente Zappy e contato da equipe podem formar peças complementares, com suas condições, sem sobrecarregar esta demonstração.
 
-**Versão sem vídeo pronto:** usar seis capturas reais com textos: Conhece o jogo; Entende o passo; Experimenta; Programa e testa; Consulta e continua; Cria novas ideias. A raiz encaminha para Como funciona, e a demonstração pertence a `#como-aprende`; a apresentação dos apoios está em `#orientacao`. O [mapa de links](operacao-e-links-2026-10-04.md) governa os destinos e a atribuição. Não publicar player vazio nem simulação de produto inexistente.
+**Versão sem vídeo pronto:** usar seis capturas reais com textos: Conhece o jogo; Entende o passo; Experimenta; Programa e testa; Consulta e continua; Cria novas ideias. A raiz encaminha para Como funciona, e a demonstração pertence a `#como-aprende`; a apresentação dos apoios está em `#orientacao`. O [mapa de links](links-e-publicacao.md) governa os destinos e a atribuição. Não publicar player vazio nem simulação de produto inexistente.
 
 ## 7. Critério de qualidade da gravação
 
@@ -228,4 +230,4 @@ As capturas de etapas diferentes precisam de transições identificadas. Não ed
 
 A produção deve coletar evidências do uso. A edição não pode transformar uma demonstração da equipe em depoimento ou resultado observado de aluno.
 
-**Revisão desta versão:** hierarquia de acompanhamento atualizada conforme esclarecimento do responsável e implementação local; referências F01–F12 reconciliadas com o calendário de 04/10. A distinção entre código, conteúdo preparado, vídeo publicado e resultado observado permanece na auditoria da plataforma. Esta entrega é editorial; não constitui publicação, gravação concluída ou teste de conversão.
+**Revisão desta versão:** hierarquia de acompanhamento atualizada conforme esclarecimento do responsável e implementação local; referências de peças e destaques alinhadas aos guias aprovados e consolidados em 04/10. A distinção entre código, conteúdo preparado, vídeo publicado e resultado observado permanece na auditoria da plataforma. Esta entrega é editorial; não constitui publicação, gravação concluída ou teste de conversão.

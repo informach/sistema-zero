@@ -1,6 +1,8 @@
 # Bio da Kodland: estrutura, força e aplicação ao Sistema Zero
 
-04/10/2026. **Fonte inicial: texto fornecido pelo usuário na conversa, reconfirmado integralmente no [perfil público da Kodland](https://www.instagram.com/kodland.brasil/) após expandir a bio na navegação em Chrome.** A oferta foi pesquisada separadamente no [dossiê Kodland](../pesquisa-kodland-2026-10-04.md). Não temos dados de conversão dessa bio nem um teste que prove o efeito de cada frase.
+> **PESQUISA DE REFERÊNCIA.** Observações e recomendações na data do estudo. A execução vigente está no [guia do Instagram](../README.md); este estudo não é uma segunda lista de tarefas.
+
+04/10/2026. **Fonte inicial: texto fornecido pelo usuário na conversa, reconfirmado integralmente no [perfil público da Kodland](https://www.instagram.com/kodland.brasil/) após expandir a bio na navegação em Chrome.** A oferta foi pesquisada separadamente no [dossiê Kodland](../../pesquisa-kodland-2026-10-04.md). Não temos dados de conversão dessa bio nem um teste que prove o efeito de cada frase.
 
 > 🎮 Aulas online de programação e design (5-17 anos)
 >
@@ -71,7 +73,7 @@ Não usar “Agende sua aula gratuita” porque esta entrega não identificou um
 
 **Título do link:** `Veja como seu filho aprende`.
 
-**Destino:** raiz `https://sistemazero.com.br/` com as UTMs do [mapa de links](operacao-e-links-2026-10-04.md). A versão local é a referência autorizada.
+**Destino:** raiz `https://sistemazero.com.br/` com as UTMs do [mapa de links](../apoio/links-e-publicacao.md). A versão local é a referência autorizada.
 
 Essa versão aproveita a arquitetura da Kodland com uma proposta coerente com o Sistema Zero:
 
@@ -117,4 +119,4 @@ Sem experimento controlado, uma comparação de semanas é observacional. Regist
 - Não copiamos “profissões do futuro” como promessa do produto nem criamos uma aula gratuita inexistente.
 - Não tratamos a popularidade da Kodland como prova de eficácia da bio.
 
-A [copy de perfil](copy-perfil-e-fixados-2026-10-03.md) contém a mesma versão pronta para aplicação. Esta análise registra o raciocínio; o documento de perfil é a fonte de execução.
+A [copy de perfil](../historico/copy-perfil-e-fixados-2026-10-03.md) contém a mesma versão pronta para aplicação. Esta análise registra o raciocínio; o documento de perfil é a fonte de execução.

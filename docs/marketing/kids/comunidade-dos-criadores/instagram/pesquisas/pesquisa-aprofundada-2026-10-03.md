@@ -1,11 +1,13 @@
 # Pesquisa aprofundada: integração, formato e referências editoriais
 
+> **PESQUISA DE REFERÊNCIA.** Observações e recomendações na data do estudo. A execução vigente está no [guia do Instagram](../README.md); este estudo não é uma segunda lista de tarefas.
+
 Segunda rodada em 03/10/2026. Complementa a [auditoria inicial](pesquisa-2026-10-03.md) e fundamenta a versão 2. A pergunta é como tornar o valor da Comunidade compreensível para responsáveis, usando a Kodland como referência competitiva e editorial.
 
 ## 1. Escopo e evidências novas
 
 - Reconsulta do perfil público da Kodland, que continuou exibindo **212 mil seguidores**. Releitura de seis publicações já presentes na amostra: projeto 3D, tempo de uma aula, funcionamento da aula, incentivo familiar, humor com animal e apoio da mãe. Aprofundamos a análise do argumento e da passagem para a oferta; não acrescentamos esses posts à contagem como se fossem novos.
-- Inspeção visual da capa e do segundo slide do carrossel de incentivo familiar, com [capa](evidencias/kodland-incentivo-capa.png) e [slide 2](evidencias/kodland-incentivo-slide2.png) preservados. Não houve leitura de todos os slides nem análise integral do áudio dos Reels. Alguns vídeos não disponibilizaram mídia reproduzível na sessão pública.
+- Inspeção visual da capa e do segundo slide do carrossel de incentivo familiar, com [capa](../evidencias/kodland-incentivo-capa.png) e [slide 2](../evidencias/kodland-incentivo-slide2.png) preservados. Não houve leitura de todos os slides nem análise integral do áudio dos Reels. Alguns vídeos não disponibilizaram mídia reproduzível na sessão pública.
 - Consulta às páginas oficiais de método, curso de Roblox e entrada em Criatividade da Kodland.
 - Consulta a pesquisas primárias sobre participação na aprendizagem, segmentação de explicações e comparação entre formatos síncrono e assíncrono.
 - Leitura aprofundada do briefing pedagógico, das duas aulas de “Cadê Todo Mundo?”, do inventário de recursos e dos catálogos de experiências e liberações do Sistema Zero.
@@ -60,7 +62,7 @@ Isso sugere funções diferentes: **atenção ampla** e **avaliação da oferta*
 
 ## 4. Fluxo Criativo: método usado, com adaptação explícita
 
-Fontes consultadas: [adaptação local](../../../../../.agents/marketing/importacao-fluxo-criativo.md), [conteúdo editorial](../../../../../.agents/skills/conteudo-editorial/SKILL.md), [funções da página](../../../../../.agents/skills/copy-funil/references/pagina-e-jornada.md) e [revisão](../../../../../.agents/skills/revisao-copy/SKILL.md).
+Fontes consultadas: [adaptação local](../../../../../../.agents/marketing/importacao-fluxo-criativo.md), [conteúdo editorial](../../../../../../.agents/skills/conteudo-editorial/SKILL.md), [funções da página](../../../../../../.agents/skills/copy-funil/references/pagina-e-jornada.md) e [revisão](../../../../../../.agents/skills/revisao-copy/SKILL.md).
 
 Também foram consultados, no repositório de origem em `C:/Users/tocha/Documents/fluxo-criativo`, o comando `.claude/commands/copy-social.md`, o comando `copy-variacao-post.md` e os princípios do manual `.claude/skills/revisora/references/manual-copy.md`.
 
@@ -92,13 +94,13 @@ Não dizer “clicou, portanto aprendeu”. Uma formulação mais sólida é: �
 
 | Fonte | Confirmação | Limite |
 | --- | --- | --- |
-| [Briefing pedagógico](../../../../aulas-interativas/BRIEFING.md) | Jogo de referência, vídeo e experiência, prática e construção do projeto | Experiências específicas são usadas quando ajudam o conceito; nem toda operação de interface exige bancada separada |
-| [Cadê Todo Mundo, aula 1](../../../../aulas-interativas/aulas/cade-todo-mundo-aula-1.md) | Jogar; comparar reação ao toque desligada/ligada; programar visibilidade no esconderijo | Cenário, personagens e partes do projeto vêm preparados |
-| [Cadê Todo Mundo, aula 2](../../../../aulas-interativas/aulas/cade-todo-mundo-aula-2.md) | Experimentar contagem; somar encontrados; testar; salvar e publicar no Mural | A publicação e a ajuda humana têm funções diferentes da verificação automática de uma etapa |
-| [Inventário da plataforma](../inventario-plataforma.md) | Recursos de criação, comunidade, apoio e acompanhamento | Inventário estático; disponibilidade depende de publicação, conta e liberações |
-| [Catálogo da Jornada](../../../../../packages/core/src/journey/catalog.ts) | Liberações progressivas de ferramentas e blocos | Não equivale a uma ferramenta inteira nova a cada curso |
-| [Catálogo de experiências](../../../../../packages/core/src/learning/scene/catalog.ts) | Experimentos para conceitos como eventos, posição, movimento e contagem | Número de modelos no código não é número de cursos publicados |
-| [Desafios mensais](../../../../../packages/members/src/domain/gamification/challenges.ts) | Temas por mês e possibilidade de configuração | Conferir tema e acesso atuais; exemplos do material comercial são ilustrativos |
+| [Briefing pedagógico](../../../../../aulas-interativas/BRIEFING.md) | Jogo de referência, vídeo e experiência, prática e construção do projeto | Experiências específicas são usadas quando ajudam o conceito; nem toda operação de interface exige bancada separada |
+| [Cadê Todo Mundo, aula 1](../../../../../aulas-interativas/aulas/cade-todo-mundo-aula-1.md) | Jogar; comparar reação ao toque desligada/ligada; programar visibilidade no esconderijo | Cenário, personagens e partes do projeto vêm preparados |
+| [Cadê Todo Mundo, aula 2](../../../../../aulas-interativas/aulas/cade-todo-mundo-aula-2.md) | Experimentar contagem; somar encontrados; testar; salvar e publicar no Mural | A publicação e a ajuda humana têm funções diferentes da verificação automática de uma etapa |
+| [Inventário da plataforma](../../inventario-plataforma.md) | Recursos de criação, comunidade, apoio e acompanhamento | Inventário estático; disponibilidade depende de publicação, conta e liberações |
+| [Catálogo da Jornada](../../../../../../packages/core/src/journey/catalog.ts) | Liberações progressivas de ferramentas e blocos | Não equivale a uma ferramenta inteira nova a cada curso |
+| [Catálogo de experiências](../../../../../../packages/core/src/learning/scene/catalog.ts) | Experimentos para conceitos como eventos, posição, movimento e contagem | Número de modelos no código não é número de cursos publicados |
+| [Desafios mensais](../../../../../../packages/members/src/domain/gamification/challenges.ts) | Temas por mês e possibilidade de configuração | Conferir tema e acesso atuais; exemplos do material comercial são ilustrativos |
 
 ## 7. Estado dos destinos na reconferência
 

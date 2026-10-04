@@ -1,5 +1,7 @@
 # Postagens da Kodland: análise e aplicação à Comunidade
 
+> **PESQUISA DE REFERÊNCIA.** Observações e recomendações na data do estudo. A execução vigente está no [guia do Instagram](../README.md); este estudo não é uma segunda lista de tarefas.
+
 04/10/2026. Perfil de referência: [@kodland.brasil](https://www.instagram.com/kodland.brasil/). Decisão: aproveitar estruturas de conteúdo da concorrente para melhorar a apresentação, a variedade e a utilidade do Instagram **@criecomhelenaejulio**, com três posts e stories em três dias por semana.
 
 O produto de referência para as adaptações é a versão local do Sistema Zero, conforme a orientação do usuário. O acompanhamento aparece como **didática, passos, experiências, diálogos, tutoriais, ferramentas e pessoas conectados durante a criação**. Não é resumido ao canal de mensagens.
@@ -24,9 +26,9 @@ Essas são hipóteses editoriais sustentadas pelo material observado. Não há d
 
 A base inicial reúne os 12 posts registrados em 03/10 na [auditoria anterior](pesquisa-2026-10-03.md#3-kodland-a-comparação-prioritária). A [segunda leitura de seis deles](pesquisa-aprofundada-2026-10-03.md#3-o-instagram-da-kodland-como-repertório) aprofundou funcionamento, projeto, rotina, incentivo, humor e vínculo. Esses registros são a mesma amostra, não 18 posts diferentes.
 
-Foram reexaminadas as imagens locais da [grade/perfil](evidencias/perfil-kodland.png), da [capa de incentivo](evidencias/kodland-incentivo-capa.png) e do [segundo slide de incentivo](evidencias/kodland-incentivo-slide2.png). Em 04/10, a frente de pesquisa voltou a abrir o perfil publicamente e reencontrou os mesmos 12 posts na grade, além da bio fornecida pelo usuário; a interface mostrava 213 mil seguidores arredondados. Os 12 posts foram abertos individualmente para reconferir legendas, datas, contagens exibidas e comentários que o acesso público renderizou. A análise não presume leitura integral de áudio, vídeo ou slides que não foram efetivamente disponibilizados.
+Foram reexaminadas as imagens locais da [grade/perfil](../evidencias/perfil-kodland.png), da [capa de incentivo](../evidencias/kodland-incentivo-capa.png) e do [segundo slide de incentivo](../evidencias/kodland-incentivo-slide2.png). Em 04/10, a frente de pesquisa voltou a abrir o perfil publicamente e reencontrou os mesmos 12 posts na grade, além da bio fornecida pelo usuário; a interface mostrava 213 mil seguidores arredondados. Os 12 posts foram abertos individualmente para reconferir legendas, datas, contagens exibidas e comentários que o acesso público renderizou. A análise não presume leitura integral de áudio, vídeo ou slides que não foram efetivamente disponibilizados.
 
-O [registro anonimizado de 04/10](evidencias/kodland-postagens-2026-10-04.json) preserva URLs, datas de publicação, paráfrases, contagens e limites. As observações de frames e metadados complementares foram comunicadas pela mesma frente durante a leitura. As capturas com nomes sem data continuam sendo as de 03/10; não foram renomeadas para parecer capturas novas.
+O [registro anonimizado de 04/10](../evidencias/kodland-postagens-2026-10-04.json) preserva URLs, datas de publicação, paráfrases, contagens e limites. As observações de frames e metadados complementares foram comunicadas pela mesma frente durante a leitura. As capturas com nomes sem data continuam sendo as de 03/10; não foram renomeadas para parecer capturas novas.
 
 As fichas distinguem três camadas:
 
@@ -191,7 +193,7 @@ Isso corrige a impressão de que todo post da Kodland segue uma fórmula de emo�
 
 ### K07. Incentivo familiar: um conteúdo para a pessoa levar à relação com o filho
 
-[Carrossel registrado em 28/09](https://www.instagram.com/kodland.brasil/p/Dd1C6CmCBQy/). Evidências visuais: [capa](evidencias/kodland-incentivo-capa.png) e [slide 2](evidencias/kodland-incentivo-slide2.png).
+[Carrossel registrado em 28/09](https://www.instagram.com/kodland.brasil/p/Dd1C6CmCBQy/). Evidências visuais: [capa](../evidencias/kodland-incentivo-capa.png) e [slide 2](../evidencias/kodland-incentivo-slide2.png).
 
 **Observado nos prints e reconfirmado em 04/10.** A capa usa proximidade entre uma mulher e uma criança, um balão de texto azul e a frase “Seu filho acredita em tudo o que você diz...”. O segundo slide mostra uma criança com acessórios de aviador e avião de papel, acompanhado de uma afirmação ampla sobre realizar seus sonhos. A legenda associa incentivo, erro e ideias à confiança, criatividade e tecnologia. O encerramento pede ao adulto contar uma frase de incentivo que usou; não aparece convite para aula nesse conteúdo lido. Na reconferência, a interface mostrou 18 curtidas e não renderizou comentários; isso não deve ser transformado em contagem privada de comentários. A capa e o segundo slide foram vistos novamente, sem auditoria de todos os slides.
 
@@ -345,7 +347,7 @@ A assistente Zappy com inteligência artificial tem condições de Jornada, serv
 
 ## 6. Aplicação nas 12 peças prontas do nosso calendário
 
-A análise não cria uma lista extra de posts pela metade. As adaptações estão ligadas às peças já escritas por completo. A [copy de perfil e fixados](copy-perfil-e-fixados-2026-10-03.md) concentra F01–F03 e S01–S05/destaques. O [calendário](calendario-2026-10-03.md) contém F04–F12 e S06–S12. Títulos, falas, legendas, telas e CTAs devem ser produzidos a partir dessas versões, não das descrições analíticas abaixo.
+A análise não cria uma lista extra de posts pela metade. As adaptações estão ligadas às peças já escritas por completo. A [copy de perfil e fixados](../historico/copy-perfil-e-fixados-2026-10-03.md) concentra F01–F03 e S01–S05/destaques. O [calendário](../historico/calendario-2026-10-03.md) contém F04–F12 e S06–S12. Títulos, falas, legendas, telas e CTAs devem ser produzidos a partir dessas versões, não das descrições analíticas abaixo.
 
 | Peça própria | Referência funcional Kodland | O que aproveitamos | O que torna a adaptação própria |
 | --- | --- | --- | --- |
@@ -405,13 +407,13 @@ Os cinco destaques são montados a partir das respectivas sequências completas,
 
 Os números públicos reconfirmados em 04/10 ilustram por que precisamos separar função e resultado: K08 exibia 704 curtidas, K09 aproximadamente 1,4 mil, K12 aproximadamente 1,3 mil e K11 20. Não há denominadores, distribuição ou compras para uma comparação de eficiência. K11 expôs perguntas de adequação; K08/K09/K12 receberam também respostas à cena. Isso justifica observar **o assunto das interações**, não atribuir vitória a um formato. As contagens anteriores de 03/10 permanecem no registro histórico e não foram somadas às de hoje.
 
-Ler cada publicação própria com sete dias de exposição e guardar contagens absolutas, denominador e formato. Os links específicos dos stories ajudam a separar destinos; a bio comum não identifica qual post levou a cada visita. O [mapa de operação](operacao-e-links-2026-10-04.md) e o calendário definem as métricas e a execução.
+Ler cada publicação própria com sete dias de exposição e guardar contagens absolutas, denominador e formato. Os links específicos dos stories ajudam a separar destinos; a bio comum não identifica qual post levou a cada visita. O [mapa de operação](../apoio/links-e-publicacao.md) e o calendário definem as métricas e a execução.
 
 ## 9. Registro de acesso e limites
 
 Em 04/10, a frente responsável pela navegação acessou o Instagram público por navegador em contexto isolado. O perfil, a grade e as 12 páginas individuais foram abertos. Os dados abaixo são contagens mostradas pela interface naquela consulta, não exportações da conta. Valores arredondados são mantidos como arredondados.
 
-Fonte preservada: [evidências das 12 publicações](evidencias/kodland-postagens-2026-10-04.json). O número exibido de 213 mil seguidores é retrato do perfil nessa leitura. A diferença para os 212 mil da captura histórica não permite calcular crescimento exato nem atribuí-lo aos posts analisados.
+Fonte preservada: [evidências das 12 publicações](../evidencias/kodland-postagens-2026-10-04.json). O número exibido de 213 mil seguidores é retrato do perfil nessa leitura. A diferença para os 212 mil da captura histórica não permite calcular crescimento exato nem atribuí-lo aos posts analisados.
 
 | Peça | Publicação reconfirmada | Curtidas exibidas | Comentários exibidos / material legível | Cobertura adicional |
 | --- | --- | --- | --- | --- |
