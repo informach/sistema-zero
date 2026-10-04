@@ -99,34 +99,13 @@
       {
         "kind": "diagram",
         "lines": [
-          [
-            0,
-            "Enquanto estiver rodando"
-          ],
-          [
-            1,
-            "A cada quadro"
-          ],
-          [
-            2,
-            "Limpar a tela [preparado]"
-          ],
-          [
-            2,
-            "Desenhar o cenário cenario [preparado]"
-          ],
-          [
-            2,
-            "<b>Mover personagem em 4 direções, velocidade 3</b>"
-          ],
-          [
-            2,
-            "<b>Manter personagem dentro da tela</b>"
-          ],
-          [
-            2,
-            "Outros blocos preparados"
-          ]
+          [0, "Enquanto estiver rodando"],
+          [1, "A cada quadro"],
+          [2, "Limpar a tela [preparado]"],
+          [2, "Desenhar o cenário cenario [preparado]"],
+          [2, "<b>Mover personagem em 4 direções, velocidade 3</b>"],
+          [2, "<b>Manter personagem dentro da tela</b>"],
+          [2, "Outros blocos preparados"]
         ]
       },
       {
@@ -332,22 +311,10 @@
       {
         "kind": "diagram",
         "lines": [
-          [
-            0,
-            "Encontro: personagem com farol"
-          ],
-          [
-            1,
-            "Se temChave"
-          ],
-          [
-            2,
-            "<b>então:</b> ganhou verdadeiro, imagem acesa, aviso"
-          ],
-          [
-            2,
-            "<b>senão:</b> aviso de que falta a chave"
-          ]
+          [0, "Encontro: personagem com farol"],
+          [1, "Se temChave"],
+          [2, "<b>então:</b> ganhou verdadeiro, imagem acesa, aviso"],
+          [2, "<b>senão:</b> aviso de que falta a chave"]
         ]
       }
     ]
