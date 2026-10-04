@@ -57,6 +57,36 @@ afterEach(() => {
 })
 
 /**
+ * ⚠️⚠️ O `MutationObserver` do happy-dom MORRE na primeira coleta de lixo (03/10/2026).
+ *
+ * O happy-dom (20.10) registra no nó observado só um `WeakRef` para a função que entrega as
+ * mudanças, e ninguém mais segura essa função: depois de um GC o observador para de avisar, sem
+ * erro nenhum. Num navegador o observador vive enquanto alguém o referencia. Foi o que derrubou o
+ * teste do vídeo flutuante no CI (o diálogo por cima saía e o vídeo seguia escondido), e só lá,
+ * porque a coleta depende da memória da máquina. Aqui cada observador segura as próprias funções
+ * pelo tempo que ele mesmo viver. Prova: o `Bun.gc(true)` do `lesson-video-gate.test.tsx`.
+ */
+const funcoesDoObservador = new WeakMap<MutationObserver, object[]>()
+const observarOriginal = MutationObserver.prototype.observe
+function ouvintesDoNo(alvo: Node): { callback?: WeakRef<object> }[] {
+  const chave = Object.getOwnPropertySymbols(alvo).find(
+    (s) => s.description === 'mutationListeners',
+  )
+  const lista = chave ? (alvo as unknown as Record<symbol, unknown>)[chave] : undefined
+  return Array.isArray(lista) ? lista : []
+}
+MutationObserver.prototype.observe = function (alvo, opcoes) {
+  const antes = new Set(ouvintesDoNo(alvo))
+  observarOriginal.call(this, alvo, opcoes)
+  const novas = ouvintesDoNo(alvo)
+    .filter((ouvinte) => !antes.has(ouvinte))
+    .map((ouvinte) => ouvinte.callback?.deref())
+    .filter((funcao): funcao is object => funcao !== undefined)
+  if (novas.length > 0)
+    funcoesDoObservador.set(this, [...(funcoesDoObservador.get(this) ?? []), ...novas])
+}
+
+/**
  * O mascote Zappy animado (Rive) fora dos testes: o `dynamic(ssr:false)` resolve
  * mesmo no happy-dom, o runtime tenta buscar `/rive/rive.wasm` — que nenhum servidor
  * serve aqui — e cada suíte que monta uma celebração cospe

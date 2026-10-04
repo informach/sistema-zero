@@ -14,6 +14,7 @@ import { buildModalGuardRuntime } from './modalGuard'
 import { buildPermissionGuardRuntime } from './permissionGuard'
 import { scriptIntegrity } from './scriptIntegrity'
 import { buildScriptSourceGuardRuntime } from './scriptSourceGuard'
+import { buildScrollKeyGuardRuntime } from './scrollKeyGuard'
 import { buildSnapshotBridgeRuntime } from './snapshotBridge'
 import { buildStorageBridgeRuntime } from './storageBridge'
 import { transpileExtra } from './transpile'
@@ -279,7 +280,7 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // Camadas de segurança no <head>, em ordem (defesa em profundidade):
   // CSP → interceptor (console/erros/heartbeat) → permissionGuard (rede) →
   // loopGuard (runtime do __szLoopTick) → modalGuard (rate-limit de alert/confirm/
-  // prompt) → scriptSourceGuard → inputBridge → storageBridge (localStorage shim) → assetsBridge
+  // prompt) → scriptSourceGuard → inputBridge → scrollKeyGuard → storageBridge (localStorage shim) → assetsBridge
   // (window.__SZGAME_ASSETS) → IMPORTMAP → scripts de extensão (NÃO instrumentados)
   // → estilos → conteúdo do <head> do aluno → corpo → código do aluno. ⚠️ O
   // importmap PRECISA vir antes
@@ -303,6 +304,9 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   // para os blocos "a tecla … está apertada?" e "x/y do mouse/dedo" do caminho
   // "na mão" funcionarem em qualquer projeto, sem a extensão Jogo 2D.
   const inputBridgeTag = trustedScriptTag(buildInputBridgeRuntime(input.parentOrigin))
+  // Guarda das teclas de navegação: as setas do jogo não rolam a página de FORA (a aula rolava
+  // junto com o personagem). Só cancela quando não há o que rolar dentro do jogo.
+  const scrollKeyGuardTag = trustedScriptTag(buildScrollKeyGuardRuntime())
   // Bridge de som: window.__szAudio — mesma ideia, para os blocos da categoria
   // 🔊 Som do núcleo tocarem os arquivos que a criança enviou sem depender de
   // nenhuma extensão de jogo. Lê o mesmo __SZGAME_SOUNDS do bridge de assets.
@@ -373,6 +377,7 @@ ${loopGuardTag}
 ${modalGuardTag}
 ${scriptSourceGuardTag}
 ${inputBridgeTag}
+${scrollKeyGuardTag}
 ${audioBridgeTag}
 ${storageBridgeTag}
 ${snapshotBridgeTag}

@@ -72,14 +72,14 @@ function getScreen(): Screen {
 
 const NAV = [
   { label: 'Início', icon: Home },
-  { label: 'Jornada', icon: GraduationCap },
+  { label: 'Aprender', icon: GraduationCap },
   { label: 'Criar', icon: Sparkles },
   { label: 'Comunidade', icon: MessagesSquare },
   { label: 'Meu espaço', icon: CircleUserRound },
 ] as const
 
 function activeSection(screen: Screen): (typeof NAV)[number]['label'] {
-  if (screen === 'career' || screen === 'lesson') return 'Jornada'
+  if (screen === 'career' || screen === 'lesson') return 'Aprender'
   if (screen === 'workshop') return 'Criar'
   if (screen === 'mural' || screen === 'club' || screen === 'messages') return 'Comunidade'
   return 'Meu espaço'

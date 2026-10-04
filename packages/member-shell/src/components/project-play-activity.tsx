@@ -10,7 +10,18 @@ import { sanitizeProjectForHost } from '@sistemazero/studio/project-validation'
 import { Button } from '@sistemazero/ui/button'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Expand, Minimize2, RotateCcw } from 'lucide-react'
-import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { inertOutside } from '../lib/inert-outside'
+import { useReportActivityExpanded } from '../lib/lesson-activity-expansion'
+import { EXPANDED_EXIT_ATTR, LESSON_FLOAT_ROOT_ATTR, LessonVideoToggle } from './lesson-video-float'
 
 export function clickedProjectPlayTarget(
   activity: ProjectPlayActivity,
@@ -58,6 +69,8 @@ export function ProjectPlayActivityView({
   const workspace = useModalA11y<HTMLElement>({
     open: expanded,
     onClose: () => setInlineHeight(null),
+    // O vídeo flutuante da aula entra no Tab da tela ampliada.
+    companions: true,
   })
   const current = useRef({ answers, onChange })
   current.current = { answers, onChange }
@@ -129,24 +142,13 @@ export function ProjectPlayActivityView({
     return () => window.removeEventListener('message', receive)
   }, [activity, sendPointer, round])
 
+  useReportActivityExpanded(expanded)
   useEffect(() => {
-    if (!expanded) return
+    if (!expanded || !workspace.current) return
     // O iframe tem navegação de teclado própria. Inert impede que o Tab saia
     // dele e alcance controles da aula que ficaram escondidos sob o modo ampliado.
-    const siblings = new Map<HTMLElement, boolean>()
-    let node: HTMLElement | null = workspace.current
-    while (node?.parentElement) {
-      for (const sibling of node.parentElement.children) {
-        if (sibling instanceof HTMLElement && sibling !== node) {
-          siblings.set(sibling, sibling.inert)
-          sibling.inert = true
-        }
-      }
-      node = node.parentElement
-    }
-    return () => {
-      for (const [sibling, inert] of siblings) sibling.inert = inert
-    }
+    // O lugar do vídeo da seção fica de fora: é ele que flutua por cima do jogo.
+    return inertOutside(workspace.current, `[${LESSON_FLOAT_ROOT_ATTR}]`)
   }, [expanded, workspace])
 
   function restart() {
@@ -176,54 +178,63 @@ export function ProjectPlayActivityView({
         aria-label={expanded ? 'Jogo ampliado' : 'Jogo pronto para brincar'}
         className={`sz-lesson-activity sz-project-play-workspace${expanded ? ' sz-activity-workspace--expanded' : ''}`}
       >
-        <div className="sz-activity-workspace-card space-y-5">
-          {header}
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="min-h-11"
-              disabled={!ready && !failed}
-              onClick={restart}
-            >
-              <RotateCcw className="size-4" aria-hidden />
-              Jogar de novo
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              aria-expanded={expanded}
-              onClick={(event) => {
-                event.currentTarget.focus({ preventScroll: true })
-                setInlineHeight(expanded ? null : (workspace.current?.offsetHeight ?? 0))
-              }}
-              className="min-h-11"
-            >
-              {expanded ? (
-                <Minimize2 className="size-4" aria-hidden />
-              ) : (
-                <Expand className="size-4" aria-hidden />
-              )}
-              {expanded ? 'Voltar à aula' : 'Ampliar jogo'}
-            </Button>
+        <div className="sz-activity-workspace-card sz-project-play-card">
+          {/* Título e ações na MESMA linha, como na cena e no Estúdio; quebra só sem espaço. */}
+          <div className="sz-project-play-header">
+            <div className="sz-project-play-heading">{header}</div>
+            <div className="sz-project-play-actions">
+              <LessonVideoToggle expanded={expanded} className="min-h-11" />
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                disabled={!ready && !failed}
+                onClick={restart}
+              >
+                <RotateCcw className="size-4" aria-hidden />
+                Jogar de novo
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                aria-expanded={expanded}
+                // O vídeo flutuante da aula começa abaixo da saída, nunca por cima dela.
+                {...(expanded ? { [EXPANDED_EXIT_ATTR]: '' } : {})}
+                onClick={(event) => {
+                  event.currentTarget.focus({ preventScroll: true })
+                  setInlineHeight(expanded ? null : (workspace.current?.offsetHeight ?? 0))
+                }}
+                className="min-h-11"
+              >
+                {expanded ? (
+                  <Minimize2 className="size-4" aria-hidden />
+                ) : (
+                  <Expand className="size-4" aria-hidden />
+                )}
+                {expanded ? 'Voltar à aula' : 'Ampliar jogo'}
+              </Button>
+            </div>
           </div>
-          <div
-            style={{ aspectRatio: `${activity.stage.width} / ${activity.stage.height}` }}
-            className={
-              expanded
-                ? 'mx-auto w-full max-w-3xl shrink-0 overflow-hidden rounded-xl border border-border bg-card [@media(min-height:900px)]:max-w-5xl'
-                : 'w-full overflow-hidden rounded-xl border border-border bg-card'
-            }
-          >
-            <StudioProjectPlayer
-              key={round}
-              ref={iframe}
-              tabIndex={0}
-              project={project}
-              title={project.name}
-              onError={() => setFailed(true)}
-              onReady={() => setReady(true)}
-            />
+          <div className="sz-project-play-stage-area">
+            <div
+              className="sz-project-play-stage overflow-hidden rounded-xl border border-border bg-card"
+              style={
+                {
+                  aspectRatio: `${activity.stage.width} / ${activity.stage.height}`,
+                  '--sz-stage-aspect': activity.stage.width / activity.stage.height,
+                } as CSSProperties
+              }
+            >
+              <StudioProjectPlayer
+                key={round}
+                ref={iframe}
+                tabIndex={0}
+                project={project}
+                title={project.name}
+                onError={() => setFailed(true)}
+                onReady={() => setReady(true)}
+              />
+            </div>
           </div>
           {failed && (
             <p role="alert">

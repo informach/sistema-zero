@@ -1,55 +1,34 @@
 # Roteiro de gravação · A Chave do Farol · Dia 1
 
-Três seções, três vídeos. A criança começa sem experiência em programação. Falar de modo conversado; fazer pausas reais enquanto encaixa blocos. Tudo entre **Na tela** é direção de gravação, não narração. O projeto abre com cenário, personagens e desenho por quadro prontos, mas sem movimento nem direcional.
+Uma seção, um vídeo de montagem. Estimativa: 4 a 5 minutos, incluindo encaixes e testes. O cenário, os desenhos, a exibição por quadro e a regra do barco já vêm preparados. O projeto inicial ainda não tem controles nem movimento. Mostrar apenas as áreas necessárias, com pausas naturais para acompanhar. Não fazer outra demonstração do jogo completo.
 
-## Seção 1. A aventura começa no farol
-
-### Vídeo `video-d1-chegada` · Uma luz precisa acender
-
-**Na tela:** jogo completo por alguns segundos: personagem anda, chave desaparece ao ser encontrada, farol acende e barco chega. Depois abrir o projeto inicial do Dia 1 e apontar os elementos sem mexer em blocos.
-
-**Narração:**
-> "Hoje começa A Chave do Farol. Um barco precisa encontrar a costa, só que o farol está apagado. O personagem vai procurar a chave para acender a luz. Este é o jogo que vamos terminar juntos. Olha o caminho, a chave e o farol. Os desenhos e o cenário já estão aqui para você. O que ainda falta no seu projeto é uma regra importante: o personagem está parado. Hoje você vai ensinar o jogo a ouvir as direções que você escolher."
-
-**Na tela:** no projeto inicial, tentar uma seta do teclado e depois tocar numa região neutra da prévia; o personagem não se move. Não sugerir que o jogo está quebrado.
-
-**Narração:**
-> "Se eu apertar uma seta agora, nada acontece. É esperado: o jogo ainda não recebeu a instrução de andar. Vamos construir essa primeira parte."
-
-## Seção 2. Quatro caminhos para seguir
-
-### Vídeo `video-d1-movimento` · Como o personagem vai andar?
-
-**Na tela:** mostrar só o mapa, não a paleta. Com uma marca temporária da gravação, apontar para cima, baixo, esquerda, direita e para as bordas do mapa. Não acrescentar blocos neste vídeo.
-
-**Narração:**
-> "Pensa que você está ajudando esse personagem a passear pelo mapa. Ele pode ir para cima, para baixo, para a esquerda ou para a direita. São quatro direções. No celular ou tablet, você vai escolher a direção tocando nas setas que vamos colocar na tela. No teclado, pode usar as setas das teclas. E tem uma coisa para observar: o que será que acontece se ele continuar andando quando chega à beirada do mapa? Vamos testar no jogo."
-
-## Seção 3. O mapa tem uma borda
+## Seção 1. Faça o personagem andar pelo mapa
 
 ### Vídeo `video-d1-borda` · Faça o personagem andar dentro do mapa
 
-**Na tela:** abrir o Estúdio da seção. Enquadrar a área **Ao iniciar** sem destacar a variável preparada `ganhou`. Abrir **Jogo 2D → Controles → Teclado, ações e toque** e arrastar **Ativar controles clássicos** para o fim de **Ao iniciar**. No menu do bloco, escolher **só as quatro direções**. Se a prévia não atualizar sozinha, clicar **Atualizar**. Mostrar as quatro setas, sem A/B.
+**Na tela:** abrir o projeto inicial da seção. Apontar o personagem parado e a área **Ao iniciar**. Abrir **Jogo 2D → Controles → Teclado, ações e toque**, arrastar **Ativar controles clássicos** para o fim de **Ao iniciar**, depois dos blocos preparados. Selecionar **só as quatro direções**. A prévia atualiza automaticamente; aguardar a atualização, sem recomendar Atualizar a cada encaixe.
 
 **Narração:**
-> "Agora vamos fazer juntos. O Estúdio já tem os desenhos e o caminho. Primeiro, o jogo precisa mostrar como você vai mandar o personagem andar. Abra Jogo 2D, depois Controles, e entre em Teclado, ações e toque. Pegue Ativar controles clássicos e encaixe no fim da área Ao iniciar, logo depois dos blocos que já estão lá. Neste menu, escolha só as quatro direções. Se as setas ainda não apareceram no jogo, aperte Atualizar. Viu? São quatro setas, sem botões que este jogo não usa."
+> "Você já experimentou a aventura pronta. Nesta versão, o cenário e os desenhos estão preparados, mas o personagem ainda está parado. Vamos programar o movimento para ele andar pelo mapa sem sair da tela. Primeiro, abra Jogo 2D, Controles, Teclado, ações e toque. Pegue Ativar controles clássicos e encaixe no fim da área Ao iniciar, depois dos blocos que já estão lá. No menu deste bloco, escolha só as quatro direções. Espere o jogo atualizar. Agora temos as setas de cima, baixo, esquerda e direita."
 
-**Na tela:** apontar a área **Enquanto estiver rodando**, abrir o bloco **A cada quadro** já preparado. Abrir **Jogo 2D → Movimento → Movimentos prontos**, arrastar **Mover sprite em 4 direções com setas, velocidade** e encaixar logo depois de **Desenhar o cenário cenario** e antes da regra preparada do barco. Selecionar `personagem`, valor `3`; sair do campo numérico clicando num espaço vazio.
-
-**Narração:**
-> "Mostrar as setas ainda não faz ninguém andar. O jogo também precisa repetir o movimento enquanto estiver rodando. Na área Enquanto estiver rodando, abra A cada quadro. Volte à paleta: Jogo 2D, Movimento, Movimentos prontos. Pegue Mover sprite em 4 direções com setas. Encaixe logo abaixo do bloco que desenha o cenário. No campo sprite, escolha personagem. A velocidade diz quanto ele anda enquanto você segura a seta. No espaço da velocidade, coloque o número três e clique fora para confirmar. Agora o jogo sabe quem deve andar e em que ritmo."
-
-**Na tela:** segurar direita no controle de toque, voltar ao começo do jogo se preciso e apertar uma seta no teclado depois de focar a prévia. Levar o personagem em direção à borda e parar quando parte dele sair ou parecer desaparecer. Não inserir ainda a solução.
+**Na tela:** abrir **Jogo 2D → Movimento → Movimentos prontos**. Pegar **Mover sprite em 4 direções com setas, velocidade**. Dentro de **A cada quadro**, na área **Enquanto estiver rodando**, encaixar imediatamente após **Desenhar o cenário cenario** e antes da condição preparada do barco. Escolher `personagem` e manter a velocidade `3`, que já vem no bloco. Apontar o bloco antes e depois do encaixe.
 
 **Narração:**
-> "Teste com uma seta da tela. Se estiver no computador, clique dentro do jogo e teste também uma seta do teclado. Funcionou? Agora continue até a beirada. O personagem pode ir para fora e sumir. Aí fica difícil explorar. Precisamos de uma regra que segure o personagem dentro do mapa."
+> "As setas apareceram, mas falta dizer quem elas movem. Na programação, chamamos de sprite um elemento do jogo que podemos controlar, como este personagem. Abra Jogo 2D, Movimento, Movimentos prontos. Pegue Mover sprite em 4 direções com setas. Na área Enquanto estiver rodando, encontre A cada quadro. Encaixe o movimento dentro dele, logo depois de Desenhar o cenário cenario e antes dos outros blocos preparados. O jogo repete o que está aqui enquanto funciona. No nome do sprite, escolha personagem. A velocidade diz quanto ele anda a cada repetição. Ela já está em três. Deixe assim."
 
-**Na tela:** abrir **Jogo 2D → Movimento → Bordas e rebatidas**, pegar **Manter o sprite dentro da tela** e encaixar logo depois do bloco de movimento. Escolher `personagem`. Testar as quatro bordas por toque e, se possível, por teclado.
-
-**Narração:**
-> "Abra Jogo 2D, Movimento, Bordas e rebatidas. Pegue Manter o sprite dentro da tela. Encaixe logo depois do bloco que move o personagem e escolha personagem. Teste outra vez. Agora, quando ele chega ao limite, fica visível. Experimente cima, baixo, esquerda e direita. Você fez três coisas importantes: colocou as setas na tela, ensinou o personagem a se mover e protegeu a borda do mapa."
-
-**Na tela:** mostrar **Salvo** na barra do Estúdio depois da alteração persistir. Clicar **Enviar para o professor**, mostrar a confirmação e o estado de enviado. Sem prometer salvamento infalível ou entrega automática.
+**Na tela:** testar uma seta da tela. No computador, focar a prévia e testar uma seta do teclado. Levar o personagem até parte dele ultrapassar a borda. Não mostrar primeiro a correção. Pausar para a criança testar.
 
 **Narração:**
-> "Antes de seguir, olha esta palavra: Salvo. Ela mostra que a mudança ficou guardada no seu trabalho. Salvar e entregar não são a mesma coisa. Para eu ver o que você fez, aperte Enviar para o professor e confirme. Se quiser, pode testar mais uma vez antes de enviar. Amanhã vamos fazer a chave ter uma função de verdade."
+> "Segure uma seta da tela. Se estiver no computador, pode clicar dentro do jogo e testar uma seta do teclado. O personagem deve andar na direção escolhida. Se não andou, confira o nome personagem e veja se o bloco está dentro de A cada quadro. Agora leve o personagem até uma beirada e continue segurando a seta. Observe se ele fica inteiro na tela."
+
+**Na tela:** abrir **Jogo 2D → Movimento → Bordas e rebatidas**. Pegar **Manter o sprite dentro da tela**, encaixar imediatamente depois do movimento, antes dos blocos preparados. Escolher `personagem`; este bloco só tem o seletor de sprite. Testar as quatro bordas; não exigir dois dispositivos.
+
+**Narração:**
+> "Se ele passou da beirada, precisamos limitar o caminho. Abra Jogo 2D, Movimento, Bordas e rebatidas. Pegue Manter o sprite dentro da tela e encaixe logo depois do bloco de movimento. Escolha personagem. A ordem importa: primeiro o jogo move, depois confere a borda. Teste as quatro direções até chegar aos limites. Agora o personagem deve continuar visível."
+
+**Na tela:** clicar **Verificar esta etapa**, no painel da seção. Mostrar o resultado real **Objetivo da etapa cumprido!**. Em caso de pendência, enquadrar o item a corrigir e verificar de novo. Depois esperar **Salvo** na barra do Estúdio; clicar **Enviar para o professor**, confirmar no botão **Enviar** da janela e aguardar o envio. Encerrar apontando **Concluir aula**.
+
+**Narração:**
+> "Depois de testar, aperte Verificar esta etapa. Se aparecer algo para corrigir, confira o bloco indicado e verifique de novo. Quando aparecer Objetivo da etapa cumprido!, espere a palavra Salvo na barra do Estúdio. Ela indica que seu trabalho ficou guardado. Agora aperte Enviar para o professor e, na janela que abrir, confirme em Enviar. Espere terminar o envio. Para finalizar, aperte Concluir aula."
+
+**Ponte do Zappy na página (não gravar):** Agora monte o movimento do seu personagem. Teste as quatro direções e as bordas, depois use Verificar esta etapa antes de enviar o projeto.

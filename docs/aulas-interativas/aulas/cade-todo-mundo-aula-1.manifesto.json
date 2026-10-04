@@ -938,6 +938,14 @@
       "plannedVideo": "Título: Seu Caderno do Aluno\n\nMostrar o caderno real e dizer que ele reúne os passos de montagem para consultar quando precisar. Leitura, download e impressão são opcionais. Terminar com Próxima seção. Não ensinar controles do leitor, download ou divisória; esses tutoriais ficam no Como Fazer. Anexar o PDF antes de gravar. Regravar a fala. Alvo: 20 a 30 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
+      "key": "ponte-a1-caderno",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção."
+      }
+    },
+    {
       "key": "caderno",
       "content": {
         "kind": "materials",
@@ -1866,7 +1874,7 @@
       "title": "Seu Caderno do Aluno",
       "intent": "material",
       "objective": "Conhecer o caderno e saber onde consultá-lo durante a construção do jogo.",
-      "blockKeys": ["video-a1-caderno", "caderno"],
+      "blockKeys": ["video-a1-caderno", "ponte-a1-caderno", "caderno"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],

@@ -19,6 +19,26 @@ const tela = (
 })
 
 export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
+  'como-fazer': {
+    frames: [
+      tela(
+        'como-fazer',
+        'Como fazer',
+        'Biblioteca de ajuda Como fazer, com os tutoriais por assunto.',
+      ),
+    ],
+    caption: 'Os tutoriais ficam disponíveis para consultar o uso das ferramentas.',
+  },
+  'jogo-pronto': {
+    frames: [
+      tela(
+        'jogo-pronto',
+        'Conheça o jogo',
+        'Início do curso Cadê Todo Mundo? com o vídeo de apresentação e o jogo pronto para encontrar os personagens no jardim.',
+      ),
+    ],
+    caption: 'A criança começa jogando o projeto que o curso vai ajudar a construir.',
+  },
   aula: {
     frames: [
       tela(

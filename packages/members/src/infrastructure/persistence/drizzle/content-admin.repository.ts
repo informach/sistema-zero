@@ -61,6 +61,7 @@ const toCourse = (r: CourseRow): Course => ({
   status: r.status,
   audience: r.audience,
   sequentialLock: r.sequentialLock,
+  videoBeforeActivity: r.videoBeforeActivity,
   level: r.level,
   track: r.track,
   careerSlot: r.careerSlot,
@@ -324,6 +325,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       audience: fields.audience ?? ('adult' as const),
       // Idem: o service normaliza; `?? true` cobre chamada direta (padrão LIGADO).
       sequentialLock: fields.sequentialLock ?? true,
+      // Idem: `?? false` cobre chamada direta (padrão DESLIGADO).
+      videoBeforeActivity: fields.videoBeforeActivity ?? false,
       // Idem: o service normaliza; `?? 'iniciante'` cobre chamada direta.
       level: fields.level ?? ('iniciante' as const),
       // Idem: `?? '2d'` cobre chamada direta.
@@ -389,6 +392,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         status: 'draft' as const,
         audience: overrides.audience,
         sequentialLock: src.sequentialLock,
+        videoBeforeActivity: src.videoBeforeActivity,
         level: src.level,
         track: src.track,
         // Fora da jornada até a operadora etiquetar (evita conflito de posição
@@ -551,6 +555,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             status: course.status,
             audience: course.audience,
             sequentialLock: course.sequentialLock,
+            videoBeforeActivity: course.videoBeforeActivity,
             level: course.level,
             track: course.track,
             careerSlot: course.careerSlot,

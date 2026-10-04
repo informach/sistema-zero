@@ -160,6 +160,7 @@ test('a atividade não bloqueia voltar à aula enquanto a conclusão está sendo
   document.body.append(host)
   const root = createRoot(host)
   let finish = () => {}
+  let tentativas = 0
   const pending = new Promise<LearningResult>((resolve) => {
     finish = () =>
       resolve({ passed: true, participated: true, verifiedBy: 'client', feedback: 'Pronto!' })
@@ -177,7 +178,10 @@ test('a atividade não bloqueia voltar à aula enquanto a conclusão está sendo
             onProjectCheck: async () => '',
             onChange: () => {},
             onQuiz: async () => {},
-            onAttempt: () => pending,
+            onAttempt: () => {
+              tentativas += 1
+              return pending
+            },
           }}
         >
           <InteractiveLessonBlock
@@ -192,7 +196,12 @@ test('a atividade não bloqueia voltar à aula enquanto a conclusão está sendo
         </LessonPreviewProvider>,
       ),
     )
-    expect(host.querySelector('fieldset:disabled')).not.toBeNull()
+    // A conclusão está sendo salva: a tentativa foi pedida e segue pendente. Desde 04/10/2026 o
+    // jogo pronto NÃO desliga o bloco nessa hora (o `fieldset` desligado piscava a pista e a tela
+    // tremia), então a prova de "salvando" é a tentativa, não o atributo.
+    expect(tentativas).toBe(1)
+    expect(host.querySelector('.sz-project-play-card fieldset')).not.toBeNull()
+    expect(host.querySelector('fieldset:disabled')).toBeNull()
     const button = [...host.querySelectorAll('button')].find((b) =>
       b.textContent?.includes('Ampliar jogo'),
     )

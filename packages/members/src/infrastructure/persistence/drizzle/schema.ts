@@ -178,6 +178,10 @@ export const courses = members.table(
     // está concluída. Default `true` = backfill LIGADO p/ os cursos já existentes
     // (decisão da usuária: padrão ligado, com toggle por curso no admin).
     sequentialLock: boolean('sequential_lock').notNull().default(true),
+    // Vídeo antes da atividade (03/10/2026): nas seções com vídeo e atividade, a atividade
+    // abre depois que o aluno assiste ao vídeo uma vez. Desligado por padrão: a autora liga
+    // nos cursos de quem está começando. Guia de interface, sem checagem no servidor.
+    videoBeforeActivity: boolean('video_before_activity').notNull().default(false),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),

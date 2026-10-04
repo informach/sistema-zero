@@ -11,6 +11,7 @@ import {
 } from '../../../packages/core/src/learning'
 import { SCENE_IDS } from '../../../packages/core/src/learning/scene'
 import { isSectionCompletion } from '../../../packages/core/src/learning/section-progression'
+import { CURSOS_DIRETRIZES_ATUAIS, problemasPedagogicos } from './diretrizes-pedagogicas'
 import { MANIFESTOS_NOVO_MODELO } from './novo-modelo'
 
 /** Cena citada por um manifesto que o catálogo ainda não tem: dependência, não erro de formato. */
@@ -328,6 +329,8 @@ for (const nome of arquivos) {
     sections: Array<Record<string, unknown>>
   }
   const avisos: string[] = []
+  if (CURSOS_DIRETRIZES_ATUAIS.has(dados.courseSlug))
+    avisos.push(...problemasPedagogicos(dados, true))
   avisos.push(...diagnosticarNovoModelo(nome, m))
   for (const b of m.blocks)
     if (typeof b.plannedVideo === 'string' && !b.plannedVideo.startsWith('Título: '))

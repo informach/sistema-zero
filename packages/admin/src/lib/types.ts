@@ -408,6 +408,11 @@ export interface CourseView {
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**
+   * A atividade de cada seção com vídeo abre só depois que o aluno assiste ao vídeo uma vez.
+   * Opcional: members mais antigo que o painel não manda o campo.
+   */
+  videoBeforeActivity?: boolean
+  /**
    * Blocos que ESTE curso libera no Estúdio livre quando o aluno satisfaz o critério
    * atual (bônus Kids: conclusão; demais: conclusão + Mural). A paleta é a UNIÃO dos
    * cursos conquistados, no lugar do conjunto fixo por nível. Opcional p/ tolerar

@@ -2,6 +2,14 @@
 
 Um vídeo. O conteúdo precisa ser regravado antes de substituir o vídeo publicado.
 
+## Como o seu jardim funciona
+
+**Seção sem vídeo. Não gravar clipe de quiz.** O diálogo aparece na página antes das perguntas.
+
+**Zappy na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Depois de conferir as explicações, você pode corrigir o que precisar.
+
+**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Após enviar, a pessoa lê as explicações e pode corrigir imediatamente. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção.
+
 ## Comemore sua criação
 
 **Duração alvo:** 15 a 25 segundos.

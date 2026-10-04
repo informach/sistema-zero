@@ -1,0 +1,245 @@
+/* Composição do Farol sobre a identidade compartilhada das ofertas Kids. */
+.df .topbar .kof-link {
+  color: var(--kof-navy-texto);
+}
+.df .df-hero-detail {
+  margin-top: 1.25rem;
+}
+.df .df-price-line {
+  margin-top: 1.75rem;
+  line-height: 1.65;
+}
+.df .df-price-line s {
+  margin-right: 0.5rem;
+}
+.df .df-note {
+  font-size: 0.9375rem;
+  color: var(--kof-tinta-suave);
+  line-height: 1.6;
+}
+.df .requirements {
+  margin-top: 1.75rem;
+}
+.df .df-alert {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 2px solid var(--kof-rosa);
+  border-radius: 1rem;
+}
+.df .df-hero-visual {
+  align-self: center;
+}
+.df .df-hero-stage {
+  display: grid;
+  gap: 1.5rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  position: relative;
+}
+.df .df-hero-stage .kof-chip {
+  justify-self: start;
+  max-width: 100%;
+  white-space: normal;
+}
+.df .df-zappy {
+  width: 7rem;
+  justify-self: end;
+  margin-top: -0.5rem;
+}
+.df .df-frames {
+  display: grid;
+  gap: 1.4rem;
+}
+.df .df-frames img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.df .df-section-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+}
+.df .df-section-grid > * {
+  min-width: 0;
+}
+.df .df-section-visual {
+  align-self: center;
+}
+.df .df-inverse .df-section-visual {
+  grid-column: 1;
+  grid-row: 1;
+}
+.df .df-inverse > .prosa {
+  grid-column: 2;
+  grid-row: 1;
+}
+.df .df-section-grid .family-photo {
+  max-width: 28rem;
+}
+.df .df-continuity {
+  max-width: 54rem;
+}
+.df .df-requirements {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+.df .df-requirements article {
+  padding: clamp(1.5rem, 3vw, 2rem);
+}
+.df .df-requirements h3 {
+  font-size: 1.55rem;
+  line-height: 1.2;
+}
+.df .df-after-note {
+  margin-top: 2rem;
+  line-height: 1.75;
+}
+.df .df-offer-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+.df .df-included,
+.df .df-price-card {
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+}
+.df .df-included ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.75rem;
+  display: grid;
+  gap: 1.25rem;
+}
+.df .df-included li {
+  display: flex;
+  align-items: start;
+  gap: 0.75rem;
+}
+.df .df-included .material-symbols-rounded {
+  color: var(--kof-verde);
+  flex-shrink: 0;
+}
+.df .df-included > p {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+.df .df-price-card {
+  display: grid;
+  gap: 1.5rem;
+  background: var(--kof-menta);
+}
+.df .df-price-card h3 {
+  font-size: 2rem;
+}
+.df .df-price-card p {
+  line-height: 1.65;
+}
+.df .df-price-card .df-price {
+  font-family: var(--kof-display);
+  font-size: clamp(3rem, 6vw, 4rem);
+  font-weight: 800;
+  line-height: 1;
+}
+.df .df-price-card a:not(.kof-btn) {
+  text-decoration: underline;
+}
+.df .df-timeline {
+  list-style: none;
+  margin: 2.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+}
+.df .df-timeline li {
+  border-top: 4px solid var(--kof-azul);
+  padding-top: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  line-height: 1.65;
+}
+.df .df-closing .wrap {
+  max-width: 54rem;
+  text-align: center;
+}
+.df :where(.df-closing) .kof-btn {
+  margin-block: 1rem;
+}
+.df .df-visual--compact {
+  max-width: 42rem;
+}
+.df .df-copy-invite {
+  display: grid;
+  gap: 1rem;
+}
+.df .df-copy-invite blockquote {
+  margin: 0;
+  padding: 1.5rem;
+  background: var(--kof-menta);
+  border-left: 4px solid var(--kof-verde);
+  border-radius: 1rem;
+  font-size: 1.15rem;
+  line-height: 1.7;
+}
+.df .df-copy-invite p:empty {
+  display: none;
+}
+.df .df-result-hero h1 {
+  font-size: clamp(2.3rem, 4vw, 3.6rem);
+}
+.df .cq-stages {
+  grid-template-columns: repeat(4, 1fr);
+}
+.df .cq-actions {
+  gap: 1.25rem;
+}
+@media (max-width: 900px) {
+  .df .df-section-grid,
+  .df .df-offer-grid {
+    grid-template-columns: 1fr;
+  }
+  .df .df-inverse .df-section-visual,
+  .df .df-inverse > .prosa {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .df .df-section-visual {
+    max-width: 46rem;
+    width: 100%;
+    margin-inline: auto;
+  }
+  .df .df-requirements {
+    grid-template-columns: 1fr;
+  }
+  .df .df-timeline {
+    grid-template-columns: 1fr;
+  }
+  .df .df-hero-stage {
+    margin-top: 1rem;
+  }
+}
+@media (max-width: 540px) {
+  .df .cq-stages {
+    gap: 0.4rem;
+  }
+  .df .cq-stages li {
+    font-size: 0.72rem;
+  }
+  .df .hero-actions,
+  .df .cq-actions {
+    align-items: stretch;
+  }
+  .df .kof-btn {
+    white-space: normal;
+    text-align: center;
+  }
+  .df .topbar .kof-link {
+    font-size: 0.85rem;
+  }
+  .df .topbar .logo {
+    width: 10rem;
+  }
+}

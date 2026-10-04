@@ -558,8 +558,11 @@ function caminhoDeSucesso(block: InteractiveBlock, onde: string): LearningAnswer
     answers.sceneCheckpoint = packExperiment(activity.scene, sessao)
   }
   if (activity.type === 'html') answers.participated = true
-  if (activity.type === 'project-play')
-    answers.foundTargets = activity.targets.map((target) => target.id)
+  // Jogar o projeto pronto conclui por PARTICIPAÇÃO (a introdução do Desafio) ou pelos alvos.
+  if (activity.type === 'project-play') {
+    if (activity.completion === 'participation') answers.participated = true
+    else answers.foundTargets = activity.targets.map((target) => target.id)
+  }
   // ⚠️ Pelo RESOLVEDOR: a experimentação que não escreve pergunta herda a do MODELO da cena, e
   // é ela que o servidor cobra. O caminho de sucesso é o da criança, e ela responde a pergunta
   // que a TELA mostrou.

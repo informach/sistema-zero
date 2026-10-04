@@ -1,0 +1,22 @@
+---
+import { DESAFIO_VISUALS } from '../../../funnels/desafio-primeiro-jogo/visuals'
+
+interface Props {
+  visual: string
+  eager?: boolean
+  compact?: boolean
+}
+const { visual, eager = false, compact = false } = Astro.props
+const asset = DESAFIO_VISUALS[visual]
+---
+{asset && <figure class:list={['visual df-visual', { 'df-visual--compact': compact }]} data-visual={`desafio-${visual}`}>
+  <div class="df-frames">
+    {asset.frames.map(frame => <a class="quadro-link" href={frame.large} target="_blank" rel="noopener" data-zoom aria-label={`Ampliar: ${frame.alt}`}>
+      <div class="kof-tela kof-tela--sombra">
+        <div class="kof-tela__barra" aria-hidden="true"><i></i><i></i><i></i><span class="kof-tela__url">{frame.label}</span><span class="material-symbols-rounded quadro-lupa">zoom_in</span></div>
+        <img src={frame.src} alt={frame.alt} width={frame.width} height={frame.height} loading={eager ? 'eager' : 'lazy'} decoding="async" fetchpriority={eager ? 'high' : undefined}/>
+      </div>
+    </a>)}
+  </div>
+  <figcaption>{asset.caption}</figcaption>
+</figure>}

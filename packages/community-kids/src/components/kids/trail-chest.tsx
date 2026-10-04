@@ -145,6 +145,7 @@ export function TrailChest({
     <>
       <div
         ref={raiz}
+        data-trail-obstacle
         tabIndex={-1}
         {...semanticaDoBaú}
         className={cn(

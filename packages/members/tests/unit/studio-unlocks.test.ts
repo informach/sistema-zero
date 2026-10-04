@@ -41,6 +41,7 @@ function makeCourse(
     track: '2d',
     careerSlot: options.careerSlot === undefined ? 1 : options.careerSlot,
     sequentialLock: true,
+    videoBeforeActivity: false,
     metadata: unlockBlocks ? { studioUnlockBlocks: unlockBlocks } : null,
     createdAt: now,
     updatedAt: now,

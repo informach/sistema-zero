@@ -35,32 +35,67 @@ export type TrailArtSide = 'left' | 'right'
 
 export interface TrailArtPlacement {
   side: TrailArtSide
-  row: number
+  top: number
+  extraHeight: number
 }
 
-/**
- * Escolhe lado e altura da arte ao mesmo tempo. Para pôr a arte à esquerda,
- * nós positivos (à direita) abrem espaço; para pôr à direita, nós negativos
- * abrem espaço. A ordem de `sides` faz a preferência decidir somente empates.
- */
-export function trailArtPlacement(unit: TrailUnit, preferredSide: TrailArtSide): TrailArtPlacement {
-  const offsets = [...unit.nodes.map((node) => node.offset), unit.chest.offset]
+export interface TrailObstacle {
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+/** Medidas locais da unidade, sem a altura adicional reservada para a arte. */
+export interface TrailArtArea {
+  width: number
+  height: number
+  artWidth: number
+  artHeight: number
+  obstacles: readonly TrailObstacle[]
+}
+
+/** Encontra uma caixa livre considerando aulas, legendas, balão e baú reais. */
+export function trailArtPlacement(
+  { width, height, artWidth, artHeight, obstacles }: TrailArtArea,
+  preferredSide: TrailArtSide,
+): TrailArtPlacement {
+  const gap = 12
   const sides: TrailArtSide[] = preferredSide === 'left' ? ['left', 'right'] : ['right', 'left']
-  let best: TrailArtPlacement & { score: number } = {
-    side: preferredSide,
-    row: 0,
-    score: Number.NEGATIVE_INFINITY,
+  const middle = Math.max(0, (height - artHeight) / 2)
+  const candidates = new Set([middle, 0, height - artHeight])
+  for (const box of obstacles) {
+    candidates.add(box.top + box.height + gap)
+    candidates.add(box.top - gap - artHeight)
   }
+  let best: (TrailArtPlacement & { clearance: number; distance: number }) | null = null
 
   for (const side of sides) {
-    const direction = side === 'left' ? 1 : -1
-    for (let row = 0; row < offsets.length - 1; row += 1) {
-      const score = direction * ((offsets[row] ?? 0) + (offsets[row + 1] ?? 0))
-      if (score > best.score) best = { side, row, score }
+    const left = side === 'left' ? 0 : width - artWidth
+    for (const top of candidates) {
+      if (top < 0 || top + artHeight > height || left < 0) continue
+      let clearance = width
+      for (const box of obstacles) {
+        if (top >= box.top + box.height + gap || top + artHeight <= box.top - gap) continue
+        const horizontalGap = Math.max(box.left - (left + artWidth), left - (box.left + box.width))
+        clearance = Math.min(clearance, horizontalGap)
+      }
+      if (clearance < gap) continue
+      const distance = Math.abs(top - middle)
+      if (
+        !best ||
+        clearance > best.clearance ||
+        (clearance === best.clearance && distance < best.distance)
+      ) {
+        best = { side, top, extraHeight: 0, clearance, distance }
+      }
     }
   }
 
-  return { side: best.side, row: best.row }
+  if (best) return { side: best.side, top: best.top, extraHeight: 0 }
+  // Unidade curta/estreita: mantém a arte inteira abaixo dos nós, dentro da unidade.
+  const top = Math.max(height, ...obstacles.map((box) => box.top + box.height + gap))
+  return { side: preferredSide, top, extraHeight: top + artHeight - height }
 }
 
 /**

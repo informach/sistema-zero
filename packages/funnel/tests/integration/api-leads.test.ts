@@ -183,6 +183,24 @@ describe('POST /api/events (whitelist de eventos do cliente)', () => {
     expect(res.status).toBe(201)
     expect(events.some((e) => e.eventName === 'viu_pagina_vendas')).toBe(true)
   })
+
+  test('métricas desativadas (sz_metrics=rejected) → 202 sem gravar o comportamento', async () => {
+    const { repo, events } = createFakeRepo()
+    const { id } = await repo.createLead()
+    const res = await recordEvent(
+      new Request('http://localhost/api/events', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          cookie: `${cookieFor(id)}; sz_metrics=rejected`,
+        },
+        body: JSON.stringify({ eventName: 'abriu_checkout' }),
+      }),
+      deps(repo),
+    )
+    expect(res.status).toBe(202)
+    expect(events.some((e) => e.eventName === 'abriu_checkout')).toBe(false)
+  })
 })
 
 describe('PATCH /api/leads (lead do cookie)', () => {

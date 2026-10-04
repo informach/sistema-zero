@@ -1,41 +1,50 @@
 # Roteiro de gravação · A Chave do Farol · Dia 2
 
-Duas seções, dois vídeos. Abrir o projeto enviado no Dia 1; para ensaio sem envio, usar a retomada do Dia 2, que já tem somente as regras do primeiro dia. Não dizer que a criança montou a arte. **Na tela** orienta a gravação; só o texto de **Narração** é falado.
+Duas seções, dois vídeos. Retomar o projeto enviado no Dia 1; o projeto preparado do Dia 2 só é a alternativa quando não houver envio anterior. Não reconstruir nem substituir um projeto já feito pela criança. O primeiro vídeo mostra o problema em 20 a 30 segundos. O segundo explica cada conceito no momento de usá-lo e acompanha a montagem, em aproximadamente 5 minutos, sem acelerar encaixes para caber na estimativa. Só a narração é falada.
 
 ## Seção 1. Encostar ainda não é pegar
 
 ### Vídeo `video-d2-contexto` · A chave precisa fazer diferença
 
-**Na tela:** mover o personagem com as setas até a chave no projeto que só tem o movimento. Ele passa pela chave; ela continua desenhada. Mostrar o farol, sem tentar resolver a porta.
+**Na tela:** no projeto que tem somente movimento e borda, mover o personagem até a chave e mostrar que ela continua no chão. Afastar o personagem para tornar visível que ela ficou ali. Não demonstrar a solução pronta nem apresentar fichas de variável. Encerrar apontando **Próxima seção**.
 
 **Narração:**
-> "Ontem você fez o personagem andar. Agora olha o que acontece quando ele chega à chave. Ele encosta nela, mas a chave continua no chão. Encostar, sozinho, não diz ao jogo o que fazer. É parecido com uma campainha: alguém aperta, mas só ouvimos o som se a campainha estiver ligada. No nosso jogo, o encontro com a chave vai ser o acontecimento. Precisamos dizer qual ação vem depois desse encontro."
+> "Seu personagem já anda pelo mapa. Veja o que acontece quando ele chega à chave: ele passa por ela sem pegar. Quando ele se afasta, ela continua no chão. Falta uma regra para esse encontro recolher a chave e guardar que ela foi encontrada. Aperte Próxima seção para montar essa parte do jogo."
 
-**Na tela:** mostrar duas fichas simples da gravação: `temChave = falso` e `temChave = verdadeiro`, sem mostrar o resultado do teste. Apontar o farol apagado.
-
-**Narração:**
-> "Tem mais uma coisa. Quando a chave sumir do chão, o jogo ainda precisa se lembrar de que o personagem a encontrou. Vamos guardar essa resposta numa variável. Variável é como uma caixinha com nome: ela guarda uma informação que pode mudar. A nossa vai se chamar temChave. No começo, a resposta é falso, porque ele ainda não pegou a chave. Depois do encontro, a resposta pode virar verdadeiro. Amanhã o farol vai olhar essa informação antes de abrir a porta."
+**Ponte do Zappy na página (não gravar):** Você viu que o personagem atravessa a chave sem recolhê-la. Clique em Próxima seção para continuar.
 
 ## Seção 2. Guarde que a chave foi encontrada
 
 ### Vídeo `video-d2-programar` · Faça o jogo guardar a chave
 
-**Na tela:** no Estúdio do Dia 2, mostrar **Ao iniciar**. Abrir **Programação → 🏷️ Variáveis**, pegar **Criar variável ... com valor ...** e encaixar depois de **Ativar controles clássicos**. Nomear `temChave`. No encaixe de valor, abrir **Programação → ❓ Lógica & Se**, pegar **Verdadeiro ou falso** e selecionar **falso**. Sair do campo para confirmar.
+**Na tela:** abrir **Programação → Variáveis**. Pegar **Criar variável ... com valor ...**, encaixar em **Ao iniciar**, após **Ativar controles clássicos**. Nomear `temChave`. Abrir **Programação → Lógica & Se**, pegar **Verdadeiro ou falso**, encaixar no valor inicial e escolher **falso**, substituindo o valor que veio no bloco. Confirmar o nome saindo do campo.
 
 **Narração:**
-> "Vamos montar essa caixinha. Na paleta, abra Programação e depois Variáveis. Pegue Criar variável com valor e encaixe no fim de Ao iniciar, depois do controle de setas. Dê o nome temChave, tudo junto, como estou escrevendo. Para colocar o valor, abra Programação, Lógica e Se. Pegue Verdadeiro ou falso, encaixe no espaço da variável e escolha falso. Assim o jogo começa sabendo que o personagem ainda não está com a chave."
+> "A chave precisa sair do chão, e o jogo precisa lembrar que ela foi encontrada. Vamos guardar essa informação numa variável. Uma variável tem um nome e guarda um valor que pode mudar. Abra Programação, Variáveis. Pegue Criar variável com valor e encaixe no fim de Ao iniciar, depois de Ativar controles clássicos. Troque o nome contador por temChave, tudo junto, com o C maiúsculo, e clique fora do campo. Abra Programação, Lógica e Se. Pegue Verdadeiro ou falso, coloque no espaço do valor da variável e escolha falso. Aqui, falso significa que o personagem ainda não está com a chave. Não quer dizer que você errou. Quando ele pegar a chave, vamos guardar verdadeiro."
 
-**Na tela:** mostrar **Quando acontecer**. Abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite ... começar a encostar no sprite ...**, encaixar na área. Selecionar `personagem` e `chave`. Antes de pôr ações, testar: o evento vazio não muda nada.
-
-**Narração:**
-> "Agora vamos avisar o jogo do encontro. Na paleta, abra Jogo 2D, Colisões, Encostar e bloquear. Pegue Quando o sprite começar a encostar no sprite e encaixe na área Quando acontecer. No primeiro nome, escolha personagem. No segundo, escolha chave. Esse bloco espera os dois se encostarem. Mas olha dentro dele: ainda não mandamos fazer nada, então o teste continua igual."
-
-**Na tela:** abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, encaixar dentro do evento e selecionar `chave`. Abrir **Programação → 🏷️ Variáveis**, pegar **Alterar variável ... para ...**, encaixar abaixo; escolher `temChave`. Abrir **Programação → ❓ Lógica & Se**, pegar **Verdadeiro ou falso** e escolher `verdadeiro`. Em seguida, outro **Alterar variável ... para ...** para `aviso`, com texto `Você pegou a chave! Agora vá ao farol.` por **Programação → 🔣 Valores → texto**.
+**Na tela:** abrir **Jogo 2D → Colisões → Encostar e bloquear**. Pegar **Quando o sprite ... começar a encostar no sprite ...** e encaixar em **Quando acontecer**. Escolher `personagem` em A e `chave` em B. Apontar o interior do evento vazio.
 
 **Narração:**
-> "Vamos colocar a ação dentro desse encontro. Abra Jogo 2D, Sprites, Criar e trocar aparência. Pegue Destruir o sprite, encaixe dentro do encontro e escolha chave. É a chave do chão que sai do jogo; o personagem continua. Abaixo, abra Programação, Variáveis. Pegue Alterar variável para e escolha temChave. Abra Programação, Lógica e Se, pegue Verdadeiro ou falso, encaixe no espaço do valor e escolha verdadeiro. Agora a caixinha se lembra da coleta. Para a mensagem da tela acompanhar, abra de novo Programação, Variáveis. Pegue outro Alterar variável para, encaixe abaixo e escolha aviso. Abra Programação, Valores, pegue texto e escreva: ‘Você pegou a chave! Agora vá ao farol.’"
+> "Agora programe o encontro. O personagem encostar na chave é um evento, um acontecimento ao qual o jogo pode responder. Abra Jogo 2D, Colisões, Encostar e bloquear. Pegue Quando o sprite começar a encostar no sprite e encaixe na área Quando acontecer, que ainda está vazia. Escolha personagem no primeiro nome e chave no segundo. As ações que colocarmos dentro deste bloco vão acontecer quando os dois começarem a se encostar."
 
-**Na tela:** mover até a chave. Mostrar desaparecimento e mensagem. Mover pelo mesmo lugar novamente. Mostrar **Salvo** e **Enviar para o professor**, deixando o farol apagado. Não ensinar porta.
+**Na tela:** abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, encaixar dentro do evento e selecionar `chave`. Depois abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e encaixar logo abaixo, ainda dentro do evento. Escolher `temChave`. Em **Programação → Lógica & Se**, pegar **Verdadeiro ou falso**, encaixar no valor e manter **verdadeiro**, como vem no bloco.
 
 **Narração:**
-> "Teste no jogo. Leve o personagem até a chave. Ela sumiu? A mensagem mudou? Passe pelo mesmo lugar mais uma vez. A chave não é recolhida de novo, porque já saiu da partida. Se a sua chave não sumir, confira os dois nomes no bloco Quando encostar: personagem primeiro, chave depois, e veja se Destruir o sprite chave está encaixado dentro dele. Quando o teste funcionar, confira Salvo e use Enviar para o professor. O farol ainda está apagado: amanhã vamos usar a resposta guardada em temChave para decidir se a porta pode abrir."
+> "Abra Jogo 2D, Sprites, Criar e trocar aparência. Pegue Destruir o sprite, encaixe dentro do encontro e escolha chave. Neste jogo, destruir quer dizer retirar da partida. É a chave que sai, não o personagem. Logo abaixo, ainda dentro do encontro, coloque Alterar variável para, que fica em Programação, Variáveis. Escolha temChave. Em Programação, Lógica e Se, pegue Verdadeiro ou falso, encaixe no valor e mantenha verdadeiro, como veio no bloco. A chave sai do chão, mas o jogo guarda que ela foi encontrada."
+
+**Na tela:** em **Programação → Variáveis**, pegar outro **Alterar variável ... para ...**, encaixar após `temChave`, dentro do mesmo evento, e selecionar `aviso`. Em **Programação → Valores**, pegar **texto**, substituir o valor e escrever `Você pegou a chave! Agora vá ao farol.`. Mostrar os três blocos na ordem: destruir, guardar, avisar.
+
+**Narração:**
+> "Vamos avisar quem está jogando. Abra Programação, Variáveis e pegue outro Alterar variável para. Encaixe abaixo do bloco que muda temChave, ainda dentro do encontro, e escolha aviso. Essa variável já veio preparada para mostrar uma mensagem na tela. Abra Programação, Valores, pegue texto e encaixe no valor de aviso, substituindo o número que veio ali. Escreva: Você pegou a chave! Agora vá ao farol. Esta mensagem conta o que aconteceu. Quem guarda a informação da coleta é temChave, no bloco anterior. Confira as três ações dentro do encontro: retirar a chave, guardar verdadeiro e mudar o aviso."
+
+**Na tela:** após a prévia atualizar, recolher a chave e atravessar novamente o mesmo lugar. Usar **Atualizar** para reiniciar e conferir que ela reaparece. Não concluir a porta nesta aula.
+
+**Narração:**
+> "Teste no jogo. Leve o personagem até a chave. Ela deve sair do chão, e a mensagem deve mudar. Passe de novo pelo mesmo lugar: não há outra chave ali para recolher. Aperte Atualizar para começar uma nova partida. A chave deve voltar. Se ela não sumiu no encontro, confira personagem e chave no evento e Destruir o sprite chave dentro dele. Se a mensagem não mudou, confira o bloco que altera aviso e o texto encaixado. Corrija e teste outra vez."
+
+**Na tela:** clicar **Verificar esta etapa**, mostrar o resultado ou uma pendência real e corrigir antes de verificar novamente. Após **Objetivo da etapa cumprido!**, esperar **Salvo**, abrir **Enviar para o professor**, confirmar **Enviar** sem exigir recado e aguardar. Apontar **Concluir aula**.
+
+**Narração:**
+> "Quando os testes funcionarem, aperte Verificar esta etapa. Se faltar alguma coisa, corrija o bloco indicado e verifique novamente. Ao aparecer Objetivo da etapa cumprido!, espere Salvo. Aperte Enviar para o professor e confirme em Enviar. Quando o envio terminar, aperte Concluir aula."
+
+**Ponte do Zappy na página (não gravar):** Agora programe a coleta da chave no seu jogo. Teste se ela sai do chão e se o aviso muda. Use Verificar esta etapa antes de enviar o projeto.

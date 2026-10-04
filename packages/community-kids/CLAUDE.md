@@ -29,7 +29,11 @@ fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), microi
 bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`).
 
 ⭐⭐ **Nav: cinco seções, e as três com destinos por dentro ABREM em vez de navegar (09/2026).**
-`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Jornada, Criar, Comunidade e Meu espaço. As três
+⭐ **O item da Jornada chama "Aprender" desde 03/10/2026** (decisão da dona): o menu diz o que a
+criança FAZ ali, em par com o "Criar" (o caminho guiado × a criação livre); a página `/cursos`
+continua "Cursos da Jornada do Criador" e todo o "sua jornada" de dentro fica. Trava:
+`tests/copy-jornada.test.ts`. Os tutoriais do "Como fazer" e os prints acompanharam.
+`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Aprender, Criar, Comunidade e Meu espaço. As três
 últimas têm **`children`**, e é isso que o menu desenha: no computador um `<details>` controlado
 (o padrão nativo do "Minhas ferramentas"), no celular uma **gaveta** sobre a barra de abas
 (`useModalA11y`, o mesmo das celebrações). O agrupamento de 07/09 tinha deixado as ferramentas a
@@ -258,8 +262,12 @@ escuro e logo) e `52de024f` (3D).
   `--sol`), com o movimento vindo do link ou botão em volta. Cor própria? Declare `--k3d-degrau`
   na peça (o "Resgatar" faz no `style`). ⚠️ As `--k3d-*` são declaradas em CADA peça, nunca
   herdadas: um cartão em hover em volta de um botão mexeria no degrau dele. Planos de propósito:
-  o menu, as abas e os chips de filtro (decisão dela), o nó travado e o baú fechado. Nas
-  ferramentas o relevo vale só nas galerias (ver o CLAUDE.md do ui).
+  o menu, as abas e os chips de filtro (decisão dela). O nó TRAVADO da trilha ganhou em
+  04/10/2026, a pedido dela, um volume baixo e apagado (`0 3px 0 var(--pen-degrau-cartao)`,
+  parado, sem subir nem afundar): de 11/09 até ali ele era plano e ela sentiu falta do cinza com
+  sombra de antes. O degrau cheio de 5px que se mexe continua só nos nós que abrem aula; com ele
+  a aula travada pareceria um botão. Nas ferramentas o relevo vale só nas galerias (ver o
+  CLAUDE.md do ui).
 - **Conferência visual** (o app exige banco e login): `tmp/pen/` (fora do git) tem uma cópia da
   conferência das telas-modelo (`?tema=pink` liga o Pink), o servidor `:4803`, uma amostra das
   receitas do `tool-chrome.css` (`ferramentas.html`) e uma da logo (`logo.tsx`). Contraste medido
@@ -1753,6 +1761,50 @@ e assim por diante. `lenda` → trilha da Lenda; curso sem `level` válido → m
 tela sem saída. A página não precisa mais buscar gamificação para desempatar a volta. Testes:
 `tests/course-return.test.ts`.
 
+## "Primeiro, assista ao vídeo" + o vídeo flutuante na aula (03/10/2026)
+
+A régua e a estrutura moram no member-shell (§"Vídeo antes da atividade + o vídeo flutuante"
+de lá); aqui mora a PELE e o Zappy.
+- O `lesson-player-client.tsx` passa `videoGateMascot` no contexto (`KidsMascotAnimated`
+  `happy`, mudo: o aviso é estado, não acontecimento).
+- `globals.css` (FORA de `@layer`, como os outros `sz-lesson-*`) veste o aviso como a carta
+  das telas-modelo: véu no céu do tema a 78% (`color-mix in oklab`, a atividade segue à vista),
+  cartão branco com `--sombra-carta-sm`, título no Baloo, a pílula do quanto já viu na menta (é
+  progresso) e "Ver o vídeo" na pílula azul de sempre; o "Pronto!" na menta. O cartão gruda a
+  5.5rem do topo (abaixo da barra de progresso da aula).
+- O vídeo flutuante: ⭐ MOLDURA DE TV no navy do menu (`--menu`, decisão dela em 03/10/2026, a
+  mesma moldura do palco das cenas), com o título "Vídeo" na pílula AMARELA com ▶ (`--kids-ouro`
+  com tinta navy) e os botões − e + claros sobre o escuro. O cartão branco com a barra no céu
+  era da família dos botões da atividade ao lado e não se lia como algo que apareceu por cima. O
+  flutuante é `fixed`, mas continua dentro de `.sz-lesson-sections` no DOM, e é por isso que as
+  regras o alcançam.
+- ⭐⭐ **O botão "Vídeo" é um INTERRUPTOR na barra da atividade, não mais a pílula flutuante
+  (03/10/2026).** Relato dela: a pílula ficava por cima dos controles do Estúdio ampliado (o olho
+  e o ⋯) e era "o mesmo componente do vídeo"; ela pediu o botão separado, sempre na barra, e o
+  vídeo ligado funcionando como antes. A estrutura é do member-shell (`LessonVideoToggle`); aqui
+  mora a pele, `.sz-lesson-video-toggle` no `globals.css`: contorno quieto desligado e, com
+  `aria-pressed="true"`, o fundo do menu (`--menu`) com tinta `--menu-texto`, o degrau num tom do
+  menu e o ícone de TV no ouro. ⚠️ A regra antiga `.sz-lesson-video-pill` saiu junto.
+- Testes: `tests/lesson-video-gate.test.tsx` (a aula de verdade com um player e uma atividade de
+  mentira que falam o contrato de produção: tranca, abre ao vivo, "Ver o vídeo", sem opção/sem
+  player, o MESMO nó do vídeo flutuando, interruptor, minimizar, Tab com a tela ampliada modal e o
+  canto guardado por perfil) e, no Chromium, `e2e-scenes/lesson-video.spec.ts`: a página
+  `/lesson-video` do harness monta a aula de verdade com um vídeo nativo de 6 s
+  (`e2e-scenes/fixtures/video.webm`, gerado com `ffmpeg -f lavfi -i testsrc`) e o jogo pronto do
+  Cadê à direita, no modo IMERSIVO (rodapé fixo, como a página de aula); o servidor do ensaio
+  devolve o progresso que recebe, então a tranca abre AO VIVO aos 90%. Cobre 1366×768, 390×844 e
+  844×340 (celular deitado): o flutuante por cima da tela ampliada (o centro dele é ele mesmo), a
+  conferência EXPLÍCITA de que ele não cobre o "Voltar à aula", o lugar do vídeo guardando a
+  altura, o `<video>` sendo o mesmo e o tempo andando, o interruptor (o foco volta a ele ao
+  minimizar, e ele é a 5ª parada do Tab), arrastar encaixando no canto, a alça
+  de tamanho, o Tab e o canto guardado após recarregar. Lacuna aceita: Estúdio, Pinta, Vimeo e
+  YouTube no flutuante, e a pele do cartão de vídeo do kids, se conferem em staging.
+- ⚠️⚠️ **O `MutationObserver` do happy-dom morre na primeira coleta de lixo** (o ouvinte fica só
+  num `WeakRef`; ver o CLAUDE.md do studio). Foi o que derrubou no CI o "outro diálogo por cima":
+  o diálogo saía e o vídeo seguia escondido. O `test-setup.ts` segura essas funções pelo tempo de
+  vida do observador, e o teste força um `Bun.gc(true)` no meio para provar.
+- O "Pronto!" é um aviso fixo acima do rodapé (o `--sz-lesson-nav-height`), na menta, com sombra.
+
 ## Bloco "Em breve" na aula (`coming_soon`, 08/2026)
 
 Quando a autora cria a aula mas ainda não terminou de montá-la, a criança abria, via blocos pela
@@ -2971,10 +3023,11 @@ que troca uma tarde de investigação por cinco segundos.
 
 ⚠️ O `.kids-trail-art` ganhou `aspect-ratio: 9 / 8` e perdeu a regra de `img`: o
 `<canvas>` **não tem proporção intrínseca** e cairia nos 150px de fábrica. O 9/8 é o
-`180x160` do `<Image>` que saiu, então a trilha não se mexeu um pixel.
+`180x160` do `<Image>` que saiu. A largura mudou em 03/10/2026, conforme abaixo.
 
 Os quatro desvios calados (SSR/primeiro quadro, `saveData`, fora da viewport, falha
-do Rive) não deixam buraco porque a arte é `position: absolute` — fora do fluxo.
+do Rive) não deixam buraco: a arte é absoluta e qualquer altura adicional só é
+reservada depois da carga; uma falha retira essa reserva.
 `prefers-reduced-motion` é o único que NÃO some: monta com `autoplay: false`, que
 pinta o primeiro quadro. O canvas monta na primeira interseção e depois só pausa,
 nunca desmonta (desmontar reiniciaria do quadro 0 a cada rolagem).
@@ -2987,7 +3040,40 @@ de segurança é como uma delas apodrece.
 ⚠️ **Teste:** o `IntersectionObserver` do happy-dom EXISTE mas nunca chama o callback
 (medido) — sem o falso, o canvas nunca monta e o teste mediria o contrário do que a
 criança vê. E, como sempre com Rive aqui, **nenhum teste prova que anima**: quem
-verifica é a prévia no Admin.
+verifica é a prévia no Admin. O ensaio Chromium abaixo também carrega um `.riv` real.
+
+### Tamanho e posição responsivos — 03/10/2026
+
+A caixa do Rive tem **250 px no desktop** e, até 640 px de viewport, **45% da
+coluna, limitados a 130–160 px**. `aspect-ratio: 9 / 8` e `Fit.Contain` preservam
+o arquivo inteiro; margens internas do artboard continuam fazendo parte da arte.
+
+`CourseTrail` ainda renderiza os nós no servidor e os passa como `children` para
+`TrailUnitBody`. Essa ilha mede os limites reais das aulas, legendas, balão e baú
+(`data-trail-obstacle` e `.kids-balloon`). `trailArtPlacement` encontra uma caixa
+lateral livre com 12 px de margem; prefere a maior folga e, no empate, o centro
+vertical e o lado alternado do módulo. O cálculo antigo pela soma de offsets saiu.
+`ResizeObserver` acompanha largura e texto, incluindo o carregamento de fontes.
+
+Quando a unidade é curta ou estreita demais, a arte fica abaixo dos nós e o corpo
+reserva a altura necessária. `onReady`/`onFailed` do canvas controlam essa reserva:
+carregamento, `saveData`, arquivo ausente ou falha não deixam espaço vazio. O Rive
+só aparece depois da primeira medição e da carga. Pausa fora da tela, carregamento
+sob demanda e movimento reduzido mantêm o comportamento anterior.
+
+Verificação: `tests/trail-art-layout.test.ts` cobre colisões e 288 combinações de
+largura/curva/comprimento; `tests/course-trail.test.tsx` confere a estrutura inicial.
+`e2e-scenes/trail-rive.spec.ts` usa os componentes e CSS reais com dados locais e
+`/zappy/happy.riv`: 320, 390, 430, 768 e 1440 px, resize, arquivo inválido e recuperação,
+movimento reduzido e economia de dados. Não depende dos uploads nem do login de alunos.
+
+Revisão de 03/10: o estado de carga reinicia em **toda troca de `src`**, inclusive
+remoção e retorno à mesma URL; o reset não remonta as aulas nem o baú. Uma URL que
+carregou antes não comprova que a nova instância está pronta. Enquanto oculta, a
+caixa fica em `top: 0`: `visibility: hidden` preserva o overflow rolável, portanto
+deixá-la na posição de reserva criava um vão no fim da página mesmo com padding zero.
+O e2e também cobre esses dois casos, além da troca dos obstáculos e do resize apenas
+da coluna. A regressão de espaço vazio compara o `scrollHeight` com o módulo sem arte.
 
 ## Comandos
 

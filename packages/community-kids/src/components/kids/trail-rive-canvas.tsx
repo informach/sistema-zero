@@ -26,6 +26,7 @@ export function TrailRiveCanvas({
   pausado,
   stateMachine,
   onFalhou,
+  onReady,
 }: {
   src: string
   /** `false` = pinta o primeiro quadro e fica nele (`prefers-reduced-motion`). */
@@ -39,6 +40,7 @@ export function TrailRiveCanvas({
    */
   stateMachine?: string
   onFalhou: () => void
+  onReady?: () => void
 }) {
   const { RiveComponent, rive } = useRive({
     src,
@@ -58,6 +60,10 @@ export function TrailRiveCanvas({
     enableRiveAssetCDN: false,
     onLoadError: onFalhou,
   })
+
+  useEffect(() => {
+    if (rive) onReady?.()
+  }, [rive, onReady])
 
   useEffect(() => {
     if (!rive) return

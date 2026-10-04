@@ -71,3 +71,26 @@ export function leadAttributionFromLocation(location: Pick<Location, 'pathname' 
     landingPath: location.pathname,
   })
 }
+
+/** Leva a origem sanitizada da entrada até o próximo passo, sem copiar a query inteira. */
+export function funnelLinkWithAttribution(
+  path: string,
+  location: Pick<Location, 'pathname' | 'search'>,
+): string {
+  const attribution = leadAttributionFromLocation(location)
+  if (!attribution) return path
+
+  const target = new URL(path, 'https://funnel.local')
+  const entries = [
+    ['utm_source', attribution.utmSource],
+    ['utm_medium', attribution.utmMedium],
+    ['utm_campaign', attribution.utmCampaign],
+    ['utm_content', attribution.utmContent],
+    ['event_code', attribution.eventCode],
+    ['cupom', attribution.initialCouponCode],
+  ] as const
+  for (const [key, value] of entries) {
+    if (value) target.searchParams.set(key, value)
+  }
+  return `${target.pathname}${target.search}${target.hash}`
+}

@@ -1,0 +1,291 @@
+{
+  "conditions": "Local built server; Chromium; 390x844; CPU 4x; 1.6Mbps down / 750Kbps up / 150ms latency; 7 interleaved runs per condition; empty browser cache",
+  "summary": [
+    {
+      "path": "/",
+      "collection": "disabled",
+      "lcpMedianMs": 1644,
+      "clsMedian": 0.00037416687076222745,
+      "longTasksMedian": 1,
+      "blockingMsMedian": 68
+    },
+    {
+      "path": "/",
+      "collection": "automatic",
+      "lcpMedianMs": 1660,
+      "clsMedian": 0.00037416687076222745,
+      "longTasksMedian": 1,
+      "blockingMsMedian": 77
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "disabled",
+      "lcpMedianMs": 2072,
+      "clsMedian": 0,
+      "longTasksMedian": 1,
+      "blockingMsMedian": 109
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "automatic",
+      "lcpMedianMs": 2068,
+      "clsMedian": 0,
+      "longTasksMedian": 1,
+      "blockingMsMedian": 105
+    }
+  ],
+  "measurements": [
+    {
+      "path": "/",
+      "collection": "disabled",
+      "lcp": 1656,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 77,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "collection": "automatic",
+      "lcp": 1668,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 77,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "disabled",
+      "lcp": 2076,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 115,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "automatic",
+      "lcp": 2048,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 100,
+      "analyticsRequests": 3
+    },
+    {
+      "path": "/",
+      "collection": "disabled",
+      "lcp": 1636,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 62,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "collection": "automatic",
+      "lcp": 1644,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 62,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "disabled",
+      "lcp": 2068,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 102,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "automatic",
+      "lcp": 2060,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 105,
+      "analyticsRequests": 3
+    },
+    {
+      "path": "/",
+      "collection": "disabled",
+      "lcp": 1640,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 64,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "collection": "automatic",
+      "lcp": 1716,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 136,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "disabled",
+      "lcp": 2088,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 114,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "automatic",
+      "lcp": 2068,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 98,
+      "analyticsRequests": 3
+    },
+    {
+      "path": "/",
+      "collection": "disabled",
+      "lcp": 1652,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 76,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "collection": "automatic",
+      "lcp": 1636,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 73,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "disabled",
+      "lcp": 2060,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 92,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "automatic",
+      "lcp": 2076,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 113,
+      "analyticsRequests": 3
+    },
+    {
+      "path": "/",
+      "collection": "disabled",
+      "lcp": 1636,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 63,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "collection": "automatic",
+      "lcp": 1672,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 102,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "disabled",
+      "lcp": 2204,
+      "cls": 0,
+      "longTasks": 2,
+      "blockingMs": 271,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "automatic",
+      "lcp": 2124,
+      "cls": 0,
+      "longTasks": 2,
+      "blockingMs": 190,
+      "analyticsRequests": 3
+    },
+    {
+      "path": "/",
+      "collection": "disabled",
+      "lcp": 1700,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 130,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "collection": "automatic",
+      "lcp": 1660,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 84,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "disabled",
+      "lcp": 2048,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 95,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "automatic",
+      "lcp": 2084,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 115,
+      "analyticsRequests": 3
+    },
+    {
+      "path": "/",
+      "collection": "disabled",
+      "lcp": 1644,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 68,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/",
+      "collection": "automatic",
+      "lcp": 1640,
+      "cls": 0.00037416687076222745,
+      "longTasks": 1,
+      "blockingMs": 65,
+      "analyticsRequests": 2
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "disabled",
+      "lcp": 2072,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 109,
+      "analyticsRequests": 0
+    },
+    {
+      "path": "/como-funciona/",
+      "collection": "automatic",
+      "lcp": 2060,
+      "cls": 0,
+      "longTasks": 1,
+      "blockingMs": 95,
+      "analyticsRequests": 3
+    }
+  ]
+}

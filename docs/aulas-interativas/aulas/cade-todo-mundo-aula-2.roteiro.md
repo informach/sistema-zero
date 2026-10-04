@@ -16,6 +16,8 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Clique em Próxima seção para começar.”
 
+**Zappy abaixo do vídeo:** “Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar.”
+
 ## 2. Um número que acompanha a busca
 
 **Duração alvo:** 40 a 55 segundos.
@@ -103,6 +105,8 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 > Quando aparecer Seu jogo está no Mural, clique em Fechar.
 >
 > Agora clique em Concluir aula.”
+
+**Zappy abaixo do vídeo:** “Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.”
 
 **Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.
 

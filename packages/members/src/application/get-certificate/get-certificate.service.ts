@@ -10,6 +10,7 @@ import type { CertificateRepository } from '../../domain/ports/certificate-repos
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import type { CertificateStateView } from '../mappers/views'
 
@@ -32,6 +33,7 @@ export class GetCertificateService {
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
     private readonly certificates: CertificateRepository,
+    private readonly sections: SectionProgressionService,
   ) {}
 
   async execute(input: GetCertificateInput): Promise<CertificateStateView> {
@@ -73,8 +75,13 @@ export class GetCertificateService {
       input.privileged,
     )
     const preceding = precedingPublishedLessonIds(orderedLessonIds, input.lessonId)
+    const state = input.privileged
+      ? undefined
+      : await this.sections.read({ userId: input.userId, accountId: input.accountId }, lesson)
+    const sectionAvailable =
+      !state || (await this.sections.accessibleBlockIds(lesson, state)).has(input.blockId)
     return {
-      eligible: eligibleForCertificate(preceding, completedIds),
+      eligible: eligibleForCertificate(preceding, completedIds) && sectionAvailable,
       issued: false,
       revoked: false,
       serial: null,

@@ -1168,15 +1168,13 @@ a.kid-pop:has(> .kids-carta):hover {
 
   .kids-trail-art {
     position: absolute;
-    /* O `top` vem do trecho de nós mais livre, calculado no course-trail.tsx. */
+    /* O `top` considera os limites reais dos nós, medidos pelo TrailUnitBody. */
     z-index: 0;
-    /* ~92px no celular estreito, ~104px no comum e até 176px no desktop.
-       Cresce junto da tela sem um salto brusco no breakpoint. */
-    width: clamp(5.75rem, 26vw, 11rem);
+    width: min(250px, 100%);
     /* ⚠️ O <canvas> do Rive NÃO tem proporção intrínseca: com `height: auto` o
        navegador cai nos 150px de fábrica dos elementos substituíveis. Quem manda
-       na altura agora é a caixa, e 9/8 é exatamente o 180x160 do <Image> que o
-       Rive substituiu — a trilha não se mexe um pixel. */
+       na altura é a caixa. A proporção 9/8 acompanha a largura; Fit.Contain
+       preserva o artboard inteiro dentro dela. */
     aspect-ratio: 9 / 8;
     pointer-events: none;
     user-select: none;
@@ -1186,6 +1184,12 @@ a.kid-pop:has(> .kids-carta):hover {
   }
   .kids-trail-art--right {
     right: 0;
+  }
+  @media (max-width: 640px) {
+    .kids-trail-art {
+      /* A porcentagem acompanha a coluna real, inclusive com menu/padding. */
+      width: min(100%, clamp(130px, 45%, 160px));
+    }
   }
   .kids-node {
     width: var(--trail-node);
@@ -1212,11 +1216,16 @@ a.kid-pop:has(> .kids-carta):hover {
     border: 2px solid var(--border);
   }
   /* Aula travada (trava sequencial estilo Duolingo): cadeado neutro tracejado,
-     sem brilho — sinaliza "ainda não liberada"; o nó não é clicável. */
+     sem brilho — sinaliza "ainda não liberada"; o nó não é clicável.
+     ⚠️ Volume BAIXO e APAGADO, e parado (04/10/2026, pedido dela): de 11/09 até aqui o nó
+     era plano e ela sentiu falta do cinza com sombra de antes. O degrau cheio de 5px, que
+     sobe e afunda ao toque, continua sendo só dos nós que abrem aula: com ele a aula
+     travada pareceria um botão. */
   .kids-node--locked {
     background-color: var(--muted);
     color: var(--muted-foreground);
     border: 2px dashed var(--border);
+    box-shadow: 0 3px 0 var(--pen-degrau-cartao);
     opacity: 0.85;
   }
   /* Baú de fim de unidade (gamificação): os três estados compartilham o mesmo
@@ -1918,6 +1927,148 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 }
 .sz-lesson-sections .sz-lesson-status-lista > ul {
   padding-bottom: 0.375rem;
+}
+
+/* ⭐ "PRIMEIRO, ASSISTA AO VÍDEO" (03/10/2026). Curso com a opção "Assistir ao vídeo antes da
+   atividade": a atividade da direita fica trancada até a criança ver o vídeo uma vez. O véu é o
+   céu do tema, translúcido, para a atividade continuar à vista atrás (ela sabe o que vem); o
+   cartão é a carta branca das telas-modelo com o Zappy, o título no Baloo e a ação na pílula de
+   sempre. O member-shell só põe os ganchos (invariante 8 de lá). */
+.sz-lesson-sections .sz-lesson-video-gate-veil {
+  border-radius: var(--sz-activity-card-radius, 1.25rem);
+  background: color-mix(in oklab, var(--band-ceu) 78%, transparent);
+  backdrop-filter: blur(2px) saturate(0.8);
+}
+.sz-lesson-sections .sz-lesson-video-gate-card {
+  /* Abaixo da barra de progresso do topo da aula, que acompanha a rolagem. */
+  top: 5.5rem;
+  gap: 0.875rem;
+  padding: 1.5rem 1.5rem 1.75rem;
+  border: 0;
+  border-radius: var(--raio-carta);
+  background: var(--card);
+  box-shadow: var(--sombra-carta-sm);
+}
+.sz-lesson-sections .sz-lesson-video-gate-mascot {
+  margin-top: -0.25rem;
+}
+.sz-lesson-sections .sz-lesson-video-gate-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.15;
+  color: var(--tinta);
+}
+.sz-lesson-sections .sz-lesson-video-gate-text {
+  max-width: 24rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--tinta);
+}
+/* O quanto já viu: a pílula menta do "pronto", porque é progresso de verdade. */
+.sz-lesson-sections .sz-lesson-video-gate-progress {
+  background: var(--band-menta);
+  color: var(--success-foreground);
+  font-weight: 800;
+}
+.sz-lesson-sections .sz-lesson-video-gate-action {
+  height: 3rem;
+  padding-inline: 1.75rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+/* "Pronto! Agora assista de novo e faça junto" — some sozinho em 8 s ou no primeiro toque. */
+.sz-lesson-sections .sz-lesson-video-gate-done {
+  border: 0;
+  border-radius: 1rem;
+  background: var(--band-menta);
+  color: var(--tinta);
+  font-weight: 800;
+}
+
+/* ⭐ O VÍDEO FLUTUANTE (03/10/2026): com a atividade ampliada e o vídeo tocando, ele vem
+   pequeno por cima. Os dois (ele e a pílula "Vídeo") são `fixed`, mas continuam DENTRO de
+   `.sz-lesson-sections` no DOM, então estas regras os alcançam.
+   ⭐⭐ Uma MOLDURA DE TV no navy do menu (decisão dela, no mesmo dia): o cartão branco com a
+   barra azul-clara era da família dos botões da atividade logo ao lado ("Jogar de novo",
+   "Voltar à aula") e não se lia como uma coisa que APARECEU por cima. Escuro, ele é a única peça
+   escura da tela ampliada, e o navy é o mesmo da moldura do palco das cenas e do menu. A
+   moldura em si (6px dos lados e embaixo) é estrutura do member-shell; aqui é só a cor. */
+.sz-lesson-sections .sz-lesson-video-float {
+  border: 0;
+  border-radius: 1.25rem;
+  background: var(--menu);
+  color: var(--menu-texto);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--menu) 22%, transparent),
+    0 22px 48px rgba(14, 24, 52, 0.42);
+}
+.sz-lesson-sections .sz-lesson-video-float-bar {
+  background: transparent;
+}
+.sz-lesson-sections .sz-lesson-video-float-move {
+  font-weight: 800;
+  color: var(--menu-texto);
+}
+.sz-lesson-sections .sz-lesson-video-float-move > svg {
+  color: var(--menu-icone);
+}
+/* "Vídeo da aula" vira a pílula AMARELA com o ▶: o amarelo da moeda com a tinta navy (10,88:1;
+   o branco sobre esse amarelo reprova). Diz "isto é um vídeo" antes de a criança ler. */
+.sz-lesson-sections .sz-lesson-video-float-move > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+  padding: 0.25rem 0.625rem 0.25rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--kids-ouro);
+  color: var(--menu);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.sz-lesson-sections .sz-lesson-video-float-move > span::before {
+  content: "";
+  flex: none;
+  border-block: 0.25rem solid transparent;
+  border-left: 0.375rem solid currentColor;
+}
+.sz-lesson-sections :is(.sz-lesson-video-float-size, .sz-lesson-video-float-minimize) {
+  color: var(--menu-texto);
+}
+.sz-lesson-sections
+  :is(
+    .sz-lesson-video-float-move,
+    .sz-lesson-video-float-size,
+    .sz-lesson-video-float-minimize
+  ):hover {
+  background: var(--menu-vidro);
+}
+.sz-lesson-sections .sz-lesson-video-float-size[aria-disabled="true"]:hover {
+  background: transparent;
+}
+/* O anel de foco do tema (azul) some no navy: aqui ele é claro. */
+.sz-lesson-sections .sz-lesson-video-float button:focus-visible {
+  outline-color: var(--menu-texto);
+}
+/* O interruptor "Vídeo" da barra da atividade ampliada (03/10/2026): desligado é um botão da barra
+   como os outros; ligado, veste a TV do vídeo (o navy da moldura, com o ícone no amarelo da pílula
+   da TV), porque é o mesmo objeto aceso. O relevo do `Button` segue, com o degrau escurecido. */
+.sz-lesson-sections .sz-lesson-video-toggle {
+  font-weight: 800;
+}
+.sz-lesson-sections .sz-lesson-video-toggle[aria-pressed="true"] {
+  --k3d-degrau: color-mix(in oklab, var(--menu) 70%, black);
+  border-color: var(--menu);
+  background: var(--menu);
+  color: var(--menu-texto);
+}
+.sz-lesson-sections .sz-lesson-video-toggle[aria-pressed="true"]:hover {
+  background: color-mix(in oklab, var(--menu) 88%, white);
+}
+.sz-lesson-sections .sz-lesson-video-toggle[aria-pressed="true"] > svg {
+  color: var(--kids-ouro);
 }
 @media (min-width: 768px) {
   .sz-lesson-sections .sz-lesson-nav-immersive {

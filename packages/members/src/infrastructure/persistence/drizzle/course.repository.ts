@@ -36,6 +36,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     status: row.status,
     audience: row.audience,
     sequentialLock: row.sequentialLock,
+    videoBeforeActivity: row.videoBeforeActivity,
     level: row.level,
     track: row.track,
     careerSlot: row.careerSlot,

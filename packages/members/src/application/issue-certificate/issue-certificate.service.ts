@@ -20,6 +20,7 @@ import type { LearningRepository } from '../../domain/ports/learning-repository.
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import { type CertificateView, toCertificateView } from '../mappers/views'
 
@@ -69,6 +70,7 @@ export class IssueCertificateService {
     private readonly gamification: AwardGamificationService,
     private readonly clock: () => Date,
     private readonly learning: LearningRepository,
+    private readonly sections: SectionProgressionService,
   ) {}
 
   async execute(input: IssueCertificateInput): Promise<IssueCertificateResult> {
@@ -118,6 +120,15 @@ export class IssueCertificateService {
     if (!eligibleForCertificate(preceding, completedIds)) {
       throw new CertificateNotEligibleError()
     }
+
+    // A primeira emissão respeita a revisão anterior da própria aula. Downloads de
+    // certificados já emitidos seguem no caminho idempotente acima, sem novo requisito.
+    await this.sections.assertBlock(
+      { userId: input.userId, accountId: input.accountId },
+      lesson,
+      input.blockId,
+      input.privileged,
+    )
 
     const now = this.clock()
     const record = await this.insertCertificate(input, course, studentName, now)

@@ -2,7 +2,7 @@
 // "interesse intenso"/"concentração fora do comum" são vocabulário da HISTÓRIA do
 // André (camada de autoridade), nunca do filtro ou do argumento. Varre o fonte de
 // src/ inteiro e só aceita os termos dentro dos blocos
-// <!-- historia-andre:inicio/fim --> (atualmente no Desafio). Casa no
+// <!-- historia-andre:inicio/fim -->, caso a história esteja presente. Casa no
 // CONTEÚDO do arquivo, não linha a linha, e tolera markup/palavras no meio: o
 // formatter quebra a prosa a ~100 colunas e um <b> dentro da frase evadiria um
 // regex ingênuo.
@@ -30,12 +30,8 @@ const PADRAO = new RegExp(
 const ABRE = '<!-- historia-andre:inicio -->'
 const FECHA = '<!-- historia-andre:fim -->'
 
-// A descoberta de blocos é automática (qualquer arquivo com marcadores vale), mas
-// o Desafio precisa seguir marcado. A copy revisada da Comunidade conta a
-// origem familiar sem empregar termos clínicos; continua sujeita à varredura.
-const HISTORIA_OBRIGATORIA = [
-  join(SRC, 'components', 'funnel', 'oferta', 'DesafioOfertaBody.astro'),
-]
+// A origem familiar na nova oferta do Farol não usa termos clínicos. A varredura
+// permanece obrigatória; não exigimos reinserir uma história que saiu da copy.
 
 function listar(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
@@ -106,10 +102,9 @@ describe('copy do funil: termo clínico só na história do André', () => {
     expect(achados).toEqual([])
   })
 
-  test('a história clínica do Desafio segue marcada e os blocos pertencem ao André', () => {
+  test('eventuais blocos da história clínica continuam delimitados e pertencem ao André', () => {
     const arquivos = listar(SRC)
     const marcados = arquivos.filter((a) => readFileSync(a, 'utf8').includes(ABRE))
-    for (const obrigatorio of HISTORIA_OBRIGATORIA) expect(marcados).toContain(obrigatorio)
     for (const arquivo of marcados) {
       const blocos = blocosDaHistoria(readFileSync(arquivo, 'utf8'), arquivo)
       expect(blocos.length).toBeGreaterThan(0)

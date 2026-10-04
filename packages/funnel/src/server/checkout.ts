@@ -622,7 +622,7 @@ export async function startCard(request: Request, deps: CheckoutDeps): Promise<R
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_card')
 
   if (view.status === 'PAID') {
-    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(view.paidAt))
+    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(view.paidAt), view.id)
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_card')
       // Cartão é síncrono → registra o uso do cupom só na transição p/ pago (exactly-once).
@@ -736,7 +736,11 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   await deps.repo.insertEvent(lead.id, 'pagamento_iniciado', 'checkout_subscription')
 
   if (view.status === 'ACTIVE' && firstPayment?.status === 'PAID') {
-    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(firstPayment.paidAt))
+    const newlyPaid = await deps.repo.markPaid(
+      lead.id,
+      paymentApprovedAt(firstPayment.paidAt),
+      firstPayment.id,
+    )
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_subscription')
     }
@@ -815,7 +819,7 @@ export async function pixStatus(
         throw err
       }
     }
-    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(view.paidAt))
+    const newlyPaid = await deps.repo.markPaid(lead.id, paymentApprovedAt(view.paidAt), paymentId)
     if (newlyPaid) {
       await deps.repo.insertEvent(lead.id, 'pagamento_confirmado', 'checkout_polling')
       // Registra o uso do cupom só na transição p/ pago (exactly-once via

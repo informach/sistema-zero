@@ -1,0 +1,2 @@
+ALTER TABLE "funil"."analytics_events" ADD COLUMN "quiz_attempt_id" uuid;--> statement-breakpoint
+ALTER TABLE "funil"."analytics_events" ADD CONSTRAINT "analytics_events_quiz_attempt_id_leads_id_fk" FOREIGN KEY ("quiz_attempt_id") REFERENCES "funil"."leads"("id") ON DELETE set null ON UPDATE no action;

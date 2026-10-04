@@ -221,7 +221,22 @@ switch · table · textarea · **`use-modal-a11y`** (`@sistemazero/ui/use-modal-
 `useModalA11y({open,onClose})` devolve o `ref` do card e faz a gestão de foco de modal: foca ao
 abrir, PRENDE o Tab, Esc fecha, devolve o foco ao gatilho; pilha refcontada + lock de scroll. O
 `Dialog` consome este hook; overlays "bespoke" que precisam do mesmo comportamento sem o chrome do
-Dialog — ex.: as celebrações do community-kids — reusam o hook direto) · `cn`
+Dialog — ex.: as celebrações do community-kids — reusam o hook direto. ⭐ **Acompanhantes
+(03/10/2026):** o que fica FORA do card e mesmo assim faz parte do modal (o vídeo flutuante da
+aula por cima da atividade ampliada) leva `data-sz-modal-companion`, e entra no ciclo do Tab SÓ
+dos modais que pedem (`useModalA11y({ ..., companions: true })`: a cena e o jogo pronto
+ampliados). ⚠️ Um diálogo de confirmação aberto por cima NÃO pede: o Tab dele não pode fugir para
+o vídeo. Com acompanhante, card e acompanhantes viram uma roda só, mas ⚠️⚠️ **dentro do card quem
+anda é o NAVEGADOR**: o hook só desvia as PASSAGENS (a última parada do card → o 1º acompanhante;
+o último acompanhante → a 1ª do card; e o inverso no Shift+Tab). A primeira versão montava a
+roda inteira à mão com o `FOCUSABLE` e pulava `summary` ("Ver a explicação" da cena), o player e
+o texto editável (full review de 03/10/2026). As pontas e a ordem dos acompanhantes saem de
+`TABBABLE` (o `FOCUSABLE` + `summary`, `iframe`, `video[controls]`, `audio[controls]`,
+`contenteditable`), pulando o que está `inert`, não desenhado (`checkVisibility`), com
+`tabindex` NEGATIVO DECLARADO (o atributo: o happy-dom devolve `tabIndex` -1 para `summary`) e a
+guarda `data-sz-focus-guard`. Sem acompanhante, nada muda: só as pontas do card, com o
+`FOCUSABLE` de sempre. Trava: `community-kids/tests/lesson-video-gate.test.tsx` ("o Tab passa
+pelo flutuante")) · `cn`
 (clsx + tailwind-merge) · **`phone`** (`@sistemazero/ui/phone`, módulo PURO sem React:
 `phoneDigits`/`brLocalDigits`/`formatTelefone` — máscara BR "(11) 99999-9999"; usado pelo
 perfil do community e pelo pré-checkout do funil; convenção: o auth guarda SÓ DÍGITOS locais).

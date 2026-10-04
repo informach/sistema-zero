@@ -1,0 +1,302 @@
+[
+  {
+    "id": "p1",
+    "kicker": "Caderno do Aluno",
+    "title": "A Chave do Farol",
+    "subtitle": "Um barco precisa chegar à costa. Você vai programar as regras para a aventura acontecer.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "O cenário, os desenhos e o movimento do barco já vêm preparados. Você faz o personagem andar, recolher a chave e decidir quando acender o farol."
+      },
+      {
+        "kind": "box",
+        "title": "Use quando precisar",
+        "text": "Este caderno reúne os caminhos dos blocos, os encaixes e os testes. Você pode ler na aula, baixar ou imprimir. Não precisa preencher nada para concluir.",
+        "tone": "note"
+      },
+      {
+        "kind": "step",
+        "title": "Encontre seu passo",
+        "text": "<b>Dia 1:</b> movimento e bordas, páginas 2 e 3.<br/><b>Dia 2:</b> coleta e memória da chave, páginas 4 e 5.<br/><b>Dia 3:</b> experiência e decisão, páginas 6 e 7; testes, página 8.<br/><b>Seu jogo no Mural:</b> página 9.<br/><b>Certificado e ajuda:</b> página 10."
+      },
+      {
+        "kind": "box",
+        "title": "Antes de montar",
+        "text": "Na introdução, jogue a versão pronta. Use as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Experimente antes de seguir. Você não precisa vencer a partida para continuar.",
+        "tone": "experience"
+      }
+    ]
+  },
+  {
+    "id": "p2",
+    "kicker": "Dia 1 · Montagem",
+    "title": "O personagem começa a andar",
+    "subtitle": "Nesta versão, o mapa está pronto, mas o personagem ainda está parado.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "1. Mostre as quatro setas",
+        "text": "<b>Jogo 2D &gt; Controles &gt; Teclado, ações e toque.</b><br/>Pegue <b>Ativar controles clássicos</b>. Encaixe no fim de <b>Ao iniciar</b>, depois dos blocos preparados. Escolha <b>só as quatro direções</b>."
+      },
+      {
+        "kind": "box",
+        "title": "Duas palavras que aparecem aqui",
+        "text": "<b>Sprite:</b> um elemento do jogo que podemos controlar, como o personagem.<br/><b>Velocidade:</b> quanto ele anda a cada repetição. O movimento fica dentro de A cada quadro para ser repetido enquanto o jogo funciona.",
+        "tone": "experience"
+      },
+      {
+        "kind": "step",
+        "title": "2. Programe o movimento",
+        "text": "<b>Jogo 2D &gt; Movimento &gt; Movimentos prontos.</b><br/>Pegue <b>Mover sprite em 4 direções com setas</b>. Em <b>Enquanto estiver rodando</b>, encaixe dentro de <b>A cada quadro</b>, logo depois de <b>Desenhar o cenário cenario</b>. Escolha o sprite <b>personagem</b>. A velocidade já vem em <b>3</b>; deixe assim."
+      },
+      {
+        "kind": "step",
+        "title": "Teste",
+        "text": "Segure uma seta da tela. No computador, pode clicar no jogo e usar o teclado. Vá até uma beirada e observe se o personagem fica inteiro na tela. Se não andar, confira o nome personagem e o encaixe dentro de A cada quadro."
+      }
+    ]
+  },
+  {
+    "id": "p3",
+    "kicker": "Dia 1 · Teste e entrega",
+    "title": "Até a borda do mapa",
+    "subtitle": "O personagem anda. Agora ele precisa continuar visível quando chega ao limite.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "3. Limite o caminho",
+        "text": "<b>Jogo 2D &gt; Movimento &gt; Bordas e rebatidas.</b><br/>Pegue <b>Manter o sprite dentro da tela</b>. Encaixe logo depois do bloco de movimento, dentro de <b>A cada quadro</b>. Escolha <b>personagem</b>."
+      },
+      {
+        "kind": "diagram",
+        "lines": [
+          [0, "Enquanto estiver rodando"],
+          [1, "A cada quadro"],
+          [2, "Limpar a tela [preparado]"],
+          [2, "Desenhar o cenário cenario [preparado]"],
+          [2, "<b>Mover personagem em 4 direções, velocidade 3</b>"],
+          [2, "<b>Manter personagem dentro da tela</b>"],
+          [2, "Outros blocos preparados"]
+        ]
+      },
+      {
+        "kind": "text",
+        "text": "Teste cima, baixo, esquerda e direita até os limites. O personagem deve continuar visível. A ordem é importante: mover primeiro, conferir a borda depois."
+      },
+      {
+        "kind": "delivery",
+        "finish": "Concluir aula"
+      }
+    ]
+  },
+  {
+    "id": "p4",
+    "kicker": "Dia 2 · Montagem",
+    "title": "A chave precisa ser lembrada",
+    "subtitle": "Seu personagem já anda. Agora o encontro com a chave precisa mudar o jogo.",
+    "items": [
+      {
+        "kind": "text",
+        "text": "Uma <b>variável</b> tem nome e guarda um valor que pode mudar. A nossa é <b>temChave</b>. Aqui, <b>falso</b> significa sem a chave e <b>verdadeiro</b>, com a chave. Falso não quer dizer que você errou."
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie a informação temChave",
+        "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e encaixe no fim de <b>Ao iniciar</b>, depois de Ativar controles clássicos. Troque o nome contador por <b>temChave</b>, tudo junto, com C maiúsculo.<br/>Em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>Verdadeiro ou falso</b>. Substitua o valor inicial por esse bloco e escolha <b>falso</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Programe o encontro",
+        "text": "O encontro é um <b>evento</b>, um acontecimento ao qual o jogo pode responder.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b><br/>Pegue <b>Quando o sprite começar a encostar no sprite</b> e encaixe em <b>Quando acontecer</b>, que ainda está vazia. Escolha <b>personagem</b> primeiro e <b>chave</b> depois. As ações dentro do bloco acontecem quando os dois começarem a se encostar."
+      },
+      {
+        "kind": "step",
+        "title": "3. Retire a chave do chão",
+        "text": "<b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b><br/>Pegue <b>Destruir o sprite</b>, encaixe dentro do encontro e escolha <b>chave</b>. Isso retira a chave da partida. Não apaga a imagem do projeto."
+      }
+    ]
+  },
+  {
+    "id": "p5",
+    "kicker": "Dia 2 · Teste e entrega",
+    "title": "O jogo guarda a coleta",
+    "subtitle": "Retirar a chave não basta: o jogo precisa lembrar que ela foi encontrada.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. Guarde verdadeiro",
+        "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b>. Encaixe abaixo de Destruir o sprite, dentro do encontro, e escolha <b>temChave</b>. Em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>Verdadeiro ou falso</b>, encaixe no valor e mantenha <b>verdadeiro</b>, como veio no bloco."
+      },
+      {
+        "kind": "step",
+        "title": "5. Mostre a mensagem",
+        "text": "Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b>. Encaixe abaixo de temChave, ainda no encontro, e escolha <b>aviso</b>. Em <b>Programação &gt; Valores</b>, pegue <b>texto</b>, encaixe no valor de aviso, substituindo o número, e escreva:<br/><b>Você pegou a chave! Agora vá ao farol.</b><br/>O aviso conta o que aconteceu; <b>temChave</b> guarda a informação da coleta."
+      },
+      {
+        "kind": "step",
+        "title": "Teste a coleta",
+        "text": "Pegue a chave, confira se ela sumiu e se a mensagem mudou. Passe pelo mesmo lugar outra vez. Aperte <b>Atualizar</b> para recomeçar: a chave deve voltar. Se não sumiu, confira os nomes do encontro e Destruir o sprite chave dentro dele. Se a mensagem não mudou, confira aviso e seu texto."
+      },
+      {
+        "kind": "delivery",
+        "finish": "Concluir aula"
+      }
+    ]
+  },
+  {
+    "id": "p6",
+    "kicker": "Dia 3 · Experiência e montagem",
+    "title": "O que a porta precisa?",
+    "subtitle": "A coleta está pronta, mas a porta ainda não responde quando você chega ao farol.",
+    "items": [
+      {
+        "kind": "box",
+        "title": "Experimente antes de programar",
+        "text": "Uma <b>condição</b> é uma pergunta que o jogo confere. Na experiência da aula, aperte <b>Testar a porta</b> sem a chave. Depois aperte <b>Levar a chave</b> e <b>Testar a porta</b> outra vez. Compare as respostas e siga em <b>Próxima seção</b>.",
+        "tone": "experience"
+      },
+      {
+        "kind": "step",
+        "title": "1. Crie outro encontro",
+        "text": "<b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b>. Encaixe em <b>Quando acontecer</b>, abaixo do evento da chave, sem colocar um evento dentro do outro. Escolha <b>personagem</b> e <b>farol</b>."
+      },
+      {
+        "kind": "step",
+        "title": "2. Faça a pergunta",
+        "text": "<b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e encaixe dentro do evento do farol. Em <b>Programação &gt; Valores</b>, pegue <b>valor da variável</b>, encaixe na pergunta do Se e escolha <b>temChave</b>."
+      },
+      {
+        "kind": "step",
+        "title": "3. Prepare a resposta sem chave",
+        "text": "No bloco Se, aperte <b>+ senão</b>, não + senão se. Em <b>Programação &gt; Variáveis</b>, pegue <b>Alterar variável para</b> e encaixe em <b>senão</b>. Escolha <b>aviso</b>. Em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e encaixe no valor. Escreva:<br/><b>A porta não abriu. Falta a chave.</b>"
+      }
+    ]
+  },
+  {
+    "id": "p7",
+    "kicker": "Dia 3 · Montagem",
+    "title": "Quando a chave está com você",
+    "subtitle": "O ramo então guarda as ações para quando temChave for verdadeiro.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "4. Ligue a chegada do barco",
+        "text": "<b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b>, encaixe no começo de <b>então</b> e escolha <b>ganhou</b>. Em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>Verdadeiro ou falso</b>, encaixe no valor e mantenha <b>verdadeiro</b>, como veio. Essa informação liga o movimento do barco que já veio preparado."
+      },
+      {
+        "kind": "step",
+        "title": "5. Acenda o farol",
+        "text": "<b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite para</b> e encaixe abaixo, ainda em <b>então</b>. Escolha o sprite <b>farol</b> e a imagem <b>farol-aceso</b>."
+      },
+      {
+        "kind": "step",
+        "title": "6. Conte o que aconteceu",
+        "text": "Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b>, encaixe abaixo da troca de imagem, ainda em <b>então</b>, e escolha <b>aviso</b>. Em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e encaixe no valor de aviso, substituindo o número. Escreva:<br/><b>Você acendeu o farol! Olhe o barco chegando.</b>"
+      },
+      {
+        "kind": "diagram",
+        "lines": [
+          [0, "Encontro: personagem com farol"],
+          [1, "Se temChave"],
+          [2, "<b>então:</b> ganhou verdadeiro, imagem acesa, aviso"],
+          [2, "<b>senão:</b> aviso de que falta a chave"]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "p8",
+    "kicker": "Dia 3 · Teste e entrega",
+    "title": "Compare os dois caminhos",
+    "subtitle": "A condição está montada. Confira se cada situação recebe a resposta certa.",
+    "items": [
+      {
+        "kind": "box",
+        "title": "Teste 1 · Sem a chave",
+        "text": "Aperte <b>Atualizar</b> para recomeçar. Vá direto ao farol, sem passar pela chave. A luz deve continuar apagada, e a mensagem deve dizer que falta a chave.",
+        "tone": "note"
+      },
+      {
+        "kind": "box",
+        "title": "Teste 2 · Com a chave",
+        "text": "Aperte <b>Atualizar</b> outra vez. Pegue a chave, afaste-se de onde ela estava e vá ao farol. O jogo continua lembrando da coleta em <b>temChave</b>. A luz deve acender, a mensagem deve mudar e o barco deve chegar.",
+        "tone": "test"
+      },
+      {
+        "kind": "step",
+        "title": "Se a resposta saiu diferente",
+        "text": "Acendeu sem chave? Confira se a troca de imagem está em <b>então</b> e se o Se consulta <b>temChave</b>.<br/>Não acendeu com chave? Confira a coleta, <b>temChave verdadeiro</b> e a imagem <b>farol-aceso</b>.<br/>O barco não veio? Confira <b>ganhou verdadeiro</b> em então.<br/>O aviso saiu errado? Confira o texto no ramo certo: <b>então</b> ou <b>senão</b>.<br/>Corrija e repita os dois testes."
+      },
+      {
+        "kind": "delivery",
+        "finish": "Próxima seção"
+      }
+    ]
+  },
+  {
+    "id": "p9",
+    "kicker": "Dia 3 · Publicação",
+    "title": "Seu jogo no Mural",
+    "subtitle": "Você enviou o jogo para o professor. Agora outras pessoas também podem jogar.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "1. Abra Compartilhar",
+        "text": "Continue no mesmo Estúdio da aula. Aperte <b>Compartilhar</b>. O título e o resumo já estão preenchidos. Deixe como estão."
+      },
+      {
+        "kind": "step",
+        "title": "2. Prepare a capa",
+        "text": "Aperte <b>Gerar capa</b> e espere a imagem aparecer. Confira a imagem: ela vai apresentar seu jogo no Mural."
+      },
+      {
+        "kind": "step",
+        "title": "3. Publique e espere",
+        "text": "Aperte <b>Publicar</b>. Espere aparecer <b>Seu jogo está no Mural!</b>. Aperte <b>Fechar</b> e depois <b>Concluir aula</b>."
+      },
+      {
+        "kind": "box",
+        "title": "Quer copiar o link ou rever um passo?",
+        "text": "Na seção de publicação, abra o link <b>Como publicar seu jogo no Mural e copiar o link</b>. Ele leva ao Como Fazer, nossa área de ajuda. Você pode consultar o passo a passo e usar a opção de voltar para a aula.",
+        "tone": "experience"
+      },
+      {
+        "kind": "box",
+        "title": "Se Compartilhar não estiver disponível",
+        "text": "Confira se terminou o envio para o professor na seção anterior. Se continuar sem conseguir, use <b>Preciso de ajuda</b> na aula e conte o que aparece. O acesso para publicar também precisa estar ativo na conta.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
+    "id": "p10",
+    "kicker": "Sua conquista",
+    "title": "Guarde o que você criou",
+    "subtitle": "Você programou movimento, coleta e uma decisão que faz a aventura acontecer.",
+    "items": [
+      {
+        "kind": "box",
+        "title": "Seu certificado",
+        "text": "Na aula do certificado, aperte <b>Pegar meu certificado</b>. Se já tiver emitido, use <b>Baixar certificado (PDF)</b>. Depois, aperte <b>Concluir aula</b>.",
+        "tone": "test"
+      },
+      {
+        "kind": "step",
+        "title": "Se travar em alguma atividade",
+        "text": "Volte ao trecho do vídeo que mostra aquele encaixe e compare com o seu projeto. Você também pode consultar a página correspondente deste caderno."
+      },
+      {
+        "kind": "box",
+        "title": "Preciso de ajuda",
+        "text": "No rodapé da seção da aula, use <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou no Dia 3. Peguei a chave, mas o farol continua apagado. Conferi o bloco temChave.</b><br/>Isso ajuda o professor a entender em que ponto você está.",
+        "tone": "experience"
+      },
+      {
+        "kind": "step",
+        "title": "Para guardar e para entregar",
+        "text": "<b>Salvo</b> indica que a mudança ficou guardada.<br/><b>Verificar esta etapa</b> confere os blocos pedidos na atividade.<br/><b>Enviar para o professor</b>, com a confirmação em <b>Enviar</b>, entrega seu trabalho.<br/>São passos diferentes. O caderno e o Como Fazer podem ser consultados quando precisar."
+      }
+    ]
+  }
+]

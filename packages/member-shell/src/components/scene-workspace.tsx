@@ -4,6 +4,8 @@ import { Button } from '@sistemazero/ui/button'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
+import { useReportActivityExpanded } from '../lib/lesson-activity-expansion'
+import { EXPANDED_EXIT_ATTR, LessonVideoToggle } from './lesson-video-float'
 
 /** Amplia a mesma árvore: nem o controlador nem os controles da cena são remontados. */
 export function SceneWorkspace({
@@ -21,7 +23,11 @@ export function SceneWorkspace({
   const workspaceRef = useModalA11y<HTMLElement>({
     open: expanded,
     onClose: () => setInlineHeight(null),
+    // O vídeo flutuante da aula entra no Tab da tela ampliada.
+    companions: true,
   })
+  // O vídeo da seção sai de baixo da experiência ampliada (o flutuante da aula).
+  useReportActivityExpanded(expanded)
 
   return (
     <div className="sz-scene-workspace-slot" style={{ minHeight: inlineHeight ?? undefined }}>
@@ -34,20 +40,29 @@ export function SceneWorkspace({
         <div className="sz-activity-workspace-card sz-scene-workspace-card">
           <header className="sz-scene-workspace-header">
             <div className="sz-scene-workspace-heading space-y-3">{header}</div>
-            <Button
-              variant="outline"
-              className="min-h-11 gap-2 whitespace-normal"
-              aria-expanded={expanded}
-              onClick={(event) => {
-                // WebKit não foca botões ao clicar. O modal deve guardar ESTE gatilho
-                // para o retorno, não o último elemento focado em outro lugar da aula.
-                if (!expanded) event.currentTarget.focus({ preventScroll: true })
-                setInlineHeight(expanded ? null : (workspaceRef.current?.offsetHeight ?? 0))
-              }}
-            >
-              {expanded ? <Minimize2 size={16} aria-hidden /> : <Maximize2 size={16} aria-hidden />}
-              {expanded ? 'Voltar à aula' : 'Ampliar experiência'}
-            </Button>
+            <div className="sz-scene-workspace-actions flex flex-wrap items-center gap-2">
+              <LessonVideoToggle expanded={expanded} className="min-h-11 gap-2" />
+              <Button
+                variant="outline"
+                className="min-h-11 gap-2 whitespace-normal"
+                aria-expanded={expanded}
+                // O vídeo flutuante da aula começa abaixo da saída, nunca por cima dela.
+                {...(expanded ? { [EXPANDED_EXIT_ATTR]: '' } : {})}
+                onClick={(event) => {
+                  // WebKit não foca botões ao clicar. O modal deve guardar ESTE gatilho
+                  // para o retorno, não o último elemento focado em outro lugar da aula.
+                  if (!expanded) event.currentTarget.focus({ preventScroll: true })
+                  setInlineHeight(expanded ? null : (workspaceRef.current?.offsetHeight ?? 0))
+                }}
+              >
+                {expanded ? (
+                  <Minimize2 size={16} aria-hidden />
+                ) : (
+                  <Maximize2 size={16} aria-hidden />
+                )}
+                {expanded ? 'Voltar à aula' : 'Ampliar experiência'}
+              </Button>
+            </div>
           </header>
           {children}
         </div>

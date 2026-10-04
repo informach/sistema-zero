@@ -42,6 +42,7 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       status: 'draft',
       audience: 'kids',
       sequentialLock: false,
+      videoBeforeActivity: false,
       level: 'iniciante',
       track: '2d',
       careerSlot: null,
@@ -64,6 +65,54 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
     await repo.updateCourse(published)
     return { course: { ...published, version: published.version + 1 }, mod, lesson, block }
   }
+  // ⚠️ O fake copia o curso inteiro, então só aqui uma linha esquecida no Drizzle aparece
+  // (full review de 03/10/2026): a caixa marcada que o PATCH responde 200 e não guarda.
+  test('a opção vídeo antes da atividade passa pelo SQL: criar, editar e clonar', async () => {
+    const guardada = async (id: string) =>
+      (await conn.sql`select video_before_activity as v from members.courses where id = ${id}`)[0]
+        ?.v
+    const course = await repo.createCourse({
+      slug: `video-antes-${randomUUID()}`,
+      title: 'Primeiros passos',
+      subtitle: null,
+      description: null,
+      coverImageUrl: null,
+      salesPageUrl: null,
+      status: 'draft',
+      audience: 'kids',
+      sequentialLock: false,
+      videoBeforeActivity: true,
+      level: 'iniciante',
+      track: '2d',
+      careerSlot: null,
+    })
+    ownedCourses.push(course.id)
+    expect(course.videoBeforeActivity).toBe(true)
+    expect(await guardada(course.id)).toBe(true)
+    expect(await repo.updateCourse({ ...course, videoBeforeActivity: false })).toBe(true)
+    expect(await guardada(course.id)).toBe(false)
+    expect(
+      await repo.updateCourse({
+        ...course,
+        version: course.version + 1,
+        videoBeforeActivity: true,
+      }),
+    ).toBe(true)
+    expect(await guardada(course.id)).toBe(true)
+    const clone = await repo.cloneCourseTree(course.id, {
+      expectedSourceVersion: course.version + 2,
+      expectedSourceAudience: 'kids',
+      slug: `video-antes-clone-${randomUUID()}`,
+      title: 'Primeiros passos (adulto)',
+      audience: 'adult',
+      dropStudioUnlockBlocks: true,
+    })
+    if (!clone) throw new Error('O clone não nasceu')
+    ownedCourses.push(clone.id)
+    expect(clone.videoBeforeActivity).toBe(true)
+    expect(await guardada(clone.id)).toBe(true)
+  })
+
   test('concurrent deletions leave one publication activity and allow an explicit unpublish', async () => {
     const { course, lesson, block } = await seed()
     const other = await repo.createBlock(lesson.id, 'studio', {

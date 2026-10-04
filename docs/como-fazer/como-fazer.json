@@ -55,34 +55,36 @@
           "próxima",
           "anterior",
           "jornada",
+          "aprender",
           "curso",
           "começar",
           "trilha",
           "mapa",
-          "acessar curso",
+          "começar agora",
+          "continuar",
           "concluir aula"
         ],
         "steps": [
           {
             "id": "jornada",
-            "title": "Abra a Jornada",
-            "body": "Toque em **Jornada** no menu da esquerda. No celular, ela fica na barra de baixo. Você verá o mapa das trilhas.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/jornada-ba6ee11ac0268543.webp",
-            "imageAlt": "Tela inicial da plataforma com o item Jornada destacado no menu da esquerda."
+            "title": "Toque em Aprender",
+            "body": "Toque em **Aprender** no menu da esquerda. No celular, ele fica na barra de baixo. Você verá o mapa da Jornada do Criador, com as trilhas.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/jornada-a2efb61f2e5bbe11.webp",
+            "imageAlt": "Tela inicial da plataforma com o item Aprender destacado no menu da esquerda."
           },
           {
             "id": "trilha",
             "title": "Escolha uma trilha",
             "body": "Toque no nível da trilha que você quer abrir. Agora aparecem os cursos daquela trilha.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/trilha-512015b0c3f2a313.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/trilha-35d68be8f759ef25.webp",
             "imageAlt": "Mapa da Jornada do Criador com o nível Construtor(a) destacado para abrir a trilha."
           },
           {
             "id": "curso",
             "title": "Abra o curso",
-            "body": "Escolha um curso liberado e toque em **Acessar curso**. Na página do curso, toque na aula disponível no caminho das aulas.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/curso-a9481083bf0d1f4c.webp",
-            "imageAlt": "Trilha Construtor(a) com o botão Acessar curso do curso Nave Contra Asteroides destacado."
+            "body": "Escolha um curso liberado e toque no botão azul do cartão: **Começar agora**, se for a primeira vez, ou **Continuar**, se você já começou. Na página do curso, toque na aula disponível no caminho das aulas.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-abrir-uma-aula/curso-43355bbc2de59cbd.webp",
+            "imageAlt": "Trilha Construtor(a) com o botão Continuar do curso Nave Contra Asteroides destacado."
           },
           {
             "id": "secoes",
@@ -130,7 +132,8 @@
           "voltar",
           "retomar",
           "de onde parei",
-          "progresso"
+          "progresso",
+          "aprender"
         ],
         "steps": [
           {
@@ -143,9 +146,9 @@
           {
             "id": "jornada",
             "title": "Encontre o curso",
-            "body": "Toque em **Jornada**, escolha a trilha no mapa e depois toque em **Acessar curso** no curso que você estava fazendo.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/jornada-a9481083bf0d1f4c.webp",
-            "imageAlt": "Trilha da Jornada com o botão Acessar curso destacado no curso que estava sendo feito."
+            "body": "Toque em **Aprender**, escolha a trilha no mapa e depois toque em **Continuar** no curso que você estava fazendo.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-para-a-aula/jornada-43355bbc2de59cbd.webp",
+            "imageAlt": "Trilha da Jornada com o botão Continuar destacado no curso que estava sendo feito."
           },
           {
             "id": "aula",
@@ -287,21 +290,21 @@
             "id": "perfil",
             "title": "Abra seu perfil",
             "body": "No menu, toque em **Meu espaço** e depois em **Meu perfil**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/perfil-2dcbd99cb8136249.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/perfil-b45cbcdd95f07b1e.webp",
             "imageAlt": "Menu da esquerda com o grupo Meu espaço aberto e o item Meu perfil destacado."
           },
           {
             "id": "cor",
             "title": "Escolha uma cor",
             "body": "Procure **Cor do seu perfil** e toque na cor que você mais gosta. A tela muda para você ver como ficou.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/cor-6e62c576785baf1c.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/cor-f1c29467ccf4da68.webp",
             "imageAlt": "Seção Cor do seu perfil com as bolinhas de cor e uma delas destacada para escolher."
           },
           {
             "id": "guardar",
             "title": "Espere guardar",
             "body": "A escolha é guardada sem apertar Salvar. Quando aparecer **Cor escolhida** embaixo das cores, ela já está guardada. Se aparecer uma falha, toque em **Tentar de novo**. A cor vale para este perfil.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/guardar-edb01cb01b7ff674.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-escolher-a-minha-cor/guardar-8b5d9368f2f6c994.webp",
             "imageAlt": "Cor do seu perfil com a nova cor marcada e o aviso Cor escolhida logo abaixo, sem botão de salvar."
           }
         ],
@@ -330,7 +333,7 @@
             "id": "abrir",
             "title": "Abra Meu avatar",
             "body": "No menu, toque em **Meu espaço** e depois em **Meu avatar**. Você também pode tocar em **Personalizar avatar** no seu perfil.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/abrir-fde6d1d78a1af444.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-montar-o-avatar/abrir-6bd0dc97de93f24e.webp",
             "imageAlt": "Menu da esquerda com o grupo Meu espaço aberto e o item Meu avatar destacado."
           },
           {
@@ -438,6 +441,7 @@
         "summary": "Entenda o mapa da Jornada e encontre os cursos de cada trilha.",
         "keywords": [
           "jornada",
+          "aprender",
           "mapa",
           "nível",
           "xp",
@@ -452,29 +456,29 @@
           {
             "id": "mapa",
             "title": "Abra o mapa",
-            "body": "Toque em **Jornada**. O mapa mostra os níveis da Jornada do Criador e indica onde você está.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/mapa-f5f8ee6f6f4e0531.webp",
-            "imageAlt": "Página Jornada aberta pelo menu, com o mapa dos níveis da Jornada do Criador."
+            "body": "Toque em **Aprender** no menu. O mapa mostra os níveis da Jornada do Criador e indica onde você está.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/mapa-2fb2e34f93af144b.webp",
+            "imageAlt": "Página da Jornada do Criador aberta pelo item Aprender do menu, com o mapa dos níveis."
           },
           {
             "id": "trilha",
             "title": "Veja os cursos da trilha",
             "body": "Toque em um nível do mapa para abrir a trilha dele. É nessa página que fica a lista de cursos da trilha.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/trilha-e5af3d7c93320785.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/trilha-2e6ec7b638d17db5.webp",
             "imageAlt": "Mapa da Jornada com o nível Construtor(a) destacado, marcado como o lugar onde você está."
           },
           {
             "id": "curso",
             "title": "Confira o que está liberado",
-            "body": "Um curso disponível mostra **Acessar curso**. Se estiver bloqueado, leia o recado do cartão para saber o que vem antes.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/curso-1a429e409dddf5fd.webp",
-            "imageAlt": "Trilha com um curso liberado mostrando Acessar curso e um curso bloqueado com o recado de qual curso fazer antes."
+            "body": "Um curso liberado mostra quantas aulas você já fez e um botão azul para seguir, como **Começar agora** ou **Continuar**. Se estiver bloqueado, leia o recado do cartão para saber o que vem antes.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/curso-60916a6793680a8d.webp",
+            "imageAlt": "Trilha com um curso liberado mostrando as aulas feitas e o botão Continuar, e um curso bloqueado com o recado de qual curso fazer antes."
           },
           {
             "id": "progresso",
             "title": "Acompanhe suas aulas",
             "body": "Abra um curso liberado. No caminho das aulas, as concluídas têm uma marca de confirmação e as bloqueadas têm cadeado. Volte ao mapa para escolher outra trilha.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/progresso-74aac99020a8a8f6.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ver-a-minha-jornada/progresso-a1aeaeee7a4eccdd.webp",
             "imageAlt": "Caminho das aulas do curso com uma aula concluída, marcada com confirmação, e uma aula bloqueada com cadeado."
           }
         ],
@@ -608,7 +612,7 @@
             "id": "abrir",
             "title": "Abra o Estúdio",
             "body": "No menu da plataforma, toque em **Criar** e depois em **Estúdio**, se ele já estiver liberado para você.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/abrir-3c5b308ccc031bde.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/estudio-criar-um-projeto/abrir-db354e35e6881595.webp",
             "imageAlt": "Menu da esquerda com o grupo Criar aberto e o item Estúdio destacado."
           },
           {
@@ -1181,7 +1185,7 @@
             "id": "abrir",
             "title": "Abra o Pensa",
             "body": "No menu, toque em **Criar** → **Pensa**, se ele já estiver liberado para você.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/abrir-9b0281a99a0edd5f.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pensa-criar-um-plano/abrir-e2f1489a20014523.webp",
             "imageAlt": "Menu da esquerda com o grupo Criar aberto e o item Pensa destacado."
           },
           {
@@ -1400,21 +1404,21 @@
             "id": "buscar",
             "title": "Escreva o que precisa",
             "body": "Em **O que você quer fazer?**, escreva uma palavra, como “aula”, “salvar” ou “camada”. Os resultados aparecem enquanto você escreve.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/buscar-c653b1e2b69a024b.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/buscar-a6bc79f1fec9ab77.webp",
             "imageAlt": "Página Como fazer com a palavra salvar escrita na busca e a lista de tutoriais aparecendo logo abaixo."
           },
           {
             "id": "ler",
             "title": "Escolha um tutorial",
             "body": "Toque no resultado que combina com sua dúvida. Você também pode escolher uma coleção, como **Plataforma** ou **Pinta**, e ver os tutoriais dela.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/ler-ca9a618fc440daaa.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/ler-02b70817f37330d0.webp",
             "imageAlt": "Resultados da busca no Como fazer com um tutorial destacado para abrir."
           },
           {
             "id": "voltar",
             "title": "Volte ao que estava fazendo",
             "body": "Se abriu a ajuda por um link da aula, ela aparece em outra aba. Volte à aba da aula ou use **Voltar para a aula**, quando esse botão aparecer.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/voltar-170987130a40aa3c.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-usar-o-como-fazer/voltar-a61a578eb7601170.webp",
             "imageAlt": "Tutorial aberto a partir de uma aula, com o botão Voltar para a aula destacado."
           }
         ],
@@ -1683,7 +1687,7 @@
             "id": "conversa",
             "title": "Escolha a conversa",
             "body": "Abra o recado sobre a aula ou atividade que quer conferir. Leia as mensagens do professor.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/conversa-dd5de23c7266d946.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-ler-recados/conversa-bb9b5867856a3883.webp",
             "imageAlt": "Página Recados do professor com uma conversa sobre uma seção da aula destacada para abrir."
           },
           {
@@ -1717,7 +1721,7 @@
             "id": "mural",
             "title": "Abra o mural",
             "body": "No menu, toque em **Comunidade** → **Mural dos Criadores**. Se ele ainda estiver bloqueado para você, a tela explica.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-no-mural/mural-c76efad68ecc2ae8.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-jogar-no-mural/mural-cebecedaad89bf31.webp",
             "imageAlt": "Menu da esquerda com o grupo Comunidade aberto e o item Mural dos Criadores destacado."
           },
           {

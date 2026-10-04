@@ -2,15 +2,116 @@
   "version": 5,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "certificado",
-  "title": "Seu certificado e próximos passos",
-  "retireBlockKeys": ["video-pitch"],
+  "title": "Seu certificado",
+  "retireBlockKeys": ["video-pitch", "fala-pitch", "video-pitch-farol", "link-comunidade"],
   "blocks": [
+    {
+      "key": "fala-revisao-final",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Seu personagem anda, recolhe a chave e faz o farol responder. Responda quatro perguntas sobre o que você programou. As explicações ajudam a conferir seu raciocínio e corrigir o que precisar."
+      }
+    },
+    {
+      "key": "quiz-revisao-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Seu personagem anda até a beirada da tela. Qual ordem você montou para ele continuar visível enquanto se move?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Conferir a borda e depois mover o personagem para qualquer posição."
+              },
+              {
+                "id": "b",
+                "label": "Mover o personagem e depois conferir o limite da tela."
+              },
+              {
+                "id": "c",
+                "label": "Conferir a borda só quando o jogo começa."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Dentro de A cada quadro, primeiro o jogo move o personagem. Logo depois, a regra da borda mantém ele dentro da tela. O jogo repete essa sequência enquanto funciona; conferir a posição somente no começo não cuidaria dos movimentos seguintes."
+          },
+          {
+            "id": "q2",
+            "prompt": "A chave saiu do chão e o personagem já se afastou dela. O que permite ao jogo continuar sabendo que ela foi recolhida?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "A variável temChave, que passou a guardar verdadeiro."
+              },
+              {
+                "id": "b",
+                "label": "A mensagem de coleta que apareceu na tela."
+              },
+              {
+                "id": "c",
+                "label": "A distância entre o personagem e o lugar da chave."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "No encontro com a chave, você mudou temChave de falso para verdadeiro. Essa informação fica guardada durante a partida, mesmo quando a chave desaparece e o personagem vai embora. A mensagem conta o que aconteceu para quem joga, mas é temChave que a porta consulta."
+          },
+          {
+            "id": "q3",
+            "prompt": "Você chega ao farol sem recolher a chave. Com a condição que programou, o que o jogo deve fazer?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Acender o farol, porque chegar à porta já é suficiente."
+              },
+              {
+                "id": "b",
+                "label": "Retirar a chave do chão, mesmo sem o personagem encostar nela."
+              },
+              {
+                "id": "c",
+                "label": "Manter o farol apagado e avisar que falta a chave."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "A porta confere temChave. Sem a coleta, o valor ainda é falso, e o jogo segue a resposta senão: avisa que falta a chave. A resposta então, que acende o farol e aciona o barco, acontece quando a informação é verdadeira."
+          },
+          {
+            "id": "q4",
+            "prompt": "Você pegou a chave, chegou ao farol e viu a luz acender. Qual teste ainda falta para conferir a regra da porta?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Chegar outra vez ao farol, na mesma partida, ainda com a chave."
+              },
+              {
+                "id": "b",
+                "label": "Reiniciar a partida e ir ao farol sem pegar a chave."
+              },
+              {
+                "id": "c",
+                "label": "Recolher a chave e repetir exatamente o caminho que já funcionou."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "A porta tem duas respostas. Você já conferiu o caminho com a chave. Reiniciar e ir direto ao farol permite conferir o caminho sem ela. Nesse teste, a luz deve continuar apagada e a mensagem deve explicar que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-certificado-farol",
+      "plannedVideo": "Título: Comemore sua criação\n\nReconhecer movimento, coleta e decisão programados pela criança. Mostrar Pegar meu certificado e encerrar em Concluir aula. Não incluir pitch comercial.\n\nRoteiro falado: desafio-certificado.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
     {
       "key": "fala-certificado",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você guiou o personagem, encontrou a chave e acendeu o farol. Toque em Pegar meu certificado e guarde o arquivo com um responsável."
+        "text": "Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula."
       }
     },
     {
@@ -21,54 +122,35 @@
         "coursePhrase": "concluiu o Desafio do Primeiro Jogo",
         "bodyText": "Criou A Chave do Farol: movimento, coleta da chave e uma decisão que acende a luz."
       }
-    },
-    {
-      "key": "fala-pitch",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Esta próxima parte é para quem cuida de você. Chame um responsável para assistir junto."
-      }
-    },
-    {
-      "key": "video-pitch-farol",
-      "plannedVideo": "Título: Para a família: próximos caminhos de criação\n\nComeçar pedindo para chamar um responsável. Dirigir a explicação da Comunidade ao adulto. Mostrar a oferta externa sem preço fixo no vídeo; compra nunca é requisito da aula.\n\nRoteiro falado: desafio-certificado.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
-    },
-    {
-      "key": "link-comunidade",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "[Conhecer a Comunidade dos Criadores](https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta)"
-      }
     }
   ],
   "sections": [
     {
-      "key": "certificado",
-      "title": "Seu certificado",
-      "intent": "delivery",
-      "objective": "Emitir e guardar o certificado da aventura concluída.",
-      "blockKeys": ["fala-certificado", "certificado"],
+      "key": "revisao-final",
+      "title": "As regras da sua aventura",
+      "intent": "explanation",
+      "objective": "Conferir as regras do próprio jogo e corrigir dúvidas antes do certificado.",
+      "blockKeys": ["fala-revisao-final", "quiz-revisao-final"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["certificado"]
+        "blockIds": ["quiz-revisao-final"]
       }
     },
     {
-      "key": "proximos-passos",
-      "title": "Uma conversa com a família",
-      "intent": "closing",
-      "objective": "Apresentar ao responsável as possibilidades de continuar criando, sem exigir compra.",
-      "blockKeys": ["fala-pitch", "video-pitch-farol", "link-comunidade"],
+      "key": "certificado",
+      "title": "Comemore sua criação",
+      "intent": "delivery",
+      "objective": "Emitir e guardar o certificado da aventura concluída.",
+      "blockKeys": ["video-certificado-farol", "fala-certificado", "certificado"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-pitch-farol"]
+        "blockIds": ["video-certificado-farol", "certificado"]
       }
     }
   ]

@@ -1,329 +1,195 @@
 ---
-// Entrada do site: página "bio" da marca kids (destino do link da bio do
-// Instagram @criecomhelenaejulio). Em vez de redirecionar, apresenta os
-// caminhos: o quiz (descobrir o perfil do filho), a oferta do Desafio do
-// Primeiro Jogo e a assinatura da Comunidade dos Criadores. Tema kids claro.
-import { EMPRESA } from '../content/legal'
-import { COMUNIDADE_DOS_CRIADORES } from '../funnels/comunidade-dos-criadores'
-import { DESAFIO_PRIMEIRO_JOGO } from '../funnels/desafio-primeiro-jogo'
+import '../styles/kids-oferta.css'
+import '../styles/comunidade-oferta.css'
+import { COMUNIDADE_DOS_CRIADORES as comunidade } from '../funnels/comunidade-dos-criadores'
+import { DESAFIO_PRIMEIRO_JOGO as desafio } from '../funnels/desafio-primeiro-jogo'
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { funnelOgImage } from '../lib/seo'
-
+import { funnelLinkWithAttribution } from '../lib/lead-attribution'
 export const prerender = false
-
-const f = DESAFIO_PRIMEIRO_JOGO
-const quizUrl = `${f.basePath}/quiz`
-const ofertaUrl = `${f.basePath}/oferta`
-const comunidadeUrl = `${COMUNIDADE_DOS_CRIADORES.basePath}/oferta`
-const img = (file: string) => `${f.imagesBase}/${file}`
-const ano = new Date().getFullYear()
-
-const title = 'Crie com Helena e Júlio | Criação de jogos para crianças'
-const description =
-  'Seu filho vive em jogo, computador e tecnologia. Aqui esse interesse vira criação: crianças a partir de 9 anos criam o primeiro jogo em 5 dias. Descubra o perfil dele no quiz.'
+Astro.response.headers.set('cache-control', 'no-store')
+const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
+const telas = comunidade.imagesBase
+// Telas reais SEM o menu lateral de propósito: nas que mostram o menu, o item ainda aparece com o
+// nome antigo ("Jornada"), e esta página é a porta de entrada.
 ---
-
-<BaseLayout
-  title={title}
-  description={description}
-  ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}
-  htmlClass={f.theme ? `theme-${f.theme}` : undefined}
->
-  <div class="bio">
-    <!-- decorações flutuantes -->
-    <svg class="deco flutua" style="top:9%;left:8%;width:44px" viewBox="0 0 24 24" fill="var(--sz-community-yellow)"
-      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
-      ></path></svg
-    >
-    <svg
-      class="deco flutua lenta"
-      style="top:16%;right:10%;width:32px"
-      viewBox="0 0 24 24"
-      fill="var(--sz-community-pink-light)"
-      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
-      ></path></svg
-    >
-    <svg
-      class="deco flutua inversa"
-      style="bottom:14%;left:12%;width:26px"
-      viewBox="0 0 24 24"
-      fill="var(--sz-community-green)"><circle cx="12" cy="12" r="10"></circle></svg
-    >
-    <svg
-      class="deco flutua lenta inversa"
-      style="bottom:22%;right:8%;width:40px"
-      viewBox="0 0 24 24"
-      fill="var(--sz-community-blue)"
-      ><path d="M12 2l2.4 6.9L21 9.3l-5.2 4.1L17.6 21 12 16.9 6.4 21l1.8-7.6L3 9.3l6.6-.4z"
-      ></path></svg
-    >
-    <div class="bolha" style="width:240px;height:240px;background:var(--sz-community-ground-alt);top:-70px;left:-70px">
-    </div>
-    <div class="bolha" style="width:190px;height:190px;background:var(--sz-community-mint);bottom:-50px;right:-40px">
-    </div>
-
-    <main class="cartao">
-      <figure class="mascote">
-        <img
-          src={img('avatar-helena-julio.webp')}
-          alt="Helena e Júlio, criadores do Crie com Helena e Júlio"
-          width="360"
-          height="360"
-          fetchpriority="high"
-        />
+<BaseLayout title="Comunidade dos Criadores | Sistema Zero" description="Seu filho aprende criando jogos, da primeira experiência às próprias ideias. Conheça as aulas, ferramentas e comunidade para crianças de 9 a 14 anos." htmlClass="theme-kids">
+  <main class="cdc bio" id="bio">
+    <div class="bio-grade">
+      <div class="bio-card">
+        <!-- A versão CLARA (para fundo claro), copiada do `logo_kids_white.svg` do app Kids: a
+             `logo-kids-escuro.svg` das ofertas tem o SISTEMA branco e sumia aqui. -->
+        <img class="bio-logo" src={`${telas}/logo-kids-claro.svg`} alt="Sistema Zero Kids" width="1597" height="123" />
+        <div class="bio-quem">
+          <img class="bio-avatar" src={`${desafio.imagesBase}/avatar-helena-julio.webp`} alt="Helena e Júlio" width="360" height="360" fetchpriority="high" />
+          <p class="bio-byline">Helena e Júlio · Sistema Zero</p>
+        </div>
+        <h1 class="kof-display">Seu filho aprende criando jogos, <em>da primeira experiência às próprias ideias.</em></h1>
+        <p class="bio-lead">Ele começa jogando o que vai construir, experimenta os conceitos ao lado da explicação e programa o jogo passo a passo. Conforme avança, encontra novas ferramentas e orientações para desenvolver seus projetos, além de uma comunidade para trocar ideias e compartilhar suas criações.</p>
+        <p class="kof-chip bio-age"><span class="material-symbols-rounded" aria-hidden="true">sports_esports</span>Comunidade dos Criadores · 9 a 14 anos</p>
+        <nav class="bio-links" aria-label="Escolha por onde começar">
+          <a class="kof-btn bio-principal" href={link('/como-funciona/')} data-analytics-id="bio-como-funciona">Ver como meu filho aprende<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+          <a class="bio-link" href={link(`${desafio.basePath}/quiz`)} data-analytics-id="bio-desafio-quiz"><span class="kof-ladrilho kof-ladrilho--amarelo" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span><span class="bio-link-texto">Encontrar um primeiro passo para meu filho<small>Responda sobre os interesses dele e receba uma orientação, sem cadastro.</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
+          <a class="bio-link" href={link(`${comunidade.basePath}/oferta`)} data-analytics-id="bio-comunidade"><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">rocket_launch</span></span><span class="bio-link-texto">Conhecer a Comunidade e os planos<small>Veja o que a assinatura oferece à sua família</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
+        </nav>
+      </div>
+      <figure class="bio-telas">
+        <div class="bio-palco">
+          <span class="kof-decor bio-estrela bio-estrela--1 material-symbols-rounded" aria-hidden="true">star</span>
+          <span class="kof-decor bio-estrela bio-estrela--2 material-symbols-rounded" aria-hidden="true">auto_awesome</span>
+          <span class="kof-decor bio-estrela bio-estrela--3 material-symbols-rounded" aria-hidden="true">star</span>
+          <div class="kof-tela bio-tela bio-tela--estudio"><img src={`${telas}/tela-estudio.webp`} alt="O Estúdio, onde a criança monta o jogo com blocos." width="1280" height="800" loading="lazy" decoding="async" /></div>
+          <div class="kof-tela bio-tela bio-tela--avatar"><img src={`${telas}/tela-avatar.webp`} alt="O editor do avatar, com o personagem e as peças para trocar." width="1280" height="800" loading="lazy" decoding="async" /></div>
+          <div class="kof-tela bio-tela bio-tela--aula"><img src={`${telas}/tela-aula.webp`} alt="Uma aula com o vídeo de um lado e a experiência do outro." width="1280" height="800" loading="lazy" decoding="async" /></div>
+          <img class="bio-zappy" src={`${desafio.imagesBase}/zappy-fala.webp`} alt="" width="360" height="458" loading="lazy" decoding="async" />
+        </div>
+        <figcaption>Telas reais da plataforma</figcaption>
       </figure>
-
-      <h1>Crie com Helena e Júlio</h1>
-      <p class="arroba">@criecomhelenaejulio</p>
-      <p class="descricao">
-        Ele já joga. Falta descobrir que dá pra criar. Aqui, crianças a partir de 9 anos criam
-        os próprios jogos, guiadas do início ao fim. Escolha por onde começar:
-      </p>
-
-      <nav class="botoes" aria-label="Escolha por onde começar">
-        <a href={quizUrl} class="botao laranja">
-          <span class="material-symbols-rounded" aria-hidden="true">psychology</span>
-          <span class="rotulo">
-            Descubra o perfil do seu filho
-            <small>Quiz gratuito de 2 minutos</small>
-          </span>
-        </a>
-        <a href={ofertaUrl} class="botao azul">
-          <span class="material-symbols-rounded" aria-hidden="true">sports_esports</span>
-          <span class="rotulo">
-            Desafio do Primeiro Jogo
-            <small>O desafio de 5 dias para criar o primeiro jogo</small>
-          </span>
-        </a>
-        <a href={comunidadeUrl} class="botao verde">
-          <span class="material-symbols-rounded" aria-hidden="true">stadia_controller</span>
-          <span class="rotulo">
-            Comunidade dos Criadores
-            <small>A assinatura da plataforma inteira de criar jogos</small>
-          </span>
-        </a>
-      </nav>
-    </main>
-
-    <footer class="rodape">
-      <p class="linhas">
-        <a href="/kids/termos">Termos de uso</a> · <a href="/kids/privacidade"
-          >Política de privacidade</a
-        >
-      </p>
-      <p>© {ano} {EMPRESA.razaoSocial} · CNPJ {EMPRESA.cnpj}</p>
-    </footer>
-  </div>
+      <!-- Não é <footer>: o `.theme-kids footer` do global.css (o rodapé largo do site) pintava uma
+           faixa com borda atrás destes dois links. -->
+      <p class="bio-legal"><a href="/kids/privacidade">Privacidade</a><span aria-hidden="true">·</span><a href="/kids/termos">Termos de uso</a></p>
+    </div>
+  </main>
 </BaseLayout>
-
 <style>
   .bio {
     position: relative;
     min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 28px;
-    padding: 48px 22px 34px;
-    /* `clip` nos DOIS eixos: as decorações que sangram nas bordas (bolhas com
-       top/bottom negativos) são cortadas sem esticar a página, senão elas
-       criam barra de rolagem e uma sobra depois do rodapé. */
-    overflow: clip;
-    background: var(--sz-community-ground);
+    overflow-x: clip;
+    padding: 2.5rem 1.25rem 3rem;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(60% 45% at 50% -8%, color-mix(in oklab, var(--kof-lilas) 75%, transparent), transparent 72%),
+      radial-gradient(38% 40% at 100% 100%, color-mix(in oklab, var(--kof-menta) 70%, transparent), transparent 72%),
+      radial-gradient(34% 36% at 0% 70%, color-mix(in oklab, var(--kof-amarelo-fundo) 90%, transparent), transparent 72%),
+      var(--kof-chao);
   }
-
-  /* decorações */
-  .deco {
-    position: absolute;
-    pointer-events: none;
-    opacity: 0.9;
-    z-index: 0;
+  .bio-grade {
+    position: relative;
+    width: min(100%, 31rem);
+    display: grid;
+    gap: 2.75rem;
   }
-  .bolha {
-    position: absolute;
+  .bio-card { text-align: center; }
+  .bio-logo { display: block; width: 11.5rem; height: auto; margin: 0 auto 1.75rem; }
+  .bio-quem { display: grid; justify-items: center; gap: 0.625rem; margin-bottom: 0.875rem; }
+  .bio-avatar {
+    width: 6.5rem;
+    height: 6.5rem;
     border-radius: 50%;
-    filter: blur(2px);
-    opacity: 0.6;
-    pointer-events: none;
-    z-index: 0;
+    object-fit: cover;
+    border: 4px solid var(--kof-carta);
+    box-shadow:
+      0 0 0 3px var(--kof-acao),
+      0 10px 22px color-mix(in oklab, var(--kof-acao) 22%, transparent);
   }
-  .flutua {
-    animation: bio-flutua 6s ease-in-out infinite;
-  }
-  .flutua.lenta {
-    animation-duration: 9s;
-  }
-  .flutua.inversa {
-    animation-direction: reverse;
-  }
-  @keyframes bio-flutua {
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-14px);
-    }
-  }
-  /* No celular as decorações de baixo cairiam sobre o aviso legal. */
-  @media (max-width: 560px) {
-    .deco.inversa {
-      display: none;
-    }
-  }
+  .bio-byline { margin: 0; font-size: 0.875rem; font-weight: 800; color: var(--kof-tinta-suave); }
+  .bio .kof-display { font-size: clamp(2.125rem, 7vw, 3rem); line-height: 1.05; margin: 0; }
+  .bio-lead { font-size: 1.0625rem; line-height: 1.5; max-width: 24rem; margin: 0.875rem auto 1rem; color: var(--kof-tinta); }
+  .bio-age { min-height: 2.25rem; margin: 0 0 1.75rem; font-size: 0.8125rem; }
+  .bio-age .material-symbols-rounded { font-size: 1.125rem; color: var(--kof-acao); translate: 0 -0.07em; }
 
-  .cartao {
-    position: relative;
-    z-index: 1;
+  .bio-links { display: grid; gap: 0.75rem; text-align: left; }
+  .bio .bio-principal {
     width: 100%;
-    max-width: 460px;
-    text-align: center;
-    /* Centraliza o miolo no espaço da tela e empurra o rodapé para o pé. */
-    margin-block: auto;
+    min-height: 3.5rem;
+    justify-content: space-between;
+    padding: 0.875rem 1.25rem 0.875rem 1.5rem;
+    font-size: 1rem;
   }
-  .mascote {
-    margin: 0 auto 12px;
-    max-width: 176px;
-    animation: bio-flutua 7s ease-in-out infinite;
-  }
-  .mascote img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  .cartao h1 {
-    font-size: clamp(1.7rem, 6vw, 2.2rem);
-    font-weight: 700;
-    color: var(--color-ink);
-    margin: 0;
-  }
-  .arroba {
-    display: inline-block;
-    margin-top: 8px;
-    font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 0.88rem;
-    color: var(--color-cyan);
-    background: var(--sz-community-card);
-    border: 2px solid var(--sz-community-line);
-    border-radius: 999px;
-    padding: 5px 16px;
-    box-shadow: 0 4px 0 var(--sz-community-card-step);
-  }
-  .descricao {
-    margin: 16px auto 0;
-    max-width: 400px;
-    color: var(--color-muted);
-    font-size: 1.02rem;
-    line-height: 1.55;
-  }
-
-  /* botões empilhados, estilo bio link com o 3D do tema */
-  .botoes {
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
-    margin-top: 28px;
-  }
-  .botao {
-    display: flex;
+  .bio-principal .material-symbols-rounded { font-size: 1.375rem; }
+  .bio-link {
+    --k3d-altura: 4px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: 14px;
-    text-align: left;
+    gap: 0.875rem;
+    padding: 0.875rem 0.875rem 0.875rem 0.875rem;
+    border: 2px solid var(--kof-linha);
+    border-radius: 20px;
+    background: var(--kof-carta);
+    color: var(--kof-tinta);
+    box-shadow: 0 var(--k3d-altura) 0 0 var(--kof-carta-degrau);
+    font-weight: 800;
+    font-size: 0.9875rem;
+    line-height: 1.25;
     text-decoration: none;
-    border: 2px solid var(--sz-community-line);
-    border-radius: 18px;
-    padding: 16px 22px;
-    font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
+    translate: 0 0;
+    transition: translate 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  }
+  .bio-link:hover { --k3d-altura: 5px; translate: 0 -1px; border-color: color-mix(in oklab, var(--kof-acao) 35%, var(--kof-linha)); }
+  .bio-link:active { --k3d-altura: 1px; translate: 0 3px; }
+  .bio-link:focus-visible { outline: 3px solid var(--kof-acao); outline-offset: 3px; }
+  .bio-link .kof-ladrilho { width: 2.75rem; height: 2.75rem; border-radius: 13px; }
+  .bio-link .kof-ladrilho .material-symbols-rounded { font-size: 1.375rem; }
+  .bio-link-texto small {
+    display: block;
+    margin-top: 0.1875rem;
     font-weight: 600;
-    font-size: 1.08rem;
-    line-height: 1.2;
-    transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    color: var(--kof-tinta-suave);
   }
-  .botao .material-symbols-rounded {
-    font-size: 30px;
-    flex: 0 0 auto;
-  }
-  .botao .rotulo {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .botao .rotulo small {
-    font-family: 'Nunito', ui-sans-serif, system-ui, sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
-    opacity: 0.85;
-  }
-  .botao.laranja {
-    background: var(--sz-community-card);
-    color: var(--sz-community-ink);
-    box-shadow: 0 5px 0 var(--sz-community-card-step);
-  }
-  .botao.laranja:hover {
-    transform: translateY(-1px);
-    border-color: var(--sz-community-action);
-    box-shadow: 0 6px 0 var(--sz-community-card-step);
-  }
-  .botao.laranja:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 var(--sz-community-card-step);
-  }
-  .botao.laranja .material-symbols-rounded {
-    color: var(--sz-community-action);
-  }
-  .botao.azul {
-    background: var(--sz-community-action);
-    color: var(--sz-community-on-action);
-    border-color: var(--sz-community-action);
-    box-shadow: 0 5px 0 var(--sz-community-action-step);
-  }
-  .botao.azul:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 0 var(--sz-community-action-step);
-  }
-  .botao.azul:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 var(--sz-community-action-step);
-  }
-  .botao.verde {
-    background: var(--sz-community-menu);
-    color: var(--sz-community-on-action);
-    border-color: var(--sz-community-menu);
-    box-shadow: 0 5px 0 var(--sz-community-menu-2);
-  }
-  .botao.verde:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 0 var(--sz-community-menu-2);
-  }
-  .botao.verde:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 var(--sz-community-menu-2);
-  }
+  .bio-seta { font-size: 1.5rem; color: var(--kof-tinta-suave); transition: color 0.12s ease, translate 0.12s ease; }
+  .bio-link:hover .bio-seta { color: var(--kof-acao); translate: 2px 0; }
 
-  .rodape {
-    position: relative;
-    z-index: 1;
-    max-width: 560px;
-    text-align: center;
-    color: var(--color-muted);
-    font-size: 0.72rem;
-    line-height: 1.5;
-    /* a sombra 3D do último botão ocupa a área logo acima */
-    margin-top: 10px;
+  .bio-legal {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--kof-tinta-suave);
   }
-  .rodape p {
-    margin: 0 0 8px;
+  .bio-legal a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .bio-legal a:hover { color: var(--kof-tinta); }
+
+  .bio-telas { margin: 0; }
+  .bio-palco { position: relative; aspect-ratio: 6 / 5; width: 100%; }
+  .bio-tela { position: absolute; width: 72%; box-shadow: 0 0 0 1px var(--kof-linha), 0 18px 36px color-mix(in oklab, var(--kof-navy) 16%, transparent); }
+  .bio-tela img { display: block; width: 100%; height: auto; }
+  .bio-tela--estudio { top: 2%; left: 0; rotate: -5deg; }
+  .bio-tela--avatar { top: 9%; right: 0; rotate: 4deg; }
+  .bio-tela--aula { bottom: 4%; left: 12%; width: 78%; rotate: -1deg; z-index: 1; box-shadow: 0 0 0 1px var(--kof-linha), 0 24px 48px color-mix(in oklab, var(--kof-navy) 24%, transparent); }
+  .bio-zappy {
+    position: absolute;
+    right: -1%;
+    bottom: -3%;
+    z-index: 2;
+    width: 21%;
+    height: auto;
+    filter: drop-shadow(0 10px 14px color-mix(in oklab, var(--kof-navy) 22%, transparent));
   }
-  .rodape a {
-    color: var(--color-ink);
-    font-weight: 700;
-    text-decoration: none;
+  /* A legenda segue a das ofertas (o fio azul do `.cdc figcaption`), só que centrada. */
+  .bio .bio-telas figcaption { justify-content: center; margin-top: 1.25rem; font-size: 0.8125rem; }
+
+  .bio-estrela { z-index: 3; font-size: 1.75rem; }
+  .bio-estrela--1 { top: -9%; left: 4%; rotate: -12deg; }
+  .bio-estrela--2 { top: -6%; right: 6%; font-size: 2.25rem; color: var(--kof-rosa); }
+  .bio-estrela--3 { bottom: 6%; left: -3%; font-size: 1.25rem; color: var(--kof-azul); }
+
+  @media (min-width: 960px) {
+    .bio { padding: 3rem 2.5rem; }
+    .bio-grade {
+      width: min(100%, 72rem);
+      grid-template-columns: minmax(0, 29rem) minmax(0, 1fr);
+      grid-template-areas: "card telas" "legal telas";
+      column-gap: 5rem;
+      row-gap: 1.75rem;
+    }
+    .bio-card { grid-area: card; align-self: end; text-align: left; }
+    .bio-telas { grid-area: telas; align-self: center; }
+    .bio-legal { grid-area: legal; align-self: start; justify-content: flex-start; }
+    .bio-logo { margin-left: 0; }
+    .bio-quem { grid-template-columns: auto 1fr; justify-items: start; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+    .bio-lead { margin-inline: 0; }
   }
-  .rodape a:hover {
-    color: var(--color-cyan);
+  @media (max-width: 959.98px) {
+    .bio-telas { width: min(100%, 26rem); margin-inline: auto; }
+    .bio-legal { margin-top: -0.75rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bio-link, .bio-seta { transition: none; }
+    .bio-link:hover, .bio-link:active, .bio-link:hover .bio-seta { translate: none; }
   }
 </style>

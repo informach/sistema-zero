@@ -279,6 +279,7 @@ async function ensureTables(conn: DbConnection) {
     "level text not null default 'iniciante'",
     "track text not null default '2d'",
     'sequential_lock boolean not null default true',
+    'video_before_activity boolean not null default false',
     'created_at timestamptz not null default now()',
     'updated_at timestamptz not null default now()',
   ]) {

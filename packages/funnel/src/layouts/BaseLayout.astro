@@ -1,4 +1,5 @@
 ---
+import Analytics from '../components/Analytics.astro'
 import '@fontsource/plus-jakarta-sans/latin-400.css'
 import '@fontsource/plus-jakarta-sans/latin-600.css'
 import '@fontsource/plus-jakarta-sans/latin-700.css'
@@ -19,6 +20,9 @@ import '@fontsource/nunito/latin-800.css'
 // para o build preservar o @font-face e todas as rotas compartilharem a fonte.
 import '@fontsource/material-symbols-rounded/400.css'
 import '../styles/global.css'
+import balooTitle from '@fontsource/baloo-2/files/baloo-2-latin-800-normal.woff2?url'
+import nunitoBody from '@fontsource/nunito/files/nunito-latin-400-normal.woff2?url'
+import nunitoBold from '@fontsource/nunito/files/nunito-latin-800-normal.woff2?url'
 
 interface Props {
   title: string
@@ -48,6 +52,7 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site ?? Astr
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
+    {htmlClass.includes('theme-kids') && [balooTitle, nunitoBody, nunitoBold].map(href => <link rel="preload" as="font" href={href} type="font/woff2" crossorigin="anonymous" />)}
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
@@ -69,5 +74,6 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site ?? Astr
   </head>
   <body id="topo" class="min-h-screen bg-bg text-ink antialiased">
     <slot />
+    <Analytics />
   </body>
 </html>

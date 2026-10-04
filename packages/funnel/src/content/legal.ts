@@ -2,6 +2,8 @@
 // Copy adaptada para a Informach — Núcleo de Aprendizagem Ltda. e o produto
 // digital "No Comando da IA" (ebook + kit prático, venda própria via funil).
 
+import { ANALYTICS_PRIVACY_PARAGRAPHS } from './legal-analytics'
+
 export interface LegalSecao {
   titulo: string
   paragrafos: string[]
@@ -29,7 +31,7 @@ export const PRIVACIDADE: LegalDoc = {
   titulo: 'Política de Privacidade',
   descricao:
     'Como a Informach — Núcleo de Aprendizagem Ltda. coleta, usa, armazena e protege os seus dados pessoais, em conformidade com a LGPD.',
-  atualizadoEm: '4 de junho de 2026',
+  atualizadoEm: '3 de outubro de 2026',
   secoes: [
     {
       titulo: '1. Do objeto',
@@ -71,7 +73,7 @@ export const PRIVACIDADE: LegalDoc = {
     {
       titulo: '5. Cookies',
       paragrafos: [
-        'Utilizamos cookies e tecnologias semelhantes para manter a sua sessão (por exemplo, lembrar o seu progresso no diagnóstico e a sua sessão de compra), medir audiência e melhorar o site.',
+        ...ANALYTICS_PRIVACY_PARAGRAPHS,
         'Você pode desabilitar os cookies nas configurações do seu navegador (Chrome, Firefox, Safari, Edge). Ao fazer isso, partes do site — como o diagnóstico e o checkout — podem deixar de funcionar corretamente.',
       ],
     },

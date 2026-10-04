@@ -10,6 +10,7 @@ describe('experiência da porta do farol', () => {
     const initial = openScene(start)
     const before = renderToStaticMarkup(<LighthouseKeyStage state={initial} />)
     expect(before).toContain('Porta fechada')
+    expect(before).toContain('viewBox="0 0 480 360"')
     const carrying = stepScene(start, initial, { type: 'key-state', hasKey: true })
     const controls = renderToStaticMarkup(
       <LighthouseKeyControls state={carrying} dispatch={() => {}} />,

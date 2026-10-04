@@ -6,18 +6,11 @@
 >
 > Manifesto que não passa no validador não importa. Siga ao pé da letra.
 
-## Direção didática vigente (21/09/2026)
+## Antes de montar o manifesto
 
-- **Seção de conceito:** um vídeo, no máximo uma fala-ponte do Zappy e uma experimentação. Vídeo e
-  experiência ficam disponíveis juntos; `completion.blockIds` inclui os dois.
-- **Seção de construção:** um vídeo, no máximo uma fala-resumo do Zappy e uma ferramenta. Vídeo e
-  ferramenta ficam disponíveis juntos; a conclusão inclui o vídeo e a evidência da ferramenta.
-- **Seção de quiz:** somente uma fala curta do Zappy e um quiz. Não misture vídeo, ferramenta,
-  experiência ou texto. Coloque-a antes da entrega ou do teste final.
-- **Palpite:** opcional e autorado no bloco. Só entra quando uma hipótese melhora a compreensão de
-  uma concepção comum ou de um efeito contraintuitivo; nunca pergunta sobre controles.
-- Cada seção tem no máximo **um vídeo** e **um diálogo**. Zappy é exceção pontual, não substituto de
-  texto ou vídeo.
+As [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md) são a referência única para contexto, Zappy, atividades, paletas, quizzes e adaptações por curso. Este arquivo descreve como representar essas decisões no contrato técnico.
+
+Vídeos planejados e diálogos são blocos diferentes. `blockKeys` conserva sua ordem editorial; `completion.blockIds` inclui evidências obrigatórias, não a fala de orientação. No quiz formativo, incluir a chave do quiz nesse critério. A configuração `videoBeforeActivity` pertence ao curso, não à ordem dos blocos. Não há vídeo a aguardar na seção de quiz.
 
 ## 1. A regra das duas colunas
 

@@ -7,6 +7,8 @@ import {
   montarProjetoCadeTodoMundoCompleto,
 } from './cade-todo-mundo-projeto'
 
+import { cadeTodoMundo } from './quizzes-cursos-curtos'
+
 const DIR = resolve(import.meta.dir, '../aulas')
 const CURSO = 'cade-todo-mundo'
 const video = (key: string, title: string, direction: string) => ({
@@ -116,6 +118,10 @@ const aula1 = {
       'Seu Caderno do Aluno',
       'Mostrar o caderno real e dizer que ele reúne os passos de montagem para consultar quando precisar. Leitura, download e impressão são opcionais. Terminar com Próxima seção. Não ensinar controles do leitor, download ou divisória; esses tutoriais ficam no Como Fazer. Anexar o PDF antes de gravar. Regravar a fala. Alvo: 20 a 30 segundos.',
     ),
+    dialogue(
+      'ponte-a1-caderno',
+      'Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção.',
+    ),
     {
       key: 'caderno',
       content: {
@@ -168,7 +174,7 @@ const aula1 = {
       'Seu Caderno do Aluno',
       'material',
       'Conhecer o caderno e saber onde consultá-lo durante a construção do jogo.',
-      ['video-a1-caderno', 'caderno'],
+      ['video-a1-caderno', 'ponte-a1-caderno', 'caderno'],
       ['video-a1-caderno'],
     ),
     section(
@@ -217,6 +223,10 @@ const aula2 = {
       'Quem você já encontrou?',
       'Começar pela tarefa de fazer o jogo contar os personagens. Mostrar um toque revelando o personagem enquanto Achados fica em zero. Terminar em Próxima seção. Esta seção só tem vídeo; não pedir manipulação de um Estúdio que ainda não aparece. Regravar a fala. Alvo: 15 a 25 segundos.',
     ),
+    dialogue(
+      'ponte-a2-retomada',
+      'Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar.',
+    ),
     video(
       'video-a2-variavel',
       'Um número que acompanha a busca',
@@ -251,6 +261,10 @@ const aula2 = {
       'Publique seu jogo',
       'Pedir que a criança publique o jogo para outras pessoas jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar, manter título e resumo preenchidos, clicar em Gerar capa e conferir a imagem. Clicar em Publicar e esperar Seu jogo está no Mural! Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Personalização, upload e cópia do link ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 45 a 60 segundos, incluindo publicação e confirmação.',
     ),
+    dialogue(
+      'ponte-a2-publicar',
+      'Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.',
+    ),
     {
       key: 'ajuda-a2-publicar',
       content: {
@@ -266,7 +280,7 @@ const aula2 = {
       'Volte ao seu jardim',
       'presentation',
       'Retomar o projeto salvo e perceber que revelar não está contando os achados ainda.',
-      ['video-a2-retomada'],
+      ['video-a2-retomada', 'ponte-a2-retomada'],
       ['video-a2-retomada'],
     ),
     section(
@@ -304,7 +318,7 @@ const aula2 = {
       'Publique seu jogo',
       'closing',
       'Publicar o jogo com título e resumo prontos e capa gerada; fechar a confirmação e concluir a aula.',
-      ['video-a2-fecho', 'ajuda-a2-publicar'],
+      ['video-a2-fecho', 'ponte-a2-publicar', 'ajuda-a2-publicar'],
       ['video-a2-fecho'],
       'projeto',
     ),
@@ -317,6 +331,8 @@ const certificado = {
   lessonSlug: 'certificado',
   title: 'Seu certificado',
   blocks: [
+    dialogue('fala-revisao-final', cadeTodoMundo.intro),
+    { key: 'quiz-revisao-final', content: cadeTodoMundo.content },
     video(
       'video-certificado',
       'Você criou seu primeiro jogo!',
@@ -337,6 +353,14 @@ const certificado = {
     },
   ],
   sections: [
+    section(
+      'revisao-final',
+      cadeTodoMundo.title,
+      'explanation',
+      'Conferir as regras do próprio jogo e corrigir dúvidas antes do certificado.',
+      ['fala-revisao-final', 'quiz-revisao-final'],
+      ['quiz-revisao-final'],
+    ),
     section(
       'certificado',
       'Comemore sua criação',

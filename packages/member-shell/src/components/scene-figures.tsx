@@ -119,7 +119,9 @@ export function ActorFigure({
           ? 'chave'
           : 'farol-apagado'
     const asset = FAROL_ASSETS[name]
-    const size = figure === 'farol' ? escala * 0.45 : escala
+    // Mantém a altura didática das figuras mesmo com os novos quadros quadrados.
+    const altura = figure === 'farol' ? 70 : figure === 'personagem-farol' ? 64 : 32
+    const size = (escala * altura) / asset.height
     return (
       <image
         data-figure={figure}

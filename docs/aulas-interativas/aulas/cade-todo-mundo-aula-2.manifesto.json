@@ -10,6 +10,14 @@
       "plannedVideo": "Título: Quem você já encontrou?\n\nComeçar pela tarefa de fazer o jogo contar os personagens. Mostrar um toque revelando o personagem enquanto Achados fica em zero. Terminar em Próxima seção. Esta seção só tem vídeo; não pedir manipulação de um Estúdio que ainda não aparece. Regravar a fala. Alvo: 15 a 25 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
+      "key": "ponte-a2-retomada",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar."
+      }
+    },
+    {
       "key": "video-a2-variavel",
       "plannedVideo": "Título: Um número que acompanha a busca\n\nApresentar a experiência com o jardim do jogo e apontar para ela ao dizer aqui. Pedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
@@ -944,6 +952,14 @@
       "plannedVideo": "Título: Publique seu jogo\n\nPedir que a criança publique o jogo para outras pessoas jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar, manter título e resumo preenchidos, clicar em Gerar capa e conferir a imagem. Clicar em Publicar e esperar Seu jogo está no Mural! Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Personalização, upload e cópia do link ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 45 a 60 segundos, incluindo publicação e confirmação.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
+      "key": "ponte-a2-publicar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula."
+      }
+    },
+    {
       "key": "ajuda-a2-publicar",
       "content": {
         "kind": "rich_text",
@@ -957,7 +973,7 @@
       "title": "Volte ao seu jardim",
       "intent": "presentation",
       "objective": "Retomar o projeto salvo e perceber que revelar não está contando os achados ainda.",
-      "blockKeys": ["video-a2-retomada"],
+      "blockKeys": ["video-a2-retomada", "ponte-a2-retomada"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -1015,7 +1031,7 @@
       "title": "Publique seu jogo",
       "intent": "closing",
       "objective": "Publicar o jogo com título e resumo prontos e capa gerada; fechar a confirmação e concluir a aula.",
-      "blockKeys": ["video-a2-fecho", "ajuda-a2-publicar"],
+      "blockKeys": ["video-a2-fecho", "ponte-a2-publicar", "ajuda-a2-publicar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

@@ -49,6 +49,8 @@ interface FormState {
   careerSlot: string
   journeyRole: 'positioned' | 'reward' | 'extra'
   sequentialLock: boolean
+  /** A atividade da seção abre depois do vídeo (cursos de quem está começando). */
+  videoBeforeActivity: boolean
   /** Blocos que este curso libera no Estúdio livre (currículo, 08/2026). */
   studioUnlockBlocks: string[]
 }
@@ -70,6 +72,8 @@ const EMPTY: FormState = {
   journeyRole: 'reward',
   // Padrão LIGADO (decisão da usuária): curso novo já trava as aulas em sequência.
   sequentialLock: true,
+  // Padrão DESLIGADO: só os cursos de quem está começando ligam (decisão da usuária 03/10).
+  videoBeforeActivity: false,
   studioUnlockBlocks: [],
 }
 
@@ -105,6 +109,7 @@ function formFromCourse(c: CourseView): FormState {
     careerSlot: c.careerSlot == null ? '' : String(c.careerSlot),
     journeyRole: c.journeyRole ?? (c.careerSlot == null ? 'reward' : 'positioned'),
     sequentialLock: c.sequentialLock ?? true,
+    videoBeforeActivity: c.videoBeforeActivity ?? false,
     studioUnlockBlocks: c.studioUnlockBlocks ?? [],
   }
 }
@@ -304,6 +309,7 @@ export function CourseFormDialog({
         careerSlot: form.audience === 'kids' && form.careerSlot ? Number(form.careerSlot) : null,
         journeyRole: form.audience === 'kids' ? form.journeyRole : 'reward',
         sequentialLock: form.sequentialLock,
+        videoBeforeActivity: form.videoBeforeActivity,
         // SEMPRE enviado (como os demais): o members PRESERVA quando ausente, então
         // omitir aqui esconderia uma limpeza intencional do professor.
         studioUnlockBlocks: form.studioUnlockBlocks,
@@ -586,6 +592,25 @@ export function CourseFormDialog({
               className="size-4"
             />
             Liberar uma aula de cada vez (concluir a anterior destrava a próxima)
+          </label>
+        </Field>
+        <Field
+          label="Assistir ao vídeo antes da atividade"
+          htmlFor="cvideobeforeactivity"
+          hint="Para cursos de quem está começando. Em cada seção com vídeo e atividade, a atividade abre depois que o aluno assiste ao vídeo uma vez até o fim (90%). Vale para Kids e Adultos. A equipe e a prévia do admin veem tudo liberado."
+        >
+          <label
+            htmlFor="cvideobeforeactivity"
+            className="flex items-center gap-2 text-muted-foreground text-sm"
+          >
+            <input
+              id="cvideobeforeactivity"
+              type="checkbox"
+              checked={form.videoBeforeActivity}
+              onChange={(e) => setForm((f) => ({ ...f, videoBeforeActivity: e.target.checked }))}
+              className="size-4"
+            />
+            Trancar a atividade até o vídeo ser visto uma vez
           </label>
         </Field>
         <Field label="Subtítulo" htmlFor="subtitle" hint="Opcional.">

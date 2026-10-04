@@ -19,7 +19,7 @@ O jardim já está preparado. Você monta as regras com blocos e testa até acha
 
 O curso já foi gravado e testado com duas crianças. A revisão de 27/09/2026 muda a linguagem
 das nove seções: tarefa imediata, passos completos e tutoriais de interface no Como Fazer.
-A estrutura de quatro seções na Aula 1, quatro na Aula 2 e uma no certificado permanece.
+A revisão atual tem quatro seções na Aula 1, quatro na Aula 2 e duas no certificado: quiz e celebração. São dez seções e nove vídeos.
 
 Os arquivos plannedVideo dos manifestos são moldes de autoria. As novas falas precisam de
 novas gravações. Ao atualizar o Admin, reconciliar os blocos pelos identificadores e preservar
@@ -34,8 +34,13 @@ de visibilidade. A prática termina com envio, confirmação e conclusão da aul
 
 A Aula 2 retoma o contador em zero, propõe quatro testes na experiência e ensina a soma no
 evento de toque. A montagem continua com caminho completo, encaixe, campos e teste de 1, 2, 3.
-O fechamento reconhece o jogo pronto e encaminha ao certificado. Compartilhar é opcional;
-janela, capa, publicação e link são ensinados no Como Fazer.
+O fechamento ensina a publicar o mesmo jogo no Mural: Compartilhar, gerar capa, publicar,
+esperar a confirmação, fechar e concluir a aula. A publicação é a tarefa ensinada, sem novo
+bloqueio técnico de conclusão. Personalização e cópia do link ficam no Como Fazer.
+
+Complemento de 03/10/2026: todas as nove seções têm uma ponte do Zappy após o vídeo.
+Caderno, retomada e publicação receberam as falas que faltavam, sem novos critérios de conclusão.
+O [quiz único antes do certificado](proposta-quizzes-cursos-curtos-2026-10-03.md) integra o manifesto e o caderno: três perguntas, fala inicial do Zappy e nenhum vídeo na seção de revisão.
 
 O jardim e os personagens já vêm preparados. A narração reconhece que a criança programou
 a reação ao toque e a contagem. O certificado encerra o curso sem oferta comercial.
@@ -51,7 +56,7 @@ Arquivo: **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**. Fonte editável:
 **bun docs/aulas-interativas/recursos/cade-todo-mundo/gerar-caderno.ts**.
 
 A Aula 2 mantém **retireBlockKeys: ['caderno']** para o molde anterior, mas não recebe outro PDF.
-A revisão de linguagem não apaga o arquivo anexado nem altera os passos de montagem do caderno.
+O PDF atualizado tem seis páginas: visão geral, montagem, publicação, revisão e certificado. Os desenhos usam as cores oficiais de cada bloco. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
 Como folhear e baixar está no tutorial de materiais.
 
 ## Configuração que deve ser preservada
@@ -72,8 +77,9 @@ Como folhear e baixar está no tutorial de materiais.
 
 Executar **bun docs/aulas-interativas/qa/validar-manifestos.ts cade-todo-mundo**,
 **python docs/aulas-interativas/validar-roteiros.py cade-todo-mundo** e os testes existentes
-**cade-todo-mundo-*.test.ts**. Conferir que só falas e orientações editoriais mudaram nos
-manifestos, preservando seções, projetos, alvos, permissões e conclusão.
+**cade-todo-mundo-*.test.ts**. Conferir as falas e a nova seção de quiz antes do certificado,
+preservando os identificadores das seções anteriores, projetos, alvos e permissões. A revisão
+exige todas as respostas corretas com nova tentativa imediata; certificados já emitidos permanecem acessíveis.
 
 Na gravação, conferir rótulos atuais, envio com confirmação e conclusão. No ensaio com crianças,
 verificar se começam a atividade sem explicação extra do adulto. Na abertura, devem saber

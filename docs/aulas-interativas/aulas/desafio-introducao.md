@@ -1,17 +1,68 @@
-# Desafio do Primeiro Jogo · Introdução · A aventura começa aqui
+# A Chave do Farol · Introdução · A aventura começa aqui
 
-## Objetivo
+## Resumo
 
-Apresentar **A Chave do Farol** e só a parte da plataforma que a criança precisa para começar. Não há projeto nem tarefa de compra nesta aula. São três seções, cada uma com um vídeo. O caderno e o mapa familiar são opcionais e aparecem na segunda seção, sem bloquear o avanço.
+- Estado de entrada: nenhuma construção; primeiro contato com a aventura.
+- Vitória: conhecer qual jogo será programado, experimentar a versão pronta e localizar o caderno.
+- Seções na entrada deste review: 2 · Seções finais: 2.
+- Clipes na entrada deste review: 2 · Clipes finais: 2.
 
-## Percurso
+## Triagem dos conceitos
 
-1. **A Chave do Farol:** mostrar o jogo pronto, o personagem, a chave, o farol e o barco. Explicar que arte e cenário já vêm preparados, mas movimento, coleta e decisão serão programados pela criança. Demonstrar, na página real, pausar/rever vídeo, Próxima seção, Anterior, divisória, Ampliar experiência/Voltar à aula e Expandir/Reduzir no Estúdio. Em tela estreita, mostrar Ver exemplo/Criar. Abaixo do vídeo, o bloco `ajuda-como-fazer-intro` (materiais só com links) aponta para os tutoriais de Plataforma do **Como fazer** (abrir uma aula, dar mais espaço à atividade, mostrar o menu): é o passo a passo que continua certo quando a interface mudar, sem regravar o vídeo. Consultar é opcional e não conta para concluir.
-2. **Seu mapa da aventura:** apresentar o caderno da criança e o mapa para responsáveis. Ambos podem ser consultados em casa; download não é critério de conclusão.
-3. **Como voltar e pedir ajuda:** mostrar lista de aulas, reabertura do curso e Preciso de ajuda com um exemplo útil, sem enviar um recado fictício. O bloco `ajuda-como-fazer-voltar` aponta para "Como voltar para a aula de onde parei" e "Como pedir ajuda ao professor" no Como fazer, para quando a criança travar dias depois.
+| O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
+| --- | --- | --- | --- | --- | --- |
+| Qual jogo será criado | Não | Na partida pronta | Contexto do barco e farol, seguido do convite para jogar | Antes da construção | Dar sentido ao projeto |
+| Mover o personagem | Não | Jogando | Setas na tela ou teclado | Depois da instrução, na mesma seção | Entrar na aventura sem um tour |
+| Consultar o caderno | Operação de apoio | Material disponível | Vídeo curto e PDF opcional | Seção 2 | Permitir consulta durante a montagem |
+| Navegar e pedir ajuda | Interface | No Como Fazer | Links diretos opcionais | Quando necessário | Evitar aula de navegação antes da atividade |
 
-## Critérios de autoria
+## Diagnóstico do desenho atual
 
-Vídeos são demonstrações conversadas, não um índice falado. Nada de nave, estrelas, tiros ou treinamento de um projeto diferente. Não ensinar Salvo e Enviar antes de a criança ter alterado seu primeiro projeto; isso entra no Dia 1. O bloco antigo de materiais e os vídeos antigos têm novas chaves para não reutilizar mídia ou anexos do curso da nave. Antes de gravar o segundo vídeo, anexar os PDFs ao bloco `materiais-farol` e conferir seus nomes reais.
+O tour já foi retirado. O contexto inicial deve permanecer: anunciar **A Chave do Farol**, situar o barco e o farol apagado, depois convidar a jogar. Não mostrar o trajeto resolvido.
 
-Os links `/como-fazer/<slug>` abrem em nova aba com o botão "Voltar para a aula"; os slugs vêm de `docs/como-fazer/como-fazer.json` e precisam estar PUBLICADOS no admin antes de a aula ir ao ar (`bun docs/como-fazer/validar.ts` confere o lote).
+O review encontrou falta de link direto para ler e baixar o caderno. A ajuda agora inclui `plataforma-baixar-materiais` e identifica o Como Fazer como área de ajuda. Não foi acrescentado um mapa como material adicional.
+
+## Proposta final
+
+### Seção 1. A Chave do Farol
+
+- **Intenção:** apresentação (`presentation`).
+- **Por que existe:** conhecer a aventura pela ação.
+- **Conclui quando:** vídeo e participação no jogo, sem exigir vitória.
+- **Blocos:** `video-intro-farol`, `ponte-intro-farol` e `jogo-pronto`.
+
+**Ponte do Zappy na página (não gravar):** Esta é a aventura que você vai programar. Jogue a versão pronta para conhecer o caminho da chave até o farol. Depois de experimentar, clique em Próxima seção.
+
+### Seção 2. Seu Caderno do Aluno
+
+- **Intenção:** material (`material`).
+- **Por que existe:** apresentar o apoio que acompanha as aulas.
+- **Conclui quando:** vídeo; leitura, impressão e download opcionais.
+- **Blocos:** `video-intro-caderno`, `ponte-intro-caderno`, `materiais-farol` com bookPreview, `ajuda-como-fazer-intro`.
+
+**Ponte do Zappy na página (não gravar):** Consulte este caderno quando precisar lembrar um passo da montagem. Para continuar, clique em Concluir aula.
+
+Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno pode incluir visão geral, navegação, montagem, testes, publicação e certificado, acompanhando o conteúdo real das aulas. O mapa antigo para responsáveis não integra esta versão. Se ainda constar no bloco publicado, retirar apenas a referência após conferir o novo caderno, preservando a mídia armazenada.
+
+## Experiências e demonstrações desta aula
+
+- **Atividade:** project-play, cópia concluída de A Chave do Farol.
+- **Situação:** recurso existente, com `completion: participation` e targets vazio.
+- **O que faz:** deixa jogar com os controles do jogo original, por toque ou teclado.
+- **Conclusão:** experimentar é suficiente. Não exigir acertar o trajeto.
+- **Preservação:** atividade isolada, sem Estúdio de entrega e sem alimentar a cadeia de criação da criança.
+
+Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstração resolve o jogo pela criança.
+
+## Vídeos
+
+| Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
+| --- | --- | --- | --- | --- |
+| `video-intro-farol` | Jogo, contexto e controles, sem resolver | Versão pronta | 35 a 45 s | Regravar |
+| `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 25 a 35 s | Regravar |
+
+## Continuidade
+
+Preservar `boas-vindas`, seções `apresentacao` e `caderno` e chave `materiais-farol`. O Dia 1 começa com outro projeto, ainda sem movimento. Manter as aposentadorias do tour no manifesto.
+
+Anexar o PDF antes de gravar sua apresentação. Reconciliar vídeos, anexos e progresso no admin. Os links do Como Fazer abrem na mesma aba com retorno à aula. Encerrar a introdução em **Concluir aula**.

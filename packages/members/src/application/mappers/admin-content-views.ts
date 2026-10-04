@@ -36,6 +36,8 @@ export interface CourseView {
   journeyRole: string
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
+  /** Atividade da seção abre só depois que o aluno assiste ao vídeo uma vez. */
+  videoBeforeActivity: boolean
   /**
    * Blocos que este curso LIBERA no Estúdio livre quando o aluno satisfaz o critério
    * atual (bônus Kids: conclusão; demais: conclusão + Mural). Vem de
@@ -73,6 +75,7 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     careerSlot: c.careerSlot,
     journeyRole: c.journeyRole,
     sequentialLock: c.sequentialLock,
+    videoBeforeActivity: c.videoBeforeActivity,
     studioUnlockBlocks: resolveStudioUnlockBlocks(c),
     clonedFrom: resolveClonedFrom(c),
     ...(hasShowcaseBlock === undefined ? {} : { hasShowcaseBlock }),

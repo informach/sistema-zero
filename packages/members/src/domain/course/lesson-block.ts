@@ -488,9 +488,9 @@ export type LessonBlockContent =
  * demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de fixação/materiais) são conteúdo livre —
  * e no caso dos MATERIAIS isso é definição, não omissão: complementar é o que está fora do
  * percurso obrigatório.
- * Usado pela autoria para manter a aula do certificado SEM gates: a emissão conclui
- * essa aula DIRETO (sem passar pelos gates), então um bloco travante ali seria PULADO —
- * o aluno emitiria o diploma sem fazê-lo.
+ * O CRUD legado sem seções mantém a aula do certificado sem gates: a emissão conclui
+ * essa aula diretamente. Na autoria por seções, `certificateLessonIssues` permite quiz
+ * obrigatório em seção anterior, e a primeira emissão confere a progressão no servidor.
  */
 export function isCompletionGatingBlock(content: LessonBlockContent): boolean {
   if (content.kind === 'studio' || content.kind === 'pinta') return content.purpose !== 'experiment'

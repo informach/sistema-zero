@@ -403,14 +403,16 @@ const seeds = [
       title: 'O primeiro jogo pode começar 🎮',
       content: [
         p(
-          'Olá, {{nome}}! O pagamento foi aprovado e o <strong>Desafio do Primeiro Jogo</strong> já está liberado para sua família.',
+          'Olá, {{nome}}! O pagamento foi aprovado e o <strong>Desafio do Primeiro Jogo</strong> já está liberado para sua família. Vocês vão conhecer A Chave do Farol: uma aventura para jogar e, depois, aprender a construir as regras.',
         ),
-        p('O acesso fica disponível até <strong>{{expira_em}}</strong>, sem renovação automática.'),
+        p(
+          'O curso e o Mural completo ficam disponíveis até <strong>{{expira_em}}</strong>. Depois, permanece o Mural visitante para ver e jogar. Não há renovação automática.',
+        ),
         p('{{orientacao}}'),
         ctaButton('{{acao}}', '{{link}}'),
         divider,
         small(
-          'Escolham um primeiro momento possível na rotina, cadastrem o perfil da criança e abram a etapa 1. As cinco etapas podem ser distribuídas dentro do período de acesso.',
+          'Escolham um momento com o computador disponível e abram a introdução juntos. Ali vocês conhecem o Farol jogando uma versão pronta. Depois, seu filho monta as regras em três etapas, distribuídas dentro do período de acesso.',
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
@@ -425,13 +427,13 @@ const seeds = [
     body: [
       'Olá, {{nome}}! 🎮',
       '',
-      'O pagamento foi aprovado e o *Desafio do Primeiro Jogo* já está liberado para sua família.',
-      'Seu acesso vai até *{{expira_em}}*, sem renovação automática.',
+      'O pagamento foi aprovado e o *Desafio do Primeiro Jogo* já está liberado para sua família. A aventura é A Chave do Farol.',
+      'Curso e Mural completo até *{{expira_em}}*. Depois, Mural visitante para ver e jogar. Sem renovação automática.',
       '',
       '{{orientacao}}',
       '{{link}}',
       '',
-      'Primeiro passo: escolher um momento possível e abrir a etapa 1. 🚀',
+      'Escolham um momento com o computador disponível e abram a introdução. Primeiro vocês conhecem a aventura; depois, seu filho começa a montar as regras.',
     ].join('\n'),
   },
   {
@@ -461,12 +463,13 @@ const seeds = [
     subject: 'Que tal abrir a primeira etapa, {{nome}}?',
     variables: ['nome', 'link'],
     body: emailLayout({
-      preheader: 'A conta está pronta; o próximo passo leva poucos minutos.',
+      preheader:
+        'A conta está pronta. Escolham um momento com o computador disponível para conhecer o Farol.',
       title: 'Hoje pode ser o começo do primeiro jogo',
       content: [
         p('Olá, {{nome}}! A conta já está pronta, mas a primeira etapa ainda não foi iniciada.'),
         p(
-          'Não precisa separar uma tarde inteira. Entre com a criança, escolha o perfil e dê apenas o primeiro passo. Quando quiserem, vocês continuam de onde pararam.',
+          'Entre com seu filho, escolha o perfil e abra a introdução para conhecer A Chave do Farol jogando. Depois vêm as três etapas de montagem. Vocês podem pausar e continuar dentro do prazo de acesso; não precisam fazer tudo no mesmo dia.',
         ),
         ctaButton('Abrir o Desafio', '{{link}}'),
         fallbackLink('{{link}}'),
@@ -478,14 +481,14 @@ const seeds = [
     key: 'challenge-day-one-complete',
     channel: 'email' as const,
     name: 'Desafio: etapa 1 concluída (e-mail)',
-    subject: 'Primeira etapa concluída: o jogo já começou a ganhar forma 🎉',
+    subject: 'Uma primeira etapa concluída para vocês conhecerem juntos 🎉',
     variables: ['nome', 'link'],
     body: emailLayout({
       preheader: 'Celebre o primeiro passo e continue do ponto em que a criança parou.',
       title: 'Primeira fase concluída 🎉',
       content: [
         p(
-          'Olá, {{nome}}! A primeira etapa foi concluída. O jogo já saiu da ideia e começou a ganhar forma na tela.',
+          'Olá, {{nome}}! A primeira etapa aparece como concluída no perfil. Vale abrir o projeto com seu filho e pedir que mostre o que já fez e o que gostaria de entender melhor.',
         ),
         p('Quando estiverem prontos, retomem do mesmo ponto. Uma etapa de cada vez é suficiente.'),
         ctaButton('Continuar o Desafio', '{{link}}'),
@@ -543,17 +546,17 @@ const seeds = [
     key: 'challenge-completed',
     channel: 'email' as const,
     name: 'Desafio: concluído (e-mail)',
-    subject: 'O primeiro jogo ficou pronto. E agora?',
+    subject: 'O Desafio foi concluído. Qual será o próximo passo?',
     variables: ['nome', 'link'],
     body: emailLayout({
       preheader: 'Celebre a conquista e conheça o caminho que vem depois do primeiro jogo.',
-      title: 'O primeiro jogo ficou pronto 🏆',
+      title: 'Um percurso concluído, uma criação para conhecer',
       content: [
         p(
-          'Olá, {{nome}}. A criança concluiu o Desafio do Primeiro Jogo: montou as regras, testou e chegou ao fim do projeto. Vale celebrar. Se o jogo já está publicado no Mural, vale jogar com a família hoje.',
+          'Olá, {{nome}}. O Desafio do Primeiro Jogo aparece como concluído no perfil. Abra a criação com seu filho e peça que mostre uma regra que montou. Se o jogo já está publicado no Mural, vocês podem compartilhar o link. Se ainda não publicou e o acesso está ativo, a seção de publicação explica como fazer.',
         ),
         p(
-          'O que costuma acontecer depois é a pergunta "e agora?". A Comunidade dos Criadores é a resposta: novos cursos, uma pessoa lendo o que ela envia e a Jornada do Criador andando a cada projeto concluído e publicado. O progresso continua de onde parou.',
+          'Se vocês quiserem continuar, a Comunidade dos Criadores reúne cursos e ferramentas na mesma conta, conforme as liberações da Jornada. É uma contratação separada e opcional. A conclusão do curso não encerra antes do prazo o acesso já comprado ao Desafio.',
         ),
         p('Conheça os planos e as condições na página, sem compromisso.'),
         ctaButton('Ver o caminho depois do primeiro jogo', '{{link}}'),
@@ -577,9 +580,12 @@ const seeds = [
           'Olá, {{nome}}! O acesso ao Desafio do Primeiro Jogo terminou em <strong>{{data}}</strong>.',
         ),
         p(
-          'O progresso e os projetos continuam guardados na conta. Para seguir criando e voltar a acessar esse conteúdo, conheça a Comunidade dos Criadores.',
+          'O Mural permanece no modo visitante: vocês podem ver e jogar, mas não fazer novas publicações, comentários ou reações. O link de um jogo publicado continua funcionando enquanto a publicação estiver disponível. O progresso e os projetos guardados permanecem na conta.',
         ),
-        ctaButton('Conhecer a Comunidade', '{{link}}'),
+        p(
+          'Permanecer como visitante não gera cobrança. Se quiserem retomar o curso ou conhecer o conjunto de experiências da Comunidade, confiram os planos e as condições na página de continuidade.',
+        ),
+        ctaButton('Conhecer a continuidade na Comunidade', '{{link}}'),
         fallbackLink('{{link}}'),
       ].join('\n'),
       footerNote: 'Você recebeu este e-mail porque teve acesso ao Desafio do Primeiro Jogo.',
