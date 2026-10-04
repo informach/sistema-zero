@@ -266,7 +266,10 @@ escuro e logo) e `52de024f` (3D).
   04/10/2026, a pedido dela, um volume baixo e apagado (`0 3px 0 var(--pen-degrau-cartao)`,
   parado, sem subir nem afundar): de 11/09 até ali ele era plano e ela sentiu falta do cinza com
   sombra de antes. O degrau cheio de 5px que se mexe continua só nos nós que abrem aula; com ele
-  a aula travada pareceria um botão. Nas ferramentas o relevo vale só nas galerias (ver o
+  a aula travada pareceria um botão. Os baús FECHADO e JÁ ABERTO seguem a mesma régua desde
+  04/10/2026 (pedido dela): o mesmo volume baixo e cinza e o `cursor-not-allowed`, porque
+  nenhum dos dois faz nada ao toque; o degrau alto e dourado, que afunda, é só do baú liberado
+  (`tests/trail-chest.test.tsx`). Nas ferramentas o relevo vale só nas galerias (ver o
   CLAUDE.md do ui).
 - **Conferência visual** (o app exige banco e login): `tmp/pen/` (fora do git) tem uma cópia da
   conferência das telas-modelo (`?tema=pink` liga o Pink), o servidor `:4803`, uma amostra das

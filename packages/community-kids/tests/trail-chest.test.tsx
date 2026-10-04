@@ -104,12 +104,17 @@ describe('baú da trilha', () => {
     expect(css).toContain(
       '.kids-node-link .kids-node:where(:not(.kids-node--locked):not(.kids-node--chest))',
     )
-    expect(closed).toContain('--k3d-altura: 6px')
-    expect(closed).toContain('var(--pen-degrau-cartao)')
-    expect(open).toContain('--k3d-altura: 8px')
+    // Fechado e aberto não fazem nada ao toque: o mesmo volume baixo e cinza da aula
+    // travada. O degrau alto e dourado é só do baú que dá para abrir.
+    const locked = rule('\\.kids-node--locked')
+    expect(locked).toContain('box-shadow: 0 3px 0 var(--pen-degrau-cartao)')
+    for (const parado of [closed, open]) {
+      expect(parado).toContain('--k3d-altura: 3px')
+      expect(parado).toContain('--k3d-degrau: var(--pen-degrau-cartao)')
+    }
     expect(open).toContain('background-color: var(--card)')
-    expect(open).toContain('var(--kids-ouro) 58%')
     expect(ready).toContain('--k3d-altura: 8px')
+    expect(ready).toContain('var(--kids-ouro) 58%')
     expect(hover).toContain('--k3d-altura: 9px')
     expect(active).toContain('--k3d-altura: 2px')
     expect(active).toContain('translate: 0 6px')
@@ -153,6 +158,39 @@ describe('baú da trilha', () => {
     expect(
       container.querySelector('.kids-node--chest-open')?.classList.contains('kids-node--chest'),
     ).toBe(true)
+  })
+
+  test('só o baú que dá para abrir tem cursor de clique', () => {
+    const raizDo = (container: HTMLElement) =>
+      container.querySelector('[data-trail-obstacle]') as HTMLElement
+    const { container, rerender } = montar(bau({ unlocked: false }))
+    expect(raizDo(container).className).toContain('cursor-not-allowed')
+
+    rerender(
+      <TrailChest
+        courseSlug="meu-curso"
+        moduleId="m1"
+        unitNumber={2}
+        chest={bau()}
+        offset={0}
+        riveSrc={null}
+      />,
+    )
+    expect(raizDo(container).className).not.toContain('cursor-not-allowed')
+    expect(screen.getByRole('button').className).toContain('cursor-pointer')
+
+    rerender(
+      <TrailChest
+        courseSlug="meu-curso"
+        moduleId="m1"
+        unitNumber={2}
+        chest={bau({ claimed: true })}
+        offset={0}
+        riveSrc={null}
+      />,
+    )
+    expect(raizDo(container).className).toContain('cursor-not-allowed')
+    expect(screen.queryByRole('button')).toBeNull()
   })
 
   test('fechado não é botão (seria uma parada de foco que não faz nada)', () => {

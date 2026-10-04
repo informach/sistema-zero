@@ -4,6 +4,16 @@ Data: 01/10/2026. Status: recomendação de posicionamento para orientar a reda�
 
 Desdobramento para a redação: [promessas e superpromessas por perfil](promessas-e-superpromessas.md), com a verificação do método de origem e as propostas em texto limpo.
 
+## Atualização de 04/10/2026: orientação integrada e entrada do Instagram
+
+A referência atual é o produto local, em publicação conforme informado pelo responsável. A [auditoria da plataforma](auditoria-plataforma-2026-10-04.md), a [pesquisa de mercado](pesquisa-mercado-2026-10-04.md) e a [análise da Kodland](pesquisa-kodland-2026-10-04.md) complementam este posicionamento. Os quatro perfis abaixo continuam como ângulos de compreensão da compra; não são quatro métodos nem segmentos cuja rentabilidade foi comprovada.
+
+**O acompanhamento é a didática e o ecossistema da Comunidade.** A criança encontra passos, explicações, falas preparadas do Zappy, experiências e verificações. Nas atividades configuradas, conhece o vídeo primeiro e depois pode rever fazendo. Tutoriais, ferramentas e espaços de troca ajudam a continuar a criação. O contato humano pelos Recados é um apoio complementar; não resume a orientação oferecida.
+
+Há duas funções de Zappy: as falas didáticas presentes nas aulas e a assistente de inteligência artificial no Estúdio. A segunda depende do posto Inventor, disponibilidade e créditos. Essas condições não se aplicam às falas autoradas da aula. A progressão segue os requisitos reais da Jornada; Cadê Todo Mundo? é um curso extra e não libera, por sua conclusão isolada, o Estúdio livre. O Desafio atual local é A Chave do Farol.
+
+Para a entrada do Instagram, a mensagem central é **“Seu filho aprende criando jogos, da primeira experiência às próprias ideias”**, demonstrada por tarefa, orientação, construção e teste. O tempo de tela permitido continua como contexto de uma situação familiar, sem precisar abrir toda peça. O [roteiro de valor e demonstração, versão 3](instagram/valor-e-demonstracao-2026-10-03.md), o [perfil e fixados](instagram/copy-perfil-e-fixados-2026-10-03.md) e o [calendário de 04/10](instagram/calendario-2026-10-03.md) aplicam essa hierarquia. Este adendo governa a interpretação do acompanhamento e da entrada editorial nas seções históricas abaixo, preservando os quadros e os argumentos por perfil.
+
 ## 1. Recomendação
 
 **Definir um quadro por perfil, apresentar a furadeira pelo ângulo pertinente àquela família e priorizar os decorados correspondentes.** Manter um resultado central da Comunidade e um mecanismo comum que sustentem as quatro versões.
