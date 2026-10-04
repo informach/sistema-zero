@@ -4,15 +4,15 @@
 
 - Estado de entrada: projeto enviado no Dia 2, com movimento, borda e coleta.
 - Vitória do dia: a porta confere a chave; sem ela, mostra o motivo; com ela, acende a luz e aciona a chegada do barco. A criança aprende a publicar seu jogo.
-- Seções na entrada deste review: 3 · Seções finais: 3.
-- Clipes na entrada deste review: 3 · Clipes finais: 3.
+- Seções na entrada deste review: 3 · Seções finais: 4.
+- Clipes na entrada deste review: 3 · Clipes finais: 4.
 
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
 | --- | --- | --- | --- | --- | --- |
 | Condição | Sim | Na experiência da porta | Testar sem chave e com chave | Explicação e experiência juntas, antes da montagem | Comparar duas respostas para a mesma pergunta |
-| Se, então e senão | Sim | No projeto | Consultar temChave e montar as duas respostas | Depois da experiência | Conectar a relação observada aos blocos |
+| Se, então e senão | Sim | Na experiência e no projeto | Mostrar a pergunta e o ramo escolhido; construir senão antes de então | Duas etapas após a experiência | Conectar a relação observada aos blocos com um teste entre as montagens |
 | Persistência da coleta | Sim | No percurso até o farol | Pegar a chave, afastar-se do lugar e chegar ao farol | Teste final | A informação continua guardada depois que a chave sai do chão |
 | Ativar consequência preparada | Não exige cena | No barco chegando | Alterar ganhou para verdadeiro | Dentro de então | Reconhecer o que foi preparado e o que a criança programa |
 | Troca de imagem e avisos | Não | No jogo | Conferir luz, mensagem e barco nos dois caminhos | Depois da montagem | Ver se cada resposta ficou no ramo certo |
@@ -24,7 +24,7 @@ O review reproduziu aprovação de uma decisão sem aviso em então ou sem ramo 
 
 O encaixe do texto de vitória estava implícito na narração. Agora são nomeados ramo então, campo de aviso e substituição do número inicial. Os testes finais incluem os dois avisos e a permanência de temChave depois de se afastar da coleta.
 
-A fala de ponte do Zappy repetia os comandos da experiência. Agora conecta a coleta à decisão; a instrução dentro da experiência conserva os botões e a ordem dos testes.
+A revisão de 04/10 torna visíveis temChave, a pergunta e as duas respostas. O destaque só aparece depois de Testar a porta; trocar a chave limpa o destaque anterior. A construção passa a duas seções no mesmo projeto. Os critérios finais conservam movimento, início falso e memória da coleta, além da decisão.
 
 ## Proposta final
 
@@ -35,24 +35,35 @@ A fala de ponte do Zappy repetia os comandos da experiência. Agora conecta a co
 - **Conclui quando:** vídeo e as duas tentativas reais na experiência.
 - **Blocos:** `video-d3-condicao`, `ponte-d3-condicao`, `experiencia-porta`.
 
-**Ponte do Zappy na página (não gravar):** A chave já pode ser recolhida. Experimente a porta e compare o que acontece nas duas situações.
+**Ponte do Zappy na página (não gravar):** A coleta já guarda uma informação. Veja como a porta usa essa informação para escolher uma resposta.
 
 Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não responde. Explicar condição brevemente. Orientar os testes sem realizá-los pela criança.
 
-### Seção 2. Faça a porta conferir a chave
+### Seção 2. Avise quando faltar a chave
+
+- **Intenção:** aplicação (`application`).
+- **Por que existe:** montar e conferir a primeira resposta antes de ampliar a condição.
+- **Conclui quando:** vídeo e dez critérios cumulativos aprovados; não pede envio.
+- **Blocos:** novo `video-d3-sem-chave`, `ponte-d3-sem-chave`, Estúdio pela `workspaceKey: projeto`.
+
+**Ponte do Zappy na página (não gravar):** Monte a resposta sem chave. Vá ao farol sem recolher a chave e confira o aviso. Verifique esta etapa antes de seguir.
+
+Criar evento separado personagem/farol e Se consultando temChave. Usar **+ senão**, encaixar aviso com texto nesse ramo; então fica vazio. Atualizar, ir ao farol sem chave e conferir luz apagada e mensagem. Verificar, corrigir, esperar Salvo e seguir em Próxima seção. A checagem aceita então vazio.
+
+### Seção 3. Acenda o farol com a chave
 
 - **Intenção:** construção e entrega (`delivery`).
 - **Por que existe:** programar a relação observada no jogo da criança.
-- **Conclui quando:** vídeo, critérios aprovados e envio confirmado.
+- **Conclui quando:** vídeo, quatorze critérios cumulativos aprovados e envio único do dia confirmado.
 - **Blocos:** `video-d3-decisao`, `ponte-d3-decisao`, Estúdio `projeto`.
 
-**Ponte do Zappy na página (não gravar):** Agora monte no seu jogo a regra que faz a porta conferir a chave. Teste os dois caminhos e use Verificar esta etapa antes de enviar o projeto.
+**Ponte do Zappy na página (não gravar):** Complete a resposta com chave. Teste chegar sem ela, buscar e voltar, e começar outra partida. Depois verifique e envie seu jogo.
 
-Criar evento separado personagem/farol. Dentro dele, Se valor da variável temChave. Em então: ganhou verdadeiro, imagem farol-aceso e aviso de chegada. Usar **+ senão**, não + senão se; em senão, aviso de falta da chave.
+Retomar o mesmo Se, preservando o aviso em senão. Completar então: ganhou verdadeiro, imagem farol-aceso e aviso de chegada. Não criar outro evento, outra condição ou cópia do projeto.
 
-Testar partidas reiniciadas por Atualizar: sem chave e com chave. Conferir mensagens, imagem e barco. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Próxima seção**.
+Testar o percurso contínuo: Atualizar, visitar o farol sem chave, afastar, buscar a chave e voltar na mesma partida. Esperar o barco. Atualizar depois da vitória, conferir a chave de volta e ir ao farol sem recolhê-la. Conferir as mensagens e a luz nos três momentos. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Próxima seção**.
 
-### Seção 3. Publique seu jogo
+### Seção 4. Publique seu jogo
 
 - **Intenção:** encerramento com publicação (`closing`).
 - **Por que existe:** mostrar o jogo a outras pessoas.
@@ -66,7 +77,7 @@ Testar partidas reiniciadas por Atualizar: sem chave e com chave. Conferir mensa
 ## Experiências e demonstrações desta aula
 
 - **Cena:** `lighthouse-key`, O que a porta precisa?
-- **Situação:** existente e pertinente à condição; sem cena nova.
+- **Situação:** cena existente, ampliada com informação, pergunta e respostas visíveis.
 - **Elenco/cenário:** farol, personagem e chave, com `cenario: farol`.
 - **Metas:** `locked-without-key` e `opened-with-key`.
 - **Instrução:** Testar a porta sem chave; Levar a chave; Testar a porta outra vez.
@@ -76,13 +87,14 @@ Testar partidas reiniciadas por Atualizar: sem chave e com chave. Conferir mensa
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d3-condicao` | Contexto e comandos, sem revelar respostas | Cena existente | 35 a 45 s | Regravar |
-| `video-d3-decisao` | Montagem dos ramos, testes e envio | Roteiro atual | 5 a 6 min, sem acelerar encaixes | Regravar |
+| `video-d3-condicao` | Contexto e comandos, sem revelar respostas | Cena ampliada | 40 a 55 s | Regravar |
+| `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 3 a 4 min | Gravar |
+| `video-d3-decisao` | Completar então, testar a aventura e enviar | Roteiro revisado | 4 a 5 min, sem acelerar os percursos | Regravar |
 | `video-d3-fecho` | Publicar e esperar confirmação | Mesmo projeto enviado | 45 a 60 s, incluindo espera | Regravar |
 
 ## Continuidade
 
-Preservar `condicao`, `decisao`, `fecho`, chave `projeto` e cadeia. Só o Estúdio do Dia 3 tem showcase habilitado, com título e resumo do Farol. Não criar uma cópia para publicar.
+Preservar `condicao`, `decisao`, `fecho`, chave `projeto` e cadeia. Inserir `sem-chave` entre condicao e decisao. O envio permanece somente em decisao; a publicação continua no mesmo Estúdio. Só o Estúdio do Dia 3 tem showcase habilitado, com título e resumo do Farol. Não criar uma cópia para publicar.
 
 Valores: temChave é consultado, ganhou vira verdadeiro apenas na resposta com chave, farol recebe farol-aceso e aviso muda conforme o ramo. O barco preparado não é atribuído à autoria da criança.
 

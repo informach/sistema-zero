@@ -96,6 +96,8 @@ Não localizar a ferramenta como “aqui ao lado” ou “aí embaixo”: a posi
 
 Os oito manifestos destes dois cursos têm cobertura das regras novas. Os demais cursos precisam de revisão própria; estarem no repositório não comprova conformidade com todas as decisões desta revisão.
 
+**Aplicação ao Farol, 04/10/2026:** a experiência de memória separa retirada do objeto, aviso e informação guardada, com o mesmo sumiço e aviso nos dois modos. A experiência da porta torna visíveis valor, pergunta e resposta escolhida. A construção de senão precede a de então, com teste e verificação intermediários no mesmo projeto e envio ao final. As verificações conservam as regras essenciais dos dias anteriores; o teste jogado inclui reiniciar depois da vitória. A comparação de velocidade acontece na própria montagem e a edição do aviso é opcional. Essas escolhas respondem às dificuldades deste jogo; não fixam uma quantidade de seções ou experiências para os demais cursos.
+
 ## Origem das decisões
 
 Consulta histórica opcional; não é preciso reconstruir as regras a partir desses relatos.
@@ -103,4 +105,5 @@ Consulta histórica opcional; não é preciso reconstruir as regras a partir des
 - [Revisão de linguagem do Cadê Todo Mundo, 27/09](REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md): teste com duas crianças, tarefa escondida pelo tour, passos completos, verificação e destino dos tutoriais.
 - [Revisão de roteiros, 20/09](REVISAO-ROTEIROS-2026-09-20.md): âncoras, rótulos reais, tempo para gestos, autoconferência e efeitos visíveis.
 - [Review pedagógico do Farol, 03/10](qa/review-pedagogico-desafio-2026-10-03.md): continuidade entre projetos, critérios vinculados ao evento e ramo corretos, contextos e caderno.
+- [Revisão do Farol, 04/10](qa/revisao-pedagogica-desafio-2026-10-04.md): comparação, memória observável, construção em duas etapas e diagnóstico da coleta; [registro da aplicação local](qa/revisao-desafio-2026-10-04/aplicacao.md).
 - [Quizzes dos cursos curtos, 03/10](proposta-quizzes-cursos-curtos-2026-10-03.md): aplicação específica da revisão antes do certificado.

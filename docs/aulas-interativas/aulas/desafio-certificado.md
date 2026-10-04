@@ -4,7 +4,7 @@
 
 - Estado de entrada: o jogo já tem movimento, coleta e decisão; a publicação foi ensinada.
 - Vitória: reconhecer a autoria e guardar o certificado.
-- Seções na entrada deste review: 1 · Seções finais: 2.
+- Seções na entrada deste review: 2 · Seções finais: 2.
 - Clipes na entrada deste review: 1 · Clipes finais: 1.
 
 ## Triagem dos conceitos
@@ -18,7 +18,7 @@ A revisão final tem quatro perguntas em seção própria, antes da celebração
 
 ## Diagnóstico do desenho atual
 
-A seção obrigatória de apresentação comercial já foi retirada. A celebração distingue a autoria das regras dos desenhos e do movimento do barco preparado. A emissão usa o bloco existente. A revisão acrescenta o quiz antes dela, preservando a estrutura de emissão.
+A seção obrigatória de apresentação comercial já foi retirada. A celebração distingue a autoria das regras dos desenhos e do movimento do barco preparado. A emissão usa o bloco existente. A revisão de 04/10 mantém as quatro perguntas e troca somente a pergunta de memória por um diagnóstico de coleta. O id novo `q-memoria-coleta` evita atribuir respostas antigas de `q2` ao novo enunciado. Preservar as outras perguntas e a estrutura de emissão.
 
 A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar meu certificado**. Quem já emitiu encontra **Baixar certificado (PDF)**; conferir o caso de retorno sem simular nova emissão.
 
@@ -44,6 +44,8 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar m
 **Ponte do Zappy na página (não gravar):** Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.
 
 Nomear o que a criança programou; orientar **Pegar meu certificado** e **Concluir aula**. Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
+
+A nova pergunta apresenta uma chave que sumiu com aviso, enquanto a porta, que consulta temChave corretamente, ainda diz que falta a chave. A criança escolhe conferir a atribuição de verdadeiro na coleta; a explicação distingue retirada, aviso e memória. Não antecipar esse gabarito no caderno.
 
 ## Experiências e demonstrações desta aula
 

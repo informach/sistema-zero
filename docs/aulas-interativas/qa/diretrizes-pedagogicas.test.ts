@@ -13,9 +13,9 @@ function load(name: string) {
 }
 
 describe('diretrizes dos cursos curtos', () => {
-  for (const [prefix, lessons, count] of [
-    ['cade-todo-mundo', ['aula-1', 'aula-2', 'certificado'], 3],
-    ['desafio', ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado'], 4],
+  for (const [prefix, lessons, count, sections, videos] of [
+    ['cade-todo-mundo', ['aula-1', 'aula-2', 'certificado'], 3, 10, 9],
+    ['desafio', ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado'], 4, 11, 10],
   ] as const) {
     test(`${prefix}: uma revisão final, sem vídeo, antes do certificado preservado`, () => {
       const manifests = lessons.map((lesson) => load(`${prefix}-${lesson}`))
@@ -31,8 +31,10 @@ describe('diretrizes dos cursos curtos', () => {
               block.content.text,
             )
       }
-      expect(manifests.flatMap((m) => m.sections)).toHaveLength(10)
-      expect(manifests.flatMap((m) => m.blocks).filter((b) => 'plannedVideo' in b)).toHaveLength(9)
+      expect(manifests.flatMap((m) => m.sections)).toHaveLength(sections)
+      expect(manifests.flatMap((m) => m.blocks).filter((b) => 'plannedVideo' in b)).toHaveLength(
+        videos,
+      )
       const quizzes = manifests.flatMap((m) => m.blocks).filter((b) => b.content?.kind === 'quiz')
       expect(quizzes).toHaveLength(1)
       const final = manifests.at(-1)!

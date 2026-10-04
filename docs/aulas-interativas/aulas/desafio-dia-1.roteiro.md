@@ -1,6 +1,6 @@
 # Roteiro de gravação · A Chave do Farol · Dia 1
 
-Uma seção, um vídeo de montagem. Estimativa: 4 a 5 minutos, incluindo encaixes e testes. O cenário, os desenhos, a exibição por quadro e a regra do barco já vêm preparados. O projeto inicial ainda não tem controles nem movimento. Mostrar apenas as áreas necessárias, com pausas naturais para acompanhar. Não fazer outra demonstração do jogo completo.
+Uma seção, um vídeo de montagem. Estimativa: 5 a 6 minutos, incluindo encaixes e testes. O cenário, os desenhos, a exibição por quadro e a regra do barco já vêm preparados. O projeto inicial ainda não tem controles nem movimento. Mostrar apenas as áreas necessárias, com pausas naturais para acompanhar. Não fazer outra demonstração do jogo completo.
 
 ## Seção 1. Faça o personagem andar pelo mapa
 
@@ -16,10 +16,20 @@ Uma seção, um vídeo de montagem. Estimativa: 4 a 5 minutos, incluindo encaixe
 **Narração:**
 > "As setas apareceram, mas falta dizer quem elas movem. Na programação, chamamos de sprite um elemento do jogo que podemos controlar, como este personagem. Abra Jogo 2D, Movimento, Movimentos prontos. Pegue Mover sprite em 4 direções com setas. Na área Enquanto estiver rodando, encontre A cada quadro. Encaixe o movimento dentro dele, logo depois de Desenhar o cenário cenario e antes dos outros blocos preparados. O jogo repete o que está aqui enquanto funciona. No nome do sprite, escolha personagem. A velocidade diz quanto ele anda a cada repetição. Ela já está em três. Deixe assim."
 
-**Na tela:** testar uma seta da tela. No computador, focar a prévia e testar uma seta do teclado. Levar o personagem até parte dele ultrapassar a borda. Não mostrar primeiro a correção. Pausar para a criança testar.
+**Na tela:** testar uma seta da tela. No computador, focar a prévia e testar uma seta do teclado. Pausar para a criança testar.
 
 **Narração:**
-> "Segure uma seta da tela. Se estiver no computador, pode clicar dentro do jogo e testar uma seta do teclado. O personagem deve andar na direção escolhida. Se não andou, confira o nome personagem e veja se o bloco está dentro de A cada quadro. Agora leve o personagem até uma beirada e continue segurando a seta. Observe se ele fica inteiro na tela."
+> "Segure uma seta da tela. Se estiver no computador, pode clicar dentro do jogo e testar uma seta do teclado. O personagem deve andar na direção escolhida. Se não andou, confira o nome personagem e veja se o bloco está dentro de A cada quadro."
+
+**Na tela:** mostrar o campo de velocidade do bloco já encaixado dentro de A cada quadro. Apontar 3 e o mesmo campo, sem demonstrar antecipadamente a comparação. Dar tempo para o teste.
+
+**Narração:**
+> "O personagem já anda. Vamos mudar uma coisa para comparar. No bloco de movimento que você acabou de encaixar, troque a velocidade de três para um e clique fora do campo. Antes de testar, pense se ele vai andar mais ou menos em cada repetição. Espere o jogo atualizar e segure uma seta. Compare com o movimento anterior. Depois volte a velocidade para três, clique fora do campo e teste novamente. Vamos continuar a aventura com esse valor."
+
+**Na tela:** levar o personagem até parte dele ultrapassar a borda. Não mostrar primeiro a correção. Pausar para a criança testar.
+
+**Narração:**
+> "Agora leve o personagem até uma beirada e continue segurando a seta. Observe se ele fica inteiro na tela."
 
 **Na tela:** abrir **Jogo 2D → Movimento → Bordas e rebatidas**. Pegar **Manter o sprite dentro da tela**, encaixar imediatamente depois do movimento, antes dos blocos preparados. Escolher `personagem`; este bloco só tem o seletor de sprite. Testar as quatro bordas; não exigir dois dispositivos.
 
@@ -31,4 +41,4 @@ Uma seção, um vídeo de montagem. Estimativa: 4 a 5 minutos, incluindo encaixe
 **Narração:**
 > "Depois de testar, aperte Verificar esta etapa. Se aparecer algo para corrigir, confira o bloco indicado e verifique de novo. Quando aparecer Objetivo da etapa cumprido!, espere a palavra Salvo na barra do Estúdio. Ela indica que seu trabalho ficou guardado. Agora aperte Enviar para o professor e, na janela que abrir, confirme em Enviar. Espere terminar o envio. Para finalizar, aperte Concluir aula."
 
-**Ponte do Zappy na página (não gravar):** Agora monte o movimento do seu personagem. Teste as quatro direções e as bordas, depois use Verificar esta etapa antes de enviar o projeto.
+**Ponte do Zappy na página (não gravar):** Monte o movimento e compare as velocidades. Depois teste as quatro direções e as bordas. Use Verificar esta etapa antes de enviar o projeto.

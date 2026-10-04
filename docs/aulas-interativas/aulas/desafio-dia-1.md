@@ -14,14 +14,14 @@
 | Sprite | Vocabulário | Na identificação do personagem | Definição curta antes de nomear o bloco | Na montagem | Evitar termo desconhecido na instrução |
 | Controles e movimento | Não | No jogo | Setas aparecem; personagem se move depois do segundo bloco | Após cada montagem | Mostrar controles não move alguém sozinho |
 | A cada quadro | Sim, em nível inicial | No movimento contínuo | Explicar que o jogo repete o que está no bloco | Antes do encaixe | Justificar onde colocar o movimento, sem aula paralela de animação |
-| Velocidade | Não exige cena | No deslocamento | Explicar quanto anda a cada repetição; manter 3 | Ao conferir o campo | Não mandar redigitar o valor que já vem correto |
+| Velocidade | Não exige cena | No deslocamento | Comparar 3 com 1 e voltar a 3 | Depois do primeiro movimento funcionar | Prever, mudar um valor e observar seu efeito |
 | Borda e ordem | Relação concreta | No jogo | Testar a saída e depois segurar o personagem dentro da tela | Problema antes da correção | Mover primeiro, conferir o limite depois |
 
 ## Diagnóstico do desenho atual
 
 A introdução já apresenta o jogo pronto. Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposentados, com o contexto necessário incorporado à montagem.
 
-O review encontrou “sprite” no nome do bloco antes da definição. A explicação agora vem primeiro, também no caderno. O seletor de borda não tem campo ctx; as instruções correspondem ao bloco atual. A velocidade inicial 3 é mantida.
+O review encontrou “sprite” no nome do bloco antes da definição. A explicação agora vem primeiro, também no caderno. O seletor de borda não tem campo ctx; as instruções correspondem ao bloco atual. A velocidade começa em 3. A criança compara com 1 e volta a 3 antes de montar a borda. A revisão de 04/10 também exige que movimento e limite estejam dentro de A cada quadro.
 
 ## Proposta final
 
@@ -32,11 +32,11 @@ O review encontrou “sprite” no nome do bloco antes da definição. A explica
 - **Conclui quando:** vídeo, três critérios de projeto aprovados e envio confirmado.
 - **Blocos:** `video-d1-borda`, `ponte-d1-borda`, Estúdio `projeto` e ajuda opcional `ajuda-d1`.
 
-**Ponte do Zappy na página (não gravar):** Agora monte o movimento do seu personagem. Teste as quatro direções e as bordas, depois use Verificar esta etapa antes de enviar o projeto.
+**Ponte do Zappy na página (não gravar):** Monte o movimento e compare as velocidades. Depois teste as quatro direções e as bordas. Use Verificar esta etapa antes de enviar o projeto.
 
 A abertura conecta a versão pronta experimentada à versão com personagem parado. Construir controles só com quatro direções no fim de Ao iniciar; movimento dentro de A cada quadro depois do cenário; limite de tela imediatamente depois do movimento.
 
-Testar com o dispositivo disponível, incluindo as quatro bordas. Não exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Concluir aula**.
+Comparar a velocidade 3 com 1, prevendo o efeito antes de testar; restaurar 3. Não criar uma resposta escrita ou seção extra. Testar com o dispositivo disponível, incluindo as quatro bordas. Não exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Concluir aula**.
 
 ## Experiências e demonstrações desta aula
 
@@ -46,7 +46,7 @@ Não há cena paralela: controles, movimento e bordas podem ser testados no pró
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d1-borda` | Contexto, montagem completa, bordas, verificação e envio | Roteiro atual e projeto inicial | 4 a 5 min, sem acelerar os encaixes | Regravar |
+| `video-d1-borda` | Contexto, montagem, comparação de velocidades, bordas e entrega | Roteiro atual e projeto inicial | 5 a 6 min, sem acelerar os encaixes | Regravar |
 
 ## Continuidade
 

@@ -16,9 +16,8 @@
         "tone": "note"
       },
       {
-        "kind": "step",
-        "title": "Encontre seu passo",
-        "text": "<b>Dia 1:</b> movimento e bordas, páginas 2 e 3.<br/><b>Dia 2:</b> coleta e memória da chave, páginas 4 e 5.<br/><b>Dia 3:</b> experiência e decisão, páginas 6 e 7; testes, página 8.<br/><b>Seu jogo no Mural:</b> página 9.<br/><b>Certificado e ajuda:</b> página 10."
+        "kind": "index",
+        "title": "Encontre seu passo"
       },
       {
         "kind": "box",
@@ -53,7 +52,36 @@
       {
         "kind": "step",
         "title": "Teste",
-        "text": "Segure uma seta da tela. No computador, pode clicar no jogo e usar o teclado. Vá até uma beirada e observe se o personagem fica inteiro na tela. Se não andar, confira o nome personagem e o encaixe dentro de A cada quadro."
+        "text": "Espere o jogo atualizar e segure uma seta da tela. No computador, pode clicar no jogo e usar o teclado. Se não andar, confira o nome personagem e o encaixe dentro de A cada quadro."
+      }
+    ]
+  },
+  {
+    "id": "comparar-velocidades",
+    "kicker": "Dia 1 · Compare no seu jogo",
+    "title": "Quanto ele anda?",
+    "subtitle": "O movimento já funciona. Mude só a velocidade e observe o deslocamento.",
+    "items": [
+      {
+        "kind": "step",
+        "title": "1. Mude de 3 para 1",
+        "text": "No bloco de movimento que você acabou de encaixar, troque a velocidade de <b>3</b> para <b>1</b> e clique fora do campo. Antes de testar, pense: ele vai andar mais ou menos em cada repetição?"
+      },
+      {
+        "kind": "step",
+        "title": "2. Compare",
+        "text": "Espere o jogo atualizar e segure uma seta. Compare com o movimento anterior. Não precisa escrever uma resposta."
+      },
+      {
+        "kind": "step",
+        "title": "3. Volte para 3",
+        "text": "No mesmo campo, coloque <b>3</b> novamente, clique fora e teste. Vamos continuar a aventura com esse valor."
+      },
+      {
+        "kind": "box",
+        "title": "Agora teste a beirada",
+        "text": "Leve o personagem até uma beirada e continue segurando a seta. Observe se ele fica inteiro na tela. Na próxima página, você vai montar o limite do caminho.",
+        "tone": "experience"
       }
     ]
   },
@@ -71,13 +99,34 @@
       {
         "kind": "diagram",
         "lines": [
-          [0, "Enquanto estiver rodando"],
-          [1, "A cada quadro"],
-          [2, "Limpar a tela [preparado]"],
-          [2, "Desenhar o cenário cenario [preparado]"],
-          [2, "<b>Mover personagem em 4 direções, velocidade 3</b>"],
-          [2, "<b>Manter personagem dentro da tela</b>"],
-          [2, "Outros blocos preparados"]
+          [
+            0,
+            "Enquanto estiver rodando"
+          ],
+          [
+            1,
+            "A cada quadro"
+          ],
+          [
+            2,
+            "Limpar a tela [preparado]"
+          ],
+          [
+            2,
+            "Desenhar o cenário cenario [preparado]"
+          ],
+          [
+            2,
+            "<b>Mover personagem em 4 direções, velocidade 3</b>"
+          ],
+          [
+            2,
+            "<b>Manter personagem dentro da tela</b>"
+          ],
+          [
+            2,
+            "Outros blocos preparados"
+          ]
         ]
       },
       {
@@ -91,10 +140,44 @@
     ]
   },
   {
+    "id": "memoria-experiencia",
+    "kicker": "Dia 2 · Experiência antes da montagem",
+    "title": "O jogo guardou a chave?",
+    "subtitle": "Compare o que some da tela com a informação que fica guardada.",
+    "items": [
+      {
+        "kind": "text",
+        "title": "",
+        "text": "Na experiência da aula, acompanhe <b>temChave</b>. Uma variável guarda um valor que pode mudar. Aqui, <b>falso</b> significa que a coleta ainda não ficou guardada. Não quer dizer que você errou."
+      },
+      {
+        "kind": "step",
+        "title": "1. Colete sem guardar",
+        "text": "Deixe <b>Guardar a coleta</b> desligado e aperte <b>Encostar na chave</b>. Compare a chave, o aviso e o valor de temChave."
+      },
+      {
+        "kind": "step",
+        "title": "2. Mude a regra e compare",
+        "text": "Aperte <b>Recomeçar a partida</b>. Ligue <b>Guardar a coleta</b> e aperte <b>Encostar na chave</b> outra vez. Compare o valor guardado, a chave e o aviso com o primeiro teste."
+      },
+      {
+        "kind": "step",
+        "title": "3. Afaste e recomece",
+        "text": "Aperte <b>Afastar</b> e olhe temChave. Depois aperte <b>Recomeçar a partida</b> e confira o que voltou ao começo. Para construir essa regra no seu jogo, aperte <b>Próxima seção</b>."
+      },
+      {
+        "kind": "box",
+        "title": "Uma coisa de cada vez",
+        "text": "Depois de recolher, recomece a partida antes de mudar Guardar a coleta. Assim você testa a regra em um novo encontro.",
+        "tone": "note"
+      }
+    ]
+  },
+  {
     "id": "p4",
     "kicker": "Dia 2 · Montagem",
     "title": "A chave precisa ser lembrada",
-    "subtitle": "Seu personagem já anda. Agora o encontro com a chave precisa mudar o jogo.",
+    "subtitle": "Na experiência, você comparou retirar a chave e guardar a coleta. Agora faça isso no seu jogo.",
     "items": [
       {
         "kind": "text",
@@ -119,7 +202,7 @@
   },
   {
     "id": "p5",
-    "kicker": "Dia 2 · Teste e entrega",
+    "kicker": "Dia 2 · Montagem",
     "title": "O jogo guarda a coleta",
     "subtitle": "Retirar a chave não basta: o jogo precisa lembrar que ela foi encontrada.",
     "items": [
@@ -132,11 +215,29 @@
         "kind": "step",
         "title": "5. Mostre a mensagem",
         "text": "Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b>. Encaixe abaixo de temChave, ainda no encontro, e escolha <b>aviso</b>. Em <b>Programação &gt; Valores</b>, pegue <b>texto</b>, encaixe no valor de aviso, substituindo o número, e escreva:<br/><b>Você pegou a chave! Agora vá ao farol.</b><br/>O aviso conta o que aconteceu; <b>temChave</b> guarda a informação da coleta."
-      },
+      }
+    ]
+  },
+  {
+    "id": "coleta-testes",
+    "kicker": "Dia 2 · Teste e entrega",
+    "title": "Confira a coleta no seu jogo",
+    "subtitle": "Retire a chave, guarde a informação e conte o que aconteceu a quem está jogando.",
+    "items": [
       {
         "kind": "step",
         "title": "Teste a coleta",
         "text": "Pegue a chave, confira se ela sumiu e se a mensagem mudou. Passe pelo mesmo lugar outra vez. Aperte <b>Atualizar</b> para recomeçar: a chave deve voltar. Se não sumiu, confira os nomes do encontro e Destruir o sprite chave dentro dele. Se a mensagem não mudou, confira aviso e seu texto."
+      },
+      {
+        "kind": "step",
+        "title": "O aviso com suas palavras",
+        "text": "Depois de fazer a mensagem funcionar, você pode mudar só o <b>texto</b> encaixado em <b>Alterar variável aviso</b>, dentro do encontro com a chave. Mantenha a ideia de que a chave foi encontrada e o próximo destino é o farol. Você também pode manter a frase do exemplo."
+      },
+      {
+        "kind": "step",
+        "title": "Teste sua escolha",
+        "text": "Espere o jogo atualizar. Se manteve a frase, aperte <b>Atualizar</b> para começar outra partida. Recolha a chave e confira a mensagem. Mudar o aviso não muda a regra de guardar verdadeiro em <b>temChave</b>."
       },
       {
         "kind": "delivery",
@@ -145,17 +246,40 @@
     ]
   },
   {
-    "id": "p6",
-    "kicker": "Dia 3 · Experiência e montagem",
+    "id": "porta-experiencia",
+    "kicker": "Dia 3 · Experiência antes da montagem",
     "title": "O que a porta precisa?",
-    "subtitle": "A coleta está pronta, mas a porta ainda não responde quando você chega ao farol.",
+    "subtitle": "A coleta guarda uma informação. A porta vai usar esse valor para escolher uma resposta.",
     "items": [
       {
-        "kind": "box",
-        "title": "Experimente antes de programar",
-        "text": "Uma <b>condição</b> é uma pergunta que o jogo confere. Na experiência da aula, aperte <b>Testar a porta</b> sem a chave. Depois aperte <b>Levar a chave</b> e <b>Testar a porta</b> outra vez. Compare as respostas e siga em <b>Próxima seção</b>.",
-        "tone": "experience"
+        "kind": "text",
+        "title": "",
+        "text": "Uma <b>condição</b> é uma pergunta que o jogo confere. Na experiência da aula, veja o mostrador <b>temChave</b>, a pergunta da porta e as duas respostas."
       },
+      {
+        "kind": "step",
+        "title": "1. Teste sem a chave",
+        "text": "Aperte <b>Testar a porta</b>. Veja o valor de temChave e qual resposta fica marcada."
+      },
+      {
+        "kind": "step",
+        "title": "2. Teste com a chave",
+        "text": "Aperte <b>Levar a chave</b> e depois <b>Testar a porta</b> outra vez. Compare o valor e a resposta com o primeiro teste."
+      },
+      {
+        "kind": "box",
+        "title": "Da experiência para o seu jogo",
+        "text": "Depois dos dois testes, aperte <b>Próxima seção</b>. Você vai montar primeiro o aviso de falta da chave e, na seção seguinte, completar a luz e a chegada do barco.",
+        "tone": "experience"
+      }
+    ]
+  },
+  {
+    "id": "p6",
+    "kicker": "Dia 3 · Resposta sem chave",
+    "title": "Avise quando faltar a chave",
+    "subtitle": "Continue no seu projeto. A parte então vai ficar vazia por enquanto.",
+    "items": [
       {
         "kind": "step",
         "title": "1. Crie outro encontro",
@@ -169,15 +293,26 @@
       {
         "kind": "step",
         "title": "3. Prepare a resposta sem chave",
-        "text": "No bloco Se, aperte <b>+ senão</b>, não + senão se. Em <b>Programação &gt; Variáveis</b>, pegue <b>Alterar variável para</b> e encaixe em <b>senão</b>. Escolha <b>aviso</b>. Em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e encaixe no valor. Escreva:<br/><b>A porta não abriu. Falta a chave.</b>"
+        "text": "No bloco Se, aperte <b>+ senão</b>, não + senão se. Em <b>Programação &gt; Variáveis</b>, pegue <b>Alterar variável para</b> e encaixe em <b>senão</b>. Escolha <b>aviso</b>. Em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e encaixe no valor, substituindo o número inicial. Escreva:<br/><b>A porta não abriu. Falta a chave.</b>"
+      },
+      {
+        "kind": "step",
+        "title": "Teste antes de continuar",
+        "text": "Aperte <b>Atualizar</b> e vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave. Se não apareceu, confira personagem/farol no encontro, temChave na pergunta e o aviso dentro de senão."
+      },
+      {
+        "kind": "box",
+        "title": "Verifique esta parte",
+        "text": "Aperte <b>Verificar esta etapa</b>. Corrija as pendências e verifique de novo. Quando aparecer <b>Objetivo da etapa cumprido!</b>, espere <b>Salvo</b> e aperte <b>Próxima seção</b>. O envio fica para depois de completar a resposta com chave.",
+        "tone": "test"
       }
     ]
   },
   {
     "id": "p7",
-    "kicker": "Dia 3 · Montagem",
+    "kicker": "Dia 3 · Resposta com chave",
     "title": "Quando a chave está com você",
-    "subtitle": "O ramo então guarda as ações para quando temChave for verdadeiro.",
+    "subtitle": "Continue no mesmo Se, no encontro com o farol. Mantenha o aviso em senão e complete então.",
     "items": [
       {
         "kind": "step",
@@ -197,10 +332,22 @@
       {
         "kind": "diagram",
         "lines": [
-          [0, "Encontro: personagem com farol"],
-          [1, "Se temChave"],
-          [2, "<b>então:</b> ganhou verdadeiro, imagem acesa, aviso"],
-          [2, "<b>senão:</b> aviso de que falta a chave"]
+          [
+            0,
+            "Encontro: personagem com farol"
+          ],
+          [
+            1,
+            "Se temChave"
+          ],
+          [
+            2,
+            "<b>então:</b> ganhou verdadeiro, imagem acesa, aviso"
+          ],
+          [
+            2,
+            "<b>senão:</b> aviso de que falta a chave"
+          ]
         ]
       }
     ]
@@ -208,7 +355,7 @@
   {
     "id": "p8",
     "kicker": "Dia 3 · Teste e entrega",
-    "title": "Compare os dois caminhos",
+    "title": "Teste a aventura inteira",
     "subtitle": "A condição está montada. Confira se cada situação recebe a resposta certa.",
     "items": [
       {
@@ -219,14 +366,20 @@
       },
       {
         "kind": "box",
-        "title": "Teste 2 · Com a chave",
-        "text": "Aperte <b>Atualizar</b> outra vez. Pegue a chave, afaste-se de onde ela estava e vá ao farol. O jogo continua lembrando da coleta em <b>temChave</b>. A luz deve acender, a mensagem deve mudar e o barco deve chegar.",
+        "title": "Teste 2 · Busque e volte na mesma partida",
+        "text": "Sem recomeçar a partida, afaste-se do farol, busque a chave e volte. O jogo guarda a coleta em <b>temChave</b> durante o caminho. A luz deve acender, o aviso deve mudar e o barco deve chegar. Espere o barco.",
         "tone": "test"
+      },
+      {
+        "kind": "box",
+        "title": "Teste 3 · Uma nova partida",
+        "text": "Depois da vitória, aperte <b>Atualizar</b>. A chave deve voltar ao chão. Vá direto ao farol sem recolhê-la. Ele deve continuar apagado e voltar a avisar que falta a chave.",
+        "tone": "note"
       },
       {
         "kind": "step",
         "title": "Se a resposta saiu diferente",
-        "text": "Acendeu sem chave? Confira se a troca de imagem está em <b>então</b> e se o Se consulta <b>temChave</b>.<br/>Não acendeu com chave? Confira a coleta, <b>temChave verdadeiro</b> e a imagem <b>farol-aceso</b>.<br/>O barco não veio? Confira <b>ganhou verdadeiro</b> em então.<br/>O aviso saiu errado? Confira o texto no ramo certo: <b>então</b> ou <b>senão</b>.<br/>Corrija e repita os dois testes."
+        "text": "Acendeu sem chave? Confira se <b>temChave começa em falso</b>, se a troca de imagem está em <b>então</b> e se o Se consulta <b>temChave</b>.<br/>Não acendeu com chave? Confira a coleta, <b>temChave verdadeiro</b> e a imagem <b>farol-aceso</b>.<br/>O barco não veio? Confira <b>ganhou verdadeiro</b> em então.<br/>O aviso saiu errado? Confira o texto no ramo certo: <b>então</b> ou <b>senão</b>.<br/>Corrija e repita os testes."
       },
       {
         "kind": "delivery",

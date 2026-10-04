@@ -38,7 +38,7 @@ encerramento do antigo Desafio.
 | **Total** | **28** | **281** | **207** | **202** | **169** |
 
 As 11 cenas anteriores foram construídas e os defeitos do catálogo, corrigidos. As cenas de toque e
-contagem do gratuito e a experiência da porta do farol elevam o catálogo de 56 para **59 cenas**. Os **34 manifestos**
+contagem do gratuito, a porta do farol e a experiência de memória elevam o catálogo de 56 para **60 cenas**. Os **34 manifestos**
 passam no validador, sem nenhuma aula esperando cena. O novo Desafio ainda precisa das gravações,
 dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 
@@ -48,7 +48,7 @@ dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 |---|---|
 | `DIRETRIZES-PEDAGOGICAS.md` | Referência única das regras, justificativas, variações por curso e conferência. **Primeira leitura para qualquer curso.** |
 | `BRIEFING.md` | Guia para preparar a análise, fazer a triagem dos conceitos e registrar decisões; encaminha às Diretrizes Pedagógicas. |
-| `CATALOGO-CENAS.json` | As **59 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
+| `CATALOGO-CENAS.json` | As **60 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
 | `REFERENCIA-PLATAFORMA.md` | **Onde cada coisa está na plataforma hoje**, lido direto do código, com a fonte citada por linha: o menu da esquerda, o recolhimento dele na aula e na ferramenta, a cor do perfil, as três ações de plataforma, os grupos do menu ⋯ do Estúdio, a lista de projetos e o Pinta. Toda fala que nomeie menu, tela ou botão confere aqui |
 | `REFERENCIA-BLOCOS-JOGO-2D.json` | Os **285 tipos** da paleta do Jogo 2D, extraídos do código: família, seção, todas as linhas do rótulo, cada campo com o padrão de fábrica e a lista de cada menu na ordem da tela |
 | `ESPEC-ROTEIRO.md` | O contrato do roteiro de gravação: tarefa na primeira fala, passo a passo completo, linguagem direta, notas de produção separadas e tutoriais de interface no Como Fazer |
