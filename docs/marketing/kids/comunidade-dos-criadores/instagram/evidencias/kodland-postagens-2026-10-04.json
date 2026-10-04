@@ -1,0 +1,200 @@
+{
+  "profile": "https://www.instagram.com/kodland.brasil/",
+  "date": "2026-10-04",
+  "method": "Navegação pública em Chrome e leitura do DOM visível, sem login. Resumo anonimizado; não inclui legendas integrais nem identificadores de comentaristas.",
+  "sample": "Mesmos 12 posts registrados em 03/10, reconferidos em 04/10. Não representa todo o histórico da conta.",
+  "limits": [
+    "Curtidas arredondadas preservadas como texto; não estimar número exato.",
+    "Sem alcance, impressões, salvamentos, distribuição paga, vendas ou conversões.",
+    "Durações são metadados do elemento de vídeo, não evidência de audição integral; elementos de carrossel não somam uma duração total.",
+    "Ausência de comentários renderizados não equivale a ausência de comentários.",
+    "Resumos são paráfrases analíticas; alegações da marca não foram verificadas como eficácia educacional."
+  ],
+  "posts": [
+    {
+      "id": "K01",
+      "url": "https://www.instagram.com/kodland.brasil/reel/Dd_VmOkikPO/",
+      "format": "Reel",
+      "publication_date_utc": "2026-10-02T11:06:32.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Medo de falar em público e confiança; convite à aula gratuita.",
+      "visible_likes": 6,
+      "visible_comment_count": null,
+      "comment_note": "Comentários não renderizados; não equivale a contagem zero.",
+      "video_durations_seconds": [
+        49.457097
+      ],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K02",
+      "url": "https://www.instagram.com/kodland.brasil/reel/Dd8wywWhWY-/",
+      "format": "Reel",
+      "publication_date_utc": "2026-10-01T11:05:06.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Projeto 3D atribuído a aluna; imaginação e convite por palavra-chave BLENDER.",
+      "visible_likes": 18,
+      "visible_comment_count": 1,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [
+        24.4
+      ],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K03",
+      "url": "https://www.instagram.com/kodland.brasil/p/DdjqQQkiL4T/",
+      "format": "Carrossel com mídia mista",
+      "publication_date_utc": "2026-09-21T17:07:46.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Hora de tela associada a criação, projetos e amizades; bio e palavra AULA.",
+      "visible_likes": 43,
+      "visible_comment_count": 3,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [
+        17.799999,
+        4.999999
+      ],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K04",
+      "url": "https://www.instagram.com/kodland.brasil/reel/DeB50lqCczT/",
+      "format": "Reel",
+      "publication_date_utc": "2026-10-03T11:01:20.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Brincadeira física e estratégia; associação à programação, sem CTA comercial expresso na legenda.",
+      "visible_likes": 214,
+      "visible_comment_count": 1,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [
+        null
+      ],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K05",
+      "url": "https://www.instagram.com/kodland.brasil/p/Dd6Mx7fCDu8/",
+      "format": "Carrossel",
+      "publication_date_utc": "2026-09-30T11:12:45.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "IA no cotidiano e criação consciente; convite à aula gratuita na bio.",
+      "visible_likes": 7,
+      "visible_comment_count": null,
+      "comment_note": "Comentários não renderizados; não equivale a contagem zero.",
+      "video_durations_seconds": [],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K06",
+      "url": "https://www.instagram.com/kodland.brasil/reel/Dd3mmF8hpfS/",
+      "format": "Reel",
+      "publication_date_utc": "2026-09-29T11:00:07.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Atividade infantil com padrões, creditada a terceiro; aprendizagem e atenção, sem CTA comercial expresso.",
+      "visible_likes": 401,
+      "visible_comment_count": 20,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [
+        62.1
+      ],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K07",
+      "url": "https://www.instagram.com/kodland.brasil/p/Dd1C6CmCBQy/",
+      "format": "Carrossel",
+      "publication_date_utc": "2026-09-28T11:10:16.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Incentivo do responsável e pergunta para conversa familiar.",
+      "visible_likes": 18,
+      "visible_comment_count": null,
+      "comment_note": "Comentários não renderizados; não equivale a contagem zero.",
+      "video_durations_seconds": [],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": "Capa e segundo slide inspecionados."
+    },
+    {
+      "id": "K08",
+      "url": "https://www.instagram.com/kodland.brasil/reel/DdzG93Ro-QV/",
+      "format": "Reel",
+      "publication_date_utc": "2026-09-27T17:09:33.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Humor com pet, inteligência e associação aos alunos; bio no comentário da marca.",
+      "visible_likes": 704,
+      "visible_comment_count": 8,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K09",
+      "url": "https://www.instagram.com/kodland.brasil/reel/Ddyd5DBor6Z/",
+      "format": "Reel",
+      "publication_date_utc": "2026-09-27T11:08:56.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Amigos e comunidade; pergunta ao responsável e bio no comentário da marca.",
+      "visible_likes": "1,4 mil",
+      "visible_comment_count": 11,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [
+        13.210702
+      ],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K10",
+      "url": "https://www.instagram.com/kodland.brasil/p/DdtW-XzCAQ-/",
+      "format": "Carrossel",
+      "publication_date_utc": "2026-09-25T11:31:42.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Segurança de contas e senhas; chamada à bio.",
+      "visible_likes": 12,
+      "visible_comment_count": 0,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    },
+    {
+      "id": "K11",
+      "url": "https://www.instagram.com/kodland.brasil/reel/Ddqxf31ooRP/",
+      "format": "Reel",
+      "publication_date_utc": "2026-09-24T11:26:49.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Funcionamento de uma aula e pedido de aula experimental pela palavra AULA.",
+      "visible_likes": 20,
+      "visible_comment_count": 10,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [
+        50.76
+      ],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": "Frames próximos de 5 e 25 segundos inspecionados."
+    },
+    {
+      "id": "K12",
+      "url": "https://www.instagram.com/kodland.brasil/reel/DdlmRVYKyTY/",
+      "format": "Reel",
+      "publication_date_utc": "2026-09-22T11:10:46.000Z",
+      "observed_at": "2026-10-04",
+      "summary": "Cena de mãe e filho, apoio familiar relacionado à jornada digital; aula experimental na bio.",
+      "visible_likes": "1,3 mil",
+      "visible_comment_count": 57,
+      "comment_note": "Contagem da interface; nem todos os comentários foram renderizados.",
+      "video_durations_seconds": [
+        28.303672
+      ],
+      "scope": "Legenda pública, data e contagens de interface; sem reprodução audiovisual integral.",
+      "visual_addendum": null
+    }
+  ]
+}

@@ -1,222 +1,197 @@
 # Perfil, destaques e posts fixados
 
-Versão 2, 03/10/2026. Textos prontos para produção; falas roteirizadas não são depoimentos. A [estratégia](README.md) e o [mapa de valor](valor-e-demonstracao-2026-10-03.md) orientam a execução.
+**Versão 3, 04/10/2026.** Substitui a copy de 03/10 neste arquivo. Referência de produto: versão local em publicação, conforme orientação do usuário. Textos prontos para produção; gravações são demonstrações da equipe, salvo identificação e autorização de um caso real.
 
-## 1. Perfil
+## 1. Perfil pronto para aplicar
 
 **Arroba:** manter `@criecomhelenaejulio`.
 
-**Nome:** `Helena e Júlio | Criar jogos`.
+**Nome:** `Helena e Júlio | Programação infantil`.
 
 **Bio recomendada:**
 
 ```text
-Seu filho aprende criando jogos
-Joga, experimenta e cria na mesma plataforma
-Comunidade dos Criadores | 9 a 14 anos
-↓ Veja como funciona
+🎮 Aulas online de programação • 9 a 14 anos
+💡 Seu filho aprende criando os próprios jogos
+👇 Veja como funciona
 ```
 
-A bio tem 136 caracteres, incluindo três quebras de linha. O nome tem 28. A sequência detalhada aparece no primeiro fixado e na página.
+Conferir a prévia de quebra de linhas no aplicativo. Nome: 37 caracteres. A bio apresenta categoria e faixa, benefício visível e próximo passo concreto. O primeiro fixado demonstra como funciona, e o destaque Orientação mostra o acompanhamento integrado. A [análise da bio da Kodland](analise-bio-kodland-2026-10-04.md) explica a escolha. “Próprios jogos” inclui construções guiadas com materiais preparados e novas criações conforme o percurso.
 
-**Título do link:** Conheça a Comunidade dos Criadores.
+**Conferência pública final de 04/10:** o [perfil](https://www.instagram.com/criecomhelenaejulio/) já exibia esse nome e essa bio. A observação confirma a apresentação visível; a alteração não foi realizada pelo agente. Os destaques ainda exibiam os títulos anteriores, cuja migração está abaixo.
 
-**URL:**
+**Título do link:** `Veja como seu filho aprende`.
+
+**URL da bio:**
 
 ```text
-https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=reposicionamento_comunidade&utm_content=bio
+https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=bio
 ```
 
-**Avatar:** manter a identidade reconhecível do casal durante a transição. Mostrar Helena e Júlio reais nos vídeos. A categoria, se exibida, deve corresponder a educação ou equivalente disponível, sem credencial não confirmada.
+A raiz local apresenta três caminhos: ver como aprende, encontrar um primeiro passo pelo quiz do Desafio e conhecer a Comunidade e os planos. Usar os nomes reais desses caminhos em atendimento. O quiz do Desafio e o quiz da Comunidade têm funções distintas. O [mapa de links](operacao-e-links-2026-10-04.md) define os destinos dos stories.
 
-**Apresentação curta:**
+**Foto:** manter o avatar reconhecível do casal neste ciclo. Conferir legibilidade em miniatura, contraste e ausência de texto miúdo. Reforçar os rostos reais nas apresentações, sem trocar toda a identidade no mesmo momento da mudança de mensagem.
 
-> Somos Helena e Júlio, criadores da Comunidade dos Criadores. Aqui, crianças de 9 a 14 anos jogam, experimentam e aprendem a programar seus jogos. Aulas, experiências, ferramentas e ajuda ficam na mesma plataforma, com um caminho para continuar criando.
+**Categoria:** educação, ou a opção equivalente realmente disponível na conta. Não acrescentar credenciais ainda não comprovadas.
 
-## 2. Destaques
+**Onde vocês se apresentam:** a apresentação falada faz parte dos vídeos, não dos campos do perfil. No [calendário](calendario-2026-10-03.md), ela já está escrita na primeira tela de **S06, em 16/10**, e na fala do Reel **F12, em 30/10**. Usar os roteiros dessas peças. O antigo bloco “Apresentação oral” foi retirado daqui porque estava sem uma publicação definida e não representa uma gravação adicional.
 
-Ordem desejada: **Comece aqui → Como aprende → Criações → Ajuda → Família → Sobre nós**. Conferir a ordem visível após atualizar, pois a operação de stories pode alterá-la.
+## 2. Destaques: cinco sequências de quatro telas
 
-| Atual | Proposto | Migração |
+Ordem desejada: **Comece → Na prática → Criações → Orientação → Família**. Publicar conforme S01 a S05 do calendário, reaproveitando os assets dos posts. Conferir a ordem exibida após atualizar. A apresentação dos fundadores entra em S06 e F12; pode formar “Sobre nós” depois, se o conteúdo acrescentar contexto útil.
+
+Capas: usar exatamente **Comece**, **Na prática**, **Criações**, **Orientação** e **Família**, com um símbolo simples já usado na identidade. Não fazer uma capa com captura inteira da plataforma. Nos stories, um texto principal por tela, contraste legível e espaço livre para o sticker. A frase principal é a fala integral quando a tela for um vídeo apresentado; os complementos ficam na arte. Não é necessário criar copy adicional para produzir as 20 telas.
+
+### Comece · S01 · 05/10
+
+1. **“Seu filho aprende a programar criando jogos.”** Casal + uma partida. Complemento menor: “Comunidade dos Criadores • 9 a 14 anos”.
+2. **“Ele experimenta uma ideia e constrói uma regra.”** Mostrar explicação, atividade e teste. Não enfileirar nomes de ferramentas.
+3. **“A orientação acompanha a criação.”** Mostrar um passo da aula e um diálogo do Zappy. Complemento: “Aulas e prática no computador, no horário da família”.
+4. **“Conheça o percurso, os recursos e os planos.”** Sticker **Ver como funciona** → L1, `utm_content=s01_comece`.
+
+### Na prática · S02 · 07/10
+
+1. **“Aqui, tocar faz o personagem aparecer.”** Abrir pelo efeito no jogo. Identificar: “Demonstração da equipe”.
+2. **“O cenário vem preparado. A criança constrói esta regra.”** Separar visualmente cenário e regra de toque. Não atribuir a ela todos os elementos do jogo.
+3. **“Depois de montar, ela testa o que acontece.”** Mostrar a regra e o resultado correspondente, com tempo para ler.
+4. **“Uma explicação, uma experiência e uma construção.”** Sticker **Ver como aprende** → L1, `utm_content=s02_pratica`.
+
+Usar Cadê Todo Mundo como exemplo de curso extra. Não afirmar que ele é o começo obrigatório da Jornada ou que sua conclusão libera o Estúdio livre.
+
+### Criações · S03 · 09/10
+
+1. **“Uma escolha pode mudar a partida.”** Duas versões reais do mesmo projeto, identificadas como demonstração da equipe.
+2. **“A criança aprende a construir e testar essas escolhas.”** Destacar a regra alterada. Usar uma variação compatível com o que foi ensinado.
+3. **“A Jornada abre novas ferramentas para outras ideias.”** Mostrar uma liberação real e sua condição. Complemento: “Os recursos são liberados por etapas”.
+4. **“Veja os espaços para continuar criando.”** Sticker **Conhecer os recursos** → L2, `utm_content=s03_criacoes`.
+
+### Orientação · S04 · 12/10
+
+1. **“A orientação começa dentro da aula.”** Mostrar um passo e um diálogo autorado do Zappy, mantendo o texto legível.
+2. **“Primeiro, conhece a explicação. Depois, revê fazendo.”** Mostrar uma atividade configurada para essa sequência: orientação antes da liberação e atividade disponível depois. Não generalizar para todos os cursos.
+3. **“Há outros caminhos para continuar criando.”** Montagem curta com os rótulos: “Como fazer: relembrar uma ação”, “Clube: trocar ideias” e “Equipe: conversar sobre dúvidas”.
+4. **“Veja como esses apoios se conectam.”** Sticker **Conhecer a orientação** → L3, `utm_content=s04_orientacao`.
+
+A página de orientação aprofunda Pensa e a assistente Zappy conforme Jornada, serviço e créditos. Os diálogos do personagem nas aulas são conteúdo autorado; não dependem da liberação da assistente de inteligência artificial. A sequência curta mostra o acompanhamento como conjunto, sem tentar apresentar todas as ferramentas numa única tela.
+
+### Família · S05 · 14/10
+
+1. **“Para começar: computador e internet.”** Complemento: “9 a 14 anos, leitura e uso de mouse e teclado”. Mostrar o equipamento usado na gravação; não sugerir que qualquer aparelho foi testado.
+2. **“Vocês combinam o horário e conhecem a atividade.”** Casal demonstra organização; a criança pode precisar de apoio no início.
+3. **“Você acompanha registros e pode conhecer o que foi criado.”** Área da família + projeto. Complemento: “Peça que seu filho mostre uma escolha”.
+4. **“Confira formato, acesso e planos.”** Sticker **Conhecer os planos** → L5, `utm_content=s05_familia`.
+
+O plano local prevê até dois perfis infantis por responsável. Explicar no atendimento e na página, com as condições vigentes; não espremer todas as condições na bio. Os registros da família não equivalem a avaliação de aprendizagem.
+
+### Migração dos destaques existentes
+
+| Anterior | Ação recomendada |
+| --- | --- |
+| Comece aqui | Substituir pela sequência Comece |
+| Sistema Zero | Reaproveitar somente telas atuais dentro de Na prática |
+| Eles criaram | Manter apenas trabalhos autorizados; identificar autoria e contexto dentro de Criações |
+| Para quem é | Atualizar equipamento, faixa e formato em Família |
+| Helena e Júlio | Preservar a história verdadeira; atualizar depois com S06/F12 |
+| Ajuda | Apresentar como Orientação, com didática, prática, consulta e pessoas |
+
+Não arquivar todo o acervo por padrão. A auditoria aponta peças que pedem revisão; nenhuma remoção foi executada.
+
+## 3. Fixados: cada um resolve uma decisão
+
+Ordem desejada no perfil: **Veja uma aula por dentro → O que ele pode criar → Como funciona em casa**. Conferir visualmente depois de fixar. São F01, F02 e F03 do calendário, dentro dos três posts da primeira semana.
+
+### F01 · Veja uma aula por dentro
+
+**Formato:** Reel de 45 a 60 segundos. **Função:** tornar a proposta compreensível com uma tarefa. **Capa:** “Veja uma aula por dentro”. **Asset:** versão local de uma atividade completa, gravação da equipe e cenário preparado identificado.
+
+| Tempo aproximado | Cena / texto de tela | Fala |
 | --- | --- | --- |
-| Comece aqui | Comece aqui | Nova apresentação e convite |
-| Sistema Zero | Como aprende | Trocar o tour de nomes pelo percurso de aprendizagem |
-| Eles criaram | Criações | Preservar trabalhos autorizados e contextualizados; acrescentar ferramentas, Mural, Clube e desafio |
-| Para quem é | Família | Acrescentar requisitos, retomada e acompanhamento |
-| Helena e Júlio | Sobre nós | Atualizar apresentação e origem |
-| Novo | Ajuda | Vídeo, orientações, Recados e resposta por mensagens |
+| 0 a 4 s | Tocar e revelar personagem. “Ele vai construir esta regra” | “Um toque faz este personagem aparecer. Seu filho aprende a construir essa regra.” |
+| 4 a 12 s | Partida de referência. “Conhecer o jogo” | “Neste curso, ele começa conhecendo a brincadeira: encontrar personagens escondidos.” |
+| 12 a 26 s | Vídeo, orientação e experiência. “Experimentar a ideia” | “A aula orienta o próximo passo. Ele testa o que muda quando a reação ao toque está ligada, com a explicação e a experiência lado a lado.” |
+| 26 a 40 s | Regra no editor → teste. “Programar e testar” | “No projeto, o cenário vem preparado. Ele monta a regra que revela o personagem e joga para conferir o resultado.” |
+| 40 a 53 s | Casal + resultado. “Comunidade dos Criadores” | “Assim, a ideia ganha um uso que ele consegue mostrar funcionando. Conheça a Comunidade dos Criadores no link da bio.” |
 
-Antes de reutilizar stories antigos, conferir o conteúdo completo. A auditoria pública não conseguiu ler todas as sequências.
+A duração final depende da fala e do tempo necessário para entender a captura. Não acelerar a interface para cumprir o segundo previsto. Mostrar o encadeamento verdadeiro; se houver corte, ele não pode ocultar um passo necessário.
 
-As capas usam o título curto e um símbolo legível da identidade atual. Cada story tem uma ação principal e legenda na tela. Um destaque pode começar com demonstrações da equipe identificadas, sem depender de depoimentos ainda não disponíveis.
+**Legenda pronta:**
 
-### Destaque 1. Comece aqui
-
-| Tela | Texto/fala pública | Cena |
-| --- | --- | --- |
-| 1 | “Seu filho aprende criando jogos, da primeira experiência às próprias ideias.” | Partida real e casal |
-| 2 | “Cada curso apresenta o jogo que ele vai construir. Primeiro, ele joga para conhecer o desafio.” | Jogo de referência |
-| 3 | “Depois, experimenta os conceitos ao lado do vídeo e usa essas ideias para programar o jogo.” | Vídeo + experiência → editor |
-| 4 | “Ao avançar, aprende novas habilidades e libera ferramentas para criar outros projetos.” | Jornada → criação livre elegível |
-| 5 | “Para crianças de 9 a 14 anos, com computador, internet, leitura e uso de mouse e teclado.” | Equipamento e texto simples |
-| 6 | “Veja o percurso completo e conheça a Comunidade dos Criadores.” | Sticker: “Ver como funciona”; raiz `#como-aprende` |
-
-### Destaque 2. Como aprende
-
-| Tela | Texto/fala pública | Cena |
-| --- | --- | --- |
-| 1 | “Neste curso, a brincadeira é encontrar personagens escondidos. A criança começa jogando a versão apresentada.” | Cadê Todo Mundo |
-| 2 | “Na experiência, ela toca com a reação desligada. Depois liga a reação e testa de novo.” | Mesmo toque, dois estados |
-| 3 | “O vídeo explica a ideia, e a atividade ao lado permite observar o que muda.” | Plano aberto das duas áreas |
-| 4 | “Agora ela programa essa reação no jogo: tocar no esconderijo revela o personagem.” | Regra → teste |
-| 5 | “Na próxima etapa, trabalha a contagem dos encontrados e acrescenta essa regra ao projeto.” | Contador → aplicação |
-| 6 | “Uma ideia experimentada e aplicada, a cada parte da construção. Conheça esse caminho.” | Sticker: “Conhecer a Comunidade”; raiz |
-
-Identificar cenário e personagens preparados. Não mostrar uma transição que esconda o trabalho da criança ou faça parecer que ela desenhou tudo na atividade.
-
-### Destaque 3. Criações
-
-| Tela | Texto/fala pública | Cena |
-| --- | --- | --- |
-| 1 | “O que seu filho aprende pode entrar em novos jogos.” | Projeto guiado → outra criação compatível |
-| 2 | “As ferramentas liberadas ficam disponíveis para criar. Aqui, um personagem desenhado no Pinta entra no Estúdio.” | Passagem real; demonstração da equipe |
-| 3 | “No Mural, ele conhece projetos de outros alunos e encontra referências para novas ideias.” | Projeto autorizado |
-| 4 | “No Clube, pode trocar ideias sobre o que está criando.” | Conversa demonstrativa identificada, sem dados privados |
-| 5 | “O desafio do mês traz um tema diferente para começar outro projeto.” | Tema vigente; não presumir qual é |
-| 6 | “A criação continua conforme as liberações da Jornada. Veja o que a Comunidade reúne.” | Sticker: “Ver recursos e planos”; raiz `#criar-mais` |
-
-Acrescentar depois uma sequência curta por projeto autorizado: jogo → materiais preparados → decisão do autor → teste → explicação. Não basta exibir uma galeria de resultados sem contexto.
-
-### Destaque 4. Ajuda
-
-| Tela | Texto/fala pública | Cena |
-| --- | --- | --- |
-| 1 | “Seu filho pode rever a explicação durante a atividade.” | Pausa e retorno a trecho |
-| 2 | “As orientações do Como fazer ajudam a consultar um passo.” | Orientação real |
-| 3 | “Quando precisa de ajuda, ele envia a dúvida pela plataforma.” | Pedido a partir da aula |
-| 4 | “A equipe responde nos Recados, em outro momento.” | Caixa de Recados com conteúdo demonstrativo identificado |
-| 5 | “Aulas gravadas e ajuda por mensagens. Veja como funciona para sua família.” | Sticker: “Ver formato e planos”; raiz `#na-rotina` |
-
-Não usar relógio de resposta ou professor com status “online”. A verificação automática de uma etapa não deve ser apresentada como resposta humana.
-
-### Destaque 5. Família
-
-| Tela | Texto/fala pública | Cena |
-| --- | --- | --- |
-| 1 | “Vocês escolhem o horário dentro dos combinados da casa.” | Acesso ao curso em computador |
-| 2 | “Ele pode pausar para experimentar e retomar a construção depois.” | Pausa, salvamento, retomada |
-| 3 | “Você acompanha registros de atividades e projetos na área da família.” | Perfil demonstrativo |
-| 4 | “Para conhecer o que ele entendeu, peça que mostre uma regra e explique o que ela faz.” | Adulto testando o projeto |
-| 5 | “A Comunidade atende crianças de 9 a 14 anos e permite até dois perfis infantis nas condições dos planos.” | Texto simples |
-| 6 | “Conheça os requisitos, os planos e as condições de acesso.” | Sticker: “Conhecer os planos”; raiz `#conhecer` |
-
-### Destaque 6. Sobre nós
-
-| Tela | Texto/fala pública | Cena |
-| --- | --- | --- |
-| 1 | “Somos Helena e Júlio, criadores do Sistema Zero.” | Casal |
-| 2 | “Somos desenvolvedores de sistemas e formados em Sistemas de Informação.” | Fala direta |
-| 3 | “A criação de jogos em família está na origem da Comunidade dos Criadores.” | Registro verdadeiro; se atual, identificar como atual |
-| 4 | “Organizamos as aulas para ligar explicação, experiência e construção.” | Bastidor com roteiro e atividade |
-| 5 | “Por aqui, mostramos as escolhas e os testes desse caminho. Conheça a Comunidade no link.” | Sticker: “Conhecer a Comunidade”; raiz |
-
-A história familiar explica a origem. Não apresentar condições de saúde, notas escolares ou premiações como resultado típico da oferta.
-
-## 3. Os três posts fixados
-
-Posições desejadas: **como aprende → como continua criando → como funciona em casa**. Os três entram na produção da primeira semana. Confirmar a ordem após fixar.
-
-### F01. Primeiro joga. Depois constrói.
-
-**Formato:** Reel, aproximadamente 70–85 segundos. **Objetivo:** apresentar o percurso e tornar visível a experiência do conceito. **Capa:** “Primeiro joga. Depois constrói.”
-
-| Trecho | Imagem e texto sobreposto | Fala |
-| --- | --- | --- |
-| 0–7 s | Personagem aparecendo. Texto: “O jogo vem primeiro” | “Antes de aprender a construir este jogo, a criança já pode jogar e conhecer a brincadeira.” |
-| 7–16 s | Partida completa. Texto: “1. Conhece o desafio” | “Aqui, ela procura três personagens escondidos. Agora sabe o que o curso vai ajudar a construir.” |
-| 16–32 s | Vídeo + experiência; reação desligada e ligada. Texto: “2. Experimenta a ideia” | “Depois, experimenta uma das ideias do jogo. Toca no esconderijo com a reação desligada, liga e testa de novo. O vídeo explica, e a atividade fica ao lado para ela observar o que muda.” |
-| 32–48 s | Regra no editor e teste. Texto: “3. Programa no jogo” | “Em seguida, ela programa essa reação no projeto: tocar no esconderijo revela o personagem. O cenário vem preparado, e ela constrói a regra proposta.” |
-| 48–60 s | Experiência do contador e jogo. Texto: “4. Testa e continua” | “Na próxima etapa, trabalha a contagem e acrescenta essa regra. A construção avança uma ideia de cada vez.” |
-| 60–73 s | Jornada → projeto próprio. Texto: “5. Cria novas ideias” | “Ao avançar nos cursos, aprende novas habilidades e libera ferramentas para os próprios jogos, com Mural, Clube e desafio mensal para continuar.” |
-| 73–85 s | Casal e captura. Texto: “Conheça a Comunidade” | “Essa é a Comunidade dos Criadores, para crianças de 9 a 14 anos. Veja o percurso completo no link da bio.” |
-
-**Legenda:**
-
-> Jogar apresenta o desafio. Experimentar permite observar uma ideia em ação. Programar dá a essa ideia uma função no jogo.
+> Uma regra fica mais clara quando dá para ver o que ela faz.
 >
-> Neste exemplo, o cenário vem preparado e a criança constrói as regras propostas. A cada etapa, testa o que fez. Ao avançar na Jornada, reúne recursos para novas criações.
+> Neste exemplo de aula, seu filho conhece o jogo, experimenta a reação ao toque e aprende a programá-la. O cenário vem preparado. A construção da regra e os testes fazem parte da atividade.
 >
-> Aulas, experiências, ferramentas e ajuda ficam na mesma plataforma. Conheça a Comunidade dos Criadores no link da bio.
+> A gravação mostra uma demonstração da nossa equipe no curso extra Cadê Todo Mundo. Conheça a proposta da Comunidade dos Criadores, para crianças de 9 a 14 anos, no link da bio.
 
-**Destino:** raiz, demonstração. **Asset necessário:** versão publicada do curso; conta demonstrativa; captura legível das duas áreas. **Prova:** a mesma ideia passa pela experiência e pelo projeto. Não cortar essa ligação para encaixar mais ferramentas no vídeo.
+**CTA principal:** conhecer a Comunidade pela bio. **Prova:** regra visível + efeito correspondente. **Critério:** responsáveis conseguem explicar o que a criança faz, sem confundir assistir com construir. Se este curso não representar o catálogo disponível no momento de publicar, usar outra aula publicada com o mesmo encadeamento e adaptar a fala ao que existe.
 
-### F02. O próximo jogo pode começar com uma ideia dele.
+### F02 · O que ele pode criar
 
-**Formato:** Reel, aproximadamente 55–70 segundos. **Objetivo:** mostrar o valor que continua depois do projeto guiado. **Capa:** “O próximo jogo começa com uma ideia”.
+**Formato:** Reel de 40 a 55 segundos. **Função:** mostrar escolha própria e continuidade, sem repetir a explicação da aula. **Capa:** “O jogo ganha escolhas dele”.
 
-| Trecho | Imagem e texto sobreposto | Fala |
+| Tempo aproximado | Cena / texto de tela | Fala |
 | --- | --- | --- |
-| 0–9 s | Duas criações diferentes. Texto: “O aprendido ganha outros usos” | “Uma regra aprendida num curso pode entrar numa nova criação. O próximo projeto ganha as escolhas de quem está fazendo.” |
-| 9–23 s | Jornada → Estúdio; Pinta → personagem. Texto: “Ferramentas para continuar” | “Conforme avança, seu filho libera ferramentas para usar nos próprios jogos. Aqui, um personagem desenhado no Pinta entra no Estúdio e recebe uma regra.” |
-| 23–34 s | Mural. Texto: “Ideias para conhecer” | “No Mural, ele conhece jogos de outros alunos e encontra referências para pensar no seu.” |
-| 34–43 s | Clube. Texto: “Ideias para trocar” | “No Clube, pode conversar sobre o que está criando e trocar sugestões.” |
-| 43–53 s | Desafio vigente. Texto: “Um tema a cada mês” | “O desafio do mês traz um tema para dar um começo à próxima criação.” |
-| 53–70 s | Jogo pronto, projeto salvo e casal. Texto: “Criar na mesma plataforma” | “Cursos, ferramentas e espaços para continuar criando fazem parte da Comunidade dos Criadores. Os recursos acompanham a Jornada. Conheça o que está incluído no link da bio.” |
+| 0 a 6 s | Duas versões da mesma partida. “Uma escolha, outra partida” | “Este jogo ficou diferente quando mudamos uma regra. Olha as duas versões.” |
+| 6 a 18 s | Destacar um valor e testar. “Escolher e testar” | “Nesta demonstração, alteramos a velocidade de um personagem. Agora precisamos testar se a partida continua funcionando como queremos.” |
+| 18 a 33 s | Jornada → projeto próprio elegível. “Continuar criando” | “Na Comunidade, os cursos dão um caminho guiado. Conforme avança na Jornada, seu filho libera ferramentas para experimentar outras ideias nos próprios projetos.” |
+| 33 a 47 s | Mural real, projeto da equipe identificado. “Conhecer referências” | “Ele também pode conhecer criações no Mural. Veja como cursos, ferramentas e espaços de criação se conectam no link da bio.” |
 
-**Legenda:**
+Se o projeto escolhido não tiver uma variável de velocidade apropriada, usar a pontuação ou outra regra que realmente exista e ajustar o texto. Preparar as duas versões antes da gravação.
 
-> Os cursos dão um começo guiado. As habilidades e as ferramentas liberadas abrem possibilidades para outros projetos.
+**Legenda pronta:**
+
+> Uma criação tem decisões: como o personagem se move, o que vale ponto e quando a partida termina.
 >
-> O Mural oferece criações para conhecer. O Clube permite trocar ideias. O desafio mensal propõe um tema. Cada parte ajuda em um momento da criação.
+> Nos cursos, a criança aprende a construir e testar regras. As ferramentas liberadas pela Jornada dão espaço para experimentar outras escolhas. O Mural reúne criações para conhecer.
 >
-> Veja como esse caminho se conecta na Comunidade dos Criadores. Link na bio.
+> As duas versões deste vídeo são da nossa equipe. Os recursos são liberados por etapas. Conheça as possibilidades e as condições da Comunidade no link da bio.
 
-**Destino:** raiz, criação própria e planos. **Assets:** conta com liberações; transferência real Pinta–Estúdio; espaços ativos; tema mensal correto. Usar demonstração da equipe enquanto não houver caso de aluno autorizado. Não fingir que o projeto próprio foi criado em segundos.
+**CTA principal:** conhecer possibilidades. **Prova:** duas versões e a regra que mudou. **Limite:** não apresentar a criação livre como disponível integralmente no primeiro acesso. Não incluir Pensa, Zappy e Molda só para aumentar a lista de recursos.
 
-### F03. A aula acompanha o tempo de fazer.
+### F03 · Como funciona em casa
 
-**Formato:** carrossel, oito slides. **Objetivo:** defender o formato e esclarecer rotina/ajuda. **Capa:** texto do slide 1.
+**Formato:** carrossel de sete slides. **Função:** qualificar a compra, explicar formato e ajuda. Uma cena por slide. Evitar capturas com toda a interface em letras miúdas.
 
-1. **“A aula acompanha o tempo de fazer.”**
-   > Seu filho pode precisar repetir um teste antes de continuar a construção.
-2. **“A família escolhe o horário.”**
-   > As aulas são gravadas, para acessar dentro dos combinados da casa.
-3. **“Ele controla a explicação.”**
-   > Pode pausar, fazer a experiência e rever o trecho.
-4. **“A ideia é testada na prática.”**
-   > Vídeo e experiência lado a lado para observar o que muda.
-5. **“Depois, a ideia entra no jogo.”**
-   > Ele programa a regra, testa e continua o projeto.
-6. **“A criação pode continuar depois.”**
-   > Projetos salvos e ferramentas liberadas ficam disponíveis durante a assinatura.
-7. **“A ajuda acontece pela plataforma.”**
-   > Seu filho envia a dúvida e consulta a resposta da equipe nos Recados, em outro momento.
-8. **“Conheça o percurso e os planos.”**
-   > Para crianças de 9 a 14 anos, com computador e internet. Comunidade dos Criadores no link da bio.
+1. **“Como funciona em casa.”** “Uma atividade de criação de jogos para crianças de 9 a 14 anos.”
+2. **“Começa no computador.”** “Internet, leitura e uso de mouse e teclado fazem parte dos requisitos.”
+3. **“Vocês escolhem o horário.”** “As aulas são gravadas. Seu filho pode pausar, praticar, rever e continuar.”
+4. **“Ele cria uma parte por vez.”** “Os cursos conectam explicação, experiência e construção de regras.”
+5. **“A orientação acompanha a criação.”** “Passos da aula, tutoriais, troca no Clube e equipe oferecem caminhos para continuar.”
+6. **“Você pode conhecer o percurso.”** “Veja registros de atividades e projetos. Peça que seu filho mostre uma escolha e o que ela faz.”
+7. **“Confira o formato e os planos.”** “As ferramentas acompanham a Jornada e o acesso segue as condições da assinatura. Link na bio.”
 
-**Legenda:**
+**Legenda pronta:**
 
-> O tempo da explicação e o tempo de fazer uma atividade podem ser diferentes. Na Comunidade, a criança pode pausar, experimentar, rever e continuar a construção.
+> A rotina começa com um computador disponível e um horário combinado em casa.
 >
-> A família organiza o horário. As ferramentas acompanham a Jornada, e a ajuda humana acontece por mensagens. Você pode conhecer as atividades e os projetos pela área da família.
+> Na Comunidade dos Criadores, as aulas são gravadas e conectadas à prática. As etapas, os diálogos do Zappy e os caminhos de consulta orientam o que fazer. Clube, ferramentas liberadas e equipe complementam esse acompanhamento.
 >
-> Veja a experiência e os planos no link da bio.
+> A área da família reúne registros para acompanhar. Conhecer o jogo e escutar uma escolha dele complementa esse registro.
+>
+> Veja os requisitos, a experiência e os planos no link da bio.
 
-**Destino:** raiz, rotina e planos. **Visual:** uma ação por slide; mostrar player, experiência, editor, projeto salvo e Recados. Não citar outras escolas, encenar uma turma prejudicando uma criança ou sugerir atendimento instantâneo.
+**CTA principal:** conferir adequação e planos. **Prova:** player, equipamento, passos de orientação e área da família. **Nota para atendimento:** o contato humano acontece pela plataforma, por mensagens, com possível espera. Explicar essa modalidade ao responder sobre atendimento; ela é um dos apoios do ecossistema. Acesso, cobrança, cancelamento, garantia e número de perfis são conferidos na oferta vigente. Evitar preços na arte permanente do fixado.
 
-## 4. Direção comum às peças
+## 4. Direção visual e edição
 
-- Casal contextualiza; tela demonstra. O adulto deve conseguir acompanhar sem conhecer programação.
-- Explicar termos pela ação: tocar, revelar, contar, mover, testar.
-- Texto sobreposto curto; fala complementa, sem competir com instruções da interface.
-- Deixar claro quando uma criação é da equipe e o que veio preparado.
-- Em peça de aluno, preservar autoria e autorização de uso. Não criar falas atribuídas a crianças.
-- Capas legíveis isoladamente, mantendo a identidade da Comunidade.
-- Um CTA principal por post. As legendas conduzem à raiz; stories podem levar à seção pertinente.
-- Vendas e condições ficam dirigidas aos responsáveis. Não pedir à criança que pressione a família.
+Três templates bastam neste ciclo:
 
-## 5. Atualização do acervo
+| Template | Aplicação | Regra de composição |
+| --- | --- | --- |
+| Tela + resultado | F01, F02, F06, F10 | Resultado legível, recorte da ação e título curto |
+| Casal + frase | F04, F12 e stories de bastidor | Rosto real, frase afirmativa e fundo com poucos elementos |
+| Orientação para a família | F03, F05, F07, F08, F09, F11 | Uma decisão por slide, exemplo ou imagem que a explique |
 
-Manter demonstrações concretas que ainda representem o produto. Reescrever ou retirar da apresentação prioritária peças com promessa de ganho cognitivo, resultado escolar generalizado, comparação absoluta entre consumir/criar ou oferta desatualizada. A [auditoria](pesquisa-2026-10-03.md) lista cada peça.
+Para produção, usar vertical 1080×1920 em Reels/stories e 1080×1350 em carrosséis como padrões do lote, não como afirmação dos limites universais da rede. Conferir recorte de capa e sobreposição dos controles no celular. Título com quatro a sete palavras é uma orientação editorial, não regra do algoritmo. Legendas de vídeo devem permitir entender a peça sem áudio.
 
-Não arquivar automaticamente todo o histórico. A decisão depende da peça completa e da possibilidade de corrigir legenda/capa. A execução deste documento não inclui exclusão, publicação ou alteração do perfil.
+Manter as cores e fontes da identidade já existente. Uma cor de acento por série é suficiente; evitar mosaico que dependa de três posts lado a lado. O adulto deve compreender cada peça isoladamente.
+
+## 5. O que conferir antes de aplicar
+
+- Bio, categoria, nome e link na prévia real do perfil.
+- Correspondência entre a ação mostrada, a fala e os recursos da conta de aluno.
+- Identificação de demonstrações da equipe e materiais preparados.
+- Legendas, contraste e captura legível em tela pequena.
+- Requisitos, formato, orientação integrada e condições de liberação explicados no contexto apropriado.
+- Destinos conforme o [mapa atual](operacao-e-links-2026-10-04.md), depois da publicação da versão local.
+
+A revisão editorial está pronta. Artes, gravações, aplicação do perfil e publicação são as próximas etapas de produção.
