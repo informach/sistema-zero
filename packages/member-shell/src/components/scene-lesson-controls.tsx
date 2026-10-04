@@ -13,6 +13,7 @@ import { Ear } from 'lucide-react'
 import { SceneButton } from './exploration-stage'
 import { AtelieSceneControls } from './scene-atelie-controls'
 import { Escolha, Medida } from './scene-bench'
+import { CollectionMemoryControls } from './scene-collect-and-remember'
 import { CollisionPairControls } from './scene-collision-pair'
 import { CopyVsOriginalControls, PublishedCopyControls } from './scene-copies'
 import { CoreSceneControls } from './scene-core-controls'
@@ -119,6 +120,9 @@ export function LessonSceneControls({
       )}
       {m === 'found-counter' && <FoundCounterControls dispatch={dispatch} />}
       {m === 'lighthouse-key' && <LighthouseKeyControls state={state} dispatch={dispatch} />}
+      {m === 'collect-and-remember' && (
+        <CollectionMemoryControls state={state} dispatch={dispatch} />
+      )}
       {m === 'fixed-vs-read' && <FixedVsReadControls state={state} dispatch={dispatch} />}
       {m === 'collision-pair' && <CollisionPairControls state={state} dispatch={dispatch} />}
       {m === 'invincibility' && <InvincibilityControls state={state} dispatch={dispatch} />}

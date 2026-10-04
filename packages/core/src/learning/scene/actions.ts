@@ -47,6 +47,7 @@ export const SCENE_IDS = [
   'controls',
   'touch-response',
   'found-counter',
+  'collect-and-remember',
   'lighthouse-key',
   'restart',
   'hitbox',
@@ -136,6 +137,10 @@ export type SceneAction =
   | { type: 'trigger' }
   | { type: 'key-state'; hasKey: boolean }
   | { type: 'try-lighthouse-door' }
+  | { type: 'remember-collection'; enabled: boolean }
+  | { type: 'collect-key' }
+  | { type: 'leave-key' }
+  | { type: 'restart-collection' }
   | { type: 'find-character'; id: 0 | 1 | 2 }
   | { type: 'look-around' | 'restart-search' }
   | { type: 'value-source'; source: 'fixed' | 'read' }
@@ -330,6 +335,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   controls: ['touch'],
   'touch-response': ['touch'],
   'found-counter': [],
+  'collect-and-remember': [],
   'lighthouse-key': [],
   restart: ['restart'],
   hitbox: [],
@@ -660,6 +666,12 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'lighthouse-key' && typeof value.hasKey === 'boolean'
     case 'try-lighthouse-door':
       return scene === 'lighthouse-key'
+    case 'remember-collection':
+      return scene === 'collect-and-remember' && typeof value.enabled === 'boolean'
+    case 'collect-key':
+    case 'leave-key':
+    case 'restart-collection':
+      return scene === 'collect-and-remember'
     case 'find-character':
       return scene === 'found-counter' && (value.id === 0 || value.id === 1 || value.id === 2)
     case 'look-around':

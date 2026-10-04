@@ -926,9 +926,11 @@ describe('⭐⭐ a moldura do lote 2: o som, a voz e a demonstração', () => {
       const resetName =
         scene === 'found-counter'
           ? 'Recomeçar a busca'
-          : scene === 'touch-response'
-            ? 'Recomeçar com a reação desligada'
-            : /^(Recomeçar|Voltar ao começo)$/
+          : scene === 'collect-and-remember'
+            ? 'Recomeçar a partida'
+            : scene === 'touch-response'
+              ? 'Recomeçar com a reação desligada'
+              : /^(Recomeçar|Voltar ao começo)$/
       expect((await screen.findAllByRole('button', { name: resetName })).length).toBeGreaterThan(0)
       const ligarSom = screen.queryByRole('button', { name: 'Ligar som' })
       // ⚠️ Mudou de propósito (consertos do review da onda A do lote 5): na EXPERIMENTAÇÃO da cena cujo

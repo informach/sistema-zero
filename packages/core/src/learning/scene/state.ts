@@ -83,6 +83,16 @@ export interface SceneWorld {
 export interface SceneLighthouseKey {
   hasKey: boolean
   door: 'closed' | 'open'
+  /** Ausente nos retratos antigos; null até uma tentativa na situação atual. */
+  checkedKey?: boolean | null
+}
+export interface SceneCollectionMemory {
+  remember: boolean
+  keyPresent: boolean
+  hasKey: boolean
+  position: 'near' | 'touching' | 'away'
+  /** Não creditar afastamento/reinício de uma coleta preparada pelo autor no setup. */
+  collectedThisRound: boolean
 }
 /** O salto. `atForce`/`atGravity` congelam as condições do voo em curso, para que mexer nos
  *  controles no meio do ar não reescreva a trajetória que já começou. */
@@ -1279,6 +1289,7 @@ function isSceneSkinGame(value: unknown): value is SceneSkinGame {
 export interface SceneState {
   evidence: SceneEvidence
   lighthouse: SceneLighthouseKey
+  collection: SceneCollectionMemory
   once: SceneOnce
   fixedRead: SceneFixedRead
   collisionPair: SceneCollisionPair
@@ -1558,7 +1569,14 @@ const MODEL_PADRAO: SceneModelView = { yaw: 1, see: 'nada', sawHalf: false }
 const RAY_PADRAO: SceneRay = { x: 240, y: 235, hit: 0, hits: [] }
 const INK_PADRAO: SceneInk = { fill: true, stroke: true, seen: [] }
 const LIGHT_PADRAO: SceneLight = { side: 'left', shade: false, sides: [] }
-const LIGHTHOUSE_PADRAO: SceneLighthouseKey = { hasKey: false, door: 'closed' }
+const LIGHTHOUSE_PADRAO: SceneLighthouseKey = { hasKey: false, door: 'closed', checkedKey: null }
+const COLLECTION_PADRAO: SceneCollectionMemory = {
+  remember: false,
+  keyPresent: true,
+  hasKey: false,
+  position: 'near',
+  collectedThisRound: false,
+}
 const CLOCK_PADRAO: SceneClock = { carry: 0 }
 
 /**
@@ -1582,6 +1600,7 @@ export function hydrateSceneState(value: unknown): unknown {
   if (!isRecord(value)) return value
   const grupos = [
     ['lighthouse', LIGHTHOUSE_PADRAO],
+    ['collection', COLLECTION_PADRAO],
     ['once', initialOnce(undefined)],
     ['fixedRead', FIXED_READ_PADRAO],
     ['collisionPair', COLLISION_PAIR_PADRAO],
@@ -1632,6 +1651,16 @@ export function hydrateSceneState(value: unknown): unknown {
     // irmãos sendo a MESMA instância em todo retrato hidratado no processo do servidor.
     saida[nome] = copiaProfunda(padrao as unknown as Record<string, unknown>)
   }
+  // ⚠️ A marca da tentativa que não bate com a porta (uma aba aberta com o motor anterior, que
+  // trocava a chave sem limpar a marca) não alimenta meta nenhuma: ela volta a `null`, em vez de o
+  // `isSceneState` recusar o retrato inteiro e a criança perder as descobertas da sessão.
+  const farol = saida.lighthouse
+  if (
+    isRecord(farol) &&
+    typeof farol.checkedKey === 'boolean' &&
+    (farol.checkedKey !== farol.hasKey || (farol.door === 'open') !== farol.checkedKey)
+  )
+    saida.lighthouse = { ...farol, checkedKey: null }
   return saida
 }
 
@@ -1662,6 +1691,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
   return {
     evidence: { actions: 0, discoveries: [], observations: [], hints: 0 },
     lighthouse: { ...LIGHTHOUSE_PADRAO },
+    collection: { ...COLLECTION_PADRAO },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
     fixedRead: { ...FIXED_READ_PADRAO, shots: [], marks: [] },
     collisionPair: { ...COLLISION_PAIR_PADRAO, shots: [0, 1, 2], rocks: [0, 1, 2] },
@@ -1831,6 +1861,7 @@ export function cloneScene(state: SceneState): SceneState {
       observations: state.evidence.observations.map((o) => ({ ...o })),
     },
     lighthouse: { ...state.lighthouse },
+    collection: { ...state.collection },
     once: cloneOnce(state.once),
     fixedRead: {
       ...state.fixedRead,
@@ -2032,7 +2063,23 @@ export function isSceneState(value: unknown): value is SceneState {
   if (
     !isRecord(value.lighthouse) ||
     typeof value.lighthouse.hasKey !== 'boolean' ||
-    (value.lighthouse.door !== 'closed' && value.lighthouse.door !== 'open')
+    (value.lighthouse.door !== 'closed' && value.lighthouse.door !== 'open') ||
+    (value.lighthouse.checkedKey !== undefined &&
+      value.lighthouse.checkedKey !== null &&
+      (typeof value.lighthouse.checkedKey !== 'boolean' ||
+        value.lighthouse.checkedKey !== value.lighthouse.hasKey ||
+        (value.lighthouse.door === 'open') !== value.lighthouse.checkedKey))
+  )
+    return false
+  if (
+    !isRecord(value.collection) ||
+    !bool(value.collection.remember) ||
+    !bool(value.collection.keyPresent) ||
+    !bool(value.collection.hasKey) ||
+    !bool(value.collection.collectedThisRound) ||
+    !['near', 'touching', 'away'].includes(value.collection.position as string) ||
+    (value.collection.keyPresent &&
+      (value.collection.hasKey || value.collection.collectedThisRound))
   )
     return false
   if (!isSceneOnce(value.once)) return false

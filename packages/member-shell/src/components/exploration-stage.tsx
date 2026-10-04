@@ -23,6 +23,7 @@ import {
   SymmetryStage,
 } from './scene-atelie-stages'
 import { SceneCenarioProvider } from './scene-cenario-context'
+import { CollectionMemoryStage } from './scene-collect-and-remember'
 import { CollisionPairStage } from './scene-collision-pair'
 import { CopyVsOriginalStage, PublishedCopyStage } from './scene-copies'
 import { VariableStage, VelocityStage } from './scene-core-stages'
@@ -310,6 +311,7 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
   if (m === 'touch-response') return <TouchResponseStage state={state} dispatch={podeInteragir} />
   if (m === 'found-counter') return <FoundCounterStage state={state} dispatch={podeInteragir} />
   if (m === 'lighthouse-key') return <LighthouseKeyStage state={state} />
+  if (m === 'collect-and-remember') return <CollectionMemoryStage state={state} />
   if (m === 'draw-loop') return <DrawLoopStage state={state} cast={cast} />
   // ⭐⭐ O ateliê de O Jogo do Meu Jeito (lote 5 do Raio-X, G4): as sete cenas em
   // `scene-atelie-stages`, com a nave 32 × 32, a grade do espelho, as duas pedras e a folha da aula.

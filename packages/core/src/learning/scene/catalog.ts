@@ -1286,14 +1286,53 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Toque no arbusto, depois nas pedras, toque fora dos esconderijos e use Recomeçar a busca.',
     ],
   },
+  'collect-and-remember': {
+    id: 'collect-and-remember',
+    group: 'events',
+    title: 'O jogo guardou a chave?',
+    instruction:
+      'Deixe Guardar a coleta desligado e aperte Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Aperte Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.',
+    manipulates: 'A regra que guarda a coleta, o encontro com a chave, o afastamento e o reinício',
+    success:
+      'Você comparou tirar a chave do chão com guardar que ela foi encontrada. Também conferiu o que permanece na partida e o que recomeça.',
+    extra: 'Experimente outra vez os dois modos de guardar a coleta.',
+    goals: [
+      {
+        id: 'collected-without-memory',
+        label: 'A chave saiu do chão, mas a coleta não ficou guardada',
+        pedido: 'Com Guardar a coleta desligado, encoste na chave e acompanhe temChave.',
+      },
+      {
+        id: 'collected-with-memory',
+        label: 'O encontro mudou a informação guardada',
+        pedido: 'Recomece, ligue Guardar a coleta e encoste na chave.',
+      },
+      {
+        id: 'remembered-after-leaving',
+        label: 'A informação continuou guardada longe da chave',
+        pedido: 'Depois de guardar a coleta, aperte Afastar e confira temChave.',
+      },
+      {
+        id: 'reset-after-remembering',
+        label: 'A nova partida começou sem a chave',
+        pedido: 'Depois de guardar a coleta, recomece a partida e confira o valor.',
+      },
+    ],
+    hints: [
+      'Olhe a chave, o aviso e temChave. São três coisas diferentes para acompanhar.',
+      'Compare o valor guardado nas duas tentativas, mesmo quando a mensagem for igual.',
+      'Use Recomeçar a partida antes de ligar Guardar a coleta. Depois encoste, afaste-se e recomece novamente.',
+    ],
+  },
   'lighthouse-key': {
     id: 'lighthouse-key',
     group: 'events',
     title: 'O que a porta precisa?',
     instruction:
-      'Teste a porta sem a chave. Depois leve a chave e teste a porta outra vez. O que mudou?',
+      'Teste a porta sem a chave. Depois leve a chave e teste outra vez. Compare temChave e a resposta marcada em cada tentativa.',
     manipulates: 'A chave e a tentativa de abrir a porta do farol',
-    success: 'A mesma porta respondeu de outro jeito quando a chave estava com o personagem.',
+    success:
+      'A porta consultou a mesma informação nas duas tentativas. Quando o valor mudou, ela escolheu outra resposta.',
     extra: 'Se você deixar a chave para trás, a porta abriria?',
     goals: [
       {
@@ -1308,8 +1347,8 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       },
     ],
     hints: [
-      'O que o personagem leva na primeira tentativa?',
-      'Experimente mudar o que ele carrega e volte à porta.',
+      'Veja qual valor temChave guarda antes de testar a porta.',
+      'Depois da tentativa, acompanhe a resposta que ficou marcada.',
       'Teste sem a chave. Depois escolha Levar a chave e aperte Testar a porta.',
     ],
   },
@@ -2489,6 +2528,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   controls: PREVIA_INICIAL,
   'touch-response': PREVIA_INICIAL,
   'found-counter': PREVIA_INICIAL,
+  'collect-and-remember': PREVIA_INICIAL,
   'lighthouse-key': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
