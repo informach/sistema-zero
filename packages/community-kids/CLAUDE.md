@@ -262,8 +262,12 @@ escuro e logo) e `52de024f` (3D).
   `--sol`), com o movimento vindo do link ou botão em volta. Cor própria? Declare `--k3d-degrau`
   na peça (o "Resgatar" faz no `style`). ⚠️ As `--k3d-*` são declaradas em CADA peça, nunca
   herdadas: um cartão em hover em volta de um botão mexeria no degrau dele. Planos de propósito:
-  o menu, as abas e os chips de filtro (decisão dela), o nó travado e o baú fechado. Nas
-  ferramentas o relevo vale só nas galerias (ver o CLAUDE.md do ui).
+  o menu, as abas e os chips de filtro (decisão dela). O nó TRAVADO da trilha ganhou em
+  04/10/2026, a pedido dela, um volume baixo e apagado (`0 3px 0 var(--pen-degrau-cartao)`,
+  parado, sem subir nem afundar): de 11/09 até ali ele era plano e ela sentiu falta do cinza com
+  sombra de antes. O degrau cheio de 5px que se mexe continua só nos nós que abrem aula; com ele
+  a aula travada pareceria um botão. Nas ferramentas o relevo vale só nas galerias (ver o
+  CLAUDE.md do ui).
 - **Conferência visual** (o app exige banco e login): `tmp/pen/` (fora do git) tem uma cópia da
   conferência das telas-modelo (`?tema=pink` liga o Pink), o servidor `:4803`, uma amostra das
   receitas do `tool-chrome.css` (`ferramentas.html`) e uma da logo (`logo.tsx`). Contraste medido

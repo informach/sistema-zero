@@ -1216,11 +1216,16 @@ a.kid-pop:has(> .kids-carta):hover {
     border: 2px solid var(--border);
   }
   /* Aula travada (trava sequencial estilo Duolingo): cadeado neutro tracejado,
-     sem brilho — sinaliza "ainda não liberada"; o nó não é clicável. */
+     sem brilho — sinaliza "ainda não liberada"; o nó não é clicável.
+     ⚠️ Volume BAIXO e APAGADO, e parado (04/10/2026, pedido dela): de 11/09 até aqui o nó
+     era plano e ela sentiu falta do cinza com sombra de antes. O degrau cheio de 5px, que
+     sobe e afunda ao toque, continua sendo só dos nós que abrem aula: com ele a aula
+     travada pareceria um botão. */
   .kids-node--locked {
     background-color: var(--muted);
     color: var(--muted-foreground);
     border: 2px dashed var(--border);
+    box-shadow: 0 3px 0 var(--pen-degrau-cartao);
     opacity: 0.85;
   }
   /* Baú de fim de unidade (gamificação): os três estados compartilham o mesmo
