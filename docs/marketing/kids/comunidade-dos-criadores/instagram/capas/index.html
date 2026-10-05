@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Capas dos destaques · Helena e Júlio</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #0f1a33; background: #f5f7fc; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 1040px; margin: auto; padding: 40px 24px 32px; }
+    .brand { margin: 0 0 8px; color: #465777; font-size: 14px; }
+    h1 { margin: 0 0 12px; font-size: clamp(28px, 5vw, 40px); letter-spacing: -.035em; }
+    h2 { font-size: 17px; margin: 0 0 20px; }
+    p { line-height: 1.6; }
+    .intro { max-width: 710px; margin: 0 0 20px; }
+    a { color: #1547bc; text-underline-offset: 3px; }
+    .download { display: inline-block; padding: 12px 18px; background: #1b5cf3; color: white; border-radius: 10px; font-weight: 650; text-decoration: none; }
+    .small-preview { margin: 32px 0 24px; padding: 24px; background: white; border: 1px solid #e0e6f0; border-radius: 18px; }
+    .strip { display: flex; gap: 16px; overflow-x: auto; padding: 2px 2px 12px; }
+    .mini { margin: 0; flex: 0 0 88px; text-align: center; }
+    .mini img { width: 56px; height: 56px; border-radius: 50%; display: block; margin: 0 auto 10px; }
+    .mini figcaption { font-size: 11px; white-space: nowrap; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card { background: white; border: 1px solid #e0e6f0; border-radius: 18px; padding: 24px 16px; text-align: center; }
+    .card img { display: block; width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 16px; }
+    .card h2 { margin: 0 0 8px; font-size: 17px; }
+    .card a { font-size: 14px; }
+    .note { font-size: 13px; color: #465777; margin: 24px 0 0; }
+    a:focus-visible { outline: 3px solid #ffc02e; outline-offset: 4px; }
+    @media (max-width: 650px) { main { padding: 28px 16px; } .grid { grid-template-columns: repeat(2, 1fr); } .card { padding: 20px 10px; } .card img { width: 116px; height: 116px; } .small-preview { padding: 20px 14px; } }
+    @media (max-width: 340px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="brand">Helena e Júlio · Programação Infantil</p>
+    <h1>Capas dos destaques</h1>
+    <p class="intro">Seis imagens na ordem dos destaques. Ao escolher a capa no Instagram, mantenha o símbolo centralizado e preserve a margem azul. O nome fica no título do destaque.</p>
+    <a class="download" href="capas-instagram.zip" download>Baixar as seis capas em PNG</a>
+    <section class="small-preview" aria-labelledby="small-title">
+      <h2 id="small-title">Conferência do recorte circular · 56 px</h2>
+      <div class="strip">
+        <figure class="mini"><img src="01-como-funciona.png" alt="Notebook com botão de reprodução"><figcaption>Como funciona</figcaption></figure>
+        <figure class="mini"><img src="02-projetos.png" alt="Controle de jogo"><figcaption>Cursos</figcaption></figure>
+        <figure class="mini"><img src="03-alunos.png" alt="Pessoa usando um notebook"><figcaption>Alunos</figcaption></figure>
+        <figure class="mini"><img src="04-duvidas.png" alt="Balão de conversa com interrogação"><figcaption>Dúvidas</figcaption></figure>
+        <figure class="mini"><img src="05-avaliacoes.png" alt="Balão de conversa com estrela"><figcaption>Avaliações</figcaption></figure>
+        <figure class="mini"><img src="06-sobre-nos.png" alt="Duas pessoas lado a lado"><figcaption>Sobre nós</figcaption></figure>
+      </div>
+    </section>
+    <div class="grid">
+      <article class="card"><img src="01-como-funciona.png" alt="Notebook com botão de reprodução"><h2>01 · Como funciona</h2><a href="01-como-funciona.png" download>Baixar PNG</a></article>
+      <article class="card"><img src="02-projetos.png" alt="Controle de jogo"><h2>02 · Cursos</h2><a href="02-projetos.png" download>Baixar PNG</a></article>
+      <article class="card"><img src="03-alunos.png" alt="Pessoa usando um notebook"><h2>03 · Alunos</h2><a href="03-alunos.png" download>Baixar PNG</a></article>
+      <article class="card"><img src="04-duvidas.png" alt="Balão de conversa com interrogação"><h2>04 · Dúvidas</h2><a href="04-duvidas.png" download>Baixar PNG</a></article>
+      <article class="card"><img src="05-avaliacoes.png" alt="Balão de conversa com estrela"><h2>05 · Avaliações</h2><a href="05-avaliacoes.png" download>Baixar PNG</a></article>
+      <article class="card"><img src="06-sobre-nos.png" alt="Duas pessoas lado a lado"><h2>06 · Sobre nós</h2><a href="06-sobre-nos.png" download>Baixar PNG</a></article>
+    </div>
+    <p class="note"><strong>Estrutura de 04/10, noite:</strong> o destaque Projetos virou Cursos e usa a capa 02. O novo destaque Ferramentas, entre Cursos e Alunos, ainda precisa de capa no mesmo padrão. Os arquivos são quadrados; esta página mostra o recorte circular. Imagens geradas com a ferramenta integrada de criação de imagens em 04/10/2026. <a href="prompts.txt">Ver os prompts utilizados</a> · <a href="../01-destaques.md">Abrir o guia de montagem dos destaques</a>.</p>
+  </main>
+</body>
+</html>

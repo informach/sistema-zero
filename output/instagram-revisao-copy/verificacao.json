@@ -1,0 +1,53 @@
+{
+  "coverage": {
+    "highlights": ["Como funciona", "Projetos", "Alunos", "Dúvidas", "Avaliações", "Sobre nós"],
+    "faq": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+    "pins": ["F01", "F02", "F03"],
+    "posts": ["F04", "F05", "F06", "F07", "F08", "F09", "F10", "F11", "F12"],
+    "stories": ["S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08", "S09", "S10", "S11", "S12"],
+    "extraStoryScripts": ["S08", "S10", "S12"]
+  },
+  "copyBlocks": 155,
+  "issues": [],
+  "exceptions": [
+    {
+      "file": "01-destaques.md",
+      "line": 160,
+      "reason": "Interrogação no rótulo real do botão de ajuda; a frase de abertura é afirmativa."
+    },
+    {
+      "file": "03-postagens.md",
+      "line": 226,
+      "reason": "Interrogação no rótulo real do botão de ajuda; a frase de abertura é afirmativa."
+    }
+  ],
+  "localLinks": 216,
+  "broken": [],
+  "reelLengths": [
+    {
+      "id": "F01",
+      "words": 154,
+      "spokenSecondsAt140wpm": 66
+    },
+    {
+      "id": "F04",
+      "words": 109,
+      "spokenSecondsAt140wpm": 47
+    },
+    {
+      "id": "F06",
+      "words": 130,
+      "spokenSecondsAt140wpm": 56
+    },
+    {
+      "id": "F10",
+      "words": 108,
+      "spokenSecondsAt140wpm": 47
+    },
+    {
+      "id": "F12",
+      "words": 144,
+      "spokenSecondsAt140wpm": 62
+    }
+  ]
+}
