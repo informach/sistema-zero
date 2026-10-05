@@ -1,5 +1,5 @@
-Capas dos destaques | Helena e Júlio | 04/10/2026
-Ferramenta: image_gen integrada, seis gerações individuais. A primeira imagem serviu de referência de estilo para as outras cinco.
+Capas dos destaques | Helena e Júlio | 04 e 05/10/2026
+Ferramenta: image_gen integrada, seis gerações individuais em 04/10 e uma imagem de apoio em 05/10. A primeira imagem serviu de referência de estilo para as outras cinco.
 Paleta solicitada: azul #1B5CF3, branco #FFFFFF, amarelo #FFC02E, navy #0F1A33, conforme packages/ui/src/styles/palettes/community.css.
 
 01-como-funciona.png — Como funciona
@@ -47,3 +47,10 @@ Use case: logo-brand. Asset type: a single Instagram Story Highlight cover for H
 Reference image 1 is a STYLE AND PALETTE REFERENCE ONLY: match its exact blue background, scale, centered composition, rounded matte 3D material, white/yellow/navy colors, restrained lighting and rendering polish. Draw a NEW standalone symbol as specified below. Do not include the reference laptop or play symbol unless specifically requested by the subject. No collage.
 Subject: Two simple friendly adult bust pictograms standing shoulder to shoulder as one unified symbol: two separate featureless round ivory-white heads, clearly visible above broad rounded shoulders, left torso ivory-white with navy shaded edges and right torso warm yellow. One head slightly higher than the other; equal visual importance. No face, hair, eyes, invented portrait likeness, glasses or gender stereotypes. No computer. Symbol for the two founders, approachable and clear at thumbnail size.
 
+
+
+apoio-secao-ferramentas.png — imagem de apoio | geração de 05/10/2026
+Gerada para um destaque Ferramentas que, na estrutura de 05/10, virou a seção 3 de Como funciona. Não entra no ZIP das capas; serve à tela de abertura dessa seção.
+Referência de estilo: 01-como-funciona.png. Modo: ferramenta integrada image_gen.
+
+Create ONE new square Instagram Highlight cover, 1254x1254 or similarly high resolution, for "Ferramentas" (creative tools) in Helena e Júlio | Programação Infantil. The attached laptop cover is a STYLE REFERENCE ONLY, not an edit target. Match its blue background, matte sculpted friendly 3D material, soft light, white/yellow/navy palette, central scale and generous empty margin. Subject: ONE compact cohesive icon of a thick white rounded gear with navy side depth, overlaid by one short chunky yellow pencil diagonally across its lower-right portion. The gear represents building with digital tools; the pencil represents creating drawings and games. No additional objects. Clear bold silhouette and few details, instantly recognizable at 56px. Use royal blue #1B5CF3 full opaque background, white #FFFFFF gear, yellow #FFC02E pencil, navy #0F1A33 subtle depth. Entire icon must fit comfortably within a centered circle about 62% of the square width with abundant blue margins. Polished minimal softly rounded 3D sculpted forms, front view, soft studio light upper left, subtle local shadow, same visual family as reference. No text, letters, digits, logos, labels, watermarks, border or visible circle. Produce only this single cover, not a contact sheet.

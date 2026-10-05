@@ -76,7 +76,7 @@ Na página padrão, o contexto é o tempo de tela já permitido. As regras de du
 
 Essa sequência organiza a explicação da experiência existente. Não cria um novo currículo, não exige publicação em toda aula e não transforma toda atividade em investigação livre. Orientação, construção e revisão podem se repetir dentro do mesmo projeto.
 
-O formato assíncrono sustenta o caminho: a família escolhe o horário, a criança pode pausar e rever a explicação e retomar a atividade nas condições de salvamento disponíveis. O apoio por Recados integra essa experiência, com resposta assíncrona. A vantagem a demonstrar é conseguir acompanhar e praticar com esses recursos; o grau de autonomia precisa ser observado no uso.
+O formato assíncrono sustenta o caminho: a família escolhe o horário, a criança pode pausar e rever a explicação e retomar a atividade nas condições de salvamento disponíveis. Para uma dúvida muito específica sobre a aula, a criança ainda pode perguntar à equipe pelos Recados; esse contato complementa a orientação da plataforma e, na comunicação, aparece só onde a família pergunta por ele (decisão de 05/10/2026). A vantagem a demonstrar é conseguir acompanhar e praticar com esses recursos; o grau de autonomia precisa ser observado no uso.
 
 ## 3. Visão das quatro páginas
 
@@ -253,7 +253,7 @@ As referências P01–P08 usadas aqui apontam para a biblioteca de demonstraçõ
 
 Ainda não há clientes pagantes. As crianças com acesso gratuito podem ajudar a observar experiência e aprendizagem; o acesso concedido não comprova uso, autonomia, permanência ou disposição a pagar. Isso permite trabalhar com uma recomendação definida agora e refiná-la com evidência, sem apresentar preferência editorial como resultado comercial.
 
-As condições comuns continuam sendo as da oferta local: faixa indicada de 9 a 14 anos, computador com internet, leitura e uso de mouse e teclado; aulas assíncronas, apoio por Recados, até dois perfis e acesso conforme assinatura, catálogo e jornada. Conferir termos e disponibilidade antes da publicação. Este posicionamento não acrescenta entrega ou compromisso comercial.
+As condições comuns continuam sendo as da oferta local: faixa indicada de 9 a 14 anos, computador com internet, leitura e uso de mouse e teclado; aulas assíncronas, orientação pela própria plataforma (com pergunta à equipe pelos Recados para dúvidas específicas), até dois perfis e acesso conforme assinatura, catálogo e jornada. Conferir termos e disponibilidade antes da publicação. Este posicionamento não acrescenta entrega ou compromisso comercial.
 
 ### Referências metodológicas locais
 

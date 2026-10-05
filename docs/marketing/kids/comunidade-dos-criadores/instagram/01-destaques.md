@@ -1,176 +1,238 @@
 # 01 · Destaques: textos e montagem
 
-**Estrutura e copy revistas em 04/10/2026, à noite.** Depois do retorno do responsável, o centro dos destaques deixou de ser uma aula e passou a ser a Jornada da criança na plataforma: são sete destaques, com Cursos no lugar de Projetos e Ferramentas como destaque novo. A redação segue a direção das páginas de oferta da Comunidade no funil e a [análise profunda da copy](pesquisas/analise-profunda-copy-2026-10-04.md#6-reestruturação-após-o-retorno-do-responsável). Esta estrutura e esta redação ainda não foram aprovadas pelo responsável. As datas estão em [Postagens](03-postagens.md#3-stories-e-formação-dos-destaques) e os links em [Links e publicação](apoio/links-e-publicacao.md#links-prontos).
+**Reestruturado em 05/10/2026 pela segunda decisão do responsável.** São seis destaques. Como funciona passa a ser um destaque maior, dividido em três seções (A Jornada, Como é cada aula e As ferramentas); Projetos volta no lugar de Cursos; Ferramentas deixa de ser destaque e vira a seção 3. A orientação passa a ser apresentada pela plataforma, que foi feita para a criança saber o próximo passo; a conversa com a equipe aparece uma vez, em Dúvidas. Ficam mantidas as correções da revisão de 05/10 cedo: nem todo curso traz comandos novos, e cada recurso informa sua condição de acesso. Fundamento na [análise profunda da copy](pesquisas/analise-profunda-copy-2026-10-04.md#6-reestruturação-após-o-retorno-do-responsável). Esta redação ainda não foi aprovada pelo responsável. As datas estão em [Postagens](03-postagens.md#3-stories-e-formação-dos-destaques) e os links em [Links e publicação](apoio/links-e-publicacao.md#links-prontos).
 
-**Ordem no perfil:** Como funciona → Cursos → Ferramentas → Alunos → Dúvidas → Avaliações → Sobre nós. Conferir a disposição no aplicativo depois de atualizar.
+**Ordem no perfil:** Como funciona → Projetos → Alunos → Dúvidas → Avaliações → Sobre nós. Conferir a disposição no aplicativo depois de atualizar.
 
-**Capas dos destaques:** [ver a prévia circular](capas/index.html) ou [baixar os PNGs em ZIP](capas/capas-instagram.zip). Os arquivos atuais estão numerados na ordem dos seis destaques anteriores. Cursos usa a capa de Projetos. **Ferramentas precisa de capa nova no mesmo padrão (pendente)**; ao criá-la, renumerar os arquivos na ordem acima. No recorte, manter o símbolo centralizado e a margem azul; os nomes ficam nos títulos dos destaques.
+**Capas dos destaques:** [ver a prévia circular](capas/index.html) ou [baixar os PNGs em ZIP](capas/capas-instagram.zip). As seis capas estão numeradas na ordem do perfil: `01-como-funciona.png`, `02-projetos.png`, `03-alunos.png`, `04-duvidas.png`, `05-avaliacoes.png` e `06-sobre-nos.png`. A engrenagem com lápis, gerada para o antigo destaque Ferramentas, ficou como [imagem de apoio](capas/apoio-secao-ferramentas.png) e pode ilustrar a tela de título da seção 3 de Como funciona. No recorte, manter o símbolo centralizado e a margem azul; os nomes ficam nos títulos dos destaques.
 
 | Destaque | O que produzir |
 | --- | --- |
-| [Como funciona](#como-funciona) | Sete stories com a Jornada inteira: cursos, ferramentas, postos, Mural e Clube, família |
-| [Cursos](#cursos) | Cinco stories sobre como cada curso ensina e duas ou três telas por projeto publicado |
-| [Ferramentas](#ferramentas) | Sete stories: o que ele faz no Estúdio, no Pinta, no Pensa, com o Zappy e no Molda, e quando cada um abre |
+| [Como funciona](#como-funciona) | Três seções, cada uma aberta por uma tela de título: A Jornada (sete stories), Como é cada aula (seis) e As ferramentas (sete unidades de roteiro) |
+| [Projetos](#projetos) | Três telas por curso, começando pelo jogo; um bloco novo a cada lançamento |
 | [Alunos](#alunos) | Clipes curtos de crianças fazendo aulas, com contexto quando necessário |
 | [Dúvidas](#dúvidas) | Vinte respostas, organizadas em quatro blocos |
 | [Avaliações](#avaliações) | Relatos literais autorizados das famílias |
 | [Sobre nós](#sobre-nós) | Quatro stories com Helena e Júlio e a preparação das aulas |
 
-**Como gravar e diagramar:** os blocos de citação são a copy. As notas de cena e produção ficam fora da arte. Nos stories apresentados, a fala deve soar como uma explicação para uma pessoa; usar legendas sincronizadas. Não colocar o parágrafo inteiro sobre o vídeo como um cartão. Cada tela de Como funciona, Cursos (as cinco do começo), Ferramentas e Sobre nós tem uma ideia e cerca de 20 a 35 palavras. Nos stories de texto, dividir a resposta em duas telas quando necessário, mantendo juntas a resposta e sua justificativa. A duração acompanha a fala e a demonstração, sem acelerar para caber numa contagem fixa.
+**Como gravar e diagramar:** os blocos de citação são a copy. As notas de cena e produção ficam fora da arte. A fala deve soar como uma explicação para uma pessoa; usar legendas sincronizadas. Não colocar o parágrafo inteiro sobre o vídeo como um cartão. Cada tela apresenta uma ideia e dá tempo para ver a ação, com cerca de 20 a 35 palavras. Na seção 3 de Como funciona, a demonstração e sua condição de acesso podem ocupar duas telas consecutivas. Nos stories de texto, dividir uma resposta longa preservando a resposta e sua justificativa. Não acelerar a fala para caber numa contagem fixa.
 
-**Materiais a separar:** uma criação real de criança, autorizada, com desenho e regras feitos por ela; um curso disponível; telas reais das ferramentas e da Jornada (as capturas usadas nas páginas de oferta estão em `packages/funnel/public/img/comunidade-dos-criadores/tela-*.webp`); cenas reais de alunos; trechos literais de avaliações e gravação do casal. Há projetos e relatos autorizados, conforme informado pelo responsável; os arquivos ainda precisam ser selecionados, inclusive confirmar as cenas de aula. O cartão do jogo sai cortado no QR, como nas páginas de oferta.
+**Materiais a separar:** uma criação real de criança, autorizada, com desenho e regras feitos por ela; um curso disponível; telas reais da aula, das ferramentas e da Jornada (as capturas usadas nas páginas de oferta estão em `packages/funnel/public/img/comunidade-dos-criadores/tela-*.webp`); cenas reais de alunos; trechos literais de avaliações e gravação do casal. Há projetos e relatos autorizados, conforme informado pelo responsável; os arquivos ainda precisam ser selecionados, inclusive confirmar as cenas de aula. O cartão do jogo sai cortado no QR, como nas páginas de oferta.
 
 ## Como funciona
 
-**O que esta sequência precisa explicar:** a Jornada inteira, em sete telas. Cada curso ensina com um jogo guiado e entrega ferramentas novas; os postos abrem o Estúdio livre, o Pinta, o Pensa, o Zappy e o Molda; a criação circula no Mural e no Clube; a família acompanha. Cada tela é uma cena com o que a criança faz, nunca uma lista de nomes. O detalhe da aula fica em [Cursos](#cursos), o de cada ferramenta em [Ferramentas](#ferramentas) e as condições em [Dúvidas](#dúvidas). Não sugerir que alguma ferramenta abre só por assinar.
+**O que este destaque explica:** como seu filho evolui na plataforma, como é cada aula e o que ele cria com cada ferramenta. São três seções, como os blocos de Dúvidas, e cada uma abre com uma tela de título curta para quem avança saber onde está. As seções podem ser publicadas em dias diferentes, conforme [Postagens](03-postagens.md#3-stories-e-formação-dos-destaques); ficam no mesmo destaque, na ordem 1, 2 e 3. Stickers: seções 1 e 2 → L1; seção 3 → L2.
 
-### Story 1 · A promessa, com uma criação na tela
+**A tese da orientação, para todo o destaque:** a plataforma foi feita para a criança saber o próximo passo. Mostrar isso pelo que existe na tela: a fala do Zappy na aula, com o botão “Ouvir”; o vídeo passo a passo; “Uma pista” e “Conferir” nas experiências; a faixa “O que falta para seguir” no pé da aula; “Verificar esta etapa” nas montagens que têm essa verificação; a próxima aula indicada na trilha; os tutoriais do Como fazer; o Clube para trocar ideias; e, mais adiante, o Zappy do Estúdio. Falar da intenção do desenho, sem garantir que nenhuma criança terá dúvida nem que toda criança acompanha sozinha desde a primeira aula. Não destacar mensagens à equipe nem tempo de espera neste destaque; esse caminho fica em Dúvidas 8.
 
-> Seu filho começa por um jogo pronto e, curso a curso, passa a montar os jogos que inventa. Assim ele aprende criando, da primeira experiência às próprias ideias. Veja o caminho nas próximas telas.
+### Seção 1 · A Jornada
 
-**Cena:** abrir com o jogo pronto de um curso e passar, em seguida, a uma criação própria: de preferência uma criação real de criança, autorizada, em que o desenho e as regras sejam dela, identificada como criação de aluno; sem esse registro, uma criação da equipe identificada como “Demonstração da equipe”. Não repetir a abertura de F01 (o personagem desenhado já andando no jogo), que sai no mesmo dia. Informar “Para crianças de 9 a 14 anos” na composição.
+**O que esta seção explica:** a metodologia geral para seu filho evoluir. Como ele começa, como a aula cabe em casa, por que ele sabe o próximo passo e como passa a usar o que aprende nas próprias criações. Os jogos ensinados ficam em [Projetos](#projetos); a aula por dentro, na seção 2; os nomes dos postos e as condições de cada recurso, na seção 3 e em [Dúvidas](#dúvidas).
 
-### Story 2 · Cada curso ensina com um jogo guiado
+#### Tela de título da seção 1
 
-> Entre a ideia e o jogo funcionando, há comandos que ele ainda não conhece. Cada curso apresenta esses comandos dentro de um jogo que ele monta com a aula: vê o passo, encaixa e testa.
+> 1 · A Jornada: como seu filho evolui na plataforma
 
-**Cena:** aula e Estúdio lado a lado (`tela-aula-estudio`), com o passo, o comando e o teste. Uma tela basta; a aula por dentro está em Cursos.
+**Cena:** tela de título no padrão visual do perfil, com a Jornada ao fundo (`tela-jornada`). Poucos segundos, sem fala.
 
-### Story 3 · Cada curso entrega ferramentas
+#### 1.1 · O que seu filho aprende a criar
 
-> Cada comando, ele aprende primeiro numa aula. Quando o curso termina e o jogo vai para o Mural, esses comandos passam para o Estúdio dele, que ganha ferramentas novas a cada curso.
+> Nas nossas aulas, seu filho aprende programação criando jogos. Ele começa por projetos guiados, em que cada aula ensina uma parte do jogo, e aos poucos passa a usar o que aprendeu nas ideias dele.
 
-**Cena:** a comemoração real de ferramenta nova e a caixa de ferramentas no perfil da criança. As ferramentas se acumulam curso a curso; não prometer posse depois do fim do acesso. Nos cursos da Jornada valem conclusão e publicação; um curso que só usa comandos que ele já tem não traz ferramenta nova. Não mostrar o Estúdio livre aberto nesta tela.
+**Cena:** jogo de curso funcionando, regra de movimento e uma variação feita no Estúdio. Identificar “Demonstração da equipe” quando for o caso. Informar “Para crianças de 9 a 14 anos”. Não apresentar o curso extra como entrada obrigatória.
 
-### Story 4 · O primeiro posto abre o Estúdio livre e o Pinta
+#### 1.2 · Como a aula entra na rotina
 
-> Com o curso de entrada concluído e o projeto publicado, ele sobe de posto na Jornada e vira Construtor. O Estúdio fica livre para as ideias dele, e abre o Pinta, onde desenha os personagens.
+> As aulas são gravadas e feitas no computador, com internet, mouse e teclado. Vocês combinam o horário. Seu filho assiste a um passo, pausa para fazer aquela parte e continua quando termina a montagem.
 
-**Cena:** o posto Construtor na Jornada (`tela-jornada-postos`), o Estúdio livre e o Pinta. Antes desse posto, ele usa o Estúdio só dentro das aulas.
+**Cena:** computador, explicação ao lado da atividade e pausa real do vídeo. O foco é a organização da aula em casa; a demonstração completa fica na seção 2.
 
-### Story 5 · Mais adiante: planejar, investigar e criar em 3D
+#### 1.3 · Feito para ele saber o próximo passo
 
-> Mais adiante, no posto Inventor, ele organiza a ideia de um jogo com o Pensa e investiga um erro com o Zappy, decidindo e testando. No Explorador de Mundos, modela em 3D no Molda.
+> A plataforma foi pensada para ele saber o próximo passo. A aula diz o que fazer e confere a montagem, a trilha mostra a aula seguinte, e o Como fazer ensina a usar cada ferramenta.
 
-**Cena:** Pensa, Zappy no Estúdio e Molda, em telas reais. Texto na composição: “Abre conforme o avanço na Jornada. Parte do percurso está em preparação. Pensa e Zappy usam créditos de inteligência artificial.” Opcional: sticker **Ver as ferramentas** → L2 nesta tela; o fecho da sequência continua em L1.
+**Cena:** três telas rápidas e reais: a fala do Zappy na aula, a trilha com a próxima aula e o Como fazer. O detalhe de cada recurso fica na seção 2.
 
-### Story 6 · A criação circula
+#### 1.4 · Quando pode começar uma ideia própria
 
-> Cada jogo que ele publica entra no Mural com um link para vocês jogarem. No Clube, ele conversa sobre as criações, e o desafio do mês propõe um tema quando disponível para a etapa.
+> O primeiro curso é o de entrada. Quando ele conclui esse curso e publica o projeto, chega ao posto Construtor e duas ferramentas se abrem: o Estúdio livre, para começar um jogo do zero, e o Pinta, para desenhar os próprios personagens.
 
-**Cena:** Mural, cartão do jogo cortado no QR e Clube. O link do jogo publicado é público; a visibilidade do perfil é outra configuração (Dúvidas 18 e 19).
+**Cena:** projeto do curso publicado, Estúdio livre e desenho entrando no jogo. O posto Construtor pode aparecer na interface, sem exigir que o pai memorize o nome. Mostrar essa passagem somente com o curso de entrada correto.
 
-### Story 7 · A família acompanha
+#### 1.5 · Como o aprendizado continua
 
-> Na área do responsável, você acompanha cursos, criações e o posto dele, e pode receber o resumo da semana por e-mail. No link, conheça o caminho e pergunte qual jogo ele quer criar.
+> Cada curso seguinte traz outro jogo para construir. Os comandos que ele conquista ficam guardados no Estúdio dele e valem para qualquer jogo que quiser inventar.
 
-**Cena:** painel real da área dos pais e o ajuste do resumo da semana; encerrar com o casal. Sticker **Ver como aprende** → L1.
+**Cena:** a trilha com o curso seguinte e a paleta do Estúdio com os comandos conquistados. Escolher um exemplo que exista no material disponível. A sequência de cursos e os recursos alcançáveis precisam corresponder ao catálogo publicado. Não prometer comando novo a cada curso.
 
-## Cursos
+#### 1.6 · O jogo chega à família
 
-**O que este destaque mostra:** como cada curso ensina e os jogos ensinados nos cursos publicados. Primeiro, cinco stories com uma aula por dentro, usando Cadê Todo Mundo? como exemplo e sem apresentá-lo como entrada obrigatória da Comunidade. Depois, um bloco por projeto. Como funciona apresenta a Jornada; aqui fica o mecanismo da aula. A explicação detalhada da orientação continua sendo de F05.
+> O jogo publicado no Mural tem um link só dele, para vocês abrirem juntos ou mandarem a quem quiserem. Enquanto jogam, peça que ele explique uma regra. No Clube, ele mostra as criações e conversa com outros criadores.
 
-### C1 · O jogo pronto vem primeiro
+**Cena:** Mural, jogo aberto pelo link e Clube. Identificar encenação da equipe e preservar o contexto dos registros reais. O link publicado é público; cortar o QR quando a captura apontar para ambiente de teste.
 
-> Um clique no esconderijo, e o personagem aparece. Antes de programar, seu filho joga essa versão pronta para conhecer a brincadeira. O jardim e os personagens vêm desenhados, e a atenção fica nas regras.
+#### 1.7 · Como você acompanha
+
+> Na área do responsável, você acompanha os cursos e as criações dele e pode receber um resumo da semana por e-mail. No link, veja uma aula por dentro e conheça o que ele pode começar a criar.
+
+**Cena:** área da família, ajuste do resumo semanal e casal no fecho. Sticker **Ver como aprende** → L1.
+
+### Seção 2 · Como é cada aula
+
+**O que esta seção explica:** a metodologia da aula, com uma aula do Cadê Todo Mundo? como exemplo, sem apresentá-lo como entrada obrigatória da Comunidade. Jogo pronto, explicação, experiência, montagem, verificação e próximo passo. Cada recurso de orientação aparece como cena real na tela. A peça de feed dona dessa tese é F05.
+
+#### Tela de título da seção 2
+
+> 2 · Como é cada aula: o que guia seu filho a cada passo
+
+**Cena:** tela de título no padrão visual do perfil, com a aula ao fundo (`tela-aula-estudio`). Poucos segundos, sem fala.
+
+#### 2.1 · O jogo pronto vem primeiro
+
+> Um clique no esconderijo, e o personagem aparece. Antes de programar, seu filho joga essa versão pronta para saber aonde vai chegar. O jardim e os personagens vêm desenhados, e a atenção fica nas regras.
 
 **Cena:** jogo funcionando (`tela-jogo-pronto`), com um personagem sendo encontrado. Identificar “Demonstração da equipe” e o curso Cadê Todo Mundo?.
 
-### C2 · Experimentar antes de montar
+#### 2.2 · A aula diz o que fazer
 
-> Um comando faz mais sentido depois que a criança vê o efeito dele. Antes de montar a regra, seu filho clica com a reação desligada, depois ligada, e compara o que aconteceu.
+> Em cada etapa, o Zappy, personagem da aula, diz o que fazer, e o botão “Ouvir” toca essa fala para quem prefere escutar.
 
-**Cena:** a experiência real de ligar e desligar a reação ao clique (`tela-regra-desligada`, `tela-regra-ligada`). A captura precisa corresponder à atividade publicada.
+**Cena:** fala real do Zappy na aula e o botão “Ouvir”. Esse Zappy é o personagem das aulas, com falas preparadas pela equipe; não confundir com o assistente de inteligência artificial do Estúdio (seção 3).
 
-### C3 · Montar com a explicação à mão
+#### 2.3 · Experimentar antes de montar
 
-> Agora ele monta essa reação no projeto. A aula gravada mostra onde está o comando, e ele pausa o vídeo para encaixá-lo no tempo dele. Depois, clica no esconderijo para conferir se o personagem aparece.
+> Um comando faz mais sentido depois que ele vê o efeito. Na experiência, clica com a reação desligada, depois ligada, e compara. Se empacar, clica em “Uma pista”, e “Conferir” diz se ele chegou lá.
 
-**Cena:** trecho da explicação, pausa do vídeo durante a montagem, comando no projeto e clique de teste com o personagem aparecendo.
+**Cena:** a experiência real de ligar e desligar a reação ao clique (`tela-regra-desligada`, `tela-regra-ligada`), com os botões “Uma pista” e “Conferir” visíveis. A captura precisa corresponder à atividade publicada.
 
-### C4 · Testar e pedir ajuda
+#### 2.4 · Montar seguindo o vídeo
 
-> Se o personagem não aparece, ele assiste de novo àquela parte e confere a montagem. Quando o problema continua, escreve à equipe pelo botão “Preciso de ajuda”. A resposta chega depois, por mensagem, nos Recados.
+> Agora ele monta essa reação no projeto, seguindo o vídeo passo a passo e pausando quando precisa. Depois, clica no esconderijo para conferir se o personagem aparece.
 
-**Cena:** se houver um erro na demonstração, mostrar o erro real e a correção. Retomar um trecho do vídeo e mostrar o botão “Preciso de ajuda” na aula (o rótulo real não tem interrogação). Ao mostrar a mensagem, manter a informação visível: “A equipe responde por mensagens. Pode ser necessário aguardar o retorno.”
+**Cena:** trecho do vídeo, pausa durante a montagem, comando no projeto e clique de teste com o personagem aparecendo.
 
-### C5 · O que fica depois do curso
+#### 2.5 · A aula confere com ele
 
-> No fim do curso, ele pode chamar você para jogar o que montou. Depois, a Jornada mostra o próximo curso. No link, você conhece uma aula por dentro.
+> Se o personagem não aparece, “Verificar esta etapa” confere o projeto e aponta o que ajustar. E a faixa no pé da aula mostra o que falta para seguir.
 
-**Cena:** alguém da família jogando, se houver registro autorizado; encerrar com o casal. Sticker **Ver a aula por dentro** → L1.
+**Cena:** uma etapa real com a verificação de projeto e a faixa “O que falta para seguir”. Nem toda etapa tem a verificação; se a captura não tiver, trocar a primeira frase por “Se o personagem não aparece, ele volta ao vídeo e confere a montagem.” Mostrar o resultado da verificação e o ajuste feito pela criança.
 
-**Projetos dos cursos:** cada lançamento acrescenta um bloco a este destaque. Começar pelo jogo e explicar a construção com o exemplo visível.
+#### 2.6 · O próximo passo já está indicado
 
-### P01 · Cadê Todo Mundo?
+> Ao terminar, a trilha mostra a próxima aula, e o Como fazer explica cada ferramenta. No fim do curso, ele pode chamar você para jogar. No link, veja uma aula por dentro.
 
-**Nome do projeto na tela:** Cadê Todo Mundo?
+**Cena:** comemoração do fim da aula com a próxima aula, tutorial do Como fazer e alguém da família jogando, se houver registro autorizado; encerrar com o casal. Sticker **Ver a aula por dentro** → L1.
 
-> Três personagens se escondem pelo jardim, e o jogador clica nos esconderijos até achar todos. Seu filho aprende a programar o que acontece em cada clique: o personagem aparece e a contagem sobe.
+### Seção 3 · As ferramentas
 
-**Cena:** partida curta, mostrando um personagem aparecer e a contagem mudar. Identificar “Demonstração da equipe”.
+**O que esta seção explica:** o que seu filho consegue fazer com cada recurso, por meio de uma ação visível, e quando ele abre. O nome identifica a ferramenta depois que a situação está clara. Usar telas reais do Estúdio, Pinta, Pensa, Zappy e Molda. As unidades 3.1 a 3.7 são roteiro; a condição de acesso faz parte da mesma explicação e pode ocupar uma continuação, com o nome do recurso visível.
 
-### P02 · O que seu filho aprende a construir
+**Antes de gravar:** conferir a [disponibilidade por recurso](#disponibilidade-por-recurso). A versão abaixo explica os requisitos. Para recursos avançados, acrescentar na própria demonstração a frase de disponibilidade escolhida após a conferência. Não apresentar uma conta de equipe com acesso completo como evidência de que uma criança consegue alcançar esse recurso com os cursos publicados.
 
-> O trabalho dele fica nas regras, porque o jardim e os personagens são preparados pela equipe. Primeiro, ele programa o clique que revela o personagem. Depois, a contagem dos encontrados, até três. A cada parte nova, ele joga para conferir.
+#### Tela de título da seção 3
 
-**Cena:** mostrar o clique, a instrução correspondente e a mudança na contagem. Dar tempo para o pai relacionar a regra ao resultado.
+> 3 · As ferramentas: o que ele cria em cada uma e quando ela abre
 
-### P03 · Onde esse curso entra no caminho dele
+**Cena:** tela de título no padrão visual do perfil, com o Estúdio ao fundo (`tela-estudio`). Poucos segundos, sem fala.
 
-> Este curso é extra: abre com a assinatura em qualquer etapa, como uma experiência a mais, e não conta para mudar de posto. No fim, seu filho pode chamar você para achar os três personagens.
+#### 3.1 · Estúdio: a regra aparece no jogo
 
-**Cena:** a trilha com o curso marcado como extra e alguém da família jogando, se houver registro autorizado. Sticker opcional **Ver a aula por dentro** → L1.
+> Seu filho aperta uma tecla e o personagem se move. No Estúdio, ele monta com blocos a regra que liga uma coisa à outra. Durante as aulas, a explicação acompanha essa montagem e ele testa o resultado.
 
-**Condição de produção:** confirmar que o curso e as mídias estão publicados antes de usar P03 como oferta disponível. A conclusão do Cadê Todo Mundo? fica registrada como experiência extra e não abre sozinha o Estúdio livre, que depende do curso de entrada concluído e do projeto publicado. Só acrescentar uma frase sobre comandos que entram na caixa de ferramentas depois de conferir no admin a lista de ferramentas deste curso (a lista mora no banco, não no repositório). O Farol tem oferta de entrada própria e não deve ser incluído neste catálogo por suposição.
+**Cena:** tecla, bloco correspondente e movimento. O Estúdio integrado à aula deve ser mostrado numa atividade publicada.
 
-Nos próximos lançamentos, seguir a mesma ordem: abrir pelo jogo funcionando, dizer o que vem pronto e o que seu filho programa, e fechar com o que o curso entrega e com o momento em que ele chama alguém para jogar. O que o curso entrega é uma de duas coisas: as ferramentas novas no Estúdio, quando a lista do curso estiver cadastrada e conferida, ou o lugar do curso no percurso (posição que conta para o posto, bônus da etapa ou curso extra). Escrever a partir do jogo real. Atualizar o bloco que mudar e retirar datas ou expressões como “hoje” da versão permanente.
+#### 3.2 · Estúdio: usar o que aprendeu em outra criação
 
-## Ferramentas
+> No Estúdio livre, seu filho abre um projeto novo e encontra reunidos os comandos que conquistou nos cursos. Dali em diante, o jogo é dele: escolhe o personagem, as regras e como se ganha.
+>
+> Esse uso livre abre depois de concluir o curso de entrada e publicar o projeto no Mural. É o posto Construtor. As ferramentas ficam disponíveis durante o período de acesso.
 
-**O que este destaque mostra:** o que seu filho faz em cada ferramenta e quando ela abre. Uma ou duas telas por ferramenta, cada uma com uma cena de uso; o nome vem junto do que ele faz. Usar telas reais da plataforma (`tela-estudio`, `tela-estudio-lista`, `tela-pinta`, `tela-trazer-do-pinta`, `tela-pensa`, `tela-pensa-conversa`, `tela-zappy`, `tela-molda`) ou capturas novas da conta de teste. As condições completas de liberação ficam em Dúvidas 11.
+**Cena:** projeto novo no Estúdio livre, com a paleta dos comandos conquistados, e uma ideia própria em construção. Mostrar os blocos efetivamente conquistados. Não usar “curso publicado” para falar do projeto que a criança publica.
 
-### T1 · Estúdio: onde ele monta o jogo
+#### 3.3 · Pinta: o desenho entra no jogo
 
-> O personagem pula quando a seta é apertada, porque alguém montou essa regra com blocos. No Estúdio, é seu filho quem monta. Nas aulas, ele usa o Estúdio desde o primeiro curso.
+> No Pinta, ele desenha personagens, cenários e animações, e leva o desenho para o jogo no Estúdio. Se o personagem some no fundo, volta ao desenho, troca a cor e testa de novo.
+>
+> O Pinta abre junto do Estúdio livre, no posto Construtor, depois do curso de entrada concluído e do projeto publicado.
 
-**Cena:** uma regra real de tecla e movimento e o resultado no jogo. Ajustar “seta” e “pula” ao que a captura mostrar.
+**Cena:** desenho, importação no Estúdio, dificuldade de contraste e ajuste real. Preservar a mesma criação para que a relação entre a mudança e o resultado fique visível.
 
-### T2 · Estúdio: a caixa de ferramentas que cresce
+#### 3.4 · Pensa: decidir por onde começar
 
-> Cada curso concluído e publicado põe comandos novos na caixa de ferramentas. O Estúdio fica livre no posto Construtor; mais adiante, mostra o código ao lado dos blocos e, no último posto, o código puro.
+> Seu filho imaginou um jogo, mas ainda precisa decidir o objetivo e os controles. No Pensa, uma conversa com inteligência artificial ajuda a organizar essas escolhas em tarefas. Quem decide é ele, e a lista mostra por onde começar.
+>
+> O Pensa faz parte do posto Inventor e usa créditos de inteligência artificial da família. Para chegar a esse posto, ele conclui os cursos exigidos e publica os projetos.
 
-**Cena:** a caixa de ferramentas no perfil e o Estúdio livre com esses blocos. O código ao lado dos blocos abre no posto Gênio da Criação; o código puro, na Lenda. Não mostrar esses modos como acesso inicial.
+**Cena:** conversa real, escolha e tarefa aberta no Pinta ou Estúdio. Acrescentar a condição atual conforme a conferência abaixo; “posto Inventor” sozinho não comprova disponibilidade.
 
-### T3 · Pinta: o desenho entra no jogo
+#### 3.5 · Zappy: investigar um erro
 
-> No Pinta, ele desenha personagens, cenários e animações, e leva o desenho para o jogo no Estúdio. Se o personagem some no fundo, volta ao desenho e troca a cor. Abre no posto Construtor.
+> Ele aperta a tecla, mas o personagem fica parado. No Estúdio, pode contar ao Zappy o que tentou. A inteligência artificial sugere o que conferir; seu filho faz o ajuste e testa para ver se resolveu.
+>
+> Essa ajuda abre no posto Inventor e usa os mesmos créditos da família que o Pensa.
 
-**Cena:** desenho no Pinta, a opção de trazer a arte para o Estúdio e o personagem no jogo. Usar desenhos caprichados, como nas páginas de oferta.
+**Cena:** usar uma dúvida real da captura; adaptar a primeira frase se o erro for outro. Mostrar sugestão, ajuste feito pela pessoa e novo teste. Não confundir esse assistente com as falas preparadas do Zappy nas aulas. Acrescentar a condição atual junto da demonstração.
 
-### T4 · Pensa: da ideia ao plano
+#### 3.6 · Molda: experimentar uma forma em 3D
 
-> No Pensa, ele conta a ideia do jogo e responde às perguntas da inteligência artificial. As escolhas dele viram cartões de tarefa, que ele abre no Pinta e no Estúdio para fazer.
+> No Molda, ele cria modelos em três dimensões. Pode girar a visão para ver o objeto de outro lado, ajustar a forma e conferir de novo. Esses modelos podem fazer parte dos jogos 3D que constrói no Estúdio.
+>
+> O Molda pertence ao posto Explorador de Mundos. Para chegar até ele, seu filho conclui e publica os projetos das etapas anteriores.
 
-**Cena:** conversa real no Pensa e o plano com tarefas. Mostrar as escolhas da criança; a sugestão da inteligência artificial não vira autoria dela automaticamente.
+**Cena:** modelo real sendo girado e ajustado. Mostrar a passagem ao jogo 3D somente se houver captura correspondente. Acrescentar a condição atual junto do recurso.
 
-### T5 · Zappy: investigar uma dúvida no Estúdio
+#### 3.7 · Escolher pelo que seu filho pode fazer
 
-> Quando algo não funciona no Estúdio, ele pergunta ao Zappy, que responde ao lado dos blocos e sugere onde procurar. Ele mesmo corrige. Pensa e Zappy abrem no posto Inventor, com créditos de inteligência artificial.
+> Antes de escolher a assinatura, veja os cursos publicados e as ferramentas que seu filho consegue alcançar com eles. Parte do percurso ainda está em preparação. No link, conheça os recursos e mostre a ele o que dá para criar.
 
-**Cena:** pergunta ao Zappy no Estúdio e a criança fazendo o ajuste. O exemplo do gato que recolhe estrelas é de F08; aqui, usar a dúvida que a captura mostrar. Não confundir com as falas do Zappy nas aulas, que não dependem de posto nem de créditos. Os créditos são compartilhados pela família.
+**Cena:** catálogo e mapa coerentes com a conferência; casal no fecho. Sticker **Ver as ferramentas** → L2. Atualizar a frase sobre preparação quando mudar o catálogo.
 
-### T6 · Molda: criar em três dimensões
+#### Disponibilidade por recurso
 
-> No Molda, a oficina 3D, ele cria modelos, texturas e céus para os jogos em três dimensões que monta no Estúdio. Abre no posto Explorador de Mundos.
+**Nota de produção, fora da copy:** requisitos conferidos na documentação da Jornada e na oferta local. O catálogo ativo necessário para confirmar quais postos são alcançáveis não foi consultado nesta revisão. A implementação de uma ferramenta não comprova que todos os cursos para liberá-la estejam publicados. Registrar aqui a verificação no ambiente de publicação antes de gravar; esta tabela é a fonte única para as unidades 3.1 a 3.7 da seção 3, F01 e F06–F09.
 
-**Cena:** um modelo real no Molda. Mostrar o uso num jogo 3D só se a captura existir.
+| Recurso | Requisito a conferir junto do catálogo | Situação da conferência |
+| --- | --- | --- |
+| Estúdio nas aulas | Curso e atividade publicados com os recursos mostrados | Pendente de conferir o curso da captura |
+| Estúdio livre e Pinta | Curso de entrada publicado, concluível e com publicação de projeto; posto Construtor | Pendente de conferir o percurso no catálogo |
+| Pensa e Zappy no Estúdio | Nove posições obrigatórias concluíveis, com os projetos publicados, até Inventor; serviço e créditos | Pendente de conferir o percurso no catálogo |
+| Molda e jogos 3D | Dezessete posições obrigatórias concluíveis, com os projetos publicados, até Explorador de Mundos | Pendente de conferir o percurso no catálogo |
+| Código ao lado dos blocos / código puro | Cursos necessários até Gênio da Criação / Lenda | Pendente; apresentados somente em F09 |
 
-### T7 · Tudo abre pelo avanço
+Depois da conferência, registrar data, ambiente, cursos/posições disponíveis e evidência. Aplicar **uma** destas frases na própria unidade do recurso, mantendo a identificação na tela; não usar as alternativas como se fossem simultaneamente verdadeiras:
 
-> Cada ferramenta abre pelo avanço dele na Jornada, e parte desse caminho ainda está em preparação. No link, você vê cada uma por dentro. Mostre a ele e pergunte o que criaria com elas.
+- **Percurso alcançável:** “Os cursos necessários para chegar a essa etapa já estão publicados. Seu filho libera o recurso quando conclui esse caminho e publica os projetos exigidos.”
+- **Percurso incompleto:** “Ainda faltam cursos publicados para chegar a essa etapa. Estamos mostrando uma possibilidade do percurso em preparação; esse recurso ainda não pode ser alcançado por quem começa agora.”
 
-**Cena:** a Jornada com os postos e o casal no fecho. Sticker **Ver as ferramentas** → L2.
+Se a disponibilidade continuar sem conferência, produzir a demonstração interna e deixar a peça sem publicação. Não substituir essa informação por uma ressalva genérica só no último story. Os requisitos individuais continuam visíveis mesmo quando o percurso já estiver publicado.
+
+## Projetos
+
+**O que este destaque mostra:** os jogos que seu filho aprende a construir nos cursos disponíveis. Abrir diretamente pelo projeto. A aula por dentro está na seção 2 de Como funciona; aqui, cada curso aparece pelo jogo.
+
+**Este destaque é alimentado a cada lançamento.** Cada curso novo publicado na assinatura vira um bloco de três telas, acrescentado aqui na semana em que sai: jogo funcionando → o que a criança programa e como aprende → posição do curso e próximo passo. A sequência de blocos mostra que a plataforma recebe projetos novos ao longo do tempo. Acrescentar somente cursos cuja publicação e inclusão na assinatura tenham sido conferidas.
+
+### P01 · Cadê Todo Mundo? em funcionamento
+
+> Três personagens se escondem pelo jardim. O jogador clica nos esconderijos até encontrar todos. No curso Cadê Todo Mundo?, seu filho aprende a programar essa brincadeira: fazer o personagem aparecer e contar quantos já foram encontrados.
+
+**Cena:** abrir pela partida, com um personagem aparecendo e a contagem mudando. Nome “Cadê Todo Mundo?” visível desde o começo; identificar “Demonstração da equipe”.
+
+### P02 · O que seu filho faz na aula
+
+> O jardim e os personagens já vêm desenhados, para ele se concentrar nas regras. A aula mostra como fazer o clique revelar um personagem. Ele pausa para montar, clica para testar e depois aprende a contar os encontrados.
+
+**Cena:** desenho preparado, explicação, pausa, montagem e resultado do clique. Dar tempo para relacionar a instrução ao efeito. Os recursos que guiam a aula estão na seção 2 de Como funciona.
+
+### P03 · Onde esse curso entra
+
+> Esse curso é extra da assinatura, disponível em qualquer etapa. Ele permite praticar essa construção, mas não conta para mudar de posto. No fim, seu filho pode chamar você para procurar os personagens no jogo que montou.
+
+**Cena:** curso identificado como extra e partida em família, se houver registro autorizado. Sticker **Ver a aula por dentro** → L1.
+
+**Condição de produção:** confirmar publicação e inclusão do curso antes de apresentar P01–P03 como catálogo disponível. O curso extra não libera sozinho o Estúdio livre; essa liberação exige concluir o curso obrigatório de entrada e publicar seu projeto. Só acrescentar uma frase sobre comandos que entram nas ferramentas dele depois de conferir no admin a lista de blocos deste curso (a lista mora no banco, não no repositório). O Farol tem oferta própria e não entra neste catálogo por suposição.
+
+Nos próximos cursos, mostrar a mecânica real, o que vem preparado e o que a criança constrói. Explicar se é curso da sequência, bônus ou extra somente no ponto em que isso orienta a escolha. Para falar de comandos novos, conferir os blocos cadastrados no curso: alguns cursos permitem praticar comandos já conhecidos. Atualizar o bloco que mudar, sem manter datas ou expressões como “hoje” na versão permanente.
 
 ## Alunos
 
@@ -194,7 +256,7 @@ Não transformar as cenas de crianças diferentes numa história de antes e depo
 
 ## Dúvidas
 
-**Como responder:** a resposta vem primeiro. Depois, o raciocínio, com um exemplo do dia a dia da família quando ele ajudar, no tom de uma conversa. Cada resposta abaixo é uma unidade de conversa, que pode ocupar um ou dois stories. A pergunta permanece visível durante a resposta. Este destaque é o dono das condições de uso e de contratação; os outros só fazem menções curtas.
+**Como responder:** a resposta vem primeiro. Depois, o raciocínio, com um exemplo do dia a dia da família quando ele ajudar, no tom de uma conversa. Cada resposta abaixo é uma unidade de conversa, que pode ocupar um ou dois stories. A pergunta permanece visível durante a resposta. Este destaque é o dono das condições de uso e de contratação; os outros só fazem menções curtas. A orientação segue a tese de Como funciona: a plataforma foi feita para a criança saber o próximo passo. A conversa com a equipe aparece uma vez, leve, na resposta 8.
 
 ### Bloco 1 · Adequação e rotina
 
@@ -214,7 +276,7 @@ Não transformar as cenas de crianças diferentes numa história de antes e depo
 
 > Não, as aulas são gravadas. O horário é o que vocês combinarem, e ele acompanha a explicação no ritmo da montagem. O vídeo mostra um passo em alguns segundos; achar o bloco pode levar mais. Ele pausa o vídeo, faz o passo e continua.
 >
-> Se perdeu um detalhe, revê só aquele trecho. Para a dúvida que o vídeo não resolve, há o pedido de ajuda à equipe, respondido por mensagem, em outro momento.
+> Se perdeu um detalhe, revê só aquele trecho.
 
 #### 4. Ele pode fazer pelo celular?
 
@@ -238,19 +300,19 @@ Não transformar as cenas de crianças diferentes numa história de antes e depo
 
 #### 7. Como meu filho recebe orientação durante a aula?
 
-> A cada passo, dentro da aula. Ela mostra uma parte da construção, explica como fazer e diz o que observar no teste. Ele faz esse passo no próprio projeto e volta à explicação quando precisa.
+> Pela própria aula, que foi desenhada para ele saber o próximo passo. O Zappy, personagem da aula, explica o que fazer, e o botão “Ouvir” toca essa fala. O vídeo mostra cada passo na tela.
 >
-> Por exemplo: depois de montar a regra que revela um personagem, ele clica no esconderijo para ver se o personagem aparece. A explicação fica ligada a algo que ele faz e vê acontecer.
+> Se o personagem não aparece no clique, “Verificar esta etapa” confere o projeto e aponta o que ajustar. Nas experiências, ele tem “Uma pista” quando empaca e “Conferir” para saber se chegou lá.
 
-#### 8. E se ele precisar falar com vocês?
+#### 8. E se ele travar numa parte?
 
-> Pela própria aula. Ele usa o botão “Preciso de ajuda” e escreve o que tentou e o que aconteceu. A conversa continua nos Recados, dentro da plataforma.
+> Dentro da plataforma, ele tem mais de um caminho. Além do que a aula mostra, o Como fazer tem tutoriais de cada ferramenta, e no Clube ele pode mostrar o que está construindo e ver como outros criadores resolveram coisas parecidas. Tudo foi pensado para ele avançar com autonomia.
 >
-> Quando ele conta que clicou e o personagem não apareceu, a equipe já sabe em que parte ele está. O atendimento é por mensagens, e pode ser necessário esperar pela resposta.
+> Se ainda sobrar uma dúvida bem específica sobre aquela aula, ele escreve para a equipe no botão “Preciso de ajuda”, ali na própria aula, contando o que tentou. A resposta aparece nos Recados.
 
 #### 9. O que ele faz depois de terminar um curso?
 
-> Publica o jogo no Mural e segue para o próximo curso que a Jornada mostra. Os comandos que o curso ensinou entram no Estúdio dele, junto dos que ele já tinha.
+> Nos cursos da sequência da Jornada, publica o projeto no Mural e continua pelo próximo curso disponível. Os comandos previstos no curso passam a compor os recursos dele no Estúdio; se já os conhecia, o curso serviu para praticá-los em outra construção.
 >
 > Depois do curso de entrada, com o projeto publicado, o Estúdio fica livre. Aí ele pode voltar ao jogo que fez, mudar uma regra e testar outra versão, ou começar uma ideia própria com as ferramentas que já tem.
 
@@ -374,10 +436,10 @@ Uma avaliação pode ocupar uma ou duas telas, com tempo para ler. Nome, relaç�
 
 ## Manutenção
 
-Cada lançamento acrescenta um bloco a Cursos, dizendo o que aquele curso entrega. Uma ferramenta nova, a mudança de posto de uma ferramenta ou a publicação de uma parte do percurso que estava em preparação atualizam Ferramentas, Como funciona (Stories 3 a 5) e as respostas 9 a 11 de Dúvidas. Novas cenas entram em Alunos; novos relatos entram em Avaliações. Mudanças de acesso, formato ou contratação atualizam Dúvidas. Sobre nós muda quando a história apresentada mudar.
+**Projetos é alimentado a cada lançamento:** cada curso novo publicado na assinatura ganha um bloco de três telas, acrescentado na semana em que sai, dizendo o que aquele curso entrega. Uma mudança na aula (novo recurso de orientação, nova forma de conferir) atualiza a seção 2 de Como funciona e as respostas 3, 7 e 8 de Dúvidas. Uma ferramenta nova, a mudança de seus requisitos ou novos cursos publicados atualizam a seção 3 e a tabela de disponibilidade; conferir também as telas 1.4 e 1.5, Dúvidas 9 a 11 e as peças F01 e F06–F09, conforme o assunto alterado. Novas cenas entram em Alunos; novos relatos entram em Avaliações. Mudanças de acesso, formato ou contratação atualizam Dúvidas. Sobre nós muda quando a história apresentada mudar.
 
 Antes de gravar, ler a sequência em voz alta: uma pessoa que ainda não conhece a Comunidade consegue entender a resposta e explicar o que seu filho faria? Se falta uma ligação entre duas frases, escrever essa ligação. Cortar repetição e informação lateral, preservando o raciocínio.
 
-Referências de redação: [análise profunda da copy](pesquisas/analise-profunda-copy-2026-10-04.md), [Jornada do Criador](../../../../jornada-do-criador.md) (princípio pedagógico, paleta do Estúdio e matriz dos níveis), copy viva das páginas de oferta em `packages/funnel/src/funnels/comunidade-dos-criadores/oferta/` (inclusive `continuidade.ts`), [diretrizes pedagógicas](../../../../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md), [oferta sobre criação de jogos](../copy/pagina-b-criacao-de-jogos.md) e [respostas da página de continuidade](../copy/pagina-e-continuidade.md#sobre-os-próximos-passos-do-seu-filho). As regras de clareza orientam a conversa com o adulto; os procedimentos das aulas continuam próprios dos cursos.
+Referências de redação: [análise profunda da copy](pesquisas/analise-profunda-copy-2026-10-04.md), [Jornada do Criador](../../../../jornada-do-criador.md) (princípio pedagógico, paleta do Estúdio e matriz dos níveis), copy viva das páginas de oferta em `packages/funnel/src/funnels/comunidade-dos-criadores/oferta/` (inclusive `continuidade.ts`), [diretrizes pedagógicas](../../../../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md), [oferta sobre criação de jogos](../copy/pagina-b-criacao-de-jogos.md) e [respostas da página de continuidade](../copy/pagina-e-continuidade.md#sobre-os-próximos-passos-do-seu-filho). Os rótulos de orientação citados (“Ouvir”, “Uma pista”, “Conferir”, “O que falta para seguir”, “Verificar esta etapa”, “Preciso de ajuda”) foram conferidos nos componentes da aula em `packages/member-shell/src/components/`. As regras de clareza orientam a conversa com o adulto; os procedimentos das aulas continuam próprios dos cursos.
 
 [Voltar ao guia](README.md) · [Produzir os fixados](02-fixados.md) · [Ver calendário](03-postagens.md)
