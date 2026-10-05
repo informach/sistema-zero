@@ -28,12 +28,13 @@ UTMs desta rodada: `utm_source=instagram`, `utm_medium=organic_social`, `utm_cam
 | Uso | Link para copiar |
 | --- | --- |
 | Bio | `https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=bio` |
-| S01 · Como funciona, tela 6 | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s01_como_funciona#como-aprende` |
+| S01 · Como funciona, tela final | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s01_como_funciona#como-aprende` |
 | Alunos · fecho opcional, sticker “Conhecer as aulas” | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=alunos_aulas#como-aprende` |
-| S04 · Projetos, P03 de Cadê Todo Mundo? | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s04_projeto_cade_todo_mundo#como-aprende` |
+| S05 · Ferramentas, sticker final | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s05_ferramentas#criar-mais` |
 | S06 · Sobre nós, tela 4 | `https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s06_sobre_nos` |
+| S08 · Cursos, sticker da aula por dentro | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s08_cursos#como-aprende` |
 | S09 · Dúvidas, planos e condições | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s09_duvidas_planos#planos` |
-| S12 · Conheça o começo com seu filho | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s12_planos#planos` |
+| S12 · Bastidor de Helena e Júlio e os planos | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s12_planos#planos` |
 | Resposta complementar sobre apoio, quando solicitada | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=duvidas_orientacao#orientacao` |
 
 Os demais stories apresentam respostas, relatos ou interações sem link obrigatório. O link opcional de Alunos pode encerrar uma seleção; não precisa aparecer em cada clipe. Não acrescentar link comercial em toda tela. Nos posts, “link na bio” remete ao link comum L0: ele não identifica sozinho qual post levou à visita.
@@ -43,7 +44,7 @@ Os demais stories apresentam respostas, relatos ou interações sem link obrigat
 1. Separar os materiais: gravação do projeto, cenas reais de alunos, relatos literais e uma captação de Helena e Júlio. Nome e foto do perfil já foram atualizados pelo responsável. A referência de perfil está no [guia de entrada](../README.md#perfil-de-referência).
 2. Produzir pelos documentos [Destaques](../01-destaques.md) e [Fixados](../02-fixados.md). Aproveitar as capturas nas peças relacionadas; manter as identificações de demonstração da equipe e de registros reais.
 3. Conferir os destinos publicados em celular, conteúdo e rolagem das âncoras. Conferir o link completo da bio com UTMs. A publicação do site não é presumida pela existência da copy local. Verificar a navegação de um quiz sem enviar cadastro nem realizar compra de teste em produção.
-4. Publicar conforme o [único calendário](../03-postagens.md). Formar Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós com os blocos indicados. Fixar F01, F02 e F03 depois de publicados; conferir ordem e leitura no perfil.
+4. Publicar conforme o [único calendário](../03-postagens.md). Formar Como funciona, Cursos, Ferramentas, Alunos, Dúvidas, Avaliações e Sobre nós com os blocos indicados. Fixar F01, F02 e F03 depois de publicados; conferir ordem e leitura no perfil.
 5. Guardar URL/ID real, data e versão de cada publicação no fluxo existente. Conferir disponibilidade dos comentários e caixas usados nas peças; se houver comentários limitados, usar a alternativa escrita em F10 com a enquete S10.
 6. Prosseguir com os lotes do mês. Registrar tempo de produção e perguntas recebidas. Atualizar os textos no guia responsável quando uma condição mudar.
 
