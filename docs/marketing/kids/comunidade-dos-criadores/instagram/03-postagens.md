@@ -1,6 +1,6 @@
 # 03 · Postagens: calendário e roteiros do mês
 
-**Calendário e publicações reestruturados em 04/10/2026 à noite, depois do retorno do responsável: a copy passa a ter a plataforma e a Jornada no centro, conforme a [seção 6 da análise profunda](pesquisas/analise-profunda-copy-2026-10-04.md#6-reestruturação-após-o-retorno-do-responsável); ainda não aprovados pelo responsável.** Os destaques passam a sete (Como funciona, Cursos, Ferramentas, Alunos, Dúvidas, Avaliações e Sobre nós). Ciclo de **05 a 30/10/2026**, fuso **America/Sao_Paulo (UTC−03:00)**. Três posts e três dias de stories por semana. São **12 posts e 12 dias de stories**, com quantidade de telas adequada a cada assunto. Este é o único calendário de execução. O produto de referência é o local, em publicação conforme informado pelo usuário.
+**Revisão solicitada aplicada em 05/10/2026.** Mantidos os seis destaques e as três seções de Como funciona. F05 acompanha uma tentativa da criança em oito slides, e os textos distinguem a verificação de objetivos do teste do jogo. O pedido de ajuda com a aula continua em Dúvidas 8. F07 explica aquisição e reutilização de comandos, e as condições de disponibilidade acompanham as demonstrações. Ciclo de **05 a 30/10/2026**, fuso **America/Sao_Paulo (UTC−03:00)**. Três posts e três dias de stories por semana. São **12 posts e 12 dias de stories**, com quantidade de telas adequada a cada assunto. Este é o único calendário de execução. O produto de referência é o local, em publicação conforme informado pelo usuário.
 
 Proposta de horário inicial: **19h** para feed e **18h30** para stories nos mesmos dias. É uma convenção operacional para caber na rotina de resposta, não um “melhor horário” medido. Ajustar quando houver dados próprios comparáveis. Nenhuma publicação foi cadastrada ou agendada.
 
@@ -8,15 +8,15 @@ Proposta de horário inicial: **19h** para feed e **18h30** para stories nos mes
 
 | Data | Peça / formato | Papel e assunto | Prova / asset | CTA principal / destino | Leitura em sete dias |
 | --- | --- | --- | --- | --- | --- |
-| Seg 05/10 | F01 · Reel fixado | Promessa: do primeiro curso aos próprios jogos | Aula guiada, ferramenta nova, Pinta → Estúdio e Mural; conta demonstrativa | Conhecer / bio | Retenção disponível + dúvidas sobre o que se faz |
+| Seg 05/10 | F01 · Reel fixado | Promessa: do primeiro curso aos próprios jogos | Aula guiada, comandos conquistados, Pinta → Estúdio e Mural; conta demonstrativa | Conhecer / bio | Retenção disponível + dúvidas sobre o que se faz |
 | Qua 07/10 | F02 · Reel fixado | Alunos em aula | Cenas reais de alunos; seleção pendente | Conhecer a experiência / bio | Visitas ao perfil e dúvidas sobre as aulas |
 | Sex 09/10 | F03 · Carrossel fixado | Como funciona na sua casa (dono dos requisitos) | Computador, player, passos, família | Conferir adequação / bio | Salvamentos + dúvidas de formato |
 | Seg 12/10 | F04 · Reel | Convite: o jogo dele vira um convite | Publicação real no Mural, link aberto e cartão com QR | Jogar uma criação do filho / sem link | Compartilhamentos e relatos de famílias que jogaram |
-| Qua 14/10 | F05 · Carrossel | Orientação: uma aula por dentro | Jogo pronto, experiência, montagem, teste e pedido de ajuda reais | Ver uma aula / bio | Entendimento de como ele é orientado |
+| Qua 14/10 | F05 · Carrossel de 8 slides | Orientação: uma tentativa, uma dúvida e os caminhos para continuar | Uma montagem de movimento: tarefa, comparação com o vídeo, consulta ao tutorial, objetivos da etapa, ajuste e teste | Conhecer a Comunidade / bio | Entendimento de como ele encontra o próximo passo |
 | Sex 16/10 | F06 · Reel | Possibilidade: o desenho dele entra no jogo | Pinta → Estúdio numa conta no posto Construtor | Conhecer o caminho / bio | Interesse de famílias com gosto por desenho |
-| Seg 19/10 | F07 · Carrossel | Progresso: cada curso entrega ferramentas novas | Estúdio antes e depois de um curso, comemoração e Minhas ferramentas | Ver as ferramentas / destaque Ferramentas (L2) | Salvamentos + dúvidas sobre liberação |
+| Seg 19/10 | F07 · Carrossel | Progresso: usar os comandos aprendidos nas próprias ideias | Estúdio antes e depois de um curso, comemoração e Minhas ferramentas | Ver as ferramentas / destaque Como funciona, seção 3 · As ferramentas (L2) | Salvamentos + dúvidas sobre liberação |
 | Qua 21/10 | F08 · Reel | Apoio: Pensa e Zappy, com ele decidindo | Plano no Pensa e dúvida com o Zappy numa conta no posto Inventor | Conhecer a Comunidade / bio | Dúvidas sobre inteligência artificial e créditos |
-| Sex 23/10 | F09 · Carrossel | Clareza: o que cada posto abre | Mapa da Jornada, postos e recompensas reais | Ver cada ferramenta e o posto / destaque Ferramentas (L2) | Entendimento do acesso e objeções |
+| Sex 23/10 | F09 · Carrossel | Clareza: o que cada posto abre | Mapa da Jornada, postos e recompensas reais | Ver cada ferramenta e o posto / destaque Como funciona, seção 3 · As ferramentas (L2) | Entendimento do acesso e objeções |
 | Seg 26/10 | F10 · Reel | Experimentar: mesmo jogo, um número diferente, no Estúdio dele | Duas velocidades no mesmo projeto do Estúdio livre | Prever e comparar / comentário | Comentários relacionados à decisão |
 | Qua 28/10 | F11 · Carrossel | Escolha: critérios para comparar cursos | Seis critérios de comparação | Salvar para comparar / sem link | Salvamentos + conversas de adequação |
 | Sex 30/10 | F12 · Reel | Continuidade: desafio do mês, Mural e Clube | Cartão do desafio, jogos do desafio no Mural e Clube | Conhecer a Comunidade / bio | Visitas ao perfil e dúvidas sobre continuidade |
@@ -61,49 +61,65 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 **CTA:** jogar uma criação do filho e ouvir como ele fez, sem link. **Material:** publicação real e fala do casal. Se a publicação mudar de data, ajustar a última frase da fala e o último parágrafo da legenda. Não há promoção comercial ligada à data.
 
-### F05 · Uma aula por dentro · 14/10
+### F05 · A plataforma guia o próximo passo · 14/10
 
-**Carrossel de sete slides. Objetivo:** mostrar como cada curso ensina, do jogo pronto ao pedido de ajuda. É a peça dona da orientação durante a construção no feed.
+**Carrossel de oito slides. Objetivo:** acompanhar uma tentativa de montar o movimento de um personagem e mostrar como a criança encontra referências para continuar. A situação conduz a peça: retomar a tarefa, comparar, consultar, conferir, ajustar e testar. F05 explica como a orientação acompanha uma dificuldade; a seção 2 de Como funciona apresenta a sequência da aula pelo exemplo do clique no esconderijo.
 
-**Slide 1. Título:** Cada curso ensina com um jogo que ele mesmo vai montar
+**Slide 1. Título:** Ele montou a regra, mas o personagem ficou parado
 
-> A aula leva seu filho do jogo pronto à regra funcionando, com a explicação perto de cada passo. Veja uma por dentro, numa aula de movimento.
+> Imagine seu filho apertando a tecla para testar o movimento que acabou de montar. O personagem não anda. Para continuar, ele precisa localizar uma parte para conferir. A orientação da aula fica junto da atividade para ajudar nessa tentativa.
 
-**Slide 2. Título:** Primeiro, ele joga a versão pronta
+**Slide 2. Título:** Ele retoma a tarefa antes de mudar o projeto
 
-> Antes de montar, ele vê o personagem andar quando a tecla é apertada. Assim, sabe aonde quer chegar e o que procurar quando testar.
+> Primeiro, volta à instrução para lembrar qual movimento está construindo. O Zappy, personagem da aula, apresenta a tarefa por escrito, e o botão “Ouvir” permite escutá-la. Ele tem uma referência do que precisa acontecer no jogo.
 
-**Slide 3. Título:** Uma experiência mostra o que a regra muda
+**Slide 3. Título:** Ele compara uma parte de cada vez
 
-> Nas aulas com experiência, ele liga e desliga a regra ou muda um valor e compara as partidas. Quando chega a hora de montar, já viu o problema que o comando resolve.
+> Com a tarefa em mente, volta ao trecho do vídeo que mostra a montagem. Pausa e compara aquela parte com o próprio projeto: qual bloco foi usado, onde entrou e o que precisa conferir antes de testar de novo.
 
-**Slide 4. Título:** A explicação fica ao lado do lugar de montar
+**Slide 4. Título:** Se esqueceu como usar um recurso, pode consultar e voltar
 
-> Nas atividades integradas, o vídeo e o editor ficam juntos. Ele assiste a um passo, pausa e faz. Se esquecer onde o bloco entra, volta só àquele trecho.
+> Pode acontecer de entender a tarefa, mas não lembrar como encaixar o bloco. Nesse caso, consulta o tutorial correspondente no Como fazer, observa a ação e volta à montagem para tentar.
 
-**Slide 5. Título:** O teste transforma o erro numa dúvida concreta
+**Slide 5. Título:** Ele confere o que já fez e o que ainda falta
 
-> O personagem não andou. Agora ele sabe onde procurar: no comando que montou, comparado ao da aula. Ele ajusta e testa de novo. Para dúvidas de uso da ferramenta, há os tutoriais do Como fazer.
+> Nas etapas com “Verificar esta etapa”, ele confere quais objetivos da montagem já cumpriu e quais ainda faltam. A tela ajuda a escolher o que retomar. O teste no jogo continua sendo necessário para observar o resultado.
 
-**Slide 6. Título:** Se a dúvida continua, ele escreve para a equipe
+**Slide 6. Título:** Depois do ajuste, ele testa outra vez
 
-> Na aula, o botão “Preciso de ajuda” abre o pedido. Ele conta o que tentou e o que aconteceu. A resposta chega nos Recados, por mensagem, e pode ser preciso esperar.
+> Seu filho aperta a mesma tecla e observa se o personagem se move. Se o resultado ainda for diferente do esperado, retoma a explicação e compara outra parte. Cada mudança precisa ser testada para saber o que aconteceu.
 
-**Slide 7. Título:** Quando funciona, ele tem um jogo e uma correção para mostrar
+**Slide 7. Título:** Ao concluir aquela parte, ele encontra onde continuar
 
-> No fim do curso, o jogo vai para o Mural e os blocos que ele aprendeu passam para o Estúdio dele. No link da bio, você vê uma aula por dentro.
+> A faixa no pé da aula mostra os requisitos que ainda faltam para seguir. Quando termina a aula, a trilha indica a próxima. Ele pode continuar em outro horário, dentro da rotina que vocês combinaram.
+
+**Slide 8. Título:** Você pode pedir que ele mostre o que mudou
+
+> Quando chamar você para jogar, peça que mostre uma parte que precisou ajustar. Ele pode executar o movimento e contar o que fez. No link da bio, veja como a aula acompanha essas tentativas.
 
 **Legenda:**
 
-> Uma explicação ajuda mais quando está perto do que seu filho está fazendo.
+> Seu filho montou uma regra, apertou a tecla e o personagem ficou parado. Nessa hora, precisa encontrar uma parte da construção para conferir.
 >
-> Quando a explicação vem toda antes e a tentativa vem depois, o erro encontra a criança sozinha: o personagem não se move e falta saber qual parte conferir. Por isso, em cada curso, a orientação fica junto da montagem. Ele joga a versão pronta, experimenta o que a regra muda, monta com o vídeo ao lado do editor nas atividades integradas e testa.
+> Por isso, a explicação fica junto da atividade. Ele pode retomar a instrução, rever o trecho da montagem e comparar uma parte de cada vez. Se a dúvida for como usar um recurso, o tutorial correspondente no Como fazer oferece outra referência para tentar.
 >
-> Se não deu certo, a dúvida já tem lugar. Ele volta ao trecho, compara com o que montou e ajusta. Para dúvidas de uso da ferramenta, os tutoriais do Como fazer mostram a ação. Se ainda travar, o botão “Preciso de ajuda” leva a pergunta à equipe, e a resposta chega nos Recados, por mensagem, em outro momento.
+> Nas etapas que têm verificação, a tela mostra quais objetivos da montagem já foram cumpridos e quais ainda faltam. Esses objetivos ajudam a orientar a tentativa. Depois de alterar uma parte, ele joga para conferir se o movimento saiu como esperava.
 >
-> Quando o personagem anda, ele tem uma correção para mostrar a você. No fim do curso, o jogo vai para o Mural e o que ele aprendeu vira ferramenta no Estúdio dele. No link da bio, você vê uma aula por dentro.
+> Cada criança tem seu ritmo, e algumas querem companhia no começo. A plataforma oferece referências para que ele possa retomar o trabalho e experimentar. Quando mostrar uma criação, você pode pedir que conte o que precisou mudar.
+>
+> As imagens são uma demonstração da equipe. No link da bio, você conhece uma aula da Comunidade dos Criadores por dentro.
 
-**Imagem:** atividade real que ensine movimento, com jogo pronto, experiência (se a aula tiver), comando, tecla e resultado correspondentes; consulta ao vídeo, tutorial do Como fazer e caminho dos Recados. Identificar a demonstração da equipe. O botão real se chama “Preciso de ajuda”. **CTA:** link da bio (L0, que leva a “Ver como meu filho aprende”). O destaque Cursos só se forma com os stories de 21/10; não apontar para ele numa peça de 14/10. Não gravar um tour de ferramentas nem confundir o diálogo preparado da aula com uma resposta de inteligência artificial.
+**Imagem:** acompanhar o mesmo projeto de movimento, numa conta demonstrativa, preservando personagem, tecla e montagem entre as telas. Mostrar a tarefa, comparação com o vídeo, consulta ao tutorial, objetivos reais, ajuste e novo teste. A falha e a alteração precisam existir na gravação. Se o exemplo disponível for outra mecânica, adaptar a história inteira, inclusive a legenda. Identificar “Demonstração da equipe”; não apresentar a encenação como registro de aluno.
+
+**Condição do slide 5:** usar uma etapa com critérios de verificação configurados e mostrar a lista de objetivos cumpridos e pendentes. O botão não diagnostica qualquer erro de funcionamento. Se a aula escolhida não tiver esse recurso, manter a mesma história e usar o título **Ele retoma a explicação para conferir a montagem**, com a fala alternativa abaixo.
+
+> Ele volta ao trecho que mostra aquela parte e compara os blocos com o próprio projeto. Essa referência ajuda a escolher o que retomar. Depois de mudar a montagem, testa no jogo para observar o resultado.
+
+**Terceiro parágrafo da legenda nessa alternativa:**
+
+> A comparação com a explicação dá uma referência para retomar a montagem. Depois de alterar uma parte, ele joga para conferir se o movimento saiu como esperava. Se ainda precisar ajustar, pode voltar àquele trecho e fazer outra tentativa.
+
+**Produção:** o tutorial precisa demonstrar o uso citado no slide 4; adaptar esse trecho se o material mostrar outra ação. A orientação das experiências é aprofundada em Como funciona, seção 2; Clube e Zappy do Estúdio têm seus espaços nas seções 1 e 3. Dúvidas 8 explica como pedir ajuda à equipe. **CTA:** link da bio. O resultado ilustrado não garante que toda criança resolva toda dúvida sozinha.
 
 ### F06 · O personagem que ele desenhou pode entrar no jogo · 16/10
 
@@ -119,7 +135,7 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 >
 > O teste também vale para o desenho. Se o personagem some no cenário, dá para voltar ao Pinta, trocar a cor e testar de novo.
 >
-> O Pinta e o Estúdio ficam livres para ele no posto Construtor, depois do curso de entrada concluído e publicado no Mural. Antes disso, cada aula traz os recursos dela.
+> O Pinta e o Estúdio ficam livres para ele no posto Construtor, depois de concluir o curso de entrada e publicar o projeto no Mural. Antes disso, cada aula traz os recursos dela.
 >
 > No link da bio, você conhece esse caminho. Mostre ao seu filho e escute qual personagem ele colocaria num jogo.
 
@@ -134,6 +150,8 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 > Para quem gosta de inventar personagens, essa passagem dá um motivo para aprender a programar. O personagem imaginado ganha movimento numa partida que outra pessoa pode jogar.
 >
 > O Pinta e o Estúdio livres abrem no posto Construtor da Jornada, depois que ele conclui o curso de entrada e publica o jogo no Mural. Antes disso, ele usa os recursos preparados em cada aula. No link da bio, você conhece esse caminho e pode mostrar ao seu filho. Talvez ele já tenha um personagem esperando para entrar num jogo.
+
+**Disponibilidade:** conferir Estúdio livre e Pinta na [tabela única](01-destaques.md#disponibilidade-por-recurso) e aplicar a condição correspondente junto da demonstração e na legenda. Vale também para o carrossel alternativo.
 
 **CTA:** conhecer o caminho pelo link da bio. **Dependência:** captura real da passagem entre as ferramentas, numa conta com acesso adequado. Não apresentar essa possibilidade como disponível a todo assinante desde o primeiro acesso.
 
@@ -157,7 +175,7 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 **Slide 5. Título:** Depois da aparência, vem a regra que faz o personagem agir
 
-> A Comunidade reúne desenho digital e programação de jogos. O uso livre do Pinta começa no posto Construtor, depois do curso de entrada concluído e publicado no Mural. No link da bio, você conhece esse caminho e pode conversar com seu filho sobre o que ele gostaria de criar.
+> A Comunidade reúne desenho digital e programação de jogos. O uso livre do Pinta começa no posto Construtor, depois de concluir o curso de entrada e publicar o projeto no Mural. No link da bio, você conhece esse caminho e pode conversar com seu filho sobre o que ele gostaria de criar.
 
 **Legenda da alternativa:**
 
@@ -171,45 +189,47 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 **Imagem da alternativa:** versões reais da equipe, identificadas como demonstração. Esta peça não anuncia uma transferência que não foi mostrada. S06 continua sendo Sobre nós, como previsto no calendário.
 
-### F07 · Cada curso entrega ferramentas novas · 19/10
+### F07 · O que ele aprende pode entrar em outro jogo · 19/10
 
-**Carrossel de seis slides. Objetivo:** mostrar que cada curso ensina um conjunto de blocos e depois o entrega ao Estúdio da criança, para ela usar nas próprias ideias. É a peça dona da caixa de ferramentas que cresce.
+**Carrossel de seis slides. Objetivo:** mostrar como os comandos aprendidos ficam disponíveis para criações próprias, distinguindo aquisição de comandos e prática dos já conhecidos. Usar um exemplo real de movimento do começo ao fim.
 
-**Slide 1. Título:** Cada curso que seu filho termina deixa ferramentas novas no Estúdio dele
+**Slide 1. Título:** Um movimento aprendido na aula pode entrar numa ideia dele
 
-> Primeiro ele aprende a usar um bloco numa aula. Depois, esse bloco passa a ser dele, para criar o jogo que quiser.
+> Seu filho aprendeu a fazer um personagem andar. No Estúdio livre, pode usar esse comando em outro jogo: escolher um novo personagem, decidir o caminho e testar a brincadeira que imaginou.
 
-**Slide 2. Título:** Na aula, ele aprende a ferramenta num jogo guiado
+**Slide 2. Título:** Primeiro, ele entende o que o comando faz
 
-> Cada curso ensina um conjunto de blocos: fazer o personagem andar, bater num obstáculo, contar pontos. Ele usa cada um com a explicação ao lado, até ver funcionando.
+> Na aula, a explicação mostra como ligar uma tecla ao movimento. Ele monta a regra, aperta a tecla e confere se o personagem andou. Assim, conhece a instrução pelo efeito que consegue observar.
 
-**Slide 3. Título:** Curso concluído e jogo publicado, os blocos vão para a caixa dele
+**Slide 3. Título:** O curso define quais comandos ele conquista
 
-> Quando termina o curso e publica o jogo no Mural, o Estúdio dele recebe os blocos que aprendeu. Uma comemoração mostra o que chegou de novo.
+> Cada curso tem um conjunto de comandos. Nos cursos da sequência da Jornada, ele os conquista ao concluir as aulas e publicar o projeto no Mural. Se algum comando ainda não estava na caixa dele, aparece como novidade.
 
-**Slide 4. Título:** A caixa cresce a cada curso, sem perder o que ele já ganhou
+**Slide 4. Título:** Outro jogo também pode ensinar a usar melhor o que ele já conhece
 
-> Os blocos se somam, curso após curso. Em Minhas ferramentas, no perfil, ele vê tudo o que já conquistou, organizado em gavetas. O uso das ferramentas acompanha o período da assinatura.
+> Alguns cursos apresentam comandos novos; outros retomam os mesmos comandos em outra construção. Usar o movimento num caminho com obstáculos, por exemplo, dá outra situação para testar. A prática também faz parte do percurso.
 
-**Slide 5. Título:** Com as ferramentas dele, a ideia vira um jogo próprio
+**Slide 5. Título:** Os comandos podem se combinar numa criação própria
 
-> No Estúdio, ele junta o que aprendeu em cursos diferentes: o movimento de um, a pontuação de outro. O jogo que sai dali é ideia dele, e é esse que ele vai querer mostrar a você.
+> Em Minhas ferramentas, ele vê os recursos que conquistou. No Estúdio livre, pode juntar comandos de cursos diferentes e testar o que acontece. As ferramentas permanecem disponíveis durante o período de acesso.
 
-**Slide 6. Título:** O curso de entrada já abre o Estúdio livre
+**Slide 6. Título:** A criação livre começa depois do curso de entrada e da publicação
 
-> Com o curso de entrada concluído e o jogo publicado, ele chega ao posto Construtor, com o Estúdio livre e o Pinta. No destaque Ferramentas, você vê o que ele faz em cada uma.
+> Depois de concluir o curso de entrada e publicar o projeto, ele chega ao posto Construtor e libera o Estúdio livre e o Pinta. No destaque Como funciona, na seção As ferramentas, veja exemplos do que pode fazer com eles.
 
 **Legenda:**
 
-> Seu filho aprende uma ferramenta numa aula e, depois, ela passa a ser dele.
+> A mesma regra de movimento pode servir a jogos diferentes. Seu filho aprende a montá-la numa aula e depois pode experimentar onde ela cabe numa ideia própria.
 >
-> Cada curso ensina um conjunto de blocos com um jogo guiado. Ao concluir o curso e publicar o jogo no Mural, esses blocos entram no Estúdio dele, com uma comemoração do que chegou de novo. Curso após curso, a caixa de ferramentas cresce, e o que ele já ganhou continua lá durante a assinatura.
+> Cada curso prevê os comandos que ele conquista. Nos cursos da sequência da Jornada, é preciso concluir as aulas e publicar o projeto no Mural. Cursos bônus e extras liberam seus comandos pela conclusão, sem exigir a publicação para isso. Eles também podem retomar comandos que já estavam disponíveis.
 >
-> A gente organizou assim de propósito. Um bloco que ele ainda não sabe usar é só mais um item na tela. Um bloco que ele já fez funcionar numa aula vira ideia: ele sabe o que esperar quando encaixar.
+> Quando aparece um comando que ele ainda não tinha, a caixa ganha uma novidade. Quando ele já conhecia todos, o curso oferece outra construção para praticar. Por isso, concluir um curso nem sempre significa receber comandos inéditos.
 >
-> No Estúdio livre, que abre no posto Construtor depois do curso de entrada concluído e publicado, ele junta essas ferramentas para criar o jogo que imaginou. No destaque Ferramentas, você vê o que ele faz em cada uma.
+> O Estúdio livre abre depois do curso obrigatório de entrada concluído e do projeto publicado. Ali ele combina os recursos conquistados durante o período de acesso: muda um movimento, experimenta um caminho e joga para conferir. Você pode pedir que mostre o que aproveitou da aula e o que resolveu mudar.
+>
+> No destaque Como funciona, na seção As ferramentas, veja essa criação acontecendo e as condições de acesso.
 
-**Imagem:** Estúdio de uma conta demonstrativa antes e depois de concluir um curso, com a comemoração real da ferramenta nova e a tela Minhas ferramentas com as gavetas. Os blocos citados no slide 2 precisam corresponder a cursos publicados; trocar os exemplos se a captura mostrar outros. **CTA:** destaque Ferramentas, cujos stories levam ao L2. Não sugerir que todo curso traz bloco inédito nem que o Estúdio livre abre no primeiro dia.
+**Imagem:** usar comandos e cursos realmente disponíveis, com aquisição conferida no cadastro do curso. Uma comemoração de recurso novo só aparece quando o comando for inédito para a conta demonstrativa. Trocar o exemplo de movimento se a captura exigir outra mecânica. **CTA:** destaque Como funciona, seção 3 · As ferramentas, cujos stories levam ao L2. Conferir também a [disponibilidade do Estúdio livre](01-destaques.md#disponibilidade-por-recurso).
 
 ### F08 · Pensa e Zappy: da ideia ao plano, com ele decidindo · 21/10
 
@@ -229,6 +249,8 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 >
 > Pensa e Zappy abrem no posto Inventor e usam créditos da família. No link da bio, você conhece a Comunidade dos Criadores.
 
+**Disponibilidade na própria peça:** conferir Pensa e Zappy na [tabela única](01-destaques.md#disponibilidade-por-recurso). Acrescentar à fala final e à legenda a frase correspondente ao percurso alcançável ou incompleto. O nome Inventor e o limite de créditos continuam na peça; eles não substituem a informação sobre os cursos publicados. Sem a conferência, manter o vídeo em produção.
+
 **Cena:** conta demonstrativa no posto Inventor ou acima: conversa real no Pensa até a lista de tarefas e uma dúvida real com o Zappy no Estúdio, seguida do ajuste feito à mão e do teste. Se o plano gravado tiver outro tema, trocar o gato na fala e na legenda. Não mostrar a inteligência artificial alterando blocos. Identificar “Demonstração da equipe”.
 
 **Legenda:**
@@ -247,7 +269,7 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 **Carrossel de sete slides. Objetivo:** mostrar, posto a posto, quais ferramentas abrem e o que ainda está em preparação, para a família escolher sabendo o que vem. É a peça dona dos postos no feed.
 
-**Slide 1. Título:** Cada posto da Jornada abre ferramentas novas para seu filho
+**Slide 1. Título:** O que seu filho libera em cada etapa da Jornada
 
 > A assinatura dá acesso à plataforma. As ferramentas de criação livre abrem conforme ele conclui cursos e publica os jogos no Mural.
 
@@ -273,19 +295,21 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 **Slide 7. Título:** Parte do caminho ainda está em preparação
 
-> A Comunidade está em lançamento e recebe cursos novos ao longo do tempo. Mensal ou anual, as etapas são as mesmas. No destaque Ferramentas, você vê cada uma por dentro e o posto em que ela abre.
+> A Comunidade está em lançamento e recebe cursos novos ao longo do tempo. Mensal ou anual, as etapas são as mesmas. No destaque Como funciona, na seção As ferramentas, você vê cada uma por dentro e o posto em que ela abre.
 
 **Legenda:**
 
-> As ferramentas de criação abrem conforme seu filho avança, curso a curso.
+> As ferramentas de criação abrem conforme seu filho avança na Jornada.
 >
 > A Jornada do Criador tem oito postos. Na Faísca, ele usa o Estúdio dentro das aulas. Com o curso de entrada concluído e o jogo publicado no Mural, chega ao Construtor e abre o Estúdio livre e o Pinta. No Inventor, entram o Pensa e o Zappy, com créditos de inteligência artificial. No Explorador de Mundos, o Molda e a criação em 3D. Mais adiante, o código: ao lado dos blocos no Gênio da Criação e puro na Lenda.
 >
 > A gente organizou assim para que cada ferramenta chegue depois de ele aprender a usar. Quando o Estúdio livre abre, ele já montou e publicou um jogo. Quando o Pensa chega, já tem repertório para planejar.
 >
-> A Comunidade está em lançamento, e parte dos cursos que levam aos próximos postos ainda está em preparação. Os planos mensal e anual seguem o mesmo caminho, e nenhum deles abre as ferramentas só pela assinatura. No destaque Ferramentas, você vê cada uma por dentro e o posto em que ela abre.
+> A Comunidade está em lançamento, e parte dos cursos que levam aos próximos postos ainda está em preparação. Os planos mensal e anual seguem o mesmo caminho, e nenhum deles abre as ferramentas só pela assinatura. No destaque Como funciona, na seção As ferramentas, você vê cada uma por dentro e o posto em que ela abre.
 
-**Imagem:** Mapa da Jornada com os postos e as recompensas reais, numa conta de aluno demonstrativa; ferramentas no estado correto para cada posto. **CTA:** destaque Ferramentas, cujos stories levam ao L2. Se o catálogo ou os requisitos mudarem antes de produzir, atualizar os slides correspondentes e a legenda. Não usar uma conta administrativa como prova de acesso inicial.
+**Disponibilidade junto de cada recurso:** conferir a [tabela única](01-destaques.md#disponibilidade-por-recurso) e acrescentar a frase correspondente em cada slide de acesso: Estúdio/Pinta no 3, Pensa/Zappy no 4, Molda no 5 e modos de código no 6. Dividir uma tela quando necessário. Na legenda, colocar a condição ao lado do trecho de cada recurso. O aviso do slide 7 não substitui essas informações. Sem a conferência, manter o carrossel em produção.
+
+**Imagem:** Mapa da Jornada com os postos e as recompensas reais, numa conta de aluno demonstrativa; ferramentas no estado correto para cada posto. **CTA:** destaque Como funciona, seção 3 · As ferramentas, cujos stories levam ao L2. Se o catálogo ou os requisitos mudarem antes de produzir, atualizar os slides correspondentes e a legenda. Não usar uma conta administrativa como prova de acesso inicial.
 
 ### F10 · Uma mudança na velocidade, outra partida · 26/10
 
@@ -343,9 +367,9 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 > Aula ao vivo tem horário marcado e alguém explicando na hora. Aula gravada deixa pausar, praticar e retomar no horário combinado. Pense também no computador disponível e no tempo que vocês conseguem reservar.
 
-**Slide 4. Título:** Uma dúvida no meio da atividade precisa de um caminho
+**Slide 4. Título:** A própria atividade precisa mostrar o próximo passo
 
-> Veja se há explicação para rever, material de consulta e contato com a equipe. Pergunte como esse contato funciona e em quanto tempo a resposta costuma chegar.
+> Observe como a aula explica a tarefa, oferece referências para conferir a montagem e mostra o que falta para seguir. Se houver verificação, veja quais objetivos ela confere. Assim, você conhece os caminhos que seu filho pode consultar durante uma tentativa.
 
 **Slide 5. Título:** Num jogo de curso, uma parte vem pronta e outra o aluno constrói
 
@@ -367,7 +391,7 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 > Ferramenta gratuita, curso gravado e aula ao vivo atendem necessidades diferentes. A comparação fica mais justa quando você olha a atividade.
 >
-> O nome de uma linguagem ou a imagem de um jogo pronto contam pouco sobre a aula. Para saber como seria para seu filho, veja o que ele recebe preparado, o que aprende a montar e onde encontra orientação quando trava. Some a isso o horário e a companhia que vocês conseguem oferecer no começo.
+> O nome de uma linguagem ou a imagem de um jogo pronto contam pouco sobre a aula. Para saber como seria para seu filho, veja o que ele recebe preparado, o que aprende a montar e como a própria atividade mostra o próximo passo quando ele trava. Some a isso o horário e a companhia que vocês conseguem oferecer no começo.
 >
 > Vale olhar também para depois. Pergunte com que ferramenta ele fica, onde os projetos ficam guardados e onde ele pode continuar criando quando a última aula terminar.
 >
@@ -413,28 +437,30 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 ## 3. Stories e formação dos destaques
 
-Três dias de stories por semana, nos mesmos dias do feed. Até 21/10, os dias de stories formam os sete destaques; Dúvidas recebe quatro blocos ao longo do mês. O volume varia conforme o assunto. Uma resposta longa pode ocupar duas telas. Stickers são aplicados no Instagram.
+Três dias de stories por semana, nos mesmos dias do feed. Até 21/10, os dias de stories formam os seis destaques: Como funciona recebe suas três seções em 05, 12 e 19/10, e Dúvidas recebe três publicações ao longo do mês. Cada seção de Como funciona começa com uma tela de título, para quem avança saber onde está. O volume varia conforme o assunto. Uma resposta longa pode ocupar duas telas. Stickers são aplicados no Instagram.
 
 | Data | Sequência | Fonte única do texto | Volume inicial | Ação e onde salvar |
 | --- | --- | --- | --- | --- |
-| 05/10 | S01 · Como funciona | [Destaques: Como funciona](01-destaques.md#como-funciona) | 7 telas | L1; salvar em Como funciona |
+| 05/10 | S01 · Como funciona, seção 1 · A Jornada | [Destaques: Como funciona](01-destaques.md#como-funciona), seção 1 | Tela de título + 7 telas | L1; salvar em Como funciona |
 | 07/10 | S02 · Alunos | [Destaques: Alunos](01-destaques.md#alunos) | Seleção curta, por exemplo 4–6 clipes | Mostrar uso real; salvar em Alunos |
 | 09/10 | S03 · Dúvidas, bloco 1 | [Destaques: Dúvidas](01-destaques.md#dúvidas), primeiro bloco | 6 respostas | Salvar em Dúvidas |
-| 12/10 | S04 · Avaliações | [Destaques: Avaliações](01-destaques.md#avaliações) | 1–2 telas por relato selecionado | Salvar em Avaliações |
-| 14/10 | S05 · Ferramentas | [Destaques: Ferramentas](01-destaques.md#ferramentas) | 7 telas (T1–T7) | L2; salvar em Ferramentas, com a capa nova |
+| 12/10 | S04 · Como funciona, seção 2 · Como é cada aula | [Destaques: Como funciona](01-destaques.md#como-funciona), seção 2 | Tela de título + 6 telas | L1; salvar em Como funciona, depois da seção 1 |
+| 14/10 | S05 · Avaliações | [Destaques: Avaliações](01-destaques.md#avaliações) | 1–2 telas por relato selecionado | Salvar em Avaliações |
 | 16/10 | S06 · Sobre nós | [Destaques: Sobre nós](01-destaques.md#sobre-nós) | 4 telas | L0; salvar em Sobre nós |
-| 19/10 | S07 · Dúvidas, bloco 2 | [Destaques: Dúvidas](01-destaques.md#dúvidas), segundo bloco | 7 respostas | Salvar em Dúvidas |
-| 21/10 | S08 · Cursos | [Destaques: Cursos](01-destaques.md#cursos) | 5 telas (C1–C5) + P01–P03 | L1; salvar em Cursos, com a capa que era de Projetos |
-| 23/10 | S09 · Dúvidas, bloco 3 | [Destaques: Dúvidas](01-destaques.md#dúvidas), terceiro bloco | 4 respostas | L5 nas telas indicadas; salvar em Dúvidas |
+| 19/10 | S07 · Como funciona, seção 3 · As ferramentas | [Destaques: Como funciona](01-destaques.md#como-funciona), seção 3 | Tela de título + 7 telas, conforme a seção no 01 | L2; salvar em Como funciona, depois da seção 2 |
+| 21/10 | S08 · Projetos | [Destaques: Projetos](01-destaques.md#projetos), P01–P03 | 3 telas (P01–P03) por projeto disponível | L1; salvar em Projetos |
+| 23/10 | S09 · Dúvidas, bloco 2 | [Destaques: Dúvidas](01-destaques.md#dúvidas), segundo bloco | 7 respostas | Salvar em Dúvidas |
 | 26/10 | S10 · Qual velocidade vocês escolheriam | Roteiro S10 abaixo | 4 telas | Enquete e resultado; sequência complementar |
-| 28/10 | S11 · Dúvidas, bloco 4 | [Destaques: Dúvidas](01-destaques.md#dúvidas), quarto bloco | 3 respostas | Salvar em Dúvidas |
+| 28/10 | S11 · Dúvidas, blocos 3 e 4 | [Destaques: Dúvidas](01-destaques.md#dúvidas), terceiro e quarto blocos | 4 + 3 respostas | L5 nas telas indicadas; salvar em Dúvidas |
 | 30/10 | S12 · Bastidor de Helena e Júlio e os planos | Roteiro S12 abaixo | 4 telas | L5, utm_content=s12_planos; sequência complementar |
 
-S02 e S04 dependem dos arquivos autorizados selecionados. Se faltarem, registrar a pendência e remanejar o bloco neste calendário. Não criar destaque vazio nem transformar projetos prontos em cenas de aula. A apresentação de Sobre nós entra na montagem inicial; S12 aprofunda uma decisão de preparação de aula, com Helena e Júlio.
+S02 e S05 dependem dos arquivos autorizados selecionados. Se faltarem, registrar a pendência e remanejar o bloco neste calendário. Não criar destaque vazio nem transformar projetos prontos em cenas de aula. A apresentação de Sobre nós entra na montagem inicial; S12 aprofunda uma decisão de preparação de aula, com Helena e Júlio.
 
-As 20 respostas de Dúvidas estão divididas em 6 + 7 + 4 + 3. Os demais textos de destaques ficam somente no documento 01, para que uma revisão não gere duas copies diferentes. Usar os [links prontos](apoio/links-e-publicacao.md#links-prontos) conforme a sequência: L1 para Como funciona e Cursos, L2 para Ferramentas e L5 para os planos.
+Projetos é alimentado a cada lançamento: cada curso novo publicado ganha suas telas P01–P03 e entra no destaque na semana em que for lançado, mesmo fora deste calendário. Isso mostra à família que a plataforma recebe projetos novos ao longo do tempo.
 
-As falas abaixo são a copy completa das sequências complementares. Em vídeo, usar legendas sincronizadas; em cards, dividir o texto quando a leitura pedir. Não substituir a explicação por uma lista de palavras. S10 e S12 não entram automaticamente nos destaques. O antigo S08 (uma dúvida durante a construção) saiu do calendário: o caminho do erro ao pedido de ajuda passou para Cursos, no documento 01.
+As 20 respostas de Dúvidas estão divididas em 6 + 7 + 4 + 3 e saem em 09/10, 23/10 e 28/10 (os blocos 3 e 4 juntos). Os demais textos de destaques ficam somente no documento 01, para que uma revisão não gere duas copies diferentes. Usar os [links prontos](apoio/links-e-publicacao.md#links-prontos) conforme a sequência: L1 para as seções 1 e 2 de Como funciona e para Projetos, L2 para a seção 3 · As ferramentas, L0 para Sobre nós e L5 para os planos.
+
+As falas abaixo são a copy completa das sequências complementares. Em vídeo, usar legendas sincronizadas; em cards, dividir o texto quando a leitura pedir. Não substituir a explicação por uma lista de palavras. S10 e S12 não entram automaticamente nos destaques. O caminho para continuar uma montagem está em F05; a sequência da aula, na seção 2 de Como funciona; o pedido de ajuda à equipe, em Dúvidas 8.
 
 ### S10 · Qual velocidade vocês escolheriam?
 
@@ -474,7 +500,7 @@ A votação abre uma conversa sobre escolha. Não anunciar uma resposta certa ne
 
 **Story 4.** Oferta e condições disponíveis para consulta.
 
-> Na Comunidade dos Criadores, cada curso ensina com um jogo e entrega ferramentas novas. Os planos estão no botão. Confira o que já está publicado, a renovação e a garantia de sete dias da primeira contratação.
+> Na Comunidade dos Criadores, seu filho aprende com projetos guiados e, conforme avança, pode usar o que aprendeu nas próprias ideias. No botão, confira os cursos publicados, os planos, a renovação e a garantia de sete dias da primeira contratação.
 
 **Sticker:** **Conhecer os planos** → L5, utm_content=s12_planos. Não sugerir que A Chave do Farol está incluída na assinatura sem conferir o catálogo.
 
@@ -482,10 +508,10 @@ A votação abre uma conversa sobre escolha. Não anunciar uma resposta certa ne
 
 | Lote | Captura e preparação | Peças atendidas |
 | --- | --- | --- |
-| A · Aula e cursos | Uma aula de movimento por dentro: jogo pronto, experiência, montagem com o vídeo ao lado, teste, Como fazer, “Preciso de ajuda” e Recados; projetos dos cursos | F01, F05; S01, S08 |
-| B · Alunos e famílias | Selecionar cenas reais de aula e relatos literais, conferir contexto e autorização | F02; S02, S04 |
-| C · Rotina e condições | Computador, área do responsável, condições e controles; cartões de critérios | F03, F11; S03, S07, S09, S11 |
-| D · Ferramentas e Jornada | Conta demonstrativa com posto alto (Explorador de Mundos ou acima), para mostrar Pensa, Zappy e Molda no estado real; Estúdio antes e depois de um curso, comemoração da ferramenta nova e Minhas ferramentas; Pinta → Estúdio; Mapa da Jornada com os postos; capturas do Pensa, do Zappy e do Molda; capa nova de Ferramentas no padrão das demais | F06, F07, F08, F09; S05 |
+| A · Aula e projetos | Para F05, a mesma tentativa de movimento do início ao teste: tarefa, comparação com o vídeo, tutorial, objetivos da etapa quando houver verificação, ajuste e resultado. Para S04, a sequência real da aula de clique no esconderijo, incluindo a experiência. Faixa do que falta e próxima aula; telas P01–P03 de cada curso lançado | F01, F05; S01, S04, S08 |
+| B · Alunos e famílias | Selecionar cenas reais de aula e relatos literais, conferir contexto e autorização | F02; S02, S05 |
+| C · Rotina e condições | Computador, área do responsável, condições e controles; cartões de critérios | F03, F11; S03, S09, S11 |
+| D · Ferramentas e Jornada | Conta demonstrativa com posto alto (Explorador de Mundos ou acima), para mostrar Pensa, Zappy e Molda no estado real; Estúdio antes e depois de um curso, comemoração da ferramenta nova e Minhas ferramentas; Pinta → Estúdio; Mapa da Jornada com os postos; capturas do Pensa, do Zappy e do Molda; disponibilidade de cada recurso conferida no catálogo antes de publicar | F06, F07, F08, F09; S07 |
 | E · Criação que circula | Publicação no Mural, link aberto num aparelho compatível com os controles e cartão com QR (cortado se apontar para ambiente de teste); cartão do desafio do mês, jogos do desafio no Mural e Clube, sem nomes de outras crianças; jogo de obstáculos em duas velocidades no Estúdio livre | F04, F10, F12; S10 |
 | F · Fundadores e preparação | Casal, roteiro e experiência da chave no Farol | S06, S12 |
 

@@ -1,922 +1,1063 @@
-01-destaques.md:26
-Na Comunidade dos Criadores, seu filho aprende programação criando jogos. Vou mostrar um exemplo: neste jogo, o jogador procura personagens escondidos e clica para encontrá-los. Nas aulas, seu filho aprende a fazer o personagem aparecer quando recebe esse clique.
+01-destaques.md:36
+Como funciona
+
+1 · A Jornada
+2 · Como é cada aula
+3 · As ferramentas
 
 ---
 
-01-destaques.md:32
-Ele começa jogando uma versão pronta, para conhecer o que vai construir. Os desenhos e o cenário já estão preparados. Assim, pode concentrar a atenção na parte que estamos ensinando: as instruções que fazem o jogo responder ao jogador.
+01-destaques.md:46
+Nas nossas aulas, seu filho aprende programação criando jogos. Ele começa por projetos guiados, em que cada aula ensina uma parte do jogo, e aos poucos passa a usar o que aprendeu nas ideias dele.
 
 ---
 
-01-destaques.md:38
-Antes de montar essa regra, ele experimenta o que acontece com ela ligada e desligada. Clica no personagem e compara o resultado. Isso dá um sentido para o comando que vai aprender: fazer o personagem aparecer quando alguém clica nele.
+01-destaques.md:52
+As aulas são gravadas e feitas no computador, com internet, mouse e teclado. Vocês combinam o horário. Seu filho assiste a um passo, pausa para fazer aquela parte e continua quando termina a montagem.
 
 ---
 
-01-destaques.md:44
-Depois, a aula mostra onde encontrar o comando e como encaixá-lo. Seu filho faz essa parte no próprio projeto e roda o jogo para conferir. Se o personagem não aparecer, ele tem o que investigar: voltar à explicação, comparar a montagem e tentar de novo.
+01-destaques.md:58
+A aula apresenta uma tarefa de cada vez e mostra como conferir o resultado. Seu filho faz aquela parte antes de seguir. Quando termina, a trilha indica a próxima aula.
 
 ---
 
-01-destaques.md:50
-Pode acontecer de ele esquecer um passo ou precisar de mais tempo para fazê-lo. Por isso, a explicação fica junto da atividade, e ele pode voltar ao trecho que precisa. Se a dúvida continuar, pode mandar uma mensagem para a equipe contando onde travou.
+01-destaques.md:64
+O primeiro curso é o de entrada. Quando ele conclui esse curso e publica o projeto, chega ao posto Construtor e duas ferramentas se abrem: o Estúdio livre, para começar um jogo do zero, e o Pinta, para desenhar os próprios personagens.
 
 ---
 
-01-destaques.md:56
-As aulas são gravadas e feitas no computador. Vocês combinam um horário, e seu filho pode pausar para fazer uma parte antes de continuar. No link, você conhece a aula por dentro e pode mostrar a proposta a ele para conversarem sobre o que gostaria de aprender a criar.
+01-destaques.md:70
+Cada curso seguinte traz outro jogo para construir. Os comandos que ele conquista ficam reunidos no Estúdio, para combinar nas próprias criações. Ele pode aproveitar um movimento que aprendeu e experimentar outra brincadeira com ele.
 
 ---
 
-01-destaques.md:68
-Neste jogo, os personagens estão escondidos pelo cenário. O jogador precisa procurar e clicar para encontrá-los. Seu filho aprende a programar o que acontece nesse momento: o personagem aparece e o jogo registra mais uma descoberta.
+01-destaques.md:76
+O jogo publicado no Mural tem um link só dele, para vocês abrirem juntos ou mandarem a quem quiserem. Enquanto jogam, peça que ele explique uma regra. No Clube, ele mostra as criações e conversa com outros criadores.
 
 ---
 
-01-destaques.md:74
-O cenário e os desenhos já vêm preparados, para ele começar pelas regras do jogo. A aula ensina a reconhecer o clique, mostrar o personagem e contar quantos foram encontrados. Depois de montar cada parte, ele joga para conferir se ela faz o que esperava.
+01-destaques.md:82
+Na área do responsável, você acompanha os cursos e as criações dele e pode receber um resumo da semana por e-mail. No link, veja uma aula por dentro e conheça o que ele pode começar a criar.
 
 ---
 
-01-destaques.md:80
-Você não precisa ensinar esses comandos para o seu filho. A aula explica a montagem, e ele pode rever um passo enquanto faz. Esse projeto está no curso Cadê Todo Mundo?, uma atividade extra da Comunidade dos Criadores. No link, você pode conhecer essa aula por dentro.
+01-destaques.md:92
+2 de 3 · Como é cada aula
+
+Acompanhe uma tarefa do começo ao teste.
 
 ---
 
-01-destaques.md:116
-Para crianças de 9 a 14 anos. Seu filho não precisa chegar sabendo programar, mas precisa conseguir ler as instruções e usar mouse e teclado para acompanhar as atividades.
-
-No começo, vale acompanhar a primeira aula com ele. Assim, você conhece o que está sendo pedido e percebe em quais momentos ele ainda precisa de companhia.
+01-destaques.md:100
+Um clique no esconderijo, e o personagem aparece. Antes de programar, seu filho joga essa versão pronta para saber aonde vai chegar. O jardim e os personagens vêm desenhados, e a atenção fica nas regras.
 
 ---
 
-01-destaques.md:122
-Não. As primeiras aulas ensinam desde o começo: onde encontrar um comando, como encaixá-lo e o que ele faz no jogo.
-
-Seu filho recebe um projeto com materiais preparados e aprende a construir uma parte de cada vez. Pode pausar a explicação para fazer o passo e, depois, jogar para conferir o resultado.
+01-destaques.md:106
+Em cada etapa, o Zappy, personagem da aula, diz o que fazer, e o botão “Ouvir” toca essa fala para quem prefere escutar.
 
 ---
 
-01-destaques.md:128
-Não. As aulas são gravadas. Vocês escolhem o horário, e seu filho pode pausar a explicação para fazer uma parte do jogo antes de continuar.
+01-destaques.md:112
+Um comando faz mais sentido depois que ele vê o efeito. Na experiência, clica com a reação desligada, depois ligada, e compara. Se empacar, clica em “Uma pista”, e “Conferir” diz se ele chegou lá.
 
-Se precisar rever onde um comando foi colocado, volta àquele trecho. E, quando uma dúvida continuar, pode escrever para a equipe pela plataforma. A resposta vem por mensagem, em outro momento.
+---
+
+01-destaques.md:118
+Agora ele monta essa reação no projeto, seguindo o vídeo passo a passo e pausando quando precisa. Depois, clica no esconderijo para conferir se o personagem aparece.
+
+---
+
+01-destaques.md:124
+Nas etapas com verificação, ele pode conferir os objetivos da montagem. A tela mostra o que já cumpriu e o que ainda falta, para ele voltar àquela parte e tentar novamente.
+
+---
+
+01-destaques.md:130
+Se o personagem não aparece, ele volta ao trecho do vídeo e compara a montagem. Depois de ajustar aquela parte, clica de novo no esconderijo e observa se o resultado mudou.
 
 ---
 
 01-destaques.md:134
-Não. Para fazer as aulas e criar os jogos, seu filho precisa de um computador com internet, navegador, mouse e teclado.
-
-Ele vai usar o mouse para montar comandos e o teclado nas atividades. Por isso, celular e tablet não são os aparelhos indicados para acompanhar o curso. Vale reservar o computador da família no horário que vocês combinarem.
-
----
-
-01-destaques.md:140
-Não. Vocês escolhem os dias e o tempo que cabe na rotina de casa. Seu filho pode fazer uma parte, conferir se o projeto ficou salvo e continuar em outro dia, durante o período de acesso.
-
-Antes de fechar, vale combinar com ele: deixar o trabalho guardado e saber qual parte quer retomar. Isso ajuda a dar continuidade à criação.
+A faixa no pé da aula mostra o que falta para seguir. Ao concluir, ele encontra a próxima aula na trilha. No link, acompanhe essa sequência por dentro.
 
 ---
 
 01-destaques.md:146
-Não. A gente ensina a programação nas aulas, mostrando como montar cada parte e o que observar no jogo.
+3 de 3 · As ferramentas
 
-Você pode ajudar a organizar o horário e conhecer os controles com seu filho no começo. Depois, pedir que ele mostre o que fez já abre uma conversa. Ele pode apontar o comando e jogar para explicar, enquanto você conhece a criação dele.
+Veja o que seu filho pode criar e quando cada recurso abre.
 
 ---
 
 01-destaques.md:154
-A aula mostra uma parte da construção, explica como fazê-la e o que seu filho deve observar quando testar. Ele acompanha esse passo no próprio projeto e pode voltar à explicação enquanto faz.
-
-Por exemplo: depois de montar a regra que revela um personagem, ele clica para conferir se o personagem aparece. A explicação fica ligada a algo que ele consegue fazer e observar.
+Seu filho quer que um personagem ande quando aperta uma tecla. No Estúdio, ele monta essa regra com blocos e joga para testar. Pode ajustar o movimento e comparar as versões.
 
 ---
 
 01-destaques.md:160
-Ele pode usar “Preciso de ajuda?” na aula e escrever o que tentou fazer e o que aconteceu. A conversa continua nos Recados, dentro da plataforma.
+Para um jogo de corrida, ele pode combinar um movimento que aprendeu com uma regra de pontuação. O Estúdio livre reúne os comandos que já conquistou, para usar e testar essas combinações.
 
-Se contar que o personagem não apareceu depois do clique, por exemplo, a equipe já sabe qual parte ele está tentando resolver. O atendimento é por mensagens; pode ser necessário esperar pela resposta.
-
----
-
-01-destaques.md:166
-Na sua área de responsável, você encontra as atividades e os projetos do seu filho. Esses registros ajudam a escolher uma criação para conhecer com ele.
-
-Peça que mostre uma parte que programou e explique o que acontece quando o jogo roda. Se mudou a pontuação, por exemplo, vocês podem jogar e conferir o placar juntos. Isso ajuda você a conhecer o que ele entendeu daquela regra.
+Esse uso livre abre depois de concluir o curso de entrada e publicar o projeto no Mural. É o posto Construtor. As ferramentas ficam disponíveis durante o período de acesso.
 
 ---
 
-01-destaques.md:172
-Não. Seu filho começa pelas aulas e pelos materiais daquela etapa. Para usar as ferramentas de criação livre, precisa cumprir os passos indicados na Jornada, que mostra o que já foi feito e o que falta.
+01-destaques.md:168
+No Pinta, ele desenha personagens, cenários e animações, e leva o desenho para o jogo no Estúdio. Se o personagem some no fundo, volta ao desenho, troca a cor e testa de novo.
 
-Algumas etapas ainda dependem de novos cursos serem publicados. E os recursos de inteligência artificial têm limites de uso. Por isso, confira o que já está disponível antes de escolher o plano.
-
----
-
-01-destaques.md:178
-Sim. Tanto o plano mensal quanto o anual permitem até dois perfis de criança. Cada filho guarda seus próprios projetos e continua do ponto em que parou, nos horários que vocês organizarem.
-
-As ferramentas são liberadas conforme o avanço de cada um. Se usarem recursos de inteligência artificial, o limite de uso é compartilhado pelos dois perfis.
+O Pinta abre junto do Estúdio livre, no posto Construtor, depois do curso de entrada concluído e do projeto publicado.
 
 ---
 
-01-destaques.md:186
-Você pode escolher o plano mensal ou o anual. Nos dois, seu filho tem acesso aos cursos publicados, aos que forem acrescentados durante a assinatura e às ferramentas conforme avança na Jornada.
+01-destaques.md:176
+Seu filho imaginou um jogo, mas ainda precisa decidir o objetivo e os controles. No Pensa, uma conversa com inteligência artificial ajuda a organizar essas escolhas em tarefas. Quem decide é ele, e a lista mostra por onde começar.
 
-A diferença está no período e no pagamento. No botão, você encontra o valor total de cada opção, as formas de pagar e como funciona a renovação, antes de contratar.
+O Pensa faz parte do posto Inventor e usa créditos de inteligência artificial da família. Para chegar a esse posto, ele conclui os cursos exigidos e publica os projetos.
 
 ---
 
-01-destaques.md:194
-No cartão, sim. O plano mensal renova a cada mês, e o anual renova a cada ano. Se não quiser continuar, você pode cancelar a próxima renovação na área do responsável.
+01-destaques.md:184
+Ele aperta a tecla, mas o personagem fica parado. No Estúdio, pode contar ao Zappy o que tentou. A inteligência artificial sugere o que conferir; seu filho faz o ajuste e testa para ver se resolveu.
 
-No plano anual pago por Pix, não há renovação automática. Quando os 12 meses terminarem, você precisa contratar novamente se quiser manter o acesso.
+Essa ajuda abre no posto Inventor e usa os mesmos créditos da família que o Pensa.
+
+---
+
+01-destaques.md:192
+No Molda, ele cria modelos em três dimensões. Pode girar a visão para ver o objeto de outro lado, ajustar a forma e conferir de novo. Esses modelos podem fazer parte dos jogos 3D que constrói no Estúdio.
+
+O Molda pertence ao posto Explorador de Mundos. Para chegar até ele, seu filho conclui e publica os projetos das etapas anteriores.
 
 ---
 
 01-destaques.md:200
-Sim. Você pode cancelar a próxima renovação em “Minhas compras”, na área do responsável. Seu filho continua com acesso até o fim do período que já foi pago.
-
-Cancelar a renovação impede a próxima cobrança. Se o que você quer é pedir o dinheiro de volta dentro da garantia, esse pedido é feito separadamente pelo canal indicado nos termos.
+Antes de escolher a assinatura, veja os cursos publicados e as ferramentas que seu filho consegue alcançar com eles. Parte do percurso ainda está em preparação. No link, conheça os recursos e mostre a ele o que dá para criar.
 
 ---
 
-01-destaques.md:206
-Na primeira contratação, você tem sete dias, a partir da compra, para pedir o reembolso integral. Nesse período, vocês podem abrir as aulas disponíveis e observar como seu filho acompanha a atividade.
-
-Se decidirem pedir o reembolso, use o canal indicado nos termos da assinatura. Cancelar a próxima renovação, sozinho, não envia esse pedido. O prazo de sete dias também vale para uma nova contratação anual por Pix; as renovações automáticas no cartão seguem os termos.
+01-destaques.md:231
+Três personagens se escondem pelo jardim. O jogador clica nos esconderijos até encontrar todos. No curso Cadê Todo Mundo?, seu filho aprende a programar essa brincadeira: fazer o personagem aparecer e contar quantos já foram encontrados.
 
 ---
 
-01-destaques.md:216
-Não de início. Essa opção começa desligada, e você decide se quer ativá-la na área da família.
-
-Vale conversar com seu filho sobre o que ele gostaria de mostrar antes de mudar a configuração. Essa escolha controla a visibilidade do perfil. Os jogos publicados por link têm outra configuração: esconder o perfil não torna esses links privados.
+01-destaques.md:237
+O jardim e os personagens já vêm desenhados, para ele se concentrar nas regras. A aula mostra como fazer o clique revelar um personagem. Ele pausa para montar, clica para testar e depois aprende a contar os encontrados.
 
 ---
 
-01-destaques.md:222
-Qualquer pessoa que tenha o link pode abrir o jogo em um aparelho compatível com os controles dele. O link é público, inclusive quando o perfil do seu filho está oculto para os colegas.
-
-Por isso, combinem quais projetos publicar e com quem compartilhar. Se a ideia for mostrar um jogo para alguém da família, vale conversar sobre essa diferença antes de enviar.
+01-destaques.md:243
+Esse curso é extra da assinatura, disponível em qualquer etapa. Ele permite praticar essa construção, mas não conta para mudar de posto. No fim, seu filho pode chamar você para procurar os personagens no jogo que montou.
 
 ---
 
-01-destaques.md:228
-Ele pode usar o caminho de denúncia do Clube para avisar a equipe. Conheçam juntos onde fazer isso e combinem que ele também procure você se alguma conversa o incomodar.
+01-destaques.md:279
+Para crianças de 9 a 14 anos. As aulas são em português, e seu filho precisa ler as instruções e usar mouse e teclado, porque é assim que acompanha a aula e monta o jogo. Saber programar não está entre os requisitos.
 
-O Clube tem regras de convivência, mas esses recursos não substituem a conversa em casa. Se acontecer algo, você pode ouvir o que houve e ajudar seu filho a relatar a situação.
-
----
-
-01-destaques.md:240
-Esta é a experiência de uma das famílias que participou das nossas aulas. Ela autorizou a gente a compartilhar esse relato com você.
+Na primeira aula, vale sentar junto. Você vê o que a atividade pede e percebe onde ele ainda quer companhia, como achar um comando na tela ou entender uma instrução mais longa.
 
 ---
 
-01-destaques.md:254
-Nós somos Helena e Júlio. Somos desenvolvedores de sistemas e criamos a Comunidade dos Criadores a partir de uma experiência em casa: fazer jogos com o nosso filho.
+01-destaques.md:285
+Serve. As primeiras aulas ensinam desde o começo: onde fica um comando, como encaixá-lo e o que esse comando muda no jogo.
+
+O cenário e os personagens já vêm preparados, e ele constrói uma regra de cada vez. Assiste ao passo, monta no projeto e joga para conferir. Quando o personagem responde do jeito que ele esperava, aquela parte do jogo já é dele.
 
 ---
 
-01-destaques.md:260
-Ele passou a chamar a gente para testar uma regra, explicar uma escolha e imaginar o que mudaria na próxima versão. A gente quis preparar esse começo para outras crianças também: aulas em português, que expliquem cada passo e deem espaço para testar o que estão construindo.
+01-destaques.md:291
+Não, as aulas são gravadas. O horário é o que vocês combinarem, e ele acompanha a explicação no ritmo da montagem. O vídeo mostra um passo em alguns segundos; achar o bloco pode levar mais. Ele pausa o vídeo, faz o passo e continua.
+
+Se perdeu um detalhe, revê só aquele trecho.
 
 ---
 
-01-destaques.md:266
-Quando preparamos uma aula, escolhemos uma parte do jogo que seu filho vai aprender a fazer. Se a tarefa é revelar um personagem com um clique, precisamos explicar qual comando usar, como montá-lo e como conferir se funcionou. É essa ligação entre explicação e prática que você vê nas nossas aulas.
+01-destaques.md:297
+Não. Para fazer as aulas e criar os jogos, ele precisa de um computador com internet, navegador, mouse e teclado.
+
+As aulas foram pensadas para esses controles: ele usa o mouse para montar os comandos e o teclado em várias tarefas. Por isso, celular e tablet não são os aparelhos indicados. Vale reservar o computador da família no horário que vocês combinarem.
 
 ---
 
-01-destaques.md:272
-A gente quer que você também possa conhecer o que seu filho está criando. Ele pode chamar você para jogar, mostrar uma mudança e contar por que fez daquele jeito. No link, mostramos uma aula por dentro para vocês conhecerem esse começo e conversarem sobre a proposta.
+01-destaques.md:303
+Não. Vocês escolhem os dias e o tempo que cabem na rotina de casa. Ele faz uma parte, guarda o projeto e continua em outro dia, dentro do período de acesso.
+
+Antes de desligar, confiram juntos o aviso de que o projeto ficou salvo e combinem qual parte ele quer fazer na próxima vez. Na volta, ele sabe por onde recomeçar.
+
+---
+
+01-destaques.md:309
+Não. A programação fica com as aulas, que mostram como montar cada parte e o que observar no jogo.
+
+Você ajuda de outro jeito: organizando o horário e conhecendo os controles com ele no começo. Depois, peça para ver o que ele fez. É pela explicação dele que você conhece a criação.
+
+---
+
+01-destaques.md:317
+Pela própria aula, que foi desenhada para ele saber o próximo passo. O Zappy, personagem da aula, explica o que fazer, e o botão “Ouvir” toca essa fala. O vídeo mostra cada passo na tela.
+
+Nas etapas que têm “Verificar esta etapa”, ele confere quais objetivos da montagem já cumpriu e quais ainda faltam. Isso dá uma referência para retomar aquela parte. Nas experiências, “Uma pista” ajuda a observar, e “Conferir” mostra o que ele já descobriu.
+
+---
+
+01-destaques.md:323
+Dentro da plataforma, ele tem mais de um caminho. Além do que a aula mostra, o Como fazer tem tutoriais de cada ferramenta, e no Clube ele pode mostrar o que está construindo e ver como outros criadores resolveram coisas parecidas. Tudo foi pensado para ele avançar com autonomia.
+
+Se ainda precisar de ajuda com a aula, ele pode escrever para a equipe pelo botão “Preciso de ajuda”, contando o que tentou. A conversa fica nos Recados.
+
+---
+
+01-destaques.md:329
+Nos cursos da sequência da Jornada, publica o projeto no Mural e continua pelo próximo curso disponível. Os comandos previstos no curso passam a compor os recursos dele no Estúdio; se já os conhecia, o curso serviu para praticá-los em outra construção.
+
+Depois do curso de entrada, com o projeto publicado, o Estúdio fica livre. Aí ele pode voltar ao jogo que fez, mudar uma regra e testar outra versão, ou começar uma ideia própria com as ferramentas que já tem.
+
+---
+
+01-destaques.md:335
+Lugares para mostrar e conversar sobre o que ele cria. O Mural reúne os jogos publicados, cada um com link e cartão com QR para a família abrir. No Clube, ele troca ideias com outros criadores por publicações e respostas.
+
+Quando disponível para a etapa, o desafio do mês traz um tema para criar. Missões, conquistas, avatar e quarto deixam o espaço com a cara dele. O tempo de uso continua sendo combinado em casa.
+
+---
+
+01-destaques.md:341
+Não. Seu filho começa pelas aulas do curso de entrada. Ao concluir esse curso e publicar o projeto no Mural, ele chega ao posto Construtor e abre o Estúdio livre e o Pinta. Pensa, Zappy e Molda vêm em postos seguintes da Jornada.
+
+No Estúdio livre, ele usa os comandos que aprendeu nos cursos. Algumas etapas ainda dependem da publicação de novos cursos, e a inteligência artificial tem limite de uso. Confira o que já está disponível antes de escolher o plano.
+
+---
+
+01-destaques.md:347
+Pela área do responsável, que reúne os cursos, as atividades e as entregas de cada filho. Lá, você também pode ativar o resumo da semana por e-mail.
+
+Os registros ajudam a escolher uma criação para ver com ele. Peça que mostre uma parte que programou. Se mudou a pontuação, joguem juntos e confiram o placar. Quando ele explica por que o número mudou, você tem uma pista do que entendeu.
+
+---
+
+01-destaques.md:353
+Sim. Os planos mensal e anual permitem até dois perfis de criança. Cada um guarda os próprios projetos e continua de onde parou, nos horários que vocês organizarem.
+
+Um pode estar no primeiro curso enquanto o outro já avançou, porque as ferramentas abrem conforme o caminho de cada um. Se usarem recursos de inteligência artificial, o limite de uso é compartilhado pelos dois perfis.
+
+---
+
+01-destaques.md:361
+Mensal ou anual. Nos dois, seu filho tem acesso aos cursos publicados, aos que forem acrescentados durante a assinatura e às ferramentas conforme avança na Jornada.
+
+O que muda é o período e a forma de pagar. No botão, você vê o valor total de cada opção, as formas de pagamento e como funciona a renovação, antes de contratar.
+
+---
+
+01-destaques.md:369
+No cartão, sim. O plano mensal renova a cada mês, e o anual, a cada ano. Se decidir parar, você cancela a próxima renovação na área do responsável.
+
+No anual pago por Pix, não há renovação automática. Quando os 12 meses terminam, vocês contratam de novo se quiserem manter o acesso.
+
+---
+
+01-destaques.md:375
+Sim. Você cancela a próxima renovação em “Minhas compras”, na área do responsável, e seu filho continua com acesso até o fim do período já pago.
+
+Se cancelar hoje, por exemplo, ele segue com as aulas até o último dia desse período, e a próxima cobrança não acontece. O reembolso dentro da garantia é outro pedido, feito pelo canal indicado nos termos.
+
+---
+
+01-destaques.md:381
+Na primeira contratação, você tem sete dias, contados da compra, para pedir o reembolso integral. O interesse de uma criança vai e volta, e esses dias servem para ver como ele reage a uma aula de verdade: abram juntos as aulas disponíveis e observem como ele acompanha a atividade.
+
+O pedido vai pelo canal indicado nos termos da assinatura. Cancelar a próxima renovação, sozinho, não faz esse pedido. Os sete dias também valem para uma nova contratação anual por Pix; as renovações automáticas no cartão seguem os termos.
+
+---
+
+01-destaques.md:391
+Só se você decidir. A opção começa desligada, e quem pode ligar é você, na área da família.
+
+Antes de mudar, conversem sobre o que ele gostaria de mostrar. Essa escolha vale só para o perfil. Os jogos publicados por link têm outra configuração: esconder o perfil não torna esses links privados.
+
+---
+
+01-destaques.md:397
+Qualquer pessoa que tenha o link, num aparelho compatível com os controles do jogo. O link é público, inclusive quando o perfil do seu filho está oculto para os colegas.
+
+Por isso, combinem quais projetos publicar e com quem compartilhar. Se ele quiser mandar o jogo para a avó, por exemplo, conversem sobre essa diferença antes de enviar.
+
+---
+
+01-destaques.md:403
+Ele avisa a equipe pelo caminho de denúncia do Clube. Conheçam juntos onde fica essa opção e combinem que ele também procure você se alguma conversa o incomodar.
+
+O Clube tem regras de convivência, mas elas não substituem a conversa em casa. Se acontecer algo, ouça o que houve e ajude seu filho a relatar a situação.
+
+---
+
+01-destaques.md:415
+Uma das famílias que participaram das nossas aulas contou como foi. As palavras são dela, e ela autorizou a gente a compartilhar com você.
+
+---
+
+01-destaques.md:429
+Programar é o nosso trabalho, e criar jogos com o nosso filho, o André, levou esse trabalho para dentro de casa. Somos Helena e Júlio, desenvolvedores de sistemas formados em Sistemas de Informação.
+
+---
+
+01-destaques.md:435
+O André passou a chamar a gente para testar uma regra. Explicava por que tinha escolhido aquilo e imaginava outra versão. Daí nasceu a Comunidade dos Criadores: um começo guiado, em português, para outras crianças.
+
+---
+
+01-destaques.md:441
+Para preparar uma aula, a gente escolhe uma parte do jogo e divide em passos que seu filho consegue testar. Se a tarefa é revelar um personagem, ele confere cada parte com um clique no esconderijo.
+
+---
+
+01-destaques.md:447
+A gente quer que você também conheça o que seu filho está criando: jogar a versão dele e ouvir por que ele mudou uma regra. No link, conheça esse começo e mostre a ele.
 
 ---
 
 02-fixados.md:21
-Seu filho pode começar a aprender programação fazendo uma parte de um jogo. Neste aqui, ele aprende a fazer um personagem aparecer quando o jogador clica.
+Um personagem desenhado pelo seu filho, num jogo que ele mesmo programou. Vou mostrar o caminho até aqui.
 
-Primeiro, joga uma versão pronta para conhecer a brincadeira. Depois, experimenta o que acontece com essa reação ligada e desligada. Ao clicar e comparar, consegue observar para que serve a regra que vai montar.
+Primeiro, ele aprende num projeto guiado. A aula mostra um comando, explica a montagem e dá uma parte do jogo para testar. Assim, ele vê o que aquela instrução faz.
 
-Na construção, a aula mostra onde encontrar o comando e como encaixá-lo. O cenário já vem preparado, então ele pode se concentrar nessa parte. Depois, roda o jogo e confere se o personagem aparece.
+Depois de concluir o curso de entrada e publicar o projeto, libera o Estúdio para criar com os comandos que já aprendeu. Também abre o Pinta, onde pode desenhar um personagem e levá-lo ao jogo.
 
-Se precisar de mais tempo, pausa o vídeo. Se esquecer um passo, volta à explicação. E, se continuar com uma dúvida, pode mandar uma mensagem para a equipe.
+Um movimento que ele montou na aula pode servir para outra brincadeira. Ele escolhe como usar, testa e muda até chegar à versão que quer mostrar.
 
-Essa é uma das aulas da Comunidade dos Criadores, para crianças de 9 a 14 anos. No link da bio, você conhece como funciona e pode mostrar a proposta ao seu filho.
+Nos cursos seguintes, alguns comandos são novos; outros voltam em construções diferentes. Ele vai formando um repertório para combinar nas próprias ideias.
 
----
+Quando publica no Mural, ganha um link para a família jogar. Você experimenta e pede que ele mostre uma escolha que fez.
 
-02-fixados.md:47
-Para começar a programar, seu filho precisa de uma tarefa que consiga entender e de uma explicação que ajude a fazê-la.
-
-Neste exemplo, a tarefa é fazer um personagem aparecer quando recebe um clique. Ele conhece o jogo, experimenta essa reação e aprende a montar os comandos. Depois, testa para ver se o resultado corresponde ao que tentou construir.
-
-O cenário vem preparado. Isso deixa espaço para se dedicar à regra que está aprendendo. Você pode conhecer o trabalho pedindo que ele mostre o comando e clique no personagem para explicar o que fez.
-
-A gravação é uma demonstração da nossa equipe no curso extra Cadê Todo Mundo?. No link da bio, você conhece as aulas da Comunidade dos Criadores, para crianças de 9 a 14 anos.
+É a Comunidade dos Criadores, para crianças de 9 a 14 anos. No link da bio, veja como começar.
 
 ---
 
-02-fixados.md:69
-Estes são alguns momentos de alunos nas nossas aulas. Repare no que estão fazendo enquanto acompanham a explicação.
+02-fixados.md:53
+Um comando que seu filho aprende numa aula pode entrar em outra ideia dele.
+
+Na construção guiada, ele tem uma referência: vê o que vai montar, acompanha a explicação e testa o resultado. Imagine que aprendeu a mover um personagem com uma tecla. Quando usa esse movimento numa brincadeira própria, precisa decidir onde o personagem vai e o que acontece pelo caminho.
+
+Depois de concluir o curso de entrada e publicar o projeto no Mural, ele chega ao posto Construtor e libera o Estúdio livre e o Pinta. Pode desenhar um personagem e combinar os comandos conquistados para fazer um jogo com suas escolhas.
+
+Os cursos seguintes trazem outras construções. Alguns apresentam comandos novos; outros permitem praticar os já conhecidos. Os recursos conquistados continuam disponíveis durante o período de acesso.
+
+Quando ele publica, você recebe um link para jogar e pode pedir que mostre uma regra. Ver a criação e ouvir a explicação ajuda a conhecer o que ele está fazendo.
+
+O vídeo é uma demonstração da equipe. No link da bio, veja os cursos publicados e como seu filho pode começar na Comunidade dos Criadores, para crianças de 9 a 14 anos.
 
 ---
 
-02-fixados.md:84
-No link da bio, você conhece as atividades e pode ver se a proposta combina com o seu filho.
+02-fixados.md:79
+Alunos nas nossas aulas, em momentos reais. Repare no que cada um faz entre a explicação e o jogo funcionando.
 
 ---
 
-02-fixados.md:88
-Esses vídeos mostram pequenos momentos de alunos fazendo as aulas da Comunidade dos Criadores, compartilhados com autorização das famílias.
-
-Ao conhecer uma atividade para o seu filho, vale reparar no que acontece entre a explicação e o jogo pronto: como ele acompanha um passo, faz uma tentativa e procura entender o resultado.
-
-Seu filho pode precisar de mais tempo numa montagem ou querer rever um passo antes de continuar. Nas primeiras atividades, vocês podem conhecer a aula juntos e perceber onde ele já consegue seguir e onde ainda precisa de companhia.
-
-No link da bio, mostramos uma aula por dentro e explicamos como funciona o acesso em casa.
+02-fixados.md:95
+No link da bio, você vê uma aula por dentro e pode avaliar se esse jeito de aprender combina com seu filho.
 
 ---
 
-02-fixados.md:106
-Seu filho faz as aulas no computador, no horário que vocês combinarem. Veja o que ele precisa para começar e como você pode acompanhar.
+02-fixados.md:99
+Numa aula de programação, o que vale observar acontece entre a explicação e o jogo funcionando.
+
+É nesse intervalo que a criança procura o comando, encaixa, testa e descobre se saiu como esperava. Uma pausa para terminar um passo, uma volta ao trecho porque o personagem não se mexeu, um ajuste antes de testar de novo. Cada tentativa dá pistas do que ela já entendeu e de onde ainda está pensando.
+
+Os vídeos mostram alunos fazendo as aulas da Comunidade dos Criadores, compartilhados com autorização das famílias.
+
+Quando seu filho fizer uma aula, vale olhar para esse mesmo intervalo. Dá para perceber onde ele segue com tranquilidade e onde precisa de mais tempo. E, no fim, ele tem um jogo para mostrar e uma escolha para contar.
+
+No link da bio, mostramos uma aula por dentro para você ver se esse jeito de aprender combina com seu filho.
 
 ---
 
-02-fixados.md:112
-As aulas são para crianças de 9 a 14 anos e ensinam os primeiros comandos. Ele precisa conseguir ler as instruções e usar mouse e teclado. A programação é o que vem aprender com a gente.
+02-fixados.md:119
+Imagine a aula num dia comum: o computador da casa, um horário que vocês combinaram e seu filho montando uma parte do jogo. Estes slides mostram o que esse dia pede e onde você entra.
 
 ---
 
-02-fixados.md:118
-Seu filho vai acompanhar a explicação e montar o jogo usando mouse e teclado. Por isso, as atividades são feitas no computador, pelo navegador. Celular e tablet não são os aparelhos indicados para fazer o curso.
+02-fixados.md:125
+As aulas são para crianças de 9 a 14 anos e começam pelos primeiros comandos, em blocos. O que ele precisa trazer é leitura e uso do mouse e do teclado. A programação, a gente ensina.
 
 ---
 
-02-fixados.md:124
-As aulas são gravadas. Seu filho pode pausar para terminar um passo ou voltar ao trecho que não entendeu. Antes de encerrar, confere se o trabalho ficou salvo para continuar em outro dia, durante o período de acesso.
+02-fixados.md:131
+Seu filho acompanha a explicação e monta o jogo com mouse e teclado. Por isso, ele precisa de um computador com internet, usando o navegador. Celular e tablet não são os aparelhos indicados para as aulas.
 
 ---
 
-02-fixados.md:130
-A aula mostra o comando, como montá-lo e o que testar no jogo. Se a dúvida continuar, seu filho pode escrever para a equipe pela plataforma. O atendimento acontece por mensagens, e ele pode precisar esperar pela resposta.
+02-fixados.md:137
+As aulas são gravadas. Se a montagem leva mais tempo que a explicação, ele pausa, termina o passo e segue. Se esqueceu onde o comando entra, volta ao trecho. Antes de sair, confere se o trabalho ficou salvo. No próximo horário, continua de onde parou, durante o período de acesso.
 
 ---
 
-02-fixados.md:136
-No começo, conhecer a aula junto com seu filho ajuda a perceber onde ele precisa de companhia. Depois, peça que mostre uma criação e conte o que fez. Sua área de responsável reúne as atividades e os projetos para vocês consultarem.
+02-fixados.md:143
+O Zappy, personagem da aula, explica a tarefa. Nas etapas com verificação, seu filho confere quais objetivos da montagem já cumpriu e quais ainda faltam. A faixa no pé da tela mostra o que falta para seguir.
 
 ---
 
-02-fixados.md:142
-Os planos mensal e anual permitem até dois perfis, com projetos e progresso separados. Cada filho avança nas aulas e libera as ferramentas conforme os passos da Jornada. Os dois planos seguem as mesmas condições de liberação.
+02-fixados.md:149
+Na sua área de responsável ficam as atividades e os projetos do seu filho. Escolha um e peça que ele mostre: ele joga, aponta a regra e conta por que fez daquele jeito. No começo, ficar ao lado dele ajuda a ver como ele segue a explicação.
 
 ---
 
-02-fixados.md:148
-No link da bio, você pode ver uma aula por dentro e conferir os valores, a renovação, o cancelamento e a garantia. O destaque Dúvidas reúne as respostas para você avaliar como a proposta cabe na rotina da sua família.
+02-fixados.md:155
+Os planos mensal e anual permitem até dois perfis, cada um com seus projetos e seu progresso. Nos dois planos, as ferramentas de criação livre abrem conforme cada filho avança na Jornada, curso a curso.
 
 ---
 
-02-fixados.md:152
-Para organizar esse começo em casa, vale conhecer a aula com seu filho e combinar quando ele vai usar o computador.
+02-fixados.md:161
+Lá você vê uma aula por dentro e confere os valores, a renovação, o cancelamento e a garantia. Mostre a aula ao seu filho e conversem sobre o que ele quer criar primeiro. O destaque Dúvidas reúne outras respostas.
 
-Como as explicações são gravadas, ele pode pausar numa montagem que leva mais tempo e voltar a um trecho quando esquecer um passo. A orientação de programação fica na aula; você pode ajudar a conhecer os controles e observar onde ele precisa de companhia.
+---
 
-Conforme fizer as atividades, vai ter criações para mostrar. Pedir que explique uma escolha ou convidar você para jogar dá um assunto concreto para acompanhar o que está aprendendo.
+02-fixados.md:165
+Seu filho senta ao computador no horário combinado, abre a aula e continua o jogo de onde parou.
 
-A Comunidade é indicada para crianças de 9 a 14 anos. No link da bio, você encontra a demonstração, os planos e as condições de acesso.
+Para esse momento acontecer, a casa precisa de um computador com internet e de um horário que vocês escolhem. As aulas são para crianças de 9 a 14 anos que consigam ler as instruções e usar mouse e teclado. A programação, ele aprende com a gente.
+
+Como as aulas são gravadas, ele pode pausar numa montagem que leva mais tempo, voltar ao trecho de um passo esquecido e guardar o trabalho para outro dia. O Zappy explica a tarefa. Nas etapas com verificação, ele consulta quais objetivos da montagem já cumpriu e quais ainda faltam. Depois de um ajuste, testa no jogo para observar o resultado.
+
+Você acompanha pelas atividades e projetos na área do responsável e pelo que ele mostra: o jogo rodando e a regra que ele explica para você.
+
+No link da bio estão a aula por dentro, os planos da Comunidade dos Criadores e as condições de renovação, cancelamento e garantia.
 
 ---
 
 02-fixados.md:17
-Como seu filho aprende aqui
+Do primeiro curso aos próprios jogos. **Linha de apoio:** O que ele aprende na aula pode entrar numa ideia dele.
 
 ---
 
-02-fixados.md:61
+02-fixados.md:71
 Alunos em aula
 
 ---
 
-02-fixados.md:104
+02-fixados.md:117
 Como funciona na sua casa
 
 ---
 
-02-fixados.md:110
-Seu filho pode começar do zero
+02-fixados.md:123
+Ele pode chegar sem saber programar
 
 ---
 
-02-fixados.md:116
-Reserve um computador com internet
+02-fixados.md:129
+A aula acontece no computador, pelo navegador
 
 ---
 
-02-fixados.md:122
-Vocês escolhem quando fazer a aula
+02-fixados.md:135
+Vocês escolhem o horário, e ele tem o tempo de que precisa
 
 ---
 
-02-fixados.md:128
-A explicação acompanha a construção
+02-fixados.md:141
+A aula mostra o próximo passo
 
 ---
 
-02-fixados.md:134
-Você pode acompanhar sem saber programar
+02-fixados.md:147
+Você acompanha pelo que ele constrói e explica
 
 ---
 
-02-fixados.md:140
-Uma assinatura pode atender dois filhos
+02-fixados.md:153
+Uma assinatura tem espaço para dois filhos
 
 ---
 
-02-fixados.md:146
-Conheça as aulas e os planos
+02-fixados.md:159
+Valores, renovação e garantia estão no link da bio
 
 ---
 
 03-postagens.md:38
-Quando seu filho mostrar um jogo, peça que conte qual parte ele aprendeu a fazer. Vou dar um exemplo com esta atividade.
+Chega um link. Você abre e está jogando o jogo que seu filho fez.
 
-O cenário e os personagens já estavam preparados. Nas aulas, ele aprende a montar a regra que faz o personagem aparecer quando recebe um clique.
+Cada curso da Jornada termina com um jogo para publicar. Ele aperta Compartilhar, escolhe o nome e a capa, e o jogo entra no Mural dos Criadores, ao lado dos jogos de outras crianças.
 
-Usar os desenhos prontos permite se dedicar a esse começo da programação. Depois de montar o comando, ele testa: clica e confere se o personagem aparece como esperava.
+Junto vem um link e um cartão com código QR. Dá para mandar para os avós ou abrir na sala e cada um jogar uma vez.
 
-Você pode participar desse momento. Peça que ele mostre a regra e jogue para explicar o que ela faz. Conhecer essa parte ajuda você a reconhecer o trabalho que houve para o jogo funcionar.
+Um jogo guardado no computador fica só com ele. Publicado, vira convite. Alguém joga, acha uma fase difícil, pergunta como ele fez. E ele explica a regra, conta o que escolheu e já pensa na próxima versão.
 
----
-
-03-postagens.md:50
-Conhecer o que seu filho fez começa por dar espaço para ele mostrar.
-
-Neste exemplo, os desenhos já vieram prontos, e a construção ensinada é a regra que faz o personagem aparecer. Saber disso ajuda a entender o que observar: qual comando ele montou, o que esperava que acontecesse e como conferiu o resultado.
-
-Você pode pedir que ele jogue uma vez e conte essa parte. A conversa acompanha algo que os dois conseguem ver, mesmo se você não souber programar.
-
-Neste Dia das Crianças, reserve um momento para conhecer uma criação que seu filho queira mostrar. Pode ser um jogo, um desenho ou algo que montou. Deixe que ele conte o que fez.
-
-O vídeo usa uma demonstração da nossa equipe.
+Neste Dia das Crianças, peça para seu filho mostrar alguma coisa que ele criou. Jogue até o fim e deixe que ele conte como fez.
 
 ---
 
-03-postagens.md:68
-Você pode conhecer o que ele fez jogando junto e deixando que conte as escolhas. Estas três sugestões ajudam a começar a conversa.
+03-postagens.md:52
+Um jogo publicado sai do computador do seu filho e vira um convite para a família jogar.
 
----
+Cada curso da Jornada termina com um projeto para publicar no Mural dos Criadores. Na publicação, ele dá um nome, escreve um resumo e escolhe a capa. O jogo ganha um link para abrir e jogar e um cartão com código QR para mostrar a quem estiver perto.
 
-03-postagens.md:72
-Deixe que seu filho apresente o objetivo e os controles. Depois, faça uma tentativa. Ao explicar o jogo para você, ele tem uma oportunidade de mostrar como as partes funcionam juntas.
+Quando alguém joga, aparecem as perguntas que só quem criou sabe responder: por que a fase é assim, onde está a regra que faz o personagem pular, o que ele quer mudar depois. É nessa hora que você conhece o trabalho por trás da partida.
 
----
+O link de um jogo publicado é público. O perfil dele começa escondido dos colegas, e a decisão de mostrar fica com a família.
 
-03-postagens.md:76
-Pode ser a cor de um personagem, a pontuação ou o lugar de um obstáculo. Escute o motivo antes de sugerir uma mudança. Assim, você conhece a ideia que ele estava tentando colocar no jogo.
-
----
-
-03-postagens.md:80
-Se ele tiver mudado alguma coisa, peça para ver como era antes e como ficou. Joguem as duas versões e conversem sobre a diferença. O resultado dá um assunto para ele explicar por que quis mudar.
-
----
-
-03-postagens.md:84
-Você não precisa fazer todas essas perguntas de uma vez. Comece pela parte que seu filho quer mostrar e acompanhe a curiosidade dele. Salve para lembrar na próxima criação.
-
----
-
-03-postagens.md:88
-Quando seu filho chama você para ver uma criação, ele abre uma oportunidade de conhecer o que está fazendo no computador.
-
-Jogar uma vez já pode render uma conversa. Talvez você não entenda um controle, ache um obstáculo difícil ou repare numa cor. Ele pode explicar o que pensou e mostrar como fez aquela parte.
-
-Você não precisa dominar programação para participar. Escutar a explicação e experimentar o jogo ajudam a dar atenção ao trabalho dele. Se surgir uma ideia de mudança, deixem que ele decida se quer tentar.
-
-Salve as sugestões para a próxima vez que seu filho quiser mostrar uma criação.
-
----
-
-03-postagens.md:104
-Se seu filho gosta de inventar personagens, pode ter vontade de colocar um deles num jogo. Aqui, vou mostrar como essas duas partes se encontram.
-
-Primeiro, desenhamos este personagem no Pinta. Depois, levamos o desenho para o Estúdio e montamos a regra que faz ele andar quando apertamos uma tecla.
-
-O teste pode trazer uma nova ideia. Se ele ficar difícil de enxergar no cenário, por exemplo, seu filho pode voltar ao desenho, mudar uma cor e conferir como ficou no jogo. O que ele desenha passa a fazer parte de uma brincadeira que consegue testar.
-
-O uso livre dessas ferramentas é liberado depois das etapas de entrada. No link da bio, você conhece esse caminho e pode ver se seu filho tem vontade de explorar desenho e programação juntos.
-
----
-
-03-postagens.md:116
-Um personagem desenhado pelo seu filho pode participar de uma criação que vocês consigam jogar.
-
-Para isso, ele trabalha duas partes. No desenho, escolhe a aparência. Na programação, aprende a fazer o personagem responder a uma tecla ou a um acontecimento. Ao testar o jogo, pode perceber algo que quer ajustar na cor, no tamanho ou no movimento.
-
-Esse caminho pode interessar a quem gosta de desenhar e também tem curiosidade sobre o funcionamento dos jogos. Vale mostrar as duas partes ao seu filho e ouvir o que ele gostaria de experimentar.
-
-A gravação é uma demonstração da equipe. O uso livre do Estúdio e do Pinta é liberado após concluir o curso obrigatório de entrada e publicar o projeto exigido na Jornada. No link da bio, você conhece as aulas e as condições desse acesso.
-
----
-
-03-postagens.md:130
-Se seu filho gosta de desenhar, talvez já tenha apagado um detalhe para tentar de outro jeito. No desenho digital, ele também pode comparar uma mudança antes de escolher.
-
----
-
-03-postagens.md:134
-Fizemos uma primeira versão e guardamos a imagem. Ela vai servir de referência para enxergar o que muda na próxima tentativa.
-
----
-
-03-postagens.md:138
-O desenho continua com a mesma forma. Ao colocar as versões lado a lado, fica mais fácil perceber qual detalhe chama atenção em cada uma.
-
----
-
-03-postagens.md:142
-Pergunte qual versão combina com o personagem que ele imaginou. Talvez prefira a primeira ou queira experimentar outra. A comparação dá uma referência para decidir e contar o motivo.
-
----
-
-03-postagens.md:146
-A proposta reúne criação visual e programação de jogos. O uso livre do Pinta depende das etapas de entrada. No link da bio, você conhece as aulas e pode conversar com seu filho sobre o que gostaria de criar.
-
----
-
-03-postagens.md:150
-Uma mudança pequena pode dar ao seu filho algo para comparar e uma escolha para explicar.
-
-Nesta demonstração da equipe, fizemos um personagem no Pinta e mudamos a cor. Ver as versões juntas ajuda a perceber o efeito dessa alteração, antes de decidir qual manter.
-
-Você pode participar pedindo que ele conte o que pretendia com a escolha. A resposta pode estar na ideia que tinha para o personagem, num detalhe que queria destacar ou na vontade de tentar outra possibilidade.
-
-Na Comunidade, criação visual e programação fazem parte do percurso. O uso livre do Pinta é liberado depois do curso obrigatório de entrada e da publicação do projeto exigido. Conheça esse caminho no link da bio.
-
----
-
-03-postagens.md:166
-Conhecer esse começo junto com ele ajuda a organizar o computador, entender a atividade e perceber em que momentos vai precisar de companhia.
-
----
-
-03-postagens.md:170
-Seu filho vai precisar de internet, navegador, mouse e teclado. Se o computador é compartilhado, combinem um período em que ele possa usá-lo para acompanhar a explicação e fazer a atividade.
-
----
-
-03-postagens.md:174
-Conhecer o que ele vai construir dá um sentido aos próximos passos. Deixe que experimente a versão pronta e mostre o que acontece na brincadeira antes de iniciar a montagem.
-
----
-
-03-postagens.md:178
-Acompanhem um passo e encontrem juntos os controles de pausa e de retorno. Se ele esquecer onde colocar um comando, pode rever aquele trecho enquanto confere o próprio projeto.
-
----
-
-03-postagens.md:182
-Verifiquem o aviso de salvamento e conversem sobre a parte que ele quer continuar depois. Ter o trabalho guardado na conta ajuda a retomar a criação no próximo horário combinado.
-
----
-
-03-postagens.md:186
-Algumas crianças precisam de mais companhia para conhecer os controles ou acompanhar uma instrução. Vocês podem ajustar esse apoio conforme o uso. No destaque Dúvidas, explicamos os requisitos e como pedir ajuda.
-
----
-
-03-postagens.md:190
-A primeira aula também é um momento para conhecer como seu filho acompanha esse tipo de atividade.
-
-Reserve o computador, abram a aula e vejam o projeto que será construído. Observe se ele encontra a explicação, consegue usar os controles e sabe onde voltar quando se perde num passo.
-
-Esse começo ajuda a decidir o apoio em casa. Talvez precise de companhia para ler uma instrução ou descobrir como pausar. Vocês podem fazer essa parte juntos e observar quando já consegue seguir com menos ajuda.
-
-Antes de encerrar, confiram o salvamento. E, se surgir uma dúvida sobre equipamento, formato ou atendimento, consulte o destaque Dúvidas.
-
----
-
-03-postagens.md:206
-Para montar um jogo, ele precisa entender o que deve acontecer e como construir essa parte. Vou mostrar como a aula ajuda, usando o movimento de um personagem como exemplo.
-
----
-
-03-postagens.md:210
-A tarefa é fazer o personagem andar quando uma tecla for apertada. Ao ver essa ação no jogo, seu filho tem um resultado para procurar durante a montagem.
-
----
-
-03-postagens.md:214
-Ele acompanha onde encontrar a instrução e como colocá-la no projeto. Pode pausar a explicação para fazer esse passo e voltar ao trecho se precisar conferir a posição.
-
----
-
-03-postagens.md:218
-Depois da montagem, ele aperta a tecla e observa o movimento. Se o personagem não andar, já tem uma pergunta concreta para investigar: qual parte do comando precisa conferir com a aula?
-
----
-
-03-postagens.md:222
-Seu filho pode voltar à explicação e comparar com o que montou. Se a dificuldade for uma ação da ferramenta, como usar um controle, os tutoriais do Como fazer também ficam disponíveis para consulta.
-
----
-
-03-postagens.md:226
-Na aula, “Preciso de ajuda?” abre o caminho para contar o que tentou e o que aconteceu. A conversa segue nos Recados. O atendimento é por mensagens, então pode ser necessário esperar pela resposta.
-
----
-
-03-postagens.md:230
-No destaque Como funciona, mostramos a explicação e a atividade juntas. Você pode ver como seu filho encontra um passo para fazer, um resultado para conferir e uma orientação para consultar.
-
----
-
-03-postagens.md:234
-Uma explicação ajuda mais quando seu filho consegue relacioná-la ao que está tentando fazer.
-
-Se a tarefa é movimentar um personagem, ele precisa conhecer o comando e saber como montá-lo. Depois, aperta a tecla para observar se o movimento acontece. Esse teste dá uma referência para continuar ou voltar a uma parte da explicação.
-
-A orientação começa nessa construção. Os trechos que ele pode rever e os tutoriais ajudam a consultar um passo. Quando a dúvida continua, ele também pode contar para a equipe o que tentou, por mensagens.
-
-No destaque Como funciona, você conhece uma aula por dentro e vê esse apoio junto da prática.
-
----
-
-03-postagens.md:250
-Ao entrar na Comunidade, ele encontra aulas que apresentam os comandos e orientam a montagem de um jogo. Durante essas atividades, usa os materiais e as ferramentas preparados para aquele começo.
-
----
-
-03-postagens.md:254
-Esse é o nome da área que reúne as etapas e seus requisitos. Nela, seu filho confere o que já concluiu, o que falta fazer e quais ferramentas pode usar no momento.
-
----
-
-03-postagens.md:258
-Depois de concluir o curso obrigatório de entrada e publicar o projeto exigido, ele chega ao posto Construtor. A partir daí, pode usar livremente o Estúdio, para criar jogos, e o Pinta, para desenhar.
-
----
-
-03-postagens.md:262
-Nas ferramentas liberadas, seu filho pode mudar uma regra, experimentar um personagem ou começar uma criação própria. O que aprendeu nas aulas dá uma referência para essas novas tentativas.
-
----
-
-03-postagens.md:266
-Para usar recursos como o planejamento com inteligência artificial, seu filho precisa cumprir outras etapas. Esses serviços também têm limites de uso. Parte dos cursos ainda está em preparação; escolher o plano anual não libera automaticamente todas as ferramentas.
-
----
-
-03-postagens.md:270
-No link da bio, você conhece os cursos publicados, o caminho de acesso e os planos. Mostre o começo ao seu filho para conversarem sobre uma criação que ele tenha vontade de tentar.
-
----
-
-03-postagens.md:274
-A assinatura e as etapas de aprendizagem têm funções diferentes. O plano mantém o acesso durante o período contratado; a Jornada mostra quais passos seu filho precisa cumprir para liberar as ferramentas.
-
-Ele começa com uma criação guiada, usando os recursos daquela aula. Para chegar ao uso livre do Estúdio e do Pinta, precisa concluir o curso obrigatório de entrada e publicar o projeto exigido. O curso extra Cadê Todo Mundo? não libera sozinho essa etapa.
-
-Depois, nas ferramentas que já pode usar, ele tem espaço para experimentar outras versões e ideias. Recursos posteriores seguem seus próprios requisitos, e parte do percurso depende de cursos ainda em preparação.
-
-No link da bio, confira o que está disponível hoje e como funciona o acesso antes de escolher um plano para sua família.
-
----
-
-03-postagens.md:290
-Neste jogo, o personagem precisa desviar dos obstáculos. Fizemos duas versões: numa ele anda mais devagar; na outra, aumentamos a velocidade. O caminho e os obstáculos continuam iguais.
-
-Repare no tempo que sobra para decidir quando desviar. A mudança no comando aparece na partida, e a gente pode jogar para comparar qual versão funciona melhor para esse desafio.
-
-Seu filho também pode investigar uma escolha assim nas atividades que permitem alterações. Muda um valor, testa e observa o efeito. Depois, tem um motivo para manter a mudança ou tentar de outro jeito.
-
-Conte qual dessas duas versões você escolheria para começar e o que pesou na sua decisão.
-
----
-
-03-postagens.md:302
-A velocidade de um personagem muda o tempo que o jogador tem para reagir ao caminho.
-
-Neste exemplo da equipe, mantivemos os obstáculos e alteramos um valor do movimento. Jogar as duas versões permite observar o efeito dessa escolha antes de decidir qual usar.
-
-Quando seu filho aprende a fazer uma mudança desse tipo, pode relacionar o comando ao que acontece no jogo. Você participa pedindo que mostre as versões e explique por que prefere uma delas. A comparação dá um assunto concreto para a conversa.
-
-Qual versão você escolheria para começar: a de velocidade menor ou a de velocidade maior? Conte o que levou à sua escolha.
-
----
-
-03-postagens.md:314
-Compare as duas versões e vote na enquete dos stories. Depois, mostre ao seu filho e conversem sobre qual escolheriam para jogar.
-
----
-
-03-postagens.md:324
-Conhecer uma aula ajuda a entender o que ele vai fazer e como poderá acompanhar. Estes cinco pontos dão um começo para comparar as opções.
-
----
-
-03-postagens.md:328
-Peça para conhecer o projeto e uma parte da explicação. Seu filho entende a brincadeira? Consegue ler as instruções e usar os controles pedidos? Essa observação ajuda a avaliar o começo para ele.
-
----
-
-03-postagens.md:332
-Se for ao vivo, veja os horários e como funcionam as faltas. Se for gravada, conheça a forma de pausar, praticar e retomar. Pense no computador disponível e no tempo que vocês conseguem combinar em casa.
-
----
-
-03-postagens.md:336
-Veja se há explicações para rever, materiais de consulta e contato com a equipe. Pergunte como esse contato funciona e quando a resposta pode chegar. Assim, você compara o apoio com a necessidade do seu filho.
-
----
-
-03-postagens.md:340
-Um jogo pode começar com personagens e cenários preparados. Peça que mostrem qual parte será feita pelo aluno e como ele confere o resultado. Isso ajuda a entender o conteúdo da atividade.
-
----
-
-03-postagens.md:344
-Confira o prazo, os cursos disponíveis, as condições das ferramentas e a forma de renovação. Um recurso anunciado pode depender de uma etapa posterior. Saber disso antes evita escolher contando com algo que ainda não poderá usar.
-
----
-
-03-postagens.md:348
-A escolha depende do que ele quer aprender, de como acompanha uma atividade e do apoio que a família procura. Salve estes pontos para consultar quando conhecer as aulas de cada opção.
-
----
-
-03-postagens.md:352
-O nome da ferramenta e a imagem de um jogo pronto contam só uma parte de um curso de programação.
-
-Para entender como seria para seu filho, conheça uma atividade: o que ele recebe pronto, o que aprende a montar e como encontra orientação quando precisa. Pense também no horário e na companhia que vocês conseguem oferecer no começo.
-
-Uma ferramenta gratuita, um curso gravado e uma aula ao vivo podem atender necessidades diferentes. Vale conhecer as condições concretas de cada opção e ouvir o interesse do seu filho, em vez de decidir apenas pela lista de recursos.
-
-Salve os cinco pontos para usar nessa comparação.
-
----
-
-03-postagens.md:368
-Antes de gravar uma aula, a gente escolhe como tornar uma ideia de programação compreensível para seu filho.
-
-No jogo do Farol, por exemplo, o personagem pega uma chave que vai abrir uma porta. A chave some do cenário quando é recolhida, mas o jogo precisa guardar a informação de que o personagem já está com ela.
-
-Por isso, preparamos uma experiência em que seu filho compara a coleta com e sem essa informação sendo guardada. A chave desaparece nos dois casos, mas ele pode ver se o jogo registrou que está com ela.
-
-Essa informação será usada para decidir se a porta abre. Ao observar o que ficou guardado, ele tem uma situação do próprio jogo para entender por que precisa montar aquela regra.
-
-Somos Helena e Júlio. No link da bio, mostramos como preparamos esse começo de programação na Comunidade dos Criadores.
-
----
-
-03-postagens.md:382
-Uma parte do nosso trabalho acontece antes de ligar a câmera: decidir o que seu filho precisa experimentar para entender a ideia da aula.
-
-No exemplo da chave, recolher o objeto e guardar a informação de que ele foi recolhido são duas partes diferentes. Seu filho compara as duas coletas e observa se o jogo guardou essa informação. Mais adiante, ela será usada na regra que decide se a porta abre.
-
-Essa experiência dá um motivo para a regra que vem depois. Quando chegar à montagem, seu filho já terá visto o problema que aquela regra ajuda a resolver. A explicação pode se apoiar no jogo que acabou de testar.
-
-Este é um bastidor de preparação do curso A Chave do Farol. No link da bio, você conhece a proposta de programação da Comunidade dos Criadores e como as aulas ligam explicação e prática.
-
----
-
-03-postagens.md:421
-Seu filho montou o comando para fazer um personagem andar, mas apertou a tecla e ele ficou parado. Esse resultado dá uma dúvida concreta para investigar: o que precisa conferir na montagem?
-
----
-
-03-postagens.md:425
-Ele pode voltar ao trecho da aula e comparar o comando com o próprio projeto. Se perceber que colocou uma instrução no lugar errado, faz o ajuste e testa outra vez. A explicação ajuda a procurar uma diferença que ele consegue conferir.
-
----
-
-03-postagens.md:429
-Se a dúvida continuar, ele pode escrever para a equipe pela aula. Contar qual tecla apertou e o que aconteceu ajuda a explicar o problema. A resposta vem pelos Recados, por mensagem, e pode ser necessário aguardar.
-
----
-
-03-postagens.md:433
-Na primeira atividade, você pode acompanhar como seu filho usa esses apoios e perceber onde precisa de companhia. Conte pra gente qual dúvida você tem sobre a ajuda durante as aulas.
-
----
-
-03-postagens.md:441
-Fizemos duas versões deste jogo. Mudamos só a velocidade do personagem; o caminho e os obstáculos são os mesmos. Veja cada partida e repare no tempo para desviar.
-
----
-
-03-postagens.md:445
-Uma velocidade muda a experiência de quem joga. Pensando em alguém que vai tentar pela primeira vez, escolha qual dessas duas versões você colocaria no começo.
-
----
-
-03-postagens.md:451
-Agora compare o que acontece perto dos obstáculos. Na versão mais rápida, o personagem chega até eles em menos tempo. Esse é um efeito que podemos observar para decidir qual velocidade combina com a partida que queremos criar.
-
----
-
-03-postagens.md:455
-Quando seu filho aprende a mudar essa regra, pode testar o resultado e explicar por que prefere uma versão. Mostre as duas a ele e conversem sobre o que escolheriam. Vocês podem até ter motivos diferentes.
-
----
-
-03-postagens.md:463
-Ao preparar uma aula, a gente procura uma situação do jogo que ajude a explicar a ideia. No exemplo da chave, seu filho observa o que o jogo guarda depois da coleta. Essa informação vai ser usada para decidir se a porta abre.
-
----
-
-03-postagens.md:467
-Depois de conhecer uma ideia, ele tem uma parte para construir e testar. Se precisar de mais tempo, pausa a aula. Se perder um passo, pode voltar à explicação enquanto confere o que montou.
-
----
-
-03-postagens.md:471
-Para saber como esse formato seria na sua casa, vale mostrar uma aula ao seu filho. Conversem sobre o jogo que ele gostaria de criar e pensem no horário de computador que vocês podem combinar.
-
----
-
-03-postagens.md:475
-Se a proposta fizer sentido para vocês, no botão você encontra os planos e as condições da Comunidade. Confira o que está disponível, como funciona a renovação e o prazo de garantia antes de escolher.
-
----
-
-03-postagens.md:66
-Seu filho chamou você para ver o jogo
+Neste Dia das Crianças, reserve um tempo para jogar uma criação do seu filho até o fim e ouvir como ele fez.
 
 ---
 
 03-postagens.md:70
-Me mostra como joga
+Imagine seu filho apertando a tecla para testar o movimento que acabou de montar. O personagem não anda. Para continuar, ele precisa localizar uma parte para conferir. A orientação da aula fica junto da atividade para ajudar nessa tentativa.
 
 ---
 
 03-postagens.md:74
-Me conta uma escolha sua
+Primeiro, volta à instrução para lembrar qual movimento está construindo. O Zappy, personagem da aula, apresenta a tarefa por escrito, e o botão “Ouvir” permite escutá-la. Ele tem uma referência do que precisa acontecer no jogo.
 
 ---
 
 03-postagens.md:78
-Vamos comparar as versões
+Com a tarefa em mente, volta ao trecho do vídeo que mostra a montagem. Pausa e compara aquela parte com o próprio projeto: qual bloco foi usado, onde entrou e o que precisa conferir antes de testar de novo.
 
 ---
 
 03-postagens.md:82
-Escolha um convite e deixe a conversa acontecer
+Pode acontecer de entender a tarefa, mas não lembrar como encaixar o bloco. Nesse caso, consulta o tutorial correspondente no Como fazer, observa a ação e volta à montagem para tentar.
 
 ---
 
-03-postagens.md:128
-Uma cor pode mudar o jeito de ver o personagem
+03-postagens.md:86
+Nas etapas com “Verificar esta etapa”, ele confere quais objetivos da montagem já cumpriu e quais ainda faltam. A tela ajuda a escolher o que retomar. O teste no jogo continua sendo necessário para observar o resultado.
 
 ---
 
-03-postagens.md:132
-Este personagem foi desenhado no Pinta
+03-postagens.md:90
+Seu filho aperta a mesma tecla e observa se o personagem se move. Se o resultado ainda for diferente do esperado, retoma a explicação e compara outra parte. Cada mudança precisa ser testada para saber o que aconteceu.
 
 ---
 
-03-postagens.md:136
-Agora, mudamos a cor
+03-postagens.md:94
+A faixa no pé da aula mostra os requisitos que ainda faltam para seguir. Quando termina a aula, a trilha indica a próxima. Ele pode continuar em outro horário, dentro da rotina que vocês combinaram.
 
 ---
 
-03-postagens.md:140
-Seu filho pode explicar a escolha dele
+03-postagens.md:98
+Quando chamar você para jogar, peça que mostre uma parte que precisou ajustar. Ele pode executar o movimento e contar o que fez. No link da bio, veja como a aula acompanha essas tentativas.
 
 ---
 
-03-postagens.md:144
-Conheça como o desenho entra na Comunidade
+03-postagens.md:102
+Seu filho montou uma regra, apertou a tecla e o personagem ficou parado. Nessa hora, precisa encontrar uma parte da construção para conferir.
+
+Por isso, a explicação fica junto da atividade. Ele pode retomar a instrução, rever o trecho da montagem e comparar uma parte de cada vez. Se a dúvida for como usar um recurso, o tutorial correspondente no Como fazer oferece outra referência para tentar.
+
+Nas etapas que têm verificação, a tela mostra quais objetivos da montagem já foram cumpridos e quais ainda faltam. Esses objetivos ajudam a orientar a tentativa. Depois de alterar uma parte, ele joga para conferir se o movimento saiu como esperava.
+
+Cada criança tem seu ritmo, e algumas querem companhia no começo. A plataforma oferece referências para que ele possa retomar o trabalho e experimentar. Quando mostrar uma criação, você pode pedir que conte o que precisou mudar.
+
+As imagens são uma demonstração da equipe. No link da bio, você conhece uma aula da Comunidade dos Criadores por dentro.
 
 ---
 
-03-postagens.md:164
-Prepare a primeira aula com seu filho
+03-postagens.md:116
+Ele volta ao trecho que mostra aquela parte e compara os blocos com o próprio projeto. Essa referência ajuda a escolher o que retomar. Depois de mudar a montagem, testa no jogo para observar o resultado.
 
 ---
 
-03-postagens.md:168
-Separe o computador para esse horário
+03-postagens.md:120
+A comparação com a explicação dá uma referência para retomar a montagem. Depois de alterar uma parte, ele joga para conferir se o movimento saiu como esperava. Se ainda precisar ajustar, pode voltar àquele trecho e fazer outra tentativa.
 
 ---
 
-03-postagens.md:172
-Comecem pelo jogo apresentado na aula
+03-postagens.md:130
+Este personagem começou num desenho. Agora ele anda quando a gente aperta uma tecla.
+
+Um desenho, sozinho, fica parado. Para andar, o personagem precisa de uma regra: o que acontece quando o jogador aperta a tecla.
+
+A gente desenhou no Pinta, nossa ferramenta de desenho, e levou para o Estúdio, onde se montam os jogos. Lá, montamos a regra do movimento e testamos.
+
+O teste também vale para o desenho. Se o personagem some no cenário, dá para voltar ao Pinta, trocar a cor e testar de novo.
+
+O Pinta e o Estúdio ficam livres para ele no posto Construtor, depois de concluir o curso de entrada e publicar o projeto no Mural. Antes disso, cada aula traz os recursos dela.
+
+No link da bio, você conhece esse caminho. Mostre ao seu filho e escute qual personagem ele colocaria num jogo.
 
 ---
 
-03-postagens.md:176
-Mostre que ele pode voltar à explicação
+03-postagens.md:146
+Um personagem desenhado fica parado até ganhar uma regra.
+
+Nesta demonstração da equipe, o personagem nasceu no Pinta, a ferramenta de desenho, e foi para o Estúdio, onde se montam os jogos. Lá, recebeu a regra do movimento: quando o jogador aperta uma tecla, ele anda. O teste vale para o desenho também. Se o personagem some no cenário ou fica pequeno demais, dá para voltar à arte, ajustar e testar de novo.
+
+Para quem gosta de inventar personagens, essa passagem dá um motivo para aprender a programar. O personagem imaginado ganha movimento numa partida que outra pessoa pode jogar.
+
+O Pinta e o Estúdio livres abrem no posto Construtor da Jornada, depois que ele conclui o curso de entrada e publica o jogo no Mural. Antes disso, ele usa os recursos preparados em cada aula. No link da bio, você conhece esse caminho e pode mostrar ao seu filho. Talvez ele já tenha um personagem esperando para entrar num jogo.
 
 ---
 
-03-postagens.md:180
-Antes de sair, confiram o que ficou salvo
+03-postagens.md:162
+Quem gosta de desenhar já apagou um detalhe para tentar de outro jeito. No desenho digital, dá para guardar a primeira versão e comparar com a próxima antes de escolher.
 
 ---
 
-03-postagens.md:184
-Observe como foi esse começo
+03-postagens.md:166
+Fizemos o personagem e guardamos a imagem. Ela vira a referência para enxergar o que muda na próxima tentativa.
 
 ---
 
-03-postagens.md:204
-Seu filho encontra uma explicação enquanto faz
+03-postagens.md:170
+A forma continua a mesma. Lado a lado, fica fácil ver qual detalhe chama atenção em cada uma e qual combina com a ideia do personagem.
 
 ---
 
-03-postagens.md:208
-Primeiro, ele sabe o que vai tentar fazer
+03-postagens.md:174
+Peça que seu filho diga qual versão combina com o personagem que imaginou e o motivo. Talvez fique com a primeira, talvez queira tentar uma terceira. A decisão é dele.
 
 ---
 
-03-postagens.md:212
-A aula explica o comando e o encaixe
+03-postagens.md:178
+A Comunidade reúne desenho digital e programação de jogos. O uso livre do Pinta começa no posto Construtor, depois de concluir o curso de entrada e publicar o projeto no Mural. No link da bio, você conhece esse caminho e pode conversar com seu filho sobre o que ele gostaria de criar.
 
 ---
 
-03-postagens.md:216
-O teste ajuda a localizar uma dúvida
+03-postagens.md:182
+Uma mudança pequena dá ao seu filho algo para comparar e uma escolha para explicar.
+
+Nesta demonstração da equipe, desenhamos um personagem no Pinta e depois trocamos só a cor. Com as duas versões lado a lado, o efeito da mudança aparece antes de decidir qual manter.
+
+A conversa começa quando você pede que ele conte o que pretendia. A resposta pode estar na ideia que tinha para o personagem, num detalhe que queria destacar ou na vontade de tentar outra coisa.
+
+Na Comunidade, desenho e programação de jogos fazem parte do mesmo percurso. O uso livre do Pinta abre no posto Construtor, depois do curso de entrada concluído e do jogo publicado no Mural. Conheça esse caminho no link da bio.
 
 ---
 
-03-postagens.md:220
-Uma orientação pode ser consultada de novo
+03-postagens.md:198
+Seu filho aprendeu a fazer um personagem andar. No Estúdio livre, pode usar esse comando em outro jogo: escolher um novo personagem, decidir o caminho e testar a brincadeira que imaginou.
 
 ---
 
-03-postagens.md:224
-Se a dúvida continuar, ele pode escrever para a equipe
+03-postagens.md:202
+Na aula, a explicação mostra como ligar uma tecla ao movimento. Ele monta a regra, aperta a tecla e confere se o personagem andou. Assim, conhece a instrução pelo efeito que consegue observar.
 
 ---
 
-03-postagens.md:228
-Conheça esse apoio dentro de uma aula
+03-postagens.md:206
+Cada curso tem um conjunto de comandos. Nos cursos da sequência da Jornada, ele os conquista ao concluir as aulas e publicar o projeto no Mural. Se algum comando ainda não estava na caixa dele, aparece como novidade.
 
 ---
 
-03-postagens.md:248
-Seu filho começa com uma criação guiada
+03-postagens.md:210
+Alguns cursos apresentam comandos novos; outros retomam os mesmos comandos em outra construção. Usar o movimento num caminho com obstáculos, por exemplo, dá outra situação para testar. A prática também faz parte do percurso.
 
 ---
 
-03-postagens.md:252
-A Jornada mostra o próximo passo
+03-postagens.md:214
+Em Minhas ferramentas, ele vê os recursos que conquistou. No Estúdio livre, pode juntar comandos de cursos diferentes e testar o que acontece. As ferramentas permanecem disponíveis durante o período de acesso.
 
 ---
 
-03-postagens.md:256
-A criação livre tem requisitos de entrada
+03-postagens.md:218
+Depois de concluir o curso de entrada e publicar o projeto, ele chega ao posto Construtor e libera o Estúdio livre e o Pinta. No destaque Como funciona, na seção As ferramentas, veja exemplos do que pode fazer com eles.
 
 ---
 
-03-postagens.md:260
-Ele pode voltar a uma ideia e fazer outra versão
+03-postagens.md:222
+A mesma regra de movimento pode servir a jogos diferentes. Seu filho aprende a montá-la numa aula e depois pode experimentar onde ela cabe numa ideia própria.
+
+Cada curso prevê os comandos que ele conquista. Nos cursos da sequência da Jornada, é preciso concluir as aulas e publicar o projeto no Mural. Cursos bônus e extras liberam seus comandos pela conclusão, sem exigir a publicação para isso. Eles também podem retomar comandos que já estavam disponíveis.
+
+Quando aparece um comando que ele ainda não tinha, a caixa ganha uma novidade. Quando ele já conhecia todos, o curso oferece outra construção para praticar. Por isso, concluir um curso nem sempre significa receber comandos inéditos.
+
+O Estúdio livre abre depois do curso obrigatório de entrada concluído e do projeto publicado. Ali ele combina os recursos conquistados durante o período de acesso: muda um movimento, experimenta um caminho e joga para conferir. Você pode pedir que mostre o que aproveitou da aula e o que resolveu mudar.
+
+No destaque Como funciona, na seção As ferramentas, veja essa criação acontecendo e as condições de acesso.
 
 ---
 
-03-postagens.md:264
-Algumas possibilidades vêm mais adiante
+03-postagens.md:240
+Seu filho quer fazer um jogo de um gato que recolhe estrelas. A ideia já está pronta na cabeça dele. O jogo ainda não.
+
+Entre os dois, há decisões: como o gato se move, o que conta como vitória, quando a fase acaba. Sem elas, fica difícil saber por onde começar.
+
+No Pensa, essas decisões viram conversa. Ele recebe perguntas e opções, escolhe, e o que escolheu vira uma lista de tarefas.
+
+Depois, no Estúdio, se o gato não anda, o Zappy olha os blocos e aponta o que conferir. Ele não mexe no projeto. Quem ajusta e testa é seu filho.
+
+Quando ele mostrar o jogo pronto, pergunte por que cada parte é assim. A inteligência artificial ajudou a organizar, e as escolhas ficaram com ele.
+
+Pensa e Zappy abrem no posto Inventor e usam créditos da família. No link da bio, você conhece a Comunidade dos Criadores.
 
 ---
 
-03-postagens.md:268
-Veja o que já está disponível para começar
+03-postagens.md:258
+Uma ideia de jogo chega inteira na cabeça do seu filho. Para virar jogo, ela precisa ser dividida em decisões.
+
+Como o personagem se move, o que conta como vitória, quando a fase termina. No Pensa, essas decisões viram conversa: ele responde, compara alternativas, escolhe, e o Pensa organiza as escolhas em tarefas para levar às ferramentas de criação.
+
+Durante a construção, o Zappy ajuda no Estúdio. Ele considera os blocos do projeto e o erro que apareceu, explica a dificuldade e indica o que conferir. Ele não altera o projeto: seu filho faz o ajuste e testa. A inteligência artificial também pode errar, e conferir a sugestão faz parte do trabalho.
+
+Pensa e Zappy abrem no posto Inventor da Jornada, dependem da disponibilidade do serviço e usam créditos compartilhados pela família, que você acompanha na área do responsável. No link da bio, você conhece a Comunidade dos Criadores.
 
 ---
 
-03-postagens.md:322
-Antes de escolher um curso de programação para seu filho
+03-postagens.md:274
+A assinatura dá acesso à plataforma. As ferramentas de criação livre abrem conforme ele conclui cursos e publica os jogos no Mural.
 
 ---
 
-03-postagens.md:326
-Veja qual é a primeira atividade
+03-postagens.md:278
+No começo, seu filho usa o Estúdio em cada aula, com os recursos daquele passo. O curso de entrada termina com um jogo publicado no Mural.
 
 ---
 
-03-postagens.md:330
-Confira como a aula cabe na rotina
+03-postagens.md:282
+Com o curso de entrada concluído e o jogo publicado, ele cria os próprios jogos e desenha os personagens. O curso extra Cadê Todo Mundo? não libera essa etapa sozinho.
 
 ---
 
-03-postagens.md:334
-Entenda o que acontece quando surge uma dúvida
+03-postagens.md:286
+Depois dos oito cursos da etapa do Construtor, ele planeja jogos no Pensa e tira dúvidas com o Zappy no Estúdio. Os dois usam inteligência artificial, com créditos da família.
+
+---
+
+03-postagens.md:290
+Mais oito cursos adiante, abre o Molda, a oficina 3D, onde ele prepara os modelos dos jogos em três dimensões.
+
+---
+
+03-postagens.md:294
+No posto Gênio da Criação, o Estúdio mostra o código lado a lado com os blocos. Na Lenda, o último posto, ele programa em código puro.
+
+---
+
+03-postagens.md:298
+A Comunidade está em lançamento e recebe cursos novos ao longo do tempo. Mensal ou anual, as etapas são as mesmas. No destaque Como funciona, na seção As ferramentas, você vê cada uma por dentro e o posto em que ela abre.
+
+---
+
+03-postagens.md:302
+As ferramentas de criação abrem conforme seu filho avança na Jornada.
+
+A Jornada do Criador tem oito postos. Na Faísca, ele usa o Estúdio dentro das aulas. Com o curso de entrada concluído e o jogo publicado no Mural, chega ao Construtor e abre o Estúdio livre e o Pinta. No Inventor, entram o Pensa e o Zappy, com créditos de inteligência artificial. No Explorador de Mundos, o Molda e a criação em 3D. Mais adiante, o código: ao lado dos blocos no Gênio da Criação e puro na Lenda.
+
+A gente organizou assim para que cada ferramenta chegue depois de ele aprender a usar. Quando o Estúdio livre abre, ele já montou e publicou um jogo. Quando o Pensa chega, já tem repertório para planejar.
+
+A Comunidade está em lançamento, e parte dos cursos que levam aos próximos postos ainda está em preparação. Os planos mensal e anual seguem o mesmo caminho, e nenhum deles abre as ferramentas só pela assinatura. No destaque Como funciona, na seção As ferramentas, você vê cada uma por dentro e o posto em que ela abre.
+
+---
+
+03-postagens.md:320
+Mesmo jogo, mesmo caminho, mesmos obstáculos. A única diferença está num número: a velocidade do personagem.
+
+Na primeira versão, ele anda devagar. Dá tempo de ver o obstáculo e decidir quando desviar.
+
+Antes da segunda, pense no que vai mudar.
+
+Aqui, a gente aumentou o número. O obstáculo chega antes, e a decisão de desviar precisa vir mais cedo.
+
+Um número dentro de uma regra muda o jeito de jogar. Quem cria escolhe esse valor pensando em quem vai jogar.
+
+No Estúdio dele, seu filho faz esse teste no próprio jogo: troca o número, joga as duas versões e decide qual fica.
+
+Conte nos comentários qual versão você colocaria na primeira fase. Depois, mostre ao seu filho e compare com a escolha dele.
 
 ---
 
 03-postagens.md:338
-Descubra o que ele aprende a construir
+Um número dentro de uma regra pode mudar o jeito de jogar a partida inteira.
+
+Neste exemplo da equipe, mantivemos o caminho e os obstáculos e mudamos só a velocidade do personagem. Na versão mais lenta, sobra tempo para decidir quando desviar. Na mais rápida, o obstáculo chega antes e a reação precisa vir mais cedo.
+
+Escolher esse número é uma decisão de quem cria: uma partida mais calma para começar ou um desafio para quem já conhece o jogo. No Estúdio livre, que abre no posto Construtor, seu filho faz isso no próprio jogo. Troca o valor, joga, compara e decide. O comando ganha um efeito que ele sentiu na partida.
+
+Qual versão você colocaria na primeira fase: a mais lenta ou a mais rápida? Conte nos comentários o que pesou na sua escolha e, depois, pergunte ao seu filho qual ele escolheria.
 
 ---
 
-03-postagens.md:342
-Leia o que está incluído no acesso
+03-postagens.md:350
+Compare as duas versões e vote na enquete dos stories. Depois, mostre ao seu filho e conversem sobre qual vocês escolheriam para a primeira fase.
 
 ---
 
-03-postagens.md:346
-Compare pensando no seu filho
+03-postagens.md:360
+Para comparar cursos de programação, olhe a atividade. Estes seis pontos mostram o que ele faz, como é orientado, como a aula cabe na rotina e o que fica depois.
+
+---
+
+03-postagens.md:364
+Peça para ver o projeto inicial e um trecho da explicação. Observe se seu filho entende a brincadeira, consegue ler as instruções e usa os controles pedidos.
+
+---
+
+03-postagens.md:368
+Aula ao vivo tem horário marcado e alguém explicando na hora. Aula gravada deixa pausar, praticar e retomar no horário combinado. Pense também no computador disponível e no tempo que vocês conseguem reservar.
+
+---
+
+03-postagens.md:372
+Observe como a aula explica a tarefa, oferece referências para conferir a montagem e mostra o que falta para seguir. Se houver verificação, veja quais objetivos ela confere. Assim, você conhece os caminhos que seu filho pode consultar durante uma tentativa.
+
+---
+
+03-postagens.md:376
+Personagens e cenários preparados ajudam no começo. Peça que mostrem qual parte seu filho vai construir e como ele confere se funcionou.
+
+---
+
+03-postagens.md:380
+Confira o prazo, os cursos publicados, a renovação e quando cada recurso fica disponível. Saber isso antes evita escolher contando com algo que ele ainda não vai usar.
+
+---
+
+03-postagens.md:384
+Pergunte com que ferramenta ele fica para continuar, onde os projetos ficam guardados e onde pode mostrar o que fez. Se o curso termina no último vídeo, pense em onde a criação vai seguir.
+
+---
+
+03-postagens.md:388
+Depois, pese como ele acompanha uma atividade e o apoio que a família procura. Salve estes pontos para usar quando conhecer cada opção.
+
+---
+
+03-postagens.md:392
+Ferramenta gratuita, curso gravado e aula ao vivo atendem necessidades diferentes. A comparação fica mais justa quando você olha a atividade.
+
+O nome de uma linguagem ou a imagem de um jogo pronto contam pouco sobre a aula. Para saber como seria para seu filho, veja o que ele recebe preparado, o que aprende a montar e como a própria atividade mostra o próximo passo quando ele trava. Some a isso o horário e a companhia que vocês conseguem oferecer no começo.
+
+Vale olhar também para depois. Pergunte com que ferramenta ele fica, onde os projetos ficam guardados e onde ele pode continuar criando quando a última aula terminar.
+
+Uma ferramenta gratuita atende bem quem gosta de explorar e montar o próprio caminho. Uma aula ao vivo atende quem quer horário fixo e um professor explicando na hora. Um curso gravado atende quem quer escolher o horário e rever um passo durante a prática. Cada formato combina com uma situação de família.
+
+Salve os seis pontos para usar nessa comparação.
+
+---
+
+03-postagens.md:410
+Mês novo, tema novo na tela do seu filho. É o desafio do mês.
+
+Quando um curso termina, a vontade de criar continua. O difícil é a página em branco. O tema resolve o assunto, e ele só precisa pensar no jogo.
+
+Na etapa em que o desafio está disponível, ele cria no Estúdio dele, com as ferramentas que ganhou nos cursos. Na hora de publicar, marca a participação, e o jogo entra junto com os outros do desafio no Mural.
+
+No Clube, ele publica ideias e responde às de outras crianças, com combinados de convivência e um caminho para avisar a equipe se algo incomodar.
+
+Quando o mês vira, chega outro tema. E você descobre o que ele inventou desta vez.
+
+No link da bio, você conhece a Comunidade dos Criadores.
+
+---
+
+03-postagens.md:426
+Quando um curso termina, a criação do seu filho continua com um tema novo a cada mês.
+
+O difícil de criar sozinho costuma ser começar. O desafio do mês dá o assunto, e ele só precisa pensar no jogo: cria no Estúdio dele, com as ferramentas que ganhou nos cursos, e marca a participação ao publicar. Os jogos do desafio ficam reunidos no Mural, onde ele joga os dos outros e vê o seu ali. O desafio aparece quando disponível para a etapa dele.
+
+No Clube, as conversas acontecem por publicações e respostas sobre ideias e criações. Há combinados de convivência e um caminho para avisar a equipe quando algo precisa de atenção. O perfil dele começa escondido dos colegas, e a família decide o que mostrar.
+
+Quando o mês vira, chega outro tema. E a próxima criação que ele mostrar pode ser uma ideia que você ainda não conhecia.
+
+No link da bio, você conhece a Comunidade dos Criadores.
+
+---
+
+03-postagens.md:469
+Mesmo jogo, dois números de velocidade. O caminho e os obstáculos são iguais. Assista às duas partidas e repare no tempo que sobra para desviar.
+
+---
+
+03-postagens.md:473
+Imagine alguém jogando pela primeira vez. Escolha qual dessas versões você colocaria na primeira fase.
+
+---
+
+03-postagens.md:479
+Olhe os obstáculos de perto. Na versão rápida, o personagem chega neles mais cedo e sobra menos tempo para desviar. Esse efeito ajuda a escolher a velocidade da partida que queremos criar.
+
+---
+
+03-postagens.md:483
+Escolher esse número faz parte de criar um jogo. Mostre as duas versões ao seu filho e pergunte qual ele colocaria no jogo dele. Vocês podem escolher versões diferentes, cada um com seu motivo.
+
+---
+
+03-postagens.md:491
+Somos Helena e Júlio. Antes de gravar uma aula, a gente decide o que a criança precisa ver acontecer para entender a ideia.
+
+---
+
+03-postagens.md:495
+No Farol, a chave some da tela quando o personagem encosta nela. Preparamos uma experiência para a criança ver se o jogo guardou que o personagem está com ela, porque a porta vai precisar disso.
+
+---
+
+03-postagens.md:499
+É assim que a gente prepara as aulas: a ideia acontece primeiro, a montagem vem depois. Este exemplo é do Desafio do Primeiro Jogo, A Chave do Farol, que tem oferta própria.
+
+---
+
+03-postagens.md:503
+Na Comunidade dos Criadores, seu filho aprende com projetos guiados e, conforme avança, pode usar o que aprendeu nas próprias ideias. No botão, confira os cursos publicados, os planos, a renovação e a garantia de sete dias da primeira contratação.
+
+---
+
+03-postagens.md:68
+Ele montou a regra, mas o personagem ficou parado
+
+---
+
+03-postagens.md:72
+Ele retoma a tarefa antes de mudar o projeto
+
+---
+
+03-postagens.md:76
+Ele compara uma parte de cada vez
+
+---
+
+03-postagens.md:80
+Se esqueceu como usar um recurso, pode consultar e voltar
+
+---
+
+03-postagens.md:84
+Ele confere o que já fez e o que ainda falta
+
+---
+
+03-postagens.md:88
+Depois do ajuste, ele testa outra vez
+
+---
+
+03-postagens.md:92
+Ao concluir aquela parte, ele encontra onde continuar
+
+---
+
+03-postagens.md:96
+Você pode pedir que ele mostre o que mudou
+
+---
+
+03-postagens.md:160
+Trocar uma cor já muda o jeito de ver um personagem
+
+---
+
+03-postagens.md:164
+Esta é a primeira versão, desenhada no Pinta
+
+---
+
+03-postagens.md:168
+Na segunda versão, só a cor mudou
+
+---
+
+03-postagens.md:172
+A comparação dá a ele uma escolha para explicar
+
+---
+
+03-postagens.md:176
+Depois da aparência, vem a regra que faz o personagem agir
+
+---
+
+03-postagens.md:196
+Um movimento aprendido na aula pode entrar numa ideia dele
+
+---
+
+03-postagens.md:200
+Primeiro, ele entende o que o comando faz
+
+---
+
+03-postagens.md:204
+O curso define quais comandos ele conquista
+
+---
+
+03-postagens.md:208
+Outro jogo também pode ensinar a usar melhor o que ele já conhece
+
+---
+
+03-postagens.md:212
+Os comandos podem se combinar numa criação própria
+
+---
+
+03-postagens.md:216
+A criação livre começa depois do curso de entrada e da publicação
+
+---
+
+03-postagens.md:272
+O que seu filho libera em cada etapa da Jornada
+
+---
+
+03-postagens.md:276
+Na Faísca, o Estúdio funciona dentro das aulas
+
+---
+
+03-postagens.md:280
+No Construtor, abrem o Estúdio livre e o Pinta
+
+---
+
+03-postagens.md:284
+No Inventor, chegam o Pensa e o Zappy
+
+---
+
+03-postagens.md:288
+No Explorador de Mundos, entram o Molda e o 3D
+
+---
+
+03-postagens.md:292
+Mais adiante, o código entra ao lado dos blocos
+
+---
+
+03-postagens.md:296
+Parte do caminho ainda está em preparação
+
+---
+
+03-postagens.md:358
+O nome da ferramenta diz pouco sobre o que seu filho vai fazer na aula
+
+---
+
+03-postagens.md:362
+A primeira atividade mostra se o começo serve para ele
+
+---
+
+03-postagens.md:366
+O formato precisa caber na rotina da casa
+
+---
+
+03-postagens.md:370
+A própria atividade precisa mostrar o próximo passo
+
+---
+
+03-postagens.md:374
+Num jogo de curso, uma parte vem pronta e outra o aluno constrói
+
+---
+
+03-postagens.md:378
+Em alguns cursos, as ferramentas chegam por etapas
+
+---
+
+03-postagens.md:382
+Vale saber o que ele consegue criar quando o curso acaba
+
+---
+
+03-postagens.md:386
+A escolha começa pelo que seu filho quer criar

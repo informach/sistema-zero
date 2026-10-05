@@ -1,5 +1,7 @@
 # Análise profunda da copy do Instagram e direção da reescrita
 
+> **Registro da análise de 04/10.** Em 05/10, o responsável solicitou os ajustes recomendados na revisão seguinte. A execução vigente está nos guias [Destaques](../01-destaques.md), [Fixados](../02-fixados.md) e [Postagens](../03-postagens.md). Foram simplificados Como funciona e Cursos, e corrigida a generalização de ferramentas inéditas em todo curso. O diagnóstico abaixo preserva o contexto da proposta anterior; não prevalece sobre os guias atuais.
+
 > **PESQUISA DE REFERÊNCIA.** Diagnóstico e decisões da revisão de copy de 04/10/2026 (noite). A copy para usar está nos guias [01 · Destaques](../01-destaques.md), [02 · Fixados](../02-fixados.md) e [03 · Postagens](../03-postagens.md). Este estudo explica por que ela mudou.
 
 **Pedido do responsável:** analisar a fundo destaques, posicionamento, fixados, stories e calendário, com a Kodland como concorrente principal, e melhorar a copy de todas as peças seguindo o direcionamento das **páginas de oferta da Comunidade dos Criadores no funil** e os métodos do Fluxo Criativo trazidos para o projeto (conteúdo editorial, revisão de copy, Light Copy).
@@ -118,6 +120,16 @@ Missões, XP, foguinho, conquistas, avatar e quarto entram como motivação da c
 | F10 | Uma regra, outra partida | Experimentar no próprio jogo |
 | F11 | Escolher um curso | Comparação justa |
 | F12 | A criação continua | Clube e desafio do mês |
+
+### Segunda decisão do responsável (05/10): Como funciona em seções, Projetos de volta e a orientação pela plataforma
+
+**Estrutura.** Cursos e Ferramentas eram, na prática, partes de Como funciona. Os três viram **um destaque Como funciona maior, dividido em seções por tema**, como Dúvidas: **1 · A Jornada** (a metodologia geral para a criança evoluir), **2 · Como é cada aula** (a metodologia da aula) e **3 · As ferramentas** (o que ela cria em cada uma e quando abre). Cada seção começa com uma tela de título, para quem avança saber onde está. O destaque Ferramentas deixa de existir e **Cursos volta a ser Projetos**, alimentado a cada lançamento: cada curso novo é um projeto novo mostrado ali, o que prova que a plataforma recebe projetos novos o tempo todo.
+
+**Destaques (6):** Como funciona (3 seções) → Projetos → Alunos → Dúvidas → Avaliações → Sobre nós. As seis capas existentes voltam a servir sem capa nova.
+
+**Orientação.** A ajuda por mensagens não pode ser destacada: o pai compara com a aula ao vivo da Kodland e entende menos do que a Comunidade oferece. A tese é outra e é a mais forte: **o ecossistema inteiro foi feito para a criança conseguir seguir sozinha**. As plataformas são intuitivas; a própria atividade diz o que fazer, dá dicas e mostra o próximo passo; o vídeo da aula mostra passo a passo; a plataforma indica a etapa seguinte; os tutoriais do Como fazer explicam as ferramentas; o Clube serve para trocar ideias; o Zappy, mais adiante, ajuda a investigar uma dúvida no Estúdio. **Se ainda restar uma dúvida muito específica de uma aula, ele pergunta para a equipe na própria aula.** Essa última linha entra só onde a pergunta for feita (Dúvidas), sem ênfase em espera. A copy fala da intenção do desenho ("feito para ele saber o próximo passo"), sem garantir que toda criança nunca terá dúvida.
+
+**Calendário de stories:** S01 Como funciona §1 · S02 Alunos · S03 Dúvidas bloco 1 · S04 Como funciona §2 · S05 Avaliações · S06 Sobre nós · S07 Como funciona §3 · S08 Projetos · S09 Dúvidas bloco 2 · S10 enquete da velocidade · S11 Dúvidas blocos 3 e 4 · S12 bastidor e planos. No feed, **F05 passa a ser a peça dona dessa tese**: a plataforma guia o próximo passo.
 
 ## 7. Limites
 

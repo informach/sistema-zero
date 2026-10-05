@@ -123,8 +123,8 @@ console.log(JSON.stringify(report, null, 2))
 if (
   issues.length ||
   broken.length ||
-  coverage.highlights.length !== 6 ||
-  coverage.faq.join(',') !== Array.from({ length: 18 }, (_, i) => i + 1).join(',') ||
+  coverage.highlights.join(',') !== 'Como funciona,Projetos,Alunos,Dúvidas,Avaliações,Sobre nós' ||
+  coverage.faq.join(',') !== Array.from({ length: 20 }, (_, i) => i + 1).join(',') ||
   coverage.pins.length !== 3 ||
   coverage.posts.length !== 9 ||
   coverage.stories.length !== 12
