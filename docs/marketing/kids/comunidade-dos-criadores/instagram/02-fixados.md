@@ -1,6 +1,6 @@
 # 02 · Fixados: roteiros e legendas
 
-**Coerência com os destaques revista em 05/10/2026, conforme os ajustes solicitados.** F01 apresenta a passagem do curso guiado à criação própria, sem prometer comandos inéditos em todo curso. F02 e F03 mantêm suas funções. Pela [segunda decisão do responsável, de 05/10](pesquisas/analise-profunda-copy-2026-10-04.md#6-reestruturação-após-o-retorno-do-responsável), os fixados apresentam a orientação como desenho da plataforma, feita para a criança saber o próximo passo, e deixam de destacar a ajuda por mensagens. **Copy ainda não aprovada pelo responsável.** Datas em [Postagens](03-postagens.md), textos dos destaques em [Destaques](01-destaques.md) e checklist em [Links e publicação](apoio/links-e-publicacao.md#checklist-da-peça-final). A revisão editorial não substitui a conferência dos materiais de cada peça.
+**Revisão solicitada aplicada em 05/10/2026.** Mantidos os três fixados. F01 apresenta a passagem do curso guiado à criação própria, F02 mostra alunos em aula e F03 explica a rotina. No F03, a verificação agora se refere aos objetivos conferidos nas etapas que têm esse recurso. A orientação da plataforma continua em primeiro plano; Dúvidas 8 explica o pedido de ajuda com a aula. Datas em [Postagens](03-postagens.md), textos dos destaques em [Destaques](01-destaques.md) e checklist em [Links e publicação](apoio/links-e-publicacao.md#checklist-da-peça-final). A revisão editorial não substitui a conferência dos materiais de cada peça.
 
 | Ordem | Capa | O que o pai ou a mãe precisa compreender |
 | --- | --- | --- |
@@ -140,7 +140,7 @@ Ajustar pronomes ao registro. Um clipe pode ficar sem comentário se o momento j
 
 **Título:** A aula mostra o próximo passo
 
-> O Zappy, personagem das aulas, explica o que fazer. A faixa no pé da tela avisa o que falta para seguir, e “Verificar esta etapa” confere o projeto e aponta o que ajustar.
+> O Zappy, personagem da aula, explica a tarefa. Nas etapas com verificação, seu filho confere quais objetivos da montagem já cumpriu e quais ainda faltam. A faixa no pé da tela mostra o que falta para seguir.
 
 ### Slide 6 · Participar como pai ou mãe
 
@@ -166,13 +166,13 @@ Ajustar pronomes ao registro. Um clipe pode ficar sem comentário se o momento j
 >
 > Para esse momento acontecer, a casa precisa de um computador com internet e de um horário que vocês escolhem. As aulas são para crianças de 9 a 14 anos que consigam ler as instruções e usar mouse e teclado. A programação, ele aprende com a gente.
 >
-> Como as aulas são gravadas, ele pode pausar numa montagem que leva mais tempo, voltar ao trecho de um passo esquecido e guardar o trabalho para outro dia. E a própria aula mostra o próximo passo: o Zappy explica o que fazer, e a plataforma confere a montagem e indica o que falta.
+> Como as aulas são gravadas, ele pode pausar numa montagem que leva mais tempo, voltar ao trecho de um passo esquecido e guardar o trabalho para outro dia. O Zappy explica a tarefa. Nas etapas com verificação, ele consulta quais objetivos da montagem já cumpriu e quais ainda faltam. Depois de um ajuste, testa no jogo para observar o resultado.
 >
 > Você acompanha pelas atividades e projetos na área do responsável e pelo que ele mostra: o jogo rodando e a regra que ele explica para você.
 >
 > No link da bio estão a aula por dentro, os planos da Comunidade dos Criadores e as condições de renovação, cancelamento e garantia.
 
-**Imagens:** computador, pausa e retomada, a orientação da aula (fala do Zappy, faixa do que falta e “Verificar esta etapa”, em conta de aluno), área do responsável e planos. Usar uma captura somente quando ela tornar a resposta mais clara. O slide precisa continuar compreensível sem conhecer os nomes das ferramentas. O slide 5 mostra a orientação da própria plataforma; o canal de mensagens não entra nesta peça e continua respondido no destaque Dúvidas. A copy fala da intenção do desenho; não afirmar que nenhuma criança terá dúvida.
+**Imagens:** computador, pausa e retomada, a orientação da aula (fala do Zappy, faixa do que falta e “Verificar esta etapa”, em conta de aluno), área do responsável e planos. Mostrar a verificação somente numa etapa que tenha critérios configurados: a tela indica os objetivos cumpridos e pendentes, não um diagnóstico de qualquer erro do jogo. Usar uma captura somente quando ela tornar a resposta mais clara. O slide precisa continuar compreensível sem conhecer os nomes das ferramentas. O slide 5 mostra a orientação da própria plataforma; o canal de mensagens continua respondido em Dúvidas 8. A copy fala da intenção do desenho; não afirmar que nenhuma criança terá dúvida.
 
 ## Montagem e conferência
 

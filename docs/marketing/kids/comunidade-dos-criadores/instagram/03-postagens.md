@@ -1,6 +1,6 @@
 # 03 · Postagens: calendário e roteiros do mês
 
-**Terceira rodada aplicada em 05/10/2026, conforme a segunda decisão do responsável registrada na [seção 6 da análise profunda](pesquisas/analise-profunda-copy-2026-10-04.md#6-reestruturação-após-o-retorno-do-responsável); ainda não aprovada pelo responsável.** Os destaques passam a seis: Como funciona, dividido em três seções (1 · A Jornada, 2 · Como é cada aula, 3 · As ferramentas), Projetos, Alunos, Dúvidas, Avaliações e Sobre nós. F05 passa a ser a peça dona da tese de que a plataforma guia o próximo passo, e a ajuda por mensagem deixa de ser destacada nas peças. Seguem valendo os ajustes de coerência anteriores: F07 explica aquisição e reutilização de comandos, e as condições de disponibilidade acompanham as demonstrações. Ciclo de **05 a 30/10/2026**, fuso **America/Sao_Paulo (UTC−03:00)**. Três posts e três dias de stories por semana. São **12 posts e 12 dias de stories**, com quantidade de telas adequada a cada assunto. Este é o único calendário de execução. O produto de referência é o local, em publicação conforme informado pelo usuário.
+**Revisão solicitada aplicada em 05/10/2026.** Mantidos os seis destaques e as três seções de Como funciona. F05 acompanha uma tentativa da criança em oito slides, e os textos distinguem a verificação de objetivos do teste do jogo. O pedido de ajuda com a aula continua em Dúvidas 8. F07 explica aquisição e reutilização de comandos, e as condições de disponibilidade acompanham as demonstrações. Ciclo de **05 a 30/10/2026**, fuso **America/Sao_Paulo (UTC−03:00)**. Três posts e três dias de stories por semana. São **12 posts e 12 dias de stories**, com quantidade de telas adequada a cada assunto. Este é o único calendário de execução. O produto de referência é o local, em publicação conforme informado pelo usuário.
 
 Proposta de horário inicial: **19h** para feed e **18h30** para stories nos mesmos dias. É uma convenção operacional para caber na rotina de resposta, não um “melhor horário” medido. Ajustar quando houver dados próprios comparáveis. Nenhuma publicação foi cadastrada ou agendada.
 
@@ -12,7 +12,7 @@ Proposta de horário inicial: **19h** para feed e **18h30** para stories nos mes
 | Qua 07/10 | F02 · Reel fixado | Alunos em aula | Cenas reais de alunos; seleção pendente | Conhecer a experiência / bio | Visitas ao perfil e dúvidas sobre as aulas |
 | Sex 09/10 | F03 · Carrossel fixado | Como funciona na sua casa (dono dos requisitos) | Computador, player, passos, família | Conferir adequação / bio | Salvamentos + dúvidas de formato |
 | Seg 12/10 | F04 · Reel | Convite: o jogo dele vira um convite | Publicação real no Mural, link aberto e cartão com QR | Jogar uma criação do filho / sem link | Compartilhamentos e relatos de famílias que jogaram |
-| Qua 14/10 | F05 · Carrossel | Orientação: a plataforma guia o próximo passo | Zappy da aula com Ouvir, vídeo, Uma pista e Conferir, faixa do que falta, “Verificar esta etapa”, trilha, Como fazer, Clube e Zappy do Estúdio | Conhecer a Comunidade / bio | Entendimento de como ele encontra o próximo passo |
+| Qua 14/10 | F05 · Carrossel de 8 slides | Orientação: uma tentativa, uma dúvida e os caminhos para continuar | Uma montagem de movimento: tarefa, comparação com o vídeo, consulta ao tutorial, objetivos da etapa, ajuste e teste | Conhecer a Comunidade / bio | Entendimento de como ele encontra o próximo passo |
 | Sex 16/10 | F06 · Reel | Possibilidade: o desenho dele entra no jogo | Pinta → Estúdio numa conta no posto Construtor | Conhecer o caminho / bio | Interesse de famílias com gosto por desenho |
 | Seg 19/10 | F07 · Carrossel | Progresso: usar os comandos aprendidos nas próprias ideias | Estúdio antes e depois de um curso, comemoração e Minhas ferramentas | Ver as ferramentas / destaque Como funciona, seção 3 · As ferramentas (L2) | Salvamentos + dúvidas sobre liberação |
 | Qua 21/10 | F08 · Reel | Apoio: Pensa e Zappy, com ele decidindo | Plano no Pensa e dúvida com o Zappy numa conta no posto Inventor | Conhecer a Comunidade / bio | Dúvidas sobre inteligência artificial e créditos |
@@ -63,61 +63,63 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 ### F05 · A plataforma guia o próximo passo · 14/10
 
-**Carrossel de dez slides. Objetivo:** mostrar que a plataforma inteira foi desenhada para a criança encontrar o próximo passo sozinha, com um slide para cada recurso que ela usa. É a peça dona dessa tese no feed. A aula por dentro, passo a passo, fica na seção Como é cada aula, do destaque Como funciona.
+**Carrossel de oito slides. Objetivo:** acompanhar uma tentativa de montar o movimento de um personagem e mostrar como a criança encontra referências para continuar. A situação conduz a peça: retomar a tarefa, comparar, consultar, conferir, ajustar e testar. F05 explica como a orientação acompanha uma dificuldade; a seção 2 de Como funciona apresenta a sequência da aula pelo exemplo do clique no esconderijo.
 
-**Slide 1. Título:** Cada tela da aula foi feita para seu filho saber o que fazer agora
+**Slide 1. Título:** Ele montou a regra, mas o personagem ficou parado
 
-> Uma criança costuma parar quando não sabe qual é o próximo passo. Por isso, a própria aula diz o que fazer, dá pistas e mostra o que falta. Veja o que ele encontra pelo caminho.
+> Imagine seu filho apertando a tecla para testar o movimento que acabou de montar. O personagem não anda. Para continuar, ele precisa localizar uma parte para conferir. A orientação da aula fica junto da atividade para ajudar nessa tentativa.
 
-**Slide 2. Título:** O Zappy apresenta a tarefa, e ele pode ouvir a instrução
+**Slide 2. Título:** Ele retoma a tarefa antes de mudar o projeto
 
-> Na aula, o Zappy, nosso personagem, explica por escrito o que fazer. Se preferir, seu filho aperta Ouvir e escuta a instrução gravada.
+> Primeiro, volta à instrução para lembrar qual movimento está construindo. O Zappy, personagem da aula, apresenta a tarefa por escrito, e o botão “Ouvir” permite escutá-la. Ele tem uma referência do que precisa acontecer no jogo.
 
-**Slide 3. Título:** O vídeo mostra cada passo da montagem
+**Slide 3. Título:** Ele compara uma parte de cada vez
 
-> Ele vê onde está o bloco, como encaixar e o que testar. Pausa, faz a parte dele e volta ao trecho se esquecer.
+> Com a tarefa em mente, volta ao trecho do vídeo que mostra a montagem. Pausa e compara aquela parte com o próprio projeto: qual bloco foi usado, onde entrou e o que precisa conferir antes de testar de novo.
 
-**Slide 4. Título:** Nas experiências, há uma pista e um botão para conferir
+**Slide 4. Título:** Se esqueceu como usar um recurso, pode consultar e voltar
 
-> Quando ele experimenta uma regra, Uma pista ajuda a perceber o que observar. Conferir mostra o que ele já descobriu e o que ainda falta.
+> Pode acontecer de entender a tarefa, mas não lembrar como encaixar o bloco. Nesse caso, consulta o tutorial correspondente no Como fazer, observa a ação e volta à montagem para tentar.
 
-**Slide 5. Título:** No pé da aula, uma faixa diz o que falta para seguir
+**Slide 5. Título:** Ele confere o que já fez e o que ainda falta
 
-> Ele não precisa adivinhar se terminou. A faixa mostra o que ainda falta fazer naquela parte da aula antes de avançar.
+> Nas etapas com “Verificar esta etapa”, ele confere quais objetivos da montagem já cumpriu e quais ainda faltam. A tela ajuda a escolher o que retomar. O teste no jogo continua sendo necessário para observar o resultado.
 
-**Slide 6. Título:** “Verificar esta etapa” confere o projeto dele
+**Slide 6. Título:** Depois do ajuste, ele testa outra vez
 
-> Nas atividades de montagem, o botão confere o que a atividade pede e aponta o que falta ajustar. Ele corrige e verifica de novo.
+> Seu filho aperta a mesma tecla e observa se o personagem se move. Se o resultado ainda for diferente do esperado, retoma a explicação e compara outra parte. Cada mudança precisa ser testada para saber o que aconteceu.
 
-**Slide 7. Título:** Terminou a aula, a trilha mostra a próxima
+**Slide 7. Título:** Ao concluir aquela parte, ele encontra onde continuar
 
-> Ao concluir, ele volta à trilha do curso e vê qual aula vem depois. Em outro dia, encontra o ponto em que parou.
+> A faixa no pé da aula mostra os requisitos que ainda faltam para seguir. Quando termina a aula, a trilha indica a próxima. Ele pode continuar em outro horário, dentro da rotina que vocês combinaram.
 
-**Slide 8. Título:** Para cada ferramenta, há um tutorial no Como fazer
+**Slide 8. Título:** Você pode pedir que ele mostre o que mudou
 
-> Quando a dúvida é sobre a ferramenta, como arrastar um bloco ou levar um desenho ao Estúdio, o tutorial mostra a ação. Ele consulta e volta ao que estava fazendo.
-
-**Slide 9. Título:** O Clube e, mais adiante, o Zappy do Estúdio ampliam o caminho
-
-> No Clube, ele troca ideias com outras crianças. A partir do posto Inventor, o Zappy do Estúdio ajuda a investigar um erro no projeto dele, sem mexer nos blocos.
-
-**Slide 10. Título:** Quando ele chamar você para mostrar o jogo, peça que conte como chegou lá
-
-> Ele joga, aponta a regra que montou e explica o que ajustou no caminho. No link da bio, você conhece a Comunidade dos Criadores.
+> Quando chamar você para jogar, peça que mostre uma parte que precisou ajustar. Ele pode executar o movimento e contar o que fez. No link da bio, veja como a aula acompanha essas tentativas.
 
 **Legenda:**
 
-> A gente desenhou cada tela da aula para seu filho saber o que fazer agora.
+> Seu filho montou uma regra, apertou a tecla e o personagem ficou parado. Nessa hora, precisa encontrar uma parte da construção para conferir.
 >
-> Uma criança costuma parar quando não sabe qual é o próximo passo. Por isso, a resposta está na própria tela. O Zappy apresenta a tarefa, e ele pode ouvir a instrução. O vídeo mostra cada passo da montagem. Nas experiências, há uma pista e um botão para conferir a descoberta. No pé da aula, uma faixa diz o que falta para seguir, e “Verificar esta etapa” aponta o que ajustar no projeto.
+> Por isso, a explicação fica junto da atividade. Ele pode retomar a instrução, rever o trecho da montagem e comparar uma parte de cada vez. Se a dúvida for como usar um recurso, o tutorial correspondente no Como fazer oferece outra referência para tentar.
 >
-> Quando a aula termina, a trilha mostra a próxima. Para usar uma ferramenta, há os tutoriais do Como fazer. No Clube, ele troca ideias, e a partir do posto Inventor o Zappy do Estúdio ajuda a investigar um erro.
+> Nas etapas que têm verificação, a tela mostra quais objetivos da montagem já foram cumpridos e quais ainda faltam. Esses objetivos ajudam a orientar a tentativa. Depois de alterar uma parte, ele joga para conferir se o movimento saiu como esperava.
 >
-> Cada criança tem seu ritmo, e algumas querem companhia no começo. A intenção do desenho é que ele encontre o próximo passo na própria plataforma e chegue até você com um jogo funcionando para mostrar.
+> Cada criança tem seu ritmo, e algumas querem companhia no começo. A plataforma oferece referências para que ele possa retomar o trabalho e experimentar. Quando mostrar uma criação, você pode pedir que conte o que precisou mudar.
 >
-> No link da bio, você conhece a Comunidade dos Criadores.
+> As imagens são uma demonstração da equipe. No link da bio, você conhece uma aula da Comunidade dos Criadores por dentro.
 
-**Imagem:** capturas reais de uma aula numa conta demonstrativa: fala do Zappy com o botão Ouvir, vídeo ao lado do editor, experiência com Uma pista e Conferir, faixa do pé da aula, resultado de “Verificar esta etapa”, trilha com a próxima aula, um tutorial do Como fazer, uma conversa do Clube sem nomes de outras crianças e o Zappy do Estúdio numa conta no posto Inventor ou acima. Identificar a demonstração da equipe. Não confundir as falas preparadas do Zappy na aula com a ajuda de inteligência artificial do Estúdio. Conferir o Zappy do Estúdio na [tabela única](01-destaques.md#disponibilidade-por-recurso) e acrescentar ao slide 9 a condição correspondente. A pergunta à equipe sobre uma dúvida muito específica fica nas Dúvidas; não destacá-la nesta peça. **CTA:** link da bio. A peça descreve a intenção do desenho; não afirmar que nenhuma criança terá dúvida.
+**Imagem:** acompanhar o mesmo projeto de movimento, numa conta demonstrativa, preservando personagem, tecla e montagem entre as telas. Mostrar a tarefa, comparação com o vídeo, consulta ao tutorial, objetivos reais, ajuste e novo teste. A falha e a alteração precisam existir na gravação. Se o exemplo disponível for outra mecânica, adaptar a história inteira, inclusive a legenda. Identificar “Demonstração da equipe”; não apresentar a encenação como registro de aluno.
+
+**Condição do slide 5:** usar uma etapa com critérios de verificação configurados e mostrar a lista de objetivos cumpridos e pendentes. O botão não diagnostica qualquer erro de funcionamento. Se a aula escolhida não tiver esse recurso, manter a mesma história e usar o título **Ele retoma a explicação para conferir a montagem**, com a fala alternativa abaixo.
+
+> Ele volta ao trecho que mostra aquela parte e compara os blocos com o próprio projeto. Essa referência ajuda a escolher o que retomar. Depois de mudar a montagem, testa no jogo para observar o resultado.
+
+**Terceiro parágrafo da legenda nessa alternativa:**
+
+> A comparação com a explicação dá uma referência para retomar a montagem. Depois de alterar uma parte, ele joga para conferir se o movimento saiu como esperava. Se ainda precisar ajustar, pode voltar àquele trecho e fazer outra tentativa.
+
+**Produção:** o tutorial precisa demonstrar o uso citado no slide 4; adaptar esse trecho se o material mostrar outra ação. A orientação das experiências é aprofundada em Como funciona, seção 2; Clube e Zappy do Estúdio têm seus espaços nas seções 1 e 3. Dúvidas 8 explica como pedir ajuda à equipe. **CTA:** link da bio. O resultado ilustrado não garante que toda criança resolva toda dúvida sozinha.
 
 ### F06 · O personagem que ele desenhou pode entrar no jogo · 16/10
 
@@ -367,7 +369,7 @@ As falas e legendas estão nos blocos de citação. Nos carrosséis, usar o tít
 
 **Slide 4. Título:** A própria atividade precisa mostrar o próximo passo
 
-> Observe se a aula diz o que fazer, dá pistas, confere a montagem e mostra o que falta para seguir. Isso indica quanto seu filho consegue avançar no horário dele.
+> Observe como a aula explica a tarefa, oferece referências para conferir a montagem e mostra o que falta para seguir. Se houver verificação, veja quais objetivos ela confere. Assim, você conhece os caminhos que seu filho pode consultar durante uma tentativa.
 
 **Slide 5. Título:** Num jogo de curso, uma parte vem pronta e outra o aluno constrói
 
@@ -458,7 +460,7 @@ Projetos é alimentado a cada lançamento: cada curso novo publicado ganha suas 
 
 As 20 respostas de Dúvidas estão divididas em 6 + 7 + 4 + 3 e saem em 09/10, 23/10 e 28/10 (os blocos 3 e 4 juntos). Os demais textos de destaques ficam somente no documento 01, para que uma revisão não gere duas copies diferentes. Usar os [links prontos](apoio/links-e-publicacao.md#links-prontos) conforme a sequência: L1 para as seções 1 e 2 de Como funciona e para Projetos, L2 para a seção 3 · As ferramentas, L0 para Sobre nós e L5 para os planos.
 
-As falas abaixo são a copy completa das sequências complementares. Em vídeo, usar legendas sincronizadas; em cards, dividir o texto quando a leitura pedir. Não substituir a explicação por uma lista de palavras. S10 e S12 não entram automaticamente nos destaques. O antigo S08 (uma dúvida durante a construção) saiu do calendário: o próximo passo dentro da aula está em F05 e na seção 2 de Como funciona, e a pergunta à equipe sobre uma dúvida muito específica fica nas Dúvidas.
+As falas abaixo são a copy completa das sequências complementares. Em vídeo, usar legendas sincronizadas; em cards, dividir o texto quando a leitura pedir. Não substituir a explicação por uma lista de palavras. S10 e S12 não entram automaticamente nos destaques. O caminho para continuar uma montagem está em F05; a sequência da aula, na seção 2 de Como funciona; o pedido de ajuda à equipe, em Dúvidas 8.
 
 ### S10 · Qual velocidade vocês escolheriam?
 
@@ -506,10 +508,10 @@ A votação abre uma conversa sobre escolha. Não anunciar uma resposta certa ne
 
 | Lote | Captura e preparação | Peças atendidas |
 | --- | --- | --- |
-| A · Aula e projetos | Uma aula de movimento por dentro: fala do Zappy com o botão Ouvir, jogo pronto, vídeo ao lado do editor, experiência com Uma pista e Conferir, faixa do que falta, “Verificar esta etapa”, trilha com a próxima aula e Como fazer; telas P01–P03 de cada curso lançado | F01, F05; S01, S04, S08 |
+| A · Aula e projetos | Para F05, a mesma tentativa de movimento do início ao teste: tarefa, comparação com o vídeo, tutorial, objetivos da etapa quando houver verificação, ajuste e resultado. Para S04, a sequência real da aula de clique no esconderijo, incluindo a experiência. Faixa do que falta e próxima aula; telas P01–P03 de cada curso lançado | F01, F05; S01, S04, S08 |
 | B · Alunos e famílias | Selecionar cenas reais de aula e relatos literais, conferir contexto e autorização | F02; S02, S05 |
 | C · Rotina e condições | Computador, área do responsável, condições e controles; cartões de critérios | F03, F11; S03, S09, S11 |
-| D · Ferramentas e Jornada | Conta demonstrativa com posto alto (Explorador de Mundos ou acima), para mostrar Pensa, Zappy e Molda no estado real; Estúdio antes e depois de um curso, comemoração da ferramenta nova e Minhas ferramentas; Pinta → Estúdio; Mapa da Jornada com os postos; capturas do Pensa, do Zappy (também para o slide 9 de F05) e do Molda; disponibilidade de cada recurso conferida no catálogo antes de publicar | F06, F07, F08, F09; S07 |
+| D · Ferramentas e Jornada | Conta demonstrativa com posto alto (Explorador de Mundos ou acima), para mostrar Pensa, Zappy e Molda no estado real; Estúdio antes e depois de um curso, comemoração da ferramenta nova e Minhas ferramentas; Pinta → Estúdio; Mapa da Jornada com os postos; capturas do Pensa, do Zappy e do Molda; disponibilidade de cada recurso conferida no catálogo antes de publicar | F06, F07, F08, F09; S07 |
 | E · Criação que circula | Publicação no Mural, link aberto num aparelho compatível com os controles e cartão com QR (cortado se apontar para ambiente de teste); cartão do desafio do mês, jogos do desafio no Mural e Clube, sem nomes de outras crianças; jogo de obstáculos em duas velocidades no Estúdio livre | F04, F10, F12; S10 |
 | F · Fundadores e preparação | Casal, roteiro e experiência da chave no Farol | S06, S12 |
 

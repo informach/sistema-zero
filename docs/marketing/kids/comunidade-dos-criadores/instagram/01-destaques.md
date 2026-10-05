@@ -1,6 +1,6 @@
 # 01 · Destaques: textos e montagem
 
-**Reestruturado em 05/10/2026 pela segunda decisão do responsável.** São seis destaques. Como funciona passa a ser um destaque maior, dividido em três seções (A Jornada, Como é cada aula e As ferramentas); Projetos volta no lugar de Cursos; Ferramentas deixa de ser destaque e vira a seção 3. A orientação passa a ser apresentada pela plataforma, que foi feita para a criança saber o próximo passo; a conversa com a equipe aparece uma vez, em Dúvidas. Ficam mantidas as correções da revisão de 05/10 cedo: nem todo curso traz comandos novos, e cada recurso informa sua condição de acesso. Fundamento na [análise profunda da copy](pesquisas/analise-profunda-copy-2026-10-04.md#6-reestruturação-após-o-retorno-do-responsável). Esta redação ainda não foi aprovada pelo responsável. As datas estão em [Postagens](03-postagens.md#3-stories-e-formação-dos-destaques) e os links em [Links e publicação](apoio/links-e-publicacao.md#links-prontos).
+**Revisão solicitada aplicada em 05/10/2026.** Mantidos seis destaques e as três seções de Como funciona: A Jornada, Como é cada aula e As ferramentas. A primeira seção apresenta a experiência completa; as seguintes aprofundam assuntos diferentes. A verificação da montagem agora descreve os objetivos conferidos nas etapas que têm esse recurso, e Dúvidas 8 acolhe o pedido de ajuda com a aula. Nem todo curso traz comandos novos, e cada recurso informa sua condição de acesso. As datas estão em [Postagens](03-postagens.md#3-stories-e-formação-dos-destaques) e os links em [Links e publicação](apoio/links-e-publicacao.md#links-prontos).
 
 **Ordem no perfil:** Como funciona → Projetos → Alunos → Dúvidas → Avaliações → Sobre nós. Conferir a disposição no aplicativo depois de atualizar.
 
@@ -23,6 +23,8 @@
 
 **O que este destaque explica:** como seu filho evolui na plataforma, como é cada aula e o que ele cria com cada ferramenta. São três seções, como os blocos de Dúvidas, e cada uma abre com uma tela de título curta para quem avança saber onde está. As seções podem ser publicadas em dias diferentes, conforme [Postagens](03-postagens.md#3-stories-e-formação-dos-destaques); ficam no mesmo destaque, na ordem 1, 2 e 3. Stickers: seções 1 e 2 → L1; seção 3 → L2.
 
+**Como manter a sequência clara:** a seção 1 precisa bastar para entender o começo, a rotina, a continuidade e a participação da família; seu fechamento e seu link são completos. A seção 2 acompanha uma tarefa dentro de uma aula. A seção 3 mostra o que a criança cria com as ferramentas e as condições de acesso. Evitar reabrir as seções 2 e 3 com outra apresentação geral. O roteiro mantém 20 unidades e três telas de título; dividir uma unidade quando a demonstração ou a leitura pedir, preservando o raciocínio. A primeira tela já apresenta os três assuntos, sem acrescentar outra abertura.
+
 **A tese da orientação, para todo o destaque:** a plataforma foi feita para a criança saber o próximo passo. Mostrar isso pelo que existe na tela: a fala do Zappy na aula, com o botão “Ouvir”; o vídeo passo a passo; “Uma pista” e “Conferir” nas experiências; a faixa “O que falta para seguir” no pé da aula; “Verificar esta etapa” nas montagens que têm essa verificação; a próxima aula indicada na trilha; os tutoriais do Como fazer; o Clube para trocar ideias; e, mais adiante, o Zappy do Estúdio. Falar da intenção do desenho, sem garantir que nenhuma criança terá dúvida nem que toda criança acompanha sozinha desde a primeira aula. Não destacar mensagens à equipe nem tempo de espera neste destaque; esse caminho fica em Dúvidas 8.
 
 ### Seção 1 · A Jornada
@@ -31,9 +33,13 @@
 
 #### Tela de título da seção 1
 
-> 1 · A Jornada: como seu filho evolui na plataforma
+> Como funciona
+>
+> 1 · A Jornada
+> 2 · Como é cada aula
+> 3 · As ferramentas
 
-**Cena:** tela de título no padrão visual do perfil, com a Jornada ao fundo (`tela-jornada`). Poucos segundos, sem fala.
+**Cena:** apresentar os três assuntos com letra legível e destacar “1 · A Jornada” como a seção atual, com a Jornada ao fundo (`tela-jornada`). Dar tempo para ler; sem fala. Nas aberturas seguintes, usar “2 de 3” e “3 de 3” para situar a continuação.
 
 #### 1.1 · O que seu filho aprende a criar
 
@@ -49,9 +55,9 @@
 
 #### 1.3 · Feito para ele saber o próximo passo
 
-> A plataforma foi pensada para ele saber o próximo passo. A aula diz o que fazer e confere a montagem, a trilha mostra a aula seguinte, e o Como fazer ensina a usar cada ferramenta.
+> A aula apresenta uma tarefa de cada vez e mostra como conferir o resultado. Seu filho faz aquela parte antes de seguir. Quando termina, a trilha indica a próxima aula.
 
-**Cena:** três telas rápidas e reais: a fala do Zappy na aula, a trilha com a próxima aula e o Como fazer. O detalhe de cada recurso fica na seção 2.
+**Cena:** tarefa explicada, criança ou equipe testando o resultado e próxima aula na trilha. É a visão geral; os recursos usados durante uma tentativa aparecem na seção 2.
 
 #### 1.4 · Quando pode começar uma ideia própria
 
@@ -61,7 +67,7 @@
 
 #### 1.5 · Como o aprendizado continua
 
-> Cada curso seguinte traz outro jogo para construir. Os comandos que ele conquista ficam guardados no Estúdio dele e valem para qualquer jogo que quiser inventar.
+> Cada curso seguinte traz outro jogo para construir. Os comandos que ele conquista ficam reunidos no Estúdio, para combinar nas próprias criações. Ele pode aproveitar um movimento que aprendeu e experimentar outra brincadeira com ele.
 
 **Cena:** a trilha com o curso seguinte e a paleta do Estúdio com os comandos conquistados. Escolher um exemplo que exista no material disponível. A sequência de cursos e os recursos alcançáveis precisam corresponder ao catálogo publicado. Não prometer comando novo a cada curso.
 
@@ -83,9 +89,11 @@
 
 #### Tela de título da seção 2
 
-> 2 · Como é cada aula: o que guia seu filho a cada passo
+> 2 de 3 · Como é cada aula
+>
+> Acompanhe uma tarefa do começo ao teste.
 
-**Cena:** tela de título no padrão visual do perfil, com a aula ao fundo (`tela-aula-estudio`). Poucos segundos, sem fala.
+**Cena:** título no padrão visual do perfil, com a aula ao fundo (`tela-aula-estudio`). Dar tempo para ler, sem fala, e entrar diretamente na tarefa abaixo. O nome do curso identifica o exemplo.
 
 #### 2.1 · O jogo pronto vem primeiro
 
@@ -113,15 +121,19 @@
 
 #### 2.5 · A aula confere com ele
 
-> Se o personagem não aparece, “Verificar esta etapa” confere o projeto e aponta o que ajustar. E a faixa no pé da aula mostra o que falta para seguir.
+> Nas etapas com verificação, ele pode conferir os objetivos da montagem. A tela mostra o que já cumpriu e o que ainda falta, para ele voltar àquela parte e tentar novamente.
 
-**Cena:** uma etapa real com a verificação de projeto e a faixa “O que falta para seguir”. Nem toda etapa tem a verificação; se a captura não tiver, trocar a primeira frase por “Se o personagem não aparece, ele volta ao vídeo e confere a montagem.” Mostrar o resultado da verificação e o ajuste feito pela criança.
+**Cena:** etapa real com “Verificar esta etapa”: mostrar os objetivos, um item ainda não cumprido, a alteração correspondente e a nova conferência. O recurso confere os critérios definidos para aquela montagem; não diagnostica qualquer erro do jogo nem está presente em todas as etapas. O teste do personagem continua sendo feito no jogo.
+
+**Alternativa se a aula escolhida não tiver essa verificação:** usar a fala abaixo e mostrar a comparação com o vídeo. Não trocar de curso no meio da sequência para encaixar o botão.
+
+> Se o personagem não aparece, ele volta ao trecho do vídeo e compara a montagem. Depois de ajustar aquela parte, clica de novo no esconderijo e observa se o resultado mudou.
 
 #### 2.6 · O próximo passo já está indicado
 
-> Ao terminar, a trilha mostra a próxima aula, e o Como fazer explica cada ferramenta. No fim do curso, ele pode chamar você para jogar. No link, veja uma aula por dentro.
+> A faixa no pé da aula mostra o que falta para seguir. Ao concluir, ele encontra a próxima aula na trilha. No link, acompanhe essa sequência por dentro.
 
-**Cena:** comemoração do fim da aula com a próxima aula, tutorial do Como fazer e alguém da família jogando, se houver registro autorizado; encerrar com o casal. Sticker **Ver a aula por dentro** → L1.
+**Cena:** faixa de pendências da mesma aula, conclusão e próxima aula indicada. Encerrar com o casal e o sticker **Ver a aula por dentro** → L1. A participação da família já foi apresentada na seção 1.
 
 ### Seção 3 · As ferramentas
 
@@ -131,23 +143,25 @@
 
 #### Tela de título da seção 3
 
-> 3 · As ferramentas: o que ele cria em cada uma e quando ela abre
+> 3 de 3 · As ferramentas
+>
+> Veja o que seu filho pode criar e quando cada recurso abre.
 
 **Cena:** tela de título no padrão visual do perfil, com o Estúdio ao fundo (`tela-estudio`). Poucos segundos, sem fala.
 
 #### 3.1 · Estúdio: a regra aparece no jogo
 
-> Seu filho aperta uma tecla e o personagem se move. No Estúdio, ele monta com blocos a regra que liga uma coisa à outra. Durante as aulas, a explicação acompanha essa montagem e ele testa o resultado.
+> Seu filho quer que um personagem ande quando aperta uma tecla. No Estúdio, ele monta essa regra com blocos e joga para testar. Pode ajustar o movimento e comparar as versões.
 
-**Cena:** tecla, bloco correspondente e movimento. O Estúdio integrado à aula deve ser mostrado numa atividade publicada.
+**Cena:** tecla, bloco correspondente e comparação entre dois ajustes do movimento. Mostrar o uso de uma regra, sem repetir a explicação da aula da seção 2. Se a captura for do Estúdio livre, manter a condição de acesso de 3.2 junto da demonstração.
 
 #### 3.2 · Estúdio: usar o que aprendeu em outra criação
 
-> No Estúdio livre, seu filho abre um projeto novo e encontra reunidos os comandos que conquistou nos cursos. Dali em diante, o jogo é dele: escolhe o personagem, as regras e como se ganha.
+> Para um jogo de corrida, ele pode combinar um movimento que aprendeu com uma regra de pontuação. O Estúdio livre reúne os comandos que já conquistou, para usar e testar essas combinações.
 >
 > Esse uso livre abre depois de concluir o curso de entrada e publicar o projeto no Mural. É o posto Construtor. As ferramentas ficam disponíveis durante o período de acesso.
 
-**Cena:** projeto novo no Estúdio livre, com a paleta dos comandos conquistados, e uma ideia própria em construção. Mostrar os blocos efetivamente conquistados. Não usar “curso publicado” para falar do projeto que a criança publica.
+**Cena:** projeto no Estúdio livre, com os comandos de movimento e pontuação conquistados pela conta. Mostrar como entram na criação. Se a captura tiver outra mecânica, adaptar o exemplo à combinação real. Não usar “curso publicado” para falar do projeto que a criança publica.
 
 #### 3.3 · Pinta: o desenho entra no jogo
 
@@ -302,13 +316,13 @@ Não transformar as cenas de crianças diferentes numa história de antes e depo
 
 > Pela própria aula, que foi desenhada para ele saber o próximo passo. O Zappy, personagem da aula, explica o que fazer, e o botão “Ouvir” toca essa fala. O vídeo mostra cada passo na tela.
 >
-> Se o personagem não aparece no clique, “Verificar esta etapa” confere o projeto e aponta o que ajustar. Nas experiências, ele tem “Uma pista” quando empaca e “Conferir” para saber se chegou lá.
+> Nas etapas que têm “Verificar esta etapa”, ele confere quais objetivos da montagem já cumpriu e quais ainda faltam. Isso dá uma referência para retomar aquela parte. Nas experiências, “Uma pista” ajuda a observar, e “Conferir” mostra o que ele já descobriu.
 
 #### 8. E se ele travar numa parte?
 
 > Dentro da plataforma, ele tem mais de um caminho. Além do que a aula mostra, o Como fazer tem tutoriais de cada ferramenta, e no Clube ele pode mostrar o que está construindo e ver como outros criadores resolveram coisas parecidas. Tudo foi pensado para ele avançar com autonomia.
 >
-> Se ainda sobrar uma dúvida bem específica sobre aquela aula, ele escreve para a equipe no botão “Preciso de ajuda”, ali na própria aula, contando o que tentou. A resposta aparece nos Recados.
+> Se ainda precisar de ajuda com a aula, ele pode escrever para a equipe pelo botão “Preciso de ajuda”, contando o que tentou. A conversa fica nos Recados.
 
 #### 9. O que ele faz depois de terminar um curso?
 

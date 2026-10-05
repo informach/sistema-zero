@@ -73,7 +73,8 @@ Registrar **ausente** quando o dado não está acessível. Métricas de sete dia
 - Falas, legendas e slides foram lidos como uma conversa; cada frase prepara a seguinte e não há cortes que escondam uma explicação necessária.
 - A fala corresponde à captura e à disponibilidade dos recursos. A [conferência por recurso](../01-destaques.md#disponibilidade-por-recurso) está registrada e sua condição aparece junto da demonstração, inclusive em F01 e F06–F09; uma conta da equipe não comprova o acesso de quem começa.
 - A peça distingue comandos novos de prática de comandos já conquistados. Quando fala em publicar, identifica o projeto, não o curso.
-- A peça mostra como a própria plataforma orienta a tarefa: a atividade diz o que fazer, o Zappy explica, o vídeo mostra o passo a passo e a conferência aponta o que falta; os tutoriais do Como fazer e o Clube ampliam esse apoio. A pergunta à equipe sobre uma dúvida muito específica aparece só na resposta de Dúvidas, sem destaque e sem falar em espera.
+- A peça acompanha uma situação da criança e mostra como ela usa a orientação para continuar. Quando aparecer “Verificar esta etapa”, a captura tem critérios configurados e a copy fala dos objetivos cumpridos e pendentes. Não apresentar o recurso como diagnóstico de qualquer erro do jogo. O pedido de ajuda à equipe com a aula está em Dúvidas 8, sem restringi-lo a dúvidas excepcionais.
+- A primeira seção de Como funciona explica a experiência e fecha com seu próprio link. As seções seguintes aprofundam a tarefa e a criação, com títulos que indicam “2 de 3” e “3 de 3”. F05 usa oito slides para acompanhar a mesma tentativa, incluindo a conferência e o teste.
 - Zappy de diálogos da aula e assistente de inteligência artificial têm papéis distintos.
 - Materiais preparados, demonstrações da equipe e casos de alunos estão identificados corretamente.
 - Legendas de vídeo, contraste, capa, som e recorte foram vistos no celular.
