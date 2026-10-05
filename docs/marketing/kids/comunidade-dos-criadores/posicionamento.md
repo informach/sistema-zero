@@ -14,6 +14,8 @@ Há duas funções de Zappy: as falas didáticas presentes nas aulas e a assiste
 
 Para a entrada do Instagram, a mensagem central é **“Seu filho aprende criando jogos, da primeira experiência às próprias ideias”**, demonstrada por tarefa, orientação, construção e teste. O tempo de tela permitido continua como contexto de uma situação familiar, sem precisar abrir toda peça. O [roteiro de valor e demonstração, versão 3](instagram/apoio/valor-e-demonstracao-2026-10-03.md), os guias vigentes de [Destaques](instagram/01-destaques.md), [Fixados](instagram/02-fixados.md) e [Postagens](instagram/03-postagens.md) aplicam essa hierarquia. Este adendo governa a interpretação do acompanhamento e da entrada editorial nas seções históricas abaixo, preservando os quadros e os argumentos por perfil.
 
+**Instagram, noite de 04/10/2026:** por decisão do responsável, a comunicação do perfil passou a ter a **Jornada da criança na plataforma** como centro. Cada curso ensina com um jogo guiado e entrega ferramentas novas; com Estúdio, Pinta, Pensa, Zappy e Molda, conforme o avanço, a criança cria os próprios jogos, publica no Mural e participa do Clube e do desafio do mês. A aula é o mecanismo; a criação própria é a promessa. Ver a [análise profunda da copy](instagram/pesquisas/analise-profunda-copy-2026-10-04.md#6-reestruturação-após-o-retorno-do-responsável).
+
 ## 1. Recomendação
 
 **Definir um quadro por perfil, apresentar a furadeira pelo ângulo pertinente àquela família e priorizar os decorados correspondentes.** Manter um resultado central da Comunidade e um mecanismo comum que sustentem as quatro versões.
