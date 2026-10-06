@@ -32,7 +32,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Repare no número Achados. Ele guarda quantos personagens a gente já encontrou, e esse número vai mudando durante a busca. É isso que é uma variável: um lugar onde o jogo guarda um número que pode mudar.
 >
-> Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. No nosso jogo é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.
+> Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. Aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.
 >
 > Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque o jogo somou um achado. Se eu toco em outro, ele soma de novo, e agora é 2.
 >
@@ -66,7 +66,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Arraste e solte logo abaixo de Deixar o sprite escolhido com 0% de visibilidade.
 >
-> O número 1 já está certo, porque cada personagem vale um achado. Mas o bloco chega com contador, e a variável do nosso jogo se chama achados. Então clique em contador e escolha achados.
+> O número 1 já está certo, porque cada personagem vale um achado. Mas o bloco chega com contador, e a variável do seu jogo se chama achados. Então clique em contador e escolha achados.
 >
 > Confira se ficou assim: os dois blocos estão dentro de Quando clicar ou tocar. Primeiro, o esconderijo escolhido fica invisível e, logo abaixo, o jogo soma 1 em achados.”
 

@@ -56,7 +56,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Na vida é assim também: toda ação tem uma reação. Por exemplo, se alguém faz cócegas em você, você ri. A cócega é a ação, e a risada é a reação.
 >
-> No nosso jogo, o toque é a ação. E a reação que a gente quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.
+> No seu jogo, o toque é a ação. E a reação que a gente quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.
 >
 > Por isso, eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível.
 >

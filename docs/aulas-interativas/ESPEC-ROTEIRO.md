@@ -94,7 +94,7 @@ Exemplo do toque, como numa conversa: "Esta é uma experiência para a gente ent
 a ação e a reação. Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda
 não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele. Na
 vida é assim também: toda ação tem uma reação. Por exemplo, se alguém faz cócegas em você, você ri.
-A cócega é a ação, e a risada é a reação. No nosso jogo, o toque é a ação. E a reação que a gente
+A cócega é a ação, e a risada é a reação. No seu jogo, o toque é a ação. E a reação que a gente
 quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter
 essa reação, a gente precisa ligar a reação ao toque. Por isso, eu clico em Ligar a reação ao toque
 e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava
@@ -115,6 +115,7 @@ questionários ou mudar as experiências só para encurtar a fala.
 ## 5. Falar com quem está fazendo
 
 - Usar "você", verbos simples e frases que soem naturais em voz alta. Toda fala conversa com quem faz a aula, como alguém ao lado dela: "o seu caderno", "o seu jogo", "Sua vez!". Nada de frase impessoal que só descreve.
+- Três vozes (Diretrizes, seção 6): "você" para o que é da pessoa, o que ela faz e o que ela conquista, com as ações no imperativo; "a gente" e "vamos" para pensar junto e convidar; "eu" só quando o narrador demonstra. Evitar o "nós" de sala de aula ("Hoje nós vamos aprender…") e dizer "o seu jogo", não "o nosso jogo".
 - A fala é uma conversa contínua, não uma lista de frases soltas: cada frase se liga à anterior ("então", "por isso", "mas", "é que", "agora que"), todo resultado vem com o porquê ("Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele") e a explicação diz o que é cada coisa no próprio jogo ("O toque é a ação, e a reação que a gente quer é o esconderijo ficar invisível"). Evitar sequências curtas e secas como "Nada acontece. O toque ainda não tem uma reação. Vamos ligar uma." (Diretrizes, seção 6).
 - O que já vem pronto não vira frase solta na montagem ("O jardim e os personagens já estão preparados"): a criança vê o que já está no projeto. Só citar o que vem pronto quando ajuda a ação, com o papel que tem ali ("Olha aqui: nessa área já tem o bloco… É ele que percebe quando alguém toca num esconderijo"). O reconhecimento do que veio pronto fica na comemoração (Diretrizes, seção 3).
 - Chamar a atenção nos momentos que importam: "Olha aqui:" ao mostrar um lugar, um bloco ou o primeiro gesto da demonstração; "Olha só:" quando aparece um resultado; "Repare:" num detalhe que a pessoa precisa notar; "Tá vendo?" logo depois do teste da retomada. Um chamado por momento importante, variando as expressões; sem repetir "bora", "capricha" ou parabéns a cada gesto (Diretrizes, seção 6).
@@ -195,6 +196,7 @@ correto. A liberdade de cor e detalhes continua livre.
 
 - Nas primeiras frases, fica claro o que fazer, em qual atividade e como começar?
 - Cada fala conversa com a pessoa e chama a atenção dela para o que aparece na tela nos momentos que importam? O que é opcional aparece como convite, sem "não precisa"?
+- As três vozes estão no lugar: "você" no que é dela e nas ações, "a gente" no raciocínio e no convite, "eu" só na demonstração? Sobrou algum "nós vamos" ou "o nosso jogo"?
 - Lida em voz alta, a fala soa como conversa contínua, com o porquê de cada resultado, ou como frases soltas lidas de um texto? Alguma frase sobre o que já vem pronto ficou solta no meio da montagem?
 - Todos os passos necessários aparecem, incluindo confirmação e saída?
 - Quem ouve consegue executar sem adivinhar uma peça, valor ou encaixe?
