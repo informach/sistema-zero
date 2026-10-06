@@ -2,6 +2,8 @@
 
 Um vídeo. O conteúdo precisa ser regravado antes de substituir o vídeo publicado.
 
+Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?") e oferece o que é opcional como escolha, sem dizer o que a pessoa não precisa fazer (Diretrizes, seção 6, revisão de 06/10/2026).
+
 ## Como o seu jardim funciona
 
 **Seção sem vídeo. Não gravar clipe de quiz.** O diálogo aparece na página antes das perguntas.
@@ -14,16 +16,16 @@ Um vídeo. O conteúdo precisa ser regravado antes de substituir o vídeo public
 
 **Duração alvo:** 15 a 25 segundos.
 
-**Na tela:** mostrar o resultado do jogo e o botão **Pegar meu certificado**. Apontar para ele sem fazer um tour do PDF ou da pasta de downloads. Mostrar o botão **Concluir aula** no encerramento.
+**Na tela:** no "Olha só", mostrar o resultado do jogo, com os três personagens encontrados. Depois, o botão **Pegar meu certificado**. Apontar para ele sem fazer um tour do PDF ou da pasta de downloads. Mostrar o botão **Concluir aula** no encerramento.
 
 **Narração:**
 
-> “Você terminou o Cadê Todo Mundo! O jardim e os personagens já vieram prontos. Você programou o toque que revela cada personagem e a contagem dos achados.
+> “Você terminou o Cadê Todo Mundo! O jardim e os personagens já vieram prontos. Olha só o que você programou: o toque que revela cada personagem e a contagem dos achados.
 >
 > Parabéns pelo seu jogo!
 >
 > Clique em Pegar meu certificado para guardar essa conquista. Quando o certificado baixar, clique em Concluir aula.”
 
-**Zappy abaixo do vídeo:** “Clique em Pegar meu certificado. Quando o certificado baixar, clique em Concluir aula.”
+**Zappy abaixo do vídeo:** “Parabéns, você terminou o seu jogo! Clique em Pegar meu certificado para guardar essa conquista. Quando o certificado baixar, clique em Concluir aula.”
 
 **Conferência de produção:** a conclusão exige vídeo e certificado. Para quem já emitiu, o botão muda para **Baixar certificado (PDF)**; essa ajuda fica no Como Fazer. Não atribuir à criança o cenário e os personagens preparados. Sem venda, ofertas ou pedido para convencer um responsável.

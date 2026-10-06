@@ -8,6 +8,8 @@ Oito seções, oito vídeos. Como na Aula 1 do Cadê Todo Mundo?, o dia começa 
 
 Só a narração é falada; o botão atual se chama **Próxima seção**, e a última seção termina em **Concluir aula**.
 
+Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?") e oferece o que é opcional como escolha, sem dizer o que a pessoa não precisa fazer (Diretrizes, seção 6, revisão de 06/10/2026).
+
 **Ordem de cada encaixe:** primeiro o lugar de destino à vista, depois a categoria e o bloco, por último arrastar e soltar. Com o bloco preso no mouse, a criança não consegue mover o espaço dos blocos para procurar o lugar.
 
 ## Seção 1. A Chave do Farol
@@ -29,7 +31,7 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 >
 > Agora é a sua vez: jogue até o farol acender e o barco chegar. Quando terminar, clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Jogue a versão pronta. Pegue a chave, leve o personagem até o farol e clique em Próxima seção.
+**Ponte do Zappy na página (não gravar):** Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima seção.
 
 **Conferência de produção:** o vídeo é uma demonstração: mostra como se anda com um gesto só, sem resolver o caminho, e só no fim passa a vez. A seção exige o vídeo e a participação no jogo pronto; vencer não é requisito técnico. A fala dá o objetivo completo para quem quiser terminar. Pausa, replay, ampliação e reinício ficam no Como Fazer.
 
@@ -39,18 +41,20 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 
 **Duração alvo:** 20 a 30 segundos.
 
-**Na tela:** capa e uma página de montagem do Caderno do Aluno anexado a `materiais-farol`. Não demonstrar download, impressão nem os controles do leitor. Não apresentar um mapa como material adicional nem simular arquivo disponível se o PDF ainda não estiver anexado. No fim, apontar **Próxima seção**.
+**Na tela:** capa e uma página de montagem do Caderno do Aluno anexado a `materiais-farol`. No "Olha aqui", apontar o caderno. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Não apresentar um mapa como material adicional nem simular arquivo disponível se o PDF ainda não estiver anexado. No fim, apontar **Próxima seção**.
 
 **Narração:**
-> "Este caderno tem os passos para montar o seu jogo. Se esquecer um bloco ou onde encaixar, consulte o caderno aqui.
+> "Olha aqui: este é o seu Caderno do Aluno! Nele estão os passos para montar o seu jogo nos três dias.
 >
-> Você pode voltar a esta parte da aula quando precisar. Não precisa baixar nem imprimir.
+> Se você esquecer qual bloco usar ou onde ele encaixa, é só voltar aqui e abrir o caderno.
+>
+> Se quiser, você pode ler aqui mesmo, na aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser.
 >
 > Agora clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção.
+**Ponte do Zappy na página (não gravar):** Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.
 
-**Conferência de produção:** o caderno é consulta opcional. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e baixar o PDF.
+**Conferência de produção:** o caderno é consulta opcional, e a fala oferece as duas escolhas como convite: ler na aula ou baixar para guardar. A fala não diz que a pessoa não precisa baixar ou imprimir: quem ouve entende como uma ordem para não fazer. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e a baixar o PDF.
 
 ## Seção 3. Como o personagem anda
 
@@ -67,13 +71,13 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 >
 > Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. O x não muda: sem a seta, o personagem fica parado.
 >
-> Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. A cada quadro, o x aumenta um pouco. É assim que ele anda: um passinho em cada quadro. Olha a regra aqui embaixo: o movimento está dentro de A cada quadro do jogo. Por isso ele anda um pouquinho em cada quadro.
+> Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. Repare: a cada quadro, o x aumenta um pouco. É assim que ele anda: um passinho em cada quadro. Olha a regra aqui embaixo: o movimento está dentro de A cada quadro do jogo. Por isso ele anda um pouquinho em cada quadro.
 >
 > Quando eu clico em Rodar, os quadros passam rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela. Para ver de novo, eu clico em Recomeçar.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Agora veja como o personagem anda, um quadro de cada vez.
+**Ponte do Zappy na página (não gravar):** Sua vez! Avance um quadro de cada vez e fique de olho no x.
 
 **Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
@@ -88,7 +92,7 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 **Narração:**
 > "Na experiência da seção anterior, com a seta segurada, o personagem andava um pouquinho a cada quadro. Agora vamos programar isso no seu jogo!
 >
-> Primeiro, teste: no seu jogo ainda não tem setas na tela. No computador, clique dentro do jogo e use uma seta do teclado. Nada acontece: o personagem está parado.
+> Olhe o seu jogo: ainda não tem setas na tela. No computador, clique dentro do jogo e use uma seta do teclado. Viu? Nada acontece: o personagem está parado.
 >
 > Vamos colocar as setas e o movimento. O cenário e os desenhos já estão preparados.
 >
@@ -98,7 +102,7 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 >
 > Arraste até o fim de Ao iniciar e solte logo abaixo do último bloco que já está lá.
 >
-> No menu desse bloco, escolha só as quatro direções. Espere o jogo atualizar. As setas de cima, baixo, esquerda e direita aparecem na tela."
+> No menu desse bloco, escolha só as quatro direções. Espere o jogo atualizar. Repare: as setas de cima, baixo, esquerda e direita aparecem na tela."
 
 **Na tela:** deixar à vista, na área **Enquanto estiver rodando**, o bloco **A cada quadro do jogo** e o **Desenhar o cenário cenario** dentro dele. Só então abrir **Jogo 2D → Movimento → Movimentos prontos**, pegar **Mover sprite em 4 direções com setas, velocidade** e soltar logo depois de **Desenhar o cenário cenario**, antes dos blocos preparados do barco. Escolher `personagem` e manter a velocidade `3`.
 
@@ -120,7 +124,7 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 **Na tela:** testar uma seta da tela. No computador, clicar dentro do jogo e testar uma seta do teclado. Pausar para a pessoa testar. Depois clicar em **Verificar esta etapa**, mostrar o resultado real, esperar **Salvo** e apontar **Próxima seção**. O envio não faz parte desta seção.
 
 **Narração:**
-> "Agora teste no seu jogo. Segure uma seta da tela. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. O personagem deve andar na direção da seta.
+> "Agora teste no seu jogo! Segure uma seta da tela. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. Olha só: o personagem anda na direção da seta!
 >
 > Se ele não andar, confira se o sprite é personagem e se o bloco está dentro de A cada quadro do jogo. Corrija e teste de novo.
 >
@@ -128,7 +132,7 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 >
 > Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Teste as setas e clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta etapa.
 
 **Conferência de produção:** a seção exige o vídeo e a aprovação de dois critérios: as quatro direções e o movimento dentro de A cada quadro do jogo. Não exigir teclado de quem só tem toque, nem toque de quem só tem teclado.
 
@@ -147,11 +151,11 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 >
 > Olha aqui: com Velocidade 3, eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. O x aumenta 3 a cada quadro.
 >
-> Agora eu clico em Recomeçar, escolho Velocidade 1 e clico em Avançar 1 quadro de novo. O x aumenta só 1, e as marcas no chão ficam mais juntas: são passos curtinhos.
+> Agora eu clico em Recomeçar, escolho Velocidade 1 e clico em Avançar 1 quadro de novo. Repare: o x aumenta só 1, e as marcas no chão ficam mais juntas. São passos curtinhos.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Agora compare as duas velocidades.
+**Ponte do Zappy na página (não gravar):** Sua vez! Compare as duas velocidades e repare nas marcas no chão.
 
 **Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
@@ -199,11 +203,11 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 >
 > Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. O personagem chega na borda e continua andando, até sair da tela.
 >
-> Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Ele para na borda e fica inteiro na tela. Manter dentro da tela funciona como uma parede invisível na borda dessa janela.
+> Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: ele para na borda e fica inteiro na tela. Manter dentro da tela funciona como uma parede invisível na borda dessa janela.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Agora veja o que acontece na borda, sem o limite e com ele.
+**Ponte do Zappy na página (não gravar):** Sua vez! Teste sem o limite e com ele e repare no que acontece na borda.
 
 **Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
@@ -218,7 +222,7 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 **Narração:**
 > "Na experiência da seção anterior, sem o limite o personagem saiu da tela, e com Manter dentro da tela ligado ele parou na borda. Agora vamos colocar esse limite no seu jogo!
 >
-> Primeiro, teste: leve o personagem até uma beirada da tela e continue segurando a seta. Parte dele sai da tela, porque ainda não tem limite.
+> Primeiro, leve o personagem até uma beirada da tela e continue segurando a seta. Viu? Parte dele sai da tela, porque ainda não tem limite.
 >
 > Vamos colocar a parede invisível."
 
@@ -235,7 +239,7 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 >
 > A ordem importa: primeiro o jogo move o personagem, depois confere a borda.
 >
-> Teste as quatro direções até chegar às beiradas. O personagem deve ficar sempre inteiro na tela. Se ele ainda sair, confira se o limite está logo abaixo do movimento e se o sprite é personagem."
+> Agora teste as quatro direções até chegar às beiradas. Repare: o personagem deve ficar sempre inteiro na tela. Se ele ainda sair, confira se o limite está logo abaixo do movimento e se o sprite é personagem."
 
 **Na tela:** clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Em caso de pendência, enquadrar o item a corrigir e verificar de novo. Esperar **Salvo**, clicar em **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar o envio. Apontar **Concluir aula**.
 
@@ -246,6 +250,6 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 >
 > Quando o envio terminar, clique em Concluir aula."
 
-**Ponte do Zappy na página (não gravar):** Coloque o limite da tela logo abaixo do movimento. Teste as quatro beiradas e clique em Verificar esta etapa antes de enviar para o professor.
+**Ponte do Zappy na página (não gravar):** Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta etapa antes de enviar para o professor.
 
 **Conferência de produção:** a seção exige o vídeo, os três critérios de projeto e o envio confirmado. A verificação depende do clique em **Verificar esta etapa**; o envio não a executa sozinho. Manter o projeto da pessoa, sem abrir o Pinta ou o Estúdio completo.

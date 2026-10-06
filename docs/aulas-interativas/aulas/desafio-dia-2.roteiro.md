@@ -2,6 +2,8 @@
 
 Quatro seções, quatro vídeos: a experiência da memória e, depois, uma montagem para cada ideia, sempre no mesmo projeto (recolher a chave, guardar a coleta e avisar quem joga). As seções 2 e 3 verificam sem enviar; a seção 4 verifica e envia. Retomar o projeto enviado no Dia 1; o projeto preparado do Dia 2 só é a alternativa quando não houver envio anterior. Não reconstruir nem substituir um projeto já feito pela pessoa. O vídeo da experiência é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. Cada montagem tem tempo para os encaixes. Só a narração é falada.
 
+Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?") e oferece o que é opcional como escolha, sem dizer o que a pessoa não precisa fazer (Diretrizes, seção 6, revisão de 06/10/2026).
+
 ## Seção 1. O jogo guardou a chave?
 
 ### Vídeo `video-d2-contexto` · O jogo guardou a chave?
@@ -17,15 +19,15 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 >
 > Olha aqui: com Guardar a coleta desligado, eu clico em Encostar na chave. Encostar na chave é um evento: algo que acontece no jogo. A regra Quando o personagem encostar na chave responde tirando a chave do chão e mudando o aviso. Mas temChave continua falso. Ninguém anotou a coleta.
 >
-> Agora eu clico em Recomeçar a partida, ligo Guardar a coleta e clico em Encostar na chave de novo. Desta vez temChave vira verdadeiro: o jogo anotou que a chave foi encontrada.
+> Agora eu clico em Recomeçar a partida, ligo Guardar a coleta e clico em Encostar na chave de novo. Olha só: desta vez, temChave vira verdadeiro. O jogo anotou que a chave foi encontrada.
 >
-> Quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave: a anotação fica guardada.
+> Repare: quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave. A anotação fica guardada.
 >
 > Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com o caderno em branco.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Agora compare o que some da tela com o que fica guardado em temChave.
+**Ponte do Zappy na página (não gravar):** Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado.
 
 **Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final. Guardar a coleta só muda com a chave no chão; por isso o recomeço vem antes de ligar.
 
@@ -40,11 +42,11 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 **Narração:**
 > "Na experiência da seção anterior, quando o personagem encostou na chave, a regra tirou a chave do chão. Agora vamos programar isso no seu jogo!
 >
-> Primeiro, leve o personagem até a chave. Ele passa por ela e nada acontece, porque nenhuma ação está ligada a esse encontro.
+> Primeiro, leve o personagem até a chave. Viu? Ele passa por ela e nada acontece, porque nenhuma ação está ligada a esse encontro.
 >
 > Encostar na chave é um evento, como você viu na experiência. Vamos ligar uma ação a esse evento: tirar a chave do chão.
 >
-> Os eventos ficam numa área própria, chamada Quando acontecer. Seu projeto ainda não tem essa área.
+> Os eventos ficam numa área própria, chamada Quando acontecer. Repare: o seu projeto ainda não tem essa área.
 >
 > Deixe à vista um espaço vazio ao lado das áreas. Se não estiver aparecendo, arraste um espaço vazio entre os blocos até ver.
 >
@@ -72,7 +74,7 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 **Na tela:** depois da atualização da Pré-visualização, levar o personagem até a chave e passar de novo pelo mesmo lugar. Clicar em **Atualizar**, na barra logo acima do jogo, para começar outra partida e mostrar a chave de volta; em barra estreita, o botão aparece só como ⟳. Clicar em **Verificar esta etapa**, esperar **Salvo** e apontar **Próxima seção**. O envio não faz parte desta seção.
 
 **Narração:**
-> "Agora teste no seu jogo. Leve o personagem até a chave. A chave deve sumir.
+> "Agora teste no seu jogo! Leve o personagem até a chave. Olha só: a chave some do chão!
 >
 > Clique em Atualizar, logo acima do jogo, para começar uma nova partida. A chave deve voltar ao chão.
 >
@@ -82,7 +84,7 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 >
 > Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Programe o encontro com a chave e faça a chave sair do chão. Teste e clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta etapa.
 
 **Conferência de produção:** a verificação confere também o movimento do Dia 1. A seção exige o vídeo e a aprovação, sem envio.
 
@@ -107,7 +109,7 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 >
 > No nome, troque contador por temChave. Escreva tudo junto, com o C maiúsculo, e clique fora do campo.
 >
-> O valor desse bloco começa com um número. Vamos trocar esse número. Abra Programação e depois Lógica e Se. Pegue o bloco verdadeiro e solte em cima do número. Ele toma o lugar do número.
+> Repare: o valor desse bloco começa com um número. Vamos trocar esse número. Abra Programação e depois Lógica e Se. Pegue o bloco verdadeiro e solte em cima do número. Ele toma o lugar do número.
 >
 > No menu desse bloco, troque verdadeiro por falso. O jogo começa sem a chave.
 >
@@ -135,7 +137,7 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 >
 > Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa.
 
 **Conferência de produção:** a mudança de temChave não aparece no jogo; a experiência da seção 1 já mostrou a informação guardada. A seção exige o vídeo e a aprovação, sem envio.
 
@@ -150,7 +152,7 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 **Narração:**
 > "Na experiência da primeira seção desta aula, o aviso mudava quando a chave era recolhida. Agora vamos programar esse aviso no seu jogo!
 >
-> Primeiro, pegue a chave no seu jogo. Ela some, mas a mensagem continua a mesma: Encontre a chave e vá ao farol.
+> Primeiro, pegue a chave no seu jogo. Viu? Ela some, mas a mensagem continua a mesma: Encontre a chave e vá ao farol.
 >
 > O próximo bloco vai logo abaixo do bloco de temChave, ainda dentro do encontro. Deixe esse lugar à vista.
 >
@@ -160,14 +162,14 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 >
 > Agora troque o número desse bloco por um texto. Abra Programação e depois Valores. Pegue o bloco texto e solte em cima do número.
 >
-> O bloco texto vem com a palavra Olá. Apague Olá e escreva: Você pegou a chave! Agora vá ao farol.
+> Repare: o bloco texto vem com a palavra Olá. Apague Olá e escreva: Você pegou a chave! Agora vá ao farol.
 >
 > Confira: dentro do encontro com a chave, estão três blocos. Primeiro, Destruir o sprite chave. Depois, Alterar temChave para verdadeiro. Por último, Alterar aviso para a sua mensagem."
 
 **Na tela:** depois da atualização da Pré-visualização, recolher a chave e ler o aviso. Clicar em **Atualizar** e repetir. Depois apontar o texto encaixado em **Alterar variável aviso**, dentro do encontro; não apontar a declaração de `aviso` em **Ao iniciar** nem o bloco de `temChave`.
 
 **Narração:**
-> "Agora teste no seu jogo. Leve o personagem até a chave. A chave deve sumir e a mensagem deve mudar. O aviso só mostra a mensagem; quem guarda a coleta continua sendo temChave.
+> "Agora teste no seu jogo! Leve o personagem até a chave. Olha só: a chave some e a mensagem muda! O aviso só mostra a mensagem; quem guarda a coleta continua sendo temChave.
 >
 > Se a mensagem não mudou, confira o bloco que altera aviso e o texto. Corrija e teste de novo."
 
@@ -180,6 +182,6 @@ Quatro seções, quatro vídeos: a experiência da memória e, depois, uma monta
 >
 > Quando o envio terminar, clique em Concluir aula."
 
-**Ponte do Zappy na página (não gravar):** Mostre um aviso quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor.
+**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor.
 
 **Conferência de produção:** a verificação confere também o movimento do Dia 1 e não exige copiar o texto do aviso. A seção exige o vídeo, a aprovação em **Verificar esta etapa** e o envio confirmado.

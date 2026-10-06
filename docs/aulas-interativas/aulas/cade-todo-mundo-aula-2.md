@@ -12,6 +12,8 @@ antes dos testes e orientar a verificação da etapa antes do envio.
 A revisão de 05/10/2026 faz a experiência explicar enquanto faz, abre a montagem com a retomada
 no próprio jogo e acrescenta **Deixe o jogo com a sua cara**, a seção de mexa e veja, entre o envio e a
 publicação: a criança troca bichos, esconderijos e a mensagem do final, e as mudanças ficam no jogo.
+A revisão de 06/10/2026 faz todas as falas conversarem com a criança e chamarem a atenção dela
+para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?"), sem mudar seções nem critérios.
 
 ## Sequência
 
@@ -28,10 +30,11 @@ publicação: a criança troca bichos, esconderijos e a mensagem do final, e as 
 ### Volte ao seu jardim
 
 Começar dizendo que a tarefa é fazer o jogo contar os personagens encontrados. Mostrar um toque
-revelando o personagem enquanto **Achados** continua em zero. Encaminhar para **Próxima seção**.
+revelando o personagem ("Olha aqui…") e chamar a atenção para **Achados**, que continua em zero
+("Mas repare no número Achados…"). Encaminhar para **Próxima seção**.
 A seção tem vídeo e ponte do Zappy, sem ferramenta. A fala não pode pedir que a criança manipule um projeto ali.
 
-**Zappy abaixo do vídeo:** “Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar.”
+**Zappy abaixo do vídeo:** “Seus personagens já aparecem, mas Achados ainda fica em zero. Vamos fazer o jogo contar! Clique em Próxima seção para começar.”
 
 ### Um número que acompanha a busca
 
@@ -96,7 +99,7 @@ esconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com u
 **esconderijo3**, para o nome não contradizer a imagem escolhida. A troca é escolha da criança e
 não vira critério: a seção conclui pelo vídeo.
 
-**Zappy abaixo do vídeo:** “Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção.”
+**Zappy abaixo do vídeo:** “Hora de deixar o jogo com a sua cara! Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção.”
 
 ### Publique seu jogo
 
@@ -118,7 +121,7 @@ Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Pub
 esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer
 “compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala.
 
-**Zappy abaixo do vídeo:** “Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.”
+**Zappy abaixo do vídeo:** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.”
 
 ## Conferência antes de regravar
 

@@ -2,6 +2,8 @@
 
 Duas seções: quiz sem vídeo e celebração com um vídeo curto e o bloco de certificado existente. Não acrescentar oferta, tour ou pedido para chamar um responsável para assistir a uma apresentação comercial. A emissão continua sendo a ação de conclusão, junto do vídeo.
 
+Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?") e oferece o que é opcional como escolha, sem dizer o que a pessoa não precisa fazer (Diretrizes, seção 6, revisão de 06/10/2026).
+
 ## Seção 1. As regras da sua aventura
 
 **Seção sem vídeo. Não gravar clipe de quiz.** O diálogo aparece na página antes das perguntas.
@@ -16,15 +18,15 @@ Duas seções: quiz sem vídeo e celebração com um vídeo curto e o bloco de c
 
 **Duração alvo:** 20 a 30 segundos.
 
-**Na tela:** mostrar brevemente os três grupos de blocos programados no curso e depois o botão **Pegar meu certificado**. Usar uma conta de ensaio sem certificado emitido para gravar a primeira emissão. Se já existir, o botão real é **Baixar certificado (PDF)**; não simular uma segunda emissão. Terminar apontando **Concluir aula**.
+**Na tela:** no "Olha só", mostrar brevemente os três grupos de blocos programados no curso e depois o botão **Pegar meu certificado**. Usar uma conta de ensaio sem certificado emitido para gravar a primeira emissão. Se já existir, o botão real é **Baixar certificado (PDF)**; não simular uma segunda emissão. Terminar apontando **Concluir aula**.
 
 **Narração:**
-> "Você programou o personagem para andar, fez o jogo guardar a chave e ensinou o farol a conferir se ela foi encontrada.
+> "Você terminou A Chave do Farol! Olha só o que você programou: o personagem anda, o jogo guarda a chave e o farol confere se ela foi encontrada.
 >
-> Os desenhos e o barco já vieram prontos. As regras que fazem a aventura funcionar foram montadas por você.
+> Os desenhos e o barco já vieram prontos. E quem montou as regras que fazem a aventura funcionar foi você.
 >
-> Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula."
+> Parabéns pelo seu jogo! Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula."
 
-**Ponte do Zappy na página (não gravar):** Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.
 
 **Conferência de produção:** a seção exige o vídeo e a emissão do certificado. Quem já emitiu encontra **Baixar certificado (PDF)**. A celebração não antecipa outra aula nem inclui venda.

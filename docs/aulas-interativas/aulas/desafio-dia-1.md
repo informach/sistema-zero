@@ -9,6 +9,8 @@
 
 **Decisões de 05/10/2026:** uma ideia por seção, e cada conceito novo ganha uma experiência antes de virar bloco. A primeira versão do Dia 1 juntava controles, movimento a cada quadro, velocidade, limite e ordem num único vídeo de 5 a 6 minutos. Toda aula também termina numa ação prática. As duas seções da antiga aula de introdução (`boas-vindas`) passaram a abrir o Dia 1. Assim, o primeiro dia já termina com uma construção enviada. Essas duas seções mantiveram blocos e critérios; mudaram a aula em que ficam e a saída do caderno, que agora é **Próxima seção**. A divisão em ideias criou as outras cinco seções e o critério intermediário `movimentoSemBorda`.
 
+**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?"); as pontes do Zappy começam convidando ("Sua vez!", "Hora de…"). O caderno é apresentado como escolha: ler na aula ou baixar para guardar. Seções, blocos e critérios não mudaram.
+
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
@@ -38,7 +40,7 @@ Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposenta
 - **Conclui quando:** vídeo e participação no jogo, sem exigir vitória.
 - **Blocos:** `video-intro-farol`, `ponte-intro-farol` e `jogo-pronto`.
 
-**Ponte do Zappy na página (não gravar):** Jogue a versão pronta. Pegue a chave, leve o personagem até o farol e clique em Próxima seção.
+**Ponte do Zappy na página (não gravar):** Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima seção.
 
 O vídeo é uma demonstração, como nas experiências: apresenta a aventura, mostra como se anda com um gesto só ("Olha aqui: quando eu seguro a seta da tela para a direita…"), sem resolver o caminho, e só no fim passa a vez.
 
@@ -49,7 +51,9 @@ O vídeo é uma demonstração, como nas experiências: apresenta a aventura, mo
 - **Conclui quando:** vídeo; leitura, impressão e download opcionais.
 - **Blocos:** `video-intro-caderno`, `ponte-intro-caderno`, `materiais-farol` com bookPreview e `ajuda-como-fazer-intro`.
 
-**Ponte do Zappy na página (não gravar):** Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção.
+**Ponte do Zappy na página (não gravar):** Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.
+
+O vídeo chama a atenção para o caderno ("Olha aqui: este é o seu Caderno do Aluno!") e oferece as duas escolhas como convite: ler aqui mesmo, na aula, ou clicar em **Baixar** para guardar e consultar onde quiser. A fala não diz que a pessoa não precisa baixar ou imprimir, porque soa como uma ordem para não fazer (ajuste do responsável, 06/10/2026).
 
 Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 21 páginas, com comparação de velocidades, experiência de memória, montagem da porta em duas etapas, testes, publicação e certificado. O mapa antigo para responsáveis não integra esta versão.
 
@@ -60,7 +64,7 @@ Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 2
 - **Conclui quando:** vídeo e os dois testes da experiência.
 - **Blocos:** `video-d1-quadro`, `ponte-d1-quadro` e `experiencia-quadro` (cena `lighthouse-walk`, metas `still-without-arrow` e `moves-each-frame`).
 
-**Ponte do Zappy na página (não gravar):** Agora veja como o personagem anda, um quadro de cada vez.
+**Ponte do Zappy na página (não gravar):** Sua vez! Avance um quadro de cada vez e fique de olho no x.
 
 ### Seção 4. Faça o personagem andar
 
@@ -69,7 +73,7 @@ Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 2
 - **Conclui quando:** vídeo e aprovação de dois critérios: as quatro direções e o movimento dentro de A cada quadro do jogo.
 - **Blocos:** `video-d1-andar`, `ponte-d1-andar` e a ajuda opcional `ajuda-d1`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Teste as setas e clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta etapa.
 
 Com o destino à vista antes de cada bloco: controles com só as quatro direções no fim de Ao iniciar; movimento dentro de **A cada quadro do jogo**, logo abaixo de Desenhar o cenário.
 
@@ -80,7 +84,7 @@ Com o destino à vista antes de cada bloco: controles com só as quatro direçõ
 - **Conclui quando:** vídeo e um teste com cada velocidade.
 - **Blocos:** `video-d1-tanto`, `ponte-d1-tanto` e `experiencia-velocidade` (metas `step-speed-3` e `step-speed-1`).
 
-**Ponte do Zappy na página (não gravar):** Agora compare as duas velocidades.
+**Ponte do Zappy na página (não gravar):** Sua vez! Compare as duas velocidades e repare nas marcas no chão.
 
 ### Seção 6. Escolha a velocidade
 
@@ -100,7 +104,7 @@ Depois da retomada, a pessoa troca o 3 por um número de 1 a 6, testa alguns e d
 - **Conclui quando:** vídeo e os dois testes da experiência.
 - **Blocos:** `video-d1-limite`, `ponte-d1-limite` e `experiencia-limite` (metas `left-the-screen` e `stayed-inside`).
 
-**Ponte do Zappy na página (não gravar):** Agora veja o que acontece na borda, sem o limite e com ele.
+**Ponte do Zappy na página (não gravar):** Sua vez! Teste sem o limite e com ele e repare no que acontece na borda.
 
 ### Seção 8. Mantenha o personagem na tela
 
@@ -109,7 +113,7 @@ Depois da retomada, a pessoa troca o 3 por um número de 1 a 6, testa alguns e d
 - **Conclui quando:** vídeo, três critérios de projeto aprovados e envio confirmado.
 - **Blocos:** `video-d1-borda`, `ponte-d1-borda` e o Estúdio `projeto`.
 
-**Ponte do Zappy na página (não gravar):** Coloque o limite da tela logo abaixo do movimento. Teste as quatro beiradas e clique em Verificar esta etapa antes de enviar para o professor.
+**Ponte do Zappy na página (não gravar):** Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta etapa antes de enviar para o professor.
 
 Primeiro a pessoa vê o personagem sair pela beirada no próprio jogo. Depois, com o bloco de movimento à vista, encaixa **Manter o sprite dentro da tela** logo abaixo dele: primeiro move, depois confere a borda. Testar as quatro bordas com o dispositivo disponível, sem exigir teclado e toque de quem só tem um deles. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Concluir aula**.
 

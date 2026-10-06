@@ -13,7 +13,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Jogue a versão pronta. Encontre os três personagens e clique em Próxima seção."
+        "text": "Sua vez! Jogue a versão pronta e encontre os três personagens. Depois, clique em Próxima seção."
       }
     },
     {
@@ -998,14 +998,14 @@
     },
     {
       "key": "video-a1-caderno",
-      "plannedVideo": "Título: Seu Caderno do Aluno\n\nMostrar o caderno real e dizer que ele reúne os passos de montagem para consultar quando precisar. Leitura, download e impressão são opcionais. Terminar com Próxima seção. Não ensinar controles do leitor, download ou divisória; esses tutoriais ficam no Como Fazer. Anexar o PDF antes de gravar. Regravar a fala. Alvo: 20 a 30 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Seu Caderno do Aluno\n\nChamar a atenção para o caderno real (Olha aqui: este é o seu Caderno do Aluno!) e dizer que ele reúne os passos de montagem para consultar quando precisar. Oferecer as duas escolhas como convite: ler aqui mesmo, na aula, ou clicar em Baixar para guardar o caderno e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Terminar com Próxima seção. Apontar Baixar sem demonstrar o download; controles do leitor e divisória ficam no Como Fazer. Anexar o PDF antes de gravar. Regravar a fala. Alvo: 20 a 30 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-1.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a1-caderno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção."
+        "text": "Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção."
       }
     },
     {
@@ -1026,7 +1026,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Use o mesmo arbusto nos dois testes e compare o que acontece."
+        "text": "Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda."
       }
     },
     {
@@ -1054,7 +1054,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte a regra do toque, teste nos esconderijos e clique em Verificar esta etapa antes de enviar seu jogo para o professor."
+        "text": "Agora monte a regra do toque no seu jogo! Teste nos esconderijos e clique em Verificar esta etapa antes de enviar para o professor."
       }
     },
     {

@@ -1,6 +1,6 @@
 # Diretrizes pedagógicas das aulas Kids
 
-Referência consolidada em 03/10/2026 a partir das decisões do Cadê Todo Mundo? e de sua aplicação ao Desafio do Primeiro Jogo; atualizada em 05/10/2026 com as correções da revisão do Farol e em 06/10/2026 com o vídeo da experiência como demonstração. Leia junto do [BRIEFING](BRIEFING.md), da [especificação do roteiro](ESPEC-ROTEIRO.md) e do [contrato do manifesto](ESPEC-MANIFESTO.md). Este documento organiza as decisões vigentes; modelos antigos não substituem essas decisões.
+Referência consolidada em 03/10/2026 a partir das decisões do Cadê Todo Mundo? e de sua aplicação ao Desafio do Primeiro Jogo; atualizada em 05/10/2026 com as correções da revisão do Farol e em 06/10/2026 com o vídeo da experiência como demonstração e com as falas que conversam com a criança e chamam a atenção dela. Leia junto do [BRIEFING](BRIEFING.md), da [especificação do roteiro](ESPEC-ROTEIRO.md) e do [contrato do manifesto](ESPEC-MANIFESTO.md). Este documento organiza as decisões vigentes; modelos antigos não substituem essas decisões.
 
 ## Como decidir o formato de um curso
 
@@ -127,7 +127,7 @@ O caderno acompanha o conteúdo real, com passo a passo completo. Pode conter vi
 
 Usar o padrão visual do Cadê Todo Mundo: tipografia, cartões, ilustrações e blocos com encaixes desenhados. **Cada bloco deve ter a cor exata da definição final no Estúdio**, inclusive áreas, famílias e valores encaixados. Não aproximar pela cor geral da categoria. Gerar e conferir o PDF renderizado, legibilidade e cortes.
 
-Apresentar o caderno na seção 2 da primeira aula; anexar uma vez, com consulta, leitura e download opcionais. As outras aulas podem indicar onde encontrá-lo. O caderno não ganha um gabarito antecipado da revisão: orienta a retomar o trabalho e responder na aula.
+Apresentar o caderno na seção 2 da primeira aula; anexar uma vez, com consulta, leitura e download opcionais. O vídeo mostra o caderno à criança e oferece as escolhas como convite: "Olha aqui: este é o seu Caderno do Aluno! (…) Se quiser, você pode ler aqui mesmo, na aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser." Não dizer que ela não precisa baixar ou imprimir (seção 6). As outras aulas podem indicar onde encontrá-lo. O caderno não ganha um gabarito antecipado da revisão: orienta a retomar o trabalho e responder na aula.
 
 Como Fazer recebe tutoriais de pausar, rever, ampliar, leitor, download e alternativas de interface. Links dentro das aulas abrem na **mesma aba**, com retorno à aula de origem. Conferir destino e retorno; não exigir visita a toda a biblioteca. Para uma dúvida sobre a atividade, indicar **Preciso de ajuda** no rodapé da aula conforme o fluxo existente.
 
@@ -147,6 +147,17 @@ Se publicar é a tarefa da seção, a aula ensina o caminho mínimo: Compartilha
 - Não abrir com "vamos investigar" nem repetir tranquilizações como "não quer dizer que você errou"; dizer o significado concreto do valor.
 
 Falar com “você”, em português brasileiro, com contexto concreto, acentuação e frases naturais. Sem travessões nas falas, metáforas não marcadas, perguntas retóricas que escondem uma ordem, excesso de elogios ou linguagem comercial. A referência de público atual é de 9 a 14 anos; não chamar quem assiste de “criança” na narração.
+
+**Toda fala conversa com a criança e chama a atenção dela.** Narração, ponte do Zappy e caderno falam diretamente com quem faz a aula, como alguém sentado ao lado dela: “o seu caderno”, “o seu jogo”, “Sua vez!”. Evitar a frase impessoal que só descreve, como “Este caderno fica aqui para consultar” ou “Os personagens já aparecem, mas a contagem ainda não muda”; dizer “Este é o seu caderno!” e “Seus personagens já aparecem, mas Achados ainda fica em zero”. Nos momentos que importam, a fala puxa o olhar da criança para a tela:
+
+- “Olha aqui:” ao mostrar um lugar, um bloco ou o primeiro gesto da demonstração;
+- “Olha só:” quando aparece um resultado (“Olha só: o personagem que estava atrás aparece!”);
+- “Repare:” num detalhe que ela precisa notar, como um número que muda ou o nome que já vem no bloco (“Repare: o bloco chega com o nome jogador”);
+- “Viu?” logo depois do teste da retomada (“Primeiro, toque num esconderijo. Viu? Nada acontece”).
+
+Um chamado por momento importante, variando as expressões; não em toda frase, para não virar fórmula. Cada “aqui” continua precisando de um apontamento visível no vídeo. A ponte do Zappy começa convidando (“Sua vez!” depois de uma demonstração; “Agora…!” ou “Hora de…!” antes de uma montagem) e termina na ação de saída. Pedido do responsável em 06/10/2026, aplicado ao Cadê e ao Farol; vale para todos os cursos.
+
+**O que é opcional vira convite, nunca negação.** A criança entende “Não precisa baixar nem imprimir” como uma ordem para não baixar. Oferecer a escolha: “Se quiser, você pode ler aqui mesmo, na aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser.” Não acrescentar frases que só dizem o que ela não precisa fazer; quando a informação ajuda, dizer o que ela pode fazer (“Você pode seguir mesmo sem terminar a partida”). Uma proibição de verdade, que evita um erro, continua clara e direta: “Não coloque um encontro dentro do outro.” Ajuste do responsável em 06/10/2026.
 
 Encerrar na ação real: Próxima seção, envio e confirmação, ou Concluir aula. Na seção do certificado, orientar Pegar meu certificado; quem já emitiu encontra Baixar certificado (PDF). Não antecipar a próxima tarefa depois da saída, atribuir autoria exagerada ou inserir venda na celebração infantil. Continuidade comercial é dirigida ao responsável fora dessa tarefa.
 
@@ -181,3 +192,4 @@ Consulta histórica opcional; não é preciso reconstruir as regras a partir des
 - Reestruturação de Nave Contra Asteroides e Corre, Dino!, 05/10: experiências antes da aplicação, montagens por conceito, contexto do próprio jogo, destinos visíveis e quizzes distribuídos; mapas em [Nave](modulos-nave-contra-asteroides.md) e [Corre, Dino!](modulos-corre-dino.md), com verificação local e etapas de produção discriminadas.
 - Reestruturação de [O Jogo do Meu Jeito](modulos-o-jogo-do-meu-jeito.md), 05/10: criação autoral no Pinta, integração no Estúdio, experiências antes da aplicação, autoconferência e entregas reais pela galeria; quatro quizzes isolados e publicação opcional.
 - Vídeo da experiência como demonstração, 06/10: o narrador faz os testes na primeira pessoa e explica, ligando ao que a criança vai montar; a vez dela começa no "Agora é a sua vez". Aplicado aos cinco cursos (Cadê, Farol, Nave, Corre Dino e Meu Jeito), e o recado da trava do vídeo passou a dizer "Pronto! Agora é a sua vez" nas cenas e no jogo pronto.
+- Falas que conversam com a criança, 06/10: toda fala diz "você", chama a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?") e oferece o que é opcional como convite. Saiu o "não precisa baixar nem imprimir" da apresentação do caderno, que a criança entendia como uma ordem para não baixar. Aplicado ao Cadê e ao Farol (roteiros, pontes do Zappy, caderno e Como Fazer); registro em [modulos-cade-todo-mundo.md](modulos-cade-todo-mundo.md) e [modulos-desafio-primeiro-jogo.md](modulos-desafio-primeiro-jogo.md).

@@ -36,6 +36,15 @@ Ainda em 05/10, a pedido do responsável, toda montagem passou a seguir **primei
 
 A revisão de linguagem não mudou seções nem critérios. A divisão em seções, descrita abaixo, veio depois, no mesmo dia, e criou as seções, a experiência e os critérios intermediários novos. As gravações e o ensaio com crianças continuam pendentes.
 
+**Revisão de 06/10/2026: falas que conversam com a criança.** A pedido do responsável, como no Cadê Todo Mundo?, e registrada nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6:
+
+- na apresentação do caderno, saiu o "Não precisa baixar nem imprimir", que a criança entendia como uma ordem para não baixar. O vídeo diz "Olha aqui: este é o seu Caderno do Aluno!" e oferece as duas escolhas: ler aqui mesmo, na aula, ou clicar em **Baixar** para guardar e consultar onde quiser. O Zappy da seção e a primeira página do caderno seguem a mesma ideia;
+- a narração chama a atenção para a tela nos momentos que importam: "Olha aqui", "Olha só" quando aparece um resultado, "Repare" num detalhe e "Viu?" depois do teste da retomada;
+- as pontes do Zappy começam convidando ("Sua vez!", "Agora…!", "Hora de…!") e falam do jogo da criança;
+- o certificado comemora ("Parabéns pelo seu jogo!") e diz em voz ativa que quem montou as regras foi ela.
+
+Seções, blocos, critérios e identificadores não mudaram. Os vídeos precisam ser gravados com as falas novas; o PDF do caderno foi regerado.
+
 ## Módulo 1 · Sua aventura no farol
 
 **Resumo do módulo:** Conheça a aventura A Chave do Farol e programe as regras que fazem o jogo acontecer. Você vai fazer o personagem andar, recolher a chave e abrir a porta do farol para guiar o barco. Teste cada construção, aprenda a publicar seu jogo no Mural e guarde seu certificado.

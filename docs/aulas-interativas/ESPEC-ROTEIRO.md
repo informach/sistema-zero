@@ -1,6 +1,6 @@
 # Especificação do roteiro de gravação
 
-Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças e atualizada em 06/10/2026 (experiência e jogo pronto como demonstração, publicação com comemoração).
+Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças e atualizada em 06/10/2026 (experiência e jogo pronto como demonstração, publicação com comemoração, falas que chamam a atenção de quem faz a aula e o opcional como convite).
 As [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md) são a referência única das regras. Esta especificação fornece exemplos e formato de execução para a gravação. Roteiros e moldes antigos não prevalecem sobre as Diretrizes.
 
 ## 1. A abertura situa a tarefa e convida à ação
@@ -12,7 +12,7 @@ o jogo, seu estado atual ou a necessidade; depois dizer o que fazer.
 - Apresentação (jogo pronto, demonstração com UM exemplo): dizer qual jogo será construído e a situação; mostrar na primeira pessoa um exemplo ("Olha aqui: quando eu toco num esconderijo, aparece quem estava atrás"), sem resolver a partida; só no fim passar a vez ("Agora é a sua vez: jogue até encontrar os três personagens").
 - Experiência (demonstração na primeira pessoa): "Esta é uma experiência para a gente entender ação e reação. Olha aqui: quando eu toco no arbusto, nada acontece. Agora eu ligo a reação e toco de novo… Agora é a sua vez: faça esses mesmos testes na experiência."
 - Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Na experiência da seção anterior, cada personagem encontrado somava um em Achados. Agora vamos programar essa contagem no seu jogo! Primeiro, toque num esconderijo: o personagem aparece, mas Achados continua em zero. Vamos fazer cada personagem encontrado somar um." Sem mandar clicar em Anterior.
-- Material: "Para acompanhar a montagem, este caderno reúne os passos do jogo. Consulte quando precisar."
+- Material: "Olha aqui: este é o seu Caderno do Aluno! Nele estão os passos para montar o seu jogo. Se você esquecer qual bloco usar ou onde ele encaixa, é só voltar aqui e abrir o caderno. Se quiser, você pode ler aqui mesmo, na aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser." Não dizer "não precisa baixar nem imprimir": a criança entende como uma ordem para não baixar.
 - Encerramento: nomear o resultado e dar a próxima ação.
 
 Não começar por uma lista do que será aprendido, a importância do conceito ou uma promessa da
@@ -58,7 +58,7 @@ A aula ensina a criar o jogo. A biblioteca ensina a usar a plataforma.
 | --- | --- |
 | Pausar o vídeo, voltar um trecho, ampliar e sair da tela cheia | Como Fazer |
 | Arrastar divisória, alternar abas, mostrar a Pré-visualização | Como Fazer |
-| Folhear o caderno, trocar a leitura, baixar e imprimir | Como Fazer |
+| Folhear o caderno, trocar a leitura e o passo a passo de baixar e imprimir | Como Fazer (a fala do caderno só convida e aponta **Baixar**) |
 | Caminho mínimo para publicar, quando publicar é a tarefa da seção | Roteiro da aula: Compartilhar, título e resumo, Gerar capa, conferir, Publicar, confirmação, comemoração, copiar o link de jogar e convidar a mandar para a família e os amigos, Fechar |
 | Personalizar a publicação, enviar outra capa e resolver problemas | Como Fazer |
 | Escolher um bloco, encaixar, preencher valores e testar a regra | Roteiro da aula |
@@ -111,8 +111,9 @@ questionários ou mudar as experiências só para encurtar a fala.
 
 ## 5. Falar com quem está fazendo
 
-- Usar "você", verbos simples e frases que soem naturais em voz alta.
-- Ser acolhedor sem repetir "bora", "capricha", "olha só" e parabéns a cada gesto ("Olha aqui:" é a abertura fixa da demonstração, uma vez por vídeo).
+- Usar "você", verbos simples e frases que soem naturais em voz alta. Toda fala conversa com quem faz a aula, como alguém ao lado dela: "o seu caderno", "o seu jogo", "Sua vez!". Nada de frase impessoal que só descreve.
+- Chamar a atenção nos momentos que importam: "Olha aqui:" ao mostrar um lugar, um bloco ou o primeiro gesto da demonstração; "Olha só:" quando aparece um resultado; "Repare:" num detalhe que a pessoa precisa notar; "Viu?" logo depois do teste da retomada. Um chamado por momento importante, variando as expressões; sem repetir "bora", "capricha" ou parabéns a cada gesto (Diretrizes, seção 6).
+- O que é opcional vira convite, nunca negação: "Se quiser, você pode ler aqui mesmo. E, se preferir, também pode baixar para guardar." Não dizer o que a pessoa não precisa fazer; uma proibição que evita um erro continua direta ("Não coloque um encontro dentro do outro").
 - Evitar perguntas que escondem um pedido. "Teste os dois jeitos" é mais claro que
   "Como será que essa ideia funciona no nosso jardim?".
 - Cada "aqui" precisa de um apontamento visível. Cada "isso" precisa de um referente claro.
@@ -188,6 +189,7 @@ correto. A liberdade de cor e detalhes continua livre.
 ## 8. Conferência antes de gravar
 
 - Nas primeiras frases, fica claro o que fazer, em qual atividade e como começar?
+- Cada fala conversa com a pessoa e chama a atenção dela para o que aparece na tela nos momentos que importam? O que é opcional aparece como convite, sem "não precisa"?
 - Todos os passos necessários aparecem, incluindo confirmação e saída?
 - Quem ouve consegue executar sem adivinhar uma peça, valor ou encaixe?
 - O vídeo evita tours, agendas, recapitulações longas e teoria sem uso imediato?

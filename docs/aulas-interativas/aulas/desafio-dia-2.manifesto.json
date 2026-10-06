@@ -14,7 +14,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora compare o que some da tela com o que fica guardado em temChave."
+        "text": "Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado."
       }
     },
     {
@@ -42,7 +42,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Programe o encontro com a chave e faça a chave sair do chão. Teste e clique em Verificar esta etapa."
+        "text": "Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta etapa."
       }
     },
     {
@@ -54,7 +54,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa."
+        "text": "Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa."
       }
     },
     {
@@ -66,7 +66,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mostre um aviso quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor."
+        "text": "Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor."
       }
     },
     {

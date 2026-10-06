@@ -14,7 +14,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar."
+        "text": "Seus personagens já aparecem, mas Achados ainda fica em zero. Vamos fazer o jogo contar! Clique em Próxima seção para começar."
       }
     },
     {
@@ -26,7 +26,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Procure no jardim e acompanhe o número Achados."
+        "text": "Sua vez! Procure no jardim e fique de olho no número Achados."
       }
     },
     {
@@ -54,7 +54,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Faça o jogo contar os achados. Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor."
+        "text": "Agora faça o seu jogo contar os achados! Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor."
       }
     },
     {
@@ -1019,7 +1019,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção."
+        "text": "Hora de deixar o jogo com a sua cara! Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção."
       }
     },
     {
@@ -1031,7 +1031,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula."
+        "text": "Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula."
       }
     },
     {

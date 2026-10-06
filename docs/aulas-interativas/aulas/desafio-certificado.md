@@ -41,7 +41,7 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar m
 - **Conclui quando:** vídeo e certificado emitido.
 - **Blocos:** `video-certificado-farol`, `fala-certificado`, bloco existente `certificado`.
 
-**Ponte do Zappy na página (não gravar):** Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.
 
 Nomear o que a criança programou; orientar **Pegar meu certificado** e **Concluir aula**. Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
 

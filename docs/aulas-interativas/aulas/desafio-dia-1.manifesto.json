@@ -14,7 +14,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Jogue a versão pronta. Pegue a chave, leve o personagem até o farol e clique em Próxima seção."
+        "text": "Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima seção."
       }
     },
     {
@@ -1275,14 +1275,14 @@
     },
     {
       "key": "video-intro-caderno",
-      "plannedVideo": "Título: Seu Caderno do Aluno\n\nApresentar o Caderno do Aluno como consulta opcional que acompanha as seções do curso: montagem, testes, publicação e certificado. Não inventar material de mapa nem ensinar o leitor. Download e impressão são opcionais.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Seu Caderno do Aluno\n\nChamar a atenção para o Caderno do Aluno (Olha aqui: este é o seu Caderno do Aluno!), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo, na aula, ou clicar em Baixar para guardar o caderno e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar material de mapa nem ensinar o leitor.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-intro-caderno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção."
+        "text": "Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção."
       }
     },
     {
@@ -1348,7 +1348,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora veja como o personagem anda, um quadro de cada vez."
+        "text": "Sua vez! Avance um quadro de cada vez e fique de olho no x."
       }
     },
     {
@@ -1379,7 +1379,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Teste as setas e clique em Verificar esta etapa."
+        "text": "Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta etapa."
       }
     },
     {
@@ -1391,7 +1391,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora compare as duas velocidades."
+        "text": "Sua vez! Compare as duas velocidades e repare nas marcas no chão."
       }
     },
     {
@@ -1434,7 +1434,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora veja o que acontece na borda, sem o limite e com ele."
+        "text": "Sua vez! Teste sem o limite e com ele e repare no que acontece na borda."
       }
     },
     {
@@ -1465,7 +1465,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Coloque o limite da tela logo abaixo do movimento. Teste as quatro beiradas e clique em Verificar esta etapa antes de enviar para o professor."
+        "text": "Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta etapa antes de enviar para o professor."
       }
     },
     {

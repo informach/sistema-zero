@@ -10,12 +10,17 @@ conclusão. Muda a fala e as orientações de gravação.
 O jardim, os personagens, os esconderijos e a estrutura do jogo vêm preparados. A criança
 acrescenta a reação ao toque. O roteiro mostra exatamente essa autoria.
 
+A revisão de 06/10/2026 faz todas as falas conversarem com a criança e chamarem a atenção dela
+para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?"), sem mudar seções nem
+critérios. O caderno passa a ser apresentado como escolha: ler na aula ou baixar para guardar.
+Saiu o "não precisa baixar nem imprimir", que a criança entenderia como uma ordem para não baixar.
+
 ## Sequência
 
 | Seção | Vídeo | O que fazer | Conclusão |
 | --- | --- | --- | --- |
 | Bem-vindo ao jardim | 30 a 40 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
-| Seu Caderno do Aluno | 20 a 30 s | conhecer o material de consulta e seguir; leitura opcional | vídeo |
+| Seu Caderno do Aluno | 20 a 30 s | conhecer o caderno e seguir; ler na aula ou baixar, se quiser | vídeo |
 | O que um toque faz? | 50 a 70 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
 | Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
 
@@ -36,11 +41,14 @@ não apresenta seções, player, ampliação, reinício, caderno ou Estúdio.
 
 ### Seu Caderno do Aluno
 
-Mostrar o caderno real e dizer que ele tem os passos para consultar se surgir dúvida.
-Leitura, download e impressão são opcionais. Encaminhar diretamente para a próxima seção.
+Chamar a atenção para o caderno real ("Olha aqui: este é o seu Caderno do Aluno!") e dizer que
+ele tem os passos para consultar se surgir dúvida. Ler e baixar são escolhas, oferecidas como
+convite: ler aqui mesmo, na aula, ou clicar em **Baixar** para guardar o caderno e consultar onde
+quiser. A fala não diz que a criança não precisa baixar ou imprimir: ela entenderia como uma ordem
+para não fazer (ajuste do responsável, 06/10/2026). Encaminhar diretamente para a próxima seção.
 Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
 
-**Zappy abaixo do vídeo:** “Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção.”
+**Zappy abaixo do vídeo:** “Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.”
 
 ### O que um toque faz?
 
@@ -77,8 +85,8 @@ executa automaticamente.
 
 ## Tutoriais retirados do vídeo
 
-Os detalhes de pausa, replay, divisória, ampliação, abas, olhinho, leitor do caderno e download
-ficam na biblioteca Como Fazer. O mapa de destinos está em
+Os detalhes de pausa, replay, divisória, ampliação, abas, olhinho, leitor do caderno e o passo a
+passo do download ficam na biblioteca Como Fazer; a fala do caderno só aponta o botão **Baixar**. O mapa de destinos está em
 [REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md](../REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
 A biblioteca é consulta, sem pré-requisito ou seção extra.
 

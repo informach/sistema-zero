@@ -72,9 +72,11 @@ referir à pessoa como “a criança” ou “o aluno”.
 
 **Caderno em cada curso:** a primeira aula apresenta o PDF na seção 2, depois do vídeo de abertura
 e antes da primeira atividade. A seção usa um vídeo curto e um bloco de materiais; 90% do vídeo
-conclui a seção, sem exigir download. O vídeo diz quando consultar; controles de leitura e download
-ficam no Como Fazer. O PDF é anexado no admin antes de gravar o vídeo. A regra para
-os próximos cursos está no `BRIEFING.md`, em “Regras de seção”.
+conclui a seção, sem exigir download. O vídeo apresenta o caderno à pessoa, diz quando consultar
+e oferece as escolhas como convite: ler ali mesmo ou clicar em **Baixar** para guardar. Não dizer
+que ela não precisa baixar ou imprimir. Controles de leitura e o passo a passo do download ficam
+no Como Fazer. O PDF é anexado no admin antes de gravar o vídeo. A regra para os próximos cursos
+está nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seções 5 e 6.
 
 ## Como ler uma análise de aula
 

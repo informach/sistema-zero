@@ -13,7 +13,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora teste a mesma porta sem a chave e com a chave."
+        "text": "Sua vez! Teste a mesma porta sem a chave e com a chave e repare na resposta que fica marcada."
       }
     },
     {
@@ -41,7 +41,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte o aviso de que falta a chave. Vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir."
+        "text": "Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir."
       }
     },
     {
@@ -53,7 +53,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Complete a parte então para acender o farol. Teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor."
+        "text": "Agora acenda o farol! Complete a parte então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor."
       }
     },
     {
@@ -65,7 +65,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção."
+        "text": "Hora de deixar o jogo com a sua cara! Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção."
       }
     },
     {
@@ -77,7 +77,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula."
+        "text": "Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula."
       }
     },
     {

@@ -53,7 +53,8 @@ a reação ao toque e a contagem. O certificado encerra o curso sem oferta comer
 
 Um único PDF para as duas aulas, anexado ao bloco **caderno** de **Seu Caderno do Aluno**, na
 Aula 1. A leitura, o download e a impressão continuam opcionais; apenas o vídeo conta para
-concluir essa seção. O mesmo anexo alimenta a consulta na tela e o download.
+concluir essa seção. Desde 06/10/2026, o vídeo apresenta o caderno como escolha: ler na aula ou
+clicar em **Baixar** para guardar e consultar onde quiser. O mesmo anexo alimenta a consulta na tela e o download.
 
 Arquivo: **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**. Fonte editável:
 **recursos/cade-todo-mundo/caderno-do-aluno.template.html**. Para regenerar, usar
@@ -105,3 +106,13 @@ Na mesma revisão:
 - **Mexa e veja numa seção própria (seção nova da Aula 2, Deixe o jogo com a sua cara).** Só mudanças que a criança mantém. Saíram os momentos de trocar e voltar dentro das montagens (o 50% da Aula 1) e a mensagem de vitória saiu da montagem da Aula 2. Depois do envio e antes de publicar, a criança troca a imagem dos bichos e dos esconderijos nos blocos **Criar sprite**, na área **Ao iniciar**, e escreve a mensagem do final. O projeto traz sete bichos e seis esconderijos, com caixa única por tipo (72 × 87 e 161 × 144), então a troca não estica o desenho nem muda o lugar. Os sprites passaram a se chamar **bicho1** a **bicho3** e **esconderijo1** a **esconderijo3**. A seção é de fechamento (a entrega continua sendo a última montagem), conclui pelo vídeo e não tem critério. Chave nova: **personalizar**, com o vídeo **video-a2-personalizar**. No Admin, acrescentar a seção sem mexer nas outras.
 - **Projetos salvos antes da revisão** recebem as imagens novas ao abrir: o Estúdio da aula acrescenta ao projeto salvo as imagens do curso que faltam, sem trocar nenhuma das que já existem. Eles guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém o canto de cima do sprite. Por isso, nesses projetos, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo. A fala da seção serve aos dois projetos, porque cita nomes de imagens, que existem nos dois. As crianças que começarem depois recebem o projeto novo, em que bicho por bicho e esconderijo por esconderijo não muda tamanho nem lugar.
 - **A imagem do bloco é um NOME.** No fim do bloco **Criar sprite**, depois de **com imagem**, o Estúdio mostra o nome da imagem (coelho, arbusto…), e não um desenho. A fala manda clicar nesse nome para abrir a lista com as imagens do jogo e, se não achar, rolar a lista. O erro provável é escolher uma imagem do outro tipo (um esconderijo no bloco de um bicho fica grande e aparece antes do toque); a fala ensina a corrigir escolhendo de novo um desenho do mesmo tipo.
+
+## Revisão de 06/10/2026
+
+A pedido do responsável, todas as falas passaram a conversar com a criança e a chamar a atenção dela. A regra entrou nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6, para os próximos cursos já nascerem assim. Seções, blocos, critérios e identificadores não mudaram.
+
+- **Seu Caderno do Aluno:** saiu o "Não precisa baixar nem imprimir", que a criança entendia como uma ordem para não baixar. O vídeo agora diz "Olha aqui: este é o seu Caderno do Aluno!" e oferece as duas escolhas: ler aqui mesmo, na aula, ou clicar em **Baixar** para guardar o caderno e consultar onde quiser. O Zappy da seção, a página 2 do caderno e o tutorial **Como abrir os materiais da aula**, no Como Fazer, seguem a mesma ideia.
+- **Narração:** os momentos que importam ganharam um chamado para a tela: "Olha aqui" ao mostrar um lugar ou bloco, "Olha só" quando aparece um resultado, "Repare" num detalhe (o número Achados, o nome que já vem no bloco) e "Viu?" depois do teste da retomada.
+- **Pontes do Zappy:** começam convidando ("Sua vez!", "Agora…!", "Hora de…!") e falam do jogo da criança ("Seus personagens já aparecem, mas Achados ainda fica em zero").
+
+Os dez vídeos precisam ser regravados com as falas novas. O PDF do caderno foi regerado; no Admin, substituir o anexo e importar o tutorial do Como Fazer atualizado.

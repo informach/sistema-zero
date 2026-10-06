@@ -85,7 +85,7 @@ const aula1 = {
     ),
     dialogue(
       'ponte-a1-jogo',
-      'Jogue a versão pronta. Encontre os três personagens e clique em Próxima seção.',
+      'Sua vez! Jogue a versão pronta e encontre os três personagens. Depois, clique em Próxima seção.',
     ),
     {
       key: 'jogo-pronto',
@@ -116,11 +116,11 @@ const aula1 = {
     video(
       'video-a1-caderno',
       'Seu Caderno do Aluno',
-      'Mostrar o caderno real e dizer que ele reúne os passos de montagem para consultar quando precisar. Leitura, download e impressão são opcionais. Terminar com Próxima seção. Não ensinar controles do leitor, download ou divisória; esses tutoriais ficam no Como Fazer. Anexar o PDF antes de gravar. Regravar a fala. Alvo: 20 a 30 segundos.',
+      'Chamar a atenção para o caderno real (Olha aqui: este é o seu Caderno do Aluno!) e dizer que ele reúne os passos de montagem para consultar quando precisar. Oferecer as duas escolhas como convite: ler aqui mesmo, na aula, ou clicar em Baixar para guardar o caderno e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Terminar com Próxima seção. Apontar Baixar sem demonstrar o download; controles do leitor e divisória ficam no Como Fazer. Anexar o PDF antes de gravar. Regravar a fala. Alvo: 20 a 30 segundos.',
     ),
     dialogue(
       'ponte-a1-caderno',
-      'Este caderno fica aqui para consultar quando precisar de um passo da montagem. Para continuar, clique em Próxima seção.',
+      'Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.',
     ),
     {
       key: 'caderno',
@@ -136,7 +136,10 @@ const aula1 = {
       'Um toque pode chamar uma ação',
       'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: tocar no arbusto (nada acontece, porque o jogo ainda não sabe o que fazer com o toque), dizer que toda ação tem uma reação, como cócegas e risada, dizer que no jogo a gente precisa ligar uma reação a essa ação, clicar em Ligar a reação ao toque e tocar de novo (o arbusto some e o coelho aparece). Meme na comparação: na frase das cócegas, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy morrendo de rir com uma pena fazendo cócegas e a legenda "ação: cócega · reação: risada"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar com Agora é a sua vez e Próxima seção. Sem palpite nem pergunta final. Regravar a fala. Alvo: 50 a 70 segundos.',
     ),
-    dialogue('ponte-a1-toque', 'Use o mesmo arbusto nos dois testes e compare o que acontece.'),
+    dialogue(
+      'ponte-a1-toque',
+      'Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda.',
+    ),
     {
       key: 'experiencia-toque',
       content: {
@@ -157,7 +160,7 @@ const aula1 = {
     ),
     dialogue(
       'ponte-a1-programar',
-      'Monte a regra do toque, teste nos esconderijos e clique em Verificar esta etapa antes de enviar seu jogo para o professor.',
+      'Agora monte a regra do toque no seu jogo! Teste nos esconderijos e clique em Verificar esta etapa antes de enviar para o professor.',
     ),
     studio(montarProjetoCadeTodoMundo()),
   ],
@@ -226,14 +229,14 @@ const aula2 = {
     ),
     dialogue(
       'ponte-a2-retomada',
-      'Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar.',
+      'Seus personagens já aparecem, mas Achados ainda fica em zero. Vamos fazer o jogo contar! Clique em Próxima seção para começar.',
     ),
     video(
       'video-a2-variavel',
       'Um número que acompanha a busca',
       'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; no nosso jogo, cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda "+1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima seção. Sem palpite nem pergunta final. Regravar a fala. Alvo: 65 a 85 segundos.',
     ),
-    dialogue('ponte-a2-variavel', 'Procure no jardim e acompanhe o número Achados.'),
+    dialogue('ponte-a2-variavel', 'Sua vez! Procure no jardim e fique de olho no número Achados.'),
     {
       key: 'experiencia-achados',
       content: {
@@ -254,7 +257,7 @@ const aula2 = {
     ),
     dialogue(
       'ponte-a2-contagem',
-      'Faça o jogo contar os achados. Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor.',
+      'Agora faça o seu jogo contar os achados! Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor.',
     ),
     studio(montarProjetoCadeTodoMundo(true), true),
     // Personalização antes de publicar (05/10/2026): todos os bichos e esconderijos têm a mesma
@@ -268,7 +271,7 @@ const aula2 = {
     ),
     dialogue(
       'ponte-a2-personalizar',
-      'Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção.',
+      'Hora de deixar o jogo com a sua cara! Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção.',
     ),
     video(
       'video-a2-fecho',
@@ -277,7 +280,7 @@ const aula2 = {
     ),
     dialogue(
       'ponte-a2-publicar',
-      'Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.',
+      'Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.',
     ),
     {
       key: 'ajuda-a2-publicar',
@@ -378,7 +381,7 @@ const certificado = {
     ),
     dialogue(
       'ponte-certificado',
-      'Clique em Pegar meu certificado. Quando o certificado baixar, clique em Concluir aula.',
+      'Parabéns, você terminou o seu jogo! Clique em Pegar meu certificado para guardar essa conquista. Quando o certificado baixar, clique em Concluir aula.',
     ),
     {
       key: 'certificado',

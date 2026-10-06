@@ -2,6 +2,8 @@
 
 Cinco seções: experiência com a porta, resposta sem chave, resposta com chave, a seção de mexa e veja (Deixe o jogo com a sua cara) e publicação. Manter o projeto enviado no Dia 2 e o mesmo Estúdio nas quatro últimas seções. A verificação intermediária não pede envio; a seção decisao recebe a entrega única do dia. Ajustar as durações no ensaio, sem acelerar encaixes, percursos ou a espera do barco. Não atribuir à pessoa a arte ou a animação preparada. Só a narração é falada.
 
+Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?") e oferece o que é opcional como escolha, sem dizer o que a pessoa não precisa fazer (Diretrizes, seção 6, revisão de 06/10/2026).
+
 ## Seção 1. O que a porta precisa?
 
 ### Vídeo `video-d3-condicao` · Quando a porta pode abrir?
@@ -17,11 +19,11 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 >
 > Olha aqui: sem levar a chave, eu clico em Testar a porta. temChave está falso, e a porta escolhe a resposta senão: avisa que falta a chave.
 >
-> Agora eu clico em Levar a chave e em Testar a porta de novo. temChave está verdadeiro, e a porta escolhe a resposta então: acender o farol.
+> Agora eu clico em Levar a chave e em Testar a porta de novo. Olha só: agora temChave está verdadeiro, e a porta escolhe a resposta então, que acende o farol.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Agora teste a mesma porta sem a chave e com a chave.
+**Ponte do Zappy na página (não gravar):** Sua vez! Teste a mesma porta sem a chave e com a chave e repare na resposta que fica marcada.
 
 **Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
@@ -36,7 +38,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 **Narração:**
 > "Na experiência da seção anterior, a porta conferia temChave antes de abrir. Agora vamos ensinar o farol a fazer o mesmo!
 >
-> Primeiro, leve o personagem até o farol: nada acontece, porque o farol ainda não confere nada.
+> Primeiro, leve o personagem até o farol. Viu? Nada acontece, porque o farol ainda não confere nada.
 >
 > Vamos começar pelo aviso para quando o personagem chega sem a chave. O encontro com a chave já está pronto no seu projeto.
 >
@@ -55,7 +57,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 >
 > Agora abra Programação e depois Lógica e Se. Pegue o bloco Se. Arraste e solte dentro do encontro com o farol.
 >
-> O Se vem com uma pergunta pronta: x maior que 0. Arraste essa pergunta para a lixeira do espaço dos blocos. O lugar ao lado de Se fica vazio. Deixe esse lugar à vista.
+> Repare: o Se vem com uma pergunta pronta, x maior que 0. Arraste essa pergunta para a lixeira do espaço dos blocos. O lugar ao lado de Se fica vazio. Deixe esse lugar à vista.
 >
 > Abra Programação e depois Valores. Pegue o bloco valor da variável.
 >
@@ -66,7 +68,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 **Na tela:** apontar a linha logo abaixo do bloco **Se**, com **+ senão se** e **+ senão**, e clicar no **+** de **senão**. Com a parte **senão** à vista, abrir **Programação → Variáveis**, pegar **Alterar variável para**, soltar em **senão** e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o número, apagar `Olá` e escrever `A porta não abriu. Falta a chave.`.
 
 **Narração:**
-> "Na parte de baixo do bloco Se, depois de então, aparecem duas opções com um sinal de mais: senão se e senão.
+> "Olha aqui, na parte de baixo do bloco Se, depois de então. Aparecem duas opções com um sinal de mais: senão se e senão.
 >
 > Clique no sinal de mais ao lado de senão. Não clique no mais de senão se.
 >
@@ -87,7 +89,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 **Narração:**
 > "Agora teste no seu jogo. Clique em Atualizar, logo acima do jogo, para começar uma partida.
 >
-> Vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave.
+> Vá ao farol sem passar pela chave. Repare: a luz deve continuar apagada e o aviso deve dizer que falta a chave.
 >
 > Se o aviso não apareceu, confira personagem e farol no encontro, temChave no Se e o aviso dentro de senão. Corrija e teste de novo."
 
@@ -98,7 +100,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 >
 > Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Monte o aviso de que falta a chave. Vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir.
+**Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir.
 
 **Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O envio único do dia acontece na seção seguinte.
 
@@ -113,7 +115,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 **Narração:**
 > "Na experiência da primeira seção desta aula, quando temChave era verdadeiro, a porta escolhia então e acendia o farol. Agora vamos programar essa resposta no seu jogo!
 >
-> Primeiro, clique em Atualizar, pegue a chave e vá ao farol. A luz não acende, porque a parte então ainda não tem nenhuma ação.
+> Primeiro, clique em Atualizar, pegue a chave e vá ao farol. Viu? A luz não acende, porque a parte então ainda não tem nenhuma ação.
 >
 > Continue no mesmo Se do encontro com o farol e deixe à vista a parte então.
 >
@@ -149,11 +151,11 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 **Na tela:** clicar em **Atualizar**. Visitar o farol sem a chave; afastar-se, buscar a chave e voltar ao farol na mesma partida. Esperar a luz e o barco. Clicar em **Atualizar** depois da vitória e ir ao farol sem a chave. Mostrar esses estados reais, sem edição que simule o funcionamento.
 
 **Narração:**
-> "Agora teste a aventura inteira. Clique em Atualizar. Vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave.
+> "Agora teste a aventura inteira! Clique em Atualizar. Vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave.
 >
-> Sem recomeçar a partida, busque a chave e volte ao farol. A luz deve acender, o aviso deve mudar e o barco deve chegar. Espere o barco.
+> Sem recomeçar a partida, busque a chave e volte ao farol. Olha só: a luz acende, o aviso muda e o barco vem chegando! Espere o barco.
 >
-> Clique em Atualizar de novo. A chave volta ao chão. Vá direto ao farol, sem pegar a chave. O farol deve avisar outra vez que falta a chave."
+> Clique em Atualizar de novo. Repare: a chave volta ao chão. Vá direto ao farol, sem pegar a chave. O farol deve avisar outra vez que falta a chave."
 
 **Na tela:** apontar, um trecho de cada vez, a declaração de `temChave` em **Ao iniciar**, sua mudança na coleta e sua consulta no farol. As correções correspondem aos casos que os três testes distinguem.
 
@@ -175,7 +177,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 >
 > Quando o envio terminar, clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Complete a parte então para acender o farol. Teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor.
+**Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete a parte então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor.
 
 **Conferência de produção:** a verificação é cumulativa e confere as regras dos dias anteriores. A seção exige o vídeo, a aprovação e o envio confirmado. A verificação não exige copiar literalmente as frases dos avisos.
 
@@ -185,7 +187,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 
 **Duração alvo:** 90 a 120 segundos.
 
-**Na tela:** no mesmo Estúdio, com o projeto já enviado. Trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e o bloco **Criar sprite personagem**. No fim dele, depois de **com imagem**, clicar no nome **personagem**, mostrar a lista de imagens que se abre (sem título; role se for preciso) e escolher a menina. Depois trazer à vista a área **Quando acontecer**, clicar no texto do aviso da chave e trocar por uma frase curta; fazer o mesmo com o aviso de **então**. Clicar em **Atualizar**, ir ao farol sem a chave, pegar a chave, voltar ao farol e mostrar as mensagens novas. Apontar **Próxima seção**.
+**Na tela:** no mesmo Estúdio, com o projeto já enviado. Trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e o bloco **Criar sprite personagem**. No fim dele, depois de **com imagem**, clicar no nome **personagem**, mostrar a lista de imagens que se abre (sem título; role se for preciso) e escolher a menina. No "Olha só", mostrar a menina no lugar do personagem, do mesmo tamanho. Depois trazer à vista a área **Quando acontecer**, clicar no texto do aviso da chave e trocar por uma frase curta; fazer o mesmo com o aviso de **então**. Clicar em **Atualizar**, ir ao farol sem a chave, pegar a chave, voltar ao farol e mostrar as mensagens novas. Apontar **Próxima seção**.
 
 **Narração:**
 > "Agora deixe o jogo com a sua cara! Você pode escolher quem vive a aventura e escrever os avisos do seu jeito. O que você mudar fica no seu jogo.
@@ -194,7 +196,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 >
 > Vá até o fim desse bloco. Depois de com imagem, está o nome da imagem: personagem. Clique nesse nome. Abre uma lista com as imagens do jogo. Escolha outro personagem, como a menina. Se não achar, role a lista.
 >
-> Todos os personagens têm o mesmo tamanho. Por isso, ele continua andando, pegando a chave e chegando ao farol do mesmo jeito.
+> Olha só: o personagem novo ficou no mesmo lugar e do mesmo tamanho. Todos os personagens têm o mesmo tamanho. Por isso, ele continua andando, pegando a chave e chegando ao farol do mesmo jeito.
 >
 > Agora os avisos. Encontre a área Quando acontecer. No encontro com a chave está o aviso de quando a chave é encontrada. No encontro com o farol, dentro de então e de senão, estão os outros dois. Clique no texto de um aviso e escreva do seu jeito, com uma frase curta.
 >
@@ -204,7 +206,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 >
 > Quando terminar, clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção.
+**Ponte do Zappy na página (não gravar):** Hora de deixar o jogo com a sua cara! Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção.
 
 **Conferência de produção:** é a seção de mexa e veja do curso: vem depois do envio e antes de publicar, para o jogo publicado ter a cara da criança. As mudanças ficam no jogo; nada aqui vira critério, e a seção conclui pelo vídeo. O bloco é Criar sprite personagem em x ___ y ___ largura ___ altura ___ com imagem ___; a imagem aparece pelo nome, no fim do bloco. Todos os personagens têm a caixa 64 × 64 e a mesma área de contato, então a troca não muda o tamanho, o limite da tela nem os encontros. Uma imagem de outro tamanho (o barco, o farol) muda a caixa; a fala ensina a voltar a um personagem. Projetos salvos antes de 05/10/2026 recebem os personagens novos ao abrir a aula. A verificação não cobra o texto dos avisos.
 
@@ -221,7 +223,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 >
 > No alto do Estúdio, clique em Compartilhar. Na aula, ele pode aparecer só como um ícone. O resumo do projeto já vem preenchido. Deixe como está.
 >
-> Clique em Gerar capa e espere a imagem aparecer. Essa é a imagem que vai apresentar seu jogo."
+> Clique em Gerar capa e espere a imagem aparecer. Olha só: essa é a capa que vai apresentar o seu jogo!"
 
 **Na tela:** conferir a capa, clicar em **Publicar** e esperar a comemoração do Zappy com **Seu jogo está no Mural!**. Clicar em **Copiar link de jogar** e mostrar **Link copiado!**. Clicar em **Fechar** e apontar **Concluir aula**. Encerrar sem abrir outra aula.
 
@@ -234,7 +236,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 >
 > Depois de copiar o link, clique em Fechar. Agora clique em Concluir aula."
 
-**Ponte do Zappy na página (não gravar):** Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.
 
 Ajuda escrita junto ao vídeo, fora da narração: [Como publicar seu jogo no Mural e copiar o link](/como-fazer/plataforma-publicar-no-mural). O tutorial abre na mesma aba e oferece retorno à aula.
 

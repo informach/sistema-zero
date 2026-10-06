@@ -7,6 +7,8 @@
 - Seções na entrada deste review: 2 · Seções finais: 4 (05/10/2026: uma ideia por seção).
 - Clipes na entrada deste review: 2 · Clipes finais: 4.
 
+**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?"); as pontes do Zappy começam convidando. Seções, blocos e critérios não mudaram.
+
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
@@ -37,7 +39,7 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Conclui quando:** vídeo e quatro descobertas reais na experiência.
 - **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`, novo `experiencia-memoria`. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.
 
-**Ponte do Zappy na página (não gravar):** Agora compare o que some da tela com o que fica guardado em temChave.
+**Ponte do Zappy na página (não gravar):** Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado.
 
 ### Seção 2. Recolha a chave
 
@@ -46,7 +48,7 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Conclui quando:** vídeo e aprovação dos três critérios de movimento mais a retirada dentro do encontro.
 - **Blocos:** `video-d2-recolher`, `ponte-d2-recolher`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Programe o encontro com a chave e faça a chave sair do chão. Teste e clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta etapa.
 
 O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só cria as áreas que têm blocos. A fala ensina a pegá-la em **Áreas do projeto** e soltar num espaço vazio, e só depois o encontro vai para dentro dela. O critério `recolher` exige o encontro nessa área.
 
@@ -57,7 +59,7 @@ O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só c
 - **Conclui quando:** vídeo e aprovação de sete critérios: movimento, retirada, temChave em falso e verdadeiro no encontro, depois da retirada.
 - **Blocos:** `video-d2-guardar`, `ponte-d2-guardar`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa.
 
 A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: quem usa a informação é a porta, no Dia 3, e por enquanto quem confere é a verificação.
 
@@ -68,7 +70,7 @@ A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: qu
 - **Conclui quando:** vídeo, aprovação dos oito critérios e envio confirmado do projeto.
 - **Blocos:** `video-d2-programar`, `ponte-d2-programar` e o Estúdio `projeto` com a cadeia existente.
 
-**Ponte do Zappy na página (não gravar):** Mostre um aviso quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor.
+**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor.
 
 Testar coleta, mudança do aviso e reinício por Atualizar. O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Concluir aula**.
 

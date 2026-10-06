@@ -2,21 +2,23 @@
 
 Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. O conteúdo precisa ser regravado antes de substituir os vídeos publicados.
 
+Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?") e oferece o que é opcional como escolha, sem dizer o que a pessoa não precisa fazer (Diretrizes, seção 6, revisão de 06/10/2026).
+
 ## 1. Volte ao seu jardim
 
 **Duração alvo:** 15 a 25 segundos.
 
-**Na tela:** mostrar a reação pronta da Aula 1. Tocar em um esconderijo: o personagem aparece e **Achados** continua em zero. Esta seção tem apenas vídeo; não mandar a criança procurar um Estúdio aqui.
+**Na tela:** mostrar a reação pronta da Aula 1. No "Olha aqui", tocar em um esconderijo: o personagem aparece. No "repare", apontar **Achados**, que continua em zero. Esta seção tem apenas vídeo; não mandar a criança procurar um Estúdio aqui.
 
 **Narração:**
 
-> “Hoje você vai fazer o jogo contar os personagens encontrados.
+> “Hoje você vai fazer o seu jogo contar os personagens encontrados.
 >
-> O esconderijo já some quando recebe um toque, mas Achados ainda está em zero. Vamos fazer esse número contar cada personagem.
+> Olha aqui o jardim, do jeito que ficou na Aula 1: quando eu toco num esconderijo, ele some e o personagem aparece. Mas repare no número Achados: ele continua em zero.
 >
-> Clique em Próxima seção para começar.”
+> Vamos fazer esse número contar cada personagem. Clique em Próxima seção para começar.”
 
-**Zappy abaixo do vídeo:** “Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar.”
+**Zappy abaixo do vídeo:** “Seus personagens já aparecem, mas Achados ainda fica em zero. Vamos fazer o jogo contar! Clique em Próxima seção para começar.”
 
 ## 2. Um número que acompanha a busca
 
@@ -28,7 +30,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 > “Esta é uma experiência para a gente entender como funciona uma variável, o número que o jogo usa para contar.
 >
-> O número Achados guarda quantos personagens já foram encontrados. Ele é uma variável: um lugar onde o jogo guarda um número que pode mudar. É como o placar de um jogo de futebol: a cada gol, o placar soma um. No nosso jogo, cada personagem encontrado é como um gol: o jogo soma um em Achados.
+> Repare no número Achados: ele guarda quantos personagens a gente já encontrou. Ele é uma variável: um lugar onde o jogo guarda um número que pode mudar. É como o placar de um jogo de futebol: a cada gol, o placar soma um. No nosso jogo, cada personagem encontrado é como um gol: o jogo soma um em Achados.
 >
 > Olha aqui: quando eu toco num esconderijo, Achados vai para 1: o jogo somou um achado. Toco em outro, e agora é 2.
 >
@@ -38,7 +40,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
-**Zappy abaixo do vídeo:** “Procure no jardim e acompanhe o número Achados.”
+**Zappy abaixo do vídeo:** “Sua vez! Procure no jardim e fique de olho no número Achados.”
 
 **Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo: o gol soma um no placar, e cada personagem encontrado soma um em Achados. Sem palpite nem pergunta final.
 
@@ -52,13 +54,13 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 > “Na experiência da seção anterior, cada personagem encontrado somava um em Achados. Agora vamos programar essa contagem no seu jogo!
 >
-> Primeiro, toque num esconderijo. O personagem aparece, mas Achados continua em zero: o jogo ainda não conta.
+> Primeiro, toque num esconderijo. Viu? O personagem aparece, mas Achados continua em zero: o jogo ainda não conta.
 >
 > Vamos fazer cada personagem encontrado somar um em Achados.
 >
 > Na área Quando acontecer, encontre o bloco Quando clicar ou tocar num sprite do grupo esconderijos. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ver.
 >
-> Deixe à vista o bloco Deixar o sprite escolhido com 0% de visibilidade, que já está dentro dele.
+> Repare: dentro dele já está o bloco Deixar o sprite escolhido com 0% de visibilidade, da Aula 1. Deixe esse bloco à vista.
 >
 > Agora abra Programação e depois Variáveis. Pegue o bloco Somar 1 em variável contador.
 >
@@ -72,11 +74,11 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 **Narração:**
 
-> “Teste no seu jogo. Toque num esconderijo. O personagem aparece e Achados vira 1.
+> “Agora teste no seu jogo! Toque num esconderijo. Olha só: o personagem aparece e Achados vira 1!
 >
 > Toque em outro: o número deve chegar a 2. Toque no último: ele chega a 3 e aparece Você achou todo mundo! Essa mensagem já estava preparada no jogo.
 >
-> Toque de novo no mesmo lugar. O número deve continuar em 3. O esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.
+> Agora toque de novo no mesmo lugar. Repare: o número deve continuar em 3. O esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.
 >
 > Se a contagem não funcionar, confira o bloco de somar: ele precisa estar dentro de Quando clicar ou tocar, logo abaixo do bloco de visibilidade, com o número 1 e a variável achados. Corrija e teste de novo.
 >
@@ -86,7 +88,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Quando o envio terminar, clique em Próxima seção.”
 
-**Zappy abaixo do vídeo:** “Faça o jogo contar os achados. Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor.”
+**Zappy abaixo do vídeo:** “Agora faça o seu jogo contar os achados! Teste os três esconderijos e clique em Verificar esta etapa antes de enviar para o professor.”
 
 **Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___, que nasce com 1 e contador. A verificação também confere a regra da Aula 1. O caderno continua na seção Seu Caderno do Aluno da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A conclusão exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente.
 
@@ -106,7 +108,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Agora os esconderijos. Num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.
 >
-> Todos os bichos têm o mesmo tamanho, e todos os esconderijos também. Por isso, ninguém sai do lugar.
+> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Todos os bichos têm o mesmo tamanho, e todos os esconderijos também. Por isso, ninguém sai do lugar.
 >
 > Por último, a mensagem do final. Encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ver. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta sua.
 >
@@ -116,7 +118,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Quando terminar, clique em Próxima seção.”
 
-**Zappy abaixo do vídeo:** “Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção.”
+**Zappy abaixo do vídeo:** “Hora de deixar o jogo com a sua cara! Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção.”
 
 **Conferência de produção:** é a seção de mexa e veja da Aula 2: vem depois do envio e antes de publicar, para o jogo publicado ter a cara da criança. As mudanças ficam no jogo; nada aqui vira critério, e a seção conclui pelo vídeo. O bloco é Criar sprite ___ em x ___ y ___ largura ___ altura ___ com imagem ___. No fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem num campo, e não um desenho: clicar no nome abre a lista com as miniaturas e o nome de cada imagem; com 14 imagens, a lista rola. Embaixo da lista há um campo para digitar um nome e o botão OK; não usar na gravação. Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém x e y, o canto de cima do sprite. No projeto novo, todos os bichos têm a caixa 72 × 87 e todos os esconderijos 161 × 144, então trocar bicho por bicho ou esconderijo por esconderijo não muda tamanho nem lugar. O erro provável é escolher uma imagem do outro tipo: um esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um esconderijo fica pequeno e deixa o bicho de trás à vista. A correção da fala resolve: escolhendo de novo uma imagem do tipo certo, o tamanho volta. Os sprites se chamam bicho1, bicho2, bicho3 e esconderijo1, esconderijo2, esconderijo3 nos projetos novos. Projetos salvos antes de 05/10/2026 recebem as imagens novas ao abrir (o Estúdio da aula acrescenta as imagens do curso que faltam, sem trocar as que já existem), mas guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Neles, como o Estúdio ajusta o tamanho à imagem nova mantendo o canto de cima, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo que o antigo. A fala serve aos dois porque cita nomes de imagens, que existem nos dois, e não nomes de sprites. A mensagem é o texto do bloco Escrever ___ em x ___ y ___, dentro do Se de A cada quadro do jogo; frase curta para caber na tela.
 
@@ -132,7 +134,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > No alto do Estúdio, clique em Compartilhar. Na aula, ele pode aparecer só como um ícone. O resumo do projeto já vem preenchido. Deixe como está.
 >
-> Clique em Gerar capa e espere a imagem aparecer. Essa é a imagem que vai apresentar seu jogo.”
+> Clique em Gerar capa e espere a imagem aparecer. Olha só: essa é a capa que vai apresentar o seu jogo!”
 
 **Na tela:** conferir a capa, clicar em **Publicar** e esperar a comemoração do Zappy com **Seu jogo está no Mural!**. Clicar em **Copiar link de jogar** e mostrar **Link copiado!**. Clicar em **Fechar** e apontar **Concluir aula**. Encerrar sem abrir outra aula.
 
@@ -146,7 +148,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 >
 > Depois de copiar o link, clique em Fechar. Agora clique em Concluir aula.”
 
-**Zappy abaixo do vídeo:** “Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.”
+**Zappy abaixo do vídeo:** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.”
 
 **Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.
 
