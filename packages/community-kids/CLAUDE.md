@@ -1788,8 +1788,9 @@ de lá); aqui mora a PELE e o Zappy.
   mora a pele, `.sz-lesson-video-toggle` no `globals.css`: contorno quieto desligado e, com
   `aria-pressed="true"`, o fundo do menu (`--menu`) com tinta `--menu-texto`, o degrau num tom do
   menu e o ícone de TV no ouro. ⚠️ A regra antiga `.sz-lesson-video-pill` saiu junto.
-- Testes: `tests/lesson-video-gate.test.tsx` (a aula de verdade com um player e uma atividade de
-  mentira que falam o contrato de produção: tranca, abre ao vivo, "Ver o vídeo", sem opção/sem
+- Testes: `tests/lesson-video-gate.test.tsx` (a aula de verdade com um player de mentira e, na
+  tranca, um jogo pronto `project-play` de verdade, porque desde 06/10/2026 só jogo pronto e
+  experiência trancam (o Estúdio de mentira segue nos testes do flutuante): tranca, abre ao vivo, "Ver o vídeo", sem opção/sem
   player, o MESMO nó do vídeo flutuando, interruptor, minimizar, Tab com a tela ampliada modal e o
   canto guardado por perfil) e, no Chromium, `e2e-scenes/lesson-video.spec.ts`: a página
   `/lesson-video` do harness monta a aula de verdade com um vídeo nativo de 6 s

@@ -18,10 +18,10 @@ publicação: a criança troca bichos, esconderijos e a mensagem do final, e as 
 | Seção | Vídeo | O que fazer | Conclusão |
 | --- | --- | --- | --- |
 | Volte ao seu jardim | 15 a 25 s | ver o que falta no contador e avançar | vídeo |
-| Um número que acompanha a busca | 50 a 70 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
+| Um número que acompanha a busca | 65 a 85 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
 | Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar, verificar a etapa e enviar | vídeo, aprovação na verificação e envio |
 | Deixe o jogo com a sua cara | 2 a 3 min | trocar bichos e esconderijos pelo nome da imagem nos blocos Criar sprite, escrever a mensagem do final e encontrar todo mundo de novo | vídeo; as mudanças não viram critério |
-| Publique seu jogo | 45 a 60 s | manter o resumo, gerar capa, publicar e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |
+| Publique seu jogo | 60 a 80 s | manter o resumo, gerar capa, publicar, comemorar, copiar o link de jogar para a família e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |
 
 ## Orientação por seção
 
@@ -35,7 +35,7 @@ A seção tem vídeo e ponte do Zappy, sem ferramenta. A fala não pode pedir qu
 
 ### Um número que acompanha a busca
 
-O vídeo explica enquanto faz, como na Aula 1. Dizer que a experiência mostra como o jogo conta e
+O vídeo é uma demonstração que explica enquanto faz, como na Aula 1: o narrador faz os testes na primeira pessoa e só no fim passa a vez. Dizer que a experiência mostra como o jogo conta e
 explicar variável em uma frase: um lugar onde o jogo guarda um número que pode mudar. A comparação
 do placar de futebol chega ao jogo: a cada gol, o placar soma um; cada personagem encontrado é como
 um gol, e o jogo soma um em Achados. Sem lista de conceitos.
@@ -100,14 +100,17 @@ não vira critério: a seção conclui pelo vídeo.
 
 ### Publique seu jogo
 
-Começar com a tarefa de publicar o jogo para outras pessoas jogarem. No mesmo Estúdio da prática,
+Começar com a tarefa de publicar o jogo para a família e os amigos jogarem. No mesmo Estúdio da prática,
 abrir **Compartilhar** e deixar o **Resumo do projeto**, que já vem preenchido, como está. Na aula,
 a janela não mostra o campo Título: o título vem do curso, e a fala não o cita. Clicar em
-**Gerar capa**, esperar a imagem e conferir. Clicar em **Publicar**, esperar a confirmação
-**Seu jogo está no Mural!**, clicar em **Fechar** e terminar em **Concluir aula**.
+**Gerar capa**, esperar a imagem e conferir. Clicar em **Publicar** e comemorar com a criança na
+tela do Zappy (**Seu jogo está no Mural!**): agora a família e os amigos podem jogar. Clicar em
+**Copiar link de jogar** e convidar a mandar o link para a família e os amigos, com ajuda de um
+adulto se precisar. Clicar em **Fechar** e terminar em **Concluir aula**.
 
-O vídeo ensina só esse caminho. Gerar capa já inclui a imagem, sem download ou upload manual.
-Trocar a capa por outra imagem, copiar o link e resolver problemas ficam no Como fazer.
+Gerar capa já inclui a imagem, sem download ou upload manual. Trocar a capa por outra imagem e
+resolver problemas ficam no Como fazer. Decisão de 06/10/2026: a publicação do primeiro jogo é
+momento de comemorar e de mostrar o jogo para a família.
 Uma ajuda escrita junto ao vídeo apresenta a área de ajuda e liga diretamente ao tutorial
 **Como publicar seu jogo no mural**, sem exigir leitura nem acrescentar um comando à narração.
 
@@ -115,7 +118,7 @@ Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Pub
 esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer
 “compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala.
 
-**Zappy abaixo do vídeo:** “Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.”
+**Zappy abaixo do vídeo:** “Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.”
 
 ## Conferência antes de regravar
 
@@ -137,7 +140,7 @@ e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para 
 pixels mais baixo. Conferir uma troca num projeto salvo antes da revisão.
 
 Conferir Compartilhar liberado após o envio, resumo preenchido, capa gerada, publicação,
-confirmação, Fechar e Concluir aula. Manter a conclusão possível sem publicação ou visita ao Mural.
+comemoração, **Copiar link de jogar** e **Link copiado!**, Fechar e Concluir aula. Manter a conclusão possível sem publicação ou visita ao Mural.
 O tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas
 de capa e link público. As novas falas precisam ser regravadas antes de substituir os vídeos
 atuais e o caminho precisa de ensaio com crianças.

@@ -12,18 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-contato` · Observe quando o jogo reconhece a batida
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Diminuir a Distância do cacto um passo por vez, com as áreas pontilhadas à vista. Parar no primeiro BATEU e apontar o vão entre os desenhos. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e o cacto, cada um dentro de um bambolê, com os bambolês se encostando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "No seu jogo o Dino atravessa os cactos. Antes de usar uma colisão para encerrar a partida, observe quando a regra reconhece um contato.
+> "Esta é uma experiência para a gente entender a colisão, o jeito que o jogo decide que o cacto bateu no Dino.
 >
-> Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU.
+> Olha aqui: com Tamanho da área do Dino em 100%, eu aproximo o cacto com Distância do cacto, um pouco de cada vez. Em volta do Dino e do cacto há áreas pontilhadas. Enquanto elas não se encostam, nada acontece.
 >
-> Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%.
+> Quando as áreas pontilhadas se encostam, aparece BATEU. Mas os desenhos ainda têm um espacinho entre eles. O jogo não olha o desenho: ele confere se as áreas se encostaram.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como brincar de pega-pega com bambolê: se um bambolê encosta no outro, já valeu, mesmo sem a mão encostar. No seu jogo, você vai usar essa batida para encerrar a partida.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Aproxime o cacto aos poucos e observe quando aparece BATEU.
 
@@ -106,18 +108,22 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-trocar-nao-limpa` · Compare voltar e reiniciar
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Mudar o estado do jogo para inicio escolhido em No fim, o toque faz. Clicar em Tocar na tela, deixar o tempo passar até a batida e mostrar os cactos que ficam na pista ao voltar e ao jogar de novo. Trocar para Reiniciar o jogo e mostrar a pista vazia na abertura e a partida começando só com um cacto novo, com os números da faixa à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino arrumando as peças de um tabuleiro antes de começar outra partida. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Sua corrida já termina. Antes de programar outra partida, compare voltar à abertura com refazer a preparação do jogo.
+> "Esta é uma experiência para a gente entender a diferença entre voltar para a abertura e reiniciar o jogo.
 >
-> Na experiência, em No fim, o Enter faz, escolha Mudar o estado do jogo para inicio. Clique em Apertar Enter para começar e espere a partida terminar. Clique em Apertar Enter para voltar à abertura e outra vez para jogar. Observe os cactos e os números da nova partida.
+> Olha aqui: em No fim, o toque faz, eu escolho Mudar o estado do jogo para inicio. Clico em Tocar na tela, a partida começa, e eu espero um cacto bater no Dino. Fim de partida.
 >
-> Quando terminar novamente, troque a ação para Reiniciar o jogo. Clique em Apertar Enter para voltar e outra vez para começar. Compare os cactos e os números com a tentativa anterior.
+> Eu clico em Tocar na tela, e a abertura volta, mas os cactos continuam na pista. Clico de novo para jogar: a partida nova começa com os cactos da anterior e acaba na hora, com uma batida. Mudar o estado só troca a tela. Ele não arruma a pista.
 >
-> Depois dos testes, clique em Próxima seção."
+> Agora, no fim, eu troco a ação para Reiniciar o jogo. Clico em Tocar na tela: a abertura volta com a pista vazia. Clico de novo, e a partida começa limpa. Reiniciar o jogo repete a preparação do começo.
+>
+> É como jogar de novo um jogo de tabuleiro: não basta voltar para a casa de início, é preciso arrumar as peças outra vez. No seu jogo, você vai usar Reiniciar o jogo quando alguém tocar na tela de fim.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare os dois modos de voltar e observe o começo da partida seguinte.
 

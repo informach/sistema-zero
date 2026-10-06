@@ -71,7 +71,7 @@ O projeto preparado e a paleta usam somente **Programação e Jogo 2D**. As áre
 
 As dezoito seções com vídeo têm uma ponte do Zappy imediatamente após o vídeo, encaminhando a ação da criança. As pontes são texto da página, não novos vídeos ou critérios de conclusão.
 
-No Dia 3, a seção de publicação usa o mesmo Estúdio da montagem. **Compartilhar** fica disponível após o envio. O resumo vem preenchido (na aula, o título vem do curso e não aparece na janela); ensinar gerar capa, publicar e esperar a confirmação. Publicar é a tarefa, mas o vídeo segue como critério técnico daquela seção. Não criar bloqueio novo por acesso expirado ao Mural.
+No Dia 3, a seção de publicação usa o mesmo Estúdio da montagem. **Compartilhar** fica disponível após o envio. O resumo vem preenchido (na aula, o título vem do curso e não aparece na janela); ensinar gerar capa, publicar, comemorar e copiar o link de jogar para mandar à família e aos amigos. Publicar é a tarefa, mas o vídeo segue como critério técnico daquela seção. Não criar bloqueio novo por acesso expirado ao Mural.
 
 ## Materiais de consulta
 

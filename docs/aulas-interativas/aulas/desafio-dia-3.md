@@ -37,7 +37,7 @@ A revisão de 04/10 torna visíveis temChave, a pergunta e as duas respostas. O 
 
 **Ponte do Zappy na página (não gravar):** Agora teste a mesma porta sem a chave e com a chave.
 
-Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não responde. Explicar a condição enquanto faz: o vídeo faz cada gesto no ritmo da fala e mostra o resultado real; depois, a pessoa repete os testes na experiência, que cobra as metas.
+Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não responde. Explicar a condição enquanto faz: o vídeo é uma demonstração, o narrador faz cada gesto na primeira pessoa e só no fim passa a vez; depois, a pessoa repete os testes na experiência, que cobra as metas.
 
 ### Seção 2. Avise quando faltar a chave
 
@@ -81,9 +81,9 @@ Vem depois do envio e antes de publicar. Começar pelo destino: a área **Ao ini
 - **Conclui quando:** vídeo; a publicação é a tarefa ensinada, sem requisito técnico novo de publicação.
 - **Blocos:** `video-d3-fecho`, `ponte-d3-publicar`, `ajuda-publicar` e o mesmo `projeto` pela workspaceKey.
 
-**Ponte do Zappy na página (não gravar):** Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.
 
-**Compartilhar → manter o resumo → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Fechar → Concluir aula**. O envio anterior libera Compartilhar. Trocar a capa, copiar o link e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula.
+**Compartilhar → manter o resumo → Gerar capa → conferir → Publicar → comemorar: Seu jogo está no Mural! → Copiar link de jogar e mandar para a família e os amigos → Fechar → Concluir aula**. O envio anterior libera Compartilhar. Trocar a capa e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula.
 
 ## Experiências e demonstrações desta aula
 
@@ -98,11 +98,11 @@ Vem depois do envio e antes de publicar. Começar pelo destino: a área **Ao ini
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d3-condicao` | Explicar fazendo: testar a porta sem e com a chave | Cena ampliada | 45 a 60 s | Regravar |
+| `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 45 a 60 s | Regravar |
 | `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 3 a 4 min | Gravar |
 | `video-d3-decisao` | Completar então, testar a aventura e enviar | Roteiro revisado | 4 a 5 min, sem acelerar os percursos | Regravar |
 | `video-d3-personalizar` | Mexa e veja: trocar o personagem e escrever os avisos | Mesmo projeto enviado | 90 a 120 s | Gravar |
-| `video-d3-fecho` | Publicar e esperar confirmação | Mesmo projeto enviado | 45 a 60 s, incluindo espera | Regravar |
+| `video-d3-fecho` | Publicar, comemorar e copiar o link de jogar para a família | Mesmo projeto enviado | 60 a 80 s, incluindo espera | Regravar |
 
 ## Continuidade
 

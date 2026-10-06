@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-quadros",
-      "plannedVideo": "Título: Compare dois desenhos e uma animação\n\nRegravar nas ferramentas atuais. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare dois desenhos e uma animação\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar. Meme na comparação: na frase do livrinho, o Zappy folheando um livrinho em que a nave aparece com o fogo pequeno numa página e grande na outra, com a legenda \"páginas rápidas viram movimento\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-quadros",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo."
+        "text": "Agora mude a Velocidade da Prévia e veja quando o fogo pulsa."
       }
     },
     {
@@ -48,7 +48,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Compare dois desenhos e uma animação",
-        "instructions": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.",
+        "instructions": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -75,14 +75,14 @@
     },
     {
       "key": "video-fantasma",
-      "plannedVideo": "Título: Use o quadro anterior como guia\n\nRegravar nas ferramentas atuais. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Use o quadro anterior como guia\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro. Meme na comparação: na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"o de baixo é a guia\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-03.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-fantasma",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro."
+        "text": "Agora use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1."
       }
     },
     {
@@ -234,7 +234,7 @@
     {
       "key": "quadros",
       "title": "Compare dois desenhos e uma animação",
-      "objective": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.",
+      "objective": "Agora mude a Velocidade da Prévia e veja quando o fogo pulsa.",
       "intent": "exploration",
       "blockKeys": ["video-quadros", "fala-quadros", "experiencia-quadros"],
       "workspaceKey": null,
@@ -262,7 +262,7 @@
     {
       "key": "fantasma",
       "title": "Use o quadro anterior como guia",
-      "objective": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.",
+      "objective": "Agora use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1.",
       "intent": "exploration",
       "blockKeys": ["video-fantasma", "fala-fantasma", "experiencia-fantasma"],
       "workspaceKey": null,

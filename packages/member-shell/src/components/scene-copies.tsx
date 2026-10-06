@@ -79,6 +79,7 @@ export function CopyVsOriginalStage({ state, cast }: { state: SceneState; cast?:
             rx={12}
             className="fill-scene-card stroke-scene-line"
           />
+          {/* Neutro: a cópia vem do curso que usa a cena (Desafio, Nave, Meu Jeito). */}
           <Texto
             x={27}
             y={47}
@@ -86,7 +87,7 @@ export function CopyVsOriginalStage({ state, cast }: { state: SceneState; cast?:
             className="fill-scene-ink"
             fontWeight="700"
           >
-            A aula do Desafio
+            O jogo da aula
           </Texto>
           <Texto
             x={303}

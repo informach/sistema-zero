@@ -839,7 +839,7 @@ devem ser construídas no mesmo lote.
 
 ### Como o palco começa
 
-Duas telas lado a lado, com rótulo em cima de cada uma: **A aula do Desafio**, à esquerda, com o jogo
+Duas telas lado a lado, com rótulo em cima de cada uma: **O jogo da aula**, à esquerda (era "A aula do Desafio" até 06/10/2026, quando a cena passou a servir a vários cursos), com o jogo
 da nave dentro, e **O Estúdio Completo**, à direita, vazio, com a frase "Você ainda não tem projetos".
 O meio, onde o arquivo vai aparecer, começa sem nada.
 

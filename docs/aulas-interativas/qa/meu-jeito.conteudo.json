@@ -30,10 +30,11 @@
         "kind": "exploration",
         "videoKey": "video-jogo-pronto",
         "speech": [
-          "Clique na área do jogo abaixo para usar o teclado. Toque na tecla Enter para começar. Use as setas para mover a nave e Espaço para atirar. Repare no fogo da nave e nas pedras: são desenhos feitos para este exemplo. Você vai escolher as cores e as formas dos seus.",
-          "As regras continuam as de Nave Contra Asteroides. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida. Jogue um pouco e siga quando quiser; não precisa vencer nem fazer uma pontuação mínima. Depois, clique em Próxima seção."
+          "Neste curso, você vai desenhar a sua nave e o seu asteroide e colocar os dois no jogo. Esta é a versão pronta, com artes de exemplo, para você ver como o jogo fica antes de criar as suas.",
+          "Olha aqui: eu clico no jogo e toco na tecla Enter para começar. Quando eu seguro a seta para a direita, a nave anda para a direita. O objetivo é atirar nas pedras para fazer pontos antes de perder as vidas. O fogo da nave e as pedras são desenhos feitos para este exemplo. As regras são as do jogo que você terminou em Nave Contra Asteroides.",
+          "Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Não precisa vencer nem fazer uma pontuação mínima. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "screen": "Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar; depois para e aponta o fogo da nave e as pedras com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima seção. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.",
         "play": true
       },
       {
@@ -52,14 +53,19 @@
       {
         "key": "aparencia-e-regras",
         "title": "Troque a história, observe as regras",
-        "bridge": "Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.",
+        "bridge": "Agora troque o tema, desligue a regra de atirar e compare o que muda.",
         "kind": "exploration",
         "videoKey": "video-aparencia-e-regras",
         "speech": [
-          "Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.",
-          "Compare a lista de regras e o que acontece ao mover e atirar em cada tema. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender a diferença entre o tema de um jogo, que são os desenhos, e as regras, que dizem o que o jogo faz.",
+          "Olha aqui: quando eu clico em Mover, a nave anda para o lado. Quando eu clico em Atirar, sai um tiro. Ao lado do jogo, a lista Regras do jogo tem quatro regras. Uma delas é a tecla atira.",
+          "Agora, em Tema do mesmo jogo, eu escolho Carrinho na estrada. A nave virou um carrinho, o asteroide também mudou de desenho, e a lista continua com as mesmas quatro regras. Escolho Submarino no mar: outros desenhos, as mesmas quatro regras. E volto para Nave no espaço.",
+          "É como brincar de pega-pega fantasiado. Com fantasia de pirata ou de astronauta, a brincadeira continua a mesma: quem é pego vira o pegador. No nosso jogo, Tema do mesmo jogo troca a fantasia, e a lista Regras do jogo é a brincadeira.",
+          "Agora eu mudo uma regra. Clico em Regra: a tecla atira, e ela fica desligada. Na lista, a regra a tecla atira fica apagada. Quando eu clico em Atirar, não sai tiro nenhum, e a frase embaixo do jogo diz que a tecla foi apertada, mas a regra está desligada. Trocar o tema mudou só os desenhos. Desligar uma regra mudou o que o jogo faz. Então eu clico de novo e ligo a regra.",
+          "Nas próximas aulas, você vai trocar os desenhos da nave e das pedras pelos seus, e as regras do seu jogo vão continuar as mesmas.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir do tema Nave no espaço, com a regra ligada: clicar em Mover e em Atirar e deixar ver a nave andar e o tiro sair. Apontar a lista Regras do jogo. Em Tema do mesmo jogo, escolher Carrinho na estrada, Submarino no mar e Nave no espaço, deixando ver os desenhos mudarem e a lista continuar com as quatro regras. Clicar em Regra: a tecla atira para desligar, mostrar essa regra apagada na lista, clicar em Atirar e deixar ver que não sai tiro, com a frase embaixo do jogo. Esperar um instante e ligar a regra de novo.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -76,19 +82,24 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-tema-e-regra"
+        "activityKey": "experimento-tema-e-regra",
+        "meme": "na frase do pega-pega, o Zappy com fantasia de pirata e o Zappy com fantasia de astronauta correndo no mesmo pega-pega, com a legenda \"fantasia nova, mesma brincadeira\"."
       },
       {
         "key": "copias",
         "title": "Veja o que uma cópia guarda",
-        "bridge": "Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.",
+        "bridge": "Agora faça a cópia e mude a cor só de um lado.",
         "kind": "exploration",
         "videoKey": "video-copias",
         "speech": [
-          "Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.",
-          "Observe o que ficou guardado no arquivo e o que muda em cada lado da bancada. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o que é uma cópia de um jogo.",
+          "Olha aqui: quando eu clico em Exportar, aparece o arquivo jogo-da-nave, guardando a nave azul. E o jogo da aula continua no lugar, com a mesma nave azul. Exportar não levou o jogo embora: só fez uma cópia.",
+          "Agora eu clico em Importar. O mesmo jogo aparece no lado do Estúdio, também com a nave azul. O arquivo virou um projeto no Estúdio.",
+          "Em Cor da nave no Estúdio, eu escolho rosa. A nave do Estúdio fica rosa, e a nave da aula continua azul. Mudar um lado não muda o outro: depois da cópia, cada um segue o seu caminho.",
+          "É como copiar um desenho do quadro da sala para o seu caderno. Se você pinta o desenho do caderno, o do quadro continua igual. Com o seu jogo vai ser assim: Exportar faz a cópia, e Importar leva essa cópia para o Estúdio, onde você muda o que quiser sem mexer na aula.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir da nave azul no jogo da aula, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave da aula no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a da aula azul.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -105,7 +116,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-copia"
+        "activityKey": "experiencia-copia",
+        "meme": "na frase do caderno, o Zappy copiando a nave do quadro da sala para o caderno e pintando a cópia de rosa, enquanto a nave do quadro continua azul, com a legenda \"a cópia é sua\"."
       },
       {
         "key": "exportar",
@@ -263,14 +275,19 @@
       {
         "key": "bordas",
         "title": "Aproxime duas formas de desenhar",
-        "bridge": "Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.",
+        "bridge": "Agora aproxime as duas pedras e compare as bordas.",
         "kind": "exploration",
         "videoKey": "video-bordas",
         "speech": [
-          "Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.",
-          "Olhe as bordas e os detalhes ao aproximar e afastar. Compare as duas técnicas na mesma ampliação. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender a diferença entre um desenho em pixel e um desenho em vetor.",
+          "Olha aqui: com Aproximar em 1 vez, a pedra de pixel e a pedra de vetor parecem a mesma pedra. Quando eu aumento Aproximar até 4, as bordas ficam diferentes: a pedra de pixel mostra degraus, e a de vetor continua lisa.",
+          "Sabe um desenho feito com pecinhas de montar? De longe, ele parece redondo. De perto, você vê os degraus das pecinhas. A pedra de pixel é assim: ela é feita de quadradinhos. Quando eu aumento Aproximar, é como chegar perto das pecinhas.",
+          "Eu continuo até 6. Na pedra de pixel, aparece a grade dos quadradinhos. Na pedra de vetor, aparecem pontos e curvas: ela é feita de pontos ligados por linhas, e o computador desenha essa linha de novo em qualquer tamanho. Por isso ela continua lisa.",
+          "Agora eu volto Aproximar para 1. De longe, as duas parecem iguais de novo.",
+          "Hoje você vai desenhar a nave em Pixel art, quadradinho por quadradinho. Na aula 4, a pedra vai ser em Vetor, feita com pontos.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -287,7 +304,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-bordas"
+        "activityKey": "experimento-bordas",
+        "meme": "na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda \"de longe: redonda · de perto: degraus\"."
       },
       {
         "key": "nova-nave",
@@ -305,14 +323,20 @@
       {
         "key": "espelho",
         "title": "Descubra o que o espelho repete",
-        "bridge": "Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.",
+        "bridge": "Agora pinte com cada espelho e veja onde a cópia aparece.",
         "kind": "exploration",
         "videoKey": "video-espelho",
         "speech": [
-          "Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.",
-          "Observe onde cada espelho coloca a cópia do traço e o que acontece ao usar o balde. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o que o espelho faz com cada traço.",
+          "Olha aqui: com os dois espelhos desligados, eu clico em Pintar a asa. Aparece uma asa só, do lado esquerdo da nave, onde eu pintei.",
+          "Agora eu ligo só o Espelho lado a lado. Aparece uma linha marcada como meio. Eu clico em Pintar a asa de novo, e uma cópia da asa surge do outro lado dessa linha. Um traço meu virou dois.",
+          "Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.",
+          "Agora eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. A cópia da ponta aparece embaixo, de cabeça para baixo. O espelho que está ligado decide onde a cópia cai.",
+          "Por último, eu deixo só o Espelho lado a lado ligado e clico em Balde de tinta: encher a asa. O Balde enche só a asa esquerda. O espelho continua ligado, mas não copia a tinta do Balde.",
+          "Daqui a pouco, quando você desenhar o contorno da nave, o espelho vai fazer o outro lado. E, para pintar com o Balde, você vai clicar dentro de cada asa.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -329,7 +353,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-espelho"
+        "activityKey": "experimento-espelho",
+        "meme": "na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda \"um pingo, dois lados\"."
       },
       {
         "key": "contorno",
@@ -360,14 +385,19 @@
       {
         "key": "luz",
         "title": "Mude o lado da luz",
-        "bridge": "Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.",
+        "bridge": "Agora ligue A sombra e a luz e mude o lado do sol.",
         "kind": "exploration",
         "videoKey": "video-luz",
         "speech": [
-          "Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.",
-          "Compare a mesma forma com os tons ligados e desligados; acompanhe o lado do sol. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender como a luz e a sombra deixam um desenho redondo.",
+          "Olha aqui: a bola começa com um tom de azul só, e o sol está na esquerda. Quando eu ligo A sombra e a luz, a bola ganha três tons de azul: um mais claro perto do sol e um mais escuro do outro lado. Agora ela parece redonda.",
+          "Quando eu desligo, a bola volta a ter um tom só e fica chapada, como um adesivo.",
+          "Sabe uma bola no pátio, num dia de sol? O lado virado para o sol fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.",
+          "Agora eu ligo de novo e mudo O sol para a direita. O azul mais claro passa para a direita, e o mais escuro vai para a esquerda. A luz e a sombra seguem o lado do sol.",
+          "Daqui a pouco, na sua nave, você vai escolher de que lado vem a luz: um tom mais claro desse lado e um mais escuro do lado oposto.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -384,7 +414,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-luz"
+        "activityKey": "experiencia-luz",
+        "meme": "na frase da bola no pátio, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda \"lado do sol: claro · outro lado: escuro\"."
       },
       {
         "key": "volume",
@@ -489,19 +520,25 @@
       {
         "key": "quadros",
         "title": "Compare dois desenhos e uma animação",
-        "bridge": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.",
+        "bridge": "Agora mude a Velocidade da Prévia e veja quando o fogo pulsa.",
         "kind": "exploration",
         "videoKey": "video-quadros",
         "speech": [
-          "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.",
-          "Compare os dois desenhos parados, o ritmo lento, o rápido e os quadros iguais. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender como dois desenhos parados viram movimento.",
+          "Olha aqui: com a Prévia parada, eu escolho o Quadro 1, a nave com o fogo pequeno. Escolho o Quadro 2: a mesma nave, com o fogo grande. Cada quadro é um desenho parado.",
+          "Agora eu coloco a Velocidade em 2 quadros por segundo e ligo a Prévia. Ela mostra um quadro, depois o outro, devagar. Dá para ver cada troca.",
+          "Mudo a Velocidade para 8. Agora as trocas são tão rápidas que o fogo parece pulsar, e a nave fica no lugar. Quando eu paro a Prévia, fica um quadro só na tela: o movimento era a troca rápida.",
+          "Sabe aqueles livrinhos com um desenho em cada página? Quando você passa as páginas bem rápido, o desenho parece se mexer. Na Prévia, cada quadro é uma página, e a Velocidade diz quantas páginas passam por segundo.",
+          "Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. A Prévia continua trocando 8 quadros por segundo, mas o fogo parou de pulsar, porque os dois desenhos ficaram iguais. Sem diferença entre os quadros, não há movimento.",
+          "Daqui a pouco, no Pinta, você vai desenhar o fogo do quadro 1 e o do quadro 2 da sua nave e deixar a Velocidade em 8 quadros por segundo.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar.",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Compare dois desenhos e uma animação",
-          "instructions": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.",
+          "instructions": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo.",
           "hints": [],
           "activity": {
             "type": "experimentation",
@@ -513,7 +550,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-quadros"
+        "activityKey": "experiencia-quadros",
+        "meme": "na frase do livrinho, o Zappy folheando um livrinho em que a nave aparece com o fogo pequeno numa página e grande na outra, com a legenda \"páginas rápidas viram movimento\"."
       },
       {
         "key": "primeiro-fogo",
@@ -531,14 +569,19 @@
       {
         "key": "fantasma",
         "title": "Use o quadro anterior como guia",
-        "bridge": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.",
+        "bridge": "Agora use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1.",
         "kind": "exploration",
         "videoKey": "video-fantasma",
         "speech": [
-          "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.",
-          "Observe o fogo do quadro 2 com e sem a guia do anterior. Confira também o limite do quadro. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o Fantasma, a guia que mostra o quadro anterior.",
+          "Olha aqui: eu escolho o Quadro 2, com o Fantasma desligado. O fogo 2 está tão grande que é cortado na borda do quadro. Eu diminuo o tamanho do fogo 2 para 7 quadradinhos. Ficou maior ou menor que o fogo do quadro 1? Não dá para saber, porque o fogo 1 não está na tela.",
+          "Agora eu ligo o Fantasma. O fogo do quadro 1 aparece tracejado, por cima do fogo 2, com as marcas fogo 1 e fogo 2 nas pontas. As duas pontas estão quase juntas: o fogo 2 ficou quase igual ao fogo 1. Na animação, quase não ia dar para ver o fogo pulsar.",
+          "Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: mostra o quadro anterior como guia.",
+          "Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro. O Fantasma não entra na animação: ele só ajuda a comparar.",
+          "Daqui a pouco, no Pinta, você vai ligar Fantasma do quadro anterior para mudar só o fogo no segundo quadro da sua nave.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -555,7 +598,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-fantasma"
+        "activityKey": "experiencia-fantasma",
+        "meme": "na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"o de baixo é a guia\"."
       },
       {
         "key": "segundo-fogo",
@@ -736,14 +780,19 @@
       {
         "key": "preenchimento-contorno",
         "title": "Separe o miolo da borda",
-        "bridge": "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.",
+        "bridge": "Agora tire a cor de uma parte de cada vez e compare a pedra.",
         "kind": "exploration",
         "videoKey": "video-preenchimento-contorno",
         "speech": [
-          "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.",
-          "Observe o interior e a borda da mesma forma em cada combinação de cores. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender as duas partes de uma forma: o Preenchimento, que fica dentro, e o Contorno, que é a linha da borda.",
+          "Olha aqui: a pedra começa com Preenchimento azul e Contorno laranja. Quando eu deixo o Contorno em Sem cor, a linha laranja da borda some, e fica só o azul por dentro.",
+          "Agora eu volto o Contorno com cor e deixo o Preenchimento em Sem cor. A linha laranja volta, e por dentro dela aparece o xadrez do fundo. Sem cor não é branco: é transparente.",
+          "Sabe um livro de colorir? A linha preta já vem desenhada, e você pinta por dentro dela. No Pinta, a linha é o Contorno, e a pintura de dentro é o Preenchimento. Cada parte tem a sua cor, e cada uma pode ficar em Sem cor.",
+          "Por fim, eu volto o Preenchimento com cor. A pedra fica com as duas partes de novo: azul por dentro e laranja na borda.",
+          "Daqui a pouco, a sua pedra vai ter uma cor no Preenchimento e o Contorno em Sem cor.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -760,7 +809,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-cores"
+        "activityKey": "experiencia-cores",
+        "meme": "na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda \"linha: Contorno · dentro: Preenchimento\"."
       },
       {
         "key": "novo-asteroide",
@@ -905,14 +955,19 @@
       {
         "key": "camadas",
         "title": "Troque o que fica na frente",
-        "bridge": "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.",
+        "bridge": "Agora suba e desça a pedra na lista Camadas e veja qual fica na frente.",
         "kind": "exploration",
         "videoKey": "video-camadas",
         "speech": [
-          "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.",
-          "Compare a ordem da lista com a parte da pedra que aparece em cada troca. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender as camadas, que decidem qual forma aparece na frente.",
+          "Olha aqui: no começo, a chama cobre quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima e a pedra está embaixo.",
+          "Quando eu clico em Uma camada para a frente, na linha da pedra, a pedra sobe na lista e aparece na frente da chama, sem nada cobrindo. Nenhuma forma foi apagada: só a ordem mudou.",
+          "Sabe quando você empilha figurinhas na mesa? A de cima tapa um pedaço da de baixo. Na lista Camadas é igual: a forma que está em cima aparece na frente.",
+          "Agora eu clico em Uma camada para trás, na linha da pedra. A pedra desce na lista, e a chama volta a cobrir a pedra. Depois, clico em Uma camada para a frente de novo, e a pedra volta para a frente.",
+          "Daqui a pouco, no seu asteroide, você vai desenhar a chama e usar Uma camada para trás até a pedra e as crateras ficarem na frente dela.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir da chama na frente da pedra: apontar a lista Camadas, com a chama em cima. Clicar em Uma camada para a frente, na linha da pedra, e mostrar a pedra subir na lista e aparecer na frente. Clicar em Uma camada para trás, na linha da pedra, e mostrar a chama cobrindo de novo. Clicar em Uma camada para a frente outra vez e mostrar a pedra na frente.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -937,15 +992,23 @@
             "setup": {
               "goals": ["front", "covered", "back-in-front"],
               "goalCopy": {
+                "front": {
+                  "pedido": "Na linha da pedra, clique em Uma camada para a frente."
+                },
+                "covered": {
+                  "pedido": "Com a pedra em cima da lista Camadas, clique em Uma camada para trás na linha da pedra."
+                },
                 "back-in-front": {
-                  "label": "A de cima na lista Camadas é a que aparece na frente"
+                  "label": "A de cima na lista Camadas é a que aparece na frente",
+                  "pedido": "Na linha da pedra, clique em Uma camada para a frente de novo."
                 }
               }
             }
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-camadas"
+        "activityKey": "experimento-camadas",
+        "meme": "na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda \"a de cima fica na frente\"."
       },
       {
         "key": "chama",
@@ -976,19 +1039,24 @@
       {
         "key": "mudanca-pequena",
         "title": "Compare mudanças entre quadros",
-        "bridge": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.",
+        "bridge": "Agora mude só a cratera, depois a pedra inteira, e compare a Prévia.",
         "kind": "exploration",
         "videoKey": "video-mudanca-pequena",
         "speech": [
-          "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.",
-          "Compare a prévia com os detalhes mudando e com o corpo inteiro mudando de lugar. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender quanto um desenho pode mudar de um quadro para o outro.",
+          "Olha aqui: a Prévia já está tocando, trocando os dois quadros 8 vezes por segundo. Com O tanto que a cratera anda e O tanto que a pedra inteira anda em 0, os dois quadros são iguais. Na Prévia, a pedra fica parada.",
+          "Agora eu coloco O tanto que a cratera anda em 4 e deixo a pedra inteira em 0. No quadro 2, só as crateras mudam um pouco de lugar. Na Prévia, as crateras andam, o corpo fica no lugar, e a pedra parece rolar.",
+          "Sabe o globo da sala de aula girando? Ele fica no mesmo lugar, e só os desenhos dos países andam um pouquinho. É essa mudança pequena que faz a gente ver o globo girar. No nosso jogo, essa mudança pequena é O tanto que a cratera anda.",
+          "Agora eu coloco O tanto que a pedra inteira anda em 10. No quadro 2, a pedra toda muda de lugar. Na Prévia, o desenho pula de um lado para o outro, em vez de rolar. Uma mudança grande demais vira pulo.",
+          "Daqui a pouco, no segundo quadro do seu asteroide, você vai mover uma cratera um pouco e deixar o corpo da pedra no mesmo lugar.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir da Prévia tocando, com os dois controles em 0: deixar ver a pedra parada na Prévia. Levar O tanto que a cratera anda até 4 e soltar; deixar ver as crateras mudarem no quadro 2 e a pedra parecer rolar na Prévia. Levar O tanto que a pedra inteira anda até 10 e soltar; deixar ver a pedra pular na Prévia.",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Compare mudanças entre quadros",
-          "instructions": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.",
+          "instructions": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0 e olhe a Prévia tocar por um instante. Se ela estiver parada, clique em Tocar a Prévia. Deixe a pedra em 0 e coloque a cratera em 4; olhe outra vez. Depois coloque a pedra inteira em 10 e compare a Prévia.",
           "hints": [],
           "activity": {
             "type": "experimentation",
@@ -1006,7 +1074,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-tanto-que-muda"
+        "activityKey": "experimento-tanto-que-muda",
+        "meme": "na frase do globo, o Zappy girando o globo da sala de aula, que fica no lugar enquanto os desenhos dos países andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\"."
       },
       {
         "key": "quadro-pedra",
@@ -1186,19 +1255,25 @@
       {
         "key": "nomes",
         "title": "Separe os nomes que os blocos procuram",
-        "bridge": "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
+        "bridge": "Agora tire o bloco, troque o nome e veja quando os avisos aparecem.",
         "kind": "exploration",
         "videoKey": "video-nomes",
         "speech": [
-          "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
-          "Observe os avisos e os nomes procurados pelos blocos em cada mudança. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender por que cada coisa do jogo precisa de um nome só dela.",
+          "Olha aqui: o bloco de cima cria o sprite nave. Ao lado, três blocos procuram esse nome: Mover nave, Desenhar nave e Ler nave. Eu clico em Tempo, e a nave voa na prévia.",
+          "Quando eu clico em Tirar este bloco, os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. A prévia para na última versão que funcionava. Os blocos procuram nave, e ninguém criou esse nome.",
+          "Eu clico em Pôr de volta, e os avisos somem. Agora, em Nome do bloco de baixo, eu escolho nave. Aparece outro aviso: o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.",
+          "Sabe quando duas pessoas da sua sala têm o mesmo nome? Se a professora chama esse nome, as duas olham. Por isso, cada uma ganha um jeito próprio de ser chamada, como o sobrenome.",
+          "Então eu escolho folha-nave. Os avisos somem, e a nave volta a voar na prévia. A folha ganhou um nome só dela, e a nave continua com o nome nave.",
+          "Daqui a pouco, no seu jogo, a folha da nave vai se chamar folha-nave, e o sprite continua com o nome nave.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo.",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Separe os nomes que os blocos procuram",
-          "instructions": "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
+          "instructions": "Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
           "hints": [],
           "activity": {
             "type": "experimentation",
@@ -1210,7 +1285,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-nomes"
+        "activityKey": "experimento-nomes",
+        "meme": "na frase dos nomes, a nave e a folha da nave com o mesmo crachá \"nave\" olhando ao mesmo tempo quando o Zappy chama, com a legenda \"nave? qual das duas?\"."
       },
       {
         "key": "trazer-artes",
@@ -1229,14 +1305,20 @@
       {
         "key": "recorte",
         "title": "Separe o quadro do tamanho no jogo",
-        "bridge": "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.",
+        "bridge": "Agora mude a Largura do recorte até aparecer uma nave inteira.",
         "kind": "exploration",
         "videoKey": "video-recorte",
         "speech": [
-          "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.",
-          "Compare a folha, o retângulo do recorte e a nave que aparece no jogo. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o recorte, que é o jeito de o jogo pegar um desenho da folha.",
+          "Olha aqui: a folha tem 64 por 32, com a nave do quadro 1 e a do quadro 2 lado a lado. O jogo começa vazio, porque ainda não tem recorte.",
+          "Quando eu coloco Largura do recorte em 64, o jogo mostra a folha inteira, com as duas naves espremidas num quadrado só. Com 16, aparece só metade de uma nave, esticada. Com 32, aparece uma nave inteira: o recorte ficou do tamanho de um quadro da folha.",
+          "Sabe uma cartela de adesivos? Para colar um adesivo, você destaca só aquele, do tamanho dele. Se pegar a cartela inteira, vêm todos juntos. Se cortar no meio, sai meio adesivo. A Largura do recorte é o tamanho do adesivo que o jogo destaca da folha.",
+          "Com 32, eu escolho o Quadro 1: no jogo, a nave com o fogo pequeno. Escolho o Quadro 2: a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.",
+          "Agora eu mudo tamanho no jogo para 80. A nave do jogo fica maior, e o recorte continua 32 por 32. O tamanho no jogo é outra escolha: ele não muda o recorte da folha.",
+          "No seu jogo vai ser assim: o recorte da folha-nave fica 32 por 32, e o tamanho da nave na tela continua 54 por 54, no criador.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -1253,7 +1335,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-recorte"
+        "activityKey": "experimento-recorte",
+        "meme": "na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\"."
       },
       {
         "key": "trocar-nave",
@@ -1420,19 +1503,24 @@
       {
         "key": "dois-relogios",
         "title": "Compare nascer e animar",
-        "bridge": "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no botão Tempo com o triângulo para deixar passar dois segundos. Clique em Tempo para parar. Coloque nascimento em 40 e animação em 16. Volte ao começo e ligue Tempo de novo. Observe por três segundos, até nascerem pelo menos três pedras. Veja o número em cada uma ao entrar.",
+        "bridge": "Agora mude os dois relógios e compare as pedras que nascem.",
         "kind": "exploration",
         "videoKey": "video-dois-relogios",
         "speech": [
-          "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no botão Tempo com o triângulo para deixar passar dois segundos. Clique em Tempo para parar. Coloque nascimento em 40 e animação em 16. Volte ao começo e ligue Tempo de novo. Observe por três segundos, até nascerem pelo menos três pedras. Veja o número em cada uma ao entrar.",
-          "Compare quantas pedras entram e como os desenhos de cada pedra se alternam. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender dois relógios que trabalham ao mesmo tempo: um faz as pedras nascerem, e o outro troca os desenhos de cada pedra.",
+          "Olha aqui: eu deixo Desenhos por segundo de cada pedra em 8 e coloco A cada quantos quadros nasce uma pedra em 20. Clico em Voltar ao começo e no Tempo. Em dois segundos, o contador chega ao quadro 60, e nasceram três pedras, nos quadros 20, 40 e 60. Cada pedra entra mostrando o quadro 0, e depois o número em cima dela troca entre 0 e 1.",
+          "Eu clico em Tempo para parar. Nasceu uma pedra a cada 20 quadros, e cada uma trocou de desenho 8 vezes por segundo.",
+          "Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais devagar, e Desenhos por segundo de cada pedra em 16, que é mais depressa. Clico em Voltar ao começo e ligo o Tempo. Em três segundos, nascem só duas pedras: o relógio de nascer ficou mais lento. Mas o número em cima de cada pedra troca entre 0 e 1 bem mais depressa: o relógio dos desenhos ficou mais rápido.",
+          "Cada relógio mudou só o que é dele. E cada pedra começa o próprio giro no quadro 0, na hora em que nasce.",
+          "No seu jogo, o bloco A cada 40 quadros faz cada pedra nascer, e a animação chamada girando troca os desenhos de cada pedra 8 vezes por segundo. No bloco, isso aparece como 8 fps.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir do quadro 0, com uma pedra a cada 40 quadros e 8 desenhos por segundo: escolher 20 quadros em A cada quantos quadros nasce uma pedra, deixar 8 por segundo, clicar em Voltar ao começo e no Tempo. Deixar o tempo passar até o contador mostrar Quadro 60 e três pedras, mostrando o quadro 0 em cada pedra ao entrar; parar o Tempo. Escolher 40 quadros e 16 por segundo, dizendo que cada relógio vai para um lado, clicar em Voltar ao começo, ligar o Tempo por três segundos e deixar ver duas pedras com o número trocando mais depressa.",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Compare nascer e animar",
-          "instructions": "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no botão Tempo com o triângulo para deixar passar dois segundos. Clique em Tempo para parar. Coloque nascimento em 40 e animação em 16. Volte ao começo e ligue Tempo de novo. Observe por três segundos, até nascerem pelo menos três pedras. Veja o número em cada uma ao entrar.",
+          "instructions": "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no Tempo, o botão com o triângulo. Deixe nascerem três pedras e veja o número em cada uma ao entrar. Clique em Tempo para parar. Mude o nascimento para 40 e os desenhos por segundo para 16. Clique em Voltar ao começo, ligue Tempo e observe por três segundos.",
           "hints": [],
           "activity": {
             "type": "experimentation",
@@ -1686,14 +1774,19 @@
       {
         "key": "copia-publicada",
         "title": "Compare projeto e versão publicada",
-        "bridge": "Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.",
+        "bridge": "Agora publique, mude a cor do projeto e publique de novo.",
         "kind": "exploration",
         "videoKey": "video-copia-publicada",
         "speech": [
-          "Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.",
-          "Compare a cor do projeto com cada cartão publicado. Esta bancada é uma simulação; você escolhe depois se quer publicar seu jogo real. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o que é publicar um jogo no Mural. Esta bancada é um treino: nada daqui vai para o Mural de verdade.",
+          "Olha aqui: na esquerda está o seu projeto, com a nave azul. Na direita, a versão no Mural, ainda sem nada publicado. Quando eu clico em Publicar, aparece o cartão Publicação 1, com a nave azul. As duas telas mostram a mesma nave.",
+          "Agora, em Cor da nave no seu projeto, eu escolho rosa. A nave do projeto fica rosa, e a Publicação 1 continua azul. Publicar guardou uma cópia daquele momento, e o projeto continua seu para mexer.",
+          "Sabe quando você manda a foto de um desenho para alguém da família? Se depois você pinta mais o desenho, a foto que a pessoa recebeu continua igual. Para ela ver o desenho novo, você manda outra foto.",
+          "Então eu clico em Publicar de novo. Aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Cada publicação é um cartão novo, e o anterior fica no Mural.",
+          "Mais adiante nesta aula, publicar o seu jogo de verdade vai ser uma escolha sua.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
-        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "screen": "A partir do projeto com a nave azul e do Mural vazio: clicar em Publicar e mostrar o cartão Publicação 1 azul. Em Cor da nave no seu projeto, escolher rosa e mostrar o projeto rosa e a Publicação 1 azul. Clicar em Publicar de novo e mostrar a Publicação 2 rosa ao lado da Publicação 1 azul, com a nota da bancada.",
         "activity": {
           "kind": "interactive",
           "required": true,
@@ -1716,7 +1809,8 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-copia-publicada"
+        "activityKey": "experimento-copia-publicada",
+        "meme": "na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda \"a foto guarda aquele momento\"."
       },
       {
         "key": "teste-completo",
@@ -1735,13 +1829,13 @@
       {
         "key": "compartilhar",
         "title": "Mostre o jogo se quiser",
-        "bridge": "Se quiser, publique uma versão no Mural e teste o cartão. Você pode seguir sem publicar.",
+        "bridge": "Se quiser, publique seu jogo no Mural e mande o link para a família e os amigos. Você pode seguir sem publicar.",
         "kind": "application",
         "videoKey": "video-compartilhar",
         "speech": [
-          "Com seu jogo salvo, clique em Compartilhar no Estúdio. Confira o título e escreva um resumo que conte como jogar. Clique em Gerar capa e confira se a imagem representa seu jogo. Com título, resumo e capa prontos, clique em Publicar.",
-          "Espere a confirmação Publicado!. Clique em Abrir o jogo, teste uma partida na versão publicada e compare com seu projeto. Você pode usar Copiar link para guardar o endereço. Depois clique em Fechar na janela de compartilhamento.",
-          "Publicar é opcional. Se preferir guardar o jogo por enquanto, siga para a revisão e entregue pela galeria. Se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão; o cartão antigo conserva a anterior."
+          "Publicar é opcional. Se quiser mostrar seu jogo para a família e os amigos, com o jogo salvo, clique em Compartilhar no Estúdio. Confira o título. O resumo pode já vir escrito: leia e deixe do seu jeito, contando como jogar. Clique em Gerar capa e confira se a imagem representa seu jogo. Com título, resumo e capa prontos, clique em Publicar.",
+          "Espere a confirmação Publicado! Seu jogo já está no Mural dos Criadores. Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Abrir o jogo: a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio. Depois, clique em Copiar link. O botão muda para Link copiado! Mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.",
+          "Se preferir guardar o jogo por enquanto, siga para a revisão e entregue pela galeria. Se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão; o cartão antigo conserva a anterior."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"

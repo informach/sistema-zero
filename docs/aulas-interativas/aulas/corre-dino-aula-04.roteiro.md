@@ -12,18 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-area-que-espera` · Compare esperar e repetir
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com as peças em Ações disponíveis. Colocar Tocar efeito · pulo em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado, com o contador da peça em 0 vezes. Clicar em Apertar a tecla e mostrar a nota ♪ no palco e o contador em 1 vez. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy apertando a campainha de uma casa, com uma nota musical saindo dela. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu Dino já pula. Para tocar um som no momento certo, observe uma ação que espera um acontecimento.
+> "Esta é a mesma experiência da primeira aula, agora para a gente entender uma área que espera um acontecimento para agir. Ela ganhou uma área nova, Quando acontecer.
 >
-> Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar na tecla. Observe o contador.
+> Olha aqui: eu coloco Tocar efeito · pulo em Quando acontecer e clico em Começar o jogo. O jogo roda até o teste terminar, e o contador continua em 0 vezes. A peça ficou esperando, porque eu não cliquei em Apertar a tecla.
 >
-> Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique.
+> Agora eu clico em Apertar a tecla. Na mesma hora, aparece a notinha ♪ no jogo, e o contador vai para 1 vez. Quando acontecer não age no começo nem repete sozinho: age quando o acontecimento chega.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como a campainha de casa: ela fica quieta o dia inteiro e só toca quando alguém aperta o botão. No seu jogo, o som vai em Quando acontecer, esperando o pulo do Dino.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Comece o teste sem tocar na tecla e depois acione a tecla uma vez.
 
@@ -31,18 +33,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-dedo-e-pulo` · Compare a tecla com o pulo
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Tocar efeito em Quando apertar Espaço e os contadores de pulos e sons em 0. Fazer os gestos no ritmo da fala, esperando o pouso entre os testes, e manter os contadores à vista depois de cada clique. Levar Tocar efeito para Quando o Dino pular e repetir os testes. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Um comando de tecla e um salto nem sempre acontecem juntos. Compare esses dois momentos antes de escolher o evento do som.
+> "Esta é uma experiência para a gente entender em que momento o som deve tocar: na tecla ou no pulo.
 >
-> Deixe Tocar efeito em Quando apertar Espaço. Toque na barra de espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, pule tocando no Dino.
+> Olha aqui: com Tocar efeito em Quando apertar Espaço, eu clico em Apertar Espaço. O Dino pula, e o som toca. Com ele ainda no ar, eu clico de novo: o som toca outra vez, mas o Dino não pula de novo. Agora são 2 sons para 1 pulo.
 >
-> Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: duas teclas no mesmo salto e um pulo tocando no Dino. Compare os contadores.
+> Depois que ele pousa, eu clico em Tocar para pular. O Dino pula, e nenhum som toca, porque esse pulo não veio da tecla Espaço.
 >
-> Depois dos testes, clique em Próxima seção."
+> Agora eu levo Tocar efeito para Quando o Dino pular e faço os mesmos testes. Duas vezes Apertar Espaço no mesmo salto: um pulo e um som só. Tocar para pular: o pulo vem com som. Cada pulo tem o seu som, venha da tecla ou do toque, porque agora o som está ligado ao pulo. No seu jogo, você vai pôr Tocar efeito dentro de Quando o sprite pular.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Teste tecla repetida e toque nos dois lugares do som.
 

@@ -24,7 +24,7 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 ### Seção 1. Compare projeto e versão publicada
 
-**Tarefa / Zappy na página:** Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.
+**Tarefa / Zappy na página:** Agora publique, mude a cor do projeto e publique de novo.
 
 **Blocos na página:** video-copia-publicada → fala-copia-publicada → experimento-copia-publicada.
 
@@ -40,7 +40,7 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 ### Seção 3. Mostre o jogo se quiser
 
-**Tarefa / Zappy na página:** Se quiser, publique uma versão no Mural e teste o cartão. Você pode seguir sem publicar.
+**Tarefa / Zappy na página:** Se quiser, publique seu jogo no Mural e mande o link para a família e os amigos. Você pode seguir sem publicar.
 
 **Blocos na página:** video-compartilhar → fala-compartilhar.
 

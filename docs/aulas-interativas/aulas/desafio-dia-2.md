@@ -35,7 +35,7 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Intenção:** exploração (`exploration`).
 - **Por que existe:** distinguir recolher, avisar e guardar antes de programar.
 - **Conclui quando:** vídeo e quatro descobertas reais na experiência.
-- **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`, novo `experiencia-memoria`. O vídeo faz cada gesto no ritmo da fala e mostra o resultado real; depois, a pessoa repete os testes na experiência, que cobra as metas.
+- **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`, novo `experiencia-memoria`. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.
 
 **Ponte do Zappy na página (não gravar):** Agora compare o que some da tela com o que fica guardado em temChave.
 
@@ -82,7 +82,7 @@ A verificação é cumulativa em cada montagem: a seção 2 confere o movimento 
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d2-contexto` | Contexto e comandos da comparação de memória | Retomada e nova experiência | 60 a 80 s | Regravar |
+| `video-d2-contexto` | Demonstração explicada da memória | Retomada e nova experiência | 80 a 100 s | Regravar |
 | `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 2 a 3 min | Gravar |
 | `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 2 a 3 min | Gravar |
 | `video-d2-programar` | Aviso, teste, aviso próprio e envio | Mesmo projeto | 2 a 3 min | Regravar |

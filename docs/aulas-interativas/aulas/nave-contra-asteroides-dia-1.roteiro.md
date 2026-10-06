@@ -12,16 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-seta-e-velocidade` · Observe o movimento quadro a quadro
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Apontar os controles sem realizar os testes pela pessoa.
+**Na tela:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda "Velocidade 3 · Velocidade 1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Sua nave ainda está parada. Antes de programar as setas, observe como a posição x desta nave muda a cada quadro.
+> "Esta é uma experiência para a gente entender a velocidade: quanto a nave anda em cada quadro. A regra aqui é a mesma que você vai montar: a cada quadro do jogo, mover a nave com as setas.
 >
-> Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta, escolha Velocidade 3 e avance alguns quadros, um de cada vez.
+> Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. O x continua 208, e a nave fica parada. Em cada quadro, o jogo confere a seta, e a seta está solta.
 >
-> Clique em Recomeçar, escolha Velocidade 1 e avance outros quadros com a seta ligada. Compare quanto o x muda em cada passo. Depois, clique em Próxima seção."
+> Agora eu ligo a seta, deixo Velocidade 3 e avanço um quadro de cada vez. O x vai para 211, depois 214, depois 217. Cada quadro soma 3. É como o tamanho do passo quando você anda: passo grande leva mais longe. A velocidade é o tamanho do passo da nave em cada quadro.
+>
+> Eu clico em Recomeçar, escolho Velocidade 1 e avanço de novo. Agora o x vai de 208 para 209, depois 210. O passo ficou menor, e a nave anda mais devagar. No seu jogo, você vai usar velocidade 7, um passo maior.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare a seta solta e segurada. Depois compare Velocidade 3 e Velocidade 1, avançando um quadro por vez.
 
@@ -71,16 +75,18 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-limite-da-tela` · Observe o que acontece na borda
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Apontar os controles sem realizar os testes pela pessoa.
+**Na tela:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "A nave pode sair da tela quando continua andando. Compare o movimento com e sem limite nesta experiência antes de montar essa regra.
+> "Esta é a mesma experiência da primeira seção desta aula, agora para a gente entender o limite da tela.
 >
-> Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Observe a nave chegar à borda e continuar até sair da tela.
+> Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. A nave anda, chega à borda e continua até sair inteira da tela. Sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.
 >
-> Clique em Recomeçar, ligue Manter dentro da tela e mantenha a seta ligada. Clique em Rodar e compare o que acontece na borda. Depois, clique em Próxima seção."
+> Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. A nave anda até a borda e para ali, inteira na tela. O x para em 416. Em cada quadro, depois de mover, o jogo confere a borda e segura a nave do lado de dentro. No seu jogo, Manter o sprite dentro da tela vai ficar logo depois do movimento.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Rode sem o limite. Depois recomece, ligue Manter dentro da tela e rode de novo.
 
@@ -111,14 +117,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-ordem-dos-desenhos` · Compare a ordem dos desenhos
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedacinho da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase de pintar no papel, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy pintando um céu estrelado por cima do desenho de uma nave, com a legenda "quem vem por último fica por cima"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Seu jogo já limpa e desenha a nave. Antes de colocar as estrelas, compare o que acontece quando dois desenhos ocupam a mesma parte da tela.
+> "Esta é uma experiência para a gente entender por que a ordem dos desenhos muda o que aparece na tela.
 >
-> Na experiência, use as setas na lista de desenhos para colocar o fundo de estrelas antes da nave. Observe a tela. Troque a ordem para desenhar a nave antes do fundo. Observe novamente e volte à primeira ordem. Depois, clique em Próxima seção."
+> Olha aqui: na lista A ordem de desenhar, a nave está em 1º a desenhar, e o fundo de estrelas, em 2º. Por isso, só aparece um pedacinho da nave: o fundo foi desenhado por cima dela. É como pintar no papel. Se você desenha a nave e depois pinta o céu por cima, o céu cobre a nave.
+>
+> Agora eu clico em Subir, no fundo de estrelas. O fundo passa a ser desenhado primeiro, e a nave aparece inteira, na frente das estrelas. Quem é desenhado por último fica por cima.
+>
+> Eu troco a ordem de novo, e a nave volta para trás das estrelas. Nada foi apagado; só a ordem mudou. Por último, deixo o fundo antes da nave outra vez, e a nave aparece. No seu jogo, o desenho das estrelas vai ficar antes do desenho da nave.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Troque a ordem do fundo e da nave, observe a tela e volte à primeira ordem.
 

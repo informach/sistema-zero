@@ -8,18 +8,22 @@ Entrada: Jogo concluído em Nave Contra Asteroides. Saída: Cópia do próprio j
 
 Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
+Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
+
 ## Seção 1. Jogue uma versão com artes próprias
 
 ### Clipe `video-jogo-pronto` · Jogue uma versão com artes próprias
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.
+**Na tela:** Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar; depois para e aponta o fogo da nave e as pedras com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima seção. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
-> "Clique na área do jogo abaixo para usar o teclado. Toque na tecla Enter para começar. Use as setas para mover a nave e Espaço para atirar. Repare no fogo da nave e nas pedras: são desenhos feitos para este exemplo. Você vai escolher as cores e as formas dos seus.
+> "Neste curso, você vai desenhar a sua nave e o seu asteroide e colocar os dois no jogo. Esta é a versão pronta, com artes de exemplo, para você ver como o jogo fica antes de criar as suas.
 >
-> As regras continuam as de Nave Contra Asteroides. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida. Jogue um pouco e siga quando quiser; não precisa vencer nem fazer uma pontuação mínima. Depois, clique em Próxima seção."
+> Olha aqui: eu clico no jogo e toco na tecla Enter para começar. Quando eu seguro a seta para a direita, a nave anda para a direita. O objetivo é atirar nas pedras para fazer pontos antes de perder as vidas. O fogo da nave e as pedras são desenhos feitos para este exemplo. As regras são as do jogo que você terminou em Nave Contra Asteroides.
+>
+> Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Não precisa vencer nem fazer uma pontuação mínima. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Experimente mover a nave e atirar. Observe os desenhos e o fogo; você vai criar as suas próprias artes.
 
@@ -42,31 +46,49 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 ### Clipe `video-aparencia-e-regras` · Troque a história, observe as regras
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do tema Nave no espaço, com a regra ligada: clicar em Mover e em Atirar e deixar ver a nave andar e o tiro sair. Apontar a lista Regras do jogo. Em Tema do mesmo jogo, escolher Carrinho na estrada, Submarino no mar e Nave no espaço, deixando ver os desenhos mudarem e a lista continuar com as quatro regras. Clicar em Regra: a tecla atira para desligar, mostrar essa regra apagada na lista, clicar em Atirar e deixar ver que não sai tiro, com a frase embaixo do jogo. Esperar um instante e ligar a regra de novo. Meme na comparação: na frase do pega-pega, o Zappy com fantasia de pirata e o Zappy com fantasia de astronauta correndo no mesmo pega-pega, com a legenda "fantasia nova, mesma brincadeira". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.
+> "Esta é uma experiência para a gente entender a diferença entre o tema de um jogo, que são os desenhos, e as regras, que dizem o que o jogo faz.
 >
-> Compare a lista de regras e o que acontece ao mover e atirar em cada tema. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: quando eu clico em Mover, a nave anda para o lado. Quando eu clico em Atirar, sai um tiro. Ao lado do jogo, a lista Regras do jogo tem quatro regras. Uma delas é a tecla atira.
+>
+> Agora, em Tema do mesmo jogo, eu escolho Carrinho na estrada. A nave virou um carrinho, o asteroide também mudou de desenho, e a lista continua com as mesmas quatro regras. Escolho Submarino no mar: outros desenhos, as mesmas quatro regras. E volto para Nave no espaço.
+>
+> É como brincar de pega-pega fantasiado. Com fantasia de pirata ou de astronauta, a brincadeira continua a mesma: quem é pego vira o pegador. No nosso jogo, Tema do mesmo jogo troca a fantasia, e a lista Regras do jogo é a brincadeira.
+>
+> Agora eu mudo uma regra. Clico em Regra: a tecla atira, e ela fica desligada. Na lista, a regra a tecla atira fica apagada. Quando eu clico em Atirar, não sai tiro nenhum, e a frase embaixo do jogo diz que a tecla foi apertada, mas a regra está desligada. Trocar o tema mudou só os desenhos. Desligar uma regra mudou o que o jogo faz. Então eu clico de novo e ligo a regra.
+>
+> Nas próximas aulas, você vai trocar os desenhos da nave e das pedras pelos seus, e as regras do seu jogo vão continuar as mesmas.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.
+**Zappy na página (não gravar):** Agora troque o tema, desligue a regra de atirar e compare o que muda.
 
 ## Seção 4. Veja o que uma cópia guarda
 
 ### Clipe `video-copias` · Veja o que uma cópia guarda
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da nave azul no jogo da aula, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave da aula no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a da aula azul. Meme na comparação: na frase do caderno, o Zappy copiando a nave do quadro da sala para o caderno e pintando a cópia de rosa, enquanto a nave do quadro continua azul, com a legenda "a cópia é sua". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.
+> "Esta é uma experiência para a gente entender o que é uma cópia de um jogo.
 >
-> Observe o que ficou guardado no arquivo e o que muda em cada lado da bancada. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: quando eu clico em Exportar, aparece o arquivo jogo-da-nave, guardando a nave azul. E o jogo da aula continua no lugar, com a mesma nave azul. Exportar não levou o jogo embora: só fez uma cópia.
+>
+> Agora eu clico em Importar. O mesmo jogo aparece no lado do Estúdio, também com a nave azul. O arquivo virou um projeto no Estúdio.
+>
+> Em Cor da nave no Estúdio, eu escolho rosa. A nave do Estúdio fica rosa, e a nave da aula continua azul. Mudar um lado não muda o outro: depois da cópia, cada um segue o seu caminho.
+>
+> É como copiar um desenho do quadro da sala para o seu caderno. Se você pinta o desenho do caderno, o do quadro continua igual. Com o seu jogo vai ser assim: Exportar faz a cópia, e Importar leva essa cópia para o Estúdio, onde você muda o que quiser sem mexer na aula.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.
+**Zappy na página (não gravar):** Agora faça a cópia e mude a cor só de um lado.
 
 ## Seção 5. Baixe o seu jogo concluído
 

@@ -568,7 +568,7 @@ export function DinoSceneControls({
             {
               id: 'relogio',
               titulo: quadros
-                ? `◷ A cada quadros: ${intervalo}`
+                ? `◷ A cada ${intervalo} quadros`
                 : `◷ No relógio, a cada ${decimal(state.crowd.interval)} s`,
               dentro: (
                 <Escolha

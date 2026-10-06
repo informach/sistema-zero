@@ -52,7 +52,7 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Jogue antes de construir\n\nRegravar no Estúdio atual. Mostrar somente o jogo pronto em funcionamento. Apontar os controles citados; participação basta para concluir.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Jogue antes de construir\n\nRegravar no Estúdio atual. Demonstração: o narrador mostra como se joga com um exemplo só. Mostrar somente o jogo pronto, na abertura. Clicar na área do jogo, esperar o primeiro cacto e fazer um salto com a barra de espaço. Parar a demonstração depois desse salto, sem jogar a partida até o fim e sem mostrar a tela de fim. Em Agora é a sua vez, deixar o jogo pronto à vista para quem faz a aula; participação basta para concluir.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-apresentacao",
@@ -1468,7 +1468,7 @@
     },
     {
       "key": "video-uma-vez-e-sempre",
-      "plannedVideo": "Título: Compare uma vez e sempre\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare uma vez e sempre\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Mover o Dino um pouquinho em Ações disponíveis. Colocar a peça em Ao iniciar, clicar em Começar o jogo e manter à vista o passo curto do Dino, o contador da peça em 1 vez e Teste encerrado. Levar a mesma peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar o Dino até sair da cena, com o contador subindo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy calçando um tênis, com a legenda Ao iniciar: uma vez, e o Dino correndo com marcas de passos, com a legenda Enquanto estiver rodando: sempre. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-uma-vez-e-sempre",
@@ -1532,7 +1532,7 @@
     },
     {
       "key": "video-limite-da-tela",
-      "plannedVideo": "Título: Escolha o tamanho da tela\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escolha o tamanho da tela\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de 800 por 480, com a borda escondida. Clicar em Ligue a borda e mostrar o contorno. Mudar a largura para 600 e a altura para 300, com o contorno acompanhando os números. Terminar em 480 por 270, com os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy segurando uma folha grande e outra menor, com o Dino desenhado dentro da menor e a legenda 480 por 270. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limite-da-tela",
@@ -1584,7 +1584,7 @@
     },
     {
       "key": "video-coordenadas",
-      "plannedVideo": "Título: Escolha onde o Dino fica\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escolha onde o Dino fica\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Aumentar só o x até 300, depois só o y até 240, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com um mapa do tesouro, com uma seta x para a direita e uma seta y para baixo. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-coordenadas",
@@ -1612,7 +1612,7 @@
     },
     {
       "key": "video-criar-e-mostrar",
-      "plannedVideo": "Título: Compare criar e mostrar\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare criar e mostrar\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com os bastidores e a tela do jogo vazios, lado a lado. Clicar em Criar o Dino e mostrar o Dino nos bastidores, com a tela ainda vazia. Clicar em Mostrar o Dino na tela e mostrar o mesmo Dino nos dois lugares. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino no camarim, arrumando o chapéu, e depois entrando no palco sob a luz. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-e-mostrar",

@@ -221,7 +221,8 @@ const chapters = aulasDino.map((lesson, i) => {
       )
       continue
     }
-    const speech = falasSecao(section)
+    // Onde o vídeo é demonstração na primeira pessoa, o caderno traz os passos no imperativo.
+    const speech = section.caderno ?? falasSecao(section)
     // Mantenha a abertura junto da primeira ação e a saída junto do último teste.
     // Cada passo conserva seu parágrafo e número, mesmo quando ocupa a mesma página.
     for (let p = 0; p < speech.length; ) {

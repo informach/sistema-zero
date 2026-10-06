@@ -14,9 +14,9 @@ acrescenta a reação ao toque. O roteiro mostra exatamente essa autoria.
 
 | Seção | Vídeo | O que fazer | Conclusão |
 | --- | --- | --- | --- |
-| Bem-vindo ao jardim | 25 a 35 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
+| Bem-vindo ao jardim | 30 a 40 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
 | Seu Caderno do Aluno | 20 a 30 s | conhecer o material de consulta e seguir; leitura opcional | vídeo |
-| O que um toque faz? | 45 a 60 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
+| O que um toque faz? | 50 a 70 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
 | Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
 
 A duração da prática inclui os gestos, sem acelerar a montagem. Não aumentar os vídeos de
@@ -26,9 +26,10 @@ apresentação para atingir uma duração mínima.
 
 ### Bem-vindo ao jardim
 
-A primeira fala diz qual jogo será construído e pede que a criança jogue a versão pronta.
-Apontar para a área jogável sem revelar os esconderijos. Pedir os três achados, pois a seção
-já exige esse resultado, e terminar com **Próxima seção**.
+A primeira fala diz qual jogo será construído e apresenta a versão pronta. O vídeo é uma
+demonstração, como nas experiências: o narrador mostra como se joga com UM achado ("Olha aqui:
+quando eu toco num esconderijo…"), deixa os outros para a criança descobrir e só no fim passa a
+vez: jogar até encontrar os três, pois a seção exige esse resultado, e clicar em **Próxima seção**.
 
 O jogo pronto é uma cópia separada do projeto de construção. O Zappy resume a ação. O vídeo
 não apresenta seções, player, ampliação, reinício, caderno ou Estúdio.
@@ -43,7 +44,7 @@ Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
 
 ### O que um toque faz?
 
-O vídeo explica enquanto faz (Diretrizes, seção 2). Dizer que a experiência mostra ação e
+O vídeo é uma demonstração que explica enquanto faz (Diretrizes, seção 2): o narrador faz os testes na primeira pessoa e só no fim passa a vez. Dizer que a experiência mostra ação e
 reação e apontar para ela. Tocar no arbusto: nada acontece, porque o jogo ainda não sabe o que
 fazer com o toque. Comparar com o que a criança já vive: toda ação tem uma reação, como a cócega
 e a risada. No jogo, o toque é a ação, e a gente precisa ligar uma reação a ela. Clicar em

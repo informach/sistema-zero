@@ -12,16 +12,16 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-abertura` · Jogue antes de construir
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar somente a versão pronta. Apontar os controles citados sem antecipar uma partida inteira. A atividade comprova participação, não vitória.
+**Na tela:** Mostrar somente a versão pronta. O narrador faz um gesto de exemplo e para: clicar na área do jogo, apertar Enter para começar e apertar a barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima seção.
 
 **Narração:**
-> "Você vai construir Nave Contra Asteroides. Nesse jogo, a nave atira nas pedras que caem do espaço. Cada acerto vale um ponto. Você ganha ao chegar a 26 pontos e perde se as três vidas acabarem.
+> "Esta é a versão pronta de Nave Contra Asteroides, para você ver como o jogo funciona antes de montar o seu. Nesse jogo, a nave atira nas pedras que caem do espaço. Cada acerto vale um ponto. Você ganha ao chegar a 26 pontos e perde se as três vidas acabarem.
 >
-> Experimente esta versão pronta. Clique na área do jogo e toque em Enter para começar. Use as setas para a esquerda e para a direita para mover a nave. Toque e solte a barra de espaço para atirar. Depois de ganhar ou perder, Enter volta à abertura. Outro Enter começa uma nova partida.
+> Olha aqui: eu clico na área do jogo e aperto Enter, e a partida começa. As pedras começam a cair. Quando eu aperto a barra de espaço, a nave atira para cima, na direção das pedras. O resto você descobre jogando.
 >
-> Jogue um pouco para conhecer os controles. Você não precisa ganhar para continuar. Depois, clique em Próxima seção."
+> Agora é a sua vez: jogue até conhecer os controles. As setas para a esquerda e para a direita movem a nave, e a barra de espaço atira. Você não precisa ganhar para continuar. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima seção.
 
@@ -44,16 +44,20 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-uma-vez-e-sempre` · Compare uma vez e sempre
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Mover a nave um pouquinho em Ao iniciar, clicar em Começar o jogo e mostrar a nave andar um pouquinho e parar, com Ações feitas em 1 e o botão em Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar a nave até sair da cena, com Ações feitas em 24. Meme na comparação: na frase da mochila e da bicicleta, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy fechando a mochila uma vez e depois pedalando sem parar, com a legenda "Ao iniciar: uma vez · Enquanto estiver rodando: sempre"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Antes de preparar o jogo, compare uma ação feita uma vez com uma ação que se repete.
+> "Esta é uma experiência para a gente entender a diferença entre uma ação que acontece uma vez e uma ação que se repete. Aqui há uma peça só: Mover a nave um pouquinho.
 >
-> Nesta experiência, coloque Mover a nave um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a nave e o contador Ações feitas.
+> Olha aqui: eu coloco a peça em Ao iniciar e clico em Começar o jogo. A nave anda um pouquinho e para, e o contador Ações feitas mostra 1. Ao iniciar faz o que está dentro dele uma vez só, quando o jogo começa.
 >
-> Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a nave e o contador nas duas tentativas. Depois, clique em Próxima seção."
+> Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. A nave anda, anda, anda e sai da tela. O contador chega a 24. Enquanto estiver rodando repete a ação o tempo todo, enquanto o jogo roda.
+>
+> Na vida também é assim. Você arruma a mochila uma vez, antes de sair. Mas, para andar de bicicleta, precisa pedalar o tempo todo. No seu jogo, Ao iniciar vai preparar a tela uma vez, e o que precisa continuar vai em Enquanto estiver rodando.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare Mover a nave um pouquinho em Ao iniciar e Enquanto estiver rodando. Comece cada teste e acompanhe até parar.
 
@@ -84,16 +88,20 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-coordenadas` · Escolha onde a nave aparece
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar os controles x e y sem realizar os testes. Não chamar x 400 de centro da nave; a referência é o canto superior esquerdo de sua caixa.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os controles x e y. Aumentar só o x de 400 para 480 e mostrar a nave ir para a direita com o y igual. Aumentar só o y de 40 para 120 e mostrar a nave descer. Colocar x em 0 e y em 0 e mostrar a nave no canto de cima, à esquerda. Não chamar x 400 de centro da nave; a referência é o canto superior esquerdo de sua caixa. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Para colocar a nave na tela, vamos usar dois números: x e y. Eles indicam uma posição. Esta experiência já tem uma nave para você testar.
+> "Esta é uma experiência para a gente entender como dois números, x e y, dizem onde a nave fica na tela. A nave começa em x 400 e y 40.
 >
-> Aumente o número x sem mudar y e observe a nave. Depois, aumente y sem mudar x. Por último, coloque x em zero e y em zero e observe onde a nave ficou.
+> Olha aqui: eu aumento só o x, de 400 para 480. A nave vai para a direita, e o y continua igual. O x conta a partir da borda da esquerda: quanto maior o x, mais para a direita.
 >
-> Quando terminar os três testes, clique em Próxima seção."
+> Agora eu aumento só o y, de 40 para 120. A nave desce. O y conta a partir da borda de cima: quanto maior o y, mais para baixo.
+>
+> Por último, eu coloco x em 0 e y em 0. A nave vai para o canto de cima, à esquerda. É desse canto que a tela começa a contar. Quando você criar a sua nave, vai usar esses dois números para escolher onde ela aparece.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Mude x e y separadamente. Por último, coloque os dois em zero.
 
@@ -101,14 +109,20 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-criar-e-mostrar` · Compare criar e mostrar
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Criar a nave e mostrar a nave nos bastidores, com a tela do jogo ainda vazia. Clicar em Mostrar a nave na tela e mostrar a mesma nave na tela do jogo. Meme na comparação: na frase da apresentação da escola, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy se arrumando atrás de uma cortina e depois entrando no palco, com a legenda "bastidores · palco"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Uma posição diz onde colocar a nave. Agora observe a diferença entre preparar esse objeto e mostrar seu desenho.
+> "Esta é uma experiência para a gente entender a diferença entre criar a nave e mostrar a nave na tela do jogo.
 >
-> Nesta experiência, clique em Criar a nave. Compare os bastidores com a tela do jogo. Depois clique em Mostrar a nave na tela e compare os dois lugares novamente. Depois, clique em Próxima seção."
+> Olha aqui: eu clico em Criar a nave. A nave aparece em Nos bastidores, mas a tela do jogo continua vazia. Criar prepara a nave: agora ela existe no jogo, só que ainda não foi desenhada.
+>
+> É como numa apresentação da escola. Você se arruma atrás da cortina, e ninguém te vê ainda. Quando você entra no palco, todo mundo vê. No nosso jogo, os bastidores ficam atrás da cortina, e a tela do jogo é o palco.
+>
+> Agora eu clico em Mostrar a nave na tela. A mesma nave aparece na tela do jogo. Mostrar não cria outra nave: desenha a nave que já existia. No seu projeto, um bloco vai criar a nave, e outro vai desenhar a nave na tela.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Crie a nave nos bastidores e depois mostre na tela. Compare os dois lugares.
 
@@ -137,16 +151,20 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-desenho-por-quadro` · Compare o desenho no começo e em cada quadro
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy folheando um bloquinho com a nave desenhada um pouco mais à frente em cada folha, com a legenda "1 quadro, 2 quadros, 3 quadros"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "A nave já pode existir sem aparecer. Agora compare desenhar uma vez com desenhar de novo enquanto a posição muda. Cada quadro é uma imagem do jogo.
+> "Esta é uma experiência para a gente entender o quadro. Cada quadro é uma imagem do jogo, e o jogo mostra uma imagem depois da outra, bem rápido. É como um desenho animado: cada imagem é um pouquinho diferente da anterior e, passando rápido, parece que o personagem se mexe.
 >
-> Na experiência, deixe Desenhar a nave em Só no começo. Clique em Avançar 1 quadro algumas vezes. Compare a imagem com o x mostrado na faixa.
+> Olha aqui: Desenhar a nave está em Só no começo. Eu clico em Avançar 1 quadro. Na faixa, o x da nave muda de 10 para 54, mas a imagem continua igual. O jogo desenhou a nave só no começo, então a imagem não acompanhou o x.
 >
-> Troque para A cada quadro e avance alguns quadros novamente. Por último, ligue Limpar a tela antes e avance mais quadros. Compare os três jeitos. Depois, clique em Próxima seção."
+> Agora eu troco para A cada quadro e avanço alguns quadros. A nave aparece no lugar novo, mas as naves velhas continuam na tela e formam um rastro. O jogo desenha de novo, mas não apaga o que já estava lá.
+>
+> Por último, eu ligo Limpar a tela antes e avanço mais quadros. Agora aparece uma nave só, sempre no lugar novo. Em cada quadro, o jogo limpa a tela e desenha a nave onde ela está. No seu projeto, o desenho da nave vai ficar dentro de A cada quadro do jogo.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare desenhar só no começo, em cada quadro e com a limpeza ligada. Avance os quadros em cada teste.
 

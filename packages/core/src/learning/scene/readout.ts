@@ -7,7 +7,8 @@ import {
   onionFireZone,
   sheetCropCell,
 } from './atelie'
-import { castText, decimal, numero, quantos, type SceneCast } from './cast'
+import { castText, decimal, numero, quantos, type SceneCast, sceneCenario } from './cast'
+import type { SceneCenarioId } from './cenario'
 import {
   PARADA_DO_SALTO,
   sceneBrainLabel,
@@ -161,18 +162,25 @@ export function sceneReadout(
   cast?: SceneCast,
   /** Como a pilha da `layers` se apresenta (`pilha.ts`). Sem ela, a lista de blocos do Estúdio. */
   pilha?: ScenePilha,
+  /** O `cenario` declarado na atividade: o reinício da Nave é por Enter, o do Dino por toque. */
+  cenario?: SceneCenarioId,
 ): SceneReading[] {
   // ⚠️ O VALOR também passa pelo elenco, não só o rótulo: em `layers` o valor É o nome do
   // personagem ("o Dino", "a floresta"), e vesti-lo pela metade deixava a faixa falando de
   // dois elencos ao mesmo tempo. Achado do full review de 14/09/2026.
-  return leituras(scene, state, pilha).map((l) => ({
+  return leituras(scene, state, pilha, sceneCenario(cast, scene, cenario)).map((l) => ({
     ...l,
     label: castText(l.label, cast),
     value: castText(l.value, cast),
   }))
 }
 
-function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneReading[] {
+function leituras(
+  scene: SceneId,
+  state: SceneState,
+  pilha: ScenePilha | undefined,
+  cenario: SceneCenarioId,
+): SceneReading[] {
   switch (scene) {
     case 'fixed-vs-read':
       return [
@@ -626,7 +634,8 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
         { label: 'tela', value: TELA[state.match.screen] ?? state.match.screen, tone: 'a' },
         { label: 'cactos na pista', value: String(state.crowd.cacti.length), tone: 'plain' },
         {
-          label: 'no fim, o toque',
+          // O mesmo nome da bancada ("No fim, o Enter faz" na Nave, "No fim, o toque faz" no Dino).
+          label: cenario === 'nave' ? 'no fim, o Enter' : 'no fim, o toque',
           value: state.match.restartConnected ? 'reinicia o jogo' : 'vai para o início',
           tone: 'b',
         },
@@ -650,8 +659,10 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
         // O MESMO jeito de dizer da frase ("Somar ponto está dentro de Se jogando").
         // ⚠️ "solto", e não "fora de Se jogando" (lote 5): a peça fica numa caixa de "qualquer tela".
         {
+          // Onde a peça está, como a frase da ação ("A cada quadro do jogo, dentro do Se"): a faixa
+          // dizia "solto" com a peça no relógio de quadro, e o vídeo do Corre Dino apontava para ela.
           label: 'Somar ponto',
-          value: state.match.guarded ? 'dentro do Se' : 'solto',
+          value: ondeSomarPonto(state.match.scoreClock, state.match.guarded),
           tone: 'plain',
         },
         { label: 'pontos', value: String(state.match.points), tone: 'b' },
@@ -1484,4 +1495,11 @@ function situacaoDoEixoZ(state: SceneState): string {
   return y > 0
     ? `O cubo está no ar, ${lugar}. A sombra ficou no chão, bem embaixo.${tamanho}`
     : `O cubo está no chão, ${lugar}, com a sombra embaixo.${tamanho}`
+}
+
+/** "a cada quadro", "a cada segundo" ou "solto", e ", dentro do Se" quando a peça está no Se. */
+function ondeSomarPonto(clock: unknown, guarded: boolean): string {
+  const relogio = clock === 'frame' ? 'a cada quadro' : clock === 'second' ? 'a cada segundo' : null
+  if (relogio) return guarded ? `${relogio}, dentro do Se` : relogio
+  return guarded ? 'dentro do Se' : 'solto'
 }

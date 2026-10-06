@@ -1,6 +1,6 @@
 # Diretrizes pedagógicas das aulas Kids
 
-Referência consolidada em 03/10/2026 a partir das decisões do Cadê Todo Mundo? e de sua aplicação ao Desafio do Primeiro Jogo; atualizada em 05/10/2026 com as correções da revisão do Farol. Leia junto do [BRIEFING](BRIEFING.md), da [especificação do roteiro](ESPEC-ROTEIRO.md) e do [contrato do manifesto](ESPEC-MANIFESTO.md). Este documento organiza as decisões vigentes; modelos antigos não substituem essas decisões.
+Referência consolidada em 03/10/2026 a partir das decisões do Cadê Todo Mundo? e de sua aplicação ao Desafio do Primeiro Jogo; atualizada em 05/10/2026 com as correções da revisão do Farol e em 06/10/2026 com o vídeo da experiência como demonstração. Leia junto do [BRIEFING](BRIEFING.md), da [especificação do roteiro](ESPEC-ROTEIRO.md) e do [contrato do manifesto](ESPEC-MANIFESTO.md). Este documento organiza as decisões vigentes; modelos antigos não substituem essas decisões.
 
 ## Como decidir o formato de um curso
 
@@ -33,7 +33,7 @@ Uma experiência pode ter sua própria fala do Zappy junto aos controles. Ela en
 
 Uma seção sem vídeo também precisa de contexto e orientação. No quiz, a fala vem **antes das perguntas** e diz o que será retomado, que haverá explicações e que é possível corrigir. Não inventar um vídeo para preencher o modelo.
 
-Ordem dos blocos não é regra de bloqueio do player. A opção de assistir antes da atividade pertence à configuração do curso (`videoBeforeActivity`). Se estiver ativada, o player libera após o limiar de visualização; se estiver desativada, a atividade fica disponível junto do vídeo. Seção de quiz não tem vídeo e não recebe essa espera. Não escrever instruções que contrariem a configuração usada.
+Ordem dos blocos não é regra de bloqueio do player. A opção de assistir antes da atividade pertence à configuração do curso (`videoBeforeActivity`). Se estiver ativada, o player libera após o limiar de visualização, e só no jogo pronto e na experiência: uma seção só com Estúdio, Pinta, materiais ou entrega pela galeria não tranca, porque ali a criança faz junto com o vídeo (uma seção mista, com editor e experiência, tranca o painel inteiro; evitar); se estiver desativada, a atividade fica disponível junto do vídeo. Seção de quiz não tem vídeo e não recebe essa espera. Não escrever instruções que contrariem a configuração usada.
 
 ## 2. Montagem guiada e conceito concreto
 
@@ -41,12 +41,14 @@ Na montagem, ensinar caminho da paleta, nome literal do bloco, encaixe com refer
 
 Explicar palavras novas quando necessárias e usar o próprio jogo como exemplo.
 
-**A experiência explica enquanto faz.** O vídeo da experiência não separa "o que fazer" de "o que significa". Ele segue esta ordem:
+**A experiência explica enquanto faz, e o vídeo é uma demonstração.** O vídeo da experiência não separa "o que fazer" de "o que significa". Quem faz os testes no vídeo é o narrador: ele mostra e explica na primeira pessoa ("Quando eu toco num esconderijo, Achados vai para 1"). O vídeo não dá ordens à criança antes da vez dela. Mandar "toque", "agora toque" e, no fim, dizer "agora é a sua vez" mistura os dois papéis: ou ela já fez, e a vez sobra, ou ainda não fez, e as ordens não tinham sentido. Nos cursos com a trava do vídeo, a experiência nem está aberta enquanto ela assiste. O vídeo segue esta ordem:
 
-1. Diz qual ideia a experiência vai mostrar: "Aqui está uma experiência para entender ação e reação".
-2. Faz cada gesto no ritmo da fala, mostra o resultado real e explica por que ele aconteceu: "Toque no arbusto. Nada aconteceu: o jogo ainda não sabe o que fazer com o toque".
+1. Diz qual ideia a experiência ensina, com o nome dela: "Esta é uma experiência para a gente entender como funciona a ação e a reação". Saber o que vai aprender prepara a criança e dá a palavra que ela reencontra na montagem; "Vou te mostrar…" sozinho fica vago (ajuste do responsável, 06/10/2026).
+2. Puxa a atenção para a demonstração ("Olha aqui:"), faz cada gesto no ritmo da fala, mostra o resultado real e explica por que ele aconteceu, ligando à regra que a criança vai montar depois: "Olha aqui: quando eu toco no arbusto, nada acontece: o jogo ainda não sabe o que fazer com o toque"; "Se eu tocar num espaço vazio, o número não muda: a regra que soma está ligada aos esconderijos e só acontece quando eu toco num esconderijo".
 3. Muda a regra e explica a diferença.
-4. Fecha com "Agora é a sua vez", e a pessoa repete os testes na experiência, que continua cobrando as metas.
+4. Só então passa a vez: "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção". A experiência continua cobrando as metas da própria pessoa.
+
+Os passos para a criança ficam nas instruções da própria experiência, no imperativo. A ponte do Zappy, também no imperativo, liga o vídeo à experiência numa frase curta, sem repetir os passos. As **montagens** também seguem no imperativo ("abra", "pegue", "solte"): ali a criança constrói no próprio jogo, fazendo junto com o vídeo. O vídeo do **jogo pronto** segue o mesmo raciocínio: apresenta o jogo, mostra como se joga na primeira pessoa com UM exemplo só ("Olha aqui: quando eu toco num esconderijo, aparece quem estava atrás"), sem resolver a partida nem revelar o resto, porque a graça é descobrir, e só no fim passa a vez: "Agora é a sua vez: jogue até encontrar os três personagens". A trava do vídeo (opção do curso) vale só para a experiência e o jogo pronto, onde a criança precisa ouvir a explicação antes de testar ou brincar; quando ela abre, a plataforma diz "Pronto! Agora é a sua vez". No Estúdio e no Pinta não há trava: a criança monta junto com o vídeo desde a primeira vez. Decisão do responsável em 06/10/2026; vale para todos os cursos.
 
 Uma comparação curta com o dia a dia da criança ajuda a ideia a fazer sentido. Exemplos:
 
@@ -77,7 +79,7 @@ No Cadê, por exemplo: "Na experiência da seção anterior, o arbusto só desap
 
 **Mexa e veja numa seção própria, com mudanças que ficam.** O mexa e veja é uma seção separada, nunca um momento dentro da montagem. A montagem tem um caminho só: montar, testar, verificar e enviar. Uma mudança no meio dela tira o foco e pode fazer a verificação reprovar.
 
-A seção só traz mudanças que a criança mantém no jogo: trocar personagens, trocar esconderijos, escrever a mensagem do final ou os avisos, escolher a velocidade. É quando o jogo passa a ser dela. Trocar um valor para ver o efeito e depois voltar ao anterior não é mexa e veja: experimentar é papel da experiência, que já faz isso melhor e sem risco para o projeto. A fala começa por "Agora mexa e veja", diz que o que a criança mudar fica no jogo e termina com um teste. As escolhas não viram critério de conclusão.
+A seção só traz mudanças que a criança mantém no jogo: trocar personagens, trocar esconderijos, escrever a mensagem do final ou os avisos, escolher a velocidade. É quando o jogo passa a ser dela. Trocar um valor para ver o efeito e depois voltar ao anterior não é mexa e veja: experimentar é papel da experiência, que já faz isso melhor e sem risco para o projeto. "Mexa e veja" é o nome interno do tipo de seção, para a equipe. Com a criança, a fala vai direto ao que ela pode fazer ("Agora deixe o jogo com a sua cara!", "Agora escolha a velocidade do seu personagem!"), diz que o que ela mudar fica no jogo e termina com um teste. Ajuste do responsável em 06/10/2026. As escolhas não viram critério de conclusão.
 
 A seção de mexa e veja do curso fica depois da última entrega e antes de publicar, como fechamento, para o jogo publicado ter a cara da criança. Uma escolha que é a própria aplicação de um conceito, como a velocidade depois da experiência da velocidade, pode ficar na sua seção de montagem; nesse caso, a verificação aceita qualquer valor razoável e a aula seguinte não depende de um valor fixo. Aplicado em 05/10/2026, a pedido do responsável:
 
@@ -129,7 +131,7 @@ Apresentar o caderno na seção 2 da primeira aula; anexar uma vez, com consulta
 
 Como Fazer recebe tutoriais de pausar, rever, ampliar, leitor, download e alternativas de interface. Links dentro das aulas abrem na **mesma aba**, com retorno à aula de origem. Conferir destino e retorno; não exigir visita a toda a biblioteca. Para uma dúvida sobre a atividade, indicar **Preciso de ajuda** no rodapé da aula conforme o fluxo existente.
 
-Se publicar é a tarefa da seção, a aula ensina o caminho mínimo: Compartilhar, título e resumo, Gerar capa, conferir, Publicar, aguardar confirmação, Fechar e Concluir aula. Personalização e problemas ficam no Como Fazer. Nos dois cursos atuais, publicação é ensinada sem virar bloqueio técnico adicional. Conferir o acesso real ao Mural durante a oferta; não prometer ação indisponível.
+Se publicar é a tarefa da seção, a aula ensina o caminho mínimo: Compartilhar, título e resumo (no Estúdio da aula o título vem do curso e só o resumo aparece), Gerar capa, conferir, Publicar e aguardar a confirmação. A publicação do primeiro jogo é momento de comemorar: a fala comemora, convida a copiar o link de jogar e a mandar para a família e os amigos, com ajuda de um adulto se precisar, e termina em Fechar e na saída da seção. No Estúdio da aula a confirmação é **Seu jogo está no Mural!** com **Copiar link de jogar**; no Estúdio completo, **Publicado! 🎉** com **Copiar link**. Decisão do responsável em 06/10/2026. Personalização e problemas ficam no Como Fazer. Nos dois cursos atuais, publicação é ensinada sem virar bloqueio técnico adicional. Conferir o acesso real ao Mural durante a oferta; não prometer ação indisponível.
 
 ## 6. Linguagem e encerramento
 
@@ -178,3 +180,4 @@ Consulta histórica opcional; não é preciso reconstruir as regras a partir des
 - [Quizzes dos cursos curtos, 03/10](proposta-quizzes-cursos-curtos-2026-10-03.md): aplicação específica da revisão antes do certificado.
 - Reestruturação de Nave Contra Asteroides e Corre, Dino!, 05/10: experiências antes da aplicação, montagens por conceito, contexto do próprio jogo, destinos visíveis e quizzes distribuídos; mapas em [Nave](modulos-nave-contra-asteroides.md) e [Corre, Dino!](modulos-corre-dino.md), com verificação local e etapas de produção discriminadas.
 - Reestruturação de [O Jogo do Meu Jeito](modulos-o-jogo-do-meu-jeito.md), 05/10: criação autoral no Pinta, integração no Estúdio, experiências antes da aplicação, autoconferência e entregas reais pela galeria; quatro quizzes isolados e publicação opcional.
+- Vídeo da experiência como demonstração, 06/10: o narrador faz os testes na primeira pessoa e explica, ligando ao que a criança vai montar; a vez dela começa no "Agora é a sua vez". Aplicado aos cinco cursos (Cadê, Farol, Nave, Corre Dino e Meu Jeito), e o recado da trava do vídeo passou a dizer "Pronto! Agora é a sua vez" nas cenas e no jogo pronto.

@@ -10,6 +10,7 @@ import {
   initialExperiment,
   packExperiment,
   type SceneAction,
+  sceneEmitsSound,
   sceneStart,
   stepExperiment,
 } from '../../../packages/core/src/learning/scene'
@@ -17,7 +18,14 @@ import { evaluateStudioSectionProject } from '../../../packages/studio/src/block
 import { etapasDino, ORDEM_DINO, projetoDino } from './corre-dino-etapas'
 import { type Block, courseProjects } from './corre-dino-projetos-qa'
 import { problemasPedagogicos } from './diretrizes-pedagogicas'
-import { aulasDino, gerarManifestoDino } from './gerar-corre-dino'
+import {
+  aulasDino,
+  ehExperiencia,
+  falasSecao,
+  gerarManifestoDino,
+  SUA_VEZ,
+  telaSecao,
+} from './gerar-corre-dino'
 
 const stages = etapasDino()
 const manifests = ORDEM_DINO.map((slug) => {
@@ -136,6 +144,78 @@ test('a abertura é jogável e o caderno aparece uma vez, com consulta opcional'
   expect(
     manifests.flatMap((m) => m.blocks).filter((b) => b.content?.kind === 'materials'),
   ).toHaveLength(1)
+})
+
+// Diretrizes, seção 2 (06/10/2026): o vídeo da experiência e o do jogo pronto são demonstrações.
+// Quem faz os testes é o narrador; ordens para quem assiste só depois de "Agora é a sua vez".
+const ordemParaQuemAssiste =
+  /(?:^|[.!?:]\s+)(?:Clique|Toque|Leve|Mude|Observe|Compare|Deixe|Escolha|Aumente|Coloque|Troque|Ligue|Desligue|Aproxime|Escreva|Espere|Volte|Teste|Use|Acompanhe|Mantenha|Aperte|Diminua|Pule|Repita|Continue|Faça|Veja|Sorteie|Jogue|Experimente|Mexa)\b/
+test('experiências: o conceito primeiro, a demonstração na primeira pessoa e a vez só no fim', () => {
+  const cenasVistas = new Set<string>()
+  let total = 0
+  for (const aula of aulasDino)
+    for (const section of aula.sections) {
+      if (!ehExperiencia(section) || section.activity?.activity.type !== 'experimentation') continue
+      total++
+      const falas = falasSecao(section)
+      const cena = section.activity.activity.scene
+      // A primeira frase diz o conceito; a cena repetida se apresenta como a mesma experiência.
+      expect(falas[0], section.key).toStartWith(
+        cenasVistas.has(cena)
+          ? 'Esta é a mesma experiência'
+          : 'Esta é uma experiência para a gente entender',
+      )
+      cenasVistas.add(cena)
+      expect(falas[1], section.key).toStartWith('Olha aqui: ')
+      expect(falas.at(-1)).toBe(SUA_VEZ)
+      const demonstracao = falas.slice(0, -1).join(' ')
+      expect(demonstracao, section.key).not.toMatch(ordemParaQuemAssiste)
+      expect(demonstracao, section.key).toMatch(/\beu\b/)
+      expect(demonstracao).not.toContain('Vou te mostrar')
+      // Cena muda (a once-vs-always só escreve "♪ N vezes"): a fala não promete um som real.
+      if (!sceneEmitsSound(cena)) expect(demonstracao, section.key).not.toMatch(/som toca/i)
+      const tela = telaSecao(section)
+      expect(tela).toContain('quem faz os testes é o narrador')
+      expect(tela).not.toContain('antecipar')
+      if (section.meme) expect(tela).toContain('Meme ilustrado')
+      // O caderno é da criança: continua com os passos no imperativo, sem a demonstração.
+      expect(section.caderno?.join(' '), section.key).toMatch(/Próxima seção\.$/)
+      expect(section.caderno?.join(' ')).not.toMatch(/\beu\b|Olha aqui/)
+    }
+  expect(total).toBe(24)
+})
+
+test('jogo pronto: um exemplo só, na primeira pessoa, e a vez passa no fim', () => {
+  const abertura = aulasDino[0]!.sections[0]!
+  expect(abertura.play).toBe(true)
+  const falas = falasSecao(abertura)
+  expect(falas[0]).toStartWith('Esta é a versão pronta')
+  expect(falas[1]).toStartWith('Olha aqui: ')
+  expect(falas.slice(0, -1).join(' ')).not.toMatch(ordemParaQuemAssiste)
+  expect(falas.at(-1)).toStartWith('Agora é a sua vez: jogue')
+  expect(falas.at(-1)).toEndWith('Quando terminar, clique em Próxima seção.')
+  expect(abertura.caderno?.join(' ')).toContain('Clique na área do jogo para começar.')
+})
+
+test('montagens seguem no imperativo e a publicação comemora com o link', () => {
+  for (const aula of aulasDino)
+    for (const section of aula.sections) {
+      expect(falasSecao(section).join(' ')).not.toMatch(/mexa e veja/i)
+      if (!section.checks?.length) continue
+      expect(section.caderno, section.key).toBeUndefined()
+      expect(falasSecao(section)).not.toContain(SUA_VEZ)
+    }
+  const entrega = aulasDino[12]!.sections.at(-1)!
+  expect(entrega.publish).toBe(true)
+  const fala = falasSecao(entrega).join(' ')
+  expect(fala).toContain('O resumo do projeto já vem preenchido. Deixe como está.')
+  expect(fala).not.toContain('título')
+  expect(fala).toContain(
+    'Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar',
+  )
+  expect(fala).toEndWith(
+    'Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.',
+  )
 })
 
 const seconds = (count: number): SceneAction[] =>

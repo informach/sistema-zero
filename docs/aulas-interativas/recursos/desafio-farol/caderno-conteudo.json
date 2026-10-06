@@ -85,7 +85,7 @@
   },
   {
     "id": "comparar-velocidades",
-    "kicker": "Dia 1 · Experiência e mexa e veja",
+    "kicker": "Dia 1 · Experiência e escolha",
     "title": "Escolha a velocidade",
     "subtitle": "A velocidade é o tanto que o personagem anda em cada quadro.",
     "items": [
@@ -97,7 +97,7 @@
       },
       {
         "kind": "step",
-        "title": "1. Mexa e veja: escolha a velocidade",
+        "title": "1. Escolha a velocidade",
         "text": "No seu jogo, deixe à vista o bloco de movimento, dentro de <b>A cada quadro do jogo</b>. Troque o <b>3</b> por um número de <b>1 a 6</b> e clique fora do campo."
       },
       {
@@ -417,7 +417,7 @@
   },
   {
     "id": "personalizar",
-    "kicker": "Dia 3 · Mexa e veja",
+    "kicker": "Dia 3 · Com a sua cara",
     "title": "Deixe o jogo com a sua cara",
     "subtitle": "Depois de enviar, escolha quem vive a aventura e escreva os avisos do seu jeito. O que você mudar fica no seu jogo.",
     "items": [
@@ -456,19 +456,19 @@
       },
       {
         "kind": "step",
-        "title": "3. Publique e espere",
-        "text": "Clique em <b>Publicar</b>. Espere aparecer <b>Seu jogo está no Mural!</b>. Clique em <b>Fechar</b> e depois <b>Concluir aula</b>."
+        "title": "3. Publique e comemore",
+        "text": "Clique em <b>Publicar</b> e comemore: <b>Seu jogo está no Mural!</b> Clique em <b>Copiar link de jogar</b> e mande para a sua família e seus amigos. Depois clique em <b>Fechar</b> e em <b>Concluir aula</b>."
       },
       {
         "kind": "box",
-        "title": "Quer copiar o link ou rever um passo?",
+        "title": "Quer rever um passo?",
         "text": "Na seção de publicação, abra o link <b>Como publicar seu jogo no Mural e copiar o link</b>. Ele leva ao Como Fazer, nossa área de ajuda. Você pode consultar o passo a passo e usar a opção de voltar para a aula.",
         "tone": "experience"
       },
       {
         "kind": "box",
         "title": "Se Compartilhar não estiver disponível",
-        "text": "Confira se terminou o envio para o professor na seção anterior. Se continuar sem conseguir, use <b>Preciso de ajuda</b> na aula e conte o que aparece. O acesso para publicar também precisa estar ativo na conta.",
+        "text": "Confira se terminou o envio para o professor na seção Acenda o farol com a chave. Se continuar sem conseguir, use <b>Preciso de ajuda</b> na aula e conte o que aparece. O acesso para publicar também precisa estar ativo na conta.",
         "tone": "note"
       }
     ]

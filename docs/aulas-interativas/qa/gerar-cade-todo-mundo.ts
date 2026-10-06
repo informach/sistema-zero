@@ -81,7 +81,7 @@ const aula1 = {
     video(
       'video-a1-abertura',
       'Vamos procurar!',
-      'Dizer que a criança vai construir Cadê Todo Mundo? e pedir que jogue a versão pronta desta seção. Apontar a área jogável, pedir que toque nos esconderijos até encontrar os três personagens e termine em Próxima seção. Não revelar os esconderijos nem explicar controles da plataforma. Pausa, replay, ampliação e reinício ficam no Como Fazer. Regravar a fala. Alvo: 25 a 35 segundos.',
+      'Dizer que a criança vai construir Cadê Todo Mundo? e apresentar a versão pronta. Demonstração na primeira pessoa com UM achado (Olha aqui: quando eu toco num esconderijo…), sem revelar os outros esconderijos; só no fim passar a vez: jogar até encontrar os três e clicar em Próxima seção. Não explicar controles da plataforma. Pausa, replay, ampliação e reinício ficam no Como Fazer. Regravar a fala. Alvo: 30 a 40 segundos.',
     ),
     dialogue(
       'ponte-a1-jogo',
@@ -134,7 +134,7 @@ const aula1 = {
     video(
       'video-a1-toque',
       'Um toque pode chamar uma ação',
-      'Explicar fazendo: tocar no arbusto (nada acontece, porque o jogo ainda não sabe o que fazer com o toque), dizer que toda ação tem uma reação, como cócegas e risada, dizer que no jogo a gente precisa ligar uma reação a essa ação, clicar em Ligar a reação ao toque e tocar de novo (o arbusto some e o coelho aparece). Meme na comparação: na frase das cócegas, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy morrendo de rir com uma pena fazendo cócegas e a legenda "ação: cócega · reação: risada"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar com Agora é a sua vez e Próxima seção. Sem palpite nem pergunta final. Regravar a fala. Alvo: 45 a 60 segundos.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: tocar no arbusto (nada acontece, porque o jogo ainda não sabe o que fazer com o toque), dizer que toda ação tem uma reação, como cócegas e risada, dizer que no jogo a gente precisa ligar uma reação a essa ação, clicar em Ligar a reação ao toque e tocar de novo (o arbusto some e o coelho aparece). Meme na comparação: na frase das cócegas, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy morrendo de rir com uma pena fazendo cócegas e a legenda "ação: cócega · reação: risada"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar com Agora é a sua vez e Próxima seção. Sem palpite nem pergunta final. Regravar a fala. Alvo: 50 a 70 segundos.',
     ),
     dialogue('ponte-a1-toque', 'Use o mesmo arbusto nos dois testes e compare o que acontece.'),
     {
@@ -231,7 +231,7 @@ const aula2 = {
     video(
       'video-a2-variavel',
       'Um número que acompanha a busca',
-      'Explicar fazendo: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; no nosso jogo, cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda "+1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima seção. Sem palpite nem pergunta final. Regravar a fala. Alvo: 50 a 70 segundos.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; no nosso jogo, cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda "+1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima seção. Sem palpite nem pergunta final. Regravar a fala. Alvo: 65 a 85 segundos.',
     ),
     dialogue('ponte-a2-variavel', 'Procure no jardim e acompanhe o número Achados.'),
     {
@@ -273,11 +273,11 @@ const aula2 = {
     video(
       'video-a2-fecho',
       'Publique seu jogo',
-      'Pedir que a criança publique o jogo para outras pessoas jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar e dizer que o resumo do projeto já vem preenchido e pode ficar como está; na aula a janela não mostra o campo Título, então a fala não o cita. Clicar em Gerar capa e conferir a imagem. Clicar em Publicar e esperar Seu jogo está no Mural! Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Outra capa, upload e cópia do link ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 45 a 60 segundos, incluindo publicação e confirmação.',
+      'Pedir que a criança publique o jogo para a família e os amigos jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar e dizer que o resumo do projeto já vem preenchido e pode ficar como está; na aula a janela não mostra o campo Título, então a fala não o cita. Clicar em Gerar capa e conferir a imagem. Clicar em Publicar e comemorar com a criança na tela do Zappy (Seu jogo está no Mural!): agora a família e os amigos podem jogar. Clicar em Copiar link de jogar e convidar a mandar o link para a família e os amigos, com ajuda de um adulto se precisar. Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Outra capa e upload ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 60 a 80 segundos, incluindo publicação, comemoração e cópia do link.',
     ),
     dialogue(
       'ponte-a2-publicar',
-      'Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.',
+      'Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.',
     ),
     {
       key: 'ajuda-a2-publicar',

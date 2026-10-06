@@ -14,7 +14,7 @@ import {
   stepExperiment,
 } from '../../../packages/core/src/learning/scene'
 import { conteudoBloco, problemasPedagogicos, temEntregaExterna } from './diretrizes-pedagogicas'
-import { aulasMeuJeito, falasSecao, gerarManifestoMeuJeito } from './gerar-meu-jeito'
+import { aulasMeuJeito, falasSecao, gerarManifestoMeuJeito, telaSecao } from './gerar-meu-jeito'
 import { etapasMeuJeito, projetoMeuJeito } from './meu-jeito-etapas'
 import { courseProjects } from './meu-jeito-projetos-qa'
 
@@ -213,17 +213,19 @@ const routes: Record<string, SceneAction[]> = {
     { type: 'layer', front: false },
     { type: 'layer', front: true },
   ],
+  // A Prévia já abre tocando: o texto só pede para olhar (e tocar se ela estiver parada).
   'motion-amount': [
     { type: 'nudge', piece: 'crater', amount: 0 },
     { type: 'nudge', piece: 'body', amount: 0 },
-    { type: 'play', on: true },
     ...seconds(1),
     { type: 'nudge', piece: 'crater', amount: 4 },
     ...seconds(1),
     { type: 'nudge', piece: 'body', amount: 10 },
     ...seconds(1),
   ],
+  // O relógio começa parado: o texto pede o Tempo para a nave voar na prévia.
   'unique-names': [
+    ...seconds(1),
     { type: 'toggle-block', present: false },
     { type: 'toggle-block', present: true },
     { type: 'name-field', name: 'nave' },
@@ -275,6 +277,51 @@ for (const m of manifests)
       expect(result.passed, JSON.stringify(result)).toBe(true)
     })
   }
+// Decisão do responsável, 06/10/2026: o vídeo da experiência é uma demonstração na primeira pessoa.
+const PASSA_A_VEZ =
+  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.'
+/** Começo de frase que dá ordem a quem assiste. "Olha aqui:" é a abertura pedida e fica de fora. */
+const ORDEM =
+  /^(Clique|Mude|Observe|Escolha|Ligue|Desligue|Coloque|Deixe|Aumente|Compare|Troque|Faça|Olhe|Veja|Repare|Use|Toque|Pinte|Volte|Experimente|Confira|Aproxime|Marque|Ajuste|Traga|Tente|Mexa)\b/
+const frases = (paragrafos: string[]) => paragrafos.join(' ').split(/(?<=[.!?:])\s+/)
+test('as experiências são demonstrações: conceito, Olha aqui, testes do narrador e a vez no fim', () => {
+  const experiencias = aulasMeuJeito.flatMap((a) => a.sections.filter((s) => s.activity))
+  expect(experiencias).toHaveLength(14)
+  for (const s of experiencias) {
+    const fala = falasSecao(s)
+    expect(fala[0], s.key).toMatch(
+      /^Esta é (uma experiência|a mesma experiência, agora) para a gente entender /,
+    )
+    expect(fala[1]?.startsWith('Olha aqui: '), s.key).toBe(true)
+    expect(fala.at(-1), s.key).toBe(PASSA_A_VEZ)
+    expect(
+      frases(fala.slice(0, -1)).filter((f) => ORDEM.test(f)),
+      s.key,
+    ).toEqual([])
+    expect(fala.join(' '), s.key).not.toMatch(/Vou te mostrar|mexa e veja|—/i)
+    // Toda comparação do dia a dia tem o meme ilustrado descrito na nota de tela, e só ela.
+    expect(Boolean(s.meme), s.key).toBe(/Sabe |É como /.test(fala.join(' ')))
+    const tela = telaSecao(s)
+    expect(tela, s.key).toContain('primeira pessoa')
+    expect(tela, s.key).not.toMatch(/Deixar a execução|sem antecipar|não demonstrar/)
+    if (s.meme) expect(tela, s.key).toContain('Meme na comparação')
+    // A ponte liga o vídeo à experiência sem repetir os passos dela (Diretrizes, seção 1).
+    expect(s.bridge, s.key).not.toBe(s.activity!.instructions)
+    expect(s.bridge.length, s.key).toBeLessThan(120)
+  }
+})
+test('o jogo pronto apresenta o jogo, mostra um exemplo e só passa a vez no fim', () => {
+  const jogo = aulasMeuJeito[0]!.sections.find((s) => s.play)!
+  const fala = falasSecao(jogo)
+  // Diz o que será construído antes de apresentar a versão pronta; o exemplo mostra o objetivo.
+  expect(fala[0]?.startsWith('Neste curso, você vai ')).toBe(true)
+  expect(fala[0]).toContain('Esta é a versão pronta')
+  expect(fala[1]?.startsWith('Olha aqui: ')).toBe(true)
+  expect(fala[1]).toContain('O objetivo é')
+  expect(fala.at(-1)?.startsWith('Agora é a sua vez: jogue')).toBe(true)
+  expect(fala.at(-1)).toMatch(/Quando terminar, clique em Próxima seção\.$/)
+  expect(frases(fala.slice(0, -1)).filter((f) => ORDEM.test(f))).toEqual([])
+})
 test('todos os percursos de experiência estão cobertos', () => {
   const scenes = manifests
     .flatMap((m) => m.blocks)

@@ -24,7 +24,7 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 ### Seção 1. Separe o miolo da borda
 
-**Tarefa / Zappy na página:** Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.
+**Tarefa / Zappy na página:** Agora tire a cor de uma parte de cada vez e compare a pedra.
 
 **Blocos na página:** video-preenchimento-contorno → fala-preenchimento-contorno → experiencia-cores.
 

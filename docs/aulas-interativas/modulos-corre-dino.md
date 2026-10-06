@@ -6,7 +6,7 @@
 
 **Descrição:** Em 13 aulas, prepare a tela, faça o Dino pular e coloque cactos na pista. Monte sons, telas de começo e fim, reinício e placar. Depois, varie os obstáculos e ajuste a dificuldade com um limite.
 
-Revisão local de 05/10/2026: **13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes**. Os 13 identificadores e os 13 programas originais foram preservados. O [Caderno do Aluno](../../output/pdf/corre-dino-caderno.pdf) acompanha os roteiros; [fontes e reprodução](recursos/corre-dino/README.md).
+Revisão local de 05/10/2026, com os vídeos de experiência reescritos como demonstração em 06/10/2026: **13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes**. Os 13 identificadores e os 13 programas originais foram preservados. O [Caderno do Aluno](../../output/pdf/corre-dino-caderno.pdf) acompanha os roteiros; [fontes e reprodução](recursos/corre-dino/README.md).
 
 ## Módulo 1 — O Dino ganha vida
 
@@ -51,6 +51,8 @@ A abertura jogável e a apresentação do caderno estão na primeira aula, junto
 A primeira aula começa com o projeto vazio e termina com a tela preparada e o Dino criado. A experiência de criação e desenho explica antes da montagem por que esse objeto ainda não aparece. A aula 2 faz o desenho: não se muda o marco original nem se apresenta a invisibilidade como defeito misterioso. Nas demais aulas, continuar o próprio projeto enviado. O projeto inicial é alternativa quando não houver envio anterior.
 
 Cada conceito novo tem experiência antes da primeira aplicação. As 24 experiências usam cenas existentes: uma vez e sempre; tamanho; coordenadas; criação e desenho; quadros e limpeza; camadas; descrição acessível; gravidade; impulso; acontecimento; som; intervalo; direção da velocidade; limpeza de grupo; estado; entrada; contato; reinício; área da batida; variável; ritmo dos pontos; sorteio; números negativos; base e velocidade recebida ao nascer. Não há palpite obrigatório nem pergunta final automática repetida.
+
+Desde a revisão de 06/10/2026, os vídeos das 24 experiências e o do jogo pronto são demonstrações. A primeira frase diz o conceito ("Esta é uma experiência para a gente entender…"; nas aulas 4 e 10, onde a cena volta, "Esta é a mesma experiência…"). A partir de "Olha aqui:", o narrador faz os testes na primeira pessoa, mostra o resultado real conferido no motor e liga cada um ao bloco que será montado. Só no fim ele passa a vez. O jogo pronto mostra um exemplo só, sem jogar a partida até o fim. As instruções das experiências, a ponte do Zappy, as montagens e o Caderno do Aluno continuam no imperativo. A entrega da aula 13 comemora a publicação e convida a mandar o link com **Copiar link de jogar**. Detalhes no [registro de revisão](qa/revisao-corre-dino-2026-10-05.md).
 
 A montagem retoma a experiência, situa o que falta no próprio jogo e localiza o destino antes de buscar a peça. Preparar, desenhar, limpar, controlar, ouvir um evento e mudar um estado ficam em seções próprias. Comparações entre comportamentos acontecem nas experiências; o projeto não precisa receber uma montagem sabidamente errada para depois ser corrigida.
 

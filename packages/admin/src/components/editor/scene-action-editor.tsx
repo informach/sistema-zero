@@ -363,7 +363,7 @@ const identidade = (a: SceneAction) =>
   )
 
 /** Segundos como o professor lê: vírgula no decimal e no máximo três casas. */
-const segundos = (n: number) => `${decimal(Number(n.toFixed(3)))} s`
+const segundos = (n: number) => `${decimal(n, 3)} s`
 
 /**
  * O aviso de um tempo que não cai em QUADRO INTEIRO do relógio da cena, ou `null`.

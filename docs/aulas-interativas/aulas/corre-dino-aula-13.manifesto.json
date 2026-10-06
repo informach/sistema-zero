@@ -39,7 +39,7 @@
   "blocks": [
     {
       "key": "video-regua-negativos",
-      "plannedVideo": "Título: Compare os números negativos\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare os números negativos\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o marcador em -5. Clicar em Somar -1 três vezes, com o marcador à vista. Clicar em Voltar ao começo, escolher > maior que e mudar valor da base para -9, com a pergunta e a resposta à vista. Voltar ao começo, escolher = igual a e clicar em Somar -1 quatro vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino de cachecol olhando dois termômetros, um em -5 e outro em -9. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-regua-negativos",
@@ -54,7 +54,7 @@
       "content": {
         "kind": "interactive",
         "title": "Compare os números negativos",
-        "instructions": "Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >. Observe a resposta com o marcador em -5. Depois leve o marcador até -9 e compare a resposta. Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta.",
+        "instructions": "Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >. Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta. Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta.",
         "hints": [],
         "required": true,
         "activity": {
@@ -67,7 +67,7 @@
     },
     {
       "key": "video-o-que-o-freio-segura",
-      "plannedVideo": "Título: Compare a base com cada cacto\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare a base com cada cacto\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a base em -5 e a condição ligada. Clicar em Passar 5 segundos cinco vezes, com a base e o número de cada cacto à vista. Continuar até nascer um cacto -10 com a base em -9. Desligar a condição e clicar mais cinco vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino descendo uma ladeira de bicicleta, apertando o freio. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-o-que-o-freio-segura",

@@ -27,11 +27,11 @@
         "key": "abertura",
         "title": "Jogue antes de construir",
         "bridge": "Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima seção.",
-        "screen": "Mostrar somente a versão pronta. Apontar os controles citados sem antecipar uma partida inteira. A atividade comprova participação, não vitória.",
+        "screen": "Mostrar somente a versão pronta. O narrador faz um gesto de exemplo e para: clicar na área do jogo, apertar Enter para começar e apertar a barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima seção.",
         "speech": [
-          "Você vai construir Nave Contra Asteroides. Nesse jogo, a nave atira nas pedras que caem do espaço. Cada acerto vale um ponto. Você ganha ao chegar a 26 pontos e perde se as três vidas acabarem.",
-          "Experimente esta versão pronta. Clique na área do jogo e toque em Enter para começar. Use as setas para a esquerda e para a direita para mover a nave. Toque e solte a barra de espaço para atirar. Depois de ganhar ou perder, Enter volta à abertura. Outro Enter começa uma nova partida.",
-          "Jogue um pouco para conhecer os controles. Você não precisa ganhar para continuar. Depois, clique em Próxima seção."
+          "Esta é a versão pronta de Nave Contra Asteroides, para você ver como o jogo funciona antes de montar o seu. Nesse jogo, a nave atira nas pedras que caem do espaço. Cada acerto vale um ponto. Você ganha ao chegar a 26 pontos e perde se as três vidas acabarem.",
+          "Olha aqui: eu clico na área do jogo e aperto Enter, e a partida começa. As pedras começam a cair. Quando eu aperto a barra de espaço, a nave atira para cima, na direção das pedras. O resto você descobre jogando.",
+          "Agora é a sua vez: jogue até conhecer os controles. As setas para a esquerda e para a direita movem a nave, e a barra de espaço atira. Você não precisa ganhar para continuar. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -60,11 +60,13 @@
         "kind": "exploration",
         "videoKey": "video-uma-vez-e-sempre",
         "bridge": "Compare Mover a nave um pouquinho em Ao iniciar e Enquanto estiver rodando. Comece cada teste e acompanhe até parar.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Mover a nave um pouquinho em Ao iniciar, clicar em Começar o jogo e mostrar a nave andar um pouquinho e parar, com Ações feitas em 1 e o botão em Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar a nave até sair da cena, com Ações feitas em 24. Meme na comparação: na frase da mochila e da bicicleta, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy fechando a mochila uma vez e depois pedalando sem parar, com a legenda \"Ao iniciar: uma vez · Enquanto estiver rodando: sempre\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Antes de preparar o jogo, compare uma ação feita uma vez com uma ação que se repete.",
-          "Nesta experiência, coloque Mover a nave um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a nave e o contador Ações feitas.",
-          "Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a nave e o contador nas duas tentativas. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender a diferença entre uma ação que acontece uma vez e uma ação que se repete. Aqui há uma peça só: Mover a nave um pouquinho.",
+          "Olha aqui: eu coloco a peça em Ao iniciar e clico em Começar o jogo. A nave anda um pouquinho e para, e o contador Ações feitas mostra 1. Ao iniciar faz o que está dentro dele uma vez só, quando o jogo começa.",
+          "Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. A nave anda, anda, anda e sai da tela. O contador chega a 24. Enquanto estiver rodando repete a ação o tempo todo, enquanto o jogo roda.",
+          "Na vida também é assim. Você arruma a mochila uma vez, antes de sair. Mas, para andar de bicicleta, precisa pedalar o tempo todo. No seu jogo, Ao iniciar vai preparar a tela uma vez, e o que precisa continuar vai em Enquanto estiver rodando.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
@@ -168,11 +170,13 @@
         "key": "coordenadas",
         "title": "Escolha onde a nave aparece",
         "bridge": "Mude x e y separadamente. Por último, coloque os dois em zero.",
-        "screen": "Apontar os controles x e y sem realizar os testes. Não chamar x 400 de centro da nave; a referência é o canto superior esquerdo de sua caixa.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os controles x e y. Aumentar só o x de 400 para 480 e mostrar a nave ir para a direita com o y igual. Aumentar só o y de 40 para 120 e mostrar a nave descer. Colocar x em 0 e y em 0 e mostrar a nave no canto de cima, à esquerda. Não chamar x 400 de centro da nave; a referência é o canto superior esquerdo de sua caixa. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Para colocar a nave na tela, vamos usar dois números: x e y. Eles indicam uma posição. Esta experiência já tem uma nave para você testar.",
-          "Aumente o número x sem mudar y e observe a nave. Depois, aumente y sem mudar x. Por último, coloque x em zero e y em zero e observe onde a nave ficou.",
-          "Quando terminar os três testes, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender como dois números, x e y, dizem onde a nave fica na tela. A nave começa em x 400 e y 40.",
+          "Olha aqui: eu aumento só o x, de 400 para 480. A nave vai para a direita, e o y continua igual. O x conta a partir da borda da esquerda: quanto maior o x, mais para a direita.",
+          "Agora eu aumento só o y, de 40 para 120. A nave desce. O y conta a partir da borda de cima: quanto maior o y, mais para baixo.",
+          "Por último, eu coloco x em 0 e y em 0. A nave vai para o canto de cima, à esquerda. É desse canto que a tela começa a contar. Quando você criar a sua nave, vai usar esses dois números para escolher onde ela aparece.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -220,10 +224,13 @@
         "kind": "exploration",
         "videoKey": "video-criar-e-mostrar",
         "bridge": "Crie a nave nos bastidores e depois mostre na tela. Compare os dois lugares.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Criar a nave e mostrar a nave nos bastidores, com a tela do jogo ainda vazia. Clicar em Mostrar a nave na tela e mostrar a mesma nave na tela do jogo. Meme na comparação: na frase da apresentação da escola, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy se arrumando atrás de uma cortina e depois entrando no palco, com a legenda \"bastidores · palco\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Uma posição diz onde colocar a nave. Agora observe a diferença entre preparar esse objeto e mostrar seu desenho.",
-          "Nesta experiência, clique em Criar a nave. Compare os bastidores com a tela do jogo. Depois clique em Mostrar a nave na tela e compare os dois lugares novamente. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender a diferença entre criar a nave e mostrar a nave na tela do jogo.",
+          "Olha aqui: eu clico em Criar a nave. A nave aparece em Nos bastidores, mas a tela do jogo continua vazia. Criar prepara a nave: agora ela existe no jogo, só que ainda não foi desenhada.",
+          "É como numa apresentação da escola. Você se arruma atrás da cortina, e ninguém te vê ainda. Quando você entra no palco, todo mundo vê. No nosso jogo, os bastidores ficam atrás da cortina, e a tela do jogo é o palco.",
+          "Agora eu clico em Mostrar a nave na tela. A mesma nave aparece na tela do jogo. Mostrar não cria outra nave: desenha a nave que já existia. No seu projeto, um bloco vai criar a nave, e outro vai desenhar a nave na tela.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
@@ -301,11 +308,13 @@
         "kind": "exploration",
         "videoKey": "video-desenho-por-quadro",
         "bridge": "Compare desenhar só no começo, em cada quadro e com a limpeza ligada. Avance os quadros em cada teste.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy folheando um bloquinho com a nave desenhada um pouco mais à frente em cada folha, com a legenda \"1 quadro, 2 quadros, 3 quadros\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "A nave já pode existir sem aparecer. Agora compare desenhar uma vez com desenhar de novo enquanto a posição muda. Cada quadro é uma imagem do jogo.",
-          "Na experiência, deixe Desenhar a nave em Só no começo. Clique em Avançar 1 quadro algumas vezes. Compare a imagem com o x mostrado na faixa.",
-          "Troque para A cada quadro e avance alguns quadros novamente. Por último, ligue Limpar a tela antes e avance mais quadros. Compare os três jeitos. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o quadro. Cada quadro é uma imagem do jogo, e o jogo mostra uma imagem depois da outra, bem rápido. É como um desenho animado: cada imagem é um pouquinho diferente da anterior e, passando rápido, parece que o personagem se mexe.",
+          "Olha aqui: Desenhar a nave está em Só no começo. Eu clico em Avançar 1 quadro. Na faixa, o x da nave muda de 10 para 54, mas a imagem continua igual. O jogo desenhou a nave só no começo, então a imagem não acompanhou o x.",
+          "Agora eu troco para A cada quadro e avanço alguns quadros. A nave aparece no lugar novo, mas as naves velhas continuam na tela e formam um rastro. O jogo desenha de novo, mas não apaga o que já estava lá.",
+          "Por último, eu ligo Limpar a tela antes e avanço mais quadros. Agora aparece uma nave só, sempre no lugar novo. Em cada quadro, o jogo limpa a tela e desenha a nave onde ela está. No seu projeto, o desenho da nave vai ficar dentro de A cada quadro do jogo.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
@@ -443,11 +452,13 @@
         "kind": "exploration",
         "videoKey": "video-seta-e-velocidade",
         "bridge": "Compare a seta solta e segurada. Depois compare Velocidade 3 e Velocidade 1, avançando um quadro por vez.",
-        "screen": "Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Apontar os controles sem realizar os testes pela pessoa.",
+        "screen": "Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda \"Velocidade 3 · Velocidade 1\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Sua nave ainda está parada. Antes de programar as setas, observe como a posição x desta nave muda a cada quadro.",
-          "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta, escolha Velocidade 3 e avance alguns quadros, um de cada vez.",
-          "Clique em Recomeçar, escolha Velocidade 1 e avance outros quadros com a seta ligada. Compare quanto o x muda em cada passo. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender a velocidade: quanto a nave anda em cada quadro. A regra aqui é a mesma que você vai montar: a cada quadro do jogo, mover a nave com as setas.",
+          "Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. O x continua 208, e a nave fica parada. Em cada quadro, o jogo confere a seta, e a seta está solta.",
+          "Agora eu ligo a seta, deixo Velocidade 3 e avanço um quadro de cada vez. O x vai para 211, depois 214, depois 217. Cada quadro soma 3. É como o tamanho do passo quando você anda: passo grande leva mais longe. A velocidade é o tamanho do passo da nave em cada quadro.",
+          "Eu clico em Recomeçar, escolho Velocidade 1 e avanço de novo. Agora o x vai de 208 para 209, depois 210. O passo ficou menor, e a nave anda mais devagar. No seu jogo, você vai usar velocidade 7, um passo maior.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activityKey": "experiencia-seta-e-velocidade",
         "activity": {
@@ -535,11 +546,12 @@
         "kind": "exploration",
         "videoKey": "video-limite-da-tela",
         "bridge": "Rode sem o limite. Depois recomece, ligue Manter dentro da tela e rode de novo.",
-        "screen": "Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Apontar os controles sem realizar os testes pela pessoa.",
+        "screen": "Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "A nave pode sair da tela quando continua andando. Compare o movimento com e sem limite nesta experiência antes de montar essa regra.",
-          "Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Observe a nave chegar à borda e continuar até sair da tela.",
-          "Clique em Recomeçar, ligue Manter dentro da tela e mantenha a seta ligada. Clique em Rodar e compare o que acontece na borda. Depois, clique em Próxima seção."
+          "Esta é a mesma experiência da primeira seção desta aula, agora para a gente entender o limite da tela.",
+          "Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. A nave anda, chega à borda e continua até sair inteira da tela. Sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.",
+          "Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. A nave anda até a borda e para ali, inteira na tela. O x para em 416. Em cada quadro, depois de mover, o jogo confere a borda e segura a nave do lado de dentro. No seu jogo, Manter o sprite dentro da tela vai ficar logo depois do movimento.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activityKey": "experiencia-limite-da-tela",
         "activity": {
@@ -614,10 +626,13 @@
         "kind": "exploration",
         "videoKey": "video-ordem-dos-desenhos",
         "bridge": "Troque a ordem do fundo e da nave, observe a tela e volte à primeira ordem.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedacinho da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase de pintar no papel, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy pintando um céu estrelado por cima do desenho de uma nave, com a legenda \"quem vem por último fica por cima\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Seu jogo já limpa e desenha a nave. Antes de colocar as estrelas, compare o que acontece quando dois desenhos ocupam a mesma parte da tela.",
-          "Na experiência, use as setas na lista de desenhos para colocar o fundo de estrelas antes da nave. Observe a tela. Troque a ordem para desenhar a nave antes do fundo. Observe novamente e volte à primeira ordem. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender por que a ordem dos desenhos muda o que aparece na tela.",
+          "Olha aqui: na lista A ordem de desenhar, a nave está em 1º a desenhar, e o fundo de estrelas, em 2º. Por isso, só aparece um pedacinho da nave: o fundo foi desenhado por cima dela. É como pintar no papel. Se você desenha a nave e depois pinta o céu por cima, o céu cobre a nave.",
+          "Agora eu clico em Subir, no fundo de estrelas. O fundo passa a ser desenhado primeiro, e a nave aparece inteira, na frente das estrelas. Quem é desenhado por último fica por cima.",
+          "Eu troco a ordem de novo, e a nave volta para trás das estrelas. Nada foi apagado; só a ordem mudou. Por último, deixo o fundo antes da nave outra vez, e a nave aparece. No seu jogo, o desenho das estrelas vai ficar antes do desenho da nave.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
@@ -971,11 +986,13 @@
         "kind": "exploration",
         "videoKey": "video-tecla-e-repeticao",
         "bridge": "Compare Criar um tiro em Quando acontecer e Enquanto estiver rodando. No primeiro teste, espere e depois clique em Apertar a tecla.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy apertando a campainha de uma porta, com a legenda \"apertou, tocou\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Sua nave já anda. Para atirar, uma ação precisa esperar a tecla. Compare essa espera com uma ação que se repete sozinha.",
-          "Coloque Criar um tiro em Quando acontecer. Clique em Começar o jogo e espere o teste parar, sem clicar em Apertar a tecla. Observe o contador de tiros. Depois clique em Apertar a tecla e observe de novo.",
-          "Leve Criar um tiro para Enquanto estiver rodando. Clique em Começar o jogo e espere o teste parar. Compare com o primeiro teste. Depois, clique em Próxima seção."
+          "Esta é a mesma experiência da primeira aula, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.",
+          "Olha aqui: eu coloco Criar um tiro em Quando acontecer e clico em Começar o jogo. O jogo roda e o teste para, mas nenhum tiro nasce. A peça mostra 0 vezes. Quando acontecer espera um acontecimento, e ninguém apertou a tecla.",
+          "Agora eu clico em Apertar a tecla. Na mesma hora, nasce um tiro, e a peça mostra 1 vez. A tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém apertar o botão.",
+          "Por último, eu levo Criar um tiro para Enquanto estiver rodando e clico em Começar o jogo. Nascem tiros sem parar, um em cada quadro, e o teste termina com 5 tiros. Ninguém apertou nada. Por isso, no seu jogo, Criar tiro vai ficar dentro de Quando acontecer, esperando a barra de espaço.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
@@ -1035,12 +1052,14 @@
         "key": "escrito-e-lido",
         "title": "Faça o tiro acompanhar a nave",
         "bridge": "Atire de dois lugares com cada opção de x. Depois ligue Marcas da caixa e atire de novo com O centro x da nave.",
-        "screen": "Apontar os controles reais. A nave se move pelo controle x da nave, não por arrastar o desenho. Não executar os disparos no vídeo.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy conferindo o relógio de pulso antes de responder, com a legenda \"ler na hora\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "O tiro precisa nascer na nave, mesmo quando ela muda de lugar. Vamos comparar um número fixo com a posição lida na hora do disparo.",
-          "Nesta experiência, deixe De onde vem o x do tiro em O número 400. Clique em Atirar. Mude x da nave para longe da primeira posição e clique em Atirar de novo. Compare as marcas onde os dois tiros nasceram.",
-          "Troque para O centro x da nave. Atire, mude x da nave e atire outra vez. Compare as novas marcas. Depois ligue Marcas da caixa e clique em Atirar mais uma vez, mantendo O centro x da nave. Compare a linha do centro com o lugar de onde saiu esse tiro.",
-          "Quando terminar, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender a diferença entre um número escrito e um número lido na hora. É isso que faz o tiro nascer na nave, mesmo quando ela muda de lugar.",
+          "Olha aqui: em De onde vem o x do tiro, está escolhido O número 400. A nave está em x 400. Eu clico em Atirar, e o tiro nasce em 400, bem na nave. Agora eu mudo x da nave para 640 e atiro de novo. O tiro nasce em 400 outra vez, longe da nave. O número escrito não muda quando a nave anda.",
+          "É como responder que horas são sempre com o mesmo horário, sem olhar o relógio. Às vezes você acerta, mas quase sempre erra. Para acertar, é preciso olhar o relógio na hora.",
+          "Agora eu troco para O centro x da nave e clico em Atirar. O tiro nasce em 640, onde a nave está. Mudo a nave para 200 e atiro: o tiro nasce em 200. O jogo lê a posição da nave na hora do disparo.",
+          "Por último, eu ligo Marcas da caixa e atiro mais uma vez. As marcas mostram a caixa da nave e a linha do centro x. O tiro sai do meio da caixa, na borda de cima. No seu jogo, o campo x do tiro vai ler o centro x da nave.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -1070,11 +1089,12 @@
         "kind": "exploration",
         "videoKey": "video-direcao-do-tiro",
         "bridge": "Compare -9 e 9 na velocidade para baixo. Avance os quadros e observe o y em cada teste.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Na seção Faça o tiro acompanhar a nave, você comparou onde o tiro nasce. Agora teste para onde ele se move depois de nascer.",
-          "Na experiência, mantenha velocidade para o lado em 0. Coloque velocidade para baixo em -9 e clique em Avançar 1 quadro algumas vezes. Observe o tiro e o y.",
-          "Troque velocidade para baixo para 9 e avance outros quadros. Compare a direção e o y nos dois testes. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender como a velocidade decide para onde o tiro vai depois de nascer. Aqui, a velocidade para o lado fica em 0, e o tiro não anda para os lados.",
+          "Olha aqui: eu coloco velocidade para baixo em -9 e clico em Avançar 1 quadro algumas vezes. O y vai de 135 para 126, depois 117, depois 108, e o tiro sobe. Em cada quadro, o jogo soma a velocidade ao y. Somar um número negativo diminui o y, e na tela y menor fica mais para cima.",
+          "Agora eu troco velocidade para baixo para 9 e avanço outros quadros. O y aumenta 9 em cada quadro, e o tiro desce. O tamanho do número é o mesmo; o sinal de menos mudou a direção. No seu jogo, o tiro vai usar vy -9 para subir na direção das pedras.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
@@ -1317,11 +1337,13 @@
         "key": "tiro-que-sai-da-tela",
         "title": "O tiro saiu da tela. E do grupo?",
         "bridge": "Deixe dois tiros saírem com a limpeza desligada. Depois ligue a regra e observe o grupo.",
-        "screen": "Mostrar a experiência cleanup no estado inicial, apontando o tempo e a chave. O controle só abre depois da saída de dois tiros. Não realizar a comparação.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Começar no estado inicial. Clicar em Tempo e deixar os tiros saírem pela borda de cima, mostrando a prateleira Fora da tela, no grupo encher e o número no grupo crescer. A chave Tirar do grupo quem sair da tela só abre depois da saída de dois tiros. Ligar a chave e deixar o tempo passar (se o tempo estiver parado, clicar em Tempo), mostrando a prateleira vazia, Removidos do grupo e o número no grupo igual ao da tela. Meme na comparação: na frase da lista de chamada, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy com uma prancheta riscando da lista um tiro que saiu pela porta, com a legenda \"saiu da tela, sai da lista\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Um tiro pode sair da tela e continuar guardado no grupo. Nesta experiência você consegue olhar o grupo por dentro.",
-          "Deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para soltar o tempo, se estiver parado. Espere dois tiros saírem da tela e olhe os objetos guardados no grupo. A regra de limpeza fica disponível depois desse teste.",
-          "Ligue Tirar do grupo quem sair da tela. Se o tempo estiver parado, clique em Tempo para continuar. Acompanhe os tiros por alguns segundos e compare os objetos no grupo. Quando terminar, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o que acontece com um tiro que sai da tela. Aqui dá para ver a tela do jogo e, ao lado, os bastidores do grupo tiros.",
+          "Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os tiros sobem e saem pela borda de cima. Na tela, eles somem. Mas, nos bastidores, cada tiro que saiu vai para a prateleira Fora da tela, no grupo. O número no grupo só cresce, enquanto na tela continuam poucos tiros. Sair da tela não tira o tiro do grupo.",
+          "É como a lista de chamada da escola. Se alguém sai da sala para beber água, o nome continua na lista. Só sai da lista se alguém riscar.",
+          "Agora eu ligo Tirar do grupo quem sair da tela. A prateleira fica vazia, e aparece Removidos do grupo. O número no grupo fica igual ao número na tela. A regra risca da lista quem saiu da tela. No seu jogo, esse mesmo bloco vai limpar o grupo dos tiros.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -1595,18 +1617,20 @@
         "kind": "exploration",
         "videoKey": "video-intervalo-das-pedras",
         "bridge": "Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila do escorregador, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados num escorregador e depois descendo um de cada vez, com o Zappy organizando a fila, com a legenda \"um de cada vez\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Sua nave já atira. Antes de criar os asteroides, compare uma pedra criada a cada quadro com pedras criadas em intervalos.",
-          "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram.",
-          "Leve Criar asteroide para o relógio de 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras.",
-          "Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o intervalo: quanto tempo o jogo espera entre uma pedra e outra.",
+          "Olha aqui: Criar asteroide está em A cada quadro. Eu clico em Tempo e deixo passar mais ou menos um segundo. Nascem umas 30 pedras, uma em cada quadro, grudadas umas nas outras. Vira um amontoado, e ninguém conseguiria passar por ali.",
+          "É como a fila do escorregador. Se todo mundo desce junto, vira um amontoado. Se cada um espera a sua vez, sobra espaço entre um e outro.",
+          "Agora eu levo Criar asteroide para a caixa A cada 40 quadros, e tudo recomeça do zero. Deixo passar uns quatro segundos. Nasce uma pedra, depois outra, depois outra, com espaço entre elas. O relógio espera 40 quadros antes de criar a próxima.",
+          "Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas das outras. Mas cada pedra desce o mesmo tanto: 180 em 60 quadros, igual antes. O intervalo muda quantas pedras nascem, não a velocidade de cada uma. No seu jogo, o relógio vai criar uma pedra a cada 40 quadros.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Compare o intervalo entre as pedras",
-          "instructions": "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para o relógio de 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros.",
+          "instructions": "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros.",
           "hints": [],
           "activity": {
             "type": "experimentation",
@@ -1695,10 +1719,12 @@
         "kind": "exploration",
         "videoKey": "video-posicao-sorteada",
         "bridge": "Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Sortear lugar na régua de cima até sair pelo menos um segundo lugar diferente, apontando as marcas na régua entre x 90 e x 390. Mostrar a pedra acima da borda de cima, clicar em Tempo e acompanhar a pedra entrando na tela. Meme na comparação: na frase do dado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando um dado gigante com asteroides nas faces, com a legenda \"Sortear lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "O relógio já separa o nascimento das pedras. Agora teste de onde elas podem entrar.",
-          "Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o sorteio: como o jogo escolhe onde cada pedra nasce.",
+          "Olha aqui: eu clico em Sortear lugar na régua de cima. Sai um lugar, e uma marca aparece na régua. Eu clico de novo, e sai outro lugar. Cada clique é um sorteio novo, sempre entre x 90 e x 390. É como jogar um dado: você não sabe qual número vai sair, e o mesmo número pode sair de novo.",
+          "A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e ela desce e entra caindo pela borda de cima. Assim, ninguém vê a pedra aparecer do nada. No seu jogo, o x do asteroide vai ser sorteado, e o y vai começar em -30, acima da tela.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
@@ -1979,12 +2005,13 @@
         "key": "trombada",
         "title": "Escolha quem sai no acerto",
         "bridge": "Compare os grupos inteiros com tiro e asteroide. No teste com os apelidos, deixe o tempo passar até as outras duas pedras saírem da tela.",
-        "screen": "Usar os seletores reais e o botão de tempo da cena collision-pair. Não fazer a colisão pela pessoa.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os seletores reais e o botão de tempo da cena collision-pair. Com tiros (o grupo inteiro) e asteroides (o grupo inteiro), clicar em Deixar a trombada acontecer e mostrar pedras no grupo e tiros no grupo em 0. Clicar em Voltar ao começo, escolher tiro (o apelido) e asteroide (o apelido), deixar a trombada acontecer e mostrar 2 pedras e 2 tiros. Clicar em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Meme na comparação: na frase da queimada, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando queimada com os asteroides: a bola acerta um asteroide só, que sai da quadra, e os outros continuam, com a legenda \"só quem foi acertado sai\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Um tiro acertou uma pedra. Queremos tirar esses dois objetos e manter os outros no jogo. Nesta experiência, vamos comparar duas maneiras de escolher quem sai.",
-          "Em O tiro que sai, escolha tiros, o grupo inteiro. Em A pedra que sai, escolha asteroides, o grupo inteiro. Clique em Deixar a trombada acontecer e observe os dois grupos.",
-          "Clique em Voltar ao começo. Agora escolha tiro, o apelido, e asteroide, o apelido. Clique em Deixar a trombada acontecer. Observe o par que se encontrou e os objetos que ficaram. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo da tela.",
-          "Depois dos testes, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender os apelidos: como escolher quem sai do jogo quando um tiro acerta uma pedra. Aqui há três tiros e três pedras, e só o tiro do meio vai encontrar uma pedra.",
+          "Olha aqui: em O tiro que sai, eu escolho tiros, o grupo inteiro. Em A pedra que sai, escolho asteroides, o grupo inteiro. Clico em Deixar a trombada acontecer. Só um tiro encontrou uma pedra, mas sumiram todos: pedras no grupo e tiros no grupo foram para 0. O grupo inteiro quer dizer todos os objetos do grupo.",
+          "Na queimada, quando a bola acerta alguém, só essa pessoa sai. O time inteiro continua jogando.",
+          "Agora eu clico em Voltar ao começo e escolho tiro, o apelido, e asteroide, o apelido. Clico em Deixar a trombada acontecer. Saem só o tiro e a pedra que se encontraram, e ficam 2 pedras e 2 tiros. O apelido aponta só para quem participou do encontro. Depois, eu clico em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo da tela. Elas continuaram o caminho. No seu jogo, o acerto vai usar os apelidos tiro e asteroide.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -2572,11 +2599,13 @@
         "key": "caixa-de-pontos",
         "title": "Guarde e mostre um número",
         "bridge": "Mude pontos com o placar desligado. Depois ligue Mostrar placar e compare.",
-        "screen": "Apontar o valor e a chave sem executar as somas. Não substituir a tarefa por metáfora de caixa.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do caderno, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy anotando pontos: 2 num caderno, ao lado de um placar de estádio mostrando 2, com a legenda \"guardar · mostrar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Seu jogo já sabe quando o tiro acerta. Agora vamos contar esses acertos. Uma variável guarda um valor que pode mudar. Nesta experiência, ela se chama pontos.",
-          "No controle número guardado em pontos, aumente para 1 e depois volte para 0. Isso registra o valor inicial da experiência. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado.",
-          "Ligue Mostrar placar e compare o número na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois. Depois, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender a variável: o lugar onde o jogo guarda um número que pode mudar. Aqui, a variável se chama pontos.",
+          "Olha aqui: eu mudo número guardado em pontos para 1 e depois volto para 0. Agora pontos existe e começa em 0, como no começo de uma partida. Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. O número guardado vai para 1 e depois para 2, mas a tela do jogo não mostra nada. O jogo guardou e mudou o número sem mostrar.",
+          "É como anotar os gols de um jogo num caderno. O número fica anotado, mesmo que ninguém esteja vendo. O placar do estádio só mostra o que já foi anotado.",
+          "Agora eu ligo Mostrar placar. A tela mostra Pontos: 2, o mesmo número guardado. Clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Guardar, mudar e mostrar são três coisas diferentes. No seu jogo, a soma vai acontecer em cada acerto, e o placar vai mostrar o valor de pontos.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -2743,11 +2772,12 @@
         "kind": "exploration",
         "videoKey": "video-vidas-no-comeco",
         "bridge": "Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações.",
-        "screen": "Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Seu jogo já conta pontos. Agora compare dois lugares para dar três vidas à nave.",
-          "Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas.",
-          "Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações. Depois, clique em Próxima seção."
+          "Esta é a mesma experiência da primeira aula, agora para a gente entender onde as vidas da nave devem ser dadas. Aqui, uma pedra bate na nave de tempos em tempos.",
+          "Olha aqui: eu coloco Dar três vidas à nave em Ao iniciar e clico em Começar o jogo. A nave começa com 3 vidas, e cada batida apaga um coração. No fim do teste, a tela mostra Vidas: 0 e Batidas: 3. As vidas foram dadas uma vez, no começo, e as batidas conseguiram tirar.",
+          "Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. A batida apaga um coração, mas no quadro seguinte as vidas voltam para 3. No fim do teste, aparece Vidas: 2, porque a última batida foi bem no último quadro. A peça devolve as vidas o tempo todo, e a nave nunca perderia. Por isso, no seu jogo, as vidas vão ser dadas em Ao iniciar.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "activity": {
           "kind": "interactive",
@@ -2854,12 +2884,13 @@
         "key": "respiro",
         "title": "Compare as batidas com proteção",
         "bridge": "Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes.",
-        "screen": "Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Não prometer que a cena reproduz 45 quadros de jogo real em segundos.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Sua nave ainda atravessa as pedras sem perder vida. Vamos programar o dano e um pequeno tempo de proteção depois de uma batida. Durante essa proteção, outra batida não tira vida.",
-          "Nesta experiência, escolha 0 quadros em Proteção em quadros. Clique em Avançar até a próxima pedra três vezes e observe os corações.",
-          "Clique em Voltar ao começo, escolha 45 quadros e repita as três batidas. Acompanhe os corações e quantos quadros de proteção restam.",
-          "Volte ao começo mais uma vez. Escolha 15 quadros e avance pelas três pedras. Observe em qual batida a proteção ainda está ativa e em qual já acabou. Depois dos três testes, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender a proteção depois de uma batida: um tempinho em que outra batida não tira vida. Aqui, as pedras batem nos quadros 1, 10 e 30.",
+          "Olha aqui: eu escolho 0 quadros em Proteção em quadros e clico em Avançar até a próxima pedra três vezes. Cada batida apaga um coração, e a nave fica sem vidas. Sem proteção, as três batidas tiram as três vidas.",
+          "Eu clico em Voltar ao começo, escolho 45 quadros e repito as três batidas. A primeira tira uma vida, e a proteção começa com 45 quadros. Na batida do quadro 10, ainda restam 36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Só a primeira batida tirou vida.",
+          "Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida. Na batida do quadro 10, restam 6 quadros, e a vida não cai. Mas, no quadro 30, a proteção já acabou, e essa batida tira outra vida. A proteção é um respiro com prazo. No seu jogo, a batida vai dar 45 quadros de proteção.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -3438,12 +3469,13 @@
         "key": "estado-do-jogo",
         "title": "Escolha quando o jogo pode agir",
         "bridge": "Compare criar asteroides fora e dentro de Se jogando, antes e depois de começar.",
-        "screen": "Confirmar rótulo Criar asteroide via cast. A cena game-state usa toque no palco para começar, diferente do Enter que será construído no projeto. Não antecipar resultados.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e o Zappy segurando a bandeira, com a legenda \"só depois da largada\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Seu jogo começa assim que abre. Agora vamos colocar uma tela de abertura para esperar quem vai jogar. O estado do jogo guarda em que momento ele está. Vamos usar inicio para a abertura e jogando para a partida.",
-          "Nesta experiência, deixe a peça Criar asteroide no relógio, fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo para soltar o tempo, se estiver parado. Espere aparecer uma pedra e observe o contador do relógio.",
-          "Arraste a peça para dentro de Se o estado do jogo é jogando. Se o tempo estiver parado, clique em Tempo para continuar. Acompanhe o relógio por três segundos, ainda na abertura, e compare as pedras criadas.",
-          "Agora toque na tela da experiência para começar. Observe de novo as pedras. Aqui o toque já veio preparado; no seu projeto, você vai programar Enter. Depois dos testes, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o estado do jogo: ele guarda em que momento o jogo está. Vamos usar inicio, para a abertura, e jogando, para a partida.",
+          "Olha aqui: a peça Criar asteroide está em No relógio, a cada 40 quadros, fora de Se o estado do jogo é jogando. Eu clico em Tempo, ainda na abertura. O relógio toca e as pedras nascem. O contador de asteroides criados sobe, mesmo sem ninguém jogando.",
+          "Agora eu levo a peça para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Deixo o tempo passar uns quatro segundos na abertura. O relógio continua tocando, mas o contador mostra esperando, e nenhuma pedra nasce. O Se pergunta se o estado é jogando. Na abertura, a resposta é não, então Criar asteroide espera. É como uma corrida: todo mundo espera o sinal de largada, e ninguém sai correndo antes.",
+          "Por último, eu clico em Toque para começar, na tela da experiência. O estado vira jogando, e as pedras voltam a nascer. Aqui, o começo por toque já veio pronto. No seu jogo, você vai programar o Enter para começar a partida.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -3470,13 +3502,20 @@
             },
             "cenario": "nave",
             "setup": {
+              "preset": {
+                "id": "pedra-40-quadros",
+                "clockFrames": 40,
+                "waitingSeconds": 4,
+                "moment": "screen"
+              },
               "goals": ["outside", "waiting", "playing"],
               "goalCopy": {
                 "outside": {
                   "label": "Sem a pergunta, as pedras nasceram antes de começar"
                 },
                 "waiting": {
-                  "label": "Com a pergunta, o relógio tocou três vezes e nenhuma pedra nasceu"
+                  "label": "Com a pergunta, o relógio tocou três vezes e nenhuma pedra nasceu",
+                  "pedido": "Leve Criar asteroide para dentro de Se o estado do jogo é jogando e deixe o tempo passar 4 segundos no início."
                 },
                 "playing": {
                   "label": "Começando a partida, as pedras voltaram a nascer"
@@ -4354,12 +4393,13 @@
         "key": "reiniciar",
         "title": "Compare voltar à abertura e reiniciar",
         "bridge": "Depois de perder, compare mudar para inicio com Reiniciar o jogo. Observe os valores ao começar outra partida.",
-        "screen": "A experiência restart usa Apertar Enter. Mostrar onde escolher a ação final, sem realizar os dois ciclos. A abertura pode cobrir indicadores: compará-los quando a partida começa.",
+        "screen": "Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase do jogo de tabuleiro, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy arrumando as peças de um tabuleiro de volta na saída, com a legenda \"Reiniciar o jogo: tudo no lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.",
         "speech": [
-          "Para jogar de novo, precisamos preparar uma nova partida. Vamos comparar mudar somente o estado com reiniciar o jogo.",
-          "Nesta experiência, em No fim, o Enter faz, escolha Mudar o estado do jogo para inicio. Clique em Apertar Enter para começar e espere a partida terminar. Clique em Apertar Enter para voltar à abertura e clique outra vez para tentar jogar. Observe os valores e o que ficou da partida anterior.",
-          "Quando estiver no final novamente, troque para Reiniciar o jogo. Clique em Apertar Enter para voltar à abertura. Clique outra vez para começar e observe os valores da nova partida.",
-          "Depois da comparação, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender como preparar uma partida nova depois do fim. Aqui, o Enter começa a partida, e dá para escolher o que ele faz no fim.",
+          "Olha aqui: em No fim, o Enter faz, eu escolho Mudar o estado do jogo para inicio. Clico em Apertar Enter, e a partida começa. Uma pedra bate na nave, e a partida termina. Clico em Apertar Enter: o jogo volta para a abertura, mas as pedras da partida continuam na pista. Clico de novo para jogar, e a partida nova começa com as pedras velhas e acaba na hora, com uma batida. Mudar só o estado não arruma o que ficou da partida anterior.",
+          "É como um jogo de tabuleiro. Para jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.",
+          "Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. A abertura volta, e a pista fica vazia. Clico outra vez, e a partida começa com a pista limpa. Reiniciar o jogo faz de novo a preparação de Ao iniciar. No seu jogo, o Enter vai reiniciar o jogo quando a partida terminar.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
         ],
         "checks": [],
         "final": false,
@@ -4546,7 +4586,7 @@
         "key": "entrega",
         "title": "Teste o jogo completo e compartilhe",
         "bridge": "Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural.",
-        "screen": "Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, Salvo, envio, confirmação e publicação opcional.",
+        "screen": "Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, Salvo, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar.",
         "speech": [
           "Agora teste o ciclo completo do jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Não deve sair som de tiro. Confira também os blocos: criar tiros e criar asteroides precisam estar dentro de Se jogando.",
           "Toque em Enter, mova a nave e atire. Deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar. Confira zero pontos e três corações.",

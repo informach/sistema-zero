@@ -12,20 +12,22 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-regua-negativos` · Compare os números negativos
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o marcador em -5. Clicar em Somar -1 três vezes, com o marcador à vista. Clicar em Voltar ao começo, escolher > maior que e mudar valor da base para -9, com a pergunta e a resposta à vista. Voltar ao começo, escolher = igual a e clicar em Somar -1 quatro vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino de cachecol olhando dois termômetros, um em -5 e outro em -9. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu jogo usa velocidades negativas para andar para a esquerda. Antes de aumentar a dificuldade, compare esses números numa régua.
+> "Esta é uma experiência para a gente entender os números negativos e como comparar esses números numa régua.
 >
-> Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >.
+> Olha aqui: quando eu clico em Somar -1 três vezes, o marcador sai do -5 e anda até o -8, sempre para a esquerda. Somar um número negativo deixa o valor menor. No nosso jogo, velocidade mais para a esquerda é cacto mais rápido.
 >
-> Observe a resposta com o marcador em -5. Depois leve o marcador até -9 e compare a resposta.
+> Eu clico em Voltar ao começo e escolho o sinal maior que, o símbolo >. Com o marcador em -5, a pergunta -5 > -9 responde sim. Na régua, -5 fica à direita do -9, então é maior. Quando eu mudo valor da base para -9, a resposta vira não, porque -9 não é maior que ele mesmo.
 >
-> Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta.
+> Por último, eu volto ao começo, escolho o sinal de igual e clico em Somar -1 quatro vezes. A resposta é não em -6, -7 e -8, e só vira sim quando o marcador chega em -9.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como o termômetro num dia muito frio: -9 graus é mais frio que -5 graus, e mais frio é um número menor. No seu jogo, a pergunta velocidade > -9 vai decidir quando a base ainda pode diminuir.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare os sinais e acompanhe a régua de -5 até -9.
 
@@ -33,20 +35,22 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-o-que-o-freio-segura` · Compare a base com cada cacto
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a base em -5 e a condição ligada. Clicar em Passar 5 segundos cinco vezes, com a base e o número de cada cacto à vista. Continuar até nascer um cacto -10 com a base em -9. Desligar a condição e clicar mais cinco vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino descendo uma ladeira de bicicleta, apertando o freio. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "A régua mostrou como a base pode mudar. Agora compare essa base com a velocidade que cada cacto recebe ao nascer.
+> "Esta é uma experiência para a gente entender a diferença entre a base e a velocidade que cada cacto recebe ao nascer.
 >
-> Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram.
+> Olha aqui: com a condição ligada, eu clico em Passar 5 segundos cinco vezes. Em cada clique, nasce um cacto com o seu número escrito. A base diminui 1 de cada vez, de -5 até -9, e para ali, porque a pergunta velocidade > -9 passou a responder não. Os cactos que já nasceram não trocam de número: cada um guarda a velocidade que recebeu ao nascer.
 >
-> Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base.
+> Com a base parada em -9, eu continuo clicando até nascer um cacto com -10. A base é -9, mas o sorteio tirou mais 1. A condição segura a base, e não o sorteio.
 >
-> Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número.
+> Por último, eu desligo a condição e clico em Passar 5 segundos mais cinco vezes. Agora a base passa do -9 e continua diminuindo.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como o freio da bicicleta numa descida: com o freio, a velocidade para de crescer, e sem ele, ela só aumenta. No seu jogo, você vai guardar a base numa variável e diminuir esse número a cada 5 segundos, só enquanto velocidade > -9.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare base, cactos novos e antigos; depois desligue a condição e avance.
 
@@ -158,9 +162,9 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 ### Clipe `video-entrega` · Teste e envie seu jogo
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado. Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.
 
 **Narração:**
 > "Seu Corre, Dino! já tem começo, pulo com som, obstáculos, pontos, derrota, reinício e dificuldade que aumenta. Teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu.
@@ -171,6 +175,6 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 >
 > Os desenhos do Dino, da floresta e dos efeitos vêm nos blocos. Você montou as regras que fazem essas partes funcionar juntas. Depois de enviar, pode compartilhar o seu jogo no Mural se quiser.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Se quiser mostrar o jogo no Mural, clique em Compartilhar depois do envio. Confira o título e escreva um resumo do seu jogo. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Espere a mensagem Seu jogo está no Mural! e clique em Fechar. Publicar é opcional; você também pode deixar para outra hora. Depois, clique em Concluir aula."
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Se quiser mostrar o jogo no Mural, clique em Compartilhar depois do envio. Publicar é opcional; você também pode deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula."
 
 **Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.

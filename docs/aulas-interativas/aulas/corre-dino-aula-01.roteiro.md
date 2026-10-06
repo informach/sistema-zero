@@ -14,14 +14,14 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 **Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar somente o jogo pronto em funcionamento. Apontar os controles citados; participação basta para concluir.
+**Na tela:** Demonstração: o narrador mostra como se joga com um exemplo só. Mostrar somente o jogo pronto, na abertura. Clicar na área do jogo, esperar o primeiro cacto e fazer um salto com a barra de espaço. Parar a demonstração depois desse salto, sem jogar a partida até o fim e sem mostrar a tela de fim. Em Agora é a sua vez, deixar o jogo pronto à vista para quem faz a aula; participação basta para concluir.
 
 **Narração:**
-> "Você vai construir Corre, Dino! O Dino pula os cactos numa corrida que fica mais rápida. Tente passar pelos obstáculos e somar pontos pelo tempo que conseguir continuar na partida.
+> "Esta é a versão pronta do Corre, Dino!, para você ver como o jogo funciona antes de montar o seu. Nesse jogo, o Dino corre e pula os cactos. A corrida fica cada vez mais rápida, e os pontos crescem enquanto você continua na partida.
 >
-> Experimente a versão pronta. Clique na área do jogo para começar. Toque e solte a barra de espaço, a seta para cima ou a tela para pular. Espere o Dino voltar ao chão para pular outra vez.
+> Olha aqui: quando eu clico na área do jogo, a abertura some e a corrida começa. Quando um cacto chega perto, eu aperto a barra de espaço, e o Dino pula por cima dele. A seta para cima e um toque na tela também fazem o Dino pular.
 >
-> Quando perder, toque uma vez para voltar à abertura e outra para começar uma nova partida. Você não precisa bater recorde para seguir. Depois de experimentar os controles, clique em Próxima seção."
+> Agora é a sua vez: jogue o Corre, Dino! pronto. Você não precisa bater recorde para continuar. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.
 
@@ -44,18 +44,20 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-uma-vez-e-sempre` · Compare uma vez e sempre
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Mover o Dino um pouquinho em Ações disponíveis. Colocar a peça em Ao iniciar, clicar em Começar o jogo e manter à vista o passo curto do Dino, o contador da peça em 1 vez e Teste encerrado. Levar a mesma peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar o Dino até sair da cena, com o contador subindo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy calçando um tênis, com a legenda Ao iniciar: uma vez, e o Dino correndo com marcas de passos, com a legenda Enquanto estiver rodando: sempre. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Antes de preparar seu jogo, compare uma ação feita uma vez com a mesma ação repetida.
+> "Esta é uma experiência para a gente entender a diferença entre fazer uma coisa uma vez e fazer sempre.
 >
-> Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação.
+> Olha aqui: quando eu coloco Mover o Dino um pouquinho em Ao iniciar e clico em Começar o jogo, o Dino anda um pouquinho e para. O contador da peça mostra 1 vez, e o teste termina. Ao iniciar faz cada peça uma vez só, no começo do jogo.
 >
-> Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador.
+> Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. O Dino anda, anda e anda, até sair da cena. O contador sobe a cada passo e chega a 24 quando o teste termina. Enquanto estiver rodando repete a peça o tempo todo, enquanto o jogo está ligado.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como sair para correr: o tênis você calça uma vez, antes de sair, e os passos você repete o caminho inteiro. No seu jogo, a preparação da tela vai em Ao iniciar, porque basta fazer uma vez.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare a mesma peça nas duas áreas, começando um teste em cada uma.
 
@@ -63,18 +65,20 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-limite-da-tela` · Escolha o tamanho da tela
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de 800 por 480, com a borda escondida. Clicar em Ligue a borda e mostrar o contorno. Mudar a largura para 600 e a altura para 300, com o contorno acompanhando os números. Terminar em 480 por 270, com os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy segurando uma folha grande e outra menor, com o Dino desenhado dentro da menor e a legenda 480 por 270. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu jogo vai ocupar uma tela de 480 por 270. Antes de preparar essa tela, veja o que os dois números mudam.
+> "Esta é uma experiência para a gente entender o tamanho da tela do jogo: a largura e a altura.
 >
-> Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo.
+> Olha aqui: a tela começa em 800 por 480, com a borda escondida. Quando eu clico em Ligue a borda, aparece um contorno em volta da tela. A borda mostra onde a tela acaba.
 >
-> Depois coloque largura 480 e altura 270. Compare com o tamanho anterior.
+> Agora eu mudo a largura para 600 e a altura para 300. O contorno fica mais estreito e mais baixo: a largura mede de um lado ao outro, e a altura, de cima a baixo.
 >
-> Depois dos testes, clique em Próxima seção."
+> Por último, eu coloco largura 480 e altura 270. Essa é a tela do nosso jogo. É como escolher o tamanho da folha antes de desenhar: tudo o que o jogo mostrar vai caber dentro dela. Na montagem, você vai escrever 480 e 270 no bloco que prepara a tela e depois mostrar a borda para ver esse limite.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Mude largura e altura com a borda visível e termine em 480 por 270.
 
@@ -128,18 +132,20 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-coordenadas` · Escolha onde o Dino fica
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Aumentar só o x até 300, depois só o y até 240, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com um mapa do tesouro, com uma seta x para a direita e uma seta y para baixo. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Para criar o Dino numa posição, vamos usar x e y. Esses números indicam um lugar na tela.
+> "Esta é uma experiência para a gente entender como dois números, o x e o y, dizem onde o Dino fica na tela.
 >
-> Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções.
+> Olha aqui: o Dino está em x 110 e y 150. Quando eu aumento só o x, para 300, o Dino vai para a direita, e o y continua igual. O x conta de um lado para o outro.
 >
-> Por último, coloque x em 0 e y em 0. Observe onde fica essa posição.
+> Quando eu aumento só o y, para 240, o Dino desce. Isso pode surpreender: no jogo, y maior leva para baixo, porque o y conta a partir do alto da tela.
 >
-> Depois dos testes, clique em Próxima seção."
+> Por último, eu coloco x em 0 e y em 0. O Dino vai para o canto de cima, à esquerda. É dali que o jogo começa a contar. É como explicar onde está um tesouro: tantos passos para o lado e tantos passos para baixo. Quando você criar o Dino, vai escrever x 110 e y 150 para escolher o lugar dele.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Mude um eixo de cada vez e termine em x 0, y 0.
 
@@ -147,18 +153,20 @@ Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos 
 
 ### Clipe `video-criar-e-mostrar` · Compare criar e mostrar
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com os bastidores e a tela do jogo vazios, lado a lado. Clicar em Criar o Dino e mostrar o Dino nos bastidores, com a tela ainda vazia. Clicar em Mostrar o Dino na tela e mostrar o mesmo Dino nos dois lugares. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino no camarim, arrumando o chapéu, e depois entrando no palco sob a luz. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Você já escolheu posições. Agora observe a diferença entre criar um objeto e desenhá-lo na tela.
+> "Esta é uma experiência para a gente entender que criar o Dino e mostrar o Dino na tela são duas coisas diferentes.
 >
-> Clique em Criar o Dino. Compare os bastidores com a tela do jogo.
+> Olha aqui: quando eu clico em Criar o Dino, ele aparece nos bastidores, mas a tela do jogo continua vazia. O Dino já existe no jogo. Ele só não foi desenhado.
 >
-> Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente.
+> Quando eu clico em Mostrar o Dino na tela, o mesmo Dino aparece na tela do jogo. Mostrar não cria outro Dino: desenha aquele que já estava nos bastidores.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como um ator no camarim: ele já chegou ao teatro, mas a plateia só vê quando ele entra no palco. Na montagem desta aula, você vai criar o Dino. Ele ainda não vai aparecer, porque o desenho fica para a próxima aula.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Crie o Dino nos bastidores e depois mostre-o na tela.
 

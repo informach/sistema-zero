@@ -54,11 +54,13 @@ O primeiro projeto está vazio, com Jogo 2D disponível. Os blocos já oferecem 
 
 As 19 experiências reaproveitam cenas existentes e antecedem a primeira aplicação dos conceitos: preparação e repetição; coordenadas; criação e desenho; atualização por quadro; movimento e velocidade; limite; camadas; evento; posição fixa ou lida; direção da velocidade; limpeza de grupo; intervalo; sorteio; par da colisão; variável; preparação das vidas; proteção; estado e reinício. Cada uma orienta todos os testes necessários, sem palpite obrigatório nem pergunta final repetida. A cena de movimento originalmente criada para o Farol agora também representa a nave, com o mesmo motor e os mesmos controles.
 
+Desde 06/10/2026, o vídeo de cada experiência é uma demonstração. A primeira frase diz o conceito ("Esta é uma experiência para a gente entender…", ou "Esta é a mesma experiência…" quando a cena volta com outra meta). Depois de "Olha aqui:", o narrador faz os testes na primeira pessoa, mostra o resultado real conferido no motor da cena e explica por que ele aconteceu, ligando-o ao bloco da montagem. Quando ajuda, há uma comparação com o dia a dia e um meme ilustrado nosso descrito na nota de tela. Só no fim vem "Agora é a sua vez". O vídeo do jogo pronto segue o mesmo raciocínio, com um único gesto de exemplo. Os passos para a criança continuam no imperativo nas instruções da experiência, na ponte do Zappy, nas montagens e no caderno.
+
 A limpeza da imagem retoma a experiência de desenho da primeira aula em uma montagem própria; a limpeza do grupo é outra ideia e tem sua própria experiência na aula dos tiros. A preparação das vidas e a colisão da nave também têm montagens separadas. Nas retomadas, a fala localiza a experiência, mostra o que ainda falta no próprio jogo e só então orienta os encaixes, com o destino visível antes de buscar cada peça. Nas aulas finais, a comparação com a meta aplica variável, leitura e condição já trabalhadas; a constante é apresentada como o valor da meta que permanece igual durante a partida.
 
 Há quatro revisões curtas, nas aulas 2, 5, 7 e 9. Retomam ideias já montadas e testadas, distribuídas ao longo deste curso maior. Cada seção contém somente Zappy → quiz, com explicação após o envio, acerto de todas as questões e tentativas ilimitadas sem espera. Configurar também as tentativas no admin; o manifesto não define essa política global sozinho.
 
-Cada etapa com critérios termina em **Verificar esta etapa**, correção se necessária e **Objetivo da etapa cumprido!**. A entrega termina em **Salvo → Enviar para o professor → Enviar → Concluir aula**. A última aula ensina a publicação completa, opcional, depois do envio. O caderno fica em um único bloco de materiais, sem exigência de leitura ou download.
+Cada etapa com critérios termina em **Verificar esta etapa**, correção se necessária e **Objetivo da etapa cumprido!**. A entrega termina em **Salvo → Enviar para o professor → Enviar → Concluir aula**. A última aula ensina a publicação completa, opcional, depois do envio: o resumo já vem preenchido, e a comemoração do Mural convida a copiar o link de jogar e mandar para a família e os amigos antes de Fechar. O caderno fica em um único bloco de materiais, sem exigência de leitura ou download.
 
 ## Continuidade do código
 
@@ -79,7 +81,7 @@ Os nomes visíveis são os títulos das aulas. Os cinco slugs antigos continuam 
 
 Esta entrega altera materiais locais. Gravação, vínculo das mídias e aplicação no admin são etapas de produção; a revisão não declara o curso publicado nem a compreensão infantil validada.
 
-Registro da retomada e das verificações: [revisão de 05/10/2026](qa/revisao-nave-2026-10-05.md).
+Registro da retomada e das verificações: [revisão de 05/10/2026](qa/revisao-nave-2026-10-05.md), com a nota da revisão de 06/10/2026.
 
 ## Conferência local
 

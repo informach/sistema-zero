@@ -55,6 +55,22 @@ De `packages/studio`: `bun run tsc --noEmit --project ../../docs/aulas-interativ
 
 De `packages/core`: `bun test src/learning/scene`. De `packages/members`: `bun test tests/integration/meu-jeito-import.test.ts`.
 
+## Revisão de 06/10/2026: a experiência explica enquanto faz
+
+Decisão do responsável, registrada nas Diretrizes e na ESPEC §4. Substitui, neste curso, a "demonstração restrita aos controles" do item de 05/10.
+
+- **14 vídeos de experiência** viraram demonstração: a primeira frase diz o conceito ("Esta é uma experiência para a gente entender…"), o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", mostra o resultado real da cena, explica o porquê e liga à aplicação seguinte. Só o fim passa a vez, com a frase padrão. Treze têm comparação do dia a dia e meme ilustrado descrito na nota de tela (`meme` na fonte); os dois relógios não têm comparação.
+- A nota "Na tela" das experiências vem de um modelo do gerador (`telaSecao`), que não alcança as aplicações nem o jogo pronto.
+- **Jogo pronto:** diz o que o curso vai construir, apresenta a versão pronta com artes de exemplo, mostra um exemplo só ("Olha aqui:", com o objetivo da partida), sem jogar a partida, e termina no convite para jogar.
+- **Publicação (aula 8):** a fala abre dizendo que publicar é opcional; o resumo pode já vir escrito pela IA; depois de **Publicado!**, comemora e convida a mandar o link com **Copiar link** (o botão muda para **Link copiado!**); o fecho não cita mais uma conferência anterior. O Compartilhar dessa aula é o do Estúdio completo: tem o campo **Título**, a confirmação "Publicado! 🎉" e o botão "Copiar link", que copia o link de jogar. A frase "Seu jogo está no Mural!" da comemoração do Estúdio embutido continua fora do roteiro.
+- **Correções conferidas no motor:** a Prévia da cena `motion-amount` já abre tocando (o texto mandava clicar em Tocar a Prévia, mas o botão mostra Parar a Prévia); nos dois relógios, com uma pedra a cada 40 quadros nascem duas pedras em três segundos, e não três; na cena dos nomes, o relógio começa parado e a nave só voa na prévia depois de Tempo. As instruções dessas três experiências foram corrigidas.
+- **Caderno:** nas experiências, usa as instruções da própria experiência; no jogo pronto, deixa de fora o exemplo do narrador. PDF regerado em 06/10/2026 com `gerar-materiais.py`: 28 páginas e 15 blocos, com as conferências do script aprovadas e as páginas alteradas inspecionadas.
+- **Pontes do Zappy:** deixaram de repetir a instrução da experiência; cada uma é uma frase curta que liga o vídeo à tarefa.
+- **Camadas:** `setup.goalCopy` faz o Conferir e o Ainda falta pedirem o gesto do vídeo, na linha da pedra.
+- `meu-jeito.test.ts` cobra a abertura, o "Olha aqui:", a ausência de ordens antes da vez, a frase final, o meme de cada comparação, a ponte curta e o jogo pronto.
+
+Pendência registrada: a escada de pistas automáticas da cena `layers` em Camadas (`LAYERS_CAMADAS.hints`, no core) termina em "Mande a chama uma camada para trás", um gesto diferente do vídeo, embora também funcione; o `goalCopy` não alcança a escada.
+
 ## Produção pendente
 
 Nenhuma aula ou arquivo foi importado no admin real. Gravar e revisar os 50 clipes, hospedar e vincular o PDF, reconciliar seções e históricos, conferir videoBeforeActivity e a política de tentativas dos quizzes. O teste HTTP usa ambiente de teste; não comprova a oferta ou a configuração em produção.

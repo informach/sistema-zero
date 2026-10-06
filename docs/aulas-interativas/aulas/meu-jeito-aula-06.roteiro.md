@@ -8,20 +8,34 @@ Entrada: Cópia do jogo da aula 1 e duas artes animadas salvas no Pinta. Saída:
 
 Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
+Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
+
 ## Seção 1. Separe os nomes que os blocos procuram
 
 ### Clipe `video-nomes` · Separe os nomes que os blocos procuram
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase dos nomes, a nave e a folha da nave com o mesmo crachá "nave" olhando ao mesmo tempo quando o Zappy chama, com a legenda "nave? qual das duas?". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.
+> "Esta é uma experiência para a gente entender por que cada coisa do jogo precisa de um nome só dela.
 >
-> Observe os avisos e os nomes procurados pelos blocos em cada mudança. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: o bloco de cima cria o sprite nave. Ao lado, três blocos procuram esse nome: Mover nave, Desenhar nave e Ler nave. Eu clico em Tempo, e a nave voa na prévia.
+>
+> Quando eu clico em Tirar este bloco, os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. A prévia para na última versão que funcionava. Os blocos procuram nave, e ninguém criou esse nome.
+>
+> Eu clico em Pôr de volta, e os avisos somem. Agora, em Nome do bloco de baixo, eu escolho nave. Aparece outro aviso: o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.
+>
+> Sabe quando duas pessoas da sua sala têm o mesmo nome? Se a professora chama esse nome, as duas olham. Por isso, cada uma ganha um jeito próprio de ser chamada, como o sobrenome.
+>
+> Então eu escolho folha-nave. Os avisos somem, e a nave volta a voar na prévia. A folha ganhou um nome só dela, e a nave continua com o nome nave.
+>
+> Daqui a pouco, no seu jogo, a folha da nave vai se chamar folha-nave, e o sprite continua com o nome nave.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.
+**Zappy na página (não gravar):** Agora tire o bloco, troque o nome e veja quando os avisos aparecem.
 
 ## Seção 2. Traga seus desenhos para o projeto
 
@@ -46,16 +60,28 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 ### Clipe `video-recorte` · Separe o quadro do tamanho no jogo
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda "um quadro de cada vez". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.
+> "Esta é uma experiência para a gente entender o recorte, que é o jeito de o jogo pegar um desenho da folha.
 >
-> Compare a folha, o retângulo do recorte e a nave que aparece no jogo. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: a folha tem 64 por 32, com a nave do quadro 1 e a do quadro 2 lado a lado. O jogo começa vazio, porque ainda não tem recorte.
+>
+> Quando eu coloco Largura do recorte em 64, o jogo mostra a folha inteira, com as duas naves espremidas num quadrado só. Com 16, aparece só metade de uma nave, esticada. Com 32, aparece uma nave inteira: o recorte ficou do tamanho de um quadro da folha.
+>
+> Sabe uma cartela de adesivos? Para colar um adesivo, você destaca só aquele, do tamanho dele. Se pegar a cartela inteira, vêm todos juntos. Se cortar no meio, sai meio adesivo. A Largura do recorte é o tamanho do adesivo que o jogo destaca da folha.
+>
+> Com 32, eu escolho o Quadro 1: no jogo, a nave com o fogo pequeno. Escolho o Quadro 2: a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.
+>
+> Agora eu mudo tamanho no jogo para 80. A nave do jogo fica maior, e o recorte continua 32 por 32. O tamanho no jogo é outra escolha: ele não muda o recorte da folha.
+>
+> No seu jogo vai ser assim: o recorte da folha-nave fica 32 por 32, e o tamanho da nave na tela continua 54 por 54, no criador.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.
+**Zappy na página (não gravar):** Agora mude a Largura do recorte até aparecer uma nave inteira.
 
 ## Seção 4. Use sua imagem no criador da nave
 

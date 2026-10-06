@@ -1,33 +1,33 @@
 # Roteiro de gravação · A Chave do Farol · Dia 2
 
-Quatro seções, quatro vídeos: a experiência da memória e, depois, uma montagem para cada ideia, sempre no mesmo projeto (recolher a chave, guardar a coleta e avisar quem joga). As seções 2 e 3 verificam sem enviar; a seção 4 verifica e envia. Retomar o projeto enviado no Dia 1; o projeto preparado do Dia 2 só é a alternativa quando não houver envio anterior. Não reconstruir nem substituir um projeto já feito pela pessoa. O vídeo faz cada gesto no ritmo da fala e mostra o resultado real; depois, a pessoa repete os testes na experiência, que cobra as metas. Cada montagem tem tempo para os encaixes. Só a narração é falada.
+Quatro seções, quatro vídeos: a experiência da memória e, depois, uma montagem para cada ideia, sempre no mesmo projeto (recolher a chave, guardar a coleta e avisar quem joga). As seções 2 e 3 verificam sem enviar; a seção 4 verifica e envia. Retomar o projeto enviado no Dia 1; o projeto preparado do Dia 2 só é a alternativa quando não houver envio anterior. Não reconstruir nem substituir um projeto já feito pela pessoa. O vídeo da experiência é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. Cada montagem tem tempo para os encaixes. Só a narração é falada.
 
 ## Seção 1. O jogo guardou a chave?
 
 ### Vídeo `video-d2-contexto` · O jogo guardou a chave?
 
-**Duração alvo:** 60 a 80 segundos.
+**Duração alvo:** 80 a 100 segundos.
 
 **Na tela:** mostrar brevemente, no projeto do fim do Dia 1, o personagem passando pela chave sem pegá-la. Depois abrir a experiência `collect-and-remember` e fazer cada gesto no ritmo da fala, deixando ver a chave, o aviso e `temChave` em cada teste. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase do caderno, o personagem anotando "peguei a chave ✔" num caderno; ao lado, o mesmo personagem sem anotar, com cara de "esqueci…". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
-> "Seu personagem já anda, mas passa pela chave sem pegar. Aqui está uma experiência para entender como o jogo guarda uma informação.
+> "Seu personagem já anda, mas passa pela chave sem pegar. Esta é uma experiência para a gente entender como uma variável guarda uma informação do jogo.
 >
 > O jogo guarda a coleta numa variável chamada temChave. Variável é um nome que guarda uma informação do jogo. Falso quer dizer que o personagem ainda não está com a chave. Guardar uma informação é como anotar num caderno: se ninguém anota, o jogo esquece.
 >
-> Deixe Guardar a coleta desligado e clique em Encostar na chave. Encostar na chave é um evento: algo que acontece no jogo. A regra Quando o personagem encostar na chave responde tirando a chave do chão e mudando o aviso. Mas temChave continua falso. Ninguém anotou a coleta.
+> Olha aqui: com Guardar a coleta desligado, eu clico em Encostar na chave. Encostar na chave é um evento: algo que acontece no jogo. A regra Quando o personagem encostar na chave responde tirando a chave do chão e mudando o aviso. Mas temChave continua falso. Ninguém anotou a coleta.
 >
-> Clique em Recomeçar a partida. Ligue Guardar a coleta e clique em Encostar na chave de novo. Agora temChave virou verdadeiro: o jogo anotou que a chave foi encontrada.
+> Agora eu clico em Recomeçar a partida, ligo Guardar a coleta e clico em Encostar na chave de novo. Desta vez temChave vira verdadeiro: o jogo anotou que a chave foi encontrada.
 >
-> Clique em Afastar. temChave continua verdadeiro, mesmo longe da chave: a anotação fica guardada.
+> Quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave: a anotação fica guardada.
 >
-> Por último, clique em Recomeçar a partida. temChave volta para falso, porque uma partida nova começa com o caderno em branco.
+> Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com o caderno em branco.
 >
-> Agora é a sua vez: faça esses testes na experiência e clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Ponte do Zappy na página (não gravar):** Agora compare o que some da tela com o que fica guardado em temChave.
 
-**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final. Guardar a coleta só muda com a chave no chão; por isso o recomeço vem antes de ligar.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final. Guardar a coleta só muda com a chave no chão; por isso o recomeço vem antes de ligar.
 
 ## Seção 2. Recolha a chave
 

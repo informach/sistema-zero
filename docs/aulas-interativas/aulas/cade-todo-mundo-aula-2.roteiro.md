@@ -20,27 +20,27 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 ## 2. Um número que acompanha a busca
 
-**Duração alvo:** 50 a 70 segundos.
+**Duração alvo:** 65 a 85 segundos.
 
 **Na tela:** mostrar a experiência com **Achados: 0**. Tocar em um esconderijo e depois em outro, deixando ver 1 e 2. Tocar num espaço vazio e deixar ver que o número não muda. Clicar em **Recomeçar a busca** e mostrar o zero. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase do placar, um placar de futebol virando de 0 para 1, com o coelho comemorando, com a legenda "+1". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
 
-> “Aqui está uma experiência para entender como o jogo conta.
+> “Esta é uma experiência para a gente entender como funciona uma variável, o número que o jogo usa para contar.
 >
-> O número Achados guarda quantos personagens você já encontrou. Ele é uma variável: um lugar onde o jogo guarda um número que pode mudar. É como o placar de um jogo de futebol: a cada gol, o placar soma um. No nosso jogo, cada personagem encontrado é como um gol: o jogo soma um em Achados.
+> O número Achados guarda quantos personagens já foram encontrados. Ele é uma variável: um lugar onde o jogo guarda um número que pode mudar. É como o placar de um jogo de futebol: a cada gol, o placar soma um. No nosso jogo, cada personagem encontrado é como um gol: o jogo soma um em Achados.
 >
-> Toque em um esconderijo. Achados foi para 1: o jogo somou um achado. Toque em outro. Agora é 2.
+> Olha aqui: quando eu toco num esconderijo, Achados vai para 1: o jogo somou um achado. Toco em outro, e agora é 2.
 >
-> Agora toque num espaço vazio do jardim. O número não muda, porque ali não tinha ninguém escondido. Só soma quando você encontra alguém.
+> E se eu tocar num espaço vazio do jardim? O número não muda. A regra que soma está ligada aos esconderijos: ela só acontece quando eu toco num esconderijo. Ali não tinha esconderijo, então nada foi somado.
 >
-> Por último, clique em Recomeçar a busca. Achados volta a zero, como o placar no começo de um jogo novo.
+> Por último, eu clico em Recomeçar a busca, e Achados volta a zero, como o placar no começo de um jogo novo.
 >
-> Agora é a sua vez: faça esses testes na experiência e clique em Próxima seção.”
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
 **Zappy abaixo do vídeo:** “Procure no jardim e acompanhe o número Achados.”
 
-**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo: o gol soma um no placar, e cada personagem encontrado soma um em Achados. Sem palpite nem pergunta final.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo: o gol soma um no placar, e cada personagem encontrado soma um em Achados. Sem palpite nem pergunta final.
 
 ## 3. Cada personagem vale um achado
 
@@ -98,7 +98,7 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 **Narração:**
 
-> “Agora mexa e veja: deixe o jogo com a sua cara. Você pode trocar quem se esconde, onde se esconde e a mensagem do final. O que você mudar fica no seu jogo.
+> “Agora deixe o jogo com a sua cara! Você pode trocar quem se esconde, onde se esconde e a mensagem do final. O que você mudar fica no seu jogo.
 >
 > Primeiro, os bichos. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ver. Nela estão os blocos Criar sprite. Cada um cria um bicho ou um esconderijo.
 >
@@ -122,30 +122,32 @@ Um vídeo por seção. Comandos da atividade e montagem completa ficam na fala. 
 
 ## 5. Publique seu jogo
 
-**Duração alvo:** 45 a 60 segundos, incluindo publicação e confirmação.
+**Duração alvo:** 60 a 80 segundos, incluindo publicação, comemoração e cópia do link.
 
-**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone, e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** já preenchido, sem editar. Na aula, a janela não mostra o campo Título: o título vem do curso. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload, personalização ou cópia do link.
+**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone, e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** já preenchido, sem editar. Na aula, a janela não mostra o campo Título: o título vem do curso. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload nem outra capa.
 
 **Narração:**
 
-> “Agora publique o seu jogo, com os bichos que você escolheu, para outras pessoas jogarem.
+> “Agora publique o seu jogo, com os bichos que você escolheu, para a sua família e seus amigos jogarem.
 >
 > No alto do Estúdio, clique em Compartilhar. Na aula, ele pode aparecer só como um ícone. O resumo do projeto já vem preenchido. Deixe como está.
 >
 > Clique em Gerar capa e espere a imagem aparecer. Essa é a imagem que vai apresentar seu jogo.”
 
-**Na tela:** conferir a capa, clicar em **Publicar** e esperar **Seu jogo está no Mural!**. Apontar e clicar em **Fechar** na confirmação. Apontar **Concluir aula**. Encerrar sem abrir outra aula.
+**Na tela:** conferir a capa, clicar em **Publicar** e esperar a comemoração do Zappy com **Seu jogo está no Mural!**. Clicar em **Copiar link de jogar** e mostrar **Link copiado!**. Clicar em **Fechar** e apontar **Concluir aula**. Encerrar sem abrir outra aula.
 
 **Narração:**
 
-> “Confira a capa, clique em Publicar e espere a confirmação.
+> “Confira a capa e clique em Publicar. Espere um pouquinho…
 >
-> Quando aparecer Seu jogo está no Mural, clique em Fechar.
+> Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou.
 >
-> Agora clique em Concluir aula.”
+> Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.
+>
+> Depois de copiar o link, clique em Fechar. Agora clique em Concluir aula.”
 
-**Zappy abaixo do vídeo:** “Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.”
+**Zappy abaixo do vídeo:** “Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.”
 
 **Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.
 
-**Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir o resumo pronto antes da gravação; o título vem do curso e não aparece na janela da aula, então a fala não o cita. A ajuda abre diretamente o tutorial; não exigir sua leitura. Personalização, outras capas, cópia do link e solução de problemas ficam no Como fazer. A fala termina em Concluir aula, sem antecipar certificado ou próxima aula. Sem oferta comercial. Regravar e ensaiar o caminho completo com crianças.
+**Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir o resumo pronto antes da gravação; o título vem do curso e não aparece na janela da aula, então a fala não o cita. A ajuda abre diretamente o tutorial; não exigir sua leitura. Outras capas e solução de problemas ficam no Como fazer. Copiar o link de jogar faz parte da comemoração e aparece no vídeo: o link é público e não mostra o nome da criança, e a fala sugere mandar para a família e os amigos, com ajuda de um adulto se precisar. A fala termina em Concluir aula, sem antecipar certificado ou próxima aula. Sem oferta comercial. Regravar e ensaiar o caminho completo com crianças.

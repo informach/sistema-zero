@@ -12,18 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-caixa-decide` · Compare a área com o desenho
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Aproximar até o primeiro BATEU e apontar o vão entre os desenhos. Diminuir a área para 80% sem mexer na distância. Aproximar até os desenhos se encostarem e, por último, diminuir a área para 40%, com a indicação da batida à vista a cada mudança. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu jogo já reconhece a batida. Agora compare o tamanho do desenho com a área usada para decidir esse contato.
+> "Esta é a mesma experiência da aula anterior, agora para a gente entender o tamanho da área que decide a batida.
 >
-> Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU. Observe os desenhos nesse momento.
+> Olha aqui: com a área do Dino em 100%, eu aproximo o cacto até aparecer BATEU. Os desenhos ainda nem se encostaram: a área pega um pedaço vazio em volta do desenho.
 >
-> Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo.
+> Sem mudar a distância, eu diminuo Tamanho da área do Dino para 80%. O BATEU some. O Dino continua do mesmo tamanho; só a área ficou menor.
 >
-> Depois dos testes, clique em Próxima seção."
+> Agora eu aproximo o cacto até encostar no desenho do Dino. Com 80%, aparece BATEU, e os desenhos também se encostam. Essa batida parece justa. Por último, eu diminuo a área para 40%. Os desenhos se tocam, mas o jogo não marca a batida: a área ficou pequena demais. No seu jogo, você vai mostrar o contorno da área e deixar a área do Dino em 80%.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Mude apenas a área com o cacto parado; depois compare o contato com 40%.
 

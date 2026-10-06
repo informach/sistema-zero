@@ -40,6 +40,8 @@ Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposenta
 
 **Ponte do Zappy na página (não gravar):** Jogue a versão pronta. Pegue a chave, leve o personagem até o farol e clique em Próxima seção.
 
+O vídeo é uma demonstração, como nas experiências: apresenta a aventura, mostra como se anda com um gesto só ("Olha aqui: quando eu seguro a seta da tela para a direita…"), sem resolver o caminho, e só no fim passa a vez.
+
 ### Seção 2. Seu Caderno do Aluno
 
 - **Intenção:** material (`material`).
@@ -123,7 +125,7 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-intro-farol` | Jogo, contexto e controles, sem resolver | Versão pronta | 35 a 45 s | Regravar |
+| `video-intro-farol` | Jogo, contexto e demonstração de um gesto, sem resolver | Versão pronta | 45 a 60 s | Regravar |
 | `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 20 a 30 s | Regravar |
 | `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 50 a 70 s | Gravar |
 | `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 3 a 4 min | Gravar |

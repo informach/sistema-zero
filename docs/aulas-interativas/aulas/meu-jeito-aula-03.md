@@ -24,11 +24,11 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 ### Seção 1. Compare dois desenhos e uma animação
 
-**Tarefa / Zappy na página:** Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.
+**Tarefa / Zappy na página:** Agora mude a Velocidade da Prévia e veja quando o fogo pulsa.
 
 **Blocos na página:** video-quadros → fala-quadros → experiencia-quadros.
 
-**Experiência existente:** `frames`. Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo. Sem palpite, pistas ou pergunta final.
+**Experiência existente:** `frames`. Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo. Sem palpite, pistas ou pergunta final.
 
 ### Seção 2. Desenhe o primeiro fogo
 
@@ -40,7 +40,7 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 ### Seção 3. Use o quadro anterior como guia
 
-**Tarefa / Zappy na página:** Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.
+**Tarefa / Zappy na página:** Agora use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1.
 
 **Blocos na página:** video-fantasma → fala-fantasma → experiencia-fantasma.
 

@@ -49,14 +49,17 @@ const CURSO = 'nave-contra-asteroides'
 const checkExit =
   'Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo.'
 const send = 'Clique em Enviar para o professor e confirme em Enviar.'
+// Na aula, o Compartilhar não mostra o campo de título e já traz o resumo do curso. A comemoração
+// do Mural oferece Copiar link de jogar antes de Fechar (ajuste do responsável em 06/10/2026).
 const publish =
-  'Se quiser mostrar o jogo no Mural, clique em Compartilhar depois do envio. Confira o título e escreva um resumo do seu jogo. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Espere a mensagem Seu jogo está no Mural! e clique em Fechar. Publicar é opcional; você também pode deixar para outra hora.'
+  'Publicar no Mural é opcional; você também pode deixar para outra hora. Se quiser mostrar o jogo agora, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
 
 export function falasSecao(section: SecaoNave): string[] {
   const speech = [...(section.speech ?? [])]
   if (section.checks?.length) {
     speech.push(
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} ` : ''}Depois, clique em Concluir aula.` : 'Depois, clique em Próxima seção.'}`,
+      // Depois da publicação, o fecho diz "Por último": a fala já termina em "Depois de copiar o link".
+      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último` : 'Depois'}, clique em Concluir aula.` : 'Depois, clique em Próxima seção.'}`,
     )
   }
   return speech
@@ -286,7 +289,7 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       )
     if (s.publish)
       lines.push(
-        'Publicação opcional após o envio: Compartilhar → título e resumo → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Fechar → Concluir aula. Não bloquear a conclusão por publicação.',
+        'Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.',
         '',
       )
   })

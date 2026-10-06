@@ -12,18 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-apelidos` · Escolha quem sai no acerto
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Usar os seletores reais e o botão de tempo da cena collision-pair. Não fazer a colisão pela pessoa.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os seletores reais e o botão de tempo da cena collision-pair. Com tiros (o grupo inteiro) e asteroides (o grupo inteiro), clicar em Deixar a trombada acontecer e mostrar pedras no grupo e tiros no grupo em 0. Clicar em Voltar ao começo, escolher tiro (o apelido) e asteroide (o apelido), deixar a trombada acontecer e mostrar 2 pedras e 2 tiros. Clicar em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Meme na comparação: na frase da queimada, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando queimada com os asteroides: a bola acerta um asteroide só, que sai da quadra, e os outros continuam, com a legenda "só quem foi acertado sai"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Um tiro acertou uma pedra. Queremos tirar esses dois objetos e manter os outros no jogo. Nesta experiência, vamos comparar duas maneiras de escolher quem sai.
+> "Esta é uma experiência para a gente entender os apelidos: como escolher quem sai do jogo quando um tiro acerta uma pedra. Aqui há três tiros e três pedras, e só o tiro do meio vai encontrar uma pedra.
 >
-> Em O tiro que sai, escolha tiros, o grupo inteiro. Em A pedra que sai, escolha asteroides, o grupo inteiro. Clique em Deixar a trombada acontecer e observe os dois grupos.
+> Olha aqui: em O tiro que sai, eu escolho tiros, o grupo inteiro. Em A pedra que sai, escolho asteroides, o grupo inteiro. Clico em Deixar a trombada acontecer. Só um tiro encontrou uma pedra, mas sumiram todos: pedras no grupo e tiros no grupo foram para 0. O grupo inteiro quer dizer todos os objetos do grupo.
 >
-> Clique em Voltar ao começo. Agora escolha tiro, o apelido, e asteroide, o apelido. Clique em Deixar a trombada acontecer. Observe o par que se encontrou e os objetos que ficaram. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo da tela.
+> Na queimada, quando a bola acerta alguém, só essa pessoa sai. O time inteiro continua jogando.
 >
-> Depois dos testes, clique em Próxima seção."
+> Agora eu clico em Voltar ao começo e escolho tiro, o apelido, e asteroide, o apelido. Clico em Deixar a trombada acontecer. Saem só o tiro e a pedra que se encontraram, e ficam 2 pedras e 2 tiros. O apelido aponta só para quem participou do encontro. Depois, eu clico em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo da tela. Elas continuaram o caminho. No seu jogo, o acerto vai usar os apelidos tiro e asteroide.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare os grupos inteiros com tiro e asteroide. No teste com os apelidos, deixe o tempo passar até as outras duas pedras saírem da tela.
 

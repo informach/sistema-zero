@@ -55,7 +55,7 @@ describe('os casos do Desafio no visual da plataforma', () => {
     const controls = renderToStaticMarkup(
       <DinoSceneControls activity={activity} state={state} dispatch={() => {}} more={false} />,
     )
-    expect(controls).toContain('A cada quadros: 40')
+    expect(controls).toContain('A cada 40 quadros')
     expect(controls).toContain('20 quadros')
     expect(controls).toContain('80 quadros')
     const stage = renderToStaticMarkup(<SpawnStage state={state} cast={cast} preset={preset} />)

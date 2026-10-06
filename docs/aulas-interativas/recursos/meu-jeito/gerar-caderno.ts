@@ -204,7 +204,12 @@ const chapters = aulasMeuJeito.map((lesson, i) => {
       )
       continue
     }
-    const speech = falasSecao(section)
+    // O caderno é da criança. Desde 06/10/2026 o vídeo da experiência e o do jogo pronto são
+    // demonstrações na primeira pessoa: na experiência entram as instruções dela, no imperativo, e
+    // no jogo pronto sai o exemplo do narrador ("Olha aqui: …").
+    const speech = section.activity
+      ? [section.activity.instructions, 'Quando terminar os testes, clique em Próxima seção.']
+      : falasSecao(section).filter((paragraph) => !paragraph.startsWith('Olha aqui:'))
     // Mantenha a abertura junto da primeira ação e a saída junto do último teste.
     // Cada passo conserva seu parágrafo e número, mesmo quando ocupa a mesma página.
     for (let p = 0; p < speech.length; ) {

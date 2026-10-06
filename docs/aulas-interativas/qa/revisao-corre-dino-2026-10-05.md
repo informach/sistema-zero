@@ -47,3 +47,28 @@ A tipagem completa de `packages/member-shell` continua falhando em cinco diagnó
 Os vídeos permanecem como `plannedVideo`. Faltam gravação, hospedagem e vínculo do caderno, associação das mídias e aplicação dos manifestos no admin, com conferência dos envios, conclusões e acessos existentes. O mapa documenta essa sequência. Nenhum conteúdo remoto foi publicado por esta revisão.
 
 Também falta o ensaio com crianças. Os testes conferem estrutura, regras, execução e instruções praticáveis; não demonstram compreensão infantil nem validam o ritmo da gravação.
+
+## Revisão de 06/10/2026: vídeos como demonstração
+
+Aplicação da regra das Diretrizes (seção 2) e da ESPEC (seção 4): o vídeo da experiência é uma demonstração.
+
+- **24 experiências.** A primeira frase diz o conceito. Nas aulas 4 e 10, onde a cena volta, a abertura é "Esta é a mesma experiência…". A demonstração começa em "Olha aqui:": o narrador faz os testes na primeira pessoa, mostra o resultado real e o liga ao bloco da montagem seguinte. O fecho "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção." é acrescentado pelo gerador. Vinte experiências têm uma comparação do dia a dia, com meme ilustrado descrito na nota de tela (campo `meme`).
+- **Resultados conferidos no motor.** Cada percurso de `corre-dino.test.ts` foi executado passo a passo em `packages/core/src/learning/scene`, lendo a faixa (`sceneReadout`) e a situação (`sceneSituation`). As falas citam só esses resultados, como 30 cactos por segundo sem relógio, as marcas 68 e 163 do impulso, o BATEU com vão de 10 entre os desenhos e a base que para em -9.
+- **Nota "Na tela".** O modelo das experiências fica em `telaSecao`: o narrador faz cada gesto no ritmo da fala, com o resultado à vista. Saiu a orientação antiga de não antecipar resultados.
+- **Jogo pronto.** Apresenta o jogo (corrida que acelera e pontos que crescem na partida) e mostra um exemplo só: começar e pular um cacto. Não joga a partida até o fim, e a vez passa no fim.
+- **Publicação na aula 13.** A fala diz que o resumo já vem preenchido, comemora "Seu jogo está no Mural! Que conquista!" e convida a mandar o link com **Copiar link de jogar**. O Compartilhar da aula não mostra o campo Título.
+- **Rótulos corrigidos nas instruções da página e no caderno.** Na cena de reinício com o cenário do Dino, os rótulos são **Tocar na tela** e **No fim, o toque faz**; **Apertar Enter** é do cenário da nave. Na cena de nascimento, o relógio aparece como **No relógio, a cada 1 s**, com a opção **1,4 s**. A cena do sorteio não escreve as contas -5 - 0 e -5 - 1. O pedido para lê-las saiu da instrução, e o vídeo mostra as contas numa legenda, porque a montagem seguinte as retoma. Na revisão do mesmo dia, também passaram aos rótulos reais: **Apertar Espaço** e **Tocar para pular** (aula 4), **Quando apertar a tecla**, **Apertar Enter** e **Voltar ao início** (aula 8), **Apertar a tecla** (aula 4) e **valor da base** (aula 13). Na aula 12, a fala cita os botões pelo nome inteiro: **Sortear lugar (velocidade fica −5)** e **Sortear velocidade (lugar fica 500)**.
+- **Cena sem som.** A `once-vs-always` não toca som: o palco só escreve "♪ N vezes" (`sceneEmitsSound` é falso). A fala da aula 4 diz que aparece a notinha ♪, e um teste impede que uma cena muda prometa som.
+- **Caderno.** Onde o vídeo é demonstração, o caderno imprime os passos no imperativo do campo `caderno`. O PDF foi regenerado com 52 páginas e 145 blocos. Mudaram só as páginas 15, 17, 27, 32, 45, 47 e 50, que foram inspecionadas.
+- **Durações.** Pela contagem de palavras, as 24 experiências passaram de cerca de 1 para 2 minutos de fala. A entrega da aula 13 passou de 2 para 3 minutos. As montagens não mudaram.
+
+| Verificação | Resultado |
+| --- | --- |
+| `bun docs/aulas-interativas/qa/gerar-corre-dino.ts` | 13 trios gerados. |
+| `bun test docs/aulas-interativas/qa/corre-dino.test.ts docs/aulas-interativas/qa/diretrizes-pedagogicas.test.ts` | **48 aprovados**, 1.559 asserções. Inclui três testes novos: abertura, primeira pessoa e fecho das experiências; exemplo único do jogo pronto; montagens no imperativo, sem "mexa e veja", e publicação com o link. |
+| `bun docs/aulas-interativas/qa/validar-manifestos.ts corre-dino` | 13 válidos, zero avisos. |
+| `python docs/aulas-interativas/validar-roteiros.py corre-dino` | 13 roteiros, 76 clipes, tempos consistentes. |
+| `python -X utf8 docs/aulas-interativas/recursos/corre-dino/gerar-materiais.py` | 52 páginas e 145 blocos; fontes, imagens, cores e limites conferidos. |
+| Biome nos arquivos alterados | Aprovado. |
+
+Continuam pendentes a gravação dos vídeos com os memes desenhados e a legenda das contas na aula 12, além do ensaio com crianças.

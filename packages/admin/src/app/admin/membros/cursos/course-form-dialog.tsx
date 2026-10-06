@@ -597,7 +597,7 @@ export function CourseFormDialog({
         <Field
           label="Assistir ao vídeo antes da atividade"
           htmlFor="cvideobeforeactivity"
-          hint="Para cursos de quem está começando. Em cada seção com vídeo e atividade, a atividade abre depois que o aluno assiste ao vídeo uma vez até o fim (90%). Vale para Kids e Adultos. A equipe e a prévia do admin veem tudo liberado."
+          hint="Para cursos de quem está começando. Em cada seção com vídeo e um jogo pronto ou uma experiência, a atividade abre depois que o aluno assiste ao vídeo uma vez até o fim (90%). Seções só com Estúdio ou Pinta não travam: o aluno monta junto com o vídeo. Vale para Kids e Adultos. A equipe e a prévia do admin veem tudo liberado."
         >
           <label
             htmlFor="cvideobeforeactivity"
