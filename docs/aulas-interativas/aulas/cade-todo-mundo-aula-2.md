@@ -13,14 +13,16 @@ A revisão de 05/10/2026 faz a experiência explicar enquanto faz, abre a montag
 no próprio jogo e acrescenta **Deixe o jogo com a sua cara**, a seção de mexa e veja, entre o envio e a
 publicação: a criança troca bichos, esconderijos e a mensagem do final, e as mudanças ficam no jogo.
 A revisão de 06/10/2026 faz todas as falas conversarem com a criança e chamarem a atenção dela
-para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?"), sem mudar seções nem critérios.
+para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"), sem mudar seções nem critérios.
+Cada fala virou uma conversa contínua, com o porquê de cada resultado. A mensagem de vitória deixou
+de ser apresentada como "já estava preparada": a fala a liga à contagem que a criança montou.
 
 ## Sequência
 
 | Seção | Vídeo | O que fazer | Conclusão |
 | --- | --- | --- | --- |
-| Volte ao seu jardim | 15 a 25 s | ver o que falta no contador e avançar | vídeo |
-| Um número que acompanha a busca | 65 a 85 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
+| Volte ao seu jardim | 25 a 35 s | ver o que falta no contador e avançar | vídeo |
+| Um número que acompanha a busca | 75 a 95 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
 | Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar, verificar a etapa e enviar | vídeo, aprovação na verificação e envio |
 | Deixe o jogo com a sua cara | 2 a 3 min | trocar bichos e esconderijos pelo nome da imagem nos blocos Criar sprite, escrever a mensagem do final e encontrar todo mundo de novo | vídeo; as mudanças não viram critério |
 | Publique seu jogo | 60 a 80 s | manter o resumo, gerar capa, publicar, comemorar, copiar o link de jogar para a família e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |
@@ -34,7 +36,7 @@ revelando o personagem ("Olha aqui…") e chamar a atenção para **Achados**, q
 ("Mas repare no número Achados…"). Encaminhar para **Próxima seção**.
 A seção tem vídeo e ponte do Zappy, sem ferramenta. A fala não pode pedir que a criança manipule um projeto ali.
 
-**Zappy abaixo do vídeo:** “Seus personagens já aparecem, mas Achados ainda fica em zero. Vamos fazer o jogo contar! Clique em Próxima seção para começar.”
+**Zappy abaixo do vídeo:** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima seção para começar.”
 
 ### Um número que acompanha a busca
 
@@ -58,8 +60,8 @@ ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Soma
 que nasce com **1** e **contador**, logo abaixo dela. Manter **1** e trocar **contador** por
 **achados**. A verificação da entrega também confere a regra da Aula 1.
 
-Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória que já estava
-preparada. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
+Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória, que aparece quando
+**Achados** chega a 3; a fala diz que quem faz a mensagem aparecer é a contagem que a criança montou. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
 outro toque. Se não funcionar, conferir encaixe, ordem, número e variável.
 
 Depois do teste, clicar em **Verificar esta etapa**. Se faltar algo, corrigir os blocos e

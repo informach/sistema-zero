@@ -7,7 +7,7 @@
 - Seções na entrada deste review: 2 · Seções finais: 4 (05/10/2026: uma ideia por seção).
 - Clipes na entrada deste review: 2 · Clipes finais: 4.
 
-**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?"); as pontes do Zappy começam convidando. Seções, blocos e critérios não mudaram.
+**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"); as pontes do Zappy começam convidando. Cada fala virou uma conversa contínua, com o porquê de cada resultado. Em vez de dizer que a variável aviso "já veio preparada", a fala diz o que ela faz: mostra a mensagem na tela. Seções, blocos e critérios não mudaram.
 
 ## Triagem dos conceitos
 
@@ -84,7 +84,7 @@ A verificação é cumulativa em cada montagem: a seção 2 confere o movimento 
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d2-contexto` | Demonstração explicada da memória | Retomada e nova experiência | 80 a 100 s | Regravar |
+| `video-d2-contexto` | Demonstração explicada da memória | Retomada e nova experiência | 90 a 110 s | Regravar |
 | `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 2 a 3 min | Gravar |
 | `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 2 a 3 min | Gravar |
 | `video-d2-programar` | Aviso, teste, aviso próprio e envio | Mesmo projeto | 2 a 3 min | Regravar |

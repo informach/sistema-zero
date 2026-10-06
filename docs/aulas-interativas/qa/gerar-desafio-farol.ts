@@ -19,7 +19,7 @@ const DIR = resolve(import.meta.dir, '../aulas')
 const CURSO = 'desafio-primeiro-jogo'
 const video = (key: string, title: string, script: string, direction: string) => ({
   key,
-  plannedVideo: `Título: ${title}\n\n${direction}\n\nRoteiro falado: ${script}. Gravar na plataforma atual; sem Pinta ou Estúdio completo.`,
+  plannedVideo: `Título: ${title}\n\n${direction}\n\nRoteiro falado: ${script}. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.`,
 })
 const fala = (key: string, text: string) => ({
   key,
@@ -617,7 +617,7 @@ const certificado = {
     ),
     fala(
       'fala-certificado',
-      'Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.',
+      'Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir aula.',
     ),
     {
       key: 'certificado',

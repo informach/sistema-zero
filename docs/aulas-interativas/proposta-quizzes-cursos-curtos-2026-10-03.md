@@ -16,7 +16,7 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 **Título da seção:** Como o seu jardim funciona
 
-**Zappy:** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
+**Zappy:** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora vamos relembrar essas regras com três perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
 ### 1. A reação ao toque
 
@@ -58,7 +58,7 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 **Título da seção:** As regras da sua aventura
 
-**Zappy:** Você fez o personagem andar, pegar a chave e acender o farol. Agora responda quatro perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
+**Zappy:** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
 ### 1. Movimento e borda
 

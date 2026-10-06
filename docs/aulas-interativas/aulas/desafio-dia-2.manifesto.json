@@ -7,7 +7,7 @@
   "blocks": [
     {
       "key": "video-d2-contexto",
-      "plannedVideo": "Título: O jogo guardou a chave?\n\nSituar a coleta que falta. Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: encostar na chave é um evento, e guardar é como anotar num caderno. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: O jogo guardou a chave?\n\nSituar a coleta que falta. Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: encostar na chave é um evento, e guardar é como anotar num caderno. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d2-contexto",
@@ -35,7 +35,7 @@
     },
     {
       "key": "video-d2-recolher",
-      "plannedVideo": "Título: Recolha a chave\n\nComeçar pela retomada: no jogo, o personagem passa pela chave e nada acontece, porque nenhuma ação está ligada ao encontro. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar o encontro personagem/chave dentro dela e Destruir o sprite chave dentro dele. Testar a chave sumindo e voltando com Atualizar. Verificar esta etapa, Salvo e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Recolha a chave\n\nComeçar pela retomada: no jogo, o personagem passa pela chave e nada acontece, porque nenhuma ação está ligada ao encontro. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar o encontro personagem/chave dentro dela e Destruir o sprite chave dentro dele. Testar a chave sumindo e voltando com Atualizar. Verificar esta etapa, Salvo e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d2-recolher",
@@ -47,7 +47,7 @@
     },
     {
       "key": "video-d2-guardar",
-      "plannedVideo": "Título: Guarde que a chave foi encontrada\n\nComeçar pela retomada: como na experiência com Guardar a coleta desligado, a chave some, mas nada guarda a coleta. Criar temChave começando em falso no fim de Ao iniciar e mudar para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite. Verificar esta etapa, Salvo e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Guarde que a chave foi encontrada\n\nComeçar pela retomada: como na experiência com Guardar a coleta desligado, a chave some, mas nada guarda a coleta. Criar temChave começando em falso no fim de Ao iniciar e mudar para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite. Verificar esta etapa, Salvo e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d2-guardar",
@@ -59,7 +59,7 @@
     },
     {
       "key": "video-d2-programar",
-      "plannedVideo": "Título: Avise quem está jogando\n\nComeçar pela retomada: no jogo, a chave some, mas a mensagem continua a inicial. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo, envio confirmado e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Avise quem está jogando\n\nComeçar pela retomada: no jogo, a chave some, mas a mensagem continua a inicial. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo, envio confirmado e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d2-programar",

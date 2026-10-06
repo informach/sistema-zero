@@ -6,7 +6,7 @@ type CourseReview = { title: string; intro: string; content: ManifestQuiz }
 export const cadeTodoMundo = {
   title: 'Como o seu jardim funciona',
   intro:
-    'Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.',
+    'Você fez os personagens aparecerem e ensinou o jogo a contar. Agora vamos relembrar essas regras com três perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.',
   content: {
     kind: 'quiz',
     passingScore: 100,
@@ -84,7 +84,7 @@ export const cadeTodoMundo = {
 export const farol = {
   title: 'As regras da sua aventura',
   intro:
-    'Você fez o personagem andar, pegar a chave e acender o farol. Agora responda quatro perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.',
+    'Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.',
   content: {
     kind: 'quiz',
     passingScore: 100,

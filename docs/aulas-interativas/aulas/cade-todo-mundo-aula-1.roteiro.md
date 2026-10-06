@@ -2,21 +2,21 @@
 
 Um vídeo por seção. As falas em citação são lidas; as notas de tela são só para quem grava. Aponte para a atividade ao dizer "aqui", sem explicar layouts ou controles da plataforma. O botão atual se chama **Próxima seção**. O conteúdo precisa ser regravado antes de substituir os vídeos publicados.
 
-Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?") e oferece o que é opcional como escolha, sem dizer o que a pessoa não precisa fazer (Diretrizes, seção 6, revisão de 06/10/2026).
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("então", "por isso", "mas", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).
 
 ## 1. Bem-vindo ao jardim
 
-**Duração alvo:** 30 a 40 segundos.
+**Duração alvo:** 35 a 45 segundos.
 
-**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "Repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No fim, apontar para a área jogável ao passar a vez e para **Próxima seção**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No fim, apontar para a área jogável ao passar a vez e para **Próxima seção**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
 
-> “Oi! Você vai construir um jogo chamado Cadê Todo Mundo. Esta é a versão pronta, para você ver como o jogo funciona antes de montar o seu.
+> “Oi! Você vai construir um jogo chamado Cadê Todo Mundo. Antes de montar o seu, você vai brincar com a versão pronta, para ver como o jogo funciona.
 >
-> No jardim, três personagens estão escondidos. Olha aqui: quando eu toco num esconderijo, ele some e aparece quem estava atrás. Achei um! Repare no número Achados: agora ele é 1.
+> Neste jardim, três personagens estão escondidos. Olha aqui: quando eu toco num esconderijo, ele some e aparece quem estava atrás dele. Achei um! E repare no número Achados: ele mudou para 1, porque eu encontrei um personagem.
 >
-> Onde estão os outros? Isso eu deixo para você descobrir.
+> E os outros dois? Esses eu deixo para você descobrir.
 >
 > Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima seção.”
 
@@ -26,15 +26,13 @@ Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção
 
 ## 2. Seu Caderno do Aluno
 
-**Duração alvo:** 20 a 30 segundos.
+**Duração alvo:** 25 a 35 segundos.
 
 **Na tela:** mostrar a capa e a página de orientação do caderno real. No "Olha aqui", apontar o caderno. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
 
 **Narração:**
 
-> “Olha aqui: este é o seu Caderno do Aluno! Nele estão os passos para montar o seu jogo.
->
-> Se você esquecer qual bloco usar ou onde ele encaixa, é só voltar aqui e abrir o caderno.
+> “Olha aqui: este é o seu Caderno do Aluno! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o caderno.
 >
 > Se quiser, você pode ler aqui mesmo, na aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser.
 >
@@ -46,72 +44,72 @@ Toda fala conversa com quem está fazendo a aula: diz "você", chama a atenção
 
 ## 3. O que um toque faz?
 
-**Duração alvo:** 50 a 70 segundos.
+**Duração alvo:** 70 a 90 segundos.
 
-**Na tela:** mostrar a experiência com a reação desligada. Tocar no arbusto e deixar ver que nada acontece. Clicar em **Ligar a reação ao toque**, tocar de novo e deixar ver o arbusto invisível e o coelho. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase das cócegas, o Zappy morrendo de rir com uma pena fazendo cócegas, com a legenda "ação: cócega · reação: risada". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+**Na tela:** mostrar a experiência com a reação desligada. No "Olha aqui", tocar no arbusto e deixar ver que nada acontece; no "Tá vendo?", manter o arbusto parado na tela. Clicar em **Ligar a reação ao toque**, tocar de novo e, no "Olha só", deixar ver o arbusto invisível e o coelho. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase das cócegas, o Zappy morrendo de rir com uma pena fazendo cócegas, com a legenda "ação: cócega · reação: risada". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
 
 > “Esta é uma experiência para a gente entender como funciona a ação e a reação.
 >
-> Olha aqui: quando eu toco no arbusto, nada acontece: o jogo ainda não sabe o que fazer com o toque.
+> Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele.
 >
-> Na vida, toda ação tem uma reação. Se alguém faz cócegas em você, você ri. A cócega é a ação, e a risada é a reação.
+> Na vida é assim também: toda ação tem uma reação. Por exemplo, se alguém faz cócegas em você, você ri. A cócega é a ação, e a risada é a reação.
 >
-> No nosso jogo, o toque é a ação. Para o jogo responder, a gente precisa ligar uma reação a essa ação.
+> No nosso jogo, o toque é a ação. E a reação que a gente quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter essa reação, a gente precisa ligar a reação ao toque.
 >
-> Por isso, eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora ele fica invisível, e dá para ver o coelho que estava atrás! Essa é a reação que eu liguei ao toque.
+> Por isso, eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
 **Zappy abaixo do vídeo:** “Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda.”
 
-**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê, como numa conversa. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo dizendo qual é a ação (o toque) e qual é a reação (o arbusto ficar invisível). Sem palpite nem pergunta final.
 
 ## 4. Faça alguém aparecer
 
 **Duração alvo:** 3 a 4 minutos, incluindo os gestos de montagem e teste.
 
-**Na tela:** abrir o Estúdio incorporado com o projeto inicial. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo na Pré-visualização e mostrar que nada acontece. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio entre os blocos se ela começar fora da tela, e enquadrar o evento do grupo **esconderijos**, ainda vazio. Deixar à vista o espaço ao lado de **fazer** antes de abrir a paleta. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.
+**Na tela:** abrir o Estúdio incorporado com o projeto inicial. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo na Pré-visualização e, no "Tá vendo?", mostrar que nada acontece. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio entre os blocos se ela começar fora da tela, e, no "Olha aqui", enquadrar o evento do grupo **esconderijos**, ainda vazio. Deixar à vista o espaço ao lado de **fazer** antes de abrir a paleta. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.
 
 **Narração:**
 
-> “Na experiência da seção anterior, o arbusto só desapareceu depois que você ligou a reação ao toque. Agora vamos programar isso no seu jogo!
+> “Lembra da experiência da seção anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso no seu jogo!
 >
-> Primeiro, toque num esconderijo. Viu? Nada acontece: o toque ainda não tem uma reação.
+> Primeiro, toque num esconderijo do seu jogo. Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele.
 >
-> Vamos ligar uma: quando você tocar num esconderijo, o personagem que está atrás vai aparecer. O jardim e os personagens já estão preparados.
+> Para o jogo responder, a gente precisa ligar uma reação a esse toque. O toque é a ação, e a reação que a gente quer é o esconderijo ficar invisível, para aparecer o personagem que está atrás dele. Então, vamos fazer isso agora!
 >
-> Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ver essa área.
+> Para começar, encontre a área Quando acontecer. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
 >
-> Olha aqui: nela já está o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. Cada esconderijo é um sprite, um objeto do jogo. O nome escolhido é o esconderijo que você tocar.
+> Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo, e escolhido é o nome do esconderijo que você tocar.
 >
-> Deixe à vista o espaço vazio dentro desse bloco, ao lado da palavra fazer.
+> A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.
 >
-> Agora abra Jogo 2D, depois Sprites e depois Aparência. Pegue o bloco Deixar o sprite jogador com 50% de visibilidade.
+> Agora sim, abra Jogo 2D, depois Sprites e depois Aparência, e pegue o bloco Deixar o sprite jogador com 50% de visibilidade.
 >
-> Arraste até o espaço vazio ao lado de fazer e solte quando aparecer o encaixe.
+> Arraste esse bloco até o espaço vazio ao lado de fazer e solte quando aparecer o encaixe.
 >
-> Repare: o bloco chega com o nome jogador. Clique em jogador. Na lista que abre, desça até o fim e clique em escolhido.
+> Repare que o bloco chega com o nome jogador. Mas quem precisa ficar invisível é o esconderijo que você tocar. Então clique em jogador, desça até o fim da lista que abre e clique em escolhido.
 >
-> Depois clique no número 50 e troque por 0. Com zero de visibilidade, o esconderijo fica invisível e dá para ver o personagem que está atrás.
+> Agora falta o número. Clique no 50 e troque por 0. Com zero de visibilidade, o esconderijo fica invisível, e aí dá para ver o personagem que está atrás dele.
 >
-> Confira: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0.”
+> Confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0.”
 
-**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e depois em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir aula**.
+**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir aula**.
 
 **Narração:**
 
-> “Agora teste no seu jogo! Toque em um esconderijo. Olha só: o personagem que estava atrás aparece! Achados continua em zero por enquanto. Depois toque em outro.
+> “Agora vamos testar no seu jogo! Toque num esconderijo. Olha só: ele fica invisível, e o personagem que estava atrás aparece! Achados continua em zero por enquanto, porque o jogo ainda não conta quem você encontra. Depois, toque em outro esconderijo também.
 >
-> Se ninguém aparecer, confira o encaixe dentro de Quando clicar ou tocar, o nome escolhido e o número 0. Se sempre some o mesmo esconderijo, troque o nome para escolhido. Corrija e teste de novo.
+> Se ninguém aparecer, confira se o bloco está encaixado dentro de Quando clicar ou tocar, se o nome é escolhido e se o número é 0. E, se sempre some o mesmo esconderijo, é porque o bloco ficou com o nome de um esconderijo só: troque para escolhido. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar.
+> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o professor e confirme em Enviar.
 >
 > Quando o envio terminar, clique em Concluir aula.”
 
-**Zappy abaixo do vídeo:** “Agora monte a regra do toque no seu jogo! Teste nos esconderijos e clique em Verificar esta etapa antes de enviar para o professor.”
+**Zappy abaixo do vídeo:** “Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta etapa antes de enviar para o professor.”
 
-**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite ___ com ___% de visibilidade e nasce com jogador e 50. A opção escolhido só existe com o bloco dentro do evento preparado e aparece no fim da lista de sprites, depois dos seis sprites com imagem; é preciso rolar a lista. A seção exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.
+**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite ___ com ___% de visibilidade e nasce com jogador e 50. A opção escolhido só existe com o bloco dentro do evento preparado e aparece no fim da lista de sprites, depois dos seis sprites com imagem; é preciso rolar a lista. A fala não diz que o jardim e os personagens estão preparados: a criança vê o que já está no projeto. O que vem pronto entra na conversa só quando ajuda a ação, como o evento que já está na área Quando acontecer. A seção exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.

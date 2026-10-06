@@ -10,9 +10,9 @@ do usuário em 03/10/2026, toda seção tem um contexto inicial curto e pertinen
 o jogo, seu estado atual ou a necessidade; depois dizer o que fazer.
 
 - Apresentação (jogo pronto, demonstração com UM exemplo): dizer qual jogo será construído e a situação; mostrar na primeira pessoa um exemplo ("Olha aqui: quando eu toco num esconderijo, aparece quem estava atrás"), sem resolver a partida; só no fim passar a vez ("Agora é a sua vez: jogue até encontrar os três personagens").
-- Experiência (demonstração na primeira pessoa): "Esta é uma experiência para a gente entender ação e reação. Olha aqui: quando eu toco no arbusto, nada acontece. Agora eu ligo a reação e toco de novo… Agora é a sua vez: faça esses mesmos testes na experiência."
-- Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Na experiência da seção anterior, cada personagem encontrado somava um em Achados. Agora vamos programar essa contagem no seu jogo! Primeiro, toque num esconderijo: o personagem aparece, mas Achados continua em zero. Vamos fazer cada personagem encontrado somar um." Sem mandar clicar em Anterior.
-- Material: "Olha aqui: este é o seu Caderno do Aluno! Nele estão os passos para montar o seu jogo. Se você esquecer qual bloco usar ou onde ele encaixa, é só voltar aqui e abrir o caderno. Se quiser, você pode ler aqui mesmo, na aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser." Não dizer "não precisa baixar nem imprimir": a criança entende como uma ordem para não baixar.
+- Experiência (demonstração na primeira pessoa, como numa conversa): "Esta é uma experiência para a gente entender como funciona a ação e a reação. Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele… Agora é a sua vez: faça esses mesmos testes na experiência."
+- Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Lembra da experiência da seção anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito! Primeiro, toque num esconderijo do seu jogo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o jogo ainda não sabe que precisa contar. Então a gente vai ensinar o jogo a somar um em Achados toda vez que um esconderijo for tocado." Sem mandar clicar em Anterior.
+- Material: "Olha aqui: este é o seu Caderno do Aluno! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o caderno. Se quiser, você pode ler aqui mesmo, na aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser." Não dizer "não precisa baixar nem imprimir": a criança entende como uma ordem para não baixar.
 - Encerramento: nomear o resultado e dar a próxima ação.
 
 Não começar por uma lista do que será aprendido, a importância do conceito ou uma promessa da
@@ -90,12 +90,15 @@ criança antes da vez dela. O vídeo segue esta ordem:
 5. Termina em "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique
    em Próxima seção."
 
-Exemplo do toque: "Esta é uma experiência para a gente entender como funciona a ação e a reação.
-Olha aqui: quando eu toco no arbusto,
-nada acontece: o jogo ainda não sabe o que fazer com o toque. Na vida, toda ação tem uma reação.
-Se alguém faz cócegas em você, você ri. No nosso jogo, o toque é a ação. Para o jogo responder, a
-gente precisa ligar uma reação a essa ação. Por isso, eu clico em Ligar a reação ao toque e toco de
-novo…"
+Exemplo do toque, como numa conversa: "Esta é uma experiência para a gente entender como funciona
+a ação e a reação. Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda
+não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele. Na
+vida é assim também: toda ação tem uma reação. Por exemplo, se alguém faz cócegas em você, você ri.
+A cócega é a ação, e a risada é a reação. No nosso jogo, o toque é a ação. E a reação que a gente
+quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter
+essa reação, a gente precisa ligar a reação ao toque. Por isso, eu clico em Ligar a reação ao toque
+e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava
+atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível."
 
 Os passos para a criança ficam nas instruções da experiência, no imperativo. A ponte do Zappy liga o vídeo à experiência numa frase curta, sem repetir os passos.
 As montagens seguem no imperativo: ali a criança faz junto com o vídeo.
@@ -112,7 +115,9 @@ questionários ou mudar as experiências só para encurtar a fala.
 ## 5. Falar com quem está fazendo
 
 - Usar "você", verbos simples e frases que soem naturais em voz alta. Toda fala conversa com quem faz a aula, como alguém ao lado dela: "o seu caderno", "o seu jogo", "Sua vez!". Nada de frase impessoal que só descreve.
-- Chamar a atenção nos momentos que importam: "Olha aqui:" ao mostrar um lugar, um bloco ou o primeiro gesto da demonstração; "Olha só:" quando aparece um resultado; "Repare:" num detalhe que a pessoa precisa notar; "Viu?" logo depois do teste da retomada. Um chamado por momento importante, variando as expressões; sem repetir "bora", "capricha" ou parabéns a cada gesto (Diretrizes, seção 6).
+- A fala é uma conversa contínua, não uma lista de frases soltas: cada frase se liga à anterior ("então", "por isso", "mas", "é que", "agora que"), todo resultado vem com o porquê ("Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele") e a explicação diz o que é cada coisa no próprio jogo ("O toque é a ação, e a reação que a gente quer é o esconderijo ficar invisível"). Evitar sequências curtas e secas como "Nada acontece. O toque ainda não tem uma reação. Vamos ligar uma." (Diretrizes, seção 6).
+- O que já vem pronto não vira frase solta na montagem ("O jardim e os personagens já estão preparados"): a criança vê o que já está no projeto. Só citar o que vem pronto quando ajuda a ação, com o papel que tem ali ("Olha aqui: nessa área já tem o bloco… É ele que percebe quando alguém toca num esconderijo"). O reconhecimento do que veio pronto fica na comemoração (Diretrizes, seção 3).
+- Chamar a atenção nos momentos que importam: "Olha aqui:" ao mostrar um lugar, um bloco ou o primeiro gesto da demonstração; "Olha só:" quando aparece um resultado; "Repare:" num detalhe que a pessoa precisa notar; "Tá vendo?" logo depois do teste da retomada. Um chamado por momento importante, variando as expressões; sem repetir "bora", "capricha" ou parabéns a cada gesto (Diretrizes, seção 6).
 - O que é opcional vira convite, nunca negação: "Se quiser, você pode ler aqui mesmo. E, se preferir, também pode baixar para guardar." Não dizer o que a pessoa não precisa fazer; uma proibição que evita um erro continua direta ("Não coloque um encontro dentro do outro").
 - Evitar perguntas que escondem um pedido. "Teste os dois jeitos" é mais claro que
   "Como será que essa ideia funciona no nosso jardim?".
@@ -190,6 +195,7 @@ correto. A liberdade de cor e detalhes continua livre.
 
 - Nas primeiras frases, fica claro o que fazer, em qual atividade e como começar?
 - Cada fala conversa com a pessoa e chama a atenção dela para o que aparece na tela nos momentos que importam? O que é opcional aparece como convite, sem "não precisa"?
+- Lida em voz alta, a fala soa como conversa contínua, com o porquê de cada resultado, ou como frases soltas lidas de um texto? Alguma frase sobre o que já vem pronto ficou solta no meio da montagem?
 - Todos os passos necessários aparecem, incluindo confirmação e saída?
 - Quem ouve consegue executar sem adivinhar uma peça, valor ou encaixe?
 - O vídeo evita tours, agendas, recapitulações longas e teoria sem uso imediato?

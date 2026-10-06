@@ -9,7 +9,7 @@
 
 **Decisões de 05/10/2026:** uma ideia por seção, e cada conceito novo ganha uma experiência antes de virar bloco. A primeira versão do Dia 1 juntava controles, movimento a cada quadro, velocidade, limite e ordem num único vídeo de 5 a 6 minutos. Toda aula também termina numa ação prática. As duas seções da antiga aula de introdução (`boas-vindas`) passaram a abrir o Dia 1. Assim, o primeiro dia já termina com uma construção enviada. Essas duas seções mantiveram blocos e critérios; mudaram a aula em que ficam e a saída do caderno, que agora é **Próxima seção**. A divisão em ideias criou as outras cinco seções e o critério intermediário `movimentoSemBorda`.
 
-**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?"); as pontes do Zappy começam convidando ("Sua vez!", "Hora de…"). O caderno é apresentado como escolha: ler na aula ou baixar para guardar. Seções, blocos e critérios não mudaram.
+**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"); as pontes do Zappy começam convidando ("Sua vez!", "Hora de…"). O caderno é apresentado como escolha: ler na aula ou baixar para guardar. Cada fala virou uma conversa contínua, com o porquê de cada resultado (as experiências ficaram um pouco mais longas). Saiu da montagem a frase solta "O cenário e os desenhos já estão preparados": o que vem pronto só entra na fala quando ajuda a ação, como os blocos que já estão em Ao iniciar. Seções, blocos e critérios não mudaram.
 
 ## Triagem dos conceitos
 
@@ -130,12 +130,12 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
 | `video-intro-farol` | Jogo, contexto e demonstração de um gesto, sem resolver | Versão pronta | 45 a 60 s | Regravar |
-| `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 20 a 30 s | Regravar |
-| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 50 a 70 s | Gravar |
+| `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 25 a 35 s | Regravar |
+| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 70 a 90 s | Gravar |
 | `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 3 a 4 min | Gravar |
-| `video-d1-tanto` | Experiência: velocidade 3 e 1 | Cena nova | 40 a 55 s | Gravar |
-| `video-d1-velocidade` | Escolher a velocidade e ficar com ela (mexa e veja) | Mesmo projeto | 45 a 70 s | Gravar |
-| `video-d1-limite` | Experiência: sem e com o limite | Cena nova | 40 a 55 s | Gravar |
+| `video-d1-tanto` | Experiência: velocidade 3 e 1 | Cena nova | 50 a 65 s | Gravar |
+| `video-d1-velocidade` | Escolher a velocidade e ficar com ela (mexa e veja) | Mesmo projeto | 70 a 90 s | Gravar |
+| `video-d1-limite` | Experiência: sem e com o limite | Cena nova | 50 a 65 s | Gravar |
 | `video-d1-borda` | Borda no jogo, limite, testes e entrega | Mesmo projeto | 2 a 3 min | Regravar |
 
 ## Continuidade

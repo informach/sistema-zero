@@ -39,11 +39,13 @@ A revisão de linguagem não mudou seções nem critérios. A divisão em seçõ
 **Revisão de 06/10/2026: falas que conversam com a criança.** A pedido do responsável, como no Cadê Todo Mundo?, e registrada nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6:
 
 - na apresentação do caderno, saiu o "Não precisa baixar nem imprimir", que a criança entendia como uma ordem para não baixar. O vídeo diz "Olha aqui: este é o seu Caderno do Aluno!" e oferece as duas escolhas: ler aqui mesmo, na aula, ou clicar em **Baixar** para guardar e consultar onde quiser. O Zappy da seção e a primeira página do caderno seguem a mesma ideia;
-- a narração chama a atenção para a tela nos momentos que importam: "Olha aqui", "Olha só" quando aparece um resultado, "Repare" num detalhe e "Viu?" depois do teste da retomada;
+- a narração chama a atenção para a tela nos momentos que importam: "Olha aqui", "Olha só" quando aparece um resultado, "Repare" num detalhe e "Tá vendo?" depois do teste da retomada;
+- na segunda rodada do mesmo dia, cada fala virou uma conversa contínua: as frases se ligam, cada resultado vem com o porquê e cada experiência diz o que é cada coisa no próprio jogo. No Dia 3, "então" não é usado como palavra de ligação, porque é o nome de uma parte do Se;
+- saíram das montagens as frases soltas sobre o que já vem preparado ("O cenário e os desenhos já estão preparados", "A variável ganhou já veio preparada", "O encontro com a chave já está pronto no seu projeto"). No lugar, a fala diz o papel de cada coisa no momento em que a criança a usa ("É essa variável que chama o barco");
 - as pontes do Zappy começam convidando ("Sua vez!", "Agora…!", "Hora de…!") e falam do jogo da criança;
 - o certificado comemora ("Parabéns pelo seu jogo!") e diz em voz ativa que quem montou as regras foi ela.
 
-Seções, blocos, critérios e identificadores não mudaram. Os vídeos precisam ser gravados com as falas novas; o PDF do caderno foi regerado.
+Seções, blocos, critérios e identificadores não mudaram, e a fórmula de verificação continua a mesma dos outros cursos. Com as explicações, algumas experiências ficaram um pouco mais longas (as durações estão nos roteiros e nas tabelas das propostas). Os vídeos precisam ser gravados com as falas novas; o PDF do caderno foi regerado.
 
 ## Módulo 1 · Sua aventura no farol
 

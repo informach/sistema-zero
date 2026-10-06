@@ -7,7 +7,7 @@
 - Seções na entrada deste review: 3 · Seções finais: 5.
 - Clipes na entrada deste review: 3 · Clipes finais: 5.
 
-**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Viu?"); as pontes do Zappy começam convidando. Seções, blocos e critérios não mudaram.
+**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"); as pontes do Zappy começam convidando. Cada fala virou uma conversa contínua, com o porquê de cada resultado; neste dia, "então" não é usado como palavra de ligação, porque é o nome de uma parte do Se. Em vez de "a variável ganhou já veio preparada" e "o encontro com a chave já está pronto", a fala diz o que cada um faz no momento em que a criança o usa. Seções, blocos e critérios não mudaram.
 
 ## Triagem dos conceitos
 
@@ -100,10 +100,10 @@ Vem depois do envio e antes de publicar. Começar pelo destino: a área **Ao ini
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 45 a 60 s | Regravar |
+| `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 60 a 75 s | Regravar |
 | `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 3 a 4 min | Gravar |
 | `video-d3-decisao` | Completar então, testar a aventura e enviar | Roteiro revisado | 4 a 5 min, sem acelerar os percursos | Regravar |
-| `video-d3-personalizar` | Mexa e veja: trocar o personagem e escrever os avisos | Mesmo projeto enviado | 90 a 120 s | Gravar |
+| `video-d3-personalizar` | Mexa e veja: trocar o personagem e escrever os avisos | Mesmo projeto enviado | 100 a 130 s | Gravar |
 | `video-d3-fecho` | Publicar, comemorar e copiar o link de jogar para a família | Mesmo projeto enviado | 60 a 80 s, incluindo espera | Regravar |
 
 ## Continuidade
