@@ -198,7 +198,7 @@ class HandoffLoadError extends Error {}
 
 const copy = {
   molda: {
-    network: 'Não consegui carregar o guia desta tarefa. Tente de novo.',
+    network: 'Não consegui carregar o Guia do Pensa desta tarefa. Tente de novo.',
     wrong: 'Esta tarefa não pertence ao Molda.',
   },
   pinta: {
@@ -206,7 +206,7 @@ const copy = {
     wrong: 'Esta tarefa não pertence ao Pinta.',
   },
   studio: {
-    network: 'Não consegui carregar o guia desta tarefa. Tente de novo.',
+    network: 'Não consegui carregar o Guia do Pensa desta tarefa. Tente de novo.',
     wrong: 'Esta tarefa não pertence ao Estúdio.',
   },
 } satisfies Record<Destination, { network: string; wrong: string }>

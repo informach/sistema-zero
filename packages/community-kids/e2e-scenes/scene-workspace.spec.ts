@@ -5,7 +5,7 @@ const chip = (page: Page) =>
     .getByRole('button', { name: /Mover a nave um pouquinho/ })
     .filter({ has: page.locator('.sz-once-card-label') })
 const expand = (page: Page) => page.getByRole('button', { name: 'Ampliar experiência' })
-const close = (page: Page) => page.getByRole('button', { name: 'Voltar à aula' })
+const close = (page: Page) => page.getByRole('button', { name: 'Voltar à fase' })
 
 test('retorno foca o gatilho mesmo com foco anterior fora da experiência', async ({ page }) => {
   await page.goto('/')
@@ -145,7 +145,7 @@ test('a divisória adapta o painel sem ampliar nem perder seleção e progresso'
   await page.mouse.up()
   await expectLayout(page, true)
   await expect(page.getByRole('dialog')).toHaveCount(0)
-  await expect(page.getByText('Vídeo da aula', { exact: true })).toBeInViewport({ ratio: 1 })
+  await expect(page.getByText('Vídeo da fase', { exact: true })).toBeInViewport({ ratio: 1 })
   await expect(chip(page)).toHaveAttribute('aria-pressed', 'true')
   await page
     .getByRole('button', { name: 'Colocar em Ao iniciar: Mover a nave um pouquinho', exact: true })

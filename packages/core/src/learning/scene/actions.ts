@@ -49,9 +49,12 @@ export const SCENE_IDS = [
   'found-counter',
   'collect-and-remember',
   'lighthouse-key',
-  // O Dia 1 do Desafio (05/10/2026): o andar do personagem quadro a quadro, a velocidade e o limite
-  // da tela, antes de cada um virar bloco no Estúdio. Três usos, um por caso (`setup.goals`).
+  // Dia 1 do Desafio: movimento quadro a quadro e limite, separados por `setup.goals`.
+  // ⚠️ A velocidade (`walk-speed`, metas `step-speed-*`) saiu do Farol em 06/10/2026, mas continua
+  // EM USO: a experiência do Dia 1 da Nave cobra `step-speed-3` e `step-speed-1`. Não remover.
   'lighthouse-walk',
+  // Dia 3 do Desafio: x e y da chave, um eixo por vez, antes de a criança escolher o lugar dela.
+  'lighthouse-position',
   'restart',
   'hitbox',
   'score',
@@ -152,6 +155,9 @@ export type SceneAction =
   | { type: 'keep-on-screen'; enabled: boolean }
   /** `lighthouse-walk`: o personagem volta ao começo e o quadro zera; as escolhas ficam. */
   | { type: 'restart-walk' }
+  /** Um campo por vez: mudar x não muda y, como no bloco que cria a chave. */
+  | { type: 'key-position'; axis: 'x' | 'y'; value: number }
+  | { type: 'restart-key-position' }
   | { type: 'find-character'; id: 0 | 1 | 2 }
   | { type: 'look-around' | 'restart-search' }
   | { type: 'value-source'; source: 'fixed' | 'read' }
@@ -306,6 +312,13 @@ export type SceneAction =
 export const LIGHTHOUSE_WALK_SPEEDS = [1, 3] as const
 export type LighthouseWalkSpeed = (typeof LIGHTHOUSE_WALK_SPEEDS)[number]
 
+/** A tela 480 × 360 e a chave 32 × 32 do Farol. O player confere contra FAROL_LAYOUT. */
+export const LIGHTHOUSE_POSITION = {
+  start: { x: 211, y: 53 },
+  x: { min: 0, max: 448 },
+  y: { min: 0, max: 328 },
+} as const
+
 /** Os três degraus do "Ver os pontos" da cena `mesh`, do que mostra menos ao que mostra mais. */
 export const MESH_LEVELS = ['nada', 'metade', 'tudo'] as const
 export type MeshLevel = (typeof MESH_LEVELS)[number]
@@ -357,6 +370,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'collect-and-remember': [],
   'lighthouse-key': [],
   'lighthouse-walk': [],
+  'lighthouse-position': [],
   restart: ['restart'],
   hitbox: [],
   score: ['condition'],
@@ -704,6 +718,17 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
     case 'restart-walk':
       return scene === 'lighthouse-walk'
+    case 'key-position':
+      return (
+        scene === 'lighthouse-position' &&
+        (value.axis === 'x' || value.axis === 'y') &&
+        typeof value.value === 'number' &&
+        Number.isInteger(value.value) &&
+        value.value >= LIGHTHOUSE_POSITION[value.axis].min &&
+        value.value <= LIGHTHOUSE_POSITION[value.axis].max
+      )
+    case 'restart-key-position':
+      return scene === 'lighthouse-position'
     case 'find-character':
       return scene === 'found-counter' && (value.id === 0 || value.id === 1 || value.id === 2)
     case 'look-around':

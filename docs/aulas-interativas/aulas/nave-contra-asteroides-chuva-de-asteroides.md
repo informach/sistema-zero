@@ -24,21 +24,21 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 ### Seção 1. Compare o intervalo entre as pedras
 
-**Tarefa:** Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras.
+**Tarefa:** Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-intervalo-das-pedras → fala-intervalo-das-pedras → experiencia-relogio.
 
-**Zappy na página (não gravar):** Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras.
+**Zappy na página (não gravar):** Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `spawn`. Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Prepare a criação dos asteroides
 
-**Tarefa:** Crie o grupo asteroides e um intervalo de 40 quadros, ao lado de A cada quadro do jogo.
+**Tarefa:** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-grupo-e-relogio → fala-relogio.
 
-**Zappy na página (não gravar):** Crie o grupo asteroides e um intervalo de 40 quadros, ao lado de A cada quadro do jogo.
+**Zappy na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -48,21 +48,21 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 ### Seção 3. Sorteie onde a pedra nasce
 
-**Tarefa:** Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela.
+**Tarefa:** Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-posicao-sorteada → fala-posicao-sorteada → experiencia-sorteio.
 
-**Zappy na página (não gravar):** Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela.
+**Zappy na página (não gravar):** Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `random`. Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Crie e mostre as pedras caindo
 
-**Tarefa:** Monte o asteroide no intervalo e o ciclo do grupo em cada quadro.
+**Tarefa:** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-asteroide → fala-asteroide.
 
-**Zappy na página (não gravar):** Monte o asteroide no intervalo e o ciclo do grupo em cada quadro.
+**Zappy na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -72,15 +72,15 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 - Retire os asteroides que saem e depois desenhe esse grupo.
 - Desenhe o grupo asteroides a cada quadro.
 
-### Seção 5. Compare o intervalo e guarde sua chuva
+### Seção 5. Teste e envie a sua chuva de pedras
 
-**Tarefa:** Teste 80 e 40 no intervalo, mantenha 40 e envie o projeto.
+**Tarefa:** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste 80 e 40 no intervalo, mantenha 40 e envie o projeto.
+**Zappy na página (não gravar):** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie o grupo asteroides em Ao iniciar.
 - Use A cada 40 quadros como vizinho de A cada quadro do jogo.

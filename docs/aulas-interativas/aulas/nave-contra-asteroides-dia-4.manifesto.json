@@ -66,7 +66,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações."
+        "text": "Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -122,14 +122,14 @@
     },
     {
       "key": "video-vidas",
-      "plannedVideo": "Título: Dê e mostre as três vidas\n\nRegravar no Estúdio atual. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Dê e mostre as três vidas\n\nRegravar no Estúdio atual. Começar pela retomada: no \"Tá vendo?\", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-vidas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Dê as três vidas em Ao iniciar e desenhe os corações a cada quadro."
+        "text": "Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
@@ -141,7 +141,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes."
+        "text": "Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -149,7 +149,7 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "O respiro depois da batida",
+        "title": "Compare as batidas com proteção",
         "instructions": "Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba.",
         "hints": [],
         "activity": {
@@ -175,14 +175,14 @@
     },
     {
       "key": "video-batida-e-coracoes",
-      "plannedVideo": "Título: Programe as vidas e a batida\n\nRegravar no Estúdio atual. Desenhar vidas primeiro para tornar o estado visível; inserir colisão antes desse desenho. Confirmar a ordem final original: placar, colisão da nave, corações.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Programe as vidas e a batida\n\nRegravar no Estúdio atual. Começar pela retomada: deixar uma pedra bater na nave e, no \"Tá vendo?\", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações.\n\nFala completa em nave-contra-asteroides-dia-4.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-batida",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Dê as vidas em Ao iniciar. Na colisão, retire a pedra e machuque a nave. Desenhe os corações em cada quadro."
+        "text": "Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
@@ -190,7 +190,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte."
+        "text": "Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte."
       }
     },
     {
@@ -251,7 +251,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira acerto, erro e batida. Verifique esta parte e envie."
+        "text": "Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase."
       }
     },
     {
@@ -1156,7 +1156,7 @@
       "key": "vidas-no-comeco",
       "title": "Compare quando dar as vidas",
       "intent": "exploration",
-      "objective": "Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações.",
+      "objective": "Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-vidas-no-comeco", "fala-vidas-no-comeco", "experiencia-uma-vez"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1170,7 +1170,7 @@
       "key": "vidas",
       "title": "Dê e mostre as três vidas",
       "intent": "application",
-      "objective": "Dê as três vidas em Ao iniciar e desenhe os corações a cada quadro.",
+      "objective": "Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-vidas", "fala-vidas"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1220,7 +1220,7 @@
       "key": "respiro",
       "title": "Compare as batidas com proteção",
       "intent": "exploration",
-      "objective": "Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes.",
+      "objective": "Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-protecao", "fala-respiro", "experiencia-protecao"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1234,7 +1234,7 @@
       "key": "batida",
       "title": "Programe as vidas e a batida",
       "intent": "application",
-      "objective": "Dê as vidas em Ao iniciar. Na colisão, retire a pedra e machuque a nave. Desenhe os corações em cada quadro.",
+      "objective": "Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-batida-e-coracoes", "fala-batida"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1327,7 +1327,7 @@
       "key": "quiz-final",
       "title": "Confira o que você construiu",
       "intent": "explanation",
-      "objective": "Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "objective": "Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
       "blockKeys": ["fala-quiz-final", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1341,7 +1341,7 @@
       "key": "entrega",
       "title": "Teste os pontos e as vidas",
       "intent": "delivery",
-      "objective": "Confira acerto, erro e batida. Verifique esta parte e envie.",
+      "objective": "Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
       "blockKeys": ["video-fecho", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1590,7 +1590,7 @@
           },
           {
             "id": "remover-pedra",
-            "label": "Na mesma colisão, remova o asteroide e então solte a explosão.",
+            "label": "Na mesma colisão, remova o asteroide e depois solte a explosão.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_group_overlap",

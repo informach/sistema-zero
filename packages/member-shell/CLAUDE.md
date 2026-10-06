@@ -117,10 +117,69 @@ pressão de disco — o rascunho da criança sumia sem culpado.
 `section-help` aceita `requestId` UUID: o player mantém a chave ao repetir o mesmo pedido após falha
 de rede e usa o `threadId` retornado em Ver conversa. `TeacherLessonLink` permite retornar ao hash
 `#section=<id>`; o player só abre seção acessível. `helpContext` da mensagem guarda revisão e pendências.
-`useTeacherUnread` revalida por navegação, foco/visibilidade, eventos de leitura/resposta e a cada 30s
+O rótulo do link é `copy.secoes.voltarParaSecao` do `LessonCopy` ("Voltar à seção" no adulto, "Voltar à parte"
+no Kids). `useTeacherUnread` revalida por navegação, foco/visibilidade, eventos de leitura/resposta e a cada 30s
 em primeiro plano. Compartilhado pelos sinos do Kids e Adultos.
 `SectionProjectCheck` mostra cada objetivo e só atualiza progresso após resposta persistida.
 Não confundir estrutura verificada no servidor com execução comprovada do jogo.
+
+## O vocabulário das telas de aula: `LessonCopy` (06/10/2026)
+
+As telas de aula que os dois apps dividem falam a língua de cada app: no adulto curso, aula, seção e
+professor; no Kids aventura, fase, parte, equipe e Mapa da Aventura (decisão da dona, Diretrizes Pedagógicas,
+seção 6). Por dentro (rotas, ids, Admin) tudo segue com os nomes de sempre. ⭐ No Kids os botões de envio
+dizem o que vai, sem destinatário ("Enviar meu projeto", "Enviar meu desenho", "Enviar (2)"), e quem lê é
+"a equipe": o "guia" saiu da tela da criança no mesmo 06/10/2026 (fica só o "Guia do Pensa", que é painel).
+
+- **`lib/lesson-copy.ts`**: o tipo `LessonCopy`, o padrão adulto `ADULT_LESSON_COPY` e os ajudantes
+  `codigoDoErro`/`mensagemDoErro`/**`fraseDoServidor`** (a régua ÚNICA dos dois vocabulários). **`lib/lesson-copy-kids.ts`**: `KIDS_LESSON_COPY`, a régua
+  `PALAVRAS_DA_ESCOLA` e `conclusaoRecusada`. O da criança mora AQUI (e não no Kids, que só o reexporta em
+  `src/lib/lesson-copy.ts`) porque o Admin também o usa.
+- **`components/lesson-copy-context.tsx`**: `LessonCopyProvider` + `useLessonCopy()`. Sem provedor vale o
+  adulto. O Kids embrulha o `(app)` com `KidsLessonCopy`; o Admin embrulha a prévia ("Conferir
+  livremente") e o ensaio com `kids ? KIDS_LESSON_COPY : ADULT_LESSON_COPY` (antes a prévia de uma aula
+  kids dizia "Próxima seção" e "Índice da aula").
+- ⚠️ **Texto de tela compartilhada que diga curso, aula, seção, etapa, caderno, professor ou aluno entra no
+  `LessonCopy`, nunca solto no componente.** O guarda `copy-vocabulario` do Kids varre `components`, `lib`,
+  `routes` e `server` daqui (além do `core/src`, do Estúdio, do Pinta, do Molda e do `ui`) e só deixa passar o
+  `lesson-copy.ts` adulto e exceções com motivo escrito (ver o CLAUDE.md do Kids).
+- **`itemPendente(item)`**: o texto de cada item da faixa "o que falta para seguir". O members manda a voz
+  adulta (`lessonCompletionRequirements`); o Kids troca pelo `kind`.
+- **`erroDoServidor(erro, padrao)`**: no adulto, a frase do servidor; no Kids, código conhecido vira a
+  frase da aventura, código desconhecido usa a frase do servidor só sem palavra da escola, e o resto cai na
+  `padrao`. ⚠️⚠️ **Erro SEM `code` não é do servidor e cai na `padrao` nos DOIS apps**: o `TypeError: Failed
+  to fetch` da rede chegava à tela, em inglês. ⚠️⚠️ O `'ERROR'`/"Algo deu errado." que o `apiSend` INVENTA
+  quando a resposta vem sem envelope (gateway em 502/504, rota com `{ ok: false }`) também conta como
+  ausência (`CODIGO_SEM_ENVELOPE`/`FRASE_SEM_ENVELOPE` em `lib/api.ts`): antes, concluir a fase com o
+  gateway fora mostrava "Algo deu errado." no lugar da frase do componente. O projeto grande demais para
+  conferir (413 `PAYLOAD_TOO_LARGE` da rota, 2 MB) tem frase própria no `SectionProjectCheck`
+  (`verificacao.grandeDemais`), e o Kids mapeia `VALIDATION_ERROR` numa frase que serve para guardar e
+  para conferir. Por isso a recusa do download de material
+  (`downloadLessonAttachment`, `reason: 'refused'`) leva o `code` do envelope, e a falha simulada do ensaio
+  do Admin (`FalhaSimulada`) também tem `code`. ⚠️ O `ApiError` é objeto simples, não `Error`: nunca filtrar
+  com `instanceof Error` antes de chamar (era o bug do `section-project-check`, que nunca mostrava a frase
+  do servidor).
+- **`conclusaoRecusada(erro)`** (`lesson-copy-kids.ts`): o toast do Kids quando o members recusa concluir a
+  fase, com a mesma troca do `erroDoServidor` (inclui `IMPERSONATION_READONLY`, que antes virava "Tente
+  novamente").
+- **`cena.perguntaMudou`**: o core devolve `PERGUNTA_MUDOU` ("Esta pergunta mudou. Abra a aula de novo.") e
+  ⚠️ a constante NÃO muda (contrato com o members); o `SceneConclusion` a reconhece por igualdade e desenha a
+  frase do app ("Abra a fase de novo" no Kids).
+- **`secoes.preparando`/`pronta`/`prontaUltima`** (a faixa "o que falta para seguir") e
+  **`secoes.duvida`** (o rótulo do pedido de ajuda): o adulto lê "seção", o Kids "parte" (antes os dois
+  liam "parte").
+- **`estudio.enviado(quando)` e `pinta.enviado(quando)` são FUNÇÕES** (a data do envio ou `null`): o adulto
+  lê "Projeto enviado ao professor em <data>." como sempre, e o Kids "Projeto enviado!" ou "Projeto
+  enviado! Foi em <data>.". Emendar a data num texto que já fecha com "!" saía "enviado! em…". O título da
+  confirmação do Pinta também entrou no `LessonCopy` (`pinta.confirmarEnviar`/`confirmarReenviar`); o
+  botão dela segue "Enviar". ⚠️ O rótulo do recado do Estúdio no Kids é só "Recado": o componente completa
+  com "(opcional)". O da galeria já vem completo ("Recado (opcional)").
+- **`secoes.voltarParaSecao`**: o rótulo do `TeacherLessonLink`. **`secoes.indice` e `secoes.lista` têm nomes
+  DIFERENTES** (o `summary` e o `nav` do índice; dois marcos com o mesmo nome o leitor não separa): "Índice da
+  aula"/"Seções da aula" e "Partes da fase"/"Escolha uma parte da fase".
+- Testes: `community-kids/tests/copy-vocabulario.test.ts` (o guarda e as trocas), a prévia e o ensaio em
+  `admin/tests/lesson-structure-preview.test.tsx` e `lesson-rehearsal.test.tsx`, e a pergunta mudada em
+  `community-kids/tests/lesson-experimentation.test.tsx`.
 
 ## O que vive aqui vs no app
 
@@ -301,16 +360,31 @@ rejeita localhost/`.internal`/IP privado/link-local (169.254 metadados de nuvem)
 ser URLs PÚBLICAS (o `ImageUploader` do admin sobe WebP no R2 público — passa; WebP→PNG via sharp). Sem
 `baseImageUrl` (ou imagem irbuscável) → `drawBrandedLayout` (moldura/título/nome/curso, compat/fallback). O PDF é montado com **`@cantoo/pdf-lib`**
 (fontes built-in, sem browser headless) + **QR** (`qrcode`, dep nova) apontando p/ `${APP_PUBLIC_URL}/validar/:id`
-e **cacheado no R2 PRIVADO** `certificates/<id>.pdf` (re-download não regenera). A página **PÚBLICA**
+e **cacheado no R2 PRIVADO** `certificates/<id>.v<N>.pdf` (re-download não regenera; `N` é a versão do
+desenho, ver abaixo). A página **PÚBLICA**
 `/validar/:id` (sem login) busca a validação por `members.validateCertificate(id)` — um **`publicGet`** (sem
 Bearer; o gateway injeta o `x-internal-token` na rota `public`) — e o shim `routes.certificateValidate`
 (`GET /api/certificates/:id/validate`, FORA do matcher do proxy) também expõe o JSON. **Env nova:
 `APP_PUBLIC_URL`** (origem pública absoluta p/ o QR; ausente → QR só com o caminho, degradado — setar em prod).
 Tipos em `lib/types.ts` (`CertificateBlock`/`CertificateConfig`/`CertificateIssueView`/`CertificateStateView`/
 `CertificateValidationView`). O members é o portão (elegibilidade + registro imutável); o BFF só monta/serve o PDF.
-⚠️ **`CertificateBlockView` tem a prop `tone: 'default' | 'kids'`** (full review 27/06): o kids passa
-`tone="kids"` (copy sem jargão/travessão); o estado de carga é `role="status"` e a virada de estado vai
-numa região `aria-live="polite"` (a11y — o leitor anuncia bloqueado→elegível→emitido).
+⚠️ **`CertificateBlockView` não tem mais a prop `tone`** (saiu em 06/10/2026): as frases vêm do `LessonCopy`
+(`copy.certificado`; o Kids passa as dele pelo `KidsLessonCopy`: "Pegar meu certificado"). O estado de carga é
+`role="status"` e a virada de estado vai numa região `aria-live="polite"` (a11y — o leitor anuncia
+bloqueado→elegível→emitido).
+⭐ **O PDF guardado tem a versão do DESENHO na chave (06/10/2026).** `certificatePdfKey(id)` =
+`certificates/<id>.v<CERTIFICATE_LAYOUT_VERSION>.pdf` (`routes/certificate.ts`; a v1 era `certificates/<id>.pdf`).
+No mesmo dia o `drawBrandedLayout` (o layout sem imagem base) foi consertado: com `coursePhrase` o PDF dizia
+"concluiu" duas vezes ("concluiu com êxito o curso / Cadê Todo Mundo? / concluiu Cadê Todo Mundo?"; hoje a frase
+toma o lugar da linha genérica e do título), e o `bodyText` só existia no layout com imagem (hoje entra nos dois,
+até três linhas; o `message` é o legado). Como todo download serve o PDF guardado, sem a versão na chave o
+conserto e o título novo "Certificado de Criador" só chegariam às emissões NOVAS. ⚠️ Mudou o desenho ou o
+texto do PDF? SUBA `CERTIFICATE_LAYOUT_VERSION`: o próximo download de cada certificado já emitido remonta o
+PDF com o MESMO registro imutável do members e a config atual do curso, e o da versão anterior fica sem uso no
+bucket. Nada mais lê essa chave (conferido em 06/10/2026). O armazenamento é injetável na rota
+(`createCertificateRoutes({ storage })`, padrão = o R2 privado) só para o teste conferir a chave, porque
+mockar o módulo `server/r2` vazaria para a suíte. Teste: `tests/certificate-pdf.test.ts` (inclui a rota
+com um R2 de mentira: monta, guarda e serve na chave versionada, e nunca lê a da v1).
 
 **Pensa (planejador de jogos — 08/2026):** o shell expõe o BFF de `@sistemazero/pensa` e espelha
 os contratos do members em `lib/types.ts` e `server/clients.ts`. `createPensaRoutes` valida e repassa
@@ -1127,8 +1201,9 @@ que fica verde quando a parte termina.
   não tem itens próprios: aula legada, conta de equipe) e `preview`. Renderiza o primeiro item com
   o prefixo "Para seguir:" (só nas razões que são uma AÇÃO da criança: `lesson`, `LESSON_COMING_SOON`
   e `authoring` saem sem ele) e, com mais de um, um `<details>` nativo com o "+N" que abre os demais
-  (teclado e leitor de graça; o alvo de 44px do `summary` é do CSS de cada app). Pronta: "Tudo
-  pronto nesta parte. Pode seguir!"; aula CONCLUÍDA não mostra a faixa.
+  (teclado e leitor de graça; o alvo de 44px do `summary` é do CSS de cada app). Pronta: o
+  `secoes.pronta` do `LessonCopy` ("Tudo pronto nesta seção. Pode seguir!" no adulto, "…nesta parte…" no
+  Kids); aula CONCLUÍDA não mostra a faixa.
   Só ganchos e utilitárias sóbrias (invariante 8): o kids veste em `--band-creme`/`--band-menta`
   com o ícone num ladrilho da família do bloco; o adulto, sob `.sz-aula-adulto`, com a linha sóbria.
 - **Os itens vêm TIPADOS.** `SectionProgressView.sections[].pendingItems: { kind, text }[]` (core,
@@ -1143,8 +1218,8 @@ que fica verde quando a parte termina.
   `SECTION_GATE_INCOMPLETE` da barra do adulto junta as frases com " · " (sem ponto final, o
   `join(' ')` colava uma na outra).
 - ⚠️⚠️ **Mensagem de AUTORIA (`kind: 'authoring'`) é para o professor**, não para a criança: fora
-  do ensaio (`preview` falso, ou seja, com `LessonPlayerProvider`) ela vira "Esta parte ainda
-  está sendo preparada". No ensaio do admin sai inteira, e a barra "O que falta para concluir" do
+  do ensaio (`preview` falso, ou seja, com `LessonPlayerProvider`) ela vira o `secoes.preparando` do
+  `LessonCopy` ("Esta seção ainda está sendo preparada" no adulto, "Esta parte…" no Kids). No ensaio do admin sai inteira, e a barra "O que falta para concluir" do
   adulto passa pela MESMA troca (`textoDoItem`): antes ela lia a `action` crua do
   `SECTION_GATE_INCOMPLETE` e a mensagem do professor chegava ao aluno adulto por ali.
 - **A copy dos requisitos é a voz da CRIANÇA** (decisão dela, vale também no adulto), em
@@ -1432,7 +1507,7 @@ casa vale em tudo abaixo: **toque, teclado e leitor de tela levam ao MESMO lugar
 17/09/2026): o segmento não leva carimbo de versão e o player não tem caminho para "servidor de outra versão".
 O que ele tem é o `servidorRecusou` (`scene-activity.tsx`): 400/422 numa gravação de cena não é falha de rede —
 tentar de novo não resolve, então a cena para, a conclusão sai da tela e a saída é "Abrir de novo" com "Esta
-atividade mudou.". Ordem de deploy e manifestos a importar:
+experiência mudou." (era "Esta atividade mudou." até 06/10/2026). Ordem de deploy e manifestos a importar:
 [`docs/aulas-interativas-legado/raio-x-implantacao.md`](../../docs/aulas-interativas-legado/raio-x-implantacao.md).
 Conferência visual das 45 com os componentes de produção: `bun run galeria:cenas` no community-kids.
 
@@ -1895,7 +1970,8 @@ acrescenta mais o modelo da cena automaticamente.
   em série no gesto que conclui caía numa opção. O teclado responde na hora. A tela só rola se a pergunta está
   fora da janela (`block: 'nearest'`).
 - **Certo** mostra o `feedback` do servidor (a explicação do professor) e a regra; **errado** é âmbar com a
-  palavra do servidor (o gabarito não sai de lá); `PERGUNTA_MUDOU` oferece "Abrir de novo". Resposta enviada
+  palavra do servidor (o gabarito não sai de lá); `PERGUNTA_MUDOU` oferece "Abrir de novo" e a frase desenhada é
+  a do vocabulário do app (`copy.cena.perguntaMudou`, ver "O vocabulário das telas de aula"). Resposta enviada
   com a cena DESFEITA vira a caixa neutra "Para conferir, deixe a cena como estava quando você descobriu."
   (`aguardaCena`), nunca âmbar. ⚠️ Toda região viva (esta, a do Conferir, a de anúncios) existe SEMPRE, com o
   texto por dentro: montada junto do conteúdo, não é anunciada.
@@ -1917,11 +1993,11 @@ acrescenta mais o modelo da cena automaticamente.
   alcança é o do render anterior, com a resposta vazia.
 - O rodapé só fala de gravação: "✓ Guardado" / "Guardando…" depois de concluir; "Ainda não ficou guardado."
   quando o servidor recusa (na demonstração, "Veja de novo até o fim." + "Tentar de novo"); 409 = "Esta
-  atividade mudou ou está aberta em outro lugar." + "Abrir de novo" (depois de um deploy o 409 é quase sempre
+  experiência mudou ou está aberta em outro lugar." + "Abrir de novo" (depois de um deploy o 409 é quase sempre
   revisão nova do bloco ou regra nova); falha de rede = uma frase + "Tentar salvar". Cópia local que falha e
   rascunho recusado ("Continuamos de onde você parou.", sem tom de erro) não assustam. Na vez, nada.
 - ⚠️⚠️ **Gravação RECUSADA não é recusa da criança** (`servidorRecusou`): 400/422 no envio param a cena, tiram
-  da tela a conclusão que o servidor não aceitou e mostram "Esta atividade mudou." + "Abrir de novo" (sem
+  da tela a conclusão que o servidor não aceitou e mostram "Esta experiência mudou." + "Abrir de novo" (sem
   "versão" no texto). Sem isso o 400 prometia "a gente guarda quando voltar" para sempre. A ordem de deploy
   (members antes de kids) está no raio-x.
 - ⚠️⚠️ **Sem ensaio em volta, o avaliador de VERDADE** (`evaluateLearning(previewContent, …)`): a prévia sem

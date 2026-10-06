@@ -4,6 +4,7 @@ import { PERGUNTA_MUDOU, type PublicInteractiveBlock } from '@sistemazero/core/l
 import { Check, ChevronDown, RotateCcw } from 'lucide-react'
 import { type Ref, useEffect, useId, useRef } from 'react'
 import { SceneButton } from './exploration-stage'
+import { useLessonCopy } from './lesson-copy-context'
 
 /**
  * O PASSADO e o DEPOIS da experimentação: a faixa da revisita e o que aparece quando ela descobre.
@@ -116,7 +117,10 @@ export function SceneConclusion({
   useEffect(() => {
     abertaEm.current = performance.now()
   }, [])
+  // ⚠️ `PERGUNTA_MUDOU` é contrato com o members (a frase adulta que o core devolve): o player a
+  // reconhece por igualdade e desenha a do vocabulário do app ("Abra a fase de novo" no Kids).
   const mudou = certa === false && feedback === PERGUNTA_MUDOU
+  const { cena } = useLessonCopy()
   return (
     <section className="space-y-3 rounded-2xl bg-primary/5 p-4" aria-labelledby={`${id}-faixa`}>
       {/* `tabIndex={-1}`: é para onde o foco vai quando a cena fecha SEM pergunta. ⚠️ O anel com o
@@ -212,7 +216,9 @@ export function SceneConclusion({
               <div className="flex flex-wrap items-center gap-3 rounded-xl bg-amber-500/15 p-3 text-sm font-semibold leading-relaxed text-amber-950">
                 <p className="flex items-start gap-2">
                   <RotateCcw size={18} className="mt-0.5 shrink-0" aria-hidden />
-                  {feedback || 'Ainda não é essa. Olhe a cena de novo e tente outra.'}
+                  {mudou
+                    ? cena.perguntaMudou
+                    : feedback || 'Ainda não é essa. Olhe a cena de novo e tente outra.'}
                 </p>
                 {/* ⚠️ A pergunta mudou enquanto a aba estava aberta: nenhuma opção desta tela
                     passa, então a saída é abrir de novo, e não "tentar outra". */}

@@ -178,7 +178,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
         </div>
         {tier ? null : (
           <p className="mt-4 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-            Você chegou ao topo! Aventuras extras que abriram porque você chegou ao topo da jornada.
+            Você chegou ao topo da jornada! Estas aventuras extras abriram para você.
           </p>
         )}
         {hint ? (

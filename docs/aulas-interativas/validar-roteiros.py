@@ -10,8 +10,18 @@ SECTION = re.compile(r'^## Seção (\d+)\. (.+)$', re.MULTILINE)
 SINGLE_VIDEO_SECTION = re.compile(r'^## (?:\d+\. )?(.+?)(?: — .+)?$', re.MULTILINE)
 # Vocabulário da aventura (Diretrizes, seção 6, 06/10/2026): a criança não ouve palavras da escola.
 # Por dentro, curso, aula, seção, caderno e professor continuam; na fala, aventura, fase, parte,
-# Mapa da Aventura e guia.
-ESCOLA = re.compile(r'\b(?:aulas?|cursos?|professor(?:a|as|es)?|alun[oa]s?|seç(?:ão|ões)|cadernos?|etapas?|nota m[ií]nima)\b', re.IGNORECASE)
+# Mapa da Aventura e equipe. A lista é a MESMA dos manifestos e do Como Fazer: este validador lê o
+# literal de `PALAVRAS_DA_ESCOLA` em qa/palavras-da-escola.ts, para as duas réguas não divergirem.
+def regua_da_escola():
+    fonte = (Path(__file__).resolve().parent / 'qa' / 'palavras-da-escola.ts').read_text(encoding='utf-8')
+    # O biome pode quebrar a linha depois do "=", mas o literal fica inteiro numa linha só.
+    literal = re.search(r'^export const PALAVRAS_DA_ESCOLA =\s*/(.+)/i$', fonte, re.MULTILINE)
+    if not literal:
+        raise SystemExit('ERRO: PALAVRAS_DA_ESCOLA não encontrada em qa/palavras-da-escola.ts')
+    return re.compile(literal.group(1), re.IGNORECASE)
+
+
+ESCOLA = regua_da_escola()
 
 
 RÓTULO_DE_FALA = re.compile(r'^\*\*(?:Narração|Zappy abaixo do vídeo|Zappy na página \(não gravar\)):\*\*(.*)$')

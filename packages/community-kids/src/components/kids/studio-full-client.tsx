@@ -332,7 +332,8 @@ export function StudioFullClient({
         if (response.status === 409) {
           openedTaskKeyRef.current = null
           retryTaskHandoff()
-          if (active) setTaskError('A tarefa mudou em outro lugar. Recarreguei o guia para você.')
+          if (active)
+            setTaskError('A tarefa mudou em outro lugar. Recarreguei o Guia do Pensa para você.')
           return
         } else if (active && response.ok && updated?.task) {
           updateTaskProgress(updated.task.progress)
@@ -439,7 +440,9 @@ export function StudioFullClient({
               } | null
               if (response.status === 409) {
                 retryTaskHandoff()
-                throw new Error('A tarefa mudou em outro lugar. Recarreguei o guia para você.')
+                throw new Error(
+                  'A tarefa mudou em outro lugar. Recarreguei o Guia do Pensa para você.',
+                )
               }
               if (!response.ok || !body?.task)
                 throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
@@ -771,8 +774,8 @@ export function StudioFullClient({
           <div className="flex max-w-md flex-col items-center gap-3">
             <h2 className="font-black text-xl">Este projeto não está neste aparelho</h2>
             <p className="text-muted-foreground">
-              O guia e o progresso continuam salvos. Você pode recriar o projeto associado com o
-              mesmo identificador e continuar por aqui.
+              O Guia do Pensa e o progresso continuam salvos. Você pode recriar o projeto associado
+              com o mesmo identificador e continuar por aqui.
             </p>
             <button
               type="button"

@@ -71,7 +71,7 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
   },
   'trofeu-diploma': { labelPt: 'Certificado na Parede', emoji: '📜', w: 1, h: 1, mount: 'wall' },
   'trofeu-chama': { labelPt: 'Chama dos 30 Dias', emoji: '🔥', w: 1, h: 1, stackable: true },
-  'trofeu-medalha-mil': { labelPt: 'Medalha Na Mosca', emoji: '🥇', w: 1, h: 1, mount: 'wall' },
+  'trofeu-medalha-mil': { labelPt: 'Medalha na Mosca', emoji: '🥇', w: 1, h: 1, mount: 'wall' },
   'trofeu-foguete': { labelPt: 'Foguete do Lançamento', emoji: '🚀', w: 1, h: 2, stackable: true },
   'trofeu-console': { labelPt: 'Console de Criador', emoji: '🕹️', w: 1, h: 1, stackable: true },
   'trofeu-estrela-do-mural': {

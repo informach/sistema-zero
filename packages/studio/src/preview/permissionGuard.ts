@@ -52,7 +52,7 @@ export function buildPermissionGuardRuntime(options: PermissionGuardOptions = {}
   var ALLOW = ${allowJson};
   function blocked(api) {
     return function () {
-      throw new Error('Acesso à rede bloqueado neste preview (' + api + '). Peça ao professor para liberar o domínio ou use o modo profissional.');
+      throw new Error('Acesso à rede bloqueado neste preview (' + api + '). O domínio precisa estar liberado neste projeto, ou use o modo profissional.');
     };
   }
   function parseUrl(u) {
@@ -96,10 +96,10 @@ export function buildPermissionGuardRuntime(options: PermissionGuardOptions = {}
     // de rede — assim os loaders (GLTFLoader/RGBELoader → FileLoader) tratam no
     // .catch/onError em vez de estourar um "Uncaught Error" no console.
     window.fetch = function () {
-      return Promise.reject(new Error('Acesso à rede bloqueado neste preview (fetch). Peça ao professor para liberar o domínio ou use o modo profissional.'));
+      return Promise.reject(new Error('Acesso à rede bloqueado neste preview (fetch). O domínio precisa estar liberado neste projeto, ou use o modo profissional.'));
     };
     if (window.XMLHttpRequest) {
-      window.XMLHttpRequest = function () { throw new Error('Acesso à rede bloqueado neste preview (XMLHttpRequest). Peça ao professor para liberar o domínio ou use o modo profissional.'); };
+      window.XMLHttpRequest = function () { throw new Error('Acesso à rede bloqueado neste preview (XMLHttpRequest). O domínio precisa estar liberado neste projeto, ou use o modo profissional.'); };
     }
   }
   // WebSocket/EventSource não casam com a allowlist http(s): sempre bloqueados

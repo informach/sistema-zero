@@ -1,10 +1,12 @@
 import { isInteractiveBlock, publicInteractiveBlock } from '@sistemazero/core/learning'
+import { LessonCopyProvider } from '@sistemazero/member-shell/components/lesson-copy-context'
 import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesson-player-context'
 import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { LessonVideo } from '@sistemazero/member-shell/components/lesson-video'
+import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import type { LessonDetailView, VideoBlock } from '@sistemazero/member-shell/lib/types'
 import { createRoot } from 'react-dom/client'
 import manifesto from '../../../../docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.manifesto.json'
@@ -98,4 +100,9 @@ function Fixture() {
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Raiz ausente')
-createRoot(root).render(<Fixture />)
+// O vocabulário da criança, como o `KidsLessonCopy` em volta da área logada do app.
+createRoot(root).render(
+  <LessonCopyProvider value={KIDS_LESSON_COPY}>
+    <Fixture />
+  </LessonCopyProvider>,
+)

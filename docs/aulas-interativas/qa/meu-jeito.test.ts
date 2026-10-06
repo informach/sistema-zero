@@ -17,6 +17,7 @@ import { conteudoBloco, problemasPedagogicos, temEntregaExterna } from './diretr
 import { aulasMeuJeito, falasSecao, gerarManifestoMeuJeito, telaSecao } from './gerar-meu-jeito'
 import { etapasMeuJeito, projetoMeuJeito } from './meu-jeito-etapas'
 import { courseProjects } from './meu-jeito-projetos-qa'
+import { GUIA_PESSOA } from './palavras-da-escola'
 
 const manifests = aulasMeuJeito.map((lesson) => {
   const m = JSON.parse(
@@ -283,9 +284,15 @@ for (const m of manifests)
 // Decisão do responsável, 06/10/2026: o vídeo da experiência é uma demonstração na primeira pessoa.
 const PASSA_A_VEZ =
   'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
-/** Começo de frase que dá ordem a quem assiste. "Olha aqui:" é a abertura pedida e fica de fora. */
+/**
+ * Começo de frase que dá ordem a quem assiste. Ficam de fora os chamados de atenção que as
+ * Diretrizes PEDEM na demonstração ("Olha aqui:", "Olha só:", "Repare:", "Tá vendo?"): eles puxam
+ * o olhar para o que o narrador faz, não mandam a criança fazer nada antes da vez dela.
+ */
 const ORDEM =
-  /^(Clique|Mude|Observe|Escolha|Ligue|Desligue|Coloque|Deixe|Aumente|Compare|Troque|Faça|Olhe|Veja|Repare|Use|Toque|Pinte|Volte|Experimente|Confira|Aproxime|Marque|Ajuste|Traga|Tente|Mexa)\b/
+  /^(Clique|Mude|Observe|Escolha|Ligue|Desligue|Coloque|Deixe|Aumente|Compare|Troque|Faça|Olhe|Use|Toque|Pinte|Volte|Experimente|Confira|Aproxime|Marque|Ajuste|Traga|Tente|Mexa)\b/
+/** A saída da experiência e do jogo pronto, a mesma frase no fim da ponte do Zappy. */
+const SAIDA_DA_PARTE = ' Quando terminar, clique em Próxima parte.'
 const frases = (paragrafos: string[]) => paragrafos.join(' ').split(/(?<=[.!?:])\s+/)
 test('as experiências são demonstrações: conceito, Olha aqui, testes do narrador e a vez no fim', () => {
   const experiencias = aulasMeuJeito.flatMap((a) => a.sections.filter((s) => s.activity))
@@ -308,17 +315,21 @@ test('as experiências são demonstrações: conceito, Olha aqui, testes do narr
     expect(tela, s.key).toContain('primeira pessoa')
     expect(tela, s.key).not.toMatch(/Deixar a execução|sem antecipar|não demonstrar/)
     if (s.meme) expect(tela, s.key).toContain('Meme na comparação')
-    // A ponte liga o vídeo à experiência sem repetir os passos dela (Diretrizes, seção 1).
+    // A ponte liga o vídeo à experiência sem repetir os passos dela (Diretrizes, seção 1): convida
+    // ("Sua vez!"), pede o teste numa frase curta e termina na saída, que não conta no tamanho.
     expect(s.bridge, s.key).not.toBe(s.activity!.instructions)
-    expect(s.bridge.length, s.key).toBeLessThan(120)
+    expect(s.bridge.startsWith('Sua vez! '), s.key).toBe(true)
+    expect(s.bridge.endsWith(SAIDA_DA_PARTE), s.key).toBe(true)
+    expect(s.bridge.slice(0, -SAIDA_DA_PARTE.length).length, s.key).toBeLessThan(120)
   }
 })
 test('o jogo pronto apresenta o jogo, mostra um exemplo e só passa a vez no fim', () => {
   const jogo = aulasMeuJeito[0]!.sections.find((s) => s.play)!
   const fala = falasSecao(jogo)
-  // Diz o que será construído antes de apresentar a versão pronta; o exemplo mostra o objetivo.
-  expect(fala[0]?.startsWith('Nesta aventura, você vai ')).toBe(true)
-  expect(fala[0]).toContain('Esta é a versão pronta')
+  // A abertura é da criança e o convite é junto (Diretrizes, seção 6, três vozes): "Oi! Você vai
+  // criar…", e só então "vamos ver como… nesta versão pronta". O exemplo mostra o objetivo.
+  expect(fala[0]?.startsWith('Oi! Você vai criar ')).toBe(true)
+  expect(fala[0]).toMatch(/Antes de [^.]*, vamos ver como [^.]*nesta versão pronta\.$/)
   expect(fala[1]?.startsWith('Olha aqui: ')).toBe(true)
   expect(fala[1]).toContain('O objetivo é')
   expect(fala.at(-1)?.startsWith('Agora é a sua vez: jogue')).toBe(true)
@@ -329,7 +340,14 @@ test('o jogo pronto apresenta o jogo, mostra um exemplo e só passa a vez no fim
 // `vocabulario-crianca` barram as palavras da escola na narração e nos manifestos; aqui a fonte
 // também não pode falar de tarefa escolar nem dizer o que é opcional como negação.
 const ESCOLA_E_TAREFA =
-  /\b(?:aulas?|cursos?|professor(?:a|as|es)?|alun[oa]s?|seç(?:ão|ões)|cadernos?|etapas?|nota m[ií]nima|sala|atividades?|entregas?|entregue|entregou|trabalhos?)\b/i
+  /\b(?:aulas?|cursos?|professor(?:a|as|es)?|alun[oa]s?|seç(?:ão|ões)|cadernos?|etapas?|unidades?|nota m[ií]nima|sala|atividades?|entregas?|entreg(?:ar|ue|ues|ou)|estud(?:ar|ando|e|os?)|trabalhos?|devolutivas?|liç(?:ão|ões)|formatura|diplomas?|tarefas?)\b/i
+/**
+ * "Guia" não é pessoa nem ferramenta na fala. O Fantasma do Pinta era "a guia" que mostrava o quadro
+ * anterior, e "guia" também era quem recebia o projeto: com os dois sentidos, a criança procurava
+ * uma pessoa. Desde a noite de 06/10/2026 quem recebe é a equipe (Diretrizes, seção 6), e a
+ * pessoa é barrada pela régua comum `GUIA_PESSOA` (`palavras-da-escola.ts`).
+ */
+const GUIA_QUE_NAO_E_PESSOA = /\b(?:a|uma|da|na|pela|essa|esta)\s+guia\b|\bcomo guia\b/i
 const textos = (valor: unknown): string[] =>
   typeof valor === 'string'
     ? [valor]
@@ -338,7 +356,7 @@ const textos = (valor: unknown): string[] =>
       : valor && typeof valor === 'object'
         ? Object.values(valor).flatMap(textos)
         : []
-test('o que a criança vê e ouve fala de aventura, fase, parte, mapa e guia', () => {
+test('o que a criança vê e ouve fala de aventura, fase, parte e Mapa da Aventura', () => {
   for (const lesson of aulasMeuJeito) {
     const visiveis = [
       lesson.title,
@@ -346,16 +364,24 @@ test('o que a criança vê e ouve fala de aventura, fase, parte, mapa e guia', (
         s.title,
         s.bridge,
         ...falasSecao(s),
+        ...falasSecao(s, 'mapa'),
         ...textos(s.activity),
         ...textos(s.questions),
+        s.meme ?? '',
       ]),
     ]
     for (const texto of visiveis) {
       expect(texto, lesson.slug).not.toMatch(ESCOLA_E_TAREFA)
       expect(texto, lesson.slug).not.toMatch(/não precisa|Próxima seção|Concluir aula/i)
+      expect(texto, lesson.slug).not.toMatch(GUIA_QUE_NAO_E_PESSOA)
+      expect(texto, lesson.slug).not.toMatch(GUIA_PESSOA)
+      // O curso encaixa blocos dentro do Se jogando: "então" não faz papel de ligação na fala.
+      expect(texto, lesson.slug).not.toMatch(/\bentão\b/i)
+      expect(texto, lesson.slug).not.toMatch(/—|\baperte\b/i)
     }
   }
-  // Envio pela galeria: os rótulos novos, na ordem em que aparecem na tela.
+  // Envio pela galeria: os rótulos novos, na ordem em que aparecem na tela (a janela da galeria,
+  // o campo "Recado (opcional)", o botão "Enviar (1)" e a confirmação "Recebido!").
   for (const [index, lesson] of aulasMeuJeito.entries()) {
     const envio = falasSecao(lesson.sections.at(-1)!).join(' ')
     const tool = index >= 1 && index <= 4 ? 'Pinta' : 'Estúdio'
@@ -363,9 +389,9 @@ test('o que a criança vê e ouve fala de aventura, fase, parte, mapa e guia', (
     for (const rotulo of [
       `Escolher no ${tool}`,
       `Minhas criações do ${tool}`,
-      'Recado para o guia',
-      `Enviar para o guia (${index === 4 ? 2 : 1})`,
-      'Recebido pelo seu guia.',
+      'no campo Recado',
+      `Enviar (${index === 4 ? 2 : 1})`,
+      'Recebido!',
       'Concluir fase.',
     ]) {
       const onde = envio.indexOf(rotulo, desde)
@@ -389,6 +415,116 @@ test('o Mapa da Aventura é apresentado à criança, com ler e baixar como convi
   expect(material?.kind === 'materials' ? material.title : undefined).toBe(
     'Mapa da Aventura: O Jogo do Meu Jeito',
   )
+})
+// Revisão de 06/10/2026 (Diretrizes, seção 6): as regras de fala que dá para conferir por máquina.
+// O resto (conversa que soa natural, um chamado por momento importante) é leitura humana.
+test('a ponte do Zappy convida e termina na ação real de saída', () => {
+  for (const [index, lesson] of aulasMeuJeito.entries())
+    for (const s of lesson.sections) {
+      const id = `${lesson.slug}/${s.key}`
+      // A ponte do Mapa é a mesma do Cadê e do Farol, aprovada como está (teste acima).
+      if (s.materials) continue
+      expect(s.bridge, id).toMatch(
+        s.activity || s.play ? /^Sua vez! / : /^(?:Agora|Hora de)\b[^.?!]*!/,
+      )
+      if (s.final) {
+        const tool = index >= 1 && index <= 4 ? 'Pinta' : 'Estúdio'
+        expect(s.bridge, id).toMatch(/^Hora de enviar /)
+        expect(s.bridge, id).toContain(`Escolher no ${tool}`)
+        expect(s.bridge, id).toContain(`Enviar (${index === 4 ? 2 : 1})`)
+        expect(s.bridge, id).toMatch(/Quando aparecer Recebido!, clique em Concluir fase\.$/)
+      } else expect(s.bridge, id).toMatch(/clique em Próxima parte\.$/)
+      // A aplicação diz quando sair: o salvamento da ferramenta, ou o arquivo baixado.
+      if (s.externalTool && !s.final && s.key !== 'compartilhar' && s.key !== 'exportar')
+        expect(s.bridge, id).toContain(
+          `Quando aparecer ${s.externalTool === 'pinta' ? 'Guardado na sua conta' : 'Salvo'}, volte a esta aba e clique em Próxima parte.`,
+        )
+    }
+})
+/**
+ * A retomada é uma ponte curta (Diretrizes, seção 2, "Primeiro o problema, depois a lembrança" e
+ * "A retomada é uma ponte", 06/10/2026, à noite): o teste no trabalho da criança com o porquê,
+ * quando há o que testar; a lembrança da experiência, dizendo onde ela foi feita; e o anúncio, uma
+ * vez só e no fim, colado ao primeiro passo. Até umas 50 palavras, sem a comparação do vídeo.
+ */
+const TETO_DA_RETOMADA = 50
+test('a retomada é uma ponte curta: problema, lembrança e um anúncio colado ao passo', () => {
+  let retomadas = 0
+  for (const lesson of aulasMeuJeito)
+    lesson.sections.forEach((s, i) => {
+      const abertura = falasSecao(s)[0] ?? ''
+      const logoDepois = s.kind === 'application' && Boolean(lesson.sections[i - 1]?.activity)
+      if (!logoDepois && !abertura.includes('Lembra da experiência')) return
+      retomadas++
+      const id = `${lesson.slug}/${s.key}`
+      // Diz onde a experiência foi feita, sem mandar clicar em Anterior.
+      const lembra = abertura.indexOf(
+        logoDepois ? 'Lembra da experiência da parte anterior? ' : 'Lembra da experiência da ',
+      )
+      expect(lembra, id).toBeGreaterThan(-1)
+      if (!logoDepois) expect(abertura, id).toMatch(/Lembra da experiência da [^?]+ desta fase\? /)
+      expect(falasSecao(s).join(' '), id).not.toMatch(/Anterior/)
+      // O problema vem antes da lembrança: "Tá vendo?" com o porquê na mesma frase.
+      const teste = abertura.indexOf('Tá vendo?')
+      if (teste > -1) {
+        expect(teste, id).toBeLessThan(lembra)
+        expect(abertura, id).toMatch(/Tá vendo\? [^.!?]*\bporque\b/)
+      } else expect(lembra, id).toBe(0)
+      expect(abertura, id).toMatch(/\b(?:porque|por isso|é que|ou seja)\b/i)
+      // Um anúncio só, na última frase, colado ao primeiro passo do parágrafo seguinte.
+      expect(
+        falasSecao(s)
+          .join(' ')
+          .match(/\bagora a gente vai\b/gi)?.length,
+        id,
+      ).toBe(1)
+      const frases = abertura.split(/(?<=[.!?])\s+/)
+      expect(frases.at(-1), id).toMatch(/\bagora a gente vai\b/i)
+      expect(abertura, id).not.toMatch(/vamos fazer isso|Sabe |É como /i)
+      // Ponte, não segundo vídeo da experiência.
+      expect(abertura.split(/\s+/).length, id).toBeLessThanOrEqual(TETO_DA_RETOMADA)
+    })
+  expect(retomadas).toBe(14)
+})
+test('a conferência aparece uma vez, depois do teste, com o gatilho genérico', () => {
+  for (const lesson of aulasMeuJeito)
+    for (const s of lesson.sections) {
+      if (s.kind !== 'application') continue
+      const fala = (s.speech ?? []).join(' ')
+      const id = `${lesson.slug}/${s.key}`
+      // A lista entra como caminho da correção, depois do resultado esperado, e termina no
+      // teste de novo (no Estúdio) ou é a última frase do parágrafo (no Pinta).
+      for (const m of fala.matchAll(
+        /Se no seu (jogo|desenho) não (?:aconteceu isso|ficou assim)/g,
+      )) {
+        expect(m[1], id).toBe(s.externalTool === 'pinta' ? 'desenho' : 'jogo')
+        expect(fala.slice(0, m.index), id).toMatch(
+          /Olha só:|Tá vendo\?|troque entre|aparece|comece (?:a|uma) partida/,
+        )
+        if (m[1] === 'jogo')
+          expect(fala.slice(m.index), id).toContain('Depois de corrigir, teste de novo.')
+      }
+      expect(fala, id).not.toMatch(/Confira se ficou assim:/)
+    }
+})
+test('cada montagem diz o porquê de algum resultado, e o Mapa não manda pausar', () => {
+  for (const lesson of aulasMeuJeito)
+    for (const s of lesson.sections) {
+      if (s.kind !== 'application' && s.kind !== 'delivery') continue
+      const id = `${lesson.slug}/${s.key}`
+      // Só a fala da seção: o fecho comum já tem um porquê e deixaria o teste vazio.
+      expect((s.speech ?? []).join(' '), id).toMatch(/\b(?:porque|por isso|é que|ou seja)\b/)
+      const mapa = falasSecao(s, 'mapa').join(' ')
+      expect(mapa, id).not.toMatch(/Pause aqui|esta aba/)
+      expect(mapa, id).toMatch(/clique em (?:Próxima parte|Concluir fase)\./)
+    }
+  // O PDF não tem vídeo para apontar: o Mapa sai sem "Olha aqui", "Olha só", "Repare" e "Tá vendo?".
+  const chamado = /(?<!\p{L})(?:olha aqui|olha só|repare|tá vendo)(?!\p{L})/iu
+  for (const lesson of aulasMeuJeito)
+    for (const s of lesson.sections)
+      if (!s.activity)
+        expect(falasSecao(s, 'mapa').join(' '), `${lesson.slug}/${s.key}`).not.toMatch(chamado)
+  expect(falasSecao(aulasMeuJeito[0]!.sections[0]!, 'mapa').join(' ')).not.toMatch(/Olha|eu clico/)
 })
 test('todos os percursos de experiência estão cobertos', () => {
   const scenes = manifests

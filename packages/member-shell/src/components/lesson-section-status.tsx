@@ -68,18 +68,17 @@ function iconeDe(item: SectionPendingItem) {
   return ICONE[item.kind] ?? Flag
 }
 
-export const PREPARANDO = 'Esta parte ainda está sendo preparada'
 /**
  * O texto que a CRIANÇA lê: a mensagem de autoria só sai inteira no ensaio (`preview`), e o resto
- * passa pelo vocabulário do app (`LessonCopy.itemPendente`: no Kids, "Envie seu projeto para o
- * guia" no lugar do "para o professor" que o members manda).
+ * passa pelo vocabulário do app (`LessonCopy.itemPendente`: no Kids, "Envie o seu projeto" no
+ * lugar do "para o professor" que o members manda).
  */
 export function textoDoItem(
   item: SectionPendingItem,
   preview: boolean,
   copy: LessonCopy = ADULT_LESSON_COPY,
 ) {
-  return item.kind === 'authoring' && !preview ? PREPARANDO : copy.itemPendente(item)
+  return item.kind === 'authoring' && !preview ? copy.secoes.preparando : copy.itemPendente(item)
 }
 /**
  * "Para seguir:" só antecede uma AÇÃO da criança. A razão da aula toda (`lesson`), a aula em
@@ -149,7 +148,7 @@ export function LessonSectionStatus({
         <Item
           item={{
             kind: 'lesson',
-            text: ultima ? 'Tudo pronto nesta parte!' : 'Tudo pronto nesta parte. Pode seguir!',
+            text: ultima ? copy.secoes.prontaUltima : copy.secoes.pronta,
           }}
           preview={preview}
         />

@@ -719,7 +719,7 @@ export function evaluateLearning(
     return {
       passed: false,
       participated: false,
-      feedback: 'Atividade inválida.',
+      feedback: 'Não foi possível conferir esta resposta.',
       verifiedBy: 'server',
     }
 

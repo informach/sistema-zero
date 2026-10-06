@@ -84,7 +84,7 @@ export default async function CoursePage({
                 A fase de publicação não está disponível agora. O que você concluiu continua
                 guardado.
                 <Link href="/recados" className="ml-1 font-bold text-primary underline">
-                  Falar com o guia
+                  Falar com a equipe
                 </Link>
               </p>
             )}

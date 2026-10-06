@@ -214,3 +214,77 @@ describe('renderCertificatePdf', () => {
     }
   })
 })
+
+/**
+ * O PDF emitido fica guardado no R2 e todo download serve o guardado. Sem a versão do desenho na
+ * chave, o conserto do "concluiu" duplicado (06/10/2026) só valia para emissões novas: quem já
+ * tinha o certificado baixava o PDF velho para sempre.
+ */
+describe('a chave do PDF guardado leva a versão do desenho', () => {
+  test('certificates/<id>.v<versão>.pdf, e a versão já passou da 1 (a chave sem versão)', async () => {
+    const { CERTIFICATE_LAYOUT_VERSION, certificatePdfKey } = await import(
+      '../src/routes/certificate'
+    )
+    expect(CERTIFICATE_LAYOUT_VERSION).toBeGreaterThanOrEqual(2)
+    expect(certificatePdfKey(CERT.id)).toBe(
+      `certificates/${CERT.id}.v${CERTIFICATE_LAYOUT_VERSION}.pdf`,
+    )
+    // A chave da v1 era esta: o PDF dela não pode voltar a ser servido.
+    expect(certificatePdfKey(CERT.id)).not.toBe(`certificates/${CERT.id}.pdf`)
+  })
+
+  test('a rota monta, guarda e serve o PDF NA chave da versão; o da v1 nunca é lido', async () => {
+    const { createCertificateRoutes, certificatePdfKey } = await import('../src/routes/certificate')
+    // Um R2 de mentira injetado na rota (o mock do módulo `server/r2` vazaria para a suíte).
+    const guardado = new Map<string, Uint8Array<ArrayBuffer>>()
+    const lidas: string[] = []
+    const storage = {
+      head: async (key: string) => {
+        lidas.push(key)
+        const bytes = guardado.get(key)
+        return bytes
+          ? { contentType: 'application/pdf', contentLength: bytes.length, etag: null }
+          : null
+      },
+      get: async (key: string) => ({
+        body: new Response(guardado.get(key)).body as ReadableStream<Uint8Array>,
+        contentType: 'application/pdf',
+        contentLength: null,
+      }),
+      put: async ({ key, body }: { key: string; body: Buffer | Uint8Array }) => {
+        guardado.set(key, new Uint8Array(body))
+      },
+    }
+    // O members é chamado nas duas vezes (é idempotente); o PDF só é MONTADO na primeira.
+    let emissoes = 0
+    const members = {
+      issueCertificate: async () => {
+        emissoes++
+        return { status: 200, body: { certificate: CERT, config: {} } }
+      },
+    }
+    const routes = createCertificateRoutes({
+      members: members as unknown as Parameters<typeof createCertificateRoutes>[0]['members'],
+      session: { getSession: async () => null } as unknown as Parameters<
+        typeof createCertificateRoutes
+      >[0]['session'],
+      storage,
+    })
+    const ctx = { params: Promise.resolve({ lessonId: 'aula', blockId: 'bloco' }) }
+    // O PDF velho, na chave sem versão: é o que quem emitiu antes de 06/10/2026 tem guardado.
+    guardado.set(`certificates/${CERT.id}.pdf`, new Uint8Array([1, 2, 3]))
+
+    const primeira = await routes.certificateIssue.POST(new Request('http://x/c'), ctx)
+    expect(primeira.status).toBe(200)
+    const pdf = new Uint8Array(await primeira.arrayBuffer())
+    expect(pdfHeader(pdf)).toBe('%PDF-')
+    expect(guardado.has(certificatePdfKey(CERT.id))).toBe(true)
+
+    // O segundo download serve o guardado, da MESMA chave versionada.
+    const segunda = await routes.certificateIssue.POST(new Request('http://x/c'), ctx)
+    expect(new Uint8Array(await segunda.arrayBuffer())).toEqual(pdf)
+    expect(lidas).toEqual([certificatePdfKey(CERT.id), certificatePdfKey(CERT.id)])
+    expect(lidas).not.toContain(`certificates/${CERT.id}.pdf`)
+    expect(emissoes).toBe(2)
+  })
+})

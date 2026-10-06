@@ -161,10 +161,10 @@ export function ChildrenDashboard({
     <section className="w-full max-w-2xl">
       <h2 className="sz-display mb-3 text-center text-foreground text-xl">Progresso dos filhos</h2>
       {/* A ponte entre os dois vocabulários (06/10/2026): aqui os pais leem curso, aula e
-          professor; na área da criança as mesmas coisas se chamam aventura, fase e guia. */}
+          professor; na área da criança as mesmas coisas se chamam aventura, fase e equipe. */}
       <p className="mb-4 text-center text-muted-foreground text-sm">
         Na área da criança, cada curso aparece como uma aventura, cada aula como uma fase e o
-        professor como o guia.
+        professor como a equipe.
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         {children === null

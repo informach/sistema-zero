@@ -319,6 +319,12 @@ Regras de `usesBlock`: `blockType` é o tipo real do bloco do Estúdio, `area` a
 (zero confere remoção), `fields` e `inputs` conferem valores, `beforeBlock` confere ordem na mesma
 sequência e `inputBlocks` confere o que está encaixado num campo.
 
+Quando um campo admite imagens alternativas, `fieldOptions` declara os nomes aceitos, por exemplo
+`fieldOptions: { IMAGE: ['farol-listrado-aceso', 'farol-de-pedra-aceso'] }`. A lista aceita de 1 a 50
+nomes distintos e não pode repetir um campo de `fields`. A opção precisa estar no mesmo bloco
+ativo e no mesmo encaixe exigido por `inputBlocks`; imagens apagadas e ações no outro ramo não
+satisfazem uma regra que pede um farol aceso. O editor do Admin exibe os valores aceitos.
+
 **Regra travada neste projeto:** todo campo que a aula declara livre tem critério em faixa ou não
 tem critério, nunca valor exato. Quatro aulas hoje reprovam quem aceita o convite do vídeo.
 

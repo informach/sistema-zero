@@ -66,7 +66,7 @@ const FANTASMA = 0.6
  * toda, ancorada no chão da caixa.
  */
 type Corpo = { esquerda: number; direita: number; topo: number; base: number }
-const HB = FAROL_HITBOXES.personagem ?? { x: 0, y: 0, w: 1, h: 1 }
+const HB = FAROL_HITBOXES.aventureiro ?? { x: 0, y: 0, w: 1, h: 1 }
 const CORPO_DO_PERSONAGEM: Corpo = {
   esquerda: HB.x * CAIXA,
   direita: (HB.x + HB.w) * CAIXA,
@@ -169,7 +169,7 @@ export function LighthouseWalkStage({ state }: { state: SceneState }) {
         <image
           data-personagem={comDados ? onde : undefined}
           data-x={comDados ? walk.x : undefined}
-          href={farolSvgUrl('personagem')}
+          href={farolSvgUrl('aventureiro')}
           x={walk.x}
           y={CAMINHO_Y}
           width={CAIXA}
@@ -215,7 +215,7 @@ export function LighthouseWalkStage({ state }: { state: SceneState }) {
             ) : (
               <image
                 data-fundo="farol"
-                href={farolSvgUrl('cenario')}
+                href={farolSvgUrl('praia-tropical')}
                 width={FAROL_LAYOUT.palco.w}
                 height={VIEW.h}
               />

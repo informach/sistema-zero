@@ -50,13 +50,20 @@ const CURSO = 'nave-contra-asteroides'
 // pelo nome exato. Por dentro, a equipe continua dizendo aula, seção e caderno.
 const checkExit =
   'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
-const send = 'Depois, clique em Enviar para o guia e confirme em Enviar.'
+const send = 'Depois, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo de título e já traz o resumo do curso. A comemoração
 // do Mural oferece Copiar link de jogar antes de Fechar (ajuste do responsável em 06/10/2026).
+// O opcional vira convite, e as frases conversam em vez de virar lista (revisão de 06/10/2026).
 const publish =
-  'Publicar no Mural é opcional; você também pode deixar para outra hora. Se quiser mostrar o jogo agora, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
+  'Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa, confira a imagem e clique em Publicar. E pronto: Seu jogo está no Mural! Que conquista! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
 
-export function falasSecao(section: SecaoNave): string[] {
+/**
+ * Onde a fala aparece: no vídeo (`video`) ou no Mapa da Aventura (`mapa`), que é lido e não
+ * assistido. Mesmo modelo de `gerar-meu-jeito.ts` (revisão independente de 06/10/2026).
+ */
+export type MeioDaFala = 'video' | 'mapa'
+
+export function falasSecao(section: SecaoNave, meio: MeioDaFala = 'video'): string[] {
   const speech = [...(section.speech ?? [])]
   if (section.checks?.length) {
     speech.push(
@@ -64,7 +71,21 @@ export function falasSecao(section: SecaoNave): string[] {
       `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando o envio terminar, clique em Concluir fase.'}` : 'Depois, clique em Próxima parte.'}`,
     )
   }
-  return speech
+  return meio === 'video' ? speech : speech.map(semChamados)
+}
+/**
+ * No PDF não há vídeo para apontar: "Olha aqui", "Olha só", "Repare" e "Tá vendo?" puxam o olhar
+ * para um gesto da gravação (Diretrizes, seção 6). No Mapa eles saem e a frase seguinte começa com
+ * maiúscula; "Repare nos/nas…" vira "Confira os/as…", que é o que a criança faz no papel.
+ */
+export function semChamados(paragrafo: string): string {
+  return paragrafo
+    .replace(/\bRepare n([oa]s?) /g, 'Confira $1 ')
+    .replace(/, (?:olha aqui|olha só|repare): /g, ', ')
+    .replace(
+      /(?:Tá vendo\? |(?:Olha aqui|Olha só|Repare): |Repare que )(\p{L})/gu,
+      (_, letra: string) => letra.toUpperCase(),
+    )
 }
 function types(value: unknown): string[] {
   const found = new Set<string>()
@@ -112,7 +133,7 @@ export function gerarManifestoNave(lesson: AulaNave, index: number): LearningMan
           required: true,
           title: 'Experimente o jogo pronto',
           instructions:
-            'Clique no jogo. Enter começa; as setas movem a nave e a barra de espaço atira. Conheça os controles e continue quando quiser.',
+            'Clique no jogo e toque em Enter para começar. As setas movem a nave, e a barra de espaço atira. Jogue o quanto quiser e, quando terminar, clique em Próxima parte.',
           hints: [],
           activity: {
             type: 'project-play',
@@ -197,6 +218,9 @@ function roteiro(lesson: AulaNave, index: number) {
     '',
     `${index === 0 ? 'Começar com o projeto vazio preparado para esta aula.' : 'Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo.'} Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.`,
     '',
+    // Três vozes e conversa contínua (Diretrizes, seção 6, revisão de 06/10/2026).
+    'Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando ("Sua vez!", "Agora…!", "Hora de…!") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Tá vendo?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").',
+    '',
   ]
   lesson.sections.forEach((s, i) => {
     lines.push(`## Seção ${i + 1}. ${s.title}`, '')
@@ -279,7 +303,7 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
     if (s.checks?.length)
       lines.push(
         '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte' +
-          (s.final ? ', com o envio confirmado em Enviar para o guia → Enviar.' : '.'),
+          (s.final ? ', com o envio confirmado em Enviar meu projeto → Enviar.' : '.'),
         '',
         ...s.checks.map((c) => `- ${c.label}`),
         '',

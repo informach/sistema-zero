@@ -1134,6 +1134,19 @@ const CENAS: Record<SceneId, Cena> = {
     mostra: (s) =>
       s.lighthouse.door === 'closed' && s.evidence.discoveries.includes('locked-without-key'),
   },
+  'lighthouse-position': {
+    pedidos: {
+      'mover-horizontal': {
+        texto: 'Troque a Posição horizontal x para 160 e olhe a chave.',
+        faz: (m) => m.faz({ type: 'key-position', axis: 'x', value: 160 }),
+      },
+      'mover-vertical': {
+        texto: 'Troque a Posição vertical y para 250 e olhe a chave.',
+        faz: (m) => m.faz({ type: 'key-position', axis: 'y', value: 250 }),
+      },
+    },
+    mostra: (s) => s.keyPosition.x === 160 && s.keyPosition.y === 53,
+  },
   // O andar do Farol (05/10/2026). "Avançar 1 quadro" anda UM quadro (1/30 s); "Rodar" é o ▶ até a
   // tela mostrar o que o pedido manda olhar.
   'lighthouse-walk': {

@@ -34,7 +34,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. Aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.
 >
-> Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque o jogo somou um achado. Se eu toco em outro, ele soma de novo, e agora é 2.
+> Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.
 >
 > E se eu tocar num espaço vazio do jardim? Tá vendo? O número não muda. Isso acontece porque a regra que soma está ligada aos esconderijos: ela só funciona quando eu toco num esconderijo. Ali não tinha nenhum, então nada foi somado.
 >
@@ -42,7 +42,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
 
-**Zappy abaixo do vídeo:** “Sua vez! Procure no jardim e fique de olho no número Achados.”
+**Zappy abaixo do vídeo:** “Sua vez! Procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima parte.”
 
 **Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo: o gol soma um no placar, e cada personagem encontrado soma um em Achados. Sem palpite nem pergunta final.
 
@@ -54,11 +54,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Narração:**
 
-> “Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito!
+> “Aqui no seu jogo, toque num esconderijo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta.
 >
-> Primeiro, toque num esconderijo do seu jogo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o jogo ainda não sabe que precisa contar. Então a gente vai ensinar o jogo a somar um em Achados toda vez que um esconderijo for tocado.
+> Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito!
 >
-> Para isso, encontre na área Quando acontecer o bloco Quando clicar ou tocar num sprite do grupo esconderijos. Se ele não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.
+> Para começar, encontre na área Quando acontecer o bloco Quando clicar ou tocar num sprite do grupo esconderijos. Se ele não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.
 >
 > Repare que dentro dele já está o bloco da Fase 1, Deixar o sprite escolhido com 0% de visibilidade. A contagem vai ficar logo abaixo dele, então deixe esse bloco à vista.
 >
@@ -66,29 +66,27 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Arraste e solte logo abaixo de Deixar o sprite escolhido com 0% de visibilidade.
 >
-> O número 1 já está certo, porque cada personagem vale um achado. Mas o bloco chega com contador, e a variável do seu jogo se chama achados. Então clique em contador e escolha achados.
->
-> Confira se ficou assim: os dois blocos estão dentro de Quando clicar ou tocar. Primeiro, o esconderijo escolhido fica invisível e, logo abaixo, o jogo soma 1 em achados.”
+> O número 1 já está certo, porque cada personagem vale um achado. Mas o bloco chega com contador, e a variável do seu jogo se chama achados. Então clique em contador e escolha achados.”
 
-**Na tela:** mostrar o jardim atualizado e testar os três esconderijos, um por vez. No "Olha só", deixar ver o primeiro personagem e Achados em 1. Conferir 2, 3 e a mensagem **Você achou todo mundo!** Tocar novamente no mesmo lugar e conferir que a contagem não sobe. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Mostrar **Salvo**, abrir **Enviar para o guia**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Próxima parte**. Não demonstrar compartilhamento.
+**Na tela:** mostrar o jardim atualizado e testar os três esconderijos, um por vez. No "Olha só", deixar ver o primeiro personagem e Achados em 1. Conferir 2, 3 e a mensagem **Você achou todo mundo!** Tocar novamente no mesmo lugar e conferir que a contagem não sobe. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Mostrar **Salvo**, abrir **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Próxima parte**. Não demonstrar compartilhamento.
 
 **Narração:**
 
 > “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!
 >
-> Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: ela aparece quando Achados chega a 3.
+> Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.
 >
 > Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.
 >
-> Se a contagem não funcionar, confira o bloco de somar. Ele precisa estar dentro de Quando clicar ou tocar, logo abaixo do bloco de visibilidade, com o número 1 e a variável achados. Depois de corrigir, teste de novo.
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: os dois blocos estão dentro de Quando clicar ou tocar, primeiro o esconderijo escolhido fica invisível e, logo abaixo, o jogo soma 1 em achados. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar.
+> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
 >
 > Quando o envio terminar, clique em Próxima parte.”
 
-**Zappy abaixo do vídeo:** “Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte antes de enviar para o guia.”
+**Zappy abaixo do vídeo:** “Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte antes de enviar o seu projeto.”
 
 **Conferência de produção:** a Pré-visualização atualiza automaticamente. O caminho é Programação > Variáveis, com o bloco Somar ___ em variável ___, que nasce com 1 e contador. A verificação também confere a regra da Aula 1. O caderno continua na seção Seu Mapa da Aventura da Aula 1. Manter a cadeia do projeto e a regra de vitória preparada. A fala não diz que a mensagem de vitória já estava preparada: ela liga a mensagem à contagem que a criança montou, que é o que a faz aparecer (Achados maior ou igual a 3). A conclusão exige vídeo, aprovação em **Verificar esta parte** e envio. A verificação depende desse clique; o envio não a executa automaticamente.
 
@@ -108,7 +106,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.
 >
-> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos têm o mesmo tamanho, e todos os esconderijos também. Então ninguém sai do lugar.
+> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.
 >
 > Agora vamos mudar a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.
 >
@@ -126,13 +124,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 60 a 80 segundos, incluindo publicação, comemoração e cópia do link.
 
-**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone, e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** já preenchido, sem editar. Na aula, a janela não mostra o campo Título: o título vem do curso. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload nem outra capa.
+**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone (uma setinha para cima saindo de uma bandeja), e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** já preenchido, sem editar. Na aula, a janela não mostra o campo Título: o título vem do curso. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload nem outra capa.
 
 **Narração:**
 
 > “Agora chegou a hora de publicar o seu jogo, com os bichos que você escolheu, para a sua família e os seus amigos jogarem!
 >
-> Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como um ícone. Repare que o resumo do projeto já vem preenchido, então pode deixar como está.
+> Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma setinha para cima. Repare que o resumo do projeto já vem preenchido, então pode deixar como está.
 >
 > Depois, clique em Gerar capa e espere a imagem aparecer. Olha só: essa é a capa que vai apresentar o seu jogo!”
 
@@ -148,8 +146,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Depois de copiar o link, clique em Fechar e, por fim, em Concluir fase.”
 
-**Zappy abaixo do vídeo:** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir fase.”
+**Zappy abaixo do vídeo:** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir fase.”
 
-**Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.
+**Ajuda escrita junto ao vídeo, fora da narração:** Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), a área de ajuda.
 
 **Conferência de produção:** publicar é a tarefa esperada da seção. O vídeo continua sendo o critério técnico de conclusão; publicação e acesso ao Mural não viram bloqueios. O envio da seção anterior libera Compartilhar. Gerar capa já inclui a imagem na publicação, sem download nem upload manual. Conferir o resumo pronto antes da gravação; o título vem do curso e não aparece na janela da aula, então a fala não o cita. A ajuda abre diretamente o tutorial; não exigir sua leitura. Outras capas e solução de problemas ficam no Como fazer. Copiar o link de jogar faz parte da comemoração e aparece no vídeo: o link é público e não mostra o nome da criança, e a fala sugere mandar para a família e os amigos, com ajuda de um adulto se precisar. A fala termina em Concluir fase, sem antecipar certificado ou próxima aula. Sem oferta comercial. Regravar e ensaiar o caminho completo com crianças.

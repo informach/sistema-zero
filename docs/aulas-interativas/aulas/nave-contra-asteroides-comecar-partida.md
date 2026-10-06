@@ -24,21 +24,21 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 ### Seção 1. Escolha quando o jogo pode agir
 
-**Tarefa:** Compare criar asteroides fora e dentro de Se jogando, antes e depois de começar.
+**Tarefa:** Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-estado-do-jogo → fala-estado-do-jogo → experiencia-estado.
 
-**Zappy na página (não gravar):** Compare criar asteroides fora e dentro de Se jogando, antes e depois de começar.
+**Zappy na página (não gravar):** Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `game-state`. Use Tempo para soltar o tempo se estiver parado. Na abertura, deixe Criar asteroide fora de Se o estado do jogo é jogando e observe o tempo e as pedras. Mova para dentro do Se e observe de novo sem começar. Depois toque na tela para começar e compare. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Separe a abertura da partida
 
-**Tarefa:** Leve os blocos da partida para Se jogando e crie o ramo da abertura.
+**Tarefa:** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-embrulhar → fala-embrulhar.
 
-**Zappy na página (não gravar):** Leve os blocos da partida para Se jogando e crie o ramo da abertura.
+**Zappy na página (não gravar):** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -50,11 +50,11 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 ### Seção 3. Espere a partida para criar pedras e tiros
 
-**Tarefa:** Coloque uma condição jogando no intervalo e outra dentro da barra de espaço.
+**Tarefa:** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-relogio-e-tiro → fala-relogio-e-tiro.
 
-**Zappy na página (não gravar):** Coloque uma condição jogando no intervalo e outra dentro da barra de espaço.
+**Zappy na página (não gravar):** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -65,13 +65,13 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 ### Seção 4. Use Enter para começar
 
-**Tarefa:** Programe Enter, teste a abertura e a partida e envie.
+**Tarefa:** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
 **Blocos na página:** video-enter → fala-enter → projeto.
 
-**Zappy na página (não gravar):** Programe Enter, teste a abertura e a partida e envie.
+**Zappy na página (não gravar):** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Vá para inicio em Ao iniciar.
 - Leve a sequência para o então de Se jogando, começando por Limpar.

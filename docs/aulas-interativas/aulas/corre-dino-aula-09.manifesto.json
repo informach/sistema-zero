@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-contato",
-      "plannedVideo": "Título: Observe quando o jogo reconhece a batida\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Diminuir a Distância do cacto um passo por vez, com as áreas pontilhadas à vista. Parar no primeiro BATEU e apontar o vão entre os desenhos. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e o cacto, cada um dentro de um bambolê, com os bambolês se encostando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Observe quando o jogo reconhece a batida\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Diminuir a Distância do cacto um passo por vez, com as áreas pontilhadas à vista. Parar no primeiro BATEU! e apontar o vão entre os desenhos. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e o cacto, cada um dentro de um bambolê, com os bambolês se encostando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-contato",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Aproxime o cacto aos poucos e observe quando aparece BATEU."
+        "text": "Sua vez! Aproxime o cacto aos poucos até aparecer BATEU! Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -48,7 +48,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Observe quando o jogo reconhece a batida",
-        "instructions": "Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU. Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%.",
+        "instructions": "Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU! Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -63,38 +63,38 @@
     },
     {
       "key": "video-batida-acaba-partida",
-      "plannedVideo": "Título: Encerre a partida na batida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Encerre a partida na batida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-batida-acaba-partida",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mude para fim dentro da colisão entre Dino e cactos."
+        "text": "Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-mapa-do-jogo",
-      "plannedVideo": "Título: Mostre a tela de fim\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre a tela de fim\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-mapa-do-jogo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mostre a tela de fim no ramo que consulta fim."
+        "text": "Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-batida-sentida",
-      "plannedVideo": "Título: Dê som e imagem à batida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Dê som e imagem à batida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-batida-sentida",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Na colisão, exploda cacto, trema em 8, toque derrota e mude para fim."
+        "text": "Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
@@ -106,7 +106,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare os dois modos de voltar e observe o começo da partida seguinte."
+        "text": "Sua vez! Compare os dois jeitos de voltar e repare em como começa a partida seguinte. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -127,14 +127,14 @@
     },
     {
       "key": "video-caminho-de-volta",
-      "plannedVideo": "Título: Prepare uma nova partida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare uma nova partida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-caminho-de-volta",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Reinicie no senão se fim do evento de qualquer tecla ou toque."
+        "text": "Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
@@ -142,7 +142,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Retome o começo, a batida e o reinício nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar."
+        "text": "Hora de lembrar o que você construiu! As perguntas falam do começo da partida, da batida e do recomeço. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte."
       }
     },
     {
@@ -223,7 +223,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase."
+        "text": "Hora de testar e enviar o seu jogo! Jogue uma partida inteira, do começo ao recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase."
       }
     },
     {
@@ -948,7 +948,7 @@
       "key": "contato",
       "title": "Observe quando o jogo reconhece a batida",
       "intent": "exploration",
-      "objective": "Aproxime o cacto aos poucos e observe quando aparece BATEU.",
+      "objective": "Sua vez! Aproxime o cacto aos poucos até aparecer BATEU! Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-contato", "fala-contato", "experiencia-contato"],
       "workspaceKey": null,
       "externalTool": null,
@@ -962,7 +962,7 @@
       "key": "batida-acaba-partida",
       "title": "Encerre a partida na batida",
       "intent": "application",
-      "objective": "Mude para fim dentro da colisão entre Dino e cactos.",
+      "objective": "Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-batida-acaba-partida", "fala-batida-acaba-partida"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -973,7 +973,7 @@
         "projectChecks": [
           {
             "id": "colisao",
-            "label": "Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a faxina, confira a colisão com os cactos e use Mudar o estado do jogo para fim.",
+            "label": "Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a regra que tira do grupo, confira a colisão com os cactos e use Mudar o estado do jogo para fim.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -1013,7 +1013,7 @@
       "key": "mapa-do-jogo",
       "title": "Mostre a tela de fim",
       "intent": "application",
-      "objective": "Mostre a tela de fim no ramo que consulta fim.",
+      "objective": "Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-mapa-do-jogo", "fala-mapa-do-jogo"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1050,7 +1050,7 @@
       "key": "batida-sentida",
       "title": "Dê som e imagem à batida",
       "intent": "application",
-      "objective": "Na colisão, exploda cacto, trema em 8, toque derrota e mude para fim.",
+      "objective": "Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-batida-sentida", "fala-batida-sentida"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1108,7 +1108,7 @@
       "key": "trocar-nao-limpa",
       "title": "Compare voltar e reiniciar",
       "intent": "exploration",
-      "objective": "Compare os dois modos de voltar e observe o começo da partida seguinte.",
+      "objective": "Sua vez! Compare os dois jeitos de voltar e repare em como começa a partida seguinte. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-trocar-nao-limpa", "fala-trocar-nao-limpa", "experiencia-restart"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1122,7 +1122,7 @@
       "key": "caminho-de-volta",
       "title": "Prepare uma nova partida",
       "intent": "application",
-      "objective": "Reinicie no senão se fim do evento de qualquer tecla ou toque.",
+      "objective": "Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-caminho-de-volta", "fala-caminho-de-volta"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1184,7 +1184,7 @@
       "key": "revisao",
       "title": "Confira o que você construiu",
       "intent": "explanation",
-      "objective": "Retome o começo, a batida e o reinício nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.",
+      "objective": "Hora de lembrar o que você construiu! As perguntas falam do começo da partida, da batida e do recomeço. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
       "blockKeys": ["fala-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1198,7 +1198,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
+      "objective": "Hora de testar e enviar o seu jogo! Jogue uma partida inteira, do começo ao recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1209,7 +1209,7 @@
         "projectChecks": [
           {
             "id": "colisao",
-            "label": "Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a faxina, confira a colisão com os cactos e use Mudar o estado do jogo para fim.",
+            "label": "Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a regra que tira do grupo, confira a colisão com os cactos e use Mudar o estado do jogo para fim.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",

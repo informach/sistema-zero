@@ -284,8 +284,7 @@ export function PintaBlockView({
         <div className="space-y-1">
           <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
             <CheckCircle2 className="size-4" />
-            {pinta.enviado}
-            {submittedAt ? ` em ${new Date(submittedAt).toLocaleString('pt-BR')}` : ''}.
+            {pinta.enviado(submittedAt ? new Date(submittedAt).toLocaleString('pt-BR') : null)}
           </p>
           {reviewed ? (
             <p className="flex items-center gap-2 text-sm text-success">
@@ -305,7 +304,7 @@ export function PintaBlockView({
       <Dialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title={submitted ? 'Enviar o desenho de novo?' : 'Enviar o desenho?'}
+        title={submitted ? pinta.confirmarReenviar : pinta.confirmarEnviar}
         footer={
           <>
             <Button

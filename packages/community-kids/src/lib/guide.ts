@@ -208,7 +208,7 @@ export function parentWelcomeSteps({
       {
         id: 'parent-3',
         emoji: '3️⃣',
-        text: 'Pronto! Na hora de criar, é só tocar na bolinha com o nome dela.',
+        text: 'Pronto! Na hora de entrar, é só tocar na bolinha com o nome dela.',
       },
     ]
   }
@@ -217,7 +217,7 @@ export function parentWelcomeSteps({
     {
       id: 'parent-1',
       emoji: '1️⃣',
-      text: 'Escolha quem vai aprender e toque na bolinha com o nome da criança.',
+      text: 'Escolha quem vai criar e toque na bolinha com o nome da criança.',
     },
     {
       id: 'parent-2',

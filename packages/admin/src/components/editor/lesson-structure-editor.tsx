@@ -2,8 +2,11 @@
 
 import { isLegacyLessonLayout } from '@sistemazero/core/learning'
 import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
+import { LessonCopyProvider } from '@sistemazero/member-shell/components/lesson-copy-context'
 import { useLessonPreview } from '@sistemazero/member-shell/components/lesson-preview-context'
 import { LessonSections } from '@sistemazero/member-shell/components/lesson-sections'
+import { ADULT_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy'
+import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import type {
   LessonBlockView,
   LessonDetailView,
@@ -129,7 +132,8 @@ export function LessonStructureEditor(
      * Plataforma do curso. A prévia e o ensaio precisam montar a aula como o ALUNO
      * daquele app vai ver: desde 13/09/2026 o kids não tem a barra "O que falta para
      * concluir / Índice da aula" e leva o índice para o cabeçalho da seção, então
-     * conferir sempre no layout adulto mostraria uma tela que a criança não tem.
+     * conferir sempre no layout adulto mostraria uma tela que a criança não tem. O mesmo vale
+     * para as PALAVRAS: no kids a prévia e o ensaio falam fase, parte e guia (`KIDS_LESSON_COPY`).
      */
     audience?: CourseAudience
   },
@@ -211,7 +215,13 @@ export function LessonStructureEditor(
               kids={kids}
             />
           ) : (
-            <LessonSections lesson={previewLesson} renderBlocks={renderPreviewBlocks} kids={kids} />
+            <LessonCopyProvider value={kids ? KIDS_LESSON_COPY : ADULT_LESSON_COPY}>
+              <LessonSections
+                lesson={previewLesson}
+                renderBlocks={renderPreviewBlocks}
+                kids={kids}
+              />
+            </LessonCopyProvider>
           )}
         </div>
       )}

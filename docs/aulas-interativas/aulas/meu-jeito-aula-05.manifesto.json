@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-camadas",
-      "plannedVideo": "Título: Troque o que fica na frente\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da chama na frente da pedra: apontar a lista Camadas, com a chama em cima. Clicar em Uma camada para a frente, na linha da pedra, e mostrar a pedra subir na lista e aparecer na frente. Clicar em Uma camada para trás, na linha da pedra, e mostrar a chama cobrindo de novo. Clicar em Uma camada para a frente outra vez e mostrar a pedra na frente. Meme na comparação: na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda \"a de cima fica na frente\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Troque o que fica na frente\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da chama na frente da pedra: apontar a lista Camadas, com a chama em cima. Clicar em Uma camada para a frente, na linha da pedra, e mostrar a pedra subir na lista e aparecer na frente. Clicar em Uma camada para trás, na linha da pedra, e mostrar a chama cobrindo de novo. Clicar em Uma camada para a frente outra vez e mostrar a pedra na frente. Meme na comparação: na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda \"a de cima fica na frente\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-camadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora suba e desça a pedra na lista Camadas e veja qual fica na frente."
+        "text": "Sua vez! Suba e desça a pedra na lista Camadas e veja qual fica na frente. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -86,38 +86,38 @@
     },
     {
       "key": "video-chama",
-      "plannedVideo": "Título: Desenhe fogo atrás da pedra\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Desenhe fogo atrás da pedra\n\nRegravar nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-chama",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Acrescente uma chama acima do asteroide e coloque-a atrás do corpo."
+        "text": "Agora desenhe o fogo atrás da sua pedra! Faça uma chama acima do asteroide e coloque a chama atrás do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-miolo-fogo",
-      "plannedVideo": "Título: Acrescente um centro mais claro\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Acrescente um centro mais claro\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-miolo-fogo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Faça uma chama menor dentro da primeira, atrás da pedra."
+        "text": "Agora acrescente um centro mais claro ao fogo! Faça uma chama menor dentro da primeira, atrás da pedra. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-mudanca-pequena",
-      "plannedVideo": "Título: Compare mudanças entre quadros\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia tocando, com os dois controles em 0: deixar ver a pedra parada na Prévia. Levar O tanto que a cratera anda até 4 e soltar; deixar ver as crateras mudarem no quadro 2 e a pedra parecer rolar na Prévia. Levar O tanto que a pedra inteira anda até 10 e soltar; deixar ver a pedra pular na Prévia. Meme na comparação: na frase da bola, o Zappy girando uma bola na ponta do dedo: a bola fica no lugar enquanto os desenhos dela andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare mudanças entre quadros\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia tocando, com os dois controles em 0: deixar ver a pedra parada na Prévia. Levar O tanto que a cratera anda até 4 e soltar; deixar ver as crateras mudarem no quadro 2 e a pedra parecer rolar na Prévia. Levar O tanto que a pedra inteira anda até 10 e soltar; deixar ver a pedra pular na Prévia. Meme na comparação: na frase da bola, o Zappy girando uma bola na ponta do dedo: a bola fica no lugar enquanto os desenhos dela andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-mudanca-pequena",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora mude só a cratera, depois a pedra inteira, e compare a Prévia."
+        "text": "Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -147,26 +147,26 @@
     },
     {
       "key": "video-quadro-pedra",
-      "plannedVideo": "Título: Mude detalhes no segundo quadro\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Mude detalhes no segundo quadro\n\nRegravar nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-quadro-pedra",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Duplique o quadro e altere um pouco as crateras e as pontas das chamas."
+        "text": "Agora mude só os detalhes no segundo quadro! Duplique o quadro e altere um pouco as crateras e as pontas das chamas. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-girando",
-      "plannedVideo": "Título: Confira o ritmo da pedra\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Confira o ritmo da pedra\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-girando",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Nomeie a animação girando e teste dois quadros a 8 por segundo."
+        "text": "Agora dê nome e ritmo à animação da pedra! Nomeie a animação girando e teste dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte."
       }
     },
     {
@@ -174,7 +174,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte."
+        "text": "Agora vamos relembrar o que você fez nas suas duas artes, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte."
       }
     },
     {
@@ -248,14 +248,14 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie suas duas artes\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie suas duas artes\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira: nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Depois, envie a nave e o asteroide para o guia pela galeria do Pinta."
+        "text": "Hora de enviar as suas duas artes! Confira se cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Depois clique em Escolher no Pinta, selecione a nave e o asteroide e clique em Enviar (2). Quando aparecer Recebido!, clique em Concluir fase."
       }
     },
     {
@@ -275,7 +275,7 @@
     {
       "key": "camadas",
       "title": "Troque o que fica na frente",
-      "objective": "Agora suba e desça a pedra na lista Camadas e veja qual fica na frente.",
+      "objective": "Sua vez! Suba e desça a pedra na lista Camadas e veja qual fica na frente. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-camadas", "fala-camadas", "experimento-camadas"],
       "workspaceKey": null,
@@ -289,7 +289,7 @@
     {
       "key": "chama",
       "title": "Desenhe fogo atrás da pedra",
-      "objective": "Acrescente uma chama acima do asteroide e coloque-a atrás do corpo.",
+      "objective": "Agora desenhe o fogo atrás da sua pedra! Faça uma chama acima do asteroide e coloque a chama atrás do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-chama", "fala-chama"],
       "workspaceKey": null,
@@ -303,7 +303,7 @@
     {
       "key": "miolo-fogo",
       "title": "Acrescente um centro mais claro",
-      "objective": "Faça uma chama menor dentro da primeira, atrás da pedra.",
+      "objective": "Agora acrescente um centro mais claro ao fogo! Faça uma chama menor dentro da primeira, atrás da pedra. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-miolo-fogo", "fala-miolo-fogo"],
       "workspaceKey": null,
@@ -317,7 +317,7 @@
     {
       "key": "mudanca-pequena",
       "title": "Compare mudanças entre quadros",
-      "objective": "Agora mude só a cratera, depois a pedra inteira, e compare a Prévia.",
+      "objective": "Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-mudanca-pequena", "fala-mudanca-pequena", "experimento-tanto-que-muda"],
       "workspaceKey": null,
@@ -331,7 +331,7 @@
     {
       "key": "quadro-pedra",
       "title": "Mude detalhes no segundo quadro",
-      "objective": "Duplique o quadro e altere um pouco as crateras e as pontas das chamas.",
+      "objective": "Agora mude só os detalhes no segundo quadro! Duplique o quadro e altere um pouco as crateras e as pontas das chamas. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-quadro-pedra", "fala-quadro-pedra"],
       "workspaceKey": null,
@@ -345,7 +345,7 @@
     {
       "key": "girando",
       "title": "Confira o ritmo da pedra",
-      "objective": "Nomeie a animação girando e teste dois quadros a 8 por segundo.",
+      "objective": "Agora dê nome e ritmo à animação da pedra! Nomeie a animação girando e teste dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-girando", "fala-girando"],
       "workspaceKey": null,
@@ -359,7 +359,7 @@
     {
       "key": "revisao",
       "title": "Confira as duas artes",
-      "objective": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte.",
+      "objective": "Agora vamos relembrar o que você fez nas suas duas artes, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.",
       "intent": "explanation",
       "blockKeys": ["fala-revisao", "quiz"],
       "workspaceKey": null,
@@ -373,7 +373,7 @@
     {
       "key": "entrega",
       "title": "Envie suas duas artes",
-      "objective": "Confira: nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Depois, envie a nave e o asteroide para o guia pela galeria do Pinta.",
+      "objective": "Hora de enviar as suas duas artes! Confira se cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Depois clique em Escolher no Pinta, selecione a nave e o asteroide e clique em Enviar (2). Quando aparecer Recebido!, clique em Concluir fase.",
       "intent": "delivery",
       "blockKeys": ["video-entrega", "fala-entrega", "entrega-galeria-v6"],
       "workspaceKey": null,

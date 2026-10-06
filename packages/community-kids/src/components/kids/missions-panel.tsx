@@ -73,7 +73,7 @@ function missionLabel(m: MissionView): string {
     case 'unit_complete':
       return n === 1 ? 'Abra o baú de um Mundo' : `Abra ${n} baús`
     case 'studio_submitted':
-      return n === 1 ? 'Envie um projeto para o guia' : `Envie ${n} projetos para o guia`
+      return n === 1 ? 'Envie um projeto' : `Envie ${n} projetos`
     case 'studio_passed':
       return n === 1 ? 'Crie 1 projeto no Estúdio' : `Crie ${n} projetos no Estúdio`
     case 'course_showcased':

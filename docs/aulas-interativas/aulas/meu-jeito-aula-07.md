@@ -24,7 +24,7 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 ### Seção 1. Compare nascer e animar
 
-**Tarefa / Zappy na página:** Agora mude os dois relógios e compare as pedras que nascem.
+**Tarefa / Zappy na página:** Sua vez! Mude os dois relógios e compare as pedras que nascem. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-dois-relogios → fala-dois-relogios → experimento-dois-relogios.
 
@@ -32,31 +32,31 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 ### Seção 2. Prepare a folha do asteroide
 
-**Tarefa / Zappy na página:** Carregue folha-asteroide com quadros de 64 por 64.
+**Tarefa / Zappy na página:** Agora prepare a folha do seu asteroide! Carregue folha-asteroide com quadros de 64 por 64 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-folha-pedra → fala-folha-pedra.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Troque a imagem das pedras que nascem
 
-**Tarefa / Zappy na página:** Substitua o criador das pedras, preservando o grupo, o sorteio e a velocidade.
+**Tarefa / Zappy na página:** Agora troque a imagem das pedras que nascem! Substitua o criador das pedras, conservando o grupo, o sorteio e a velocidade. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-trocar-pedra → fala-trocar-pedra.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 4. Anime cada pedra depois de criar
 
-**Tarefa / Zappy na página:** Coloque a animação girando logo abaixo do criador, dentro do mesmo Se.
+**Tarefa / Zappy na página:** Agora anime cada pedra depois de criar! Coloque a animação girando logo abaixo do criador, dentro do mesmo Se. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-animar-pedra → fala-animar-pedra.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 5. Confira as artes dentro do jogo
 
-**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte.
+**Tarefa / Zappy na página:** Agora vamos relembrar como as suas artes entraram no jogo, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
@@ -64,11 +64,11 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 ### Seção 6. Envie o jogo com as duas artes
 
-**Tarefa / Zappy na página:** Confira: nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.
+**Tarefa / Zappy na página:** Hora de enviar o seu jogo com as duas artes! Confira se a nave e as pedras usam as suas animações. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
 
 ## Continuidade e produção
 

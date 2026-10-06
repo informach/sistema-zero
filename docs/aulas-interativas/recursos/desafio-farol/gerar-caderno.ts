@@ -3,8 +3,14 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   FAROL_ASSETS,
+  FAROL_BARCOS,
+  FAROL_CENARIOS,
+  FAROL_CHAVES,
+  FAROL_FAROIS,
   FAROL_LAYOUT,
+  FAROL_PERSONAGENS,
   type FarolAssetName,
+  farolSvg,
 } from '../../../../packages/studio/src/arte/farol-assets'
 import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
 import { JS_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/js'
@@ -13,7 +19,14 @@ import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensi
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
 
-type Item = { kind: string; title?: string; text?: string; tone?: string; finish?: string }
+type Item = {
+  kind: string
+  title?: string
+  text?: string
+  tone?: string
+  finish?: string
+  category?: string
+}
 type ContentPage = { id: string; kicker: string; title: string; subtitle: string; items: Item[] }
 const root = resolve(import.meta.dir, '../../../..')
 const pages = JSON.parse(
@@ -39,7 +52,7 @@ function sprite(
 function scene(lit = false) {
   // Ilustração com a arte do próprio jogo, não uma captura da interface.
   const { palco, farol, personagem, personagemNaPorta, barco, chegadaBarcoX, chave } = FAROL_LAYOUT
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${palco.w}" height="${palco.h}" viewBox="0 0 ${palco.w} ${palco.h}">${FAROL_ASSETS.cenario.body}${sprite(lit ? 'farol-aceso' : 'farol-apagado', farol)}${sprite('personagem', lit ? personagemNaPorta : personagem)}${lit ? sprite('barco', { ...barco, x: chegadaBarcoX }) : sprite('chave', chave)}</svg>`
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${palco.w}" height="${palco.h}" viewBox="0 0 ${palco.w} ${palco.h}">${FAROL_ASSETS['praia-tropical'].body}${sprite(lit ? 'farol-listrado-aceso' : 'farol-listrado-apagado', farol)}${sprite('aventureiro', lit ? personagemNaPorta : personagem)}${lit ? sprite('veleiro', { ...barco, x: chegadaBarcoX }) : sprite('chave-dourada', chave)}</svg>`
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
 // Importar as definições finais inclui os tons por família, não só a cor da categoria.
@@ -145,7 +158,7 @@ const door = diagram(
         assign('ganhou', 'verdadeiro') +
         block(
           'sz_g2d_set_image',
-          `Trocar imagem do sprite ${field('farol')} para ${field('farol-aceso')}`,
+          `Trocar imagem do sprite ${field('farol')} para ${field('farol-listrado-aceso')}`,
         ) +
         message('Você acendeu o farol! Olhe o barco chegando.') +
         '<div class="branch-label">senão · quando temChave é falso</div>' +
@@ -153,7 +166,26 @@ const door = diagram(
     ),
   ),
 )
+function imageOption(name: FarolAssetName): string {
+  const src = `data:image/svg+xml;base64,${Buffer.from(farolSvg(name)).toString('base64')}`
+  return `<figure class="farol-option" data-image-name="${name}"><img src="${src}" alt="${name}"><figcaption>${name}</figcaption></figure>`
+}
+function gallery(category: string | undefined): string {
+  if (category === 'farois')
+    return `<div class="farol-pairs">${FAROL_FAROIS.map(({ nome, apagado, aceso }) => `<div class="farol-pair"><h3>${nome}</h3><div>${imageOption(apagado)}${imageOption(aceso)}</div></div>`).join('')}</div>`
+  const groups: Record<string, readonly FarolAssetName[]> = {
+    personagens: FAROL_PERSONAGENS,
+    cenarios: FAROL_CENARIOS,
+    barcos: FAROL_BARCOS,
+    chaves: FAROL_CHAVES,
+  }
+  const names = groups[category ?? '']
+  if (!names) throw new Error(`Galeria desconhecida: ${category}`)
+  return `<div class="farol-gallery farol-gallery--${category}">${names.map(imageOption).join('')}</div>`
+}
 function renderItem(item: Item): string {
+  if (item.kind === 'gallery')
+    return `${item.title ? `<h3>${item.title}</h3>` : ''}${gallery(item.category)}`
   if (item.kind === 'index') return '<!-- course-index -->'
   if (item.kind === 'text') return `<p class="body-text">${item.text}</p>`
   if (item.kind === 'step') {
@@ -163,7 +195,7 @@ function renderItem(item: Item): string {
       : `<div class="text-section"><h3>${item.title}</h3><p>${item.text}</p></div>`
   }
   if (item.kind === 'delivery')
-    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta parte</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo cumprido!</strong>, espere aparecer <strong>Salvo</strong>. Clique em <strong>Enviar para o guia</strong> e confirme em <strong>Enviar</strong>. Quando o envio terminar, clique em <strong>${item.finish}</strong>.</p></div>`
+    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta parte</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo cumprido!</strong>, espere aparecer <strong>Salvo</strong>. Clique em <strong>Enviar meu projeto</strong> e confirme em <strong>Enviar</strong>. Quando o envio terminar, clique em <strong>${item.finish}</strong>.</p></div>`
   if (item.kind === 'box')
     return `<div class="soft-box box-${item.tone ?? 'note'}"><h3>${item.title}</h3><p>${item.text}</p></div>`
   return '' // Os diagramas antigos em texto foram substituídos por encaixes desenhados.
@@ -221,7 +253,7 @@ for (const page of pages) {
       title: 'As regras da sua aventura',
       subtitle:
         'Você programou o movimento, a coleta e a decisão do farol. Agora confira o que faz essas regras funcionarem.',
-      body: '<div class="soft-box activity"><span class="pill pill--experience">Na fase, antes do certificado</span><p>Leia a fala do Zappy e responda às quatro perguntas sobre seu jogo. Esta parte tem somente a conversa do Zappy e o quiz, sem vídeo.</p></div><div class="step"><span class="number">1</span><div><h3>Pense no que você construiu</h3><p>As perguntas retomam o movimento, a informação da chave, a resposta do farol e os testes da porta. Escolha uma resposta para cada pergunta e envie para conferir.</p></div></div><div class="step"><span class="number">2</span><div><h3>Leia e confira</h3><p>Depois do envio, leia as explicações. Se algo precisar mudar, corrija e envie novamente. Você pode tentar de novo sem esperar.</p></div></div><div class="step"><span class="number">3</span><div><h3>Siga para a celebração</h3><p>Quando todas as respostas estiverem corretas, clique em <strong>Próxima parte</strong>. O vídeo e o certificado ficam na parte seguinte.</p></div></div><div class="note">Se quiser rever uma regra, volte ao seu jogo e aos passos deste mapa. A revisão ajuda a entender a aventura que você programou.</div>',
+      body: '<div class="soft-box activity"><span class="pill pill--experience">Na fase, antes do certificado</span><p>Leia a fala do Zappy e responda às quatro perguntas sobre seu jogo. Esta parte tem somente a conversa do Zappy e o quiz, sem vídeo.</p></div><div class="step"><span class="number">1</span><div><h3>Pense no que você construiu</h3><p>As perguntas retomam o movimento, a informação da chave, a resposta do farol e os testes da porta. Clique em <strong>Começar!</strong>, escolha uma resposta em cada pergunta e clique em <strong>Próxima</strong>; na última, clique em <strong>Responder!</strong>.</p></div></div><div class="step"><span class="number">2</span><div><h3>Leia e confira</h3><p>Leia o porquê de cada resposta. Se alguma estiver errada, clique em <strong>Tentar de novo!</strong> e responda outra vez, sem esperar.</p></div></div><div class="step"><span class="number">3</span><div><h3>Siga para a celebração</h3><p>Quando todas as respostas estiverem corretas, clique em <strong>Próxima parte</strong>. O vídeo e o certificado ficam na parte seguinte.</p></div></div><div class="note">Se quiser rever uma regra, volte ao seu jogo e aos passos deste mapa. A revisão ajuda a entender o jogo que você programou.</div>',
     })
   sheets.push({ ...page, theme, body, lit: page.id === 'p10' })
   if (page.id === 'p7')
@@ -245,7 +277,7 @@ function pageNumber(id: string): number {
 const courseIndex = renderItem({
   kind: 'step',
   title: 'Encontre seu passo',
-  text: `<b>Dia 1:</b> experiências, movimento, velocidade e borda, páginas ${pageNumber('andar-experiencia')} a ${pageNumber('p3')}.<br><b>Dia 2:</b> experiência, coleta e memória, páginas ${pageNumber('memoria-experiencia')} a ${pageNumber('coleta-testes')}.<br><b>Dia 3:</b> experiência, duas respostas e testes, páginas ${pageNumber('porta-experiencia')} a ${pageNumber('p8')}.<br><b>Seu jogo com a sua cara e no Mural:</b> páginas ${pageNumber('personalizar')} e ${pageNumber('p9')}.<br><b>Revisão das regras:</b> página ${pageNumber('revisao-final')}.<br><b>Certificado e ajuda:</b> página ${pageNumber('p10')}.`,
+  text: `<b>Dia 1:</b> experiências, movimento e borda, páginas ${pageNumber('andar-experiencia')} a ${pageNumber('p3')}.<br><b>Dia 2:</b> experiência, coleta e memória, páginas ${pageNumber('memoria-experiencia')} a ${pageNumber('coleta-testes')}.<br><b>Dia 3:</b> experiência, duas respostas e testes, páginas ${pageNumber('porta-experiencia')} a ${pageNumber('p8')}.<br><b>Personalize seu jogo:</b> escolhas, galerias, mensagens e posição da chave, páginas ${pageNumber('personalizar')} a ${pageNumber('posicionar-chave')}.<br><b>Publique no Mural:</b> página ${pageNumber('p9')}.<br><b>Revisão das regras:</b> página ${pageNumber('revisao-final')}.<br><b>Certificado e ajuda:</b> página ${pageNumber('p10')}.`,
 })
 for (const sheet of sheets) sheet.body = sheet.body.replace('<!-- course-index -->', courseIndex)
 const total = sheets.length + 1
@@ -288,6 +320,21 @@ const extraCss = `
 .cover p { max-width: 140mm; }
 .cover .cover-bottom { margin-top: 12mm; }
 .cover .zappy { bottom: 10mm; }
+.farol-gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4mm; }
+.farol-option { margin: 0; padding: 3mm 2mm; border: 1px solid #dce5f5; border-radius: 12px; background: #f8faff; text-align: center; }
+.farol-option img { width: 100%; height: 37mm; object-fit: contain; display: block; }
+.farol-option figcaption { margin-top: 2mm; font-size: 11pt; font-weight: 800; line-height: 1.3; }
+.farol-gallery--cenarios { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.farol-gallery--cenarios img { height: 54mm; }
+.farol-gallery--chaves { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.farol-gallery--chaves img { height: 22mm; }
+.farol-pairs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5mm; }
+.farol-pair { border: 1px solid #dce5f5; border-radius: 12px; padding: 3mm; }
+.farol-pair > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2mm; }
+.farol-pair h3 { text-align: center; }
+.farol-pair .farol-option { border: 0; padding: 1mm; }
+.farol-pair img { height: 35mm; }
+.farol-pair figcaption { font-size: 10pt; }
 `
 const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Mapa da Aventura - A Chave do Farol</title><style>${css}\n${extraCss}</style></head><body>${cover}${body}</body></html>`
 if (html.includes('{{')) throw new Error('Campo do caderno sem preencher.')

@@ -29,13 +29,13 @@ export function LighthouseKeyStage({ state }: { state: SceneState }) {
     >
       <image
         data-fundo="farol"
-        href={farolSvgUrl('cenario')}
+        href={farolSvgUrl('praia-tropical')}
         width={FAROL_LAYOUT.palco.w}
         height={FAROL_LAYOUT.palco.h}
       />
       {!hasKey && (
         <image
-          href={farolSvgUrl('chave')}
+          href={farolSvgUrl('chave-dourada')}
           x={FAROL_LAYOUT.chave.x}
           y={FAROL_LAYOUT.chave.y}
           width={FAROL_LAYOUT.chave.w}
@@ -43,14 +43,14 @@ export function LighthouseKeyStage({ state }: { state: SceneState }) {
         />
       )}
       <image
-        href={farolSvgUrl(aberta ? 'farol-aceso' : 'farol-apagado')}
+        href={farolSvgUrl(aberta ? 'farol-listrado-aceso' : 'farol-listrado-apagado')}
         x={FAROL_LAYOUT.farol.x}
         y={FAROL_LAYOUT.farol.y}
         width={FAROL_LAYOUT.farol.w}
         height={FAROL_LAYOUT.farol.h}
       />
       <image
-        href={farolSvgUrl('personagem')}
+        href={farolSvgUrl('aventureiro')}
         x={FAROL_LAYOUT.personagemNaPorta.x}
         y={FAROL_LAYOUT.personagemNaPorta.y}
         width={FAROL_LAYOUT.personagemNaPorta.w}
@@ -64,7 +64,7 @@ export function LighthouseKeyStage({ state }: { state: SceneState }) {
         }}
       >
         <image
-          href={farolSvgUrl('barco')}
+          href={farolSvgUrl('veleiro')}
           x={FAROL_LAYOUT.barco.x}
           y={FAROL_LAYOUT.barco.y}
           width={FAROL_LAYOUT.barco.w}

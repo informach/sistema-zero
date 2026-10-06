@@ -24,7 +24,7 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 1. Troque o que fica na frente
 
-**Tarefa / Zappy na página:** Agora suba e desça a pedra na lista Camadas e veja qual fica na frente.
+**Tarefa / Zappy na página:** Sua vez! Suba e desça a pedra na lista Camadas e veja qual fica na frente. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-camadas → fala-camadas → experimento-camadas.
 
@@ -32,23 +32,23 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 2. Desenhe fogo atrás da pedra
 
-**Tarefa / Zappy na página:** Acrescente uma chama acima do asteroide e coloque-a atrás do corpo.
+**Tarefa / Zappy na página:** Agora desenhe o fogo atrás da sua pedra! Faça uma chama acima do asteroide e coloque a chama atrás do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-chama → fala-chama.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Acrescente um centro mais claro
 
-**Tarefa / Zappy na página:** Faça uma chama menor dentro da primeira, atrás da pedra.
+**Tarefa / Zappy na página:** Agora acrescente um centro mais claro ao fogo! Faça uma chama menor dentro da primeira, atrás da pedra. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-miolo-fogo → fala-miolo-fogo.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 4. Compare mudanças entre quadros
 
-**Tarefa / Zappy na página:** Agora mude só a cratera, depois a pedra inteira, e compare a Prévia.
+**Tarefa / Zappy na página:** Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-mudanca-pequena → fala-mudanca-pequena → experimento-tanto-que-muda.
 
@@ -56,23 +56,23 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 5. Mude detalhes no segundo quadro
 
-**Tarefa / Zappy na página:** Duplique o quadro e altere um pouco as crateras e as pontas das chamas.
+**Tarefa / Zappy na página:** Agora mude só os detalhes no segundo quadro! Duplique o quadro e altere um pouco as crateras e as pontas das chamas. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-quadro-pedra → fala-quadro-pedra.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 6. Confira o ritmo da pedra
 
-**Tarefa / Zappy na página:** Nomeie a animação girando e teste dois quadros a 8 por segundo.
+**Tarefa / Zappy na página:** Agora dê nome e ritmo à animação da pedra! Nomeie a animação girando e teste dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-girando → fala-girando.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 7. Confira as duas artes
 
-**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte.
+**Tarefa / Zappy na página:** Agora vamos relembrar o que você fez nas suas duas artes, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
@@ -80,11 +80,11 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 8. Envie suas duas artes
 
-**Tarefa / Zappy na página:** Confira: nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Depois, envie a nave e o asteroide para o guia pela galeria do Pinta.
+**Tarefa / Zappy na página:** Hora de enviar as suas duas artes! Confira se cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Depois clique em Escolher no Pinta, selecione a nave e o asteroide e clique em Enviar (2). Quando aparecer Recebido!, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
 
 ## Continuidade e produção
 

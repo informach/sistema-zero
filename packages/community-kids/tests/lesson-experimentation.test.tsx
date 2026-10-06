@@ -31,6 +31,7 @@ import { LessonPlayerProvider } from '@sistemazero/member-shell/components/lesso
 import { guardarPalpite } from '@sistemazero/member-shell/components/scene-prediction'
 import { registerLessonMedia } from '@sistemazero/member-shell/lib/lesson-media-focus'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { KidsLessonCopy } from '../src/components/kids/kids-lesson-copy'
 
 // ⚠️ `bun:test` não isola módulos entre arquivos: um `globalThis.fetch` deixado para trás vira
 // teste vermelho no CI e verde aqui, dependendo da ORDEM em que os arquivos rodam.
@@ -577,6 +578,8 @@ function aluno(
   bloco: InteractiveBlock,
   salvo?: Partial<LearningBlockProgress>,
   viewerId = 'crianca-moldura',
+  /** Monta dentro do vocabulário da criança (`KidsLessonCopy`), como a área logada do app. */
+  vocabularioDoKids = false,
 ) {
   // Estes testes exercitam deliberadamente o percurso com palpite. Desde 21/09/2026 o catálogo
   // oferece apenas um modelo de autoria: o palpite precisa ser declarado no bloco para chegar à
@@ -626,6 +629,7 @@ function aluno(
         }}
       />
     </LessonPlayerProvider>,
+    vocabularioDoKids ? { wrapper: KidsLessonCopy } : undefined,
   )
 }
 
@@ -1090,12 +1094,15 @@ describe('⭐⭐ consertos do review do lote 2: a resposta e a gravação', () =
         progress: {},
       })
     }) as unknown as typeof fetch
-    aluno(bloco)
+    aluno(bloco, undefined, undefined, true)
     await palpitar('world')
     concluirMundo()
     await waitFor(() => expect(screen.getByText('Agora explique')).toBeTruthy(), { timeout: 5000 })
     fireEvent.click(opcao('world', true))
     expect(await screen.findByRole('button', { name: 'Abrir de novo' })).toBeTruthy()
+    // A frase do core é a adulta (contrato com o members); a criança lê a do vocabulário dela.
+    expect(screen.getByText('Esta pergunta mudou. Abra a fase de novo.')).toBeTruthy()
+    expect(screen.queryByText(PERGUNTA_MUDOU)).toBeNull()
   })
 
   test('⚠️ uma escolha ANTERIOR que responde depois não pinta a escolha nova de âmbar', async () => {

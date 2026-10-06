@@ -24,21 +24,21 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 ### Seção 1. Compare o desenho no começo e a cada quadro
 
-**Tarefa:** Compare desenho único, desenho a cada quadro e desenho com limpeza.
+**Tarefa:** Sua vez! Compare o desenho só no começo, o desenho a cada quadro e o desenho com a tela limpa antes. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-quadros → fala-quadros → experiencia-laco.
 
-**Zappy na página (não gravar):** Compare desenho único, desenho a cada quadro e desenho com limpeza.
+**Zappy na página (não gravar):** Sua vez! Compare o desenho só no começo, o desenho a cada quadro e o desenho com a tela limpa antes. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `draw-loop`. Nesta experiência, deixe Desenhar o Dino em Só no começo. Clique em Avançar 1 quadro algumas vezes e compare o desenho com o x mostrado. Troque para A cada quadro e avance mais alguns quadros. Por último, ligue Limpar a tela antes e avance de novo. Compare os três jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Mostre o Dino a cada quadro
 
-**Tarefa:** Desenhe dino dentro de A cada quadro do jogo.
+**Tarefa:** Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-motor-e-dino → fala-motor-e-dino.
 
-**Zappy na página (não gravar):** Desenhe dino dentro de A cada quadro do jogo.
+**Zappy na página (não gravar):** Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -47,11 +47,11 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 ### Seção 3. Prepare uma imagem nova em cada quadro
 
-**Tarefa:** Limpe a tela antes de desenhar dino.
+**Tarefa:** Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-limpeza → fala-limpeza.
 
-**Zappy na página (não gravar):** Limpe a tela antes de desenhar dino.
+**Zappy na página (não gravar):** Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -59,21 +59,21 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 ### Seção 4. Compare a ordem dos desenhos
 
-**Tarefa:** Troque a ordem dos dois desenhos e compare o que fica visível.
+**Tarefa:** Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-camadas → fala-camadas → experiencia-camadas.
 
-**Zappy na página (não gravar):** Troque a ordem dos dois desenhos e compare o que fica visível.
+**Zappy na página (não gravar):** Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `layers`. Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela. Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 5. Coloque a floresta atrás do Dino
 
-**Tarefa:** Desenhe uma floresta em velocidade 5 antes do Dino.
+**Tarefa:** Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-ordem-certa → fala-ordem-certa.
 
-**Zappy na página (não gravar):** Desenhe uma floresta em velocidade 5 antes do Dino.
+**Zappy na página (não gravar):** Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -84,11 +84,11 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 ### Seção 6. Retire a borda provisória
 
-**Tarefa:** Retire a borda e preserve a criação do Dino.
+**Tarefa:** Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-retirar-borda → fala-retirar-borda.
 
-**Zappy na página (não gravar):** Retire a borda e preserve a criação do Dino.
+**Zappy na página (não gravar):** Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -97,21 +97,21 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 ### Seção 7. Ouça a descrição do jogo
 
-**Tarefa:** Ouça a tela sem descrição e depois com a tarefa e o controle escritos.
+**Tarefa:** Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-descricao → fala-descricao → experiencia-descricao.
 
-**Zappy na página (não gravar):** Ouça a tela sem descrição e depois com a tarefa e o controle escritos.
+**Zappy na página (não gravar):** Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `screen-reader`. Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente. Compare o que foi lido antes e depois da frase. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 8. Escreva a descrição do jogo
 
-**Tarefa:** Escreva a tarefa e o controle na descrição para o leitor de tela.
+**Tarefa:** Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-descrever-jogo → fala-descrever-jogo.
 
-**Zappy na página (não gravar):** Escreva a tarefa e o controle na descrição para o leitor de tela.
+**Zappy na página (não gravar):** Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -119,13 +119,13 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 ### Seção 9. Teste e envie seu jogo
 
-**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
+**Tarefa:** Hora de testar e enviar o seu jogo! Confira o Dino na frente da floresta, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Confira o Dino na frente da floresta, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Desenhe o sprite dino dentro de A cada quadro.
 - Limpe a tela antes de desenhar a floresta.

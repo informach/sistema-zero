@@ -23,50 +23,50 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 
 ### Seção 1. Escolha quem sai no acerto
 
-**Tarefa:** Compare os grupos inteiros com tiro e asteroide. No teste com os apelidos, deixe o tempo passar até as outras duas pedras saírem da tela.
+**Tarefa:** Sua vez! Compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-apelidos → fala-trombada → experiencia-trombada.
 
-**Zappy na página (não gravar):** Compare os grupos inteiros com tiro e asteroide. No teste com os apelidos, deixe o tempo passar até as outras duas pedras saírem da tela.
+**Zappy na página (não gravar):** Sua vez! Compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `collision-pair`. Teste a colisão com tiros e asteroides, os grupos inteiros. Volte ao começo e repita com tiro e asteroide, os apelidos. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Programe o acerto
 
-**Tarefa:** Escolha os grupos e os apelidos. Retire o par atingido e adicione explosão e som.
+**Tarefa:** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-colisao → fala-colisao.
 
-**Zappy na página (não gravar):** Escolha os grupos e os apelidos. Retire o par atingido e adicione explosão e som.
+**Zappy na página (não gravar):** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
-- Na mesma colisão, remova o asteroide e então solte a explosão.
+- Na mesma colisão, remova o asteroide e depois solte a explosão.
 - Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
 
 ### Seção 3. Confira o que você construiu
 
-**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
+**Tarefa:** Hora de conferir o que você construiu! Responda sobre o acerto e o lugar de onde o tiro sai, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
+**Zappy na página (não gravar):** Hora de conferir o que você construiu! Responda sobre o acerto e o lugar de onde o tiro sai, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 4. Confira os acertos e envie
 
-**Tarefa:** Acerte pedras de posições diferentes e confira se as outras continuam caindo.
+**Tarefa:** Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
 **Blocos na página:** video-fecho → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Acerte pedras de posições diferentes e confira se as outras continuam caindo.
+**Zappy na página (não gravar):** Hora de testar os acertos! Acerte pedras em lugares diferentes, confira se as outras continuam caindo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
-- No evento Espaço, use Tocar efeito e escolha tiro.
+- No evento Espaço, use Tocar efeito e escolha tiro grande.
 - No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.
 - Mantenha apenas um comando de criar tiro.
 - Crie o grupo asteroides em Ao iniciar.
@@ -79,7 +79,7 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 - Desenhe o grupo asteroides a cada quadro.
 - Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
-- Na mesma colisão, remova o asteroide e então solte a explosão.
+- Na mesma colisão, remova o asteroide e depois solte a explosão.
 - Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
 
 ## Blocos disponíveis

@@ -228,7 +228,7 @@ export const CANVAS_BLOCKS: BlockDefinition[] = [
     args0: [{ type: 'field_asset_picker', name: 'ASSET', text: 'foto' }],
     output: 'JSValue',
     colour: C,
-    tooltip: 'Entrega a imagem escolhida do acervo para encaixar em outro bloco.',
+    tooltip: 'Devolve a imagem escolhida do acervo para encaixar em outro bloco.',
   },
   {
     // Cria um objeto de imagem já com a fonte (`const v = new Image(); v.src = …`).

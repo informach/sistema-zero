@@ -1894,6 +1894,7 @@ function LessonEditorSession({
                     sectionCriteria={draft?.document.sections.some(
                       (s) => s.completion !== undefined,
                     )}
+                    kids={courseInfo?.audience === 'kids'}
                     value={blockForm.interactive}
                     onChange={(interactive) => setBlockForm((form) => ({ ...form, interactive }))}
                   />

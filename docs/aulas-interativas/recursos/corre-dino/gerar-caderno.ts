@@ -1,6 +1,6 @@
 /**
  * Caderno derivado da mesma fonte das aulas; CSS e fontes do Cadê Todo Mundo. Para a criança, ele
- * é o Mapa da Aventura: o texto impresso usa fase, parte e guia (Diretrizes, seção 6).
+ * é o Mapa da Aventura: o texto impresso usa fase e parte, e o envio é Enviar meu projeto (Diretrizes, seção 6).
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -220,7 +220,7 @@ const chapters = aulasDino.map((lesson, i) => {
     const heading = `<h3 class="section-head">${escapeHtml(section.title)}</h3>`
     if (section.questions) {
       chunks.push(
-        `${heading}<div class="note">${escapeHtml(section.bridge)} As perguntas ficam na fase.</div>`,
+        `${heading}<div class="note">As perguntas estão na própria fase, logo depois do Zappy. ${escapeHtml(section.bridge)}</div>`,
       )
       continue
     }
@@ -249,7 +249,7 @@ const chapters = aulasDino.map((lesson, i) => {
     chunks,
     diagrams: diagrams[i]!.map(
       (d) =>
-        `<div class="blocks">${d}</div><p class="small">Encaixes desta fase, com as cores dos blocos do Estúdio. As instruções trazem os caminhos, os valores e os testes completos.</p>`,
+        `<div class="blocks">${d}</div><p class="small">Estes são os encaixes desta fase, com as mesmas cores dos blocos no Estúdio. Os caminhos, os valores e os testes completos estão nos passos desta fase.</p>`,
     ),
   }
 })
@@ -257,10 +257,10 @@ const data = JSON.stringify(chapters).replaceAll('<', '\u003c')
 const zappy = `data:image/webp;base64,${readFileSync(resolve(root, 'packages/community-kids/public/zappy/happy.webp')).toString('base64')}`
 const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Corre, Dino! · Mapa da Aventura</title><style>${css}
 .content{padding-top:4mm}.content>.entry{margin-bottom:4mm}.content .section-head{margin-top:2mm}.content .step{font-size:11pt}.content .blocks{margin:0;display:grid;gap:10px}.former{font:700 10pt Nunito;color:#585a7a;padding:7px;background:#f2f3fa;border-radius:6px}.branch{font:800 10pt Nunito;color:#1f2042;padding:6px}.field{white-space:normal}.value-block{display:inline-block;border-radius:12px;padding:3px 8px;color:#fff;font-weight:800;line-height:1.6}.value-block .field{padding:1px 5px;font-size:inherit}.cover-art{height:48%;background:#07162e;display:flex;align-items:center}.cover-art img{width:100%;height:auto!important;object-fit:contain!important}.cover h1{font-size:38pt}.cover .cover-bottom{margin-top:10mm}.lesson-title{font-size:24pt;margin-top:3mm}.index{display:grid;gap:12px;margin-top:6mm}.index p{font-size:11pt}.diagram-page .content .block{font-size:9.5pt}.diagram-page .event-body{gap:5px;padding:6px;margin-top:6px}
-</style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="O jogo Corre, Dino! em funcionamento"></div><div class="cover-copy"><span class="badge">Mapa da Aventura</span><h1>Corre,<br><em>Dino!</em></h1><p>Os passos para construir, testar e recomeçar seu jogo.</p><div class="cover-bottom">Da primeira tela à corrida completa.</div></div><img class="zappy" src="${zappy}" alt="Zappy"></section>
+</style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="O jogo Corre, Dino! em funcionamento"></div><div class="cover-copy"><span class="badge">Mapa da Aventura</span><h1>Corre,<br><em>Dino!</em></h1><p>Os passos para construir, testar e recomeçar o seu jogo.</p><div class="cover-bottom">Da primeira tela à corrida completa.</div></div><img class="zappy" src="${zappy}" alt="Zappy"></section>
 <script>const chapters=${data};
 function page(chapter, more=false, diagram=false){const p=document.createElement('section');p.className='page'+(diagram?' diagram-page':'');p.dataset.id=chapter.label; p.innerHTML='<div class="inner"><div class="kicker">'+chapter.label+(more?' · continuação':'')+'</div><h2 class="lesson-title">'+chapter.title+'</h2><div class="content"></div></div><div class="page-no"><span class="brand">Corre, Dino! | Mapa da Aventura</span><span class="count"></span></div>';document.body.append(p);return p;}
-async function layout(){await document.fonts.ready;const index=page({label:'Seu percurso',title:'Uma parte do jogo por fase'});const content=index.querySelector('.content');content.innerHTML='<p class="lead">Este é o seu Mapa da Aventura! Consulte quando precisar de um passo, um valor ou um teste: você pode ler aqui na fase ou baixar para guardar.</p><div class="index">'+chapters.map(c=>'<p><strong>'+c.label+'.</strong> '+c.title+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">Os desenhos do Dino, da floresta e dos efeitos vêm nos blocos. Você vai programar como eles participam do jogo. Continue sempre no projeto que você enviou na fase anterior.</div>';
+async function layout(){await document.fonts.ready;const index=page({label:'Seu percurso',title:'Uma parte do jogo por fase'});const content=index.querySelector('.content');content.innerHTML='<p class="lead">Este é o seu Mapa da Aventura! Nele estão os passos para montar e testar o seu jogo, fase por fase. Quando precisar de um passo, de um valor ou de um teste, é só voltar aqui. Se quiser, você pode ler na própria fase. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.</p><div class="index">'+chapters.map(c=>'<p><strong>'+c.label+'.</strong> '+c.title+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">Os desenhos do Dino, da floresta e dos efeitos já vêm nos blocos, e é você que vai programar como eles participam do seu jogo. Em cada fase, continue no projeto que você enviou na fase anterior.</div>';
 for(const chapter of chapters){let sheet=page(chapter);for(const chunk of chapter.chunks){const node=document.createElement('div');node.className='entry';node.innerHTML=chunk;sheet.querySelector('.content').append(node);const limit=sheet.querySelector('.page-no').getBoundingClientRect().top-24;if(node.getBoundingClientRect().bottom>limit){node.remove();sheet=page(chapter,true);sheet.querySelector('.content').append(node);}}
 
 for(const fragment of chapter.diagrams){const diagram=document.createElement('div');diagram.className='entry';diagram.innerHTML='<h3 class="section-head">Confira os encaixes</h3>'+fragment;sheet.classList.add('diagram-page');sheet.querySelector('.content').append(diagram);if(diagram.getBoundingClientRect().bottom>sheet.querySelector('.page-no').getBoundingClientRect().top-24){diagram.remove();if(!sheet.querySelector('.blocks'))sheet.classList.remove('diagram-page');sheet=page({label:chapter.label+' · confira os encaixes',title:chapter.title},false,true);sheet.querySelector('.content').append(diagram);}}}

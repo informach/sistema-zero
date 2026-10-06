@@ -436,12 +436,14 @@ test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do 
         />,
       ),
     )
+    // O índice tem o nome do vocabulário do curso: "Partes da fase" no kids.
     const indice = [...container.querySelectorAll('summary')].find((s) =>
-      s.textContent?.includes('Índice da aula'),
+      s.textContent?.includes(kids ? 'Partes da fase' : 'Índice da aula'),
     )
     return {
       container,
       root,
+      texto: container.textContent ?? '',
       temBarra: container.querySelector('.sz-lesson-toolbar') !== null,
       // ⚠️ Sinal que DISCRIMINA: o gancho de tema do kids. O `indiceNoCabecalho`
       // deixou de separar os dois em 18/09/2026 (o índice mora no cabeçalho nos
@@ -459,6 +461,9 @@ test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do 
     expect(kids.pedePendencias).toBe(false)
     expect(kids.indiceNoCabecalho).toBe(true)
     expect(kids.temTemaKids).toBe(true)
+    // E com as palavras da criança (06/10/2026): o ensaio mostrava "Próxima seção".
+    expect(kids.texto).toContain('Próxima parte')
+    expect(kids.texto).not.toContain('Próxima seção')
   } finally {
     await act(async () => kids.root.unmount())
     kids.container.remove()
@@ -473,6 +478,7 @@ test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do 
     expect(adulto.pedePendencias).toBe(true)
     expect(adulto.indiceNoCabecalho).toBe(true)
     expect(adulto.temTemaKids).toBe(false)
+    expect(adulto.texto).toContain('Próxima seção')
   } finally {
     await act(async () => adulto.root.unmount())
     adulto.container.remove()

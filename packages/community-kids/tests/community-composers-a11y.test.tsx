@@ -178,7 +178,7 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
     async () => {
       render(<RecadoThreadClient threadId="thread-1" />)
 
-      const reply = await screen.findByRole('textbox', { name: 'Resposta para o guia' })
+      const reply = await screen.findByRole('textbox', { name: 'Resposta para a equipe' })
       expect(reply.getAttribute('name')).toBe('reply')
     },
     TETO_DO_CASO_MS,

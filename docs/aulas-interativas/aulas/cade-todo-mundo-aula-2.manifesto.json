@@ -19,14 +19,14 @@
     },
     {
       "key": "video-a2-variavel",
-      "plannedVideo": "Título: Um número que acompanha a busca\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; no nosso jogo, cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda \"+1\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima parte. Sem palpite nem pergunta final. Regravar a fala. Alvo: 75 a 95 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Um número que acompanha a busca\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda \"+1\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima parte. Sem palpite nem pergunta final. Regravar a fala. Alvo: 75 a 95 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-a2-variavel",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Procure no jardim e fique de olho no número Achados."
+        "text": "Sua vez! Procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -35,7 +35,7 @@
         "kind": "interactive",
         "required": true,
         "semPerguntaFinal": true,
-        "title": "Quantos já encontramos?",
+        "title": "Quantos você já encontrou?",
         "instructions": "Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca.",
         "hints": [],
         "activity": {
@@ -47,14 +47,14 @@
     },
     {
       "key": "video-a2-contagem",
-      "plannedVideo": "Título: Cada descoberta conta\n\nComeçar pela retomada animada da experiência, antes de qualquer bloco: \"Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito!\" Depois tocar num esconderijo do próprio jogo (Tá vendo? O personagem aparece, mas Achados continua em zero, porque o jogo ainda não sabe que precisa contar). Então pedir que cada personagem encontrado some um em Achados. Primeiro o destino: trazer à vista o evento Quando clicar/tocar num sprite do grupo esconderijos (arrastando um espaço vazio entre os blocos se for preciso) e deixar à vista o bloco de visibilidade que já está dentro dele antes de abrir a paleta. Só então ensinar Programação > Variáveis, Somar 1 em variável, o encaixe logo abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a mensagem de vitória (ligada à contagem que a criança montou: aparece quando Achados chega a 3) e a contagem sem repetição; dar correção curta. Clicar em Verificar esta parte; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo cumprido!, esperar Salvo, usar Enviar para o guia, confirmar em Enviar e seguir em Próxima parte. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Cada descoberta conta\n\nComeçar pela retomada, antes de qualquer bloco, curta e nesta ordem: primeiro o problema no próprio jogo (\"Aqui no seu jogo, toque num esconderijo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta.\"), depois a lembrança (\"Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados.\") e, por último, o anúncio uma vez só, colado ao primeiro passo (\"Agora a gente vai fazer o seu jogo contar do mesmo jeito!\"). Não repetir a explicação da experiência. Primeiro o destino: trazer à vista o evento Quando clicar/tocar num sprite do grupo esconderijos (arrastando um espaço vazio entre os blocos se for preciso) e deixar à vista o bloco de visibilidade que já está dentro dele antes de abrir a paleta. Só então ensinar Programação > Variáveis, Somar 1 em variável, o encaixe logo abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a mensagem de vitória (ligada à contagem que a criança montou: aparece quando Achados chega a 3) e a contagem sem repetição. Não listar os blocos antes do teste: a lista entra uma vez, depois dele, com o gatilho genérico (Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …). Clicar em Verificar esta parte; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo cumprido!, esperar Salvo, usar Enviar meu projeto, confirmar em Enviar e seguir em Próxima parte. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-a2-contagem",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte antes de enviar para o guia."
+        "text": "Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte antes de enviar o seu projeto."
       }
     },
     {
@@ -1012,7 +1012,7 @@
     },
     {
       "key": "video-a2-personalizar",
-      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nMexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e os blocos Criar sprite. No bloco não há desenho para clicar: no fim de um bloco que cria um bicho, depois de com imagem, clicar no nome da imagem (coelho) para abrir a lista com as imagens do jogo e escolher outro bicho (gato); dizer que, se não achar, é só rolar a lista. Fazer o mesmo num bloco que cria um esconderijo: clicar em arbusto e escolher toco. Dizer que todos os bichos têm o mesmo tamanho, e todos os esconderijos também, então ninguém sai do lugar. Depois, em Enquanto estiver rodando, trocar o texto do bloco Escrever dentro do Se por uma frase curta. Antes do teste, dar a correção do erro provável: se algum bicho aparecer antes do toque, ou um desenho ficar grande demais, clicar de novo no nome da imagem e escolher um desenho do mesmo tipo (bicho no bloco do bicho, esconderijo no bloco do esconderijo). Testar encontrando todo mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em Próxima parte. As escolhas não viram critério. Regravar a fala. Alvo: 2 a 3 minutos, incluindo gestos e teste.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nMexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e os blocos Criar sprite. No bloco não há desenho para clicar: no fim de um bloco que cria um bicho, depois de com imagem, clicar no nome da imagem (coelho) para abrir a lista com as imagens do jogo e escolher outro bicho (gato); dizer que, se não achar, é só rolar a lista. Fazer o mesmo num bloco que cria um esconderijo: clicar em arbusto e escolher toco. Dizer que todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também, por isso o desenho novo cabe certinho no lugar do antigo. Depois, em Enquanto estiver rodando, trocar o texto do bloco Escrever dentro do Se por uma frase curta. Antes do teste, dar a correção do erro provável: se algum bicho aparecer antes do toque, ou um desenho ficar grande demais, clicar de novo no nome da imagem e escolher um desenho do mesmo tipo (bicho no bloco do bicho, esconderijo no bloco do esconderijo). Testar encontrando todo mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em Próxima parte. As escolhas não viram critério. Regravar a fala. Alvo: 2 a 3 minutos, incluindo gestos e teste.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-a2-personalizar",
@@ -1031,14 +1031,14 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir fase."
+        "text": "Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir fase."
       }
     },
     {
       "key": "ajuda-a2-publicar",
       "content": {
         "kind": "rich_text",
-        "markdown": "Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda."
+        "markdown": "Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), a área de ajuda."
       }
     }
   ],

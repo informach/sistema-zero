@@ -24,11 +24,11 @@ A primeira aula conserva jogo pronto e caderno, mas termina com a nave construí
 
 ### Seção 1. Jogue antes de construir
 
-**Tarefa:** Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima parte.
+**Tarefa:** Sua vez! Jogue a versão pronta: Enter começa a partida, as setas movem a nave e a barra de espaço atira. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-abertura → fala-abertura → jogo-pronto.
 
-**Zappy na página (não gravar):** Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Jogue a versão pronta: Enter começa a partida, as setas movem a nave e a barra de espaço atira. Quando terminar, clique em Próxima parte.
 
 Versão completa do mesmo jogo, derivada do marco original 5. Conclusão por participação; vencer não é exigência para conhecer o jogo.
 
@@ -44,21 +44,21 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 
 ### Seção 3. Compare uma vez e sempre
 
-**Tarefa:** Compare Mover a nave um pouquinho em Ao iniciar e Enquanto estiver rodando. Comece cada teste e acompanhe até parar.
+**Tarefa:** Sua vez! Faça os dois testes e fique de olho no contador Ações feitas. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-uma-vez-e-sempre → fala-uma-vez-e-sempre → experiencia-areas.
 
-**Zappy na página (não gravar):** Compare Mover a nave um pouquinho em Ao iniciar e Enquanto estiver rodando. Comece cada teste e acompanhe até parar.
+**Zappy na página (não gravar):** Sua vez! Faça os dois testes e fique de olho no contador Ações feitas. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `once-vs-always`. Nesta experiência, coloque Mover a nave um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a nave e o contador Ações feitas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a nave e o contador nas duas tentativas. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Prepare a tela do jogo
 
-**Tarefa:** Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira esta parte.
+**Tarefa:** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-montar-areas-tela → fala-montar-areas-e-tela.
 
-**Zappy na página (não gravar):** Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira esta parte.
+**Zappy na página (não gravar):** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -68,31 +68,31 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 
 ### Seção 5. Escolha onde a nave aparece
 
-**Tarefa:** Mude x e y separadamente. Por último, coloque os dois em zero.
+**Tarefa:** Sua vez! Mude x e y, um de cada vez, e depois coloque os dois em zero. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-coordenadas → fala-coordenadas → experiencia-coordenadas.
 
-**Zappy na página (não gravar):** Mude x e y separadamente. Por último, coloque os dois em zero.
+**Zappy na página (não gravar):** Sua vez! Mude x e y, um de cada vez, e depois coloque os dois em zero. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `coordinates`. Aumente x sem mudar y e observe a nave. Depois aumente y sem mudar x. Por último, coloque x e y em zero e observe o canto da tela. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 6. Compare criar e mostrar
 
-**Tarefa:** Crie a nave nos bastidores e depois mostre na tela. Compare os dois lugares.
+**Tarefa:** Sua vez! Crie a nave, mostre a nave na tela e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-criar-e-mostrar → fala-criar-e-mostrar → experiencia-criar-mostrar.
 
-**Zappy na página (não gravar):** Crie a nave nos bastidores e depois mostre na tela. Compare os dois lugares.
+**Zappy na página (não gravar):** Sua vez! Crie a nave, mostre a nave na tela e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `world`. Nesta experiência, clique em Criar a nave. Compare os bastidores com a tela do jogo. Depois clique em Mostrar a nave na tela e compare os dois lugares novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 7. Crie a nave nos bastidores
 
-**Tarefa:** Crie nave em Ao iniciar, com posição e tamanho definidos. O desenho será ligado na próxima montagem.
+**Tarefa:** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-criar-nave → fala-criar-nave.
 
-**Zappy na página (não gravar):** Crie nave em Ao iniciar, com posição e tamanho definidos. O desenho será ligado na próxima montagem.
+**Zappy na página (não gravar):** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -101,23 +101,23 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 
 ### Seção 8. Compare o desenho no começo e em cada quadro
 
-**Tarefa:** Compare desenhar só no começo, em cada quadro e com a limpeza ligada. Avance os quadros em cada teste.
+**Tarefa:** Sua vez! Compare desenhar só no começo, a cada quadro e com a limpeza ligada, avançando os quadros em cada teste. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-desenho-por-quadro → fala-desenho-por-quadro → experiencia-quadro.
 
-**Zappy na página (não gravar):** Compare desenhar só no começo, em cada quadro e com a limpeza ligada. Avance os quadros em cada teste.
+**Zappy na página (não gravar):** Sua vez! Compare desenhar só no começo, a cada quadro e com a limpeza ligada, avançando os quadros em cada teste. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `draw-loop`. Na experiência, deixe Desenhar a nave em Só no começo. Clique em Avançar 1 quadro algumas vezes. Compare a imagem com o x mostrado na faixa. Troque para A cada quadro e avance alguns quadros novamente. Por último, ligue Limpar a tela antes e avance mais quadros. Compare os três jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 9. Mostre a nave a cada quadro
 
-**Tarefa:** Desenhe a nave em cada quadro e confira se ela aparece antes de enviar.
+**Tarefa:** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
 **Blocos na página:** video-motor-e-nave → fala-motor-e-nave → projeto.
 
-**Zappy na página (não gravar):** Desenhe a nave em cada quadro e confira se ela aparece antes de enviar.
+**Zappy na página (não gravar):** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
 - Coloque A cada quadro do jogo em Enquanto estiver rodando.

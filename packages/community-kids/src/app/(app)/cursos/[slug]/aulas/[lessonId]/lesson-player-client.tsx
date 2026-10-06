@@ -26,7 +26,7 @@ import { LessonCelebration } from '@/components/kids/lesson-celebration'
 import { KidsMascotAnimated, prefetchZappyRive } from '@/components/kids/mascot-rive'
 import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
-import { type ApiError, apiSend } from '@/lib/api'
+import { apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { conclusaoRecusada } from '@/lib/lesson-copy'
 import type { PosicaoNaAula } from '@/lib/lesson-progress'
@@ -167,8 +167,7 @@ export function LessonPlayer({
       })
       router.refresh()
     } catch (error) {
-      const apiError = error as ApiError
-      toast.error(conclusaoRecusada(apiError.code))
+      toast.error(conclusaoRecusada(error))
     } finally {
       setCompleting(false)
     }
@@ -240,13 +239,13 @@ export function LessonPlayer({
     : blockedByLearning
       ? 'Termine as experiências desta fase para concluir'
       : blockedByPinta
-        ? 'Envie seu desenho para o guia para concluir a fase'
+        ? 'Envie o seu desenho para concluir a fase'
         : blockedByComingSoon
           ? `Essa fase ainda está sendo preparada${nextLessonLocked ? '. Quando ela ficar pronta, você termina e as próximas abrem' : ''}`
           : blockedByQuiz
             ? 'Passe no quiz da fase para concluir'
             : blockedByStudioNotSubmitted
-              ? 'Envie seu projeto para o guia para concluir a fase'
+              ? 'Envie o seu projeto para concluir a fase'
               : blockedByStudioNotPassed
                 ? 'Alcance a meta do projeto para concluir a fase'
                 : null

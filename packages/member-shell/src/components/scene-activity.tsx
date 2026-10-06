@@ -1092,7 +1092,10 @@ export function SceneActivityView({
   /* ⚠️ O andar do Farol também: o "Recomeçar" dele mora na bancada e CONSERVA as escolhas (seta,
      velocidade, limite); o geral voltaria ao caso e as desligaria em silêncio. */
   const recomecar =
-    m !== 'found-counter' && m !== 'collect-and-remember' && m !== 'lighthouse-walk' ? (
+    m !== 'found-counter' &&
+    m !== 'collect-and-remember' &&
+    m !== 'lighthouse-walk' &&
+    m !== 'lighthouse-position' ? (
       <SceneButton
         tom="ferramenta"
         className="min-w-11"

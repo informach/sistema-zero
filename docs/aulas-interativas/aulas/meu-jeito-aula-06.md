@@ -24,7 +24,7 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 ### Seção 1. Separe os nomes que os blocos procuram
 
-**Tarefa / Zappy na página:** Agora tire o bloco, troque o nome e veja quando os avisos aparecem.
+**Tarefa / Zappy na página:** Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-nomes → fala-nomes → experimento-nomes.
 
@@ -32,15 +32,15 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 ### Seção 2. Traga seus desenhos para o projeto
 
-**Tarefa / Zappy na página:** Adicione nave e asteroide aos materiais da cópia do seu jogo.
+**Tarefa / Zappy na página:** Agora traga os seus desenhos para o jogo! Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-trazer-artes → fala-trazer-artes.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Separe o quadro do tamanho no jogo
 
-**Tarefa / Zappy na página:** Agora mude a Largura do recorte até aparecer uma nave inteira.
+**Tarefa / Zappy na página:** Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-recorte → fala-recorte → experimento-recorte.
 
@@ -48,35 +48,35 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 ### Seção 4. Use sua imagem no criador da nave
 
-**Tarefa / Zappy na página:** Troque o criador da nave por um sprite com imagem, conservando o nome nave.
+**Tarefa / Zappy na página:** Agora use a sua imagem no criador da nave! Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-trocar-nave → fala-trocar-nave.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 5. Prepare o recorte da nave
 
-**Tarefa / Zappy na página:** Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar.
+**Tarefa / Zappy na página:** Agora prepare o recorte da sua nave! Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-folha-nave → fala-folha-nave.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 6. Ligue a animação voando
 
-**Tarefa / Zappy na página:** Anime nave com folha-nave e confira os dois quadros no jogo.
+**Tarefa / Zappy na página:** Agora ligue a animação voando! Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-animar-nave → fala-animar-nave.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 7. Envie o jogo com sua nave
 
-**Tarefa / Zappy na página:** Confira: a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais por enquanto. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.
+**Tarefa / Zappy na página:** Hora de enviar o seu jogo com a sua nave! Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
 
 ## Continuidade e produção
 

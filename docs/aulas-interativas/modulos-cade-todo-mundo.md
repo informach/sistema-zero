@@ -61,7 +61,7 @@ Arquivo: **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**. Fonte editável:
 **bun docs/aulas-interativas/recursos/cade-todo-mundo/gerar-caderno.ts**.
 
 A Aula 2 mantém **retireBlockKeys: ['caderno']** para o molde anterior, mas não recebe outro PDF.
-O PDF atualizado tem seis páginas: visão geral, montagem, troca de bichos e publicação, revisão e certificado. Os desenhos usam as cores oficiais de cada bloco. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
+O PDF atualizado tem sete páginas: capa, visão geral, duas montagens, personalização, publicação e revisão com certificado. A página 5 mostra os sete bichos e os seis esconderijos, com os desenhos e nomes do jogo; a publicação fica na página 6 e a revisão com certificado na 7. A galeria é gerada a partir de **JARDIM_BICHOS**, **JARDIM_ESCONDERIJOS** e **jardimSvg**, as mesmas fontes do projeto. Os desenhos dos blocos usam suas cores oficiais. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
 Como folhear e baixar está no tutorial de materiais.
 
 ## Configuração que deve ser preservada
@@ -98,7 +98,7 @@ As duas montagens passaram a começar pela retomada da experiência no próprio 
 - **Faça alguém aparecer:** a fala lembra que o toque sozinho não faz nada e pede para tocar num esconderijo do jogo. Nada acontece, porque ainda não há ação ligada ao toque. Só então vem a ligação.
 - **Cada personagem vale um achado:** a fala lembra a experiência da contagem e pede para tocar num esconderijo. O personagem aparece, mas Achados continua em zero.
 
-No caderno, as duas páginas de montagem trazem a retomada numa caixa de experiência, na ordem da aula. Os vídeos dessas duas seções precisam ser regravados. A retomada não manda clicar em **Anterior**: ela lembra a experiência e convida a programar ("Agora vamos programar isso no seu jogo!").
+No caderno, as duas páginas de montagem trazem a retomada numa caixa de experiência, na ordem da aula. Os vídeos dessas duas seções precisam ser regravados. A retomada não manda clicar em **Anterior**: ela lembra a experiência e convida a programar ("Agora a gente vai fazer isso no seu jogo!").
 
 Na mesma revisão:
 
@@ -127,7 +127,24 @@ A pedido do responsável, a plataforma deixou de parecer uma extensão da escola
 
 - **Falas e pontes do Zappy:** os botões citados passaram a ser **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**, e a retomada diz "Lembra da experiência da parte anterior?". Na Aula 2, "do jeito que ficou na Aula 1" virou "na Fase 1", "nesta aula" virou "agora" e "Na aula, ele pode aparecer só como um ícone" virou "Aqui, ele pode aparecer…".
 - **Caderno para a criança:** a seção 2 da Aula 1 se chama **Seu Mapa da Aventura**, o material é **Mapa da Aventura: Cadê Todo Mundo?** e o vídeo diz "Olha aqui: este é o seu Mapa da Aventura! (…) Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser." As chaves **seu-caderno-do-aluno** e **caderno** continuam.
-- **PDF:** capa, título e rodapé dizem Mapa da Aventura; os cabeçalhos passaram a Fase 1, Fase 2 e Fase 3, "seção" virou "parte" e "professor" virou "guia". A capa dizia "Todos os passos para construir o nosso jogo." e agora diz "o seu jogo". O arquivo continua **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**, com seis páginas.
+- **PDF:** capa, título e rodapé dizem Mapa da Aventura; os cabeçalhos passaram a Fase 1, Fase 2 e Fase 3, "seção" virou "parte" e "professor" virou "guia". A capa dizia "Todos os passos para construir o nosso jogo." e agora diz "o seu jogo". O arquivo continua **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**, agora com sete páginas após a inclusão da galeria de personalização.
 - **Certificado:** sem imagem base, o PDF tem o título **Certificado de Criador**, e a frase passou de "concluiu Cadê Todo Mundo?" para "completou a aventura Cadê Todo Mundo?".
+- **À noite, a equipe no lugar do guia:** "Enviar para o guia" soava estranho. Falas, pontes, notas de gravação e Mapa citam **Enviar meu projeto**, confirmado em **Enviar**, e as pontes dizem "antes de enviar o seu projeto"; quem recebe é a equipe. Manifestos e PDF (7 páginas) gerados de novo.
 
 Os vídeos precisam ser gravados com as falas novas. No Admin, substituir o anexo do caderno e conferir os títulos das seções e o bloco do certificado.
+
+## Full review de 06/10/2026
+
+Os achados foram conferidos no código e aplicados juntos em roteiros, gerador, manifestos, propostas e Mapa da Aventura. Seções, blocos, critérios e identificadores não mudaram.
+
+- **Ações de saída:** as pontes das duas experiências (do toque e do Achados) terminam em "Quando terminar, clique em Próxima parte.".
+- **Publicação:** a ponte e o Mapa dizem "Se precisar, peça ajuda a um adulto"; o **Compartilhar** que aparece só como ícone é "uma setinha para cima", conferido no ícone do Estúdio; a ajuda escrita fala em "a área de ajuda", sem "nossa".
+- **Três vozes:** o título da experiência da Aula 2 passou de "Quantos já encontramos?" para **Quantos você já encontrou?**, e a direção do vídeo do Achados diz "aqui no jardim é parecido" no lugar de "no nosso jogo".
+- **O porquê sem círculo:** "Achados vai para 1, porque eu encontrei um personagem e o jogo somou um"; na vitória, "a mensagem aparece quando Achados chega a 3"; na troca de imagens, todos os bichos e todos os esconderijos "foram desenhados do mesmo tamanho", e por isso o desenho novo cabe no lugar do antigo. Ali a fala usa "por isso" e não "então", porque a criança está olhando um bloco **Se** do jogo.
+- **Frase mais curta:** na Aula 1, "Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.".
+- **Mapa da Aventura:** a página da Fase 1 deixou de inverter ação e reação ("Você vai ligar uma reação ao toque: o esconderijo fica invisível e o personagem aparece"); o teste da Fase 1 diz que Achados fica em zero porque o jogo ainda não conta; as duas verificações usam a fórmula de sempre ("Se faltar alguma coisa, corrija os blocos e clique de novo…"); e todos os botões são citados com "clique em", inclusive **Baixar**, **Voltar para a fase** e **Preciso de ajuda**. O PDF tem sete páginas, com personalização e publicação em páginas próprias.
+
+- **Retomada da Aula 2, curta e com o problema primeiro (à noite, pedido da dona):** "Aqui no seu jogo, toque num esconderijo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta." Depois vêm a lembrança da experiência e o anúncio, uma vez só, colado ao primeiro passo. Saiu o segundo anúncio ("Então a gente vai ensinar o jogo a somar um em Achados…"). Foram de 70 para 49 palavras.
+- **Conferência uma vez só, depois do teste:** a montagem da Aula 2 não termina mais em "Confira se ficou assim:"; a lista dos blocos entra depois do teste, com o gatilho genérico "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …". No Mapa da Aventura, as páginas das Fases 1 e 2 ganharam o teste como passo 4, o desenho dos blocos virou "Se no seu jogo não aconteceu isso, confira se ficou assim" e a caixa final ficou só com a verificação e o envio.
+
+No Admin: importar os manifestos das Aulas 1 e 2 e substituir o anexo do Mapa da Aventura. Os vídeos ainda precisam ser gravados com as falas novas.

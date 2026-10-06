@@ -14,7 +14,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras."
+        "text": "Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -53,14 +53,14 @@
     },
     {
       "key": "video-grupo-e-relogio",
-      "plannedVideo": "Título: Prepare a criação dos asteroides\n\nRegravar no Estúdio atual. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro de BODY. O intervalo começa vazio.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare a criação dos asteroides\n\nRegravar no Estúdio atual. Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no \"Tá vendo?\", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie o grupo asteroides e um intervalo de 40 quadros, ao lado de A cada quadro do jogo."
+        "text": "Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
@@ -72,7 +72,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela."
+        "text": "Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -106,26 +106,26 @@
     },
     {
       "key": "video-asteroide",
-      "plannedVideo": "Título: Crie e mostre as pedras caindo\n\nRegravar no Estúdio atual. Mostrar criação no intervalo e movimento/limpeza/desenho no bloco de cada quadro. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Crie e mostre as pedras caindo\n\nRegravar no Estúdio atual. Começar pela retomada: esperar alguns segundos e, no \"Tá vendo?\", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-asteroide",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte o asteroide no intervalo e o ciclo do grupo em cada quadro."
+        "text": "Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Compare o intervalo e guarde sua chuva\n\nRegravar no Estúdio atual. Dar tempo para observar alguns nascimentos em cada intervalo. Restaurar 40 antes da verificação. Não confundir quadros com segundos.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste e envie a sua chuva de pedras\n\nRegravar no Estúdio atual. Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste 80 e 40 no intervalo, mantenha 40 e envie o projeto."
+        "text": "Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase."
       }
     },
     {
@@ -639,7 +639,7 @@
       "key": "intervalo-das-pedras",
       "title": "Compare o intervalo entre as pedras",
       "intent": "exploration",
-      "objective": "Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras.",
+      "objective": "Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-intervalo-das-pedras",
         "fala-intervalo-das-pedras",
@@ -657,7 +657,7 @@
       "key": "relogio",
       "title": "Prepare a criação dos asteroides",
       "intent": "application",
-      "objective": "Crie o grupo asteroides e um intervalo de 40 quadros, ao lado de A cada quadro do jogo.",
+      "objective": "Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-grupo-e-relogio", "fala-relogio"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -709,7 +709,7 @@
       "key": "posicao-sorteada",
       "title": "Sorteie onde a pedra nasce",
       "intent": "exploration",
-      "objective": "Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela.",
+      "objective": "Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-posicao-sorteada", "fala-posicao-sorteada", "experiencia-sorteio"],
       "workspaceKey": null,
       "externalTool": null,
@@ -723,7 +723,7 @@
       "key": "asteroide",
       "title": "Crie e mostre as pedras caindo",
       "intent": "application",
-      "objective": "Monte o asteroide no intervalo e o ciclo do grupo em cada quadro.",
+      "objective": "Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-asteroide", "fala-asteroide"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -812,9 +812,9 @@
     },
     {
       "key": "entrega",
-      "title": "Compare o intervalo e guarde sua chuva",
+      "title": "Teste e envie a sua chuva de pedras",
       "intent": "delivery",
-      "objective": "Teste 80 e 40 no intervalo, mantenha 40 e envie o projeto.",
+      "objective": "Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

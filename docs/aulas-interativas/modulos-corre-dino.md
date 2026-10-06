@@ -10,6 +10,65 @@ Revisão local de 05/10/2026, com os vídeos de experiência reescritos como dem
 
 **Revisão de 06/10/2026 (vocabulário da aventura).** O que a criança vê ou ouve fala de fase, parte, Mapa da Aventura e guia (Diretrizes, seção 6); chaves, slugs e arquivos não mudaram. Falas, Zappy e Mapa citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**; a ponte da entrega virou conversa e as retomadas usam "Lembra da experiência da parte anterior?". A seção 2 da aula 1 virou **Seu Mapa da Aventura**, com o material **Mapa da Aventura: Corre, Dino!** e as escolhas como convite (ler aqui mesmo ou clicar em **Baixar** para guardar). Nas aulas 6 e 11, a comparação usa um bloquinho no lugar do caderno. O PDF foi gerado de novo, sem "Você não precisa baixar ou imprimir". A descrição do curso diz "Em 13 fases"; atualizar também no admin.
 
+**À noite, a equipe no lugar do guia.** "Enviar para o guia" soava estranho: as 13 entregas citam **Enviar meu projeto**, confirmado em **Enviar**, e "Antes de enviar para o guia" virou "Antes de enviar o seu projeto" (só "Antes de enviar" nas fases 1 e 13, em que a frase vizinha já fala do projeto). Trios e PDF (56 páginas) gerados de novo.
+
+**Revisão de 06/10/2026 (falas que conversam).** As regras das três vozes, da conversa contínua e dos chamados de atenção (Diretrizes, seção 6), já aplicadas ao Cadê e ao Farol, chegaram ao Corre, Dino! antes da gravação. Ids, chaves, fases, partes, vídeos, `completion`, `projectChecks`, nomes de bloco e valores do jogo não mudaram; só falas, pontes, passos do Mapa e notas de tela.
+
+- **Pontes do Zappy:** 80 das 81 abrem com convite: "Sua vez!" nas 24 experiências e no jogo pronto, "Agora…!" nas 37 montagens e "Hora de…!" nos 5 quizzes e nas 13 entregas. A do Mapa segue o modelo aprovado do Cadê ("Este é o seu Mapa da Aventura!"). As 81 terminam na ação de saída: Próxima parte, Verificar esta parte e Próxima parte, ou o envio para o guia e Concluir fase. As dos quizzes dizem o assunto e citam os botões reais do quiz, **Responder!** e **Tentar de novo!** (`kids-quiz.tsx`).
+- **Retomadas:** as 30 montagens que aplicam uma experiência começam por "Lembra da experiência…" (nomeando a parte quando ela ficou mais atrás), dizem o que a experiência mostrou, convidam ("Agora a gente vai… no seu jogo!"), pedem um teste no jogo da criança com "Tá vendo?" e o porquê (16) ou, quando o efeito ainda não aparece no jogo, dizem isso com honestidade, depois de "Repare:" (14), e fecham com "Por isso, vamos…".
+- **Montagens:** frases ligadas, com o porquê de cada lugar e de cada resultado; "Confira se ficou assim:" em todas; a orientação de deixar o destino à vista ficou numa frase só. Como o Corre usa o encaixe **então** do bloco Se, "então" deixou de ser palavra de ligação em todas as falas (também nas experiências), trocado por "por isso" ou "ou seja". As aberturas impessoais viraram conversa ("Repare: agora que a floresta mostra onde fica a área do jogo, a borda não faz mais falta…").
+- **Jogo pronto:** abre com "Oi! Você vai construir um jogo chamado Corre, Dino!", o que acontece e como a partida acaba, e "Antes de montar o seu, vamos ver como ele funciona nesta versão pronta."; "eu aperto a barra de espaço" virou "eu toco na barra de espaço".
+- **Achados da revisão:** o único "nós" da fase 8 ("só montamos o desenho") saiu; a comparação da mochila virou "mochila de passeio" com brinquedo; "tarefa" saiu das fases 2 e 13 ("o que fazer e como jogar"); a entrega da fase 13 não repete mais o convite do Mural, que o gerador já acrescenta, e o "uma unidade mais rápido" virou "o sorteio ainda pode tirar mais 1 e deixar um cacto um pouquinho mais rápido".
+- **Fase 7:** nas partes 3, 4 e 5, a troca temporária para jogando continua (é o único jeito de testar a partida), mas a volta para inicio ficou num passo próprio, o último antes de verificar: "Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque…", seguido do efeito que a criança vê (revisão independente abaixo).
+- **Notas de tela das montagens:** pedem o teste da retomada antes de qualquer bloco, o resultado à vista no "Tá vendo?", o apontamento em cada "Olha aqui", "Olha só" ou "Repare" e, na fase 7, o estado de volta em inicio antes de verificar.
+- **Mapa da Aventura:** a página de abertura fala com a criança e oferece ler na fase ou clicar em **Baixar** como convite; os passos das montagens acompanham as falas novas. O PDF foi gerado de novo: 59 páginas (eram 52) e os mesmos 145 blocos, com fontes, cores e limites conferidos.
+- **Guardas:** `qa/corre-dino.test.ts` passou a exigir a abertura nova, o convite e a saída de cada ponte, a retomada conversada, a ausência de "então" de ligação, de "nós" e de travessão, a volta para inicio da fase 7 e a régua de palavras da escola ampliada (unidade, atividade, entrega, trabalho, estudar, devolutiva, formatura, diploma e tarefa).
+
+**Revisão independente de 06/10/2026 (verdade sobre o jogo e rótulos).** Cada "Tá vendo?", "Olha só:" e "Repare:" foi conferido contra o projeto de cada parte, os valores de fábrica dos blocos, o motor do Jogo 2D e as cenas. Mudaram falas, pontes, passos do Mapa, notas de tela, alguns rótulos de critério e dois critérios; programas, ids, partes e vídeos não mudaram.
+
+- **Fase 3, gravidade:** "Aplicar a gravidade" só muda a velocidade; quem move o Dino e faz ele pousar na grama é **Controlar o dinossauro** (`runtime/physics.ts`, `runtime/arcadeKitsDino.ts`). O título da parte, a ponte e a fala deixaram de prometer "o Dino desce até o chão" (a parte agora se chama **Deixe a gravidade pronta**, com a mesma chave): a gravidade fica pronta e o efeito aparece com o controle, na parte seguinte. A ordem do quadro explica que o controle move o Dino, pousa na grama e confere o pulo.
+- **Toque:** o toque só faz o Dino pular na parte de cima da tela; embaixo, perto do chão, ele se abaixa. Falas, pontes, Mapa e a instrução do jogo pronto dizem "um toque na parte de cima da tela".
+- **Tecla:** clicar na área do jogo já é um toque e começa a partida. Os testes por tecla usam **Atualizar**, que dá o foco ao jogo, e a tecla sem clicar no jogo.
+- **Rótulos como estão na tela:**
+  - o + que cria um ramo é o de **senão se** (o de **senão** cria o ramo sem pergunta);
+  - o sorteio é **um número de 1 a 6**, em Jogo 2D → Sorteios → Números e posições;
+  - a conta aparece como **0 + 0** ("Conta matemática" é nome do catálogo do admin);
+  - o campo do obstáculo é **vx**;
+  - a colisão tem **chamar o sprite de** (chega com inimigo);
+  - a limpeza do grupo tem **(chamado sprite)**, trocado por cacto;
+  - na cena da condição, o botão é **Toque para começar**;
+  - na cena da batida, o aviso é **BATEU!**.
+- **Valores de fábrica ditos:**
+  - a tela chega com 800 e 480;
+  - o Dino chega em x 120;
+  - a floresta chega com velocidade 4 (o critério exige 5);
+  - o controle chega com força 15;
+  - o placar já traz Pontos:, x 12, y 30 e tamanho 24;
+  - o sinal da comparação já é >;
+  - o estado chega como inicio;
+  - a tremida já é 8.
+- **Descrições:** a ponte e a fala ditam a frase exata, "sem ponto no fim", porque o critério compara o texto inteiro.
+- **Fase 7:** as partes 3 e 4 também conferem `cena-inicial`. A ponte da parte 3 pede o estado em inicio. A volta para inicio diz o efeito visível ("só a floresta continua passando") no lugar de "Confira se o estado voltou". A frase da floresta na entrega foi para depois da volta.
+- **Fórmula:**
+  - o lembrete de arrastar um espaço vazio ficou só na primeira montagem e na fase 7;
+  - os "Repare:" que apontavam o invisível viraram teste com "Tá vendo?";
+  - o "Repare:" da pergunta x > 0 aparece uma vez;
+  - as retomadas variam o convite e o anúncio;
+  - o teste passou a exigir convite, porquê e anúncio, sem frase fixa.
+- **Outros:**
+  - a sombra do Dino escurece sem a limpeza (conferir na gravação);
+  - a retomada da fase 5 deixou de citar um grupo que a cena não mostra;
+  - as raias da fase 12 mostram −5 e −6, não a conta;
+  - a fase 13 não tem mais "mexa e veja" dentro da entrega;
+  - os rótulos de critério "faxina" e "andar de fim" viraram o que a fala diz.
+- **Exceção registrada, "Aperte" e "apertando":** os textos que a criança escreve no próprio jogo continuam com essas palavras, e as falas os ditam como estão: "Corra com o dino e pule os cactos apertando espaço", "Aperte qualquer tecla ou toque na tela para começar" e "Aperte qualquer tecla ou toque para jogar de novo". São textos do jogo original, exigidos pelos critérios e pelos 13 programas preservados. A regra de não usar "aperte" vale para as instruções da narração, que continuam com "clique em" para botões e "toque" no jogo.
+- **Pendente fora destes arquivos:** na cena da variável (fase 11), cada mudança da caixa explode um cacto-alvo, um desenho que não combina com o Corre, Dino!, onde o ponto vem do tempo. A fala agora descreve o que a cena mostra, mas o desenho é da cena.
+- **PDF:** gerado de novo, com 58 páginas e os mesmos 145 blocos; fontes, imagens, cores e limites conferidos pelo gerador. A inspeção visual continua pendente.
+
+**Retomadas curtas e conferência depois do teste (06/10/2026, à noite, pedido da dona).** As 30 retomadas seguem a ordem nova: o teste no jogo da criança com "Tá vendo?" e o porquê, a lembrança da experiência numa frase e o anúncio uma vez só, colado ao primeiro passo; as 5 sem efeito visível (criar-dino, aplicar-gravidade, grupo-e-relogio, faxina e o relógio da fase 7) ficam só com a lembrança e o anúncio. Mediana de 72 para 48 palavras, máximo de 106 para 50. Em 26 montagens a lista dos blocos entra uma vez, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …"); nas 11 sem teste visível, "Confira se ficou assim:" continua logo depois da montagem. O Mapa ficou com 56 páginas e os mesmos 145 blocos. O teste do curso trava o teto de 50 palavras por retomada e uma lista de conferência por montagem.
+
+Pendente: gravar os vídeos com as falas novas, importar os 13 manifestos no admin e anexar o PDF novo.
+
 ## Módulo 1 — O Dino ganha vida
 
 **Resumo:** Prepare a tela e faça o Dino aparecer, cair e pular com som.
@@ -62,7 +121,7 @@ Os roteiros usam os caminhos e nomes atuais do Estúdio, inclusive **Mostrar a c
 
 Cinco revisões curtas, nas aulas 3, 6, 9, 11 e 13, retomam o que foi montado e testado. Cada seção contém apenas Zappy → quiz, com explicação após responder, acerto de todas as questões e novas tentativas sem limite nem espera. Essa política também precisa estar configurada no admin.
 
-As etapas de montagem terminam em **Verificar esta parte → correção, se necessária → Objetivo cumprido! → Salvo → Próxima parte**. A entrega final acrescenta **Enviar para o guia → Enviar → Concluir fase**. Publicar no Mural não é condição de conclusão.
+As etapas de montagem terminam em **Verificar esta parte → correção, se necessária → Objetivo cumprido! → Salvo → Próxima parte**. A entrega final acrescenta **Enviar meu projeto → Enviar → Concluir fase**. Publicar no Mural não é condição de conclusão.
 
 ## Continuidade do jogo
 

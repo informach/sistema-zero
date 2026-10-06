@@ -8,61 +8,75 @@ Entrada: Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. A
 
 Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando ("Sua vez!", "Agora…!", "Hora de…!") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Tá vendo?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").
+
 ## Seção 1. Defina quando ganhar e perder
 
 ### Clipe `video-finais` · Defina quando ganhar e perder
 
-**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Agora vamos encerrar a partida ao chegar a 26 pontos ou ficar sem vidas. Deixe à vista o espaço entre Dar 3 de vida e Mudar o estado para inicio, dentro de Ao iniciar. Abra Programação e depois Variáveis. Pegue Criar constante com valor. Encaixe em Ao iniciar, depois de Dar ao sprite nave 3 de vida e antes de Mudar o estado do jogo para inicio. Escreva alvo no nome e 26 no valor. Uma constante guarda um valor que não muda durante a partida. Aqui, ela guarda a meta de pontos.
+> "Repare: no seu jogo, a partida continua mesmo quando as vidas acabam, porque ele ainda não sabe quando a partida termina. Agora faça a partida acabar quando chegar a 26 pontos ou quando as vidas acabarem.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
+> Primeiro, a meta. Os 26 pontos não mudam durante a partida, por isso a meta vai numa constante, que é um nome que guarda um valor que não muda. A constante é criada uma vez, quando o jogo começa, em Ao iniciar: deixe à vista o espaço entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio.
 >
-> Vá ao fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo. Abra Programação e depois Lógica e Se. Pegue Se e encaixe depois de Desenhar as vidas do sprite, ainda dentro de jogando.
+> Agora abra Programação e depois Variáveis, e pegue o bloco Criar constante com valor. Arraste e solte entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio. O nome chega como PI: troque PI por alvo e o 0 do valor por 26.
 >
-> Vamos perguntar se pontos chegou ao alvo. Mantenha a comparação que veio na condição. No lado esquerdo, escolha pontos no bloco valor da variável. No sinal, escolha maior ou igual. Deixe à vista o número à direita da comparação. Abra Programação e depois Valores. Pegue valor da variável e solte sobre o número do lado direito da comparação. Escolha alvo. Confira: pontos maior ou igual a alvo.
+> Agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida. Ela vai no fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo, logo depois de Desenhar as vidas do sprite: deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.
 >
-> Deixe à vista o então da condição que acabou de montar. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue Mudar o estado do jogo para, encaixe dentro do então dessa comparação e escolha vitoria.
+> Desta vez, a pergunta que vem no Se vai ser usada. Ela é uma comparação: um valor, um sinal e outro valor. No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.
 >
-> Deixe à vista o encaixe abaixo da condição de vitória, dentro de jogando. Agora monte a derrota. Abra Programação e depois Lógica e Se. Pegue outra Se e encaixe logo depois da condição de vitória, ainda dentro de jogando. Retire a comparação que veio nesse novo bloco.
+> Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima do 0. Escolha alvo. Assim, a pergunta fica pontos maior ou igual a alvo, ou seja, a partida já chegou à meta?
 >
-> Deixe à vista a condição vazia da derrota. Abra Jogo 2D, depois Vida e placar e Vida. Pegue as vidas do sprite acabaram?, encaixe na condição vazia e escolha nave. Deixe à vista o então da condição que acabou de montar. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue Mudar o estado do jogo para, encaixe no então dessa condição e escolha fim.
+> Deixe à vista o espaço do então dessa comparação. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.
 >
-> Confira a ordem no fim da partida: desenho das vidas, condição de vitória e condição de derrota. Se as duas condições acontecerem no mesmo quadro, a de derrota vem por último. As telas desses finais ainda não foram montadas. Por enquanto, confira os encaixes; vamos mostrar os resultados na próxima parte.
+> Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e depois Lógica e Se, pegue outro Se e solte nesse encaixe. Desta vez, a pergunta x maior que 0 não serve, por isso arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.
+>
+> Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco as vidas do sprite acabaram?, solte nesse lugar e escolha nave. Depois, deixe à vista o então desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.
+>
+> Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da derrota. Se as duas coisas acontecerem no mesmo quadro, a derrota vem por último, e é ela que vale.
+>
+> Confira se ficou assim: em Ao iniciar, entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio, está Criar constante alvo com valor 26. E, no fim de jogando, depois de Desenhar as vidas do sprite, estão o Se pontos ≥ alvo, que muda o estado para vitoria, e o Se as vidas do sprite nave acabaram?, que muda o estado para fim.
+>
+> As telas da vitória e da derrota ainda não existem, por isso o jogo ainda não mostra esses finais. Desta vez, quem confere o que você montou é a verificação, e as telas vêm na próxima parte.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Crie a meta e acrescente as condições de vitória e derrota dentro de jogando.
+**Zappy na página (não gravar):** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 ## Seção 2. Mostre a vitória e a derrota
 
 ### Clipe `video-mostrar-telas` · Mostre a vitória e a derrota
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Criar um ramo por vez, sem remontar inicio. Não alegar que Enter reinicia nesta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Vamos mostrar uma tela para cada final. Encontre a condição maior, dentro de A cada quadro do jogo. Ela já tem jogando e o senão se de inicio. Clique no + ao lado de senão se, na parte de baixo do bloco, uma vez para criar o ramo da vitória.
+> "Repare: quando as vidas acabam, a partida para, mas nenhuma tela de fim aparece. É que o Se grande de A cada quadro do jogo só tem os ramos de jogando e de inicio, e nenhum para vitoria ou fim. Agora mostre uma tela para cada final.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
+> Encontre esse Se, dentro de A cada quadro do jogo. Olha aqui: na linha de baixo dele, clique uma vez no + que fica antes de senão se, para criar o ramo da vitória.
 >
-> Retire a comparação do ramo novo. Deixe à vista a condição do ramo novo. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe nessa condição e escolha vitoria. Deixe à vista o então do ramo vitoria. Na mesma categoria, pegue Mostrar tela com título subtítulo dica fundo e encaixe no então desse ramo.
+> O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria.
 >
-> No título, escreva Você ganhou!. Apague o subtítulo e deixe vazio. Na dica, escreva Aperte Enter para voltar ao início. Escolha um fundo escuro com letras legíveis.
+> Deixe à vista o espaço do então do ramo vitoria. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço.
 >
-> Clique no + ao lado de senão se, na parte de baixo do bloco, outra vez para criar o ramo da derrota. Retire a comparação. Deixe à vista a condição do ramo novo. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe nessa condição e escolha fim. Deixe à vista o então do ramo fim. Pegue Mostrar tela com título subtítulo dica fundo na mesma categoria e encaixe no então desse ramo.
+> Agora os textos da vitória: no título, escreva Você ganhou!, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.
 >
-> No título, escreva Você perdeu. Deixe o subtítulo vazio. Na dica, escreva Aperte Enter para voltar ao início. Escolha um fundo escuro. Confira os ramos: primeiro jogando, depois inicio, depois vitoria e depois fim.
+> Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio. Na mesma categoria Telas e partida, pegue o estado do jogo é, solte nesse lugar e escolha fim.
 >
-> Clique no jogo, comece com Enter e deixe as vidas acabarem. A tela Você perdeu deve aparecer. Se não aparecer, confira se a condição das vidas muda para fim e se o ramo dessa tela pergunta por fim. A dica já fala em voltar ao início, mas essa resposta do Enter será montada depois da experiência.
+> Deixe à vista o espaço do então do ramo fim. Pegue outro Mostrar tela com título subtítulo dica fundo, na mesma categoria, e solte nesse espaço. No título, escreva Você perdeu, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro.
+>
+> Agora teste: clique na área do jogo, comece com Enter e deixe as vidas acabarem. Olha só: aparece a tela Você perdeu! Isso acontece porque a pergunta das vidas muda o estado para fim, e o ramo fim mostra essa tela. A dica já fala em voltar ao início, mas o Enter ainda não faz isso: essa resposta vem depois da próxima experiência.
+>
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de jogando, a pergunta das vidas muda o estado para fim, e o Se grande tem os ramos jogando, inicio, vitoria e fim, nessa ordem. Os ramos vitoria e fim mostram as telas Você ganhou! e Você perdeu, com a dica Aperte Enter para voltar ao início. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Acrescente os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela.
+**Zappy na página (não gravar):** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 ## Seção 3. Compare voltar à abertura e reiniciar
 
@@ -75,48 +89,48 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 **Narração:**
 > "Esta é uma experiência para a gente entender como preparar uma partida nova depois do fim. Aqui, o Enter começa a partida, e dá para escolher o que ele faz no fim.
 >
-> Olha aqui: em No fim, o Enter faz, eu escolho Mudar o estado do jogo para inicio. Clico em Apertar Enter, e a partida começa. Uma pedra bate na nave, e a partida termina. Clico em Apertar Enter: o jogo volta para a abertura, mas as pedras da partida continuam na pista. Clico de novo para jogar, e a partida nova começa com as pedras velhas e acaba na hora, com uma batida. Mudar só o estado não arruma o que ficou da partida anterior.
+> Olha aqui: em No fim, o Enter faz, eu escolho Mudar o estado do jogo para inicio. Clico em Apertar Enter, e a partida começa. Uma pedra bate na nave, e a partida termina. Clico em Apertar Enter, e o jogo volta para a abertura, mas tá vendo? As pedras da partida continuam na pista. Clico de novo para jogar, e a partida nova começa com as pedras velhas e acaba na hora, com uma batida. Ou seja, mudar só o estado não arruma o que ficou da partida anterior.
 >
-> É como um jogo de tabuleiro. Para jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.
+> É como um jogo de tabuleiro: para jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.
 >
-> Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. A abertura volta, e a pista fica vazia. Clico outra vez, e a partida começa com a pista limpa. Reiniciar o jogo faz de novo a preparação de Ao iniciar. No seu jogo, o Enter vai reiniciar o jogo quando a partida terminar.
+> Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. Olha só: a abertura volta, e a pista fica vazia. Clico outra vez, e a partida começa com a pista limpa, porque Reiniciar o jogo faz de novo a preparação de Ao iniciar. No seu jogo, o Enter vai reiniciar o jogo quando a partida terminar.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Depois de perder, compare mudar para inicio com Reiniciar o jogo. Observe os valores ao começar outra partida.
+**Zappy na página (não gravar):** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Faça Enter preparar outra partida
 
 ### Clipe `video-enter` · Faça Enter preparar outra partida
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Ampliar o evento existente, sem criar um segundo Enter. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada: perder, tocar em Enter e, no "Tá vendo?", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Lembra da experiência da parte anterior? Você comparou mudar apenas o estado com reiniciar a preparação. No seu jogo, deixe as vidas acabarem e toque em Enter: ele ainda não volta à abertura. Agora acrescente essa resposta.
+> "No seu jogo, comece uma partida, perca e toque em Enter. Tá vendo? Você perdeu continua na tela, porque o Enter só sabe começar a partida.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
+> Lembra da experiência da parte anterior? Reiniciar o jogo deixava tudo limpo para outra partida. Agora a gente vai ensinar isso ao Enter do seu jogo!
 >
-> Reiniciar o jogo executa a preparação de Ao iniciar de novo. Assim, pontos volta a zero, a nave recebe três vidas, os grupos são preparados e o estado volta para inicio.
+> Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está. Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no + que fica antes de senão se.
 >
-> Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio. Vamos manter essa parte. Clique no + ao lado de senão se, na parte de baixo do bloco, uma vez.
+> O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha fim.
 >
-> Retire a comparação do ramo novo. Deixe à vista a condição do ramo novo. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe na condição e escolha fim. Deixe à vista o então do ramo fim. Na mesma categoria, pegue Reiniciar o jogo e encaixe no então desse ramo.
+> Deixe à vista o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.
 >
-> Clique no + ao lado de senão se, na parte de baixo do bloco, outra vez. Retire a comparação. Deixe à vista a condição do ramo novo. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe na nova condição e escolha vitoria. Deixe à vista o então do ramo vitoria. Pegue outro Reiniciar o jogo na mesma categoria e encaixe no então.
+> Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do ramo novo para a lixeira e deixe à vista o lugar vazio. Na mesma categoria, pegue o estado do jogo é, solte nesse lugar e escolha vitoria. Depois, deixe à vista o então do ramo vitoria, pegue outro Reiniciar o jogo e solte nesse espaço.
 >
-> Confira o evento inteiro: em inicio, Enter muda para jogando. Em fim e em vitoria, Enter reinicia o jogo. Se estiver jogando, Enter não faz nenhuma dessas três ações.
+> Agora teste: perca uma partida e toque em Enter. Olha só: a abertura volta! Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova. Repare que o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.
 >
-> Teste uma derrota e toque em Enter. A abertura deve voltar. Toque em Enter outra vez: é esse segundo Enter que começa a partida nova. Agora confira o placar em zero e os três corações. Se as vidas não voltarem, confira se usou Reiniciar o jogo e se Dar 3 de vida continua em Ao iniciar.
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos. Em inicio, o Enter muda o estado para jogando. Em fim e em vitoria, o Enter reinicia o jogo. E Dar ao sprite nave 3 de vida continua em Ao iniciar. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Amplie o evento Enter com os ramos fim e vitoria. Em cada um, use Reiniciar o jogo.
+**Zappy na página (não gravar):** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 ## Seção 5. Confira o que você construiu
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
+**Zappy na página (não gravar):** Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
@@ -129,14 +143,14 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 **Na tela:** Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, Salvo, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Agora teste o ciclo completo do jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Não deve sair som de tiro. Confira também os blocos: criar tiros e criar asteroides precisam estar dentro de Se jogando.
+> "Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Repare: não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá.
 >
-> Toque em Enter, mova a nave e atire. Deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar. Confira zero pontos e três corações.
+> Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.
 >
-> Nessa nova partida, tente chegar a 26 pontos para conferir Você ganhou!. Se perder antes, recomece e tente de novo. Na vitória, teste a barra de espaço: não deve haver disparo. Toque em Enter para voltar à abertura e outra vez para jogar. Confira de novo os pontos e as vidas. Se algum final não funcionar, reveja a condição que muda o estado e o ramo que desenha aquela tela.
+> Nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!. Se perder antes, recomece e tente de novo. Na vitória, toque na barra de espaço: não pode sair nenhum tiro. Toque em Enter para voltar à abertura e outra vez para jogar, e confira de novo os pontos e as vidas. Se algum final não funcionar, reveja a pergunta que muda o estado e o ramo que mostra aquela tela.
 >
-> Você montou os controles, os tiros, os acertos, os pontos, as vidas e as telas. Os blocos de nave, estrelas e efeitos já traziam esses desenhos prontos; você programou como eles participam do jogo.
+> Olha só o que você programou: os controles, os tiros, os acertos, os pontos, as vidas e as telas! Os blocos da nave, das estrelas e dos efeitos já traziam os desenhos prontos, e foi você quem programou como eles participam do jogo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar. Publicar no Mural é opcional; você também pode deixar para outra hora. Se quiser mostrar o jogo agora, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa, confira a imagem e clique em Publicar. E pronto: Seu jogo está no Mural! Que conquista! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase."
 
-**Zappy na página (não gravar):** Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural.
+**Zappy na página (não gravar):** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.

@@ -19,7 +19,7 @@ const { EMPTY_LEARNING, LearningBuilder } = await import(
  * uma no gesto certo. Foi ali que os defeitos moraram: a pergunta que atravessava a troca de
  * tipo e o impulso que atravessava a troca de cena.
  */
-async function montar(inicial: InteractiveBlock) {
+async function montar(inicial: InteractiveBlock, opcoes: { kids?: boolean } = {}) {
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)
@@ -28,6 +28,7 @@ async function montar(inicial: InteractiveBlock) {
     root.render(
       <LearningBuilder
         value={value}
+        kids={opcoes.kids}
         onChange={(next) => {
           value = next
           render()
@@ -342,6 +343,34 @@ test('⚠️⚠️ "Experimentar a prévia" CORRIGE de verdade: errar recebe rec
     expect(previa.textContent).toContain(modelo.explain.explanation)
   } finally {
     await b.fechar()
+  }
+})
+
+test('numa aula kids a prévia fala o vocabulário da criança ("Voltar à fase")', async () => {
+  // A prévia do bloco montava sem o `LessonCopy` e mostrava a aula infantil com as palavras do
+  // adulto, como a prévia e o ensaio da aula inteira faziam antes de 06/10/2026.
+  const bloco: InteractiveBlock = {
+    kind: 'interactive',
+    title: SCENE_MODELS.world.title,
+    instructions: SCENE_MODELS.world.instruction,
+    hints: [],
+    required: false,
+    activity: { type: 'experimentation', scene: 'world' },
+  }
+  const botao = (nome: string) =>
+    [...document.querySelectorAll('button')].find((x) => x.textContent?.trim() === nome)
+  for (const [kids, voltar] of [
+    [true, 'Voltar à fase'],
+    [false, 'Voltar à aula'],
+  ] as const) {
+    const b = await montar(bloco, { kids })
+    try {
+      await act(async () => botao('Experimentar a prévia')?.click())
+      await act(async () => botao('Ampliar experiência')?.click())
+      expect(botao(voltar)).toBeTruthy()
+    } finally {
+      await b.fechar()
+    }
   }
 })
 

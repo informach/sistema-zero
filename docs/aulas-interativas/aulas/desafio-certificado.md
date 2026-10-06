@@ -2,7 +2,7 @@
 
 ## Resumo
 
-- Estado de entrada: o jogo já tem movimento, coleta e decisão; a publicação foi ensinada.
+- Estado de entrada: o jogo já tem movimento, coleta e decisão; a personalização de visuais, avisos e posição da chave e a publicação foram ensinadas.
 - Vitória: reconhecer a autoria e guardar o certificado.
 - Seções na entrada deste review: 2 · Seções finais: 2.
 - Clipes na entrada deste review: 1 · Clipes finais: 1.
@@ -13,6 +13,8 @@
 | --- | --- | --- | --- | --- | --- |
 | Reconhecer a autoria | Não | Nas regras construídas | Nomear movimento, coleta e decisão | Abertura | Celebrar sem atribuir a arte preparada à criança |
 | Guardar a conquista | Interface | Na emissão | Pegar meu certificado e concluir | Após a celebração | Dar um encerramento claro |
+
+As escolhas de personalização são livres: não acrescentar pergunta que cobre um desenho, frase ou lugar escolhido. A criança escolheu entre artes preparadas; não atribuir a ela o desenho dos personagens ou dos cenários.
 
 A revisão final tem quatro perguntas em seção própria, antes da celebração. A seção de celebração não recebe quiz nem conteúdo comercial.
 

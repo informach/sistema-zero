@@ -1,16 +1,22 @@
 import type { SectionPendingItem } from '@sistemazero/core/learning'
+import { CODIGO_SEM_ENVELOPE, FRASE_SEM_ENVELOPE } from './api'
 
 /**
  * As palavras das telas de aula que os dois apps dividem.
  *
  * Na comunidade adulta a aula fala de curso, aula, seção e professor. No Kids, desde 06/10/2026,
- * fala de aventura, fase, parte e guia: a dona não quer que a área da criança pareça uma extensão
+ * fala de aventura, fase, parte e equipe: a dona não quer que a área da criança pareça uma extensão
  * da escola (Diretrizes Pedagógicas, seção 6). O Kids passa a versão dele pelo
  * `LessonCopyProvider`; sem provedor, vale esta, a adulta.
  *
+ * O vocabulário da criança mora ao lado, em `lesson-copy-kids.ts` (o Kids o usa na área logada e
+ * o Admin na prévia e no ensaio de uma aula de curso kids).
+ *
  * ⚠️ Texto de tela compartilhada que diga curso, aula, seção, etapa, caderno, professor ou aluno
- * entra AQUI, e não solto no componente: o guarda `copy-vocabulario` do Kids varre o
- * `member-shell` e só deixa passar este arquivo.
+ * entra AQUI, e não solto no componente: o guarda `copy-vocabulario` do Kids varre o código que a
+ * criança vê (o `src/` do Kids; `components`, `lib`, `routes` e `server` do member-shell;
+ * `core/src`; `studio/src`; `pinta/src`; `molda/src`; `ui/src`) e deixa passar este arquivo
+ * inteiro, mais uma lista de exceções com o motivo de cada uma.
  */
 export interface LessonCopy {
   /** Navegação entre as seções e o pedido de ajuda (`LessonSections`). */
@@ -23,8 +29,15 @@ export interface LessonCopy {
     erroAoAbrir: string
     semRequisitos: string
     enviarAjuda: string
+    /** O rótulo do campo do pedido de ajuda ("Em que ponto desta seção…"). */
+    duvida: string
     /** O link de um recado de ajuda de volta à seção em que a dúvida nasceu. */
     voltarParaSecao: string
+    /** A mensagem de AUTORIA fora do ensaio: o aluno lê esta, nunca a do professor. */
+    preparando: string
+    /** A faixa do rodapé com a seção pronta; `prontaUltima` na última (ao lado de "Concluir"). */
+    pronta: string
+    prontaUltima: string
   }
   /**
    * O texto de um item da faixa "o que falta para seguir". O members manda as frases da voz
@@ -34,7 +47,9 @@ export interface LessonCopy {
   /**
    * A frase de um erro que veio do servidor, com a frase padrão do componente para quando não
    * houver uma. Na comunidade adulta vale a do servidor; o Kids troca pelo `code` e, se a frase
-   * do servidor falar a língua da escola ("Conclua a seção anterior"), usa a `padrao`.
+   * do servidor falar a língua da escola ("Conclua a seção anterior"), usa a `padrao`. Erro SEM
+   * `code` não é do servidor (`TypeError: Failed to fetch`, um `Error` do cliente) e cai na
+   * `padrao` nos dois apps.
    */
   erroDoServidor: (erro: unknown, padrao: string) => string
   /** "Verificar esta etapa" dos objetivos de projeto da seção. */
@@ -43,10 +58,20 @@ export interface LessonCopy {
     objetivos: string
     cumprido: string
     faltou: string
+    /** O projeto passou do limite da rota (413 `PAYLOAD_TOO_LARGE`, 2 MB) ao ser conferido. */
+    grandeDemais: string
   }
   acaoDePlataforma: {
     concluida: string
     previa: string
+  }
+  cena: {
+    /**
+     * A resposta veio de uma pergunta que não existe mais. O core devolve a frase adulta
+     * (`PERGUNTA_MUDOU`, contrato com o members, que o player reconhece por igualdade) e a tela
+     * desenha esta.
+     */
+    perguntaMudou: string
   }
   estudio: {
     titulo: string
@@ -60,7 +85,12 @@ export interface LessonCopy {
     avisoProjetoInicial: string
     recado: string
     recadoExemplo: string
-    enviado: string
+    /**
+     * A linha de "já foi" sob o editor, com a data do envio quando ela existe. É função porque a
+     * pontuação depende da voz: o adulto lê "Projeto enviado ao professor em <data>." e a criança
+     * "Projeto enviado!", e emendar a data num texto que já fecha com "!" saía "enviado! em…".
+     */
+    enviado: (quando: string | null) => string
     conferido: string
     paraConcluir: string
     paraConcluirComMeta: string
@@ -76,7 +106,11 @@ export interface LessonCopy {
   }
   pinta: {
     enviar: string
-    enviado: string
+    /** O título da confirmação do envio (o botão dela é sempre "Enviar"). */
+    confirmarEnviar: string
+    confirmarReenviar: string
+    /** Mesma regra do `estudio.enviado`: a data entra pela voz de cada app. */
+    enviado: (quando: string | null) => string
     visto: string
     paraConcluir: string
     continueDesenhando: string
@@ -124,12 +158,17 @@ export interface LessonCopy {
   voltarDaAmpliacao: string
 }
 
-/** O `code` de um erro da API (`{ code, message }`), quando houver. */
+/**
+ * O `code` de um erro da API (`{ code, message }`), quando houver um de VERDADE. O
+ * `CODIGO_SEM_ENVELOPE` (o `'ERROR'` que o `apiSend` inventa quando o gateway cai e a resposta
+ * vem sem envelope) conta como ausência: não foi o servidor que o escreveu.
+ */
 export function codigoDoErro(erro: unknown): string | undefined {
   return typeof erro === 'object' &&
     erro !== null &&
     'code' in erro &&
-    typeof erro.code === 'string'
+    typeof erro.code === 'string' &&
+    erro.code !== CODIGO_SEM_ENVELOPE
     ? erro.code
     : undefined
 }
@@ -145,6 +184,18 @@ export function mensagemDoErro(erro: unknown): string | undefined {
     : undefined
 }
 
+/**
+ * A frase que o SERVIDOR escreveu, ou nada. Só existe com um `code` de verdade
+ * (`codigoDoErro`): o `TypeError: Failed to fetch` da rede (em inglês) e um `Error` do próprio
+ * cliente não têm, e o "Algo deu errado." que o `apiSend` inventa sem envelope também não conta.
+ * É a régua ÚNICA dos dois vocabulários (`ADULT_LESSON_COPY` e `KIDS_LESSON_COPY`).
+ */
+export function fraseDoServidor(erro: unknown): string | undefined {
+  if (!codigoDoErro(erro)) return undefined
+  const frase = mensagemDoErro(erro)
+  return frase === FRASE_SEM_ENVELOPE ? undefined : frase
+}
+
 export const ADULT_LESSON_COPY: LessonCopy = {
   secoes: {
     proxima: 'Próxima seção',
@@ -156,19 +207,28 @@ export const ADULT_LESSON_COPY: LessonCopy = {
       'Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.',
     semRequisitos: 'Explore o conteúdo e conclua a aula quando terminar.',
     enviarAjuda: 'Enviar ao professor',
+    duvida: 'Em que ponto desta seção você ficou com dúvida?',
     voltarParaSecao: 'Voltar à seção',
+    preparando: 'Esta seção ainda está sendo preparada',
+    pronta: 'Tudo pronto nesta seção. Pode seguir!',
+    prontaUltima: 'Tudo pronto nesta seção!',
   },
   itemPendente: (item) => item.text,
-  erroDoServidor: (erro, padrao) => mensagemDoErro(erro) ?? padrao,
+  erroDoServidor: (erro, padrao) => fraseDoServidor(erro) ?? padrao,
   verificacao: {
     botao: 'Verificar esta etapa',
     objetivos: 'Objetivos desta etapa',
     cumprido: 'Objetivo da etapa cumprido!',
     faltou: 'Confira os blocos pedidos nesta etapa e tente novamente.',
+    grandeDemais:
+      'O projeto ficou grande demais para conferir. Remova algumas imagens ou sons e tente novamente.',
   },
   acaoDePlataforma: {
     concluida: 'Etapa concluída!',
     previa: 'Prévia: a verificação real acontece na conta do aluno.',
+  },
+  cena: {
+    perguntaMudou: 'Esta pergunta mudou. Abra a aula de novo.',
   },
   estudio: {
     titulo: 'Atividade no Estúdio',
@@ -184,7 +244,7 @@ export const ADULT_LESSON_COPY: LessonCopy = {
       'Atenção: você está enviando o projeto inicial da aula por cima do que você já entregou. Se terminou em outro computador, use o menu ⋯ e escolha Trazer o que eu enviei antes.',
     recado: 'Recado para o professor',
     recadoExemplo: 'Quer contar algo pro professor sobre o seu projeto? (não é obrigatório)',
-    enviado: 'Projeto enviado ao professor',
+    enviado: (quando) => `Projeto enviado ao professor${quando ? ` em ${quando}` : ''}.`,
     conferido: 'O professor já conferiu sua entrega.',
     paraConcluir: 'Envie seu projeto ao professor para poder concluir a aula.',
     paraConcluirComMeta:
@@ -203,7 +263,9 @@ export const ADULT_LESSON_COPY: LessonCopy = {
   },
   pinta: {
     enviar: 'Enviar para o professor',
-    enviado: 'Desenho enviado ao professor',
+    confirmarEnviar: 'Enviar o desenho?',
+    confirmarReenviar: 'Enviar o desenho de novo?',
+    enviado: (quando) => `Desenho enviado ao professor${quando ? ` em ${quando}` : ''}.`,
     visto: 'O professor já viu o seu desenho.',
     paraConcluir: 'Envie o seu desenho ao professor para poder concluir a aula.',
     continueDesenhando: 'Continue desenhando. A entrega fica no fechamento.',

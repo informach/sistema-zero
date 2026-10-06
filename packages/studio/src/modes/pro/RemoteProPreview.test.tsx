@@ -45,7 +45,7 @@ describe('preview Pro remoto', () => {
     const { container } = render(<RemoteProPreview runtime={runtime} />)
 
     await waitFor(() => expect(build).toHaveBeenCalledTimes(1))
-    await waitFor(() => expect(screen.getByTitle('Pré-visualização da atividade Pro')).toBeTruthy())
+    await waitFor(() => expect(screen.getByTitle('Pré-visualização do projeto Pro')).toBeTruthy())
     const iframe = container.querySelector('iframe')
     expect(iframe?.getAttribute('sandbox')).toBe('allow-scripts allow-pointer-lock')
     expect(iframe?.getAttribute('srcdoc')).toContain('sz-pro-console')

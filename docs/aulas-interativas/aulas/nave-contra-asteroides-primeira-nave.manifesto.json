@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Jogue antes de construir\n\nRegravar no Estúdio atual. Mostrar somente a versão pronta. O narrador faz um gesto de exemplo e para: clicar na área do jogo, apertar Enter para começar e apertar a barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima parte.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Jogue antes de construir\n\nRegravar no Estúdio atual. Mostrar somente a versão pronta. Na primeira fala, apresentar o jogo, o acerto, a vitória e a derrota. O narrador faz um gesto de exemplo e para: clicar na área do jogo, tocar em Enter para começar e tocar na barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima parte.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima parte."
+        "text": "Sua vez! Jogue a versão pronta: Enter começa a partida, as setas movem a nave e a barra de espaço atira. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -23,7 +23,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Experimente o jogo pronto",
-        "instructions": "Clique no jogo. Enter começa; as setas movem a nave e a barra de espaço atira. Conheça os controles e continue quando quiser.",
+        "instructions": "Clique no jogo e toque em Enter para começar. As setas movem a nave, e a barra de espaço atira. Jogue o quanto quiser e, quando terminar, clique em Próxima parte.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -1703,7 +1703,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare Mover a nave um pouquinho em Ao iniciar e Enquanto estiver rodando. Comece cada teste e acompanhe até parar."
+        "text": "Sua vez! Faça os dois testes e fique de olho no contador Ações feitas. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1758,14 +1758,14 @@
     },
     {
       "key": "video-montar-areas-tela",
-      "plannedVideo": "Título: Prepare a tela do jogo\n\nRegravar no Estúdio atual. Montar as duas áreas do zero. Mostrar o bloco da tela dentro de Ao iniciar e a prévia automática; não acrescentar estrelas.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare a tela do jogo\n\nRegravar no Estúdio atual. Começar pela retomada, antes de qualquer bloco: no \"Tá vendo?\", mostrar o espaço dos blocos vazio e a prévia sem nada. Montar as duas áreas do zero, com um lugar vazio à vista antes de cada uma. Mostrar o bloco da tela dentro de Ao iniciar e a prévia automática; não acrescentar estrelas.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-montar-areas-e-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira esta parte."
+        "text": "Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
@@ -1777,7 +1777,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mude x e y separadamente. Por último, coloque os dois em zero."
+        "text": "Sua vez! Mude x e y, um de cada vez, e depois coloque os dois em zero. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1785,7 +1785,7 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "O endereço na tela",
+        "title": "Escolha onde a nave aparece",
         "instructions": "Aumente x sem mudar y e observe a nave. Depois aumente y sem mudar x. Por último, coloque x e y em zero e observe o canto da tela.",
         "hints": [],
         "semPerguntaFinal": true,
@@ -1826,7 +1826,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie a nave nos bastidores e depois mostre na tela. Compare os dois lugares."
+        "text": "Sua vez! Crie a nave, mostre a nave na tela e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1853,14 +1853,14 @@
     },
     {
       "key": "video-criar-nave",
-      "plannedVideo": "Título: Crie a nave nos bastidores\n\nRegravar no Estúdio atual. Mostrar a criação em Ao iniciar, com nome, posição, tamanho e cores. Conferir os blocos e manter a prévia ainda vazia: o desenho será montado depois.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Crie a nave nos bastidores\n\nRegravar no Estúdio atual. Começar pela retomada, sem teste no jogo: a criação não aparece na tela. Mostrar a criação em Ao iniciar, com nome, posição, tamanho e cores, deixando à vista Preparar o jogo em tela cheia antes de abrir a paleta. Conferir os blocos e manter a prévia ainda vazia: o desenho será montado depois.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-nave",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie nave em Ao iniciar, com posição e tamanho definidos. O desenho será ligado na próxima montagem."
+        "text": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
@@ -1872,7 +1872,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare desenhar só no começo, em cada quadro e com a limpeza ligada. Avance os quadros em cada teste."
+        "text": "Sua vez! Compare desenhar só no começo, a cada quadro e com a limpeza ligada, avançando os quadros em cada teste. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1902,14 +1902,14 @@
     },
     {
       "key": "video-motor-e-nave",
-      "plannedVideo": "Título: Mostre a nave a cada quadro\n\nRegravar no Estúdio atual. Retomar a nave já criada. Montar A cada quadro do jogo e Desenhar o sprite, escolhendo nave. Mostrar a nave aparecer e permanecer parada.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre a nave a cada quadro\n\nRegravar no Estúdio atual. Começar pela retomada, antes de qualquer bloco: no \"Tá vendo?\", mostrar a tela ainda lisa, sem a nave. Montar A cada quadro do jogo e Desenhar o sprite, escolhendo nave, com o destino à vista antes de abrir a paleta. Mostrar a nave aparecer e permanecer parada.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-motor-e-nave",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Desenhe a nave em cada quadro e confira se ela aparece antes de enviar."
+        "text": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase."
       }
     },
     {
@@ -1983,7 +1983,7 @@
       "key": "abertura",
       "title": "Jogue antes de construir",
       "intent": "presentation",
-      "objective": "Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima parte.",
+      "objective": "Sua vez! Jogue a versão pronta: Enter começa a partida, as setas movem a nave e a barra de espaço atira. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-abertura", "fala-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2011,7 +2011,7 @@
       "key": "uma-vez-e-sempre",
       "title": "Compare uma vez e sempre",
       "intent": "exploration",
-      "objective": "Compare Mover a nave um pouquinho em Ao iniciar e Enquanto estiver rodando. Comece cada teste e acompanhe até parar.",
+      "objective": "Sua vez! Faça os dois testes e fique de olho no contador Ações feitas. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-uma-vez-e-sempre", "fala-uma-vez-e-sempre", "experiencia-areas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2025,7 +2025,7 @@
       "key": "montar-areas-e-tela",
       "title": "Prepare a tela do jogo",
       "intent": "application",
-      "objective": "Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira esta parte.",
+      "objective": "Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-montar-areas-tela", "fala-montar-areas-e-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -2072,7 +2072,7 @@
       "key": "coordenadas",
       "title": "Escolha onde a nave aparece",
       "intent": "exploration",
-      "objective": "Mude x e y separadamente. Por último, coloque os dois em zero.",
+      "objective": "Sua vez! Mude x e y, um de cada vez, e depois coloque os dois em zero. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-coordenadas", "fala-coordenadas", "experiencia-coordenadas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2086,7 +2086,7 @@
       "key": "criar-e-mostrar",
       "title": "Compare criar e mostrar",
       "intent": "exploration",
-      "objective": "Crie a nave nos bastidores e depois mostre na tela. Compare os dois lugares.",
+      "objective": "Sua vez! Crie a nave, mostre a nave na tela e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-criar-e-mostrar", "fala-criar-e-mostrar", "experiencia-criar-mostrar"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2100,7 +2100,7 @@
       "key": "criar-nave",
       "title": "Crie a nave nos bastidores",
       "intent": "delivery",
-      "objective": "Crie nave em Ao iniciar, com posição e tamanho definidos. O desenho será ligado na próxima montagem.",
+      "objective": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-criar-nave", "fala-criar-nave"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -2148,7 +2148,7 @@
       "key": "desenho-por-quadro",
       "title": "Compare o desenho no começo e em cada quadro",
       "intent": "exploration",
-      "objective": "Compare desenhar só no começo, em cada quadro e com a limpeza ligada. Avance os quadros em cada teste.",
+      "objective": "Sua vez! Compare desenhar só no começo, a cada quadro e com a limpeza ligada, avançando os quadros em cada teste. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-desenho-por-quadro", "fala-desenho-por-quadro", "experiencia-quadro"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2162,7 +2162,7 @@
       "key": "motor-e-nave",
       "title": "Mostre a nave a cada quadro",
       "intent": "delivery",
-      "objective": "Desenhe a nave em cada quadro e confira se ela aparece antes de enviar.",
+      "objective": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
       "blockKeys": ["video-motor-e-nave", "fala-motor-e-nave", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

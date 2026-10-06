@@ -22,6 +22,7 @@ import { FixedVsReadControls } from './scene-fixed-vs-read'
 import { FoundCounterControls } from './scene-found-counter'
 import { InvincibilityControls } from './scene-invincibility'
 import { LighthouseKeyControls } from './scene-lighthouse-key'
+import { LighthousePositionControls } from './scene-lighthouse-position'
 import { LighthouseWalkControls } from './scene-lighthouse-walk'
 import { MotionAmountControls } from './scene-motion-amount'
 import { MotorSceneControls } from './scene-motor-controls'
@@ -121,6 +122,9 @@ export function LessonSceneControls({
       )}
       {m === 'found-counter' && <FoundCounterControls dispatch={dispatch} />}
       {m === 'lighthouse-key' && <LighthouseKeyControls state={state} dispatch={dispatch} />}
+      {m === 'lighthouse-position' && (
+        <LighthousePositionControls state={state} dispatch={dispatch} />
+      )}
       {m === 'collect-and-remember' && (
         <CollectionMemoryControls state={state} dispatch={dispatch} />
       )}

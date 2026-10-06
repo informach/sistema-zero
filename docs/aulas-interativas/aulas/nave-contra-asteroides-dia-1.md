@@ -25,21 +25,21 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 ### Seção 1. Observe o movimento quadro a quadro
 
-**Tarefa:** Compare a seta solta e segurada. Depois compare Velocidade 3 e Velocidade 1, avançando um quadro por vez.
+**Tarefa:** Sua vez! Compare a seta solta e a seta segurada e depois as velocidades 3 e 1, avançando um quadro por vez. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-seta-e-velocidade → fala-seta-e-velocidade → experiencia-seta-e-velocidade.
 
-**Zappy na página (não gravar):** Compare a seta solta e segurada. Depois compare Velocidade 3 e Velocidade 1, avançando um quadro por vez.
+**Zappy na página (não gravar):** Sua vez! Compare a seta solta e a seta segurada e depois as velocidades 3 e 1, avançando um quadro por vez. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `lighthouse-walk`. Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta, escolha Velocidade 3 e avance alguns quadros, um de cada vez. Clique em Recomeçar, escolha Velocidade 1 e avance outros quadros com a seta ligada. Compare quanto o x muda em cada passo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Faça a nave responder às setas
 
-**Tarefa:** Coloque o movimento antes do desenho da nave e teste as duas setas.
+**Tarefa:** Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-setas-e-rastro → fala-setas.
 
-**Zappy na página (não gravar):** Coloque o movimento antes do desenho da nave e teste as duas setas.
+**Zappy na página (não gravar):** Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -47,11 +47,11 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 ### Seção 3. Tire o rastro da nave
 
-**Tarefa:** Encaixe Limpar a tela antes de mover e desenhar. Repita o teste da seta.
+**Tarefa:** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-limpeza → fala-limpeza.
 
-**Zappy na página (não gravar):** Encaixe Limpar a tela antes de mover e desenhar. Repita o teste da seta.
+**Zappy na página (não gravar):** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -59,21 +59,21 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 ### Seção 4. Observe o que acontece na borda
 
-**Tarefa:** Rode sem o limite. Depois recomece, ligue Manter dentro da tela e rode de novo.
+**Tarefa:** Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-limite-da-tela → fala-limite-da-tela → experiencia-limite-da-tela.
 
-**Zappy na página (não gravar):** Rode sem o limite. Depois recomece, ligue Manter dentro da tela e rode de novo.
+**Zappy na página (não gravar):** Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `lighthouse-walk`. Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Observe a nave chegar à borda e continuar até sair da tela. Clique em Recomeçar, ligue Manter dentro da tela e mantenha a seta ligada. Clique em Rodar e compare o que acontece na borda. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 5. Mantenha a nave na tela
 
-**Tarefa:** Teste as duas bordas e coloque o limite entre mover e desenhar.
+**Tarefa:** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-limite-da-nave → fala-borda.
 
-**Zappy na página (não gravar):** Teste as duas bordas e coloque o limite entre mover e desenhar.
+**Zappy na página (não gravar):** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -82,21 +82,21 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 ### Seção 6. Compare a ordem dos desenhos
 
-**Tarefa:** Troque a ordem do fundo e da nave, observe a tela e volte à primeira ordem.
+**Tarefa:** Sua vez! Troque a ordem do fundo e da nave, compare a tela e termine com o fundo antes da nave. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-ordem-dos-desenhos → fala-ordem-dos-desenhos → experiencia-camadas.
 
-**Zappy na página (não gravar):** Troque a ordem do fundo e da nave, observe a tela e volte à primeira ordem.
+**Zappy na página (não gravar):** Sua vez! Troque a ordem do fundo e da nave, compare a tela e termine com o fundo antes da nave. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `layers`. Na experiência, use as setas na lista de desenhos para colocar o fundo de estrelas antes da nave. Observe a tela. Troque a ordem para desenhar a nave antes do fundo. Observe novamente e volte à primeira ordem. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 7. Coloque as estrelas atrás da nave
 
-**Tarefa:** Adicione as estrelas e confira a ordem dos cinco blocos.
+**Tarefa:** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-fundo-estrelado → fala-fundo-estrelado.
 
-**Zappy na página (não gravar):** Adicione as estrelas e confira a ordem dos cinco blocos.
+**Zappy na página (não gravar):** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -105,23 +105,23 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 ### Seção 8. Confira o que você construiu
 
-**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
+**Tarefa:** Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
+**Zappy na página (não gravar):** Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 9. Teste e envie sua nave
 
-**Tarefa:** Confira o movimento nas duas bordas, verifique esta parte e envie o projeto.
+**Tarefa:** Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
 **Blocos na página:** video-teste-e-envio → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Confira o movimento nas duas bordas, verifique esta parte e envie o projeto.
+**Zappy na página (não gravar):** Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Deixe a tela de 800 × 480 em Ao iniciar.
 - Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.

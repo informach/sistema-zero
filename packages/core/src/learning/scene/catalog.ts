@@ -717,7 +717,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'No quadro 2, mude o fogo com o fantasma desligado. Depois ligue o fantasma e compare os dois fogos.',
     manipulates: 'O fantasma do quadro anterior e o tamanho do fogo do quadro 2',
     success:
-      'O fantasma é uma guia, não um desenho: ele deixa você comparar os dois fogos sem decorar!',
+      'O fantasma só ajuda a comparar, não é um desenho: com ele você vê os dois fogos juntos, sem decorar!',
     extra: 'E no quadro 1? Tente ligar o fantasma lá e veja o que aparece.',
     goals: [
       {
@@ -1431,6 +1431,34 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Olhe o número do quadro e o x do sprite enquanto os quadros passam.',
       'Compare: avance quadros com a seta solta e depois com a seta segurada.',
       'Clique em Avançar 1 quadro com Segurar a seta para a direita desligado. Depois ligue a seta e clique em Avançar 1 quadro mais duas vezes.',
+    ],
+  },
+  'lighthouse-position': {
+    id: 'lighthouse-position',
+    group: 'stage',
+    title: 'Onde fica a chave?',
+    instruction:
+      'Troque a Posição horizontal x para 160 e olhe a chave. Depois troque só a Posição vertical y para 250. Compare os dois lugares.',
+    manipulates: 'A posição horizontal x e a posição vertical y da chave no mapa do Farol',
+    success:
+      'O x escolhe o lugar para os lados. O y escolhe o lugar para cima ou para baixo; quanto maior o y, mais embaixo a chave fica.',
+    extra: 'Que lugar você escolheria para a chave na sua aventura?',
+    goals: [
+      {
+        id: 'mover-horizontal',
+        label: 'Só o x mudou: a chave foi para o lado',
+        pedido: 'Troque a Posição horizontal x para 160 e olhe a chave.',
+      },
+      {
+        id: 'mover-vertical',
+        label: 'Só o y mudou: a chave subiu ou desceu',
+        pedido: 'Troque a Posição vertical y para 250 e olhe a chave.',
+      },
+    ],
+    hints: [
+      'Olhe a chave e os dois números. Mude só a Posição horizontal x.',
+      'Deixe o x como está e mude a Posição vertical y. Compare com a marca do lugar anterior.',
+      'Digite 160 em Posição horizontal x e confirme. Depois digite 250 em Posição vertical y e confirme.',
     ],
   },
   restart: {
@@ -2612,6 +2640,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'collect-and-remember': PREVIA_INICIAL,
   'lighthouse-key': PREVIA_INICIAL,
   'lighthouse-walk': PREVIA_INICIAL,
+  'lighthouse-position': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
   score: PREVIA_INICIAL,

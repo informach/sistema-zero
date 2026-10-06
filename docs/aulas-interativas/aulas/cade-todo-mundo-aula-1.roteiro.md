@@ -62,7 +62,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
 
-**Zappy abaixo do vídeo:** “Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda.”
+**Zappy abaixo do vídeo:** “Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda. Quando terminar, clique em Próxima parte.”
 
 **Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê, como numa conversa. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e chega ao jogo dizendo qual é a ação (o toque) e qual é a reação (o arbusto ficar invisível). Sem palpite nem pergunta final.
 
@@ -74,15 +74,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Narração:**
 
-> “Lembra da experiência da parte anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso no seu jogo!
+> “Aqui no seu jogo, toque num esconderijo. Tá vendo? Nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele.
 >
-> Primeiro, toque num esconderijo do seu jogo. Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele.
->
-> Para o jogo responder, a gente precisa ligar uma reação a esse toque. O toque é a ação, e a reação que a gente quer é o esconderijo ficar invisível, para aparecer o personagem que está atrás dele. Então, vamos fazer isso agora!
+> Lembra da experiência da parte anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso com os esconderijos do seu jogo!
 >
 > Para começar, encontre a área Quando acontecer. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
 >
-> Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo, e escolhido é o nome do esconderijo que você tocar.
+> Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.
 >
 > A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.
 >
@@ -92,24 +90,22 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Repare que o bloco chega com o nome jogador. Mas quem precisa ficar invisível é o esconderijo que você tocar. Então clique em jogador, desça até o fim da lista que abre e clique em escolhido.
 >
-> Agora falta o número. Clique no 50 e troque por 0. Com zero de visibilidade, o esconderijo fica invisível, e aí dá para ver o personagem que está atrás dele.
->
-> Confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0.”
+> Agora falta o número. Clique no 50 e troque por 0. Com zero de visibilidade, o esconderijo fica invisível, e aí dá para ver o personagem que está atrás dele.”
 
-**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Mostrar **Salvo**, abrir **Enviar para o guia**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir fase**.
+**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Mostrar **Salvo**, abrir **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir fase**.
 
 **Narração:**
 
 > “Agora vamos testar no seu jogo! Toque num esconderijo. Olha só: ele fica invisível, e o personagem que estava atrás aparece! Achados continua em zero por enquanto, porque o jogo ainda não conta quem você encontra. Depois, toque em outro esconderijo também.
 >
-> Se ninguém aparecer, confira se o bloco está encaixado dentro de Quando clicar ou tocar, se o nome é escolhido e se o número é 0. E, se sempre some o mesmo esconderijo, é porque o bloco ficou com o nome de um esconderijo só: troque para escolhido. Depois de corrigir, teste de novo.
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar.
+> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
 >
 > Quando o envio terminar, clique em Concluir fase.”
 
-**Zappy abaixo do vídeo:** “Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta parte antes de enviar para o guia.”
+**Zappy abaixo do vídeo:** “Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta parte antes de enviar o seu projeto.”
 
 **Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite ___ com ___% de visibilidade e nasce com jogador e 50. A opção escolhido só existe com o bloco dentro do evento preparado e aparece no fim da lista de sprites, depois dos seis sprites com imagem; é preciso rolar a lista. A fala não diz que o jardim e os personagens estão preparados: a criança vê o que já está no projeto. O que vem pronto entra na conversa só quando ajuda a ação, como o evento que já está na área Quando acontecer. A seção exige vídeo, aprovação em **Verificar esta parte** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.

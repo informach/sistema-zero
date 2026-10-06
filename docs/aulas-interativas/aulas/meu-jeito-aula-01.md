@@ -24,7 +24,7 @@ A antiga abertura exigia um projeto vazio e a falta artificial de extensão ante
 
 ### Seção 1. Jogue uma versão com artes próprias
 
-**Tarefa / Zappy na página:** Experimente mover a nave e atirar. Observe os desenhos e o fogo; você vai criar as suas próprias artes.
+**Tarefa / Zappy na página:** Sua vez! Jogue um pouco: mova a nave, atire e repare nos desenhos e no fogo, porque logo você vai criar as suas próprias artes. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-jogo-pronto → fala-jogo-pronto → jogo-pronto.
 
@@ -40,7 +40,7 @@ Anexar `output/pdf/meu-jeito-caderno.pdf`, que a criança conhece como Mapa da A
 
 ### Seção 3. Troque a história, observe as regras
 
-**Tarefa / Zappy na página:** Agora troque o tema, desligue a regra de atirar e compare o que muda.
+**Tarefa / Zappy na página:** Sua vez! Troque os temas, desligue a regra de atirar e compare o que muda. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-aparencia-e-regras → fala-aparencia-e-regras → experimento-tema-e-regra.
 
@@ -48,7 +48,7 @@ Anexar `output/pdf/meu-jeito-caderno.pdf`, que a criança conhece como Mapa da A
 
 ### Seção 4. Veja o que uma cópia guarda
 
-**Tarefa / Zappy na página:** Agora faça a cópia e mude a cor só de um lado.
+**Tarefa / Zappy na página:** Sua vez! Faça a cópia e mude a cor só de um lado. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-copias → fala-copias → experiencia-copia.
 
@@ -56,27 +56,27 @@ Anexar `output/pdf/meu-jeito-caderno.pdf`, que a criança conhece como Mapa da A
 
 ### Seção 5. Baixe o seu jogo concluído
 
-**Tarefa / Zappy na página:** Baixe o projeto que você terminou em Nave Contra Asteroides.
+**Tarefa / Zappy na página:** Agora baixe o jogo que você terminou em Nave Contra Asteroides! No Estúdio da última fase dessa aventura, abra Mais opções e clique em Baixar o projeto. Quando o arquivo .szproject.json aparecer nos seus downloads, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-exportar → fala-exportar.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 6. Abra a cópia no seu Estúdio
 
-**Tarefa / Zappy na página:** Importe o arquivo do seu jogo e escolha um nome para reconhecer a cópia.
+**Tarefa / Zappy na página:** Agora abra a cópia no seu Estúdio! Importe o arquivo e escolha um nome para reconhecer o seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-importar → fala-importar.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 7. Envie a cópia do jogo
 
-**Tarefa / Zappy na página:** Confira: o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.
+**Tarefa / Zappy na página:** Hora de enviar a cópia do seu jogo! Confira se o cartão tem o nome que você escolheu. Depois clique em Escolher no Estúdio, selecione esse cartão e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
 
 ## Continuidade e produção
 

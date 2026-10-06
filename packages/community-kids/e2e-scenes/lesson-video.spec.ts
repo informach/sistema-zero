@@ -79,11 +79,11 @@ for (const viewport of [
     const alturaDoLugar = await lugar.evaluate((el) => el.getBoundingClientRect().height)
     await play(page)
     await page.getByRole('button', { name: 'Ampliar jogo' }).click()
-    const flutuante = page.getByRole('region', { name: 'Vídeo da aula' })
+    const flutuante = page.getByRole('region', { name: 'Vídeo da fase' })
     await expect(flutuante).toBeVisible()
     await expect(flutuante).toBeInViewport({ ratio: 1 })
     // ⚠️⚠️ Nunca por cima da SAÍDA da tela ampliada, em nenhuma janela.
-    const saida = await page.getByRole('button', { name: 'Voltar à aula' }).boundingBox()
+    const saida = await page.getByRole('button', { name: 'Voltar à fase' }).boundingBox()
     const caixa = await flutuante.boundingBox()
     if (!saida || !caixa) throw new Error('Sem caixa')
     const cobre =
@@ -104,7 +104,7 @@ for (const viewport of [
       ({ x, y }) => document.elementFromPoint(x, y)?.closest('[role="region"]')?.ariaLabel ?? null,
       { x: box.x + box.width / 2, y: box.y + box.height / 2 },
     )
-    expect(topo).toBe('Vídeo da aula')
+    expect(topo).toBe('Vídeo da fase')
     expect(box.width).toBeGreaterThanOrEqual(viewport.width < 640 ? 160 : 200)
     // ⚠️⚠️ O MESMO elemento, tocando sem recomeçar.
     expect(await video?.evaluate((el) => el.isConnected)).toBe(true)
@@ -139,7 +139,7 @@ for (const viewport of [
     await expect(flutuante).toBeVisible()
     await expect(interruptor).toHaveAttribute('aria-pressed', 'true')
 
-    await page.getByRole('button', { name: 'Voltar à aula' }).click()
+    await page.getByRole('button', { name: 'Voltar à fase' }).click()
     await expect(flutuante).toHaveCount(0)
     expect(await page.locator('video').evaluate((el: HTMLVideoElement) => el.paused)).toBe(false)
     expect(await video?.evaluate((el) => el.isConnected)).toBe(true)
@@ -154,10 +154,10 @@ test('arrastar encaixa no canto, o + muda o tamanho, e o Tab passa pelo flutuant
   await fonts(page)
   await play(page)
   await page.getByRole('button', { name: 'Ampliar jogo' }).click()
-  const flutuante = page.getByRole('region', { name: 'Vídeo da aula' })
+  const flutuante = page.getByRole('region', { name: 'Vídeo da fase' })
   await expect(flutuante).toHaveAttribute('data-corner', 'top-right')
 
-  const mover = page.getByRole('button', { name: 'Vídeo da aula: mover para outro canto' })
+  const mover = page.getByRole('button', { name: 'Vídeo da fase: mover para outro canto' })
   const alca = await mover.boundingBox()
   if (!alca) throw new Error('Alça sem caixa')
   await page.mouse.move(alca.x + alca.width / 2, alca.y + alca.height / 2)
@@ -185,7 +185,7 @@ test('arrastar encaixa no canto, o + muda o tamanho, e o Tab passa pelo flutuant
   expect(largura).toBeLessThan(400)
   await expect(aumentar).toHaveAttribute('aria-disabled', 'true')
   // O grande no canto de baixo não sobe até o "Voltar à aula".
-  const saidaGrande = await page.getByRole('button', { name: 'Voltar à aula' }).boundingBox()
+  const saidaGrande = await page.getByRole('button', { name: 'Voltar à fase' }).boundingBox()
   const grande = await flutuante.boundingBox()
   if (!saidaGrande || !grande) throw new Error('Sem caixa')
   expect(grande.y).toBeGreaterThan(saidaGrande.y + saidaGrande.height)
@@ -217,7 +217,7 @@ test('arrastar encaixa no canto, o + muda o tamanho, e o Tab passa pelo flutuant
   await fonts(page)
   await play(page)
   await page.getByRole('button', { name: 'Ampliar jogo' }).click()
-  await expect(page.getByRole('region', { name: 'Vídeo da aula' })).toHaveAttribute(
+  await expect(page.getByRole('region', { name: 'Vídeo da fase' })).toHaveAttribute(
     'data-corner',
     'bottom-left',
   )

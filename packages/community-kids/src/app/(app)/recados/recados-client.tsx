@@ -57,7 +57,7 @@ export function RecadosClient({
         <KidsEmptyState
           icon={Mail}
           title="Tudo tranquilo por aqui"
-          description="Continue criando e enviando seus projetos. Se o seu guia quiser te falar alguma coisa, o recado aparece aqui."
+          description="Continue criando e enviando seus projetos. Se a equipe quiser te falar alguma coisa, o recado aparece aqui."
           action={
             <Link
               href="/criar"
@@ -99,7 +99,7 @@ export function RecadosClient({
                     ) : null}
                   </span>
                   <span className="sz-display mt-1.5 block truncate text-lg">
-                    {t.title ?? 'Conversa com o guia'}
+                    {t.title ?? 'Conversa com a equipe'}
                   </span>
                   {t.lastMessagePreview ? (
                     <span className="mt-0.5 block truncate font-medium text-muted-foreground text-sm">

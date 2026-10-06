@@ -90,7 +90,7 @@ export function ImpersonationBanner({ studentName, actorName, mode }: Impersonat
         <p className="min-w-0 text-center sm:text-left">
           {writable ? (
             <>
-              <strong className="font-bold">Modo de edição ativo</strong> — alterações reais como{' '}
+              <strong className="font-bold">Modo de edição ativo:</strong> alterações reais como{' '}
               <strong className="font-semibold">{studentName}</strong>, por {actorName}.
             </>
           ) : (

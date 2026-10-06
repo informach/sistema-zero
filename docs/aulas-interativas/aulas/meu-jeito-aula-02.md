@@ -25,7 +25,7 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 ### Seção 1. Aproxime duas formas de desenhar
 
-**Tarefa / Zappy na página:** Agora aproxime as duas pedras e compare as bordas.
+**Tarefa / Zappy na página:** Sua vez! Aproxime as duas pedras e compare as bordas. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-bordas → fala-bordas → experimento-bordas.
 
@@ -33,15 +33,15 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 ### Seção 2. Prepare a folha da nave
 
-**Tarefa / Zappy na página:** Crie uma arte de personagem em pixel art, tamanho Médio, chamada nave.
+**Tarefa / Zappy na página:** Agora prepare o desenho da sua nave! Crie uma arte de personagem em Pixel art, tamanho Médio, chamada nave. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-nova-nave → fala-nova-nave.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Descubra o que o espelho repete
 
-**Tarefa / Zappy na página:** Agora pinte com cada espelho e veja onde a cópia aparece.
+**Tarefa / Zappy na página:** Sua vez! Pinte com cada espelho e veja onde a cópia aparece. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-espelho → fala-espelho → experimento-espelho.
 
@@ -49,23 +49,23 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 ### Seção 4. Feche o contorno da nave
 
-**Tarefa / Zappy na página:** Desenhe um corpo com duas asas e deixe quatro linhas livres embaixo.
+**Tarefa / Zappy na página:** Agora desenhe o contorno da sua nave! Com o Espelho lado a lado ligado, faça um corpo com duas asas e deixe quatro linhas livres embaixo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-contorno → fala-contorno.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 5. Pinte o corpo e a cabine
 
-**Tarefa / Zappy na página:** Preencha a nave e desenhe uma cabine dentro do corpo.
+**Tarefa / Zappy na página:** Agora pinte o corpo e a cabine da sua nave! Preencha a nave com o Balde e desenhe uma cabine dentro do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-cores → fala-cores.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 6. Mude o lado da luz
 
-**Tarefa / Zappy na página:** Agora ligue A sombra e a luz e mude o lado do sol.
+**Tarefa / Zappy na página:** Sua vez! Ligue A sombra e a luz e mude o lado do sol. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-luz → fala-luz → experiencia-luz.
 
@@ -73,19 +73,19 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 ### Seção 7. Escolha um lado para a luz
 
-**Tarefa / Zappy na página:** Acrescente um tom claro e um escuro sem mudar o formato da nave.
+**Tarefa / Zappy na página:** Agora dê luz e sombra à sua nave! Escolha um lado para a luz e pinte um tom claro desse lado e um escuro do outro. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-volume → fala-volume.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 8. Envie o desenho da nave
 
-**Tarefa / Zappy na página:** Confira: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Depois, envie a sua nave para o guia pela galeria do Pinta.
+**Tarefa / Zappy na página:** Hora de enviar a sua nave! Confira se a arte se chama nave e tem 32 por 32. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
 
 ## Continuidade e produção
 

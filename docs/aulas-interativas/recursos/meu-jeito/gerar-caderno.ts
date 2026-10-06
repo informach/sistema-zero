@@ -1,6 +1,6 @@
 /**
  * Caderno derivado da mesma fonte das aulas; CSS e fontes do Cadê Todo Mundo. Para a criança, o
- * caderno é o Mapa da Aventura e fala de fase, parte e guia (vocabulário da aventura, 06/10/2026).
+ * caderno é o Mapa da Aventura e fala de fase e parte (vocabulário da aventura, 06/10/2026).
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -192,7 +192,7 @@ const diagrams: string[][] = [
     cards([
       'Projeto salvo: você continua editando no Estúdio.',
       'Publicação: uma cópia daquele momento no Mural. Se quiser, compartilhe o seu jogo.',
-      'Envio: escolher o cartão na galeria da fase e clicar em Enviar para o guia. Espere a confirmação Recebido pelo seu guia.',
+      'Envio: clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Espere aparecer Recebido!',
     ]),
   ],
 ]
@@ -208,14 +208,13 @@ const chapters = aulasMeuJeito.map((lesson, i) => {
       continue
     }
     // O caderno é da criança. Desde 06/10/2026 o vídeo da experiência e o do jogo pronto são
-    // demonstrações na primeira pessoa: na experiência entram as instruções dela, no imperativo, e
-    // no jogo pronto sai o exemplo do narrador ("Olha aqui: …"). A apresentação do Mapa da
-    // Aventura também começa com "Olha aqui:" e fica, porque é ela que diz o que o mapa traz.
+    // demonstrações na primeira pessoa: na experiência entram as instruções dela, no imperativo. O
+    // resto usa a fala do Mapa (`falasSecao(…, 'mapa')`): sem os parágrafos do narrador no jogo
+    // pronto, sem os chamados de atenção, que apontam para o vídeo, e com um fecho que não manda
+    // pausar nem voltar a "esta aba", que o PDF não tem.
     const speech = section.activity
       ? [section.activity.instructions, 'Quando terminar os testes, clique em Próxima parte.']
-      : falasSecao(section).filter(
-          (paragraph) => !(section.play && paragraph.startsWith('Olha aqui:')),
-        )
+      : falasSecao(section, 'mapa')
     // Mantenha a abertura junto da primeira ação e a saída junto do último teste.
     // Cada passo conserva seu parágrafo e número, mesmo quando ocupa a mesma página.
     for (let p = 0; p < speech.length; ) {
@@ -239,7 +238,7 @@ const chapters = aulasMeuJeito.map((lesson, i) => {
     chunks,
     diagrams: diagrams[i]!.map(
       (d) =>
-        `<div class="blocks">${d}</div><p class="small">Compare com a sua criação. Nos diagramas de programação, rótulos, valores e cores vêm dos blocos reais do Estúdio; os trechos anteriores estão indicados.</p>`,
+        `<div class="blocks">${d}</div><p class="small">Compare com a sua criação.${d.includes('data-block-type') ? ' Os blocos destes desenhos têm os mesmos nomes, valores e cores do Estúdio, e os que você já montou nas fases anteriores aparecem resumidos.' : ''}</p>`,
     ),
   }
 })
@@ -250,7 +249,7 @@ const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><tit
 </style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="O jogo O Jogo do Meu Jeito em funcionamento"></div><div class="cover-copy"><span class="badge">Mapa da Aventura</span><h1>O jogo<br><em>do meu jeito</em></h1><p>Desenhe, anime e coloque suas criações no jogo.</p><div class="cover-bottom">Do seu desenho à sua versão jogável.</div></div><img class="zappy" src="${zappy}" alt="Zappy"></section>
 <script>const chapters=${data};
 function page(chapter, more=false, diagram=false){const p=document.createElement('section');p.className='page'+(diagram?' diagram-page':'');p.dataset.id=chapter.label; p.innerHTML='<div class="inner"><div class="kicker">'+chapter.label+(more?' · continuação':'')+'</div><h2 class="lesson-title">'+chapter.title+'</h2><div class="content"></div></div><div class="page-no"><span class="brand">O Jogo do Meu Jeito | Mapa da Aventura</span><span class="count"></span></div>';document.body.append(p);return p;}
-async function layout(){await document.fonts.ready;const index=page({label:'Seu percurso',title:'Seu desenho dentro do jogo'});const content=index.querySelector('.content');content.innerHTML='<p class="lead">Este é o seu Mapa da Aventura! Consulte quando precisar de um passo, um valor ou um teste: leia aqui na fase ou baixe para guardar.</p><div class="index">'+chapters.map(c=>'<p><strong>'+c.label+'.</strong> '+c.title+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">Continue no seu cartão do Estúdio e nas suas artes do Pinta. As imagens deste mapa são exemplos; as cores e as formas das suas artes são escolha sua. Nomes, dimensões e animações precisam combinar com os blocos. Você envia as suas criações para o guia pela galeria da fase.</div>';
+async function layout(){await document.fonts.ready;const index=page({label:'Seu percurso',title:'Seu desenho dentro do jogo'});const content=index.querySelector('.content');content.innerHTML='<p class="lead">Este é o seu Mapa da Aventura! Consulte quando precisar de um passo, um valor ou um teste: leia aqui na fase ou baixe para guardar.</p><div class="index">'+chapters.map(c=>'<p><strong>'+c.label+'.</strong> '+c.title+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">Continue no seu cartão do Estúdio e nas suas artes do Pinta. As imagens deste mapa são exemplos: as cores e as formas das suas artes são escolha sua. Só os nomes, os tamanhos e as animações precisam combinar com os blocos, porque é por eles que o jogo encontra as suas artes. No fim de cada fase, você envia as suas criações para a equipe: clique em Escolher no Pinta ou em Escolher no Estúdio, selecione o que você fez e clique em Enviar (1). O número mostra quantas criações você marcou.</div>';
 for(const chapter of chapters){let sheet=page(chapter);for(const chunk of chapter.chunks){const node=document.createElement('div');node.className='entry';node.innerHTML=chunk;sheet.querySelector('.content').append(node);const limit=sheet.querySelector('.page-no').getBoundingClientRect().top-24;if(node.getBoundingClientRect().bottom>limit){node.remove();sheet=page(chapter,true);sheet.querySelector('.content').append(node);}}
 
 for(const fragment of chapter.diagrams){const diagram=document.createElement('div');diagram.className='entry';diagram.innerHTML='<h3 class="section-head">Referências para conferir</h3>'+fragment;sheet.classList.add('diagram-page');sheet.querySelector('.content').append(diagram);if(diagram.getBoundingClientRect().bottom>sheet.querySelector('.page-no').getBoundingClientRect().top-24){diagram.remove();if(!sheet.querySelector('.blocks'))sheet.classList.remove('diagram-page');sheet=page({label:chapter.label+' · referências',title:chapter.title},false,true);sheet.querySelector('.content').append(diagram);}}}

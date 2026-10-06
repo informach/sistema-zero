@@ -193,8 +193,8 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
           <div>
             <p className="sz-display text-xl">Quase lá!</p>
             <p className="mt-0.5 text-sm">
-              Você fez <span className="sz-display-grad">{result.score}%</span> e precisa de{' '}
-              {passingScore}% para passar.
+              Você acertou <span className="sz-display-grad">{result.score}%</span>, e a meta é{' '}
+              {passingScore}% de acertos.
             </p>
           </div>
         </div>
@@ -237,8 +237,8 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
           <p className="sz-display text-lg">Pausa rápida!</p>
           {lastScore !== null ? (
             <p className="text-sm">
-              Você fez <span className="sz-display-grad">{lastScore}%</span> e precisa de{' '}
-              {passingScore}% para passar.
+              Você acertou <span className="sz-display-grad">{lastScore}%</span>, e a meta é{' '}
+              {passingScore}% de acertos.
             </p>
           ) : null}
           <p className="text-sm">Respire fundo e pense nas perguntas. Já já dá para tentar!</p>

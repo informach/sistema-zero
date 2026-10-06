@@ -5,6 +5,8 @@ import type { LessonRequirementReason } from './requirements'
 export interface ProjectBlockPattern {
   blockType: string
   fields?: Record<string, string | number | boolean>
+  /** A field may match any of these explicit names, e.g. alternative lit lighthouse images. */
+  fieldOptions?: Record<string, string[]>
   inputs?: Record<string, string | number | boolean>
   /** A later enabled sibling in this same statement chain, never another branch. */
   beforeBlock?: string
@@ -111,6 +113,22 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
                   (typeof val === 'string' && val.length <= 200)),
             )),
       )
+    )
+      return false
+    if (
+      v.fieldOptions !== undefined &&
+      (!record(v.fieldOptions) ||
+        Object.keys(v.fieldOptions).length > 20 ||
+        !Object.entries(v.fieldOptions).every(
+          ([key, options]) =>
+            label(key) &&
+            !(record(v.fields) && Object.hasOwn(v.fields, key)) &&
+            Array.isArray(options) &&
+            options.length > 0 &&
+            options.length <= 50 &&
+            options.every(label) &&
+            new Set(options).size === options.length,
+        ))
     )
       return false
     return (

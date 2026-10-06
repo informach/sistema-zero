@@ -28,9 +28,14 @@ export {
 export type { FarolAssetName, FarolPersonagem } from './farol-assets'
 export {
   FAROL_ASSETS,
+  FAROL_BARCOS,
+  FAROL_CENARIOS,
+  FAROL_CHAVES,
+  FAROL_FAROIS,
   FAROL_HITBOXES,
   FAROL_LAYOUT,
   FAROL_PERSONAGENS,
+  FAROL_POSICOES_CHAVE,
   farolSvg,
   farolSvgUrl,
 } from './farol-assets'

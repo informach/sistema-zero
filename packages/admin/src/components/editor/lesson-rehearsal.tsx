@@ -8,8 +8,11 @@ import {
   type SectionPendingItem,
   sectionProgressView,
 } from '@sistemazero/core/learning'
+import { LessonCopyProvider } from '@sistemazero/member-shell/components/lesson-copy-context'
 import { LessonPreviewProvider } from '@sistemazero/member-shell/components/lesson-preview-context'
 import { LessonSections } from '@sistemazero/member-shell/components/lesson-sections'
+import { ADULT_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy'
+import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import type { LessonBlockView, LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import type { Project } from '@sistemazero/studio'
 import { evaluateStudioSectionProject } from '@sistemazero/studio/server-project-checks'
@@ -26,6 +29,15 @@ interface RehearsalState {
   fixtures: Set<string>
   workspaces: Record<string, Project>
 }
+/**
+ * A falha que o botão "Falhar na próxima confirmação" simula. Leva `code` como um erro do
+ * servidor: sem ele o `erroDoServidor` do player trata o erro como falha de rede e mostra a frase
+ * padrão do componente, e o professor não leria a falha que pediu.
+ */
+class FalhaSimulada extends Error {
+  readonly code = 'ENSAIO_FALHA_SIMULADA'
+}
+
 const empty = (): RehearsalState => ({
   answers: {},
   hintsUsed: {},
@@ -74,9 +86,17 @@ export function LessonRehearsal({
     const missing: SectionPendingItem[] = []
     for (const id of s.completion?.blockIds ?? [])
       if (!state.completedBlocks.has(id))
-        missing.push({ kind: 'LEARNING_GATE_INCOMPLETE', text: 'Realize a atividade desta seção' })
+        missing.push({
+          kind: 'LEARNING_GATE_INCOMPLETE',
+          text: kids ? 'Termine o que esta parte pede' : 'Realize a atividade desta seção',
+        })
     if (s.completion?.projectChecks?.length && !state.completedProjects.has(s.id))
-      missing.push({ kind: 'project-check', text: 'Confira o objetivo no projeto desta seção' })
+      missing.push({
+        kind: 'project-check',
+        text: kids
+          ? 'Confira o objetivo desta parte no seu projeto'
+          : 'Confira o objetivo no projeto desta seção',
+      })
     if (s.completion?.platformAction && !state.fixtures.has(s.id))
       missing.push({ kind: 'platform-action', text: 'Verifique a ação da plataforma' })
     if (
@@ -98,7 +118,7 @@ export function LessonRehearsal({
     if (failRef.current) {
       failRef.current = false
       setFailNext(false)
-      throw new Error(
+      throw new FalhaSimulada(
         'Falha de salvamento simulada. Sua descoberta continua aqui. Tente salvar novamente.',
       )
     }
@@ -229,22 +249,25 @@ export function LessonRehearsal({
       >
         {/* O ensaio existe para ver a aula como a criança vê, e desde 18/09/2026
             isso inclui o cabeçalho "aula · seção". Sem o título aqui, o professor
-            conferiria uma tela que o aluno não tem. */}
-        <LessonSections
-          lessonTitle={lesson.title}
-          key={epoch}
-          kids={kids}
-          lesson={{
-            ...lesson,
-            sectionProgress: progress,
-            learningProgress: { sectionId, blocks: [] },
-          }}
-          renderBlocks={renderBlocks}
-          onSectionChange={({ index }) => {
-            const next = document.sections[index]
-            if (next) setSectionId(next.id)
-          }}
-        />
+            conferiria uma tela que o aluno não tem. Pelo mesmo motivo, num curso kids
+            a aula fala o vocabulário da criança (fase, parte, guia). */}
+        <LessonCopyProvider value={kids ? KIDS_LESSON_COPY : ADULT_LESSON_COPY}>
+          <LessonSections
+            lessonTitle={lesson.title}
+            key={epoch}
+            kids={kids}
+            lesson={{
+              ...lesson,
+              sectionProgress: progress,
+              learningProgress: { sectionId, blocks: [] },
+            }}
+            renderBlocks={renderBlocks}
+            onSectionChange={({ index }) => {
+              const next = document.sections[index]
+              if (next) setSectionId(next.id)
+            }}
+          />
+        </LessonCopyProvider>
       </LessonPreviewProvider>
     </div>
   )

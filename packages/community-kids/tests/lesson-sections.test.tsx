@@ -200,7 +200,7 @@ describe('aula por seções', () => {
     ).toBe('lesson-content')
     const project = container.querySelector('#lesson-block-project')
     fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
-    expect(screen.getByRole('heading', { name: /Feche a aula/ })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: /Faça o quiz/ })).toBeTruthy()
     expect(screen.getByText('quiz')).toBeTruthy()
     expect(project?.isConnected).toBe(true)
     expect(container.querySelectorAll('#lesson-block-project')).toHaveLength(1)
@@ -474,10 +474,10 @@ describe('aula por seções', () => {
     // Navegar FECHA o menu: aberto, ele cobriria justamente o começo da seção nova.
     expect(summary.closest('details')?.open).toBe(false)
   })
-  test('no Kids, com o vocabulário da aventura, a fase fala parte e guia', () => {
+  test('no Kids, com o vocabulário da aventura, a fase fala parte e equipe', () => {
     // Os testes acima montam a aula SEM o provedor do Kids e leem o texto adulto. Este monta
     // como a página da fase monta (`KidsLessonCopy` no layout), e é ele que garante que a
-    // troca de 06/10/2026 chega à tela: parte no lugar de seção e guia no lugar de professor.
+    // troca de 06/10/2026 chega à tela: parte no lugar de seção e equipe no lugar de professor.
     render(
       <KidsLessonCopy>
         <LessonPlayerProvider value={player}>
@@ -492,7 +492,7 @@ describe('aula por seções', () => {
     expect(screen.getByText('Partes da fase')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Próxima parte' })).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: /Preciso de ajuda/ }))
-    expect(screen.getByRole('button', { name: 'Enviar para o guia' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Enviar para a equipe' })).toBeTruthy()
     for (const adulto of ['Índice da aula', 'Próxima seção', 'Enviar ao professor'])
       expect(screen.queryByText(adulto)).toBeNull()
   })
@@ -1049,14 +1049,15 @@ describe('o cabeçalho da aula e da seção, numa linha só', () => {
     expect(faixa()?.textContent).not.toContain('Termine as atividades desta aula')
     expect(faixa()?.querySelector('[data-kind="VIDEO_GATE_NOT_WATCHED"]')).not.toBeNull()
 
-    // ⚠️⚠️ A segunda seção tem a mensagem de AUTORIA: com o player de verdade (fora do ensaio) a
-    // criança lê "Esta parte ainda está sendo preparada", nunca "professor" (full review de 30/09:
-    // a troca só era guardada na unidade, não na fiação).
+    // ⚠️⚠️ A segunda seção tem a mensagem de AUTORIA: com o player de verdade (fora do ensaio) o
+    // aluno lê "Esta seção ainda está sendo preparada" (no Kids, com o `KidsLessonCopy`, "Esta
+    // parte…"), nunca "professor" (full review de 30/09: a troca só era guardada na unidade, não na
+    // fiação). Este teste monta sem o vocabulário da criança, por isso a frase é a adulta.
     fireEvent.click(screen.getByRole('button', { name: /Próxima seção/ }))
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('Observar'),
     )
-    expect(faixa()?.textContent).toContain('Esta parte ainda está sendo preparada')
+    expect(faixa()?.textContent).toContain('Esta seção ainda está sendo preparada')
     expect(faixa()?.textContent).not.toContain('professor')
     expect(faixa()?.textContent).not.toContain('Para seguir:')
 

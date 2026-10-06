@@ -249,6 +249,10 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     label: 'A porta do farol',
     explanation: 'Nesta experiência, você vai testar a mesma porta em duas situações.',
   },
+  'lighthouse-position': {
+    label: 'O lugar da chave no mapa',
+    explanation: 'Nesta experiência, você muda um número por vez e acompanha a chave no mapa.',
+  },
   'lighthouse-walk': {
     label: 'O personagem e os quadros do jogo',
     explanation:
@@ -853,7 +857,7 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       ],
       correctChoiceId: 'comparar',
       explanation:
-        'O fantasma é uma guia de quem desenha, não parte do jogo. Ele deixa você ver o fogo de antes e o de agora juntos.',
+        'O fantasma só ajuda quem desenha a comparar, não é parte do jogo. Ele deixa você ver o fogo de antes e o de agora juntos.',
     },
   },
   symmetry: {
@@ -1292,6 +1296,30 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       ],
       correctChoiceId: 'chave',
       explanation: 'O jogo conferiu se o personagem tinha a chave antes de abrir a porta.',
+    },
+  },
+  'lighthouse-position': {
+    prediction: {
+      prompt: 'Você muda só o x da chave. Para onde a chave vai?',
+      choices: [
+        { id: 'lado', label: 'Para o lado.' },
+        {
+          id: 'altura',
+          label: 'Para cima ou para baixo.',
+          shows: 'A chave mudou de lado e continuou na mesma altura.',
+        },
+      ],
+      correctChoiceId: 'lado',
+      revealOn: 'mover-horizontal',
+    },
+    explain: {
+      prompt: 'Qual número você muda para levar a chave mais para baixo?',
+      choices: [
+        { id: 'x', label: 'Aumento a Posição horizontal x.' },
+        { id: 'y', label: 'Aumento a Posição vertical y.' },
+      ],
+      correctChoiceId: 'y',
+      explanation: 'O y cresce para baixo na tela. Mudar só o y conserva o x da chave.',
     },
   },
   // Modelo para outros autores: o Dia 1 do Farol usa a cena sem pergunta final.

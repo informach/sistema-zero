@@ -138,7 +138,7 @@ const aula1 = {
     ),
     dialogue(
       'ponte-a1-toque',
-      'Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda.',
+      'Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-toque',
@@ -156,11 +156,11 @@ const aula1 = {
     video(
       'video-a1-programar',
       'Faça o primeiro personagem aparecer',
-      'Começar pela retomada animada da experiência, antes de qualquer bloco: "Lembra da experiência da parte anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso no seu jogo!" Depois tocar num esconderijo do próprio jogo (Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele) e explicar, numa conversa contínua, que o toque é a ação e a reação que a gente quer é o esconderijo ficar invisível. Não dizer que o jardim e os personagens estão preparados. Primeiro o destino: trazer à vista a área Quando acontecer (arrastando um espaço vazio entre os blocos se ela estiver fora da tela), mostrar o evento que já está nela (é ele que percebe o toque) e o significado de escolhido, e deixar à vista o espaço ao lado de fazer antes de abrir a paleta. Só então ensinar Jogo 2D > Sprites > Aparência, o bloco de visibilidade, o encaixe nesse espaço, escolhido e a troca de 50 para 0. Testar dois esconderijos com a prévia automática e conferir campos e encaixe se não funcionar. Clicar em Verificar esta parte; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo cumprido!, esperar Salvo, usar Enviar para o guia, confirmar em Enviar e terminar em Concluir fase. Sem tour de abas, olhinho, divisória ou expansão. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
+      'Começar pela retomada animada da experiência, antes de qualquer bloco: "Lembra da experiência da parte anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso no seu jogo!" Depois tocar num esconderijo do próprio jogo (Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele) e explicar, numa conversa contínua, que o toque é a ação e a reação que a gente quer é o esconderijo ficar invisível. Não dizer que o jardim e os personagens estão preparados. Primeiro o destino: trazer à vista a área Quando acontecer (arrastando um espaço vazio entre os blocos se ela estiver fora da tela), mostrar o evento que já está nela (é ele que percebe o toque) e o significado de escolhido, e deixar à vista o espaço ao lado de fazer antes de abrir a paleta. Só então ensinar Jogo 2D > Sprites > Aparência, o bloco de visibilidade, o encaixe nesse espaço, escolhido e a troca de 50 para 0. Testar dois esconderijos com a prévia automática e conferir campos e encaixe se não funcionar. Clicar em Verificar esta parte; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo cumprido!, esperar Salvo, usar Enviar meu projeto, confirmar em Enviar e terminar em Concluir fase. Sem tour de abas, olhinho, divisória ou expansão. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
     ),
     dialogue(
       'ponte-a1-programar',
-      'Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta parte antes de enviar para o guia.',
+      'Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta parte antes de enviar o seu projeto.',
     ),
     studio(montarProjetoCadeTodoMundo()),
   ],
@@ -234,16 +234,19 @@ const aula2 = {
     video(
       'video-a2-variavel',
       'Um número que acompanha a busca',
-      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; no nosso jogo, cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda "+1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima parte. Sem palpite nem pergunta final. Regravar a fala. Alvo: 75 a 95 segundos.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda "+1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima parte. Sem palpite nem pergunta final. Regravar a fala. Alvo: 75 a 95 segundos.',
     ),
-    dialogue('ponte-a2-variavel', 'Sua vez! Procure no jardim e fique de olho no número Achados.'),
+    dialogue(
+      'ponte-a2-variavel',
+      'Sua vez! Procure no jardim e fique de olho no número Achados. Quando terminar, clique em Próxima parte.',
+    ),
     {
       key: 'experiencia-achados',
       content: {
         kind: 'interactive',
         required: true,
         semPerguntaFinal: true,
-        title: 'Quantos já encontramos?',
+        title: 'Quantos você já encontrou?',
         instructions:
           'Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca.',
         hints: [],
@@ -253,11 +256,11 @@ const aula2 = {
     video(
       'video-a2-contagem',
       'Cada descoberta conta',
-      'Começar pela retomada animada da experiência, antes de qualquer bloco: "Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito!" Depois tocar num esconderijo do próprio jogo (Tá vendo? O personagem aparece, mas Achados continua em zero, porque o jogo ainda não sabe que precisa contar). Então pedir que cada personagem encontrado some um em Achados. Primeiro o destino: trazer à vista o evento Quando clicar/tocar num sprite do grupo esconderijos (arrastando um espaço vazio entre os blocos se for preciso) e deixar à vista o bloco de visibilidade que já está dentro dele antes de abrir a paleta. Só então ensinar Programação > Variáveis, Somar 1 em variável, o encaixe logo abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a mensagem de vitória (ligada à contagem que a criança montou: aparece quando Achados chega a 3) e a contagem sem repetição; dar correção curta. Clicar em Verificar esta parte; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo cumprido!, esperar Salvo, usar Enviar para o guia, confirmar em Enviar e seguir em Próxima parte. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
+      'Começar pela retomada, antes de qualquer bloco, curta e nesta ordem: primeiro o problema no próprio jogo ("Aqui no seu jogo, toque num esconderijo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta."), depois a lembrança ("Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados.") e, por último, o anúncio uma vez só, colado ao primeiro passo ("Agora a gente vai fazer o seu jogo contar do mesmo jeito!"). Não repetir a explicação da experiência. Primeiro o destino: trazer à vista o evento Quando clicar/tocar num sprite do grupo esconderijos (arrastando um espaço vazio entre os blocos se for preciso) e deixar à vista o bloco de visibilidade que já está dentro dele antes de abrir a paleta. Só então ensinar Programação > Variáveis, Somar 1 em variável, o encaixe logo abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a mensagem de vitória (ligada à contagem que a criança montou: aparece quando Achados chega a 3) e a contagem sem repetição. Não listar os blocos antes do teste: a lista entra uma vez, depois dele, com o gatilho genérico (Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …). Clicar em Verificar esta parte; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo cumprido!, esperar Salvo, usar Enviar meu projeto, confirmar em Enviar e seguir em Próxima parte. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.',
     ),
     dialogue(
       'ponte-a2-contagem',
-      'Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte antes de enviar para o guia.',
+      'Agora faça o seu jogo contar os achados! Depois, teste os três esconderijos e clique em Verificar esta parte antes de enviar o seu projeto.',
     ),
     studio(montarProjetoCadeTodoMundo(true), true),
     // Personalização antes de publicar (05/10/2026): todos os bichos e esconderijos têm a mesma
@@ -267,7 +270,7 @@ const aula2 = {
     video(
       'video-a2-personalizar',
       'Deixe o jogo com a sua cara',
-      'Mexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e os blocos Criar sprite. No bloco não há desenho para clicar: no fim de um bloco que cria um bicho, depois de com imagem, clicar no nome da imagem (coelho) para abrir a lista com as imagens do jogo e escolher outro bicho (gato); dizer que, se não achar, é só rolar a lista. Fazer o mesmo num bloco que cria um esconderijo: clicar em arbusto e escolher toco. Dizer que todos os bichos têm o mesmo tamanho, e todos os esconderijos também, então ninguém sai do lugar. Depois, em Enquanto estiver rodando, trocar o texto do bloco Escrever dentro do Se por uma frase curta. Antes do teste, dar a correção do erro provável: se algum bicho aparecer antes do toque, ou um desenho ficar grande demais, clicar de novo no nome da imagem e escolher um desenho do mesmo tipo (bicho no bloco do bicho, esconderijo no bloco do esconderijo). Testar encontrando todo mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em Próxima parte. As escolhas não viram critério. Regravar a fala. Alvo: 2 a 3 minutos, incluindo gestos e teste.',
+      'Mexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e os blocos Criar sprite. No bloco não há desenho para clicar: no fim de um bloco que cria um bicho, depois de com imagem, clicar no nome da imagem (coelho) para abrir a lista com as imagens do jogo e escolher outro bicho (gato); dizer que, se não achar, é só rolar a lista. Fazer o mesmo num bloco que cria um esconderijo: clicar em arbusto e escolher toco. Dizer que todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também, por isso o desenho novo cabe certinho no lugar do antigo. Depois, em Enquanto estiver rodando, trocar o texto do bloco Escrever dentro do Se por uma frase curta. Antes do teste, dar a correção do erro provável: se algum bicho aparecer antes do toque, ou um desenho ficar grande demais, clicar de novo no nome da imagem e escolher um desenho do mesmo tipo (bicho no bloco do bicho, esconderijo no bloco do esconderijo). Testar encontrando todo mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em Próxima parte. As escolhas não viram critério. Regravar a fala. Alvo: 2 a 3 minutos, incluindo gestos e teste.',
     ),
     dialogue(
       'ponte-a2-personalizar',
@@ -280,14 +283,14 @@ const aula2 = {
     ),
     dialogue(
       'ponte-a2-publicar',
-      'Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir fase.',
+      'Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir fase.',
     ),
     {
       key: 'ajuda-a2-publicar',
       content: {
         kind: 'rich_text',
         markdown:
-          'Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), nossa área de ajuda.',
+          'Quer rever como publicar? Abra [o passo a passo do Como fazer](/como-fazer/plataforma-publicar-no-mural), a área de ajuda.',
       },
     },
   ],

@@ -6,10 +6,22 @@ const values = () =>
     t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]),
     { maxProperties: 20 },
   )
+/**
+ * Accepted names for a field (e.g. the lit lighthouse images). Declared explicitly: without it the
+ * Elysia normalization dropped the list in silence and the rule accepted any value. The core guard
+ * (`isProjectBlockPattern`) still rejects a key present in both `fields` and `fieldOptions`.
+ */
+export const fieldOptionsSchema = () =>
+  t.Record(
+    t.String({ minLength: 1, maxLength: 200 }),
+    t.Array(t.String({ minLength: 1, maxLength: 200 }), { minItems: 1, maxItems: 50 }),
+    { maxProperties: 20 },
+  )
 const base = () => ({
   // Empty selections are valid drafts; publication requires a selected block.
   blockType: t.String({ maxLength: 200 }),
   fields: t.Optional(values()),
+  fieldOptions: t.Optional(fieldOptionsSchema()),
   inputs: t.Optional(values()),
   beforeBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
 })

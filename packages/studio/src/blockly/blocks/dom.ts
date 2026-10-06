@@ -601,7 +601,7 @@ export const DOM_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Muda uma característica visual do elemento, como posição, tamanho ou transparência. Lembre da unidade em medidas, como 120px.',
+      'Muda uma característica visual do elemento, como posição, tamanho ou transparência. Nas medidas, escreva também o px ou o %, como em 120px.',
   },
   {
     type: 'sz_js_set_style_text',

@@ -37,9 +37,9 @@ const PORTAS = [
   },
   {
     href: '/recados',
-    title: 'Recados do guia',
+    title: 'Recados da equipe',
     icon: Mail,
-    text: 'Veja o que o seu guia achou dos seus projetos e continue a conversa.',
+    text: 'Veja o que a equipe achou dos seus projetos e continue a conversa.',
     tom: 'pensa',
   },
   {

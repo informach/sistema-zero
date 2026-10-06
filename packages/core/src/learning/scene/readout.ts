@@ -619,6 +619,11 @@ function leituras(
           tone: 'b',
         },
       ]
+    case 'lighthouse-position':
+      return [
+        { label: 'x da chave', value: String(state.keyPosition.x), tone: 'a' },
+        { label: 'y da chave', value: String(state.keyPosition.y), tone: 'b' },
+      ]
     case 'lighthouse-walk':
       // ⚠️ Os três números que os blocos do Dia 1 mexem: o quadro que passa, o x que muda e a
       // velocidade do bloco de mover. A seta e o limite são chaves da bancada, com o estado escrito.
@@ -1222,6 +1227,8 @@ function situacao(scene: SceneId, state: SceneState): string {
       return state.lighthouse.door === 'open'
         ? 'A porta abriu e a luz do farol acendeu.'
         : 'A porta do farol está fechada.'
+    case 'lighthouse-position':
+      return `A chave está em x ${state.keyPosition.x}, y ${state.keyPosition.y}.`
     case 'lighthouse-walk': {
       // ⚠️ Sem "parado" nem "anda": é a previsão do caso do andar. A frase diz o quadro, o x e a seta,
       // e só fala da borda quando a figura já está fora da tela inteira.

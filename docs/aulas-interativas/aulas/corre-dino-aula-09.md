@@ -24,33 +24,33 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 ### Seção 1. Observe quando o jogo reconhece a batida
 
-**Tarefa:** Aproxime o cacto aos poucos e observe quando aparece BATEU.
+**Tarefa:** Sua vez! Aproxime o cacto aos poucos até aparecer BATEU! Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-contato → fala-contato → experiencia-contato.
 
-**Zappy na página (não gravar):** Aproxime o cacto aos poucos e observe quando aparece BATEU.
+**Zappy na página (não gravar):** Sua vez! Aproxime o cacto aos poucos até aparecer BATEU! Quando terminar, clique em Próxima parte.
 
-**Experiência existente:** `hitbox`. Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU. Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência existente:** `hitbox`. Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU! Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Encerre a partida na batida
 
-**Tarefa:** Mude para fim dentro da colisão entre Dino e cactos.
+**Tarefa:** Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-batida-acaba-partida → fala-batida-acaba-partida.
 
-**Zappy na página (não gravar):** Mude para fim dentro da colisão entre Dino e cactos.
+**Zappy na página (não gravar):** Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
-- Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a faxina, confira a colisão com os cactos e use Mudar o estado do jogo para fim.
+- Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a regra que tira do grupo, confira a colisão com os cactos e use Mudar o estado do jogo para fim.
 
 ### Seção 3. Mostre a tela de fim
 
-**Tarefa:** Mostre a tela de fim no ramo que consulta fim.
+**Tarefa:** Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-mapa-do-jogo → fala-mapa-do-jogo.
 
-**Zappy na página (não gravar):** Mostre a tela de fim no ramo que consulta fim.
+**Zappy na página (não gravar):** Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -58,11 +58,11 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 ### Seção 4. Dê som e imagem à batida
 
-**Tarefa:** Na colisão, exploda cacto, trema em 8, toque derrota e mude para fim.
+**Tarefa:** Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-batida-sentida → fala-batida-sentida.
 
-**Zappy na página (não gravar):** Na colisão, exploda cacto, trema em 8, toque derrota e mude para fim.
+**Zappy na página (não gravar):** Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -72,21 +72,21 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 ### Seção 5. Compare voltar e reiniciar
 
-**Tarefa:** Compare os dois modos de voltar e observe o começo da partida seguinte.
+**Tarefa:** Sua vez! Compare os dois jeitos de voltar e repare em como começa a partida seguinte. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-trocar-nao-limpa → fala-trocar-nao-limpa → experiencia-restart.
 
-**Zappy na página (não gravar):** Compare os dois modos de voltar e observe o começo da partida seguinte.
+**Zappy na página (não gravar):** Sua vez! Compare os dois jeitos de voltar e repare em como começa a partida seguinte. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `restart`. Na experiência, em No fim, o toque faz, escolha Mudar o estado do jogo para inicio. Clique em Tocar na tela para começar e espere a partida terminar. Clique em Tocar na tela para voltar à abertura e outra vez para jogar. Observe os cactos e os números da nova partida. Quando terminar novamente, troque a ação para Reiniciar o jogo. Clique em Tocar na tela para voltar e outra vez para começar. Compare os cactos e os números com a tentativa anterior. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 6. Prepare uma nova partida
 
-**Tarefa:** Reinicie no senão se fim do evento de qualquer tecla ou toque.
+**Tarefa:** Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-caminho-de-volta → fala-caminho-de-volta.
 
-**Zappy na página (não gravar):** Reinicie no senão se fim do evento de qualquer tecla ou toque.
+**Zappy na página (não gravar):** Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -95,25 +95,25 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 ### Seção 7. Confira o que você construiu
 
-**Tarefa:** Retome o começo, a batida e o reinício nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Tarefa:** Hora de lembrar o que você construiu! As perguntas falam do começo da partida, da batida e do recomeço. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
-**Zappy na página (não gravar):** Retome o começo, a batida e o reinício nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Zappy na página (não gravar):** Hora de lembrar o que você construiu! As perguntas falam do começo da partida, da batida e do recomeço. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 8. Teste e envie seu jogo
 
-**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
+**Tarefa:** Hora de testar e enviar o seu jogo! Jogue uma partida inteira, do começo ao recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Jogue uma partida inteira, do começo ao recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
-- Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a faxina, confira a colisão com os cactos e use Mudar o estado do jogo para fim.
+- Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a regra que tira do grupo, confira a colisão com os cactos e use Mudar o estado do jogo para fim.
 - Mantenha uma única conferência de colisão com os cactos.
 - No segundo senão se, quando o estado do jogo é fim, desenhe a tela de fim. O título, o subtítulo e a cor do fundo são seus.
 - Exploda o cacto que bateu antes da tremida. A cor da explosão é sua.

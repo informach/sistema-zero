@@ -3,6 +3,15 @@
  * expirada e refresh falhou) redireciona para o login. Erros do gateway/catálogo
  * chegam no envelope `{ error: { code, message } }`.
  */
+/**
+ * O `code` e a frase que o CLIENTE inventa quando a resposta de erro não traz o envelope (o
+ * gateway caiu, 502/504, ou a rota devolveu `{ ok: false }`). Não são do servidor: o
+ * `erroDoServidor` do `LessonCopy` os trata como ausência de código, e a tela mostra a frase
+ * padrão do componente em vez de "Algo deu errado.".
+ */
+export const CODIGO_SEM_ENVELOPE = 'ERROR'
+export const FRASE_SEM_ENVELOPE = 'Algo deu errado.'
+
 export interface ApiError {
   status: number
   code: string
@@ -18,8 +27,8 @@ function extractError(status: number, body: unknown): ApiError {
   } | null
   return {
     status,
-    code: envelope?.error?.code ?? 'ERROR',
-    message: envelope?.error?.message ?? 'Algo deu errado.',
+    code: envelope?.error?.code ?? CODIGO_SEM_ENVELOPE,
+    message: envelope?.error?.message ?? FRASE_SEM_ENVELOPE,
     ...(typeof envelope?.retryAvailableAt === 'string'
       ? { retryAvailableAt: envelope.retryAvailableAt }
       : {}),

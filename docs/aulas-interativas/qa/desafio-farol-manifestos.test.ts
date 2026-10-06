@@ -12,6 +12,7 @@ import {
   type SectionProjectCheck,
   sectionCompletionIssues,
 } from '../../../packages/core/src/learning/section-progression'
+import { FAROL_FAROIS } from '../../../packages/studio/src/arte/farol-assets'
 import { resolveBlockLevel } from '../../../packages/studio/src/blockly/blockLevels'
 import {
   evaluateStudioSectionProject,
@@ -174,8 +175,6 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       'caderno',
       'quadro',
       'andar',
-      'tanto',
-      'velocidade',
       'limite',
       'borda',
     ])
@@ -186,17 +185,14 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       'exploration',
       'application',
       'exploration',
-      'application',
-      'exploration',
       'delivery',
     ])
     for (const section of m.sections.filter((item) => item.intent === 'application')) {
       expect(section.workspaceKey).toBe('projeto')
       expect(section.blockKeys).not.toContain('projeto')
     }
-    // A velocidade é o mexa e veja do Dia 1 (05/10/2026): a criança fica com a que escolher, e a
-    // verificação só confere que o movimento continua no lugar.
-    for (const key of ['andar', 'velocidade']) {
+    // O movimento é verificado antes do limite; a escolha de velocidade saiu do curso.
+    for (const key of ['andar']) {
       const section = m.sections.find((item) => item.key === key)
       expect(section?.completion?.projectChecks?.length, key).toBe(2)
     }
@@ -210,7 +206,15 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(borda.key).toBe('borda')
     expect(borda.workspaceKey).toBe('projeto')
     expect(borda.completion?.blockIds).toContain('projeto')
-    expect(m.retireBlockKeys).toEqual(['video-d1-chegada', 'video-d1-movimento'])
+    expect(m.retireBlockKeys).toEqual([
+      'video-d1-chegada',
+      'video-d1-movimento',
+      'video-d1-tanto',
+      'ponte-d1-tanto',
+      'experiencia-velocidade',
+      'video-d1-velocidade',
+      'ponte-d1-velocidade',
+    ])
     for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const current = manifesto(name)
       for (const retired of current.retireBlockKeys ?? []) {
@@ -272,14 +276,42 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       'sem-chave',
       'decisao',
       'personalizar',
+      'farol-mensagens',
+      'posicao',
+      'posicionar-chave',
       'fecho',
     ])
-    // O mexa e veja do curso: fechamento depois da entrega, sem critério, no mesmo projeto.
+    // O mexa e veja do curso: fechamento depois da entrega, no mesmo projeto. Uma ideia só
+    // (decisão da dona, 06/10/2026): todas as trocas de imagem, o par do farol incluído. A única
+    // conferência é a do farol aceso, que aceita qualquer modelo: nenhuma escolha vira critério.
     const mexa = m.sections[3]!
     expect(mexa.intent).toBe('closing')
     expect(mexa.workspaceKey).toBe('projeto')
     expect(mexa.completion?.blockIds).toEqual(['video-d3-personalizar'])
-    expect(mexa.completion?.projectChecks).toBeUndefined()
+    expect(mexa.completion?.projectChecks?.map((check) => check.id)).toEqual(['acender'])
+    const acesos = [...FAROL_FAROIS.map(({ aceso }) => aceso), 'farol-aceso']
+    expect(JSON.stringify(mexa.completion?.projectChecks)).toContain(JSON.stringify(acesos))
+    const decisaoAcender = m.sections[2]?.completion?.projectChecks?.find((c) => c.id === 'acender')
+    expect(mexa.completion?.projectChecks?.[0]?.rule).toEqual(decisaoAcender?.rule)
+    const avisos = m.sections[4]!
+    expect(avisos.title).toBe('Escreva seus avisos')
+    expect(avisos.blockKeys).toEqual(['video-d3-farol-mensagens', 'ponte-d3-farol-mensagens'])
+    for (const key of ['farol-mensagens', 'posicionar-chave']) {
+      const choice = m.sections.find((section) => section.key === key)!
+      expect(choice.intent).toBe('closing')
+      expect(choice.workspaceKey).toBe('projeto')
+      expect(choice.completion?.projectChecks).toBeUndefined()
+    }
+    const position = m.blocks.find((block) => block.key === 'experiencia-posicao')?.content
+    if (position?.kind !== 'interactive' || position.activity.type !== 'experimentation') {
+      throw new Error('Experiência de posição ausente')
+    }
+    expect(position.activity.scene).toBe('lighthouse-position')
+    expect(position.activity.setup?.goals).toEqual(['mover-horizontal', 'mover-vertical'])
+    expect(m.sections.find((section) => section.key === 'posicao')?.completion?.blockIds).toEqual([
+      'video-d3-posicao',
+      'experiencia-posicao',
+    ])
     const intermediate = m.sections[1]!
     const delivery = m.sections[2]!
     expect(intermediate.workspaceKey).toBe('projeto')

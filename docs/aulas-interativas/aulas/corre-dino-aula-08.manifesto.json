@@ -27,14 +27,14 @@
   "blocks": [
     {
       "key": "video-menu",
-      "plannedVideo": "Título: Desenhe a tela de início\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Desenhe a tela de início\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-menu",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mostre a abertura no senão se inicio, com título e convite para começar."
+        "text": "Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
@@ -46,7 +46,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste toque e Enter antes e depois de mudar o lugar da peça Começar."
+        "text": "Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -67,14 +67,14 @@
     },
     {
       "key": "video-entrada-ampla",
-      "plannedVideo": "Título: Ligue a entrada ao início da partida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Ligue a entrada ao início da partida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrada-ampla",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Comece a partida somente quando uma tecla ou toque encontrar o estado inicio."
+        "text": "Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
@@ -86,7 +86,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase."
+        "text": "Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase."
       }
     },
     {
@@ -673,7 +673,7 @@
       "key": "menu",
       "title": "Desenhe a tela de início",
       "intent": "application",
-      "objective": "Mostre a abertura no senão se inicio, com título e convite para começar.",
+      "objective": "Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-menu", "fala-menu"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -719,7 +719,7 @@
       "key": "convite",
       "title": "Compare tecla e toque para começar",
       "intent": "exploration",
-      "objective": "Teste toque e Enter antes e depois de mudar o lugar da peça Começar.",
+      "objective": "Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-convite", "fala-convite", "experiencia-convite"],
       "workspaceKey": null,
       "externalTool": null,
@@ -733,7 +733,7 @@
       "key": "entrada-ampla",
       "title": "Ligue a entrada ao início da partida",
       "intent": "application",
-      "objective": "Comece a partida somente quando uma tecla ou toque encontrar o estado inicio.",
+      "objective": "Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-entrada-ampla", "fala-entrada-ampla"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -816,7 +816,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
+      "objective": "Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

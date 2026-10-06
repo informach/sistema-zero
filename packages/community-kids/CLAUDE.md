@@ -29,11 +29,12 @@ fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), microi
 bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`).
 
 ⭐⭐ **Nav: cinco seções, e as três com destinos por dentro ABREM em vez de navegar (09/2026).**
-⭐ **O item da Jornada chama "Aprender" desde 03/10/2026** (decisão da dona): o menu diz o que a
-criança FAZ ali, em par com o "Criar" (o caminho guiado × a criação livre); a página `/cursos`
-continua "Cursos da Jornada do Criador" e todo o "sua jornada" de dentro fica. Trava:
-`tests/copy-jornada.test.ts`. Os tutoriais do "Como fazer" e os prints acompanharam.
-`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Aprender, Criar, Comunidade e Meu espaço. As três
+⭐ **O item da Jornada chama "Explorar" desde 06/10/2026** (era "Aprender" desde 03/10; decisão da
+dona, junto com o vocabulário da aventura): o menu diz o que a criança FAZ ali, em par com o "Criar"
+(o caminho guiado × a criação livre); a página `/cursos` é "Aventuras da Jornada do Criador" e todo o
+"sua jornada" de dentro fica. Trava: `tests/copy-jornada.test.ts`. Os tutoriais do "Como fazer" e os
+prints acompanham (a lista do que refazer está em `docs/como-fazer/PRINTS-A-REFAZER-2026-10-06.md`).
+`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Explorar, Criar, Comunidade e Meu espaço. As três
 últimas têm **`children`**, e é isso que o menu desenha: no computador um `<details>` controlado
 (o padrão nativo do "Minhas ferramentas"), no celular uma **gaveta** sobre a barra de abas
 (`useModalA11y`, o mesmo das celebrações). O agrupamento de 07/09 tinha deixado as ferramentas a
@@ -323,9 +324,85 @@ trava as promessas contra o core E contra as constantes dos portões (inclusive 
 `tests/copy-sem-travessao.test.ts`, que lê o `src/`, descarta comentários (esses são nossos) e falha
 com arquivo:linha se sobrar travessão em texto visível, `aria-label` ou `<title>`. O teste também
 assere que LEU arquivos — guarda que não lê nada aprova tudo, em silêncio. O irmão
-**`tests/copy-vocabulario.test.ts`** faz o mesmo com o JARGÃO ("curso-base", "etapa", "Iniciante 2D"),
+**`tests/copy-vocabulario.test.ts`** faz o mesmo com o JARGÃO ("curso-base", "Iniciante 2D"),
 que já tinha voltado duas vezes por componente novo; os dois dividem a máquina de estados em
-`tests/helpers/copy-scan.ts`.
+`tests/helpers/copy-scan.ts`. Desde 06/10/2026 o mesmo arquivo guarda o vocabulário da aventura (abaixo).
+
+## A criança lê aventura, não escola (06/10/2026)
+
+⭐⭐ Decisão da dona: a área da criança é um lugar de criar jogos, não uma extensão da escola. No que a
+criança lê, curso é **aventura**, aula é **fase**, seção (e etapa) é **parte**, unidade é **Mundo**, o
+Caderno do Aluno é o **Mapa da Aventura** e quem lê os projetos e responde os recados é **a equipe**. Também
+saem atividade, entrega, trabalho, devolutiva, lição, formatura, diploma, estudar e nota mínima ("Meta: N%
+de acertos"). A regra e o glossário estão nas Diretrizes Pedagógicas, seção 6. Por dentro nada muda:
+rotas (`/cursos/…/aulas/…`), ids, Admin e a ÁREA DOS PAIS (`/perfis`, `/responsavel`) seguem com curso,
+aula e professor, que é a língua dos adultos.
+
+- **As telas de aula do member-shell** falam pelo `LessonCopy` (ver o CLAUDE.md do member-shell). O
+  `KidsLessonCopy` (`components/kids/kids-lesson-copy.tsx`, componente de CLIENTE porque o vocabulário tem
+  funções) embrulha o `{children}` do `(app)/layout.tsx`; o vocabulário em si (`KIDS_LESSON_COPY`,
+  `PALAVRAS_DA_ESCOLA`, `conclusaoRecusada`) mora no member-shell (`lib/lesson-copy-kids.ts`, o Admin
+  também usa) e `src/lib/lesson-copy.ts` só o reexporta. ⚠️ Teste que monta uma tela de aula e confere
+  texto do Kids precisa do `KidsLessonCopy` em volta (as fixtures do `e2e-scenes` também: sem ele saía
+  "Voltar à aula").
+- **`conclusaoRecusada(erro)`**: o toast quando o members recusa concluir a fase. Código conhecido vira a
+  frase da aventura; desconhecido usa a frase do servidor só sem palavra da escola; erro sem `code` (rede)
+  e o resto caem em "Não foi possível concluir a fase. Tente novamente.". Recebe o ERRO inteiro, não só o
+  `code`: antes a sessão de suporte (`IMPERSONATION_READONLY`) lia "Tente novamente". O mesmo vale para o
+  `erroDoServidor` das telas de aula (com `GALLERY_DELIVERY_FAILED` e `VALIDATION_ERROR` mapeados).
+- ⭐ **O "guia" saiu da tela da criança (06/10/2026, decisão da dona no mesmo dia).** A pessoa que lê
+  os projetos e responde os recados é **a equipe** ("Recados da equipe", "A equipe já viu o seu projeto",
+  "Pedir ajuda à equipe", "Enviar para a equipe" no pedido de ajuda, autor "Equipe" na conversa). E os
+  botões de envio dizem O QUE vai, sem destinatário: "Enviar meu projeto" / "Enviar de novo" no Estúdio,
+  "Enviar meu desenho" no Pinta, "Enviar (2)" na galeria, confirmação "Enviar o seu projeto?" /
+  "Enviar o seu desenho?" com o botão "Enviar", e "Projeto enviado!" / "Desenho enviado!" depois. Os
+  rótulos moram no `KIDS_LESSON_COPY` (member-shell) e nas telas de Recados, no sino, na Comunidade, no
+  "Como fazer", nas missões e no status de publicação. A área dos pais segue com "professor" e explica
+  a ponte ("o professor como a equipe"). O prompt do Zappy (`zappy-ai.ts` do member-shell) acompanha.
+  **"Guia" sobrou só no "Guia do Pensa"**, o painel das tarefas do Pensa nas oficinas, com o nome
+  inteiro em todo texto (Estúdio, Molda, Pinta): é um painel, não uma pessoa.
+- ⭐ **O guarda `tests/copy-vocabulario.test.ts`** lê o TEXTO DE TELA pelo parser do TypeScript
+  (`literaisVisiveis` em `tests/helpers/copy-scan.ts`: literais, crases, texto de JSX e rótulos; comentário
+  não é nó da árvore) e reprova qualquer palavra da régua `PALAVRAS_DA_ESCOLA`, e também a CONCORDÂNCIA que
+  a troca palavra por palavra deixa ("o fase", "no parte", "próximo parte"; a régua `CONCORDANCIA_ERRADA`
+  é importada, só leitura, de `docs/aulas-interativas/qa/palavras-da-escola.ts`). O alcance: o `src/` do
+  app (a área dos pais fica fora por ARQUIVO, e a grade `perfis-client.tsx`, que a criança também lê, é
+  varrida com exceções pontuais), o member-shell que roda aqui (`components`, `lib`, `routes`, `server`),
+  o `core/src` inteiro, o `studio/src`, o `pinta/src`, o `molda/src` e o `ui/src`, cada raiz com um
+  mínimo de arquivos lidos. Regras do detector (reviews de 06/10/2026, cada furo provado por mutação):
+  - texto de JSX, valor de rótulo (`aria-label`, `title`, `alt`, `placeholder`, `label`) e o par
+    singular/plural de contagem (`n === 1 ? 'aula' : 'aulas'`, `plural(n, 'aula', 'aulas')`) NUNCA caem
+    nas regras de "parece código" (o texto depois de `{expr}` começa com ". " e escondia "Continue nos
+    cursos");
+  - caminho é `/`, `@`, `#` ou ponto seguido de letra (`.sz-aula`), e SÓ sem espaço: o manual em
+    markdown ("## Jogo 2D…") é lido como texto, e ". " é pontuação. Numa crase cada `${…}` vira espaço
+    para a régua de palavras e `#` para as regras de código (`/cursos/${slug}` continua caminho);
+  - palavra solta minúscula é identificador; com inicial maiúscula ("Aluno") é rótulo; numa crase (que
+    sobra "cursos" de `${n} cursos`) ou com espaço nas pontas (`n + ' aulas'`) conta;
+  - lista de classes CSS só quando o `-`/`:` fica POR DENTRO da palavra (`w-full`, `md:flex`): "aula:
+    comece aqui" e "parte - 2" são frase;
+  - `new Error(…)` só fica fora em `page.tsx`, `route.ts` e `server/`: num componente a mensagem chega à
+    tela (o Molda faz `setError(cause.message)`);
+  - literal que É código JS (o runtime que o Estúdio injeta no preview: `(function () {…`, `import …`,
+    `var …` ou um runtime que abre com comentário, `// ----`/`/**`) é lido por dentro: o comentário dele
+    passa, a frase que aparece no jogo ou no console do Estúdio (`fillText('Fim da aula')`) não.
+  O que sobra tem motivo escrito em duas listas: `FORA_DA_VARREDURA` (arquivo inteiro que não chega à
+  tela da criança: o `lesson-copy.ts` ADULTO, os prompts de IA, os exemplos da galeria, as mensagens de
+  autoria do core) e `EXCECOES` (trecho EXATO; cobre só as palavras de dentro dele e só UMA vez, então a
+  palavra nova no mesmo texto ou o trecho repetido reprova). Entrada que não esconde nada também reprova.
+  Palavra no sentido de outra coisa (o `<section>` do HTML, "unidades por segundo", o dado `etapa` da
+  campanha, a "etapa Z" do Pensa, "O kit entrega" como verbo, os comentários do Dockerfile do `.zip` Pro)
+  é exceção com motivo, não troca de bloco. O "o que falta para seguir" tem anti-vácuo por `Record`
+  EXAUSTIVO de `SectionPendingKind` (um motivo novo no core é erro de tipo no teste).
+- **O guarda de travessão** (`tests/copy-sem-travessao.test.ts`) também varre, pelo parser, o
+  member-shell que aparece nas fases (`components`, `routes` e o `lib/lesson-copy-kids.ts`).
+- **Texto compartilhado com o adulto (core, Estúdio, Pinta)** ganha redação NEUTRA, nem de escola nem de
+  aventura: "Assista ao vídeo" e "Faça o quiz" (títulos de parte das aulas legadas), "Material para
+  explorar" (modelo de seção), "Pré-visualização do projeto Pro", o arquivo baixado do Pinta
+  "meu-desenho" (o `PintaLesson` troca o "desenho-da-aula" antigo ao carregar, sem mexer no banco), e
+  nos manuais do Estúdio "das engines de verdade" no lugar de "do curso".
+- ⚠️ A régua da tela cobre tudo o que a régua dos roteiros e manifestos cobre
+  (`docs/aulas-interativas/qa/palavras-da-escola.ts`): o que a narração não pode dizer, a tela também não.
 
 ## A regra de ouro: quase tudo vem do member-shell
 
@@ -350,7 +427,14 @@ DOIS apps). Este app define apenas:
   trilha, celebração, catálogo, auth-shell).
 - Route handlers = 1-3 linhas sobre `shell.routes.*` (idênticos ao community, MENOS payments).
 
-## Perfis estilo Netflix (PR5) — quem vai aprender hoje?
+## Perfis estilo Netflix (PR5) — quem vai criar hoje?
+
+A grade pergunta **"Quem vai criar hoje?"** desde 06/10/2026 (era "Quem vai aprender hoje?"; decisão da
+dona, junto com o vocabulário da aventura), e o tutorial dos pais combina com ela: "Escolha quem vai
+criar", "Em três passos a criança já começa a criar", "Pronto! Na hora de entrar, é só tocar na bolinha"
+e o balão da bolinha "Quando <nome> quiser entrar…" (antes "estudar", que brigava com o "criar" do mesmo
+diálogo). O tutorial `plataforma-trocar-de-perfil` do "Como fazer" e o print dele acompanham a pergunta
+nova.
 
 **⭐ Tutorial guiado dos PAIS (08/2026):** os primeiros passos confundiam (com ZERO perfis a grade
 renderizava VAZIA e o "+" só existe atrás da senha). O guia **segue o ESTADO real**, não um roteiro:

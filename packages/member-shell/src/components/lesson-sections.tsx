@@ -809,8 +809,8 @@ function LessonSectionsContent({
       {/* ⚠️ No estreito fica só o ícone. O texto comia ~108px da MESMA linha do
           título, e medido nos 392 pares reais de aula × seção isso custava 5,3
           linhas de cabeçalho num celular de 390px; sem ele (e sem o cartão) são
-          3,2. O nome acessível não muda — quem lê a tela continua ouvindo
-          "Índice da aula". */}
+          3,2. O nome acessível não muda: quem lê a tela continua ouvindo o
+          `copy.secoes.indice` ("Índice da aula" no adulto, "Partes da fase" no Kids). */}
       <summary
         aria-label={copy.secoes.indice}
         className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
@@ -871,7 +871,7 @@ function LessonSectionsContent({
       }}
     >
       <label htmlFor={`section-help-${lesson.id}`} className="block font-medium">
-        Em qual parte você ficou com dúvida?
+        {copy.secoes.duvida}
       </label>
       <textarea
         id={`section-help-${lesson.id}`}

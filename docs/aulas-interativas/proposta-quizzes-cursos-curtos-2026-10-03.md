@@ -70,7 +70,7 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 **Correta:** B.
 
-**Explicação:** Dentro de A cada quadro do jogo, primeiro o jogo move o personagem. Logo depois, a regra da borda mantém ele dentro da tela. O jogo repete essa sequência enquanto funciona; conferir a posição somente no começo não cuidaria dos movimentos seguintes.
+**Explicação:** Dentro de A cada quadro do jogo, primeiro o jogo move o personagem e, logo depois, a regra da borda segura ele dentro da tela. Isso se repete em todo quadro.
 
 ### 2. Conferir a memória da coleta
 
@@ -96,19 +96,19 @@ Atualizada em 04/10/2026, com id `q-memoria-coleta` no lugar de `q2` do Farol.
 
 **Correta:** C.
 
-**Explicação:** A porta confere temChave. Sem a coleta, o valor ainda é falso, e o jogo segue a resposta senão: avisa que falta a chave. A resposta então, que acende o farol e aciona o barco, acontece quando a informação é verdadeira.
+**Explicação:** A porta confere temChave. Se você não pegou a chave, temChave ainda é falso, e o jogo segue o senão: avisa que falta a chave. O então, que acende o farol e chama o barco, só acontece quando temChave é verdadeiro.
 
 ### 4. Conferir os dois caminhos
 
 **Pergunta:** Você pegou a chave, chegou ao farol e viu a luz acender. Qual teste ainda falta para conferir a regra da porta?
 
 - A. Chegar outra vez ao farol, na mesma partida, ainda com a chave.
-- B. Reiniciar a partida e ir ao farol sem pegar a chave.
+- B. Clicar em Atualizar para começar uma partida nova e ir ao farol sem pegar a chave.
 - C. Recolher a chave e repetir exatamente o caminho que já funcionou.
 
 **Correta:** B.
 
-**Explicação:** A porta tem duas respostas. Você já conferiu o caminho com a chave. Reiniciar e ir direto ao farol permite conferir o caminho sem ela. Nesse teste, a luz deve continuar apagada e a mensagem deve explicar que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado.
+**Explicação:** A porta tem duas respostas. Você já conferiu o caminho com a chave. Começar uma partida nova e ir direto ao farol permite conferir o caminho sem ela. Nesse teste, a luz deve continuar apagada e a mensagem deve explicar que falta a chave. Testar só o caminho que dá certo pode esconder uma regra montada no lugar errado.
 
 ## Correção e conclusão
 

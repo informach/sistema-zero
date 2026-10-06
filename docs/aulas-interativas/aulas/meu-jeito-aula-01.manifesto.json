@@ -36,14 +36,14 @@
   "blocks": [
     {
       "key": "video-jogo-pronto",
-      "plannedVideo": "Título: Jogue uma versão com artes próprias\n\nRegravar nas ferramentas atuais. Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar; depois para e aponta o fogo da nave e as pedras com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima parte. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Jogue uma versão com artes próprias\n\nRegravar nas ferramentas atuais. Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar. No Olha só, parar e apontar o fogo da nave pulsando e uma pedra caindo, com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima parte. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-jogo-pronto",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Experimente mover a nave e atirar. Observe os desenhos e o fogo; você vai criar as suas próprias artes."
+        "text": "Sua vez! Jogue um pouco: mova a nave, atire e repare nos desenhos e no fogo, porque logo você vai criar as suas próprias artes. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -52,7 +52,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Experimente uma versão com artes próprias",
-        "instructions": "Clique no jogo. Enter começa; as setas movem a nave e Espaço atira. Depois que a partida terminar, Enter volta à abertura e outro Enter começa. Observe as artes. Você pode seguir mesmo sem vencer.",
+        "instructions": "Clique no jogo e toque na tecla Enter para começar. As setas movem a nave e Espaço atira. Depois que a partida terminar, Enter volta à abertura e outro Enter começa de novo. Repare no fogo da nave e nas pedras. Você pode seguir mesmo sem vencer.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -1983,14 +1983,14 @@
     },
     {
       "key": "video-aparencia-e-regras",
-      "plannedVideo": "Título: Troque a história, observe as regras\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do tema Nave no espaço, com a regra ligada: clicar em Mover e em Atirar e deixar ver a nave andar e o tiro sair. Apontar a lista Regras do jogo. Em Tema do mesmo jogo, escolher Carrinho na estrada, Submarino no mar e Nave no espaço, deixando ver os desenhos mudarem e a lista continuar com as quatro regras. Clicar em Regra: a tecla atira para desligar, mostrar essa regra apagada na lista, clicar em Atirar e deixar ver que não sai tiro, com a frase embaixo do jogo. Esperar um instante e ligar a regra de novo. Meme na comparação: na frase do pega-pega, o Zappy com fantasia de pirata e o Zappy com fantasia de astronauta correndo no mesmo pega-pega, com a legenda \"fantasia nova, mesma brincadeira\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Troque a história, observe as regras\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do tema Nave no espaço, com a regra ligada: clicar em Mover e em Atirar e deixar ver a nave andar e o tiro sair. Apontar a lista Regras do jogo. Em Tema do mesmo jogo, escolher Carrinho na estrada, Submarino no mar e Nave no espaço, deixando ver os desenhos mudarem e a lista continuar com as quatro regras. Clicar em Regra: a tecla atira para desligar, mostrar essa regra apagada na lista, clicar em Atirar e deixar ver que não sai tiro, com a frase embaixo do jogo. Esperar um instante e ligar a regra de novo. Meme na comparação: na frase do pega-pega, o Zappy com fantasia de pirata e o Zappy com fantasia de astronauta correndo no mesmo pega-pega, com a legenda \"fantasia nova, mesma brincadeira\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-aparencia-e-regras",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora troque o tema, desligue a regra de atirar e compare o que muda."
+        "text": "Sua vez! Troque os temas, desligue a regra de atirar e compare o que muda. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -2014,14 +2014,14 @@
     },
     {
       "key": "video-copias",
-      "plannedVideo": "Título: Veja o que uma cópia guarda\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da nave azul no jogo da fase, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave do jogo da fase no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a do jogo da fase azul. Meme na comparação: na frase do gibi, o Zappy copiando a nave de um gibi numa folha e pintando a cópia de rosa, enquanto a nave do gibi continua azul, com a legenda \"a cópia é sua\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Veja o que uma cópia guarda\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da nave azul no jogo da fase, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave do jogo da fase no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a do jogo da fase azul. Meme na comparação: na frase do gibi, o Zappy copiando a nave de um gibi numa folha e pintando a cópia de rosa, enquanto a nave do gibi continua azul, com a legenda \"a cópia é sua\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-copias",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça a cópia e mude a cor só de um lado."
+        "text": "Sua vez! Faça a cópia e mude a cor só de um lado. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -2045,38 +2045,38 @@
     },
     {
       "key": "video-exportar",
-      "plannedVideo": "Título: Baixe o seu jogo concluído\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Baixe o seu jogo concluído\n\nRegravar nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-exportar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Baixe o projeto que você terminou em Nave Contra Asteroides."
+        "text": "Agora baixe o jogo que você terminou em Nave Contra Asteroides! No Estúdio da última fase dessa aventura, abra Mais opções e clique em Baixar o projeto. Quando o arquivo .szproject.json aparecer nos seus downloads, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-importar",
-      "plannedVideo": "Título: Abra a cópia no seu Estúdio\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Abra a cópia no seu Estúdio\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-importar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Importe o arquivo do seu jogo e escolha um nome para reconhecer a cópia."
+        "text": "Agora abra a cópia no seu Estúdio! Importe o arquivo e escolha um nome para reconhecer o seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie a cópia do jogo\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie a cópia do jogo\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-01.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira: o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio."
+        "text": "Hora de enviar a cópia do seu jogo! Confira se o cartão tem o nome que você escolheu. Depois clique em Escolher no Estúdio, selecione esse cartão e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase."
       }
     },
     {
@@ -2135,7 +2135,7 @@
     {
       "key": "jogo-pronto",
       "title": "Jogue uma versão com artes próprias",
-      "objective": "Experimente mover a nave e atirar. Observe os desenhos e o fogo; você vai criar as suas próprias artes.",
+      "objective": "Sua vez! Jogue um pouco: mova a nave, atire e repare nos desenhos e no fogo, porque logo você vai criar as suas próprias artes. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-jogo-pronto", "fala-jogo-pronto", "jogo-pronto"],
       "workspaceKey": null,
@@ -2163,7 +2163,7 @@
     {
       "key": "aparencia-e-regras",
       "title": "Troque a história, observe as regras",
-      "objective": "Agora troque o tema, desligue a regra de atirar e compare o que muda.",
+      "objective": "Sua vez! Troque os temas, desligue a regra de atirar e compare o que muda. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": [
         "video-aparencia-e-regras",
@@ -2181,7 +2181,7 @@
     {
       "key": "copias",
       "title": "Veja o que uma cópia guarda",
-      "objective": "Agora faça a cópia e mude a cor só de um lado.",
+      "objective": "Sua vez! Faça a cópia e mude a cor só de um lado. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-copias", "fala-copias", "experiencia-copia"],
       "workspaceKey": null,
@@ -2195,7 +2195,7 @@
     {
       "key": "exportar",
       "title": "Baixe o seu jogo concluído",
-      "objective": "Baixe o projeto que você terminou em Nave Contra Asteroides.",
+      "objective": "Agora baixe o jogo que você terminou em Nave Contra Asteroides! No Estúdio da última fase dessa aventura, abra Mais opções e clique em Baixar o projeto. Quando o arquivo .szproject.json aparecer nos seus downloads, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-exportar", "fala-exportar"],
       "workspaceKey": null,
@@ -2209,7 +2209,7 @@
     {
       "key": "importar",
       "title": "Abra a cópia no seu Estúdio",
-      "objective": "Importe o arquivo do seu jogo e escolha um nome para reconhecer a cópia.",
+      "objective": "Agora abra a cópia no seu Estúdio! Importe o arquivo e escolha um nome para reconhecer o seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-importar", "fala-importar"],
       "workspaceKey": null,
@@ -2223,7 +2223,7 @@
     {
       "key": "entrega",
       "title": "Envie a cópia do jogo",
-      "objective": "Confira: o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.",
+      "objective": "Hora de enviar a cópia do seu jogo! Confira se o cartão tem o nome que você escolheu. Depois clique em Escolher no Estúdio, selecione esse cartão e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
       "intent": "delivery",
       "blockKeys": ["video-entrega", "fala-entrega", "entrega-galeria-v6"],
       "workspaceKey": null,

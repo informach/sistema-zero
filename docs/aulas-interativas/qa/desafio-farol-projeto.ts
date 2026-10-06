@@ -1,5 +1,9 @@
 import {
   FAROL_ASSETS,
+  FAROL_BARCOS,
+  FAROL_CENARIOS,
+  FAROL_CHAVES,
+  FAROL_FAROIS,
   FAROL_HITBOXES,
   FAROL_LAYOUT,
   FAROL_PERSONAGENS,
@@ -23,7 +27,10 @@ const TAMANHO = FAROL_LAYOUT.palco
 function image(name: FarolAssetName): ProjectAsset {
   const { width, height } = FAROL_ASSETS[name]
   return {
-    id: `desafio-farol-${name}`,
+    id: `desafio-farol-${name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replaceAll(' ', '-')}`,
     name,
     kind: 'image',
     source: 'library',
@@ -44,13 +51,11 @@ function image(name: FarolAssetName): ProjectAsset {
 }
 
 export const ASSETS_FAROL: ProjectAsset[] = [
-  image('cenario'),
-  // O original primeiro e, logo depois, as imagens que a criança pode dar ao sprite `personagem`.
+  ...FAROL_CENARIOS.map((name) => image(name)),
   ...FAROL_PERSONAGENS.map((name) => image(name)),
-  image('chave'),
-  image('farol-apagado'),
-  image('farol-aceso'),
-  image('barco'),
+  ...FAROL_CHAVES.map((name) => image(name)),
+  ...FAROL_FAROIS.flatMap(({ apagado, aceso }) => [image(apagado), image(aceso)]),
+  ...FAROL_BARCOS.map((name) => image(name)),
 ]
 
 const saida: JSStatement[] = [
@@ -59,16 +64,21 @@ const saida: JSStatement[] = [
     type: 'g2d:createImageSprite',
     varName: 'personagem',
     ...FAROL_LAYOUT.personagem,
-    image: 'personagem',
+    image: 'aventureiro',
   },
-  { type: 'g2d:createImageSprite', varName: 'chave', ...FAROL_LAYOUT.chave, image: 'chave' },
+  {
+    type: 'g2d:createImageSprite',
+    varName: 'chave',
+    ...FAROL_LAYOUT.chave,
+    image: 'chave-dourada',
+  },
   {
     type: 'g2d:createImageSprite',
     varName: 'farol',
     ...FAROL_LAYOUT.farol,
-    image: 'farol-apagado',
+    image: 'farol-listrado-apagado',
   },
-  { type: 'g2d:createImageSprite', varName: 'barco', ...FAROL_LAYOUT.barco, image: 'barco' },
+  { type: 'g2d:createImageSprite', varName: 'barco', ...FAROL_LAYOUT.barco, image: 'veleiro' },
   {
     type: 'g2d:setVelocity',
     spriteVar: 'barco',
@@ -112,7 +122,7 @@ const porta: JSStatement = {
       cond: { type: 'var', name: 'temChave' },
       then: [
         { type: 'assign', name: 'ganhou', value: { type: 'bool', value: true } },
-        { type: 'g2d:setImage', spriteVar: 'farol', image: 'farol-aceso' },
+        { type: 'g2d:setImage', spriteVar: 'farol', image: 'farol-listrado-aceso' },
         {
           type: 'assign',
           name: 'aviso',
@@ -180,7 +190,7 @@ function irFarol(etapa: DiaDoFarol | 'concluido'): SZIRV2 {
           type: 'g2d:updateEachFrame',
           body: [
             { type: 'g2d:clear' },
-            { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'cenario' },
+            { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'praia-tropical' },
             ...(comMovimento ? movimentoPorQuadro : []),
             barcoChega,
             { type: 'g2d:drawSprite', spriteVar: 'chave', ctxVar: 'ctx' },

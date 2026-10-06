@@ -78,6 +78,9 @@ function matchesBlock(
       Object.entries(pattern.fields ?? {}).every(
         ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
       ) &&
+      Object.entries(pattern.fieldOptions ?? {}).every(
+        ([key, options]) => Object.hasOwn(fields, key) && options.includes(String(fields[key])),
+      ) &&
       Object.entries(pattern.inputs ?? {}).every(([key, value]) => {
         const actual = literal(child(inputs[key]))
         return actual !== undefined && String(actual) === String(value)

@@ -42,7 +42,7 @@ export const ptBR: Record<string, string> = {
   'topbar.hint.download': 'um .zip com o código, para abrir no computador',
   'topbar.hint.export': 'um .zip pronto para pôr no ar',
   'topbar.hint.convertPro': 'troca os blocos por um projeto de código, sem volta',
-  'topbar.hint.cloudSync': 'troca o que está aqui pela versão que você entregou',
+  'topbar.hint.cloudSync': 'troca o que está aqui pela versão que você enviou',
   'topbar.modes': 'Modo de edição',
   'topbar.undo': 'Desfazer',
   'topbar.redo': 'Refazer',

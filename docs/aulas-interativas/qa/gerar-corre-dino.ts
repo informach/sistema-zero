@@ -56,10 +56,10 @@ const CURSO = 'corre-dino'
 // Fórmulas fixas do vocabulário da aventura (Diretrizes, seção 6): verificação, envio e saída.
 const checkExit =
   'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
-const send = 'Depois, clique em Enviar para o guia e confirme em Enviar.'
+const send = 'Depois, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo Título e traz o resumo do manifesto (showcase).
 const publish =
-  'Se quiser mostrar o jogo no Mural, clique em Compartilhar depois do envio. Publicar é opcional; você também pode deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
+  'Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
 /** O fim de todo vídeo de experiência: só aqui a vez passa para quem faz a aula. */
 export const SUA_VEZ =
   'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
@@ -136,7 +136,7 @@ export function gerarManifestoDino(lesson: AulaDino, index: number): LearningMan
           required: true,
           title: 'Experimente o jogo pronto',
           instructions:
-            'Clique na área do jogo para começar. Toque e solte a barra de espaço, a seta para cima ou a tela para pular. Tente passar pelos cactos. Depois de perder, uma entrada volta à abertura e outra começa. Você pode continuar mesmo sem bater recorde.',
+            'Clique na área do jogo para começar. Toque e solte a barra de espaço ou a seta para cima, ou toque na parte de cima da tela, para pular. Tente passar pelos cactos. Depois de perder, uma entrada volta à abertura e outra começa. Você pode continuar mesmo sem bater recorde.',
           hints: [],
           activity: {
             type: 'project-play',
@@ -221,6 +221,8 @@ function roteiro(lesson: AulaDino, index: number) {
     '',
     `${index === 0 ? 'Começar com o projeto vazio preparado para esta aula.' : 'Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo.'} Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.`,
     '',
+    'Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "agora que", "ou seja"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e a ponte do Zappy convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026).',
+    '',
   ]
   lesson.sections.forEach((s, i) => {
     lines.push(`## Seção ${i + 1}. ${s.title}`, '')
@@ -233,7 +235,7 @@ function roteiro(lesson: AulaDino, index: number) {
         '',
         `**Estimativa de gravação:** aproximadamente ${voice} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.`,
         '',
-        `**Na tela:** ${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado${s.final ? ' (Enviar para o guia, Enviar e Concluir fase)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
+        `**Na tela:** ${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado${s.final ? ' (Enviar meu projeto, Enviar e Concluir fase)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
         '',
         '**Narração:**',
         `> "${speech.join('\n>\n> ')}"`,
@@ -303,7 +305,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
     if (s.checks?.length)
       lines.push(
         '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte' +
-          (s.final ? ', com o envio em Enviar para o guia confirmado em Enviar.' : '.'),
+          (s.final ? ', com o envio em Enviar meu projeto confirmado em Enviar.' : '.'),
         '',
         ...s.checks.map((c) => `- ${c.label}`),
         '',

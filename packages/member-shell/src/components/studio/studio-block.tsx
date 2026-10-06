@@ -606,8 +606,7 @@ export function StudioBlockView({
         <div className="space-y-1">
           <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
             <CheckCircle2 className="size-4" />
-            {estudio.enviado}
-            {submittedAt ? ` em ${new Date(submittedAt).toLocaleString('pt-BR')}` : ''}.
+            {estudio.enviado(submittedAt ? new Date(submittedAt).toLocaleString('pt-BR') : null)}
           </p>
           {/* O professor carimbou "já conferi". Não é nota: é ele dizendo que viu. */}
           {reviewed ? (

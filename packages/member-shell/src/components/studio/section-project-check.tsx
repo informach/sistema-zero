@@ -4,6 +4,7 @@ import type { StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { type RefObject, useState } from 'react'
 import { apiSend } from '../../lib/api'
+import { codigoDoErro } from '../../lib/lesson-copy'
 import { useLessonCopy } from '../lesson-copy-context'
 import { useLessonPlayer } from '../lesson-player-context'
 
@@ -47,7 +48,14 @@ function CheckStage({ handleRef }: { handleRef: RefObject<StudioHandle | null> }
       player.refreshAfterLearning?.()
     } catch (error) {
       const padrao = 'Não foi possível verificar. Seu projeto continua aqui; tente novamente.'
-      setFeedback(error instanceof Error ? erroDoServidor(error, padrao) : padrao)
+      // ⚠️ O erro da API é um objeto simples (`ApiError`), não um `Error`: com `instanceof
+      // Error` a frase do servidor nunca chegava, e o `TypeError` da rede (sem `code`) é que
+      // passava. Quem decide é o `erroDoServidor`.
+      setFeedback(
+        codigoDoErro(error) === 'PAYLOAD_TOO_LARGE'
+          ? verificacao.grandeDemais
+          : erroDoServidor(error, padrao),
+      )
     } finally {
       setBusy(false)
     }

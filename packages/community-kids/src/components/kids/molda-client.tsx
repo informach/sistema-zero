@@ -277,7 +277,7 @@ export function MoldaClient({
         <EmbeddedAppLoadingBody label="Carregando o Molda…" />
       ) : taskId && handoff.status !== 'success' ? (
         <div className="grid flex-1 place-content-center gap-4 p-6">
-          <p role="status">{handoff.error ?? 'Buscando o guia do Pensa…'}</p>
+          <p role="status">{handoff.error ?? 'Buscando o Guia do Pensa…'}</p>
           {handoff.status === 'error' ? (
             <button
               type="button"

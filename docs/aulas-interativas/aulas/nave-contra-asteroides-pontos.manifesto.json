@@ -14,7 +14,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mude pontos com o placar desligado. Depois ligue Mostrar placar e compare."
+        "text": "Sua vez! Mude pontos com o placar desligado, depois ligue Mostrar placar e compare. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Guardar, mudar e mostrar",
+        "title": "Guarde e mostre um número",
         "instructions": "Mude pontos para 1 e volte para 0 com Mostrar placar desligado. Some 1 duas vezes e observe o número guardado. Ligue Mostrar placar, compare e some 1 novamente.",
         "hints": [],
         "activity": {
@@ -48,14 +48,14 @@
     },
     {
       "key": "video-pontos-e-placar",
-      "plannedVideo": "Título: Some um ponto a cada acerto\n\nRegravar no Estúdio atual. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela.\n\nFala completa em nave-contra-asteroides-pontos.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Some um ponto a cada acerto\n\nRegravar no Estúdio atual. Começar pela retomada: acertar uma pedra e, no \"Tá vendo?\", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela.\n\nFala completa em nave-contra-asteroides-pontos.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-placar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie pontos, some dentro da colisão e mostre o valor no placar. Teste erro e acerto antes de enviar."
+        "text": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir fase."
       }
     },
     {
@@ -829,7 +829,7 @@
       "key": "caixa-de-pontos",
       "title": "Guarde e mostre um número",
       "intent": "exploration",
-      "objective": "Mude pontos com o placar desligado. Depois ligue Mostrar placar e compare.",
+      "objective": "Sua vez! Mude pontos com o placar desligado, depois ligue Mostrar placar e compare. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-variavel", "fala-caixa-de-pontos", "experiencia-variavel"],
       "workspaceKey": null,
       "externalTool": null,
@@ -843,7 +843,7 @@
       "key": "placar",
       "title": "Some um ponto a cada acerto",
       "intent": "delivery",
-      "objective": "Crie pontos, some dentro da colisão e mostre o valor no placar. Teste erro e acerto antes de enviar.",
+      "objective": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir fase.",
       "blockKeys": ["video-pontos-e-placar", "fala-placar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

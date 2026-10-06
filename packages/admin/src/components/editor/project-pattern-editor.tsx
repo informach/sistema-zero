@@ -74,6 +74,17 @@ export function ProjectPatternEditor({
       )}
       {depth > 0 &&
         block.parameters.map((parameter) => {
+          const options =
+            parameter.kind === 'fields' ? pattern.fieldOptions?.[parameter.name] : undefined
+          if (options)
+            return (
+              <div key={`fields:${parameter.name}`} className="text-sm">
+                <span>
+                  {parameter.label} ({parameter.name})
+                </span>
+                <p className="text-muted-foreground">Valores aceitos: {options.join(', ')}</p>
+              </div>
+            )
           const value = String(pattern[parameter.kind]?.[parameter.name] ?? '')
           const update = (raw: string) => {
             const values = { ...pattern[parameter.kind] }

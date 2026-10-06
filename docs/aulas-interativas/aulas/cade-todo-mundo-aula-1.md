@@ -22,9 +22,16 @@ quando ajuda a ação, como o evento que já está em **Quando acontecer**.
 
 Ainda em 06/10/2026, o vocabulário da aventura (Diretrizes, seção 6): no que a criança vê e ouve,
 aula virou fase, seção virou parte, o caderno virou Mapa da Aventura (a seção se chama **Seu Mapa
-da Aventura**) e professor virou guia. As falas citam os botões novos (**Próxima parte**,
-**Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia**, **Concluir fase**);
-seções, blocos e critérios não mudaram.
+da Aventura**) e professor virou equipe. As falas citam os botões novos (**Próxima parte**,
+**Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto**, **Concluir fase**);
+seções, blocos e critérios não mudaram. Na mesma noite, o botão de envio passou a dizer o que
+ela envia (**Enviar meu projeto**), e quem recebe passou a ser a equipe.
+
+No full review de 06/10/2026, a explicação de **escolhido** foi partida em duas frases curtas ("Cada
+esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo
+que você tocar.") e a ponte da experiência do toque passou a terminar em "Quando terminar, clique em
+Próxima parte.". No Mapa da Aventura, a página da Fase 1 deixou de inverter ação e reação: o toque
+é a ação, e a reação ligada a ele é o esconderijo ficar invisível.
 
 ## Sequência
 
@@ -96,8 +103,8 @@ Se não funcionar, conferir encaixe, sprite e valor. **Achados** ainda fica em z
 
 Após o teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e verificar
 novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar **Enviar
-para o guia**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
-fase**. O recado para o guia é opcional. A verificação exige esse clique; o envio não a
+meu projeto**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
+fase**. O recado é opcional. A verificação exige esse clique; o envio não a
 executa automaticamente.
 
 ## Tutoriais retirados do vídeo

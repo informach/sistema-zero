@@ -608,7 +608,7 @@ export const JS_BLOCKS: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Busca dados de uma URL e converte para JSON. Os dados ficam na variável "quando chegar"; um erro fica na variável "se der erro". Precisa de permissão de rede no preview (o professor libera a origem).',
+      'Busca dados de uma URL e converte para JSON. Os dados ficam na variável "quando chegar"; um erro fica na variável "se der erro". Precisa de permissão de rede no preview (a origem precisa estar liberada).',
   },
 ]
 

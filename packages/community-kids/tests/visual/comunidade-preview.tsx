@@ -72,14 +72,14 @@ function getScreen(): Screen {
 
 const NAV = [
   { label: 'Início', icon: Home },
-  { label: 'Aprender', icon: GraduationCap },
+  { label: 'Explorar', icon: GraduationCap },
   { label: 'Criar', icon: Sparkles },
   { label: 'Comunidade', icon: MessagesSquare },
   { label: 'Meu espaço', icon: CircleUserRound },
 ] as const
 
 function activeSection(screen: Screen): (typeof NAV)[number]['label'] {
-  if (screen === 'career' || screen === 'lesson') return 'Aprender'
+  if (screen === 'career' || screen === 'lesson') return 'Explorar'
   if (screen === 'workshop') return 'Criar'
   if (screen === 'mural' || screen === 'club' || screen === 'messages') return 'Comunidade'
   return 'Meu espaço'
@@ -182,7 +182,7 @@ function JourneyScreen() {
     <CaptureShell screen="career">
       <PageFrame>
         <div className="text-center">
-          <h1 className="sz-display text-[2.35rem]">Cursos da Jornada do Criador</h1>
+          <h1 className="sz-display text-[2.35rem]">Aventuras da Jornada do Criador</h1>
           <p className="mt-2 font-medium text-muted-foreground">
             De Faísca a Lenda. Cada aventura concluída abre um novo passo.
           </p>
@@ -558,7 +558,7 @@ function ClubScreen() {
               )}
             </div>
             <p className="mt-4 flex items-center gap-2 rounded-xl bg-(--band-menta) px-3 py-3 font-bold text-xs">
-              <ShieldCheck className="size-5 text-emerald-700" />O professor acompanha as conversas.
+              <ShieldCheck className="size-5 text-emerald-700" />A equipe acompanha as conversas.
             </p>
           </nav>
           <section className="kids-carta rounded-[1.5rem] p-5">
@@ -623,27 +623,27 @@ function MessagesScreen() {
         <PageTitle
           eyebrow="Comunidade"
           icon={Mail}
-          title="Recados do professor"
-          subtitle="As devolutivas ficam guardadas aqui para Bia ler, responder e continuar criando."
+          title="Recados da equipe"
+          subtitle="Os recados da equipe ficam guardados aqui para Bia ler, responder e continuar criando."
         />
         <section className="mt-6 grid gap-4">
           {[
             {
-              tag: 'Sua entrega',
+              tag: 'Seu projeto',
               title: 'Missão Galáxia · sistema de vidas',
-              preview: 'Prof. Júlio: Bia, o teste ficou muito bom. Agora experimente...',
+              preview: 'Bia, o teste ficou muito bom. Agora experimente...',
               unread: true,
               color: 'bg-amber-400 text-amber-950',
             },
             {
               tag: 'Seu jogo no Mural',
               title: 'Missão Galáxia foi publicada',
-              preview: 'Prof. Helena: Já joguei sua nova versão. O começo ficou mais claro.',
+              preview: 'Já joguei sua nova versão. O começo ficou mais claro.',
               unread: true,
               color: 'bg-blue-600 text-white',
             },
             {
-              tag: 'Dúvida na aula',
+              tag: 'Dúvida na fase',
               title: 'Como repetir o movimento?',
               preview: 'Você: Consegui depois que troquei o bloco de lugar.',
               unread: false,
@@ -678,7 +678,7 @@ function MessagesScreen() {
           ))}
         </section>
         <div className="mt-6 grid grid-cols-3 gap-4">
-          {['Você envia o projeto', 'O professor olha com calma', 'A conversa continua'].map(
+          {['Você envia o projeto', 'A equipe olha com calma', 'A conversa continua'].map(
             (title, index) => (
               <div key={title} className="rounded-2xl bg-(--chao-alt) p-4">
                 <span className="grid size-8 place-items-center rounded-full bg-primary font-black text-primary-foreground">

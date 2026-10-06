@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import {
+  FAROL_BARCOS,
+  FAROL_CENARIOS,
+  FAROL_CHAVES,
+  FAROL_FAROIS,
   FAROL_HITBOXES,
   FAROL_LAYOUT,
   FAROL_PERSONAGENS,
@@ -97,16 +101,11 @@ describe('projeto preparado A Chave do Farol', () => {
         project.assets.every((asset) => asset.dataUrl.startsWith('data:image/svg+xml;base64,')),
       ).toBe(true)
       expect(project.assets.map((asset) => asset.name)).toEqual([
-        'cenario',
-        'personagem',
-        'menina',
-        'marinheira',
-        'menino',
-        'exploradora',
-        'chave',
-        'farol-apagado',
-        'farol-aceso',
-        'barco',
+        ...FAROL_CENARIOS,
+        ...FAROL_PERSONAGENS,
+        ...FAROL_CHAVES,
+        ...FAROL_FAROIS.flatMap(({ apagado, aceso }) => [apagado, aceso]),
+        ...FAROL_BARCOS,
       ])
     }
     expect(JSON.stringify(d1.ir)).not.toContain('g2d:topDown')
@@ -118,7 +117,7 @@ describe('projeto preparado A Chave do Farol', () => {
 
   test('as imagens de personagem vêm logo depois do original, com a mesma caixa e o mesmo contato', () => {
     const assets = montarProjetoFarol('concluido').assets ?? []
-    const inicio = assets.findIndex((asset) => asset.name === 'personagem')
+    const inicio = assets.findIndex((asset) => asset.name === 'aventureiro')
     const personagens = assets.slice(inicio, inicio + FAROL_PERSONAGENS.length)
     expect(personagens.map((asset) => asset.name)).toEqual([...FAROL_PERSONAGENS])
     for (const asset of personagens) {
@@ -160,7 +159,7 @@ describe('projeto preparado A Chave do Farol', () => {
       return { mapa, w: personagem.w, h: personagem.h }
     }
 
-    const original = encontros('personagem')
+    const original = encontros('aventureiro')
     expect(original.mapa.filter(Boolean).length).toBeGreaterThan(20)
     expect(original.mapa.filter((v) => !v).length).toBeGreaterThan(20)
     for (const imagem of FAROL_PERSONAGENS) {
@@ -169,7 +168,7 @@ describe('projeto preparado A Chave do Farol', () => {
       expect(trocado.mapa, imagem).toEqual(original.mapa)
     }
     // anti-vácuo: sem a área de contato no asset, a mesma grade encosta em outros lugares
-    expect(encontros('menina', true).mapa).not.toEqual(original.mapa)
+    expect(encontros('menina-de-laco', true).mapa).not.toEqual(original.mapa)
   })
 
   test('o jogo real anda, recolhe a chave uma vez e só acende o farol depois dela', () => {

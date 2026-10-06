@@ -80,7 +80,7 @@ def main():
         page.set_viewport_size({"width": 1280, "height": 1200})
         page.goto((ROOT / "tmp/pdfs/desafio-farol/caderno.html").as_uri())
         page.evaluate("document.fonts.ready")
-        page.locator(".page").nth(11).screenshot(path=str(OUTPUT / "farol-caderno.png"))
+        page.locator('.page[data-id="p8"]').screenshot(path=str(OUTPUT / "farol-caderno.png"))
         page.locator(".blocks").filter(has_text="Duas respostas para a mesma pergunta").screenshot(path=str(OUTPUT / "farol-blocos.png"))
         browser.close()
 

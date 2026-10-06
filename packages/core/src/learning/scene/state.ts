@@ -1,5 +1,6 @@
 import {
   isRecord,
+  LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
   type LighthouseWalkSpeed,
   MESH_LEVELS,
@@ -95,6 +96,13 @@ export interface SceneCollectionMemory {
   position: 'near' | 'touching' | 'away'
   /** Não creditar afastamento/reinício de uma coleta preparada pelo autor no setup. */
   collectedThisRound: boolean
+}
+
+/** A posição atual e a anterior permitem comparar um eixo por vez no mapa. */
+export interface SceneLighthousePosition {
+  x: number
+  y: number
+  before: { x: number; y: number } | null
 }
 /**
  * O andar do personagem do Farol, quadro a quadro (`lighthouse-walk`, 05/10/2026).
@@ -1369,6 +1377,7 @@ export interface SceneState {
   lighthouse: SceneLighthouseKey
   collection: SceneCollectionMemory
   walk: SceneLighthouseWalk
+  keyPosition: SceneLighthousePosition
   once: SceneOnce
   fixedRead: SceneFixedRead
   collisionPair: SceneCollisionPair
@@ -1667,6 +1676,10 @@ const WALK_PADRAO: SceneLighthouseWalk = {
   run: 0,
 }
 const CLOCK_PADRAO: SceneClock = { carry: 0 }
+const KEY_POSITION_PADRAO: SceneLighthousePosition = {
+  ...LIGHTHOUSE_POSITION.start,
+  before: null,
+}
 
 /**
  * ⚠️⚠️ O retrato guardado vira um estado COMPLETO antes de o validador olhar para ele.
@@ -1691,6 +1704,7 @@ export function hydrateSceneState(value: unknown): unknown {
     ['lighthouse', LIGHTHOUSE_PADRAO],
     ['collection', COLLECTION_PADRAO],
     ['walk', WALK_PADRAO],
+    ['keyPosition', KEY_POSITION_PADRAO],
     ['once', initialOnce(undefined)],
     ['fixedRead', FIXED_READ_PADRAO],
     ['collisionPair', COLLISION_PAIR_PADRAO],
@@ -1783,6 +1797,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     lighthouse: { ...LIGHTHOUSE_PADRAO },
     collection: { ...COLLECTION_PADRAO },
     walk: { ...WALK_PADRAO, trail: [...WALK_PADRAO.trail] },
+    keyPosition: { ...KEY_POSITION_PADRAO },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
     fixedRead: { ...FIXED_READ_PADRAO, shots: [], marks: [] },
     collisionPair: { ...COLLISION_PAIR_PADRAO, shots: [0, 1, 2], rocks: [0, 1, 2] },
@@ -1954,6 +1969,10 @@ export function cloneScene(state: SceneState): SceneState {
     lighthouse: { ...state.lighthouse },
     collection: { ...state.collection },
     walk: { ...state.walk, trail: [...state.walk.trail] },
+    keyPosition: {
+      ...state.keyPosition,
+      before: state.keyPosition.before ? { ...state.keyPosition.before } : null,
+    },
     once: cloneOnce(state.once),
     fixedRead: {
       ...state.fixedRead,
@@ -2202,6 +2221,22 @@ export function isSceneState(value: unknown): value is SceneState {
   )
     return false
   if (!isSceneLighthouseWalk(value.walk)) return false
+  const position = value.keyPosition
+  const validPosition = (point: unknown) =>
+    isRecord(point) &&
+    (['x', 'y'] as const).every(
+      (axis) =>
+        typeof point[axis] === 'number' &&
+        Number.isInteger(point[axis]) &&
+        point[axis] >= LIGHTHOUSE_POSITION[axis].min &&
+        point[axis] <= LIGHTHOUSE_POSITION[axis].max,
+    )
+  if (!validPosition(position) || !isRecord(position)) return false
+  if (position.before !== null) {
+    if (!validPosition(position.before) || !isRecord(position.before)) return false
+    // Um gesto muda exatamente um eixo. O outro permanece igual.
+    if ((position.x === position.before.x) === (position.y === position.before.y)) return false
+  }
   if (!isSceneOnce(value.once)) return false
   if (!isSceneFixedRead(value.fixedRead)) return false
   if (!isSceneCollisionPair(value.collisionPair)) return false

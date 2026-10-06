@@ -192,7 +192,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                 <TopbarChrome session={session} />
               </Suspense>
               <MainContainer>
-                {/* O vocabulário da criança (fase, parte, guia) nas telas de aula do member-shell. */}
+                {/* O vocabulário da criança (fase, parte, equipe) nas telas de aula do member-shell. */}
                 <KidsLessonCopy>{children}</KidsLessonCopy>
               </MainContainer>
               {/* ⚠️ Com `<Suspense>`: a barra de abas virou Server Component (espera a posse

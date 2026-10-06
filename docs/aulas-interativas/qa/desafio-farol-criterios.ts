@@ -3,6 +3,7 @@ import type {
   SectionProjectCheck,
   SectionStructureRule,
 } from '../../../packages/core/src/learning/section-progression'
+import { FAROL_FAROIS } from '../../../packages/studio/src/arte/farol-assets'
 
 const check = (id: string, label: string, rule: SectionStructureRule): SectionProjectCheck => ({
   id,
@@ -37,8 +38,7 @@ export const movimento: SectionProjectCheck[] = [
     area: 'start',
     fields: { MODE: 'directions' },
   }),
-  // A velocidade é escolha da criança (mexa e veja do Dia 1, 05/10/2026): nenhum critério exige
-  // um número, só que o movimento esteja no lugar.
+  // A montagem usa 3; a conferência conserva também os projetos anteriores do curso.
   check(
     'andar',
     'Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.',
@@ -175,7 +175,8 @@ export const portaCompleta: SectionProjectCheck[] = [
     'Troque a imagem do farol dentro de então, no encontro com o farol.',
     naResposta('THEN', {
       blockType: 'sz_g2d_set_image',
-      fields: { SPRITE: 'farol', IMAGE: 'farol-aceso' },
+      fields: { SPRITE: 'farol' },
+      fieldOptions: { IMAGE: [...FAROL_FAROIS.map(({ aceso }) => aceso), 'farol-aceso'] },
     }),
   ),
   check(
@@ -192,4 +193,18 @@ export const portaCompleta: SectionProjectCheck[] = [
     'Altere aviso com um texto dentro de então, no encontro com o farol.',
     naResposta('THEN', aviso),
   ),
+]
+
+/**
+ * A parte em que a criança troca o farol (`personalizar`, decisão da dona em 06/10/2026): a mesma
+ * regra `acender` da entrega, para o jogo publicado continuar acendendo. Aceita os quatro faróis
+ * acesos e o antigo `farol-aceso`, então nenhuma escolha de modelo é reprovada; reprova só uma
+ * imagem apagada ou que não é farol no espaço do então.
+ */
+export const farolEscolhido: SectionProjectCheck[] = [
+  {
+    ...(portaCompleta.find((item) => item.id === 'acender') as SectionProjectCheck),
+    label:
+      'Dentro de então, no encontro com o farol, use a imagem acesa do farol que você escolheu.',
+  },
 ]

@@ -23,23 +23,23 @@ Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um
 
 ### Seção 1. Guarde e mostre um número
 
-**Tarefa:** Mude pontos com o placar desligado. Depois ligue Mostrar placar e compare.
+**Tarefa:** Sua vez! Mude pontos com o placar desligado, depois ligue Mostrar placar e compare. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-variavel → fala-caixa-de-pontos → experiencia-variavel.
 
-**Zappy na página (não gravar):** Mude pontos com o placar desligado. Depois ligue Mostrar placar e compare.
+**Zappy na página (não gravar):** Sua vez! Mude pontos com o placar desligado, depois ligue Mostrar placar e compare. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `variable`. Mude pontos para 1 e volte para 0 com Mostrar placar desligado. Some 1 duas vezes e observe o número guardado. Ligue Mostrar placar, compare e some 1 novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Some um ponto a cada acerto
 
-**Tarefa:** Crie pontos, some dentro da colisão e mostre o valor no placar. Teste erro e acerto antes de enviar.
+**Tarefa:** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir fase.
 
 **Blocos na página:** video-pontos-e-placar → fala-placar → projeto.
 
-**Zappy na página (não gravar):** Crie pontos, some dentro da colisão e mostre o valor no placar. Teste erro e acerto antes de enviar.
+**Zappy na página (não gravar):** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie a variável pontos com 0 em Ao iniciar.
 - Some 1 em pontos dentro da colisão tiros × asteroides.
