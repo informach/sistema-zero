@@ -9,6 +9,7 @@ import { formatBytes, friendlyFileType } from '../lib/format'
 import { helpLinkHref, renderMarkdown } from '../lib/markdown'
 import type { MaterialItem, MaterialsBlock } from '../lib/types'
 import { videoEmbedUrl } from '../lib/video-embed'
+import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
 
 /**
@@ -51,6 +52,7 @@ export function MaterialsBlockView({
   content: MaterialsBlock
 }) {
   const player = useLessonPlayer()
+  const { material, erroDoServidor } = useLessonCopy()
   const [baixando, setBaixando] = useState<string | null>(null)
   const [baixados, setBaixados] = useState<Set<string>>(() => new Set())
   const downloadKey = (itemId: string) => `${blockRevision ?? ''}:${itemId}`
@@ -79,7 +81,8 @@ export function MaterialsBlockView({
       if (r.ok) {
         setBaixados((ids) => new Set(ids).add(downloadKey(item.id)))
         if (required.includes(item.id)) player.refreshAfterLearning?.()
-      } else if (r.reason === 'refused') toast.error(r.message)
+      } else if (r.reason === 'refused')
+        toast.error(erroDoServidor(r, 'Não foi possível baixar o material.'))
       else {
         toast.info('O material pode abrir em outra aba. Confira se o download começou.')
         if (required.includes(item.id))
@@ -134,7 +137,7 @@ export function MaterialsBlockView({
                       <span className="sz-lesson-material-required">Obrigatório para avançar</span>
                     )}
                     <span className="sz-lesson-material-meta">
-                      {podeBaixar ? descricaoDoArquivo(item) : 'baixa na aula'}
+                      {podeBaixar ? descricaoDoArquivo(item) : material.baixaNaAula}
                     </span>
                   </span>
                   <span className="sz-lesson-material-cta" aria-live="polite">

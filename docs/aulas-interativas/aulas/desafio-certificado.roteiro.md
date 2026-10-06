@@ -10,7 +10,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
-**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Depois de enviar, a pessoa lê as explicações e pode corrigir na hora. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção.
+**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Depois de enviar, a pessoa lê as explicações e pode corrigir na hora. Com todas as respostas corretas, avança em Próxima parte. Não acrescentar vídeo, material ou certificado nesta seção.
 
 ## Seção 2. Comemore sua criação
 
@@ -18,13 +18,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 25 a 35 segundos.
 
-**Na tela:** no "Olha só", mostrar brevemente os três grupos de blocos programados no curso e depois o botão **Pegar meu certificado**. Usar uma conta de ensaio sem certificado emitido para gravar a primeira emissão. Se já existir, o botão real é **Baixar certificado (PDF)**; não simular uma segunda emissão. Terminar apontando **Concluir aula**.
+**Na tela:** no "Olha só", mostrar brevemente os três grupos de blocos programados no curso e depois o botão **Pegar meu certificado**. Usar uma conta de ensaio sem certificado emitido para gravar a primeira emissão. Se já existir, o botão real é **Baixar certificado (PDF)**; não simular uma segunda emissão. Terminar apontando **Concluir fase**.
 
 **Narração:**
 > "Você terminou A Chave do Farol! Os desenhos e o barco já vieram prontos, mas olha só o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem a aventura funcionar, e quem montou foi você!
 >
-> Parabéns pelo seu jogo! Agora clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula."
+> Parabéns pelo seu jogo! Agora clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir fase."
 
-**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir fase.
 
 **Conferência de produção:** a seção exige o vídeo e a emissão do certificado. Quem já emitiu encontra **Baixar certificado (PDF)**. A celebração não antecipa outra aula nem inclui venda.

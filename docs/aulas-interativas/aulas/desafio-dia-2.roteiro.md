@@ -10,14 +10,14 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 90 a 110 segundos.
 
-**Na tela:** mostrar brevemente, no projeto do fim do Dia 1, o personagem passando pela chave sem pegá-la. Depois abrir a experiência `collect-and-remember` e fazer cada gesto no ritmo da fala, deixando ver a chave, o aviso e `temChave` em cada teste. No "Repare neste nome aqui", apontar o mostrador `temChave`; no "tá vendo?", manter `temChave` em falso à vista. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase do caderno, o personagem anotando "peguei a chave ✔" num caderno; ao lado, o mesmo personagem sem anotar, com cara de "esqueci…". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+**Na tela:** mostrar brevemente, no projeto do fim do Dia 1, o personagem passando pela chave sem pegá-la. Depois abrir a experiência `collect-and-remember` e fazer cada gesto no ritmo da fala, deixando ver a chave, o aviso e `temChave` em cada teste. No "Repare neste nome aqui", apontar o mostrador `temChave`; no "tá vendo?", manter `temChave` em falso à vista. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase do bloquinho, o personagem anotando "peguei a chave ✔" num bloquinho; ao lado, o mesmo personagem sem anotar, com cara de "esqueci…". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
 > "O seu personagem já anda, mas passa pela chave sem pegar. Por isso, esta é uma experiência para a gente entender como uma variável guarda uma informação do jogo.
 >
 > Repare neste nome aqui: temChave. Ele é uma variável, que é um nome que guarda uma informação do jogo. Nesse caso, a informação é se o personagem está com a chave ou não, e, quando aparece falso, quer dizer que ele ainda não está com ela.
 >
-> Guardar uma informação é como anotar num caderno: se ninguém anota, o jogo esquece.
+> Guardar uma informação é como anotar num bloquinho: se ninguém anota, o jogo esquece.
 >
 > Olha aqui: com Guardar a coleta desligado, eu clico em Encostar na chave. Encostar na chave é um evento, que é algo que acontece no jogo. E a regra Quando o personagem encostar na chave responde a esse evento: ela tira a chave do chão e muda o aviso. Mas tá vendo? temChave continua falso, porque ninguém anotou a coleta.
 >
@@ -25,9 +25,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > E repare: quando eu clico em Afastar, temChave continua verdadeiro, mesmo longe da chave. É que a anotação fica guardada.
 >
-> Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com o caderno em branco.
+> Por último, eu clico em Recomeçar a partida, e temChave volta para falso, porque uma partida nova começa com o bloquinho em branco.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado.
 
@@ -42,7 +42,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Na tela:** abrir o projeto da pessoa. Começar pela retomada, antes de qualquer bloco: levar o personagem até a chave e, no "Tá vendo?", mostrar que ele passa por ela sem efeito. Em cada encaixe, primeiro deixar o destino à vista; só então abrir a categoria e pegar o bloco. O projeto ainda não tem a área **Quando acontecer**: deixar à vista um espaço vazio entre **Ao iniciar** e **Enquanto estiver rodando**, abrir **Áreas do projeto**, pegar **Quando acontecer** e soltar nesse espaço. Depois abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite ... começar a encostar no sprite ...** e soltar dentro da área nova. Escolher `personagem` no primeiro nome e `chave` no segundo.
 
 **Narração:**
-> "Lembra da experiência da seção anterior? Quando o personagem encostou na chave, a regra tirou a chave do chão. Agora a gente vai programar isso no seu jogo!
+> "Lembra da experiência da parte anterior? Quando o personagem encostou na chave, a regra tirou a chave do chão. Agora a gente vai programar isso no seu jogo!
 >
 > Primeiro, leve o personagem até a chave. Tá vendo? Ele passa por ela e não acontece nada, porque o jogo ainda não sabe o que fazer quando os dois se encontram.
 >
@@ -71,7 +71,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Confira se ficou assim: dentro do encontro entre personagem e chave, está Destruir o sprite chave."
 
-**Na tela:** depois da atualização da Pré-visualização, levar o personagem até a chave e passar de novo pelo mesmo lugar. Clicar em **Atualizar**, na barra logo acima do jogo, para começar outra partida e mostrar a chave de volta; em barra estreita, o botão aparece só como ⟳. Clicar em **Verificar esta etapa**, esperar **Salvo** e apontar **Próxima seção**. O envio não faz parte desta seção.
+**Na tela:** depois da atualização da Pré-visualização, levar o personagem até a chave e passar de novo pelo mesmo lugar. Clicar em **Atualizar**, na barra logo acima do jogo, para começar outra partida e mostrar a chave de volta; em barra estreita, o botão aparece só como ⟳. Clicar em **Verificar esta parte**, esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Narração:**
 > "Agora vamos testar! Leve o personagem até a chave. Olha só: a chave some do chão!
@@ -80,11 +80,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se a chave não sumiu, confira se o encontro tem personagem e chave e se o bloco Destruir o sprite chave está dentro dele. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo e clique em Próxima seção."
+> Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte.
 
 **Conferência de produção:** a verificação confere também o movimento do Dia 1. A seção exige o vídeo e a aprovação, sem envio.
 
@@ -97,7 +97,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Na tela:** mostrar o fim da área **Ao iniciar**, logo abaixo de **Ativar controles clássicos**. Abrir **Programação → Variáveis**, pegar **Criar variável ... com valor ...** e soltar ali. Trocar o nome para `temChave` e clicar fora do campo. Abrir **Programação → Lógica & Se**, pegar o bloco **verdadeiro** (no catálogo, Verdadeiro ou falso; na tela, só o menu), soltar sobre o número do bloco e escolher **falso** no menu.
 
 **Narração:**
-> "Lembra da experiência da primeira seção desta aula? Com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso. O seu jogo está assim agora: a chave sai do chão, mas nada anota que ela foi encontrada. Então a gente vai ensinar o seu jogo a guardar essa informação!
+> "Lembra da experiência da primeira parte desta fase? Com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso. O seu jogo está assim agora: a chave sai do chão, mas nada anota que ela foi encontrada. Então a gente vai ensinar o seu jogo a guardar essa informação!
 >
 > Primeiro, a gente precisa criar a variável temChave. Ela nasce quando o jogo começa, então encontre o fim da área Ao iniciar, logo abaixo de Ativar controles clássicos. Se esse lugar não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.
 >
@@ -116,7 +116,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Na tela:** deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Escolher `temChave`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**.
 
 **Narração:**
-> "Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. É como anotar no caderno: peguei a chave! Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.
+> "Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. É como anotar no bloquinho: peguei a chave! Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.
 >
 > Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 >
@@ -126,16 +126,16 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Confira se ficou assim: no encontro com a chave, primeiro vem Destruir o sprite chave e, logo abaixo, Alterar temChave para verdadeiro."
 
-**Na tela:** apontar a declaração em **Ao iniciar** e a mudança no encontro. Clicar em **Verificar esta etapa**, esperar **Salvo** e apontar **Próxima seção**. O envio não faz parte desta seção.
+**Na tela:** apontar a declaração em **Ao iniciar** e a mudança no encontro. Clicar em **Verificar esta parte**, esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Narração:**
 > "No jogo, você ainda não consegue ver temChave, porque quem vai usar essa informação é a porta do farol, no Dia 3. Por isso, desta vez quem confere o que você montou é a verificação.
 >
-> Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+> Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo e clique em Próxima seção."
+> Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte.
 
 **Conferência de produção:** a mudança de temChave não aparece no jogo; a experiência da seção 1 já mostrou a informação guardada. A seção exige o vídeo e a aprovação, sem envio.
 
@@ -148,7 +148,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Na tela:** Começar pela retomada, antes de qualquer bloco: recolher a chave no jogo e mostrar que a mensagem continua a inicial. Depois, com o bloco de `temChave` à vista dentro do encontro, abrir **Programação → Variáveis**, pegar outro **Alterar variável ... para ...**, soltar logo abaixo dele e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o número, apagar `Olá` e escrever `Você pegou a chave! Agora vá ao farol.`. Mostrar os três blocos na ordem.
 
 **Narração:**
-> "Lembra da experiência da primeira seção desta aula? Quando a chave era recolhida, o aviso mudava. Agora a gente vai fazer o aviso do seu jogo mudar também!
+> "Lembra da experiência da primeira parte desta fase? Quando a chave era recolhida, o aviso mudava. Agora a gente vai fazer o aviso do seu jogo mudar também!
 >
 > Primeiro, pegue a chave no seu jogo. Tá vendo? Ela some, mas a mensagem continua a mesma: Encontre a chave e vá ao farol. Quem está jogando nem fica sabendo que pegou a chave, então vamos avisar.
 >
@@ -171,15 +171,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se a mensagem não mudou, confira o bloco que altera aviso e o texto dentro dele. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta etapa**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo da etapa cumprido!**, esperar **Salvo**, clicar em **Enviar para o professor**, confirmar em **Enviar** sem exigir recado e aguardar. Apontar **Concluir aula**.
+**Na tela:** clicar em **Verificar esta parte**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo cumprido!**, esperar **Salvo**, clicar em **Enviar para o guia**, confirmar em **Enviar** sem exigir recado e aguardar. Apontar **Concluir fase**.
 
 **Narração:**
-> "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+> "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o professor e confirme em Enviar.
+> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar.
 >
-> Quando o envio terminar, clique em Concluir aula."
+> Quando o envio terminar, clique em Concluir fase."
 
-**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor.
+**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar para o guia.
 
-**Conferência de produção:** a verificação confere também o movimento do Dia 1 e não exige copiar o texto do aviso. A seção exige o vídeo, a aprovação em **Verificar esta etapa** e o envio confirmado.
+**Conferência de produção:** a verificação confere também o movimento do Dia 1 e não exige copiar o texto do aviso. A seção exige o vídeo, a aprovação em **Verificar esta parte** e o envio confirmado.

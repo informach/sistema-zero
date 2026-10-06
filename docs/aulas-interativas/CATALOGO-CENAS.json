@@ -1019,15 +1019,15 @@
     "id": "copy-vs-original",
     "grupo": "world",
     "titulo": "A cópia e o original",
-    "instrucao": "Exporte o jogo da aula, importe o arquivo no Estúdio e pinte a nave de um lado só.",
+    "instrucao": "Exporte o jogo da fase, importe o arquivo no Estúdio e pinte a nave de um lado só.",
     "manipula": "Exportar, importar e a cor da nave em cada painel",
     "frase_sucesso": "Exportar tira uma cópia, importar transforma a cópia num projeto seu, e daí em diante cada um segue o seu caminho.",
-    "pergunta_extra": "E se você pintar a nave na aula depois de exportar, antes de importar?",
+    "pergunta_extra": "E se você pintar a nave na fase depois de exportar, antes de importar?",
     "metas": [
       {
         "id": "exported",
-        "rotulo": "O arquivo saiu, e o jogo continuou na aula",
-        "pedido": "Aperte Exportar e olhe o lado da aula.",
+        "rotulo": "O arquivo saiu, e o jogo continuou na fase",
+        "pedido": "Aperte Exportar e olhe o lado da fase.",
         "soNoCaso": false
       },
       {
@@ -1044,9 +1044,9 @@
       }
     ],
     "pistas": [
-      "Aperte Exportar e olhe o lado da aula antes de olhar o arquivo.",
+      "Aperte Exportar e olhe o lado da fase antes de olhar o arquivo.",
       "Com o arquivo no meio, aperte Importar e compare as duas telas.",
-      "Pinte a nave do lado do Estúdio e olhe a nave do lado da aula."
+      "Pinte a nave do lado do Estúdio e olhe a nave do lado da fase."
     ],
     "roteiro_demonstracao": [],
     "acoes_usadas": []

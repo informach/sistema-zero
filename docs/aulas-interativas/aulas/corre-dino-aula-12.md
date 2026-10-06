@@ -39,7 +39,7 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 **Zappy na página (não gravar):** Sorteie o x de 500 a 560 dentro do único criador de cactos.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No x do cacto, encaixe um número de 500 a 560.
 - Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
@@ -53,7 +53,7 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 **Zappy na página (não gravar):** Use -5 menos um sorteio de 0 a 1 no vx do mesmo criador.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No x do cacto, encaixe um número de 500 a 560.
 - Na velocidade do cacto, use -5 menos um número de 0 a 1.
@@ -61,13 +61,13 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - No x do cacto, encaixe um número de 500 a 560.
 - Na velocidade do cacto, use -5 menos um número de 0 a 1.

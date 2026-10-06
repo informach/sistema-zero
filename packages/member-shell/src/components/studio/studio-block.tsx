@@ -25,6 +25,7 @@ import { resolveStudioLessonSeed } from '../../lib/studio-lesson-seed'
 import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
+import { useLessonCopy } from '../lesson-copy-context'
 import { useLessonPlayer } from '../lesson-player-context'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { SectionProjectCheck } from './section-project-check'
@@ -109,6 +110,7 @@ export function StudioBlockView({
   fillHeight,
 }: Props) {
   const player = useLessonPlayer()
+  const { estudio } = useLessonCopy()
   const lessonId = player?.lessonId ?? ''
   // Id estável por bloco E por PERFIL (`viewerId`): irmãos no mesmo navegador não misturam o
   // rascunho. ⚠️ Charset seguro (sem `:`): id inválido vira ULID aleatório → perde tudo no refresh.
@@ -350,14 +352,14 @@ export function StudioBlockView({
         handleRef.current?.replaceProject({ ...(res.project as Project), id: projectId })
         setSyncOpen(false)
       } else {
-        setSyncNote('Você ainda não enviou nenhum projeto para o professor.')
+        setSyncNote(estudio.semEnvio)
       }
     } catch {
       setSyncNote('Não consegui sincronizar agora. Tente de novo.')
     } finally {
       setSyncing(false)
     }
-  }, [lessonId, blockId, projectId])
+  }, [lessonId, blockId, projectId, estudio.semEnvio])
 
   const doRestart = useCallback(async () => {
     const handle = handleRef.current
@@ -466,7 +468,7 @@ export function StudioBlockView({
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="sz-display text-base">Atividade no Estúdio</h3>
+        <h3 className="sz-display text-base">{estudio.titulo}</h3>
         <div className="flex items-center gap-2">
           <LessonVideoToggle expanded={expanded} size="sm" />
           <Button
@@ -510,7 +512,7 @@ export function StudioBlockView({
                 disabled={submitting || !ready}
               >
                 {submitting ? <Spinner /> : <Send className="size-4" />}
-                {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
+                {submitted ? estudio.reenviar : estudio.enviar}
               </Button>
             )}
         </div>
@@ -557,7 +559,7 @@ export function StudioBlockView({
             shareDisabledReason={
               share
                 ? !submitted
-                  ? 'Envie o projeto para o professor primeiro para poder compartilhar.'
+                  ? estudio.compartilharDepois
                   : alreadyShared
                     ? 'Você já compartilhou este jogo no Mural. 🎉'
                     : undefined
@@ -570,7 +572,7 @@ export function StudioBlockView({
         ) : seedLoadFailed ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
             <p role="alert" className="text-sm text-muted-foreground">
-              Não conseguimos abrir sua atividade. Seu trabalho não foi substituído.
+              {estudio.erroAoAbrir}
             </p>
             <Button variant="outline" onClick={() => setSeedLoadAttempt((attempt) => attempt + 1)}>
               Tentar novamente
@@ -590,12 +592,10 @@ export function StudioBlockView({
           checagem é instantâneo no painel do editor (botão "Verificar"). */}
       {activity && score !== null ? (
         <p className="inline-flex flex-wrap items-center gap-2 text-sm">
-          <span className="font-medium">Sua nota: {score}/100</span>
+          <span className="font-medium">{estudio.pontuacao(score)}</span>
           {passingScore !== undefined ? (
             <span className={passed ? 'text-accent dark:text-primary' : 'text-muted-foreground'}>
-              {passed
-                ? '· você atingiu a nota mínima'
-                : `· precisa de ${passingScore} para concluir`}
+              {passed ? estudio.metaAlcancada : estudio.precisaDe(passingScore)}
             </span>
           ) : null}
           {xp ? <span className="text-accent dark:text-primary">· +{xp} XP</span> : null}
@@ -606,31 +606,32 @@ export function StudioBlockView({
         <div className="space-y-1">
           <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
             <CheckCircle2 className="size-4" />
-            Projeto enviado ao professor
+            {estudio.enviado}
             {submittedAt ? ` em ${new Date(submittedAt).toLocaleString('pt-BR')}` : ''}.
           </p>
           {/* O professor carimbou "já conferi". Não é nota: é ele dizendo que viu. */}
           {reviewed ? (
             <p className="flex items-center gap-2 text-sm text-success">
-              <CheckCheck className="size-4" />O professor já conferiu sua entrega.
+              <CheckCheck className="size-4" />
+              {estudio.conferido}
             </p>
           ) : null}
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">
           {passingScore !== undefined
-            ? 'Use "Verificar" no editor e envie ao professor. Atinja a nota mínima para concluir a aula.'
+            ? estudio.paraConcluirComMeta
             : player?.submissionAllowedBlockIds &&
                 !player.submissionAllowedBlockIds.includes(blockId)
-              ? 'Continue construindo. A entrega do projeto fica no fechamento.'
-              : 'Envie seu projeto ao professor para poder concluir a aula.'}
+              ? estudio.continueConstruindo
+              : estudio.paraConcluir}
         </p>
       )}
 
       <Dialog
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title={submitted ? 'Reenviar ao professor?' : 'Enviar ao professor?'}
+        title={submitted ? estudio.confirmarReenviar : estudio.confirmarEnviar}
         footer={
           <>
             <Button
@@ -656,24 +657,16 @@ export function StudioBlockView({
         }
       >
         <p className="text-sm text-muted-foreground">
-          {submitted
-            ? 'O professor vai receber a versão atual do seu projeto, no lugar da anterior.'
-            : 'O professor vai receber o seu projeto do jeitinho que está agora.'}{' '}
-          Você pode continuar editando e enviar de novo quando quiser.
-          {passingScore !== undefined
-            ? ' Dica: clique em "Verificar" no editor antes, para ver se já atingiu a nota.'
-            : ''}
+          {submitted ? estudio.vaiReceberDeNovo : estudio.vaiReceber} Você pode continuar editando e
+          enviar de novo quando quiser.
+          {passingScore !== undefined ? estudio.dicaVerificar : ''}
         </p>
         {templateWarning ? (
-          <p className="mt-3 text-sm font-medium text-destructive">
-            Atenção: você está enviando o projeto inicial da aula por cima do que você já entregou.
-            Se terminou em outro computador, use o menu ⋯ e escolha Trazer o que eu enviei antes.
-          </p>
+          <p className="mt-3 text-sm font-medium text-destructive">{estudio.avisoProjetoInicial}</p>
         ) : null}
         <div className="mt-4 flex flex-col gap-1.5">
           <label htmlFor="studio-teacher-message" className="font-medium text-sm">
-            Recado para o professor{' '}
-            <span className="font-normal text-muted-foreground">(opcional)</span>
+            {estudio.recado} <span className="font-normal text-muted-foreground">(opcional)</span>
           </label>
           <Textarea
             id="studio-teacher-message"
@@ -682,7 +675,7 @@ export function StudioBlockView({
             maxLength={MESSAGE_MAX}
             rows={3}
             disabled={submitting}
-            placeholder="Quer contar algo pro professor sobre o seu projeto? (não é obrigatório)"
+            placeholder={estudio.recadoExemplo}
           />
         </div>
       </Dialog>
@@ -708,10 +701,7 @@ export function StudioBlockView({
           </>
         }
       >
-        <p className="text-sm text-muted-foreground">
-          Isto substitui o que você está editando aqui pelo último projeto que você enviou ao
-          professor. Use se você terminou em outro computador.
-        </p>
+        <p className="text-sm text-muted-foreground">{estudio.trazerExplica}</p>
         {syncNote ? <p className="mt-2 text-sm text-destructive">{syncNote}</p> : null}
       </Dialog>
 
@@ -736,10 +726,7 @@ export function StudioBlockView({
           </>
         }
       >
-        <p className="text-sm text-muted-foreground">
-          O Estúdio vai abrir o projeto inicial mais recente desta aula. O que você mudou neste
-          aparelho será substituído. Se já enviou um projeto ao professor, o envio continuará salvo.
-        </p>
+        <p className="text-sm text-muted-foreground">{estudio.recomecarExplica}</p>
         {restartNote ? <p className="mt-2 text-sm text-destructive">{restartNote}</p> : null}
       </Dialog>
     </div>

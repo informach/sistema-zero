@@ -152,7 +152,7 @@ function ReaderSession({ pdfUrl, onOpened }: { pdfUrl: string; onOpened: () => v
         <canvas
           ref={canvas}
           role="img"
-          aria-label={`Página ${page} do caderno. O texto extraído está disponível abaixo.`}
+          aria-label={`Página ${page} do material. O texto extraído está disponível abaixo.`}
           className={ready ? 'block h-auto' : 'hidden'}
           style={{ width: `${zoom}%`, maxWidth: 'none' }}
         />

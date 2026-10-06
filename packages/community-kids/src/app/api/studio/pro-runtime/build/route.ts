@@ -45,13 +45,10 @@ export async function POST(request: Request): Promise<Response> {
     body = (await readJsonBodyWithLimit(request, MAX_REQUEST_BYTES)) as BuildBody
   } catch (error) {
     if (error instanceof RequestBodyTooLargeError) {
-      return response(
-        { error: { message: 'O projeto ficou grande demais para esta atividade.' } },
-        413,
-      )
+      return response({ error: { message: 'O projeto ficou grande demais para esta fase.' } }, 413)
     }
     if (error instanceof InvalidJsonBodyError) {
-      return response({ error: { message: 'A atividade Pro enviada é inválida.' } }, 400)
+      return response({ error: { message: 'O projeto Pro enviado é inválido.' } }, 400)
     }
     throw error
   }
@@ -59,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
   const lessonId = text(body?.lessonId)
   const blockId = text(body?.blockId)
   if (!courseSlug || !lessonId || !blockId || !isProStudioProject(body?.project)) {
-    return response({ error: { message: 'A atividade Pro enviada é inválida.' } }, 400)
+    return response({ error: { message: 'O projeto Pro enviado é inválido.' } }, 400)
   }
 
   // A mesma consulta que abre a aula garante matrícula, trava sequencial e
@@ -67,13 +64,13 @@ export async function POST(request: Request): Promise<Response> {
   // livre antes de a jornada liberar o Estúdio Pro.
   const lesson = await getLesson(courseSlug, lessonId)
   if (lesson.status !== 200 || !lesson.body) {
-    return response({ error: { message: 'Esta atividade não está liberada.' } }, 403)
+    return response({ error: { message: 'Esta fase não está liberada.' } }, 403)
   }
   const block = lesson.body.blocks.find((item) => item.id === blockId && item.kind === 'studio')
   const initial = readInitialProject(block?.content)
   const templateId = initial ? proProjectTemplateId(initial) : null
   if (initial?.kind !== 'pro' || !templateId) {
-    return response({ error: { message: 'Este bloco não é uma atividade Pro.' } }, 403)
+    return response({ error: { message: 'Este bloco não é um projeto Pro.' } }, 403)
   }
 
   const runtimeUrl = process.env.STUDIO_PRO_RUNTIME_URL?.trim().replace(/\/$/, '')

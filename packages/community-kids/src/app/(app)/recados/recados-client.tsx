@@ -8,8 +8,8 @@ import { apiGet } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadSummaryView } from '@/lib/types'
 
 const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
-  lesson_section: 'Dúvida na aula',
-  studio_submission: 'Sua entrega',
+  lesson_section: 'Dúvida na fase',
+  studio_submission: 'Seu projeto',
   mural_publication: 'Seu jogo no Mural',
   general: 'Recado',
 }
@@ -57,7 +57,7 @@ export function RecadosClient({
         <KidsEmptyState
           icon={Mail}
           title="Tudo tranquilo por aqui"
-          description="Continue criando e enviando seus projetos. Se o professor quiser te falar alguma coisa, o recado aparece aqui."
+          description="Continue criando e enviando seus projetos. Se o seu guia quiser te falar alguma coisa, o recado aparece aqui."
           action={
             <Link
               href="/criar"
@@ -99,7 +99,7 @@ export function RecadosClient({
                     ) : null}
                   </span>
                   <span className="sz-display mt-1.5 block truncate text-lg">
-                    {t.title ?? 'Conversa com o professor'}
+                    {t.title ?? 'Conversa com o guia'}
                   </span>
                   {t.lastMessagePreview ? (
                     <span className="mt-0.5 block truncate font-medium text-muted-foreground text-sm">

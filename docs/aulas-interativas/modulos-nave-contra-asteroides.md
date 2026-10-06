@@ -4,7 +4,7 @@
 
 **Descrição curta:** Monte um jogo de nave com tiros, asteroides, pontos, três vidas e uma partida que você pode recomeçar.
 
-**Descrição:** Primeiro, jogue uma versão pronta para conhecer a nave e os controles. Depois, construa seu jogo em nove aulas: faça a nave aparecer e se mover, programe os tiros, crie os asteroides e os acertos, conte pontos e cuide das vidas. No final, coloque as telas de abertura, vitória e derrota e programe Enter para jogar outra vez. Cada aula traz os passos de montagem, testes no jogo e orientações para corrigir o que não funcionar. Você pode consultar o Caderno do Aluno durante o curso e compartilhar seu jogo no Mural quando quiser.
+**Descrição:** Primeiro, jogue uma versão pronta para conhecer a nave e os controles. Depois, construa seu jogo em nove fases: faça a nave aparecer e se mover, programe os tiros, crie os asteroides e os acertos, conte pontos e cuide das vidas. No final, coloque as telas de abertura, vitória e derrota e programe Enter para jogar outra vez. Cada fase traz os passos de montagem, testes no jogo e orientações para corrigir o que não funcionar. Você pode consultar o Mapa da Aventura sempre que precisar e compartilhar seu jogo no Mural quando quiser.
 
 ## O que consultar para executar
 
@@ -12,7 +12,7 @@
 - **Gravação:** o `.roteiro.md` da aula, ao lado de sua proposta. As falas do Zappy identificadas como texto da página não são gravadas.
 - **Montagem no admin:** o `.manifesto.json` correspondente. Os vídeos ainda são moldes `plannedVideo`.
 - **Revisão de texto ou estrutura:** `qa/nave-contra-asteroides.conteudo.json`; depois executar `bun docs/aulas-interativas/qa/gerar-nave-contra-asteroides.ts`. Os nove trios são derivados dessa fonte única.
-- **Material de consulta:** [Caderno do Aluno](../../output/pdf/nave-contra-asteroides-caderno.pdf), apresentado na seção 2 da primeira aula. Geração e conferência em [recursos/nave-contra-asteroides](recursos/nave-contra-asteroides/README.md).
+- **Material de consulta:** [Caderno do Aluno](../../output/pdf/nave-contra-asteroides-caderno.pdf), que a criança vê como **Mapa da Aventura**, apresentado na seção 2 da primeira aula. Geração e conferência em [recursos/nave-contra-asteroides](recursos/nave-contra-asteroides/README.md).
 
 ## Módulo 1 · A nave e seus controles
 
@@ -60,7 +60,7 @@ A limpeza da imagem retoma a experiência de desenho da primeira aula em uma mon
 
 Há quatro revisões curtas, nas aulas 2, 5, 7 e 9. Retomam ideias já montadas e testadas, distribuídas ao longo deste curso maior. Cada seção contém somente Zappy → quiz, com explicação após o envio, acerto de todas as questões e tentativas ilimitadas sem espera. Configurar também as tentativas no admin; o manifesto não define essa política global sozinho.
 
-Cada etapa com critérios termina em **Verificar esta etapa**, correção se necessária e **Objetivo da etapa cumprido!**. A entrega termina em **Salvo → Enviar para o professor → Enviar → Concluir aula**. A última aula ensina a publicação completa, opcional, depois do envio: o resumo já vem preenchido, e a comemoração do Mural convida a copiar o link de jogar e mandar para a família e os amigos antes de Fechar. O caderno fica em um único bloco de materiais, sem exigência de leitura ou download.
+Cada seção com critérios termina em **Verificar esta parte**, correção se necessária e **Objetivo cumprido!**. A entrega termina em **Salvo → Enviar para o guia → Enviar → Concluir fase**. A última aula ensina a publicação completa, opcional, depois do envio: o resumo já vem preenchido, e a comemoração do Mural convida a copiar o link de jogar e mandar para a família e os amigos antes de Fechar. O caderno (o **Mapa da Aventura**, para a criança) fica em um único bloco de materiais; ler na fase e baixar são convites, sem exigência para concluir.
 
 ## Continuidade do código
 
@@ -83,6 +83,17 @@ Esta entrega altera materiais locais. Gravação, vínculo das mídias e aplica�
 
 Registro da retomada e das verificações: [revisão de 05/10/2026](qa/revisao-nave-2026-10-05.md), com a nota da revisão de 06/10/2026.
 
+## Revisão de 06/10/2026 (vocabulário da aventura)
+
+A pedido do responsável e registrada nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6: tudo o que a criança vê ou ouve fala de aventura, fase, parte, Mapa da Aventura e guia. Por dentro, nada mudou: slugs, chaves (inclusive `video-seu-caderno-do-aluno` e `caderno`), nomes de arquivo e projetos continuam iguais. Os vídeos revisados ainda não foram gravados, então a gravação já usa as falas novas.
+
+- **Botões:** as falas, as pontes do Zappy e as notas "Na tela" citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**. O gerador acrescenta as fórmulas comuns aos cursos: "Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar." e "Quando o envio terminar, clique em Concluir fase."
+- **Retomadas:** "Lembra da experiência da parte anterior?"; as experiências que voltam dizem "da primeira fase" ou "da primeira parte desta fase".
+- **Mapa da Aventura:** a seção 2 da primeira aula virou **Seu Mapa da Aventura**, e o material, **Mapa da Aventura: Nave Contra Asteroides**. O vídeo diz "Olha aqui: este é o seu Mapa da Aventura!" e oferece ler aqui mesmo ou clicar em **Baixar** para guardar; saiu o "Não precisa fazer isso agora". No PDF, capa e rodapé dizem Mapa da Aventura, os capítulos são Fase 1 a Fase 9 e a primeira página convida a ler na fase ou baixar para guardar, no lugar de "Você não precisa baixar ou imprimir".
+- **Comparações:** "apresentação da escola" virou "apresentação de teatro para a família"; "lista de chamada da escola", "lista de convidados de uma festa"; "anotar num caderno", "anotar num bloquinho". Os memes descritos nas notas de tela acompanham.
+- **Convite:** no jogo pronto, "Você não precisa ganhar para continuar" virou "Você pode continuar mesmo sem ganhar".
+- **Três vozes:** "precisamos desenhá-lo" virou "a gente precisa desenhá-lo"; "ainda não programamos o acerto", "você ainda não programou o acerto"; "Ainda não montamos o encerramento", "Você ainda não montou o encerramento"; e o "No nosso jogo" dos bastidores, "Aqui".
+
 ## Conferência local
 
 ```powershell
@@ -90,6 +101,7 @@ bun docs/aulas-interativas/qa/gerar-nave-contra-asteroides.ts
 bun docs/aulas-interativas/qa/validar-manifestos.ts nave-contra-asteroides
 python -X utf8 docs/aulas-interativas/validar-roteiros.py nave-contra-asteroides
 bun test docs/aulas-interativas/qa/nave-contra-asteroides.test.ts
+bun test docs/aulas-interativas/qa/vocabulario-crianca.test.ts
 python docs/aulas-interativas/recursos/nave-contra-asteroides/gerar-materiais.py
 ```
 

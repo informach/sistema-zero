@@ -115,7 +115,7 @@ describe('central de ranking kids', () => {
 
   test('quanto vale cada coisa: o jogo publicado só entra para quem pode publicar', () => {
     const { unmount } = render(<RankingHub initialRanking={ranking} league={league} />)
-    expect(screen.getByText('Terminar uma aula')).toBeTruthy()
+    expect(screen.getByText('Terminar uma fase')).toBeTruthy()
     expect(screen.getByText('+10 XP')).toBeTruthy()
     expect(screen.queryByText('Publicar um jogo no Mural')).toBeNull()
     unmount()

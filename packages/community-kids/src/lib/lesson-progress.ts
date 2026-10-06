@@ -38,6 +38,9 @@ const VAZIO: VistaProgressoAula = { percent: 0, numero: null, texto: '', medivel
  *
  * Sem nenhuma atividade obrigatória no degrau 3 não há o que medir, e a barra não
  * inventa número: o caminho é organizar a aula em seções no "Percurso da aula".
+ *
+ * ⚠️ O texto é o da criança (06/10/2026): seção é "parte", aula é "fase" e a atividade
+ * obrigatória é um "passo" (a palavra "atividade" lembra a escola).
  */
 export function vistaProgressoAula(
   progress: SectionProgressView | undefined,
@@ -48,11 +51,11 @@ export function vistaProgressoAula(
     return {
       percent: progress.percent,
       numero: `${Math.round(progress.percent)}%`,
-      texto: `${progress.completed} de ${progress.total} seções concluídas`,
+      texto: `${progress.completed} de ${progress.total} partes concluídas`,
       medivel: true,
     }
   if (posicao && posicao.total > 1) {
-    const rotulo = `Seção ${posicao.index + 1} de ${posicao.total}`
+    const rotulo = `Parte ${posicao.index + 1} de ${posicao.total}`
     return {
       percent: ((posicao.index + 1) / posicao.total) * 100,
       numero: rotulo,
@@ -63,11 +66,11 @@ export function vistaProgressoAula(
   if (atividades.length === 0) return VAZIO
   const feitas = atividades.filter((a) => a.complete).length
   const uma = atividades.length === 1
-  const rotulo = `${feitas} de ${atividades.length} ${uma ? 'atividade' : 'atividades'}`
+  const rotulo = `${feitas} de ${atividades.length} ${uma ? 'passo' : 'passos'}`
   return {
     percent: (feitas / atividades.length) * 100,
     numero: rotulo,
-    texto: `${rotulo} ${uma ? 'concluída' : 'concluídas'} nesta aula`,
+    texto: `${rotulo} ${uma ? 'concluído' : 'concluídos'} nesta fase`,
     medivel: true,
   }
 }

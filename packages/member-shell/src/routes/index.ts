@@ -641,7 +641,12 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           viewerId !== user.id)
       )
         return NextResponse.json(
-          { error: { code: 'INVALID_ATTACHMENT', message: 'Abra o material novamente na aula.' } },
+          {
+            error: {
+              code: 'INVALID_ATTACHMENT',
+              message: 'Abra o material de novo pela página dele.',
+            },
+          },
           { status: 400 },
         )
       const resolved = await members.resolveAttachment(slug, lessonId, attachmentId)

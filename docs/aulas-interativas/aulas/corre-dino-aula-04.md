@@ -49,7 +49,7 @@ As duas experiências mostram espera por um evento e diferença entre tecla e pu
 
 **Zappy na página (não gravar):** Coloque um único Tocar efeito pulo dentro de Quando o sprite pular.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Coloque o Tocar efeito, com o efeito que você escolheu, dentro de Quando o dino pular.
 - Mantenha apenas um Tocar efeito no projeto inteiro.
@@ -57,13 +57,13 @@ As duas experiências mostram espera por um evento e diferença entre tecla e pu
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - Coloque o Tocar efeito, com o efeito que você escolheu, dentro de Quando o dino pular.
 - Mantenha apenas um Tocar efeito no projeto inteiro.

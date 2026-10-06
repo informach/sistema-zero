@@ -56,7 +56,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
  * CONTROLADO, porque só um grupo fica aberto por vez e o aberto segue a página.
  *
  * ⚠️ O clique no nome ABRE em vez de navegar (decisão da dona): a página da seção é o
- * primeiro filho ("Meus trabalhos", "Nossa turma", "Meu perfil"). Foi o que devolveu o
+ * primeiro filho ("Minhas criações", "Nossa turma", "Meu perfil"). Foi o que devolveu o
  * atalho que as crianças perderam quando o menu virou cinco páginas-hub.
  */
 export function NavGroup({

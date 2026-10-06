@@ -119,7 +119,7 @@ export function TrailChest({
   const posicao = {
     left: `calc(50% + ${offset} * var(--trail-step))`,
   }
-  const legenda = aberto ? 'Baú aberto!' : chest?.unlocked ? 'Abrir baú' : 'Baú da unidade'
+  const legenda = aberto ? 'Baú aberto!' : chest?.unlocked ? 'Abrir baú' : 'Baú do Mundo'
   const abrindo = estado === 'abrindo'
   const svgAbrindo = abrindo && !riveReady
   const bloqueado = !chest?.unlocked && !aberto
@@ -130,8 +130,8 @@ export function TrailChest({
       ? {
           role: 'img' as const,
           'aria-label': bloqueado
-            ? `Baú da unidade ${unitNumber}, fechado. Ele abre quando você concluir todas as aulas desta unidade.`
-            : `Baú da unidade ${unitNumber}, aberto`,
+            ? `Baú do Mundo ${unitNumber}, fechado. Ele abre quando você concluir todas as fases deste Mundo.`
+            : `Baú do Mundo ${unitNumber}, aberto`,
         }
       : { role: 'group' as const }
 
@@ -160,7 +160,7 @@ export function TrailChest({
             type="button"
             onClick={() => void abrir()}
             disabled={estado !== 'parado'}
-            aria-label={`Abrir o baú da unidade ${unitNumber} e ganhar ${chest?.xp ?? 0} XP`}
+            aria-label={`Abrir o baú do Mundo ${unitNumber} e ganhar ${chest?.xp ?? 0} XP`}
             className="kids-chest-hit-area absolute top-0 left-1/2 z-10 size-(--trail-node) -translate-x-1/2 cursor-pointer rounded-full border-0 bg-transparent p-0 disabled:cursor-wait"
           />
         ) : null}

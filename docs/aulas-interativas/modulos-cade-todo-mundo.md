@@ -51,7 +51,7 @@ a reação ao toque e a contagem. O certificado encerra o curso sem oferta comer
 
 ## Caderno
 
-Um único PDF para as duas aulas, anexado ao bloco **caderno** de **Seu Caderno do Aluno**, na
+Um único PDF para as duas aulas, anexado ao bloco **caderno** de **Seu Mapa da Aventura**, na
 Aula 1. A leitura, o download e a impressão continuam opcionais; apenas o vídeo conta para
 concluir essa seção. Desde 06/10/2026, o vídeo apresenta o caderno como escolha: ler na aula ou
 clicar em **Baixar** para guardar e consultar onde quiser. O mesmo anexo alimenta a consulta na tela e o download.
@@ -111,7 +111,7 @@ Na mesma revisão:
 
 A pedido do responsável, todas as falas passaram a conversar com a criança e a chamar a atenção dela. A regra entrou nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6, para os próximos cursos já nascerem assim. Seções, blocos, critérios e identificadores não mudaram.
 
-- **Seu Caderno do Aluno:** saiu o "Não precisa baixar nem imprimir", que a criança entendia como uma ordem para não baixar. O vídeo agora diz "Olha aqui: este é o seu Caderno do Aluno!" e oferece as duas escolhas: ler aqui mesmo, na aula, ou clicar em **Baixar** para guardar o caderno e consultar onde quiser. O Zappy da seção, a página 2 do caderno e o tutorial **Como abrir os materiais da aula**, no Como Fazer, seguem a mesma ideia.
+- **Seu Mapa da Aventura** (na época, Seu Caderno do Aluno): saiu o "Não precisa baixar nem imprimir", que a criança entendia como uma ordem para não baixar. O vídeo agora diz "Olha aqui: este é o seu Mapa da Aventura!" e oferece as duas escolhas: ler aqui mesmo ou clicar em **Baixar** para guardar o mapa e consultar onde quiser. O Zappy da seção, a página 2 do caderno e o tutorial **Como abrir o Mapa da Aventura e os materiais**, no Como Fazer, seguem a mesma ideia.
 - **Narração:** os momentos que importam ganharam um chamado para a tela: "Olha aqui" ao mostrar um lugar ou bloco, "Olha só" quando aparece um resultado, "Repare" num detalhe (o número Achados, o nome que já vem no bloco) e "Tá vendo?" depois do teste da retomada.
 - **Conversa contínua (segunda rodada do mesmo dia):** as falas deixaram de ser frases soltas lidas em sequência. Cada frase se liga à anterior, cada resultado vem com o porquê e a experiência do toque diz com clareza que o toque é a ação e que a reação é o arbusto ficar invisível. A retomada da Aula 1 passou de "Primeiro, toque num esconderijo. Nada acontece: o toque ainda não tem uma reação. Vamos ligar uma." para "Primeiro, toque num esconderijo do seu jogo. Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele…".
 - **O que já vem pronto:** saiu da montagem da Aula 1 a frase solta "O jardim e os personagens já estão preparados", e a mensagem de vitória da Aula 2 deixou de ser apresentada como "já estava preparada": a fala diz que quem a faz aparecer é a contagem montada pela criança. O reconhecimento do que veio pronto fica no certificado ("O jardim e os personagens já vieram prontos, mas olha só o que você programou…").
@@ -119,4 +119,15 @@ A pedido do responsável, todas as falas passaram a conversar com a criança e a
 - **Durações:** com as explicações, alguns vídeos ficaram um pouco mais longos: abertura 35 a 45 s, caderno 25 a 35 s, experiência do toque 70 a 90 s, retomada da Aula 2 25 a 35 s, experiência do Achados 75 a 95 s e certificado 20 a 30 s.
 - **Pontes do Zappy:** começam convidando ("Sua vez!", "Agora…!", "Hora de…!") e falam do jogo da criança ("Seus personagens já aparecem, mas Achados ainda fica em zero").
 
-Os dez vídeos precisam ser regravados com as falas novas. A fórmula de verificação ("Funcionou? Clique em Verificar esta etapa…") continua a mesma dos outros cursos. O PDF do caderno foi regerado; no Admin, substituir o anexo e importar o tutorial do Como Fazer atualizado.
+Os dez vídeos precisam ser regravados com as falas novas. A fórmula de verificação ("Funcionou? Clique em Verificar esta parte…") continua a mesma dos outros cursos. O PDF do caderno foi regerado; no Admin, substituir o anexo e importar o tutorial do Como Fazer atualizado.
+
+## Revisão de 06/10/2026 (vocabulário da aventura)
+
+A pedido do responsável, a plataforma deixou de parecer uma extensão da escola: tudo o que a criança vê e ouve usa o vocabulário da aventura, regra registrada nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6. Por dentro (chaves, identificadores, `plannedVideo`, objetivos e documentos da equipe), curso, aula, seção e caderno continuam. Seções, blocos, critérios, identificadores e durações não mudaram.
+
+- **Falas e pontes do Zappy:** os botões citados passaram a ser **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**, e a retomada diz "Lembra da experiência da parte anterior?". Na Aula 2, "do jeito que ficou na Aula 1" virou "na Fase 1", "nesta aula" virou "agora" e "Na aula, ele pode aparecer só como um ícone" virou "Aqui, ele pode aparecer…".
+- **Caderno para a criança:** a seção 2 da Aula 1 se chama **Seu Mapa da Aventura**, o material é **Mapa da Aventura: Cadê Todo Mundo?** e o vídeo diz "Olha aqui: este é o seu Mapa da Aventura! (…) Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser." As chaves **seu-caderno-do-aluno** e **caderno** continuam.
+- **PDF:** capa, título e rodapé dizem Mapa da Aventura; os cabeçalhos passaram a Fase 1, Fase 2 e Fase 3, "seção" virou "parte" e "professor" virou "guia". A capa dizia "Todos os passos para construir o nosso jogo." e agora diz "o seu jogo". O arquivo continua **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**, com seis páginas.
+- **Certificado:** sem imagem base, o PDF tem o título **Certificado de Criador**, e a frase passou de "concluiu Cadê Todo Mundo?" para "completou a aventura Cadê Todo Mundo?".
+
+Os vídeos precisam ser gravados com as falas novas. No Admin, substituir o anexo do caderno e conferir os títulos das seções e o bloco do certificado.

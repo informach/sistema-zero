@@ -7,7 +7,9 @@
 - Seções na entrada deste review: 3 · Seções finais: 5.
 - Clipes na entrada deste review: 3 · Clipes finais: 5.
 
-**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"); as pontes do Zappy começam convidando. Cada fala virou uma conversa contínua, com o porquê de cada resultado; neste dia, "então" não é usado como palavra de ligação, porque é o nome de uma parte do Se. Em vez de "a variável ganhou já veio preparada" e "o encontro com a chave já está pronto", a fala diz o que cada um faz no momento em que a criança o usa. Seções, blocos e critérios não mudaram.
+**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"); as pontes do Zappy começam convidando. Cada fala virou uma conversa contínua, com o porquê de cada resultado; neste dia, "então" não é usado como palavra de ligação, porque é o nome de um espaço do Se. Em vez de "a variável ganhou já veio preparada" e "o encontro com a chave já está pronto", a fala diz o que cada um faz no momento em que a criança o usa. Seções, blocos e critérios não mudaram.
+
+**Vocabulário da aventura, 06/10/2026:** as retomadas dizem "Lembra da experiência da parte anterior?" e "Lembra da experiência da primeira parte desta fase?"; na publicação, "Na aula, ele pode aparecer só como um ícone" virou "Aqui, ele pode aparecer…"; as falas citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**. Como "parte" passou a ser o nome da seção para a criança, os ramos do bloco Se deixaram de ser "a parte então" e "a parte senão": a fala diz "o espaço do então" e "o espaço do senão" ("O espaço do então fica vazio por enquanto", "Deixe à vista o espaço do então", "Complete o espaço do então"), do mesmo jeito que o Cadê fala do espaço vazio ao lado de fazer, e "na parte de baixo do bloco Se" virou "na linha de baixo do bloco Se".
 
 ## Triagem dos conceitos
 
@@ -48,9 +50,9 @@ Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não
 - **Conclui quando:** vídeo e dez critérios cumulativos aprovados; não pede envio.
 - **Blocos:** novo `video-d3-sem-chave`, `ponte-d3-sem-chave`, Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir.
+**Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta parte antes de seguir.
 
-Criar evento separado personagem/farol e Se consultando temChave. A pergunta `x > 0` que nasce no Se é um bloco de verdade: vai para a lixeira antes de pôr `valor da variável temChave` no lugar vazio, senão sobra um bloco solto ou nasce `temChave > 0`, que o critério `condicao` reprova. Na parte de baixo do Se, usar o **+** de **senão** (não o de senão se), encaixar aviso com texto nesse ramo; então fica vazio. Atualizar, ir ao farol sem chave e conferir luz apagada e mensagem. Verificar, corrigir, esperar Salvo e seguir em Próxima seção. A checagem aceita então vazio.
+Criar evento separado personagem/farol e Se consultando temChave. A pergunta `x > 0` que nasce no Se é um bloco de verdade: vai para a lixeira antes de pôr `valor da variável temChave` no lugar vazio, senão sobra um bloco solto ou nasce `temChave > 0`, que o critério `condicao` reprova. Na linha de baixo do Se, usar o **+** de **senão** (não o de senão se), encaixar aviso com texto nesse ramo; então fica vazio. Atualizar, ir ao farol sem chave e conferir luz apagada e mensagem. Verificar, corrigir, esperar Salvo e seguir em Próxima parte. A checagem aceita então vazio.
 
 ### Seção 3. Acenda o farol com a chave
 
@@ -59,11 +61,11 @@ Criar evento separado personagem/farol e Se consultando temChave. A pergunta `x 
 - **Conclui quando:** vídeo, quatorze critérios cumulativos aprovados e envio único do dia confirmado.
 - **Blocos:** `video-d3-decisao`, `ponte-d3-decisao`, Estúdio `projeto`.
 
-**Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete a parte então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor.
+**Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta parte e envie para o guia.
 
 Retomar o mesmo Se, preservando o aviso em senão. Completar então: ganhou verdadeiro, imagem farol-aceso e aviso de chegada. Não criar outro evento, outra condição ou cópia do projeto. A verificação não exige a frase do exemplo.
 
-Testar o percurso contínuo: Atualizar, visitar o farol sem chave, afastar, buscar a chave e voltar na mesma partida. Esperar o barco. Atualizar depois da vitória, conferir a chave de volta e ir ao farol sem recolhê-la. Conferir as mensagens e a luz nos três momentos. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Próxima seção**.
+Testar o percurso contínuo: Atualizar, visitar o farol sem chave, afastar, buscar a chave e voltar na mesma partida. Esperar o barco. Atualizar depois da vitória, conferir a chave de volta e ir ao farol sem recolhê-la. Conferir as mensagens e a luz nos três momentos. Terminar em **Verificar esta parte → Objetivo cumprido! → Salvo → Enviar para o guia → Enviar → Próxima parte**.
 
 ### Seção 4. Deixe o jogo com a sua cara
 
@@ -72,9 +74,9 @@ Testar o percurso contínuo: Atualizar, visitar o farol sem chave, afastar, busc
 - **Conclui quando:** vídeo. As escolhas não viram critério.
 - **Blocos:** `video-d3-personalizar`, `ponte-d3-personalizar` e o mesmo `projeto` pela workspaceKey.
 
-**Ponte do Zappy na página (não gravar):** Hora de deixar o jogo com a sua cara! Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção.
+**Ponte do Zappy na página (não gravar):** Hora de deixar o jogo com a sua cara! Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima parte.
 
-Vem depois do envio e antes de publicar. Começar pelo destino: a área **Ao iniciar** e o bloco **Criar sprite personagem**; no fim dele, clicar no nome da imagem e escolher outro personagem. Todos os personagens têm a caixa 64 × 64 e a mesma área de contato, então andar, pegar a chave e chegar ao farol continuam iguais. Depois, em **Quando acontecer**, escrever os avisos com as próprias palavras. Correção do erro provável: imagem de outro tamanho (barco, farol) muda a caixa; voltar a um personagem. Testar e seguir em **Próxima seção**.
+Vem depois do envio e antes de publicar. Começar pelo destino: a área **Ao iniciar** e o bloco **Criar sprite personagem**; no fim dele, clicar no nome da imagem e escolher outro personagem. Todos os personagens têm a caixa 64 × 64 e a mesma área de contato, então andar, pegar a chave e chegar ao farol continuam iguais. Depois, em **Quando acontecer**, escrever os avisos com as próprias palavras. Correção do erro provável: imagem de outro tamanho (barco, farol) muda a caixa; voltar a um personagem. Testar e seguir em **Próxima parte**.
 
 ### Seção 5. Publique seu jogo
 
@@ -83,9 +85,9 @@ Vem depois do envio e antes de publicar. Começar pelo destino: a área **Ao ini
 - **Conclui quando:** vídeo; a publicação é a tarefa ensinada, sem requisito técnico novo de publicação.
 - **Blocos:** `video-d3-fecho`, `ponte-d3-publicar`, `ajuda-publicar` e o mesmo `projeto` pela workspaceKey.
 
-**Ponte do Zappy na página (não gravar):** Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir fase.
 
-**Compartilhar → manter o resumo → Gerar capa → conferir → Publicar → comemorar: Seu jogo está no Mural! → Copiar link de jogar e mandar para a família e os amigos → Fechar → Concluir aula**. O envio anterior libera Compartilhar. Trocar a capa e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula.
+**Compartilhar → manter o resumo → Gerar capa → conferir → Publicar → comemorar: Seu jogo está no Mural! → Copiar link de jogar e mandar para a família e os amigos → Fechar → Concluir fase**. O envio anterior libera Compartilhar. Trocar a capa e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula.
 
 ## Experiências e demonstrações desta aula
 

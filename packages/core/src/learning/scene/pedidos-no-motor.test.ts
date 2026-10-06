@@ -133,7 +133,7 @@ const CENAS: Record<SceneId, Cena> = {
   'copy-vs-original': {
     pedidos: {
       exported: {
-        texto: 'Aperte Exportar e olhe o lado da aula.',
+        texto: 'Aperte Exportar e olhe o lado da fase.',
         faz: (m) => m.faz({ type: 'export-file' }),
       },
       imported: {

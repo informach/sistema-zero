@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: Jogue antes de construir\n\nRegravar no Estúdio atual. Mostrar somente a versão pronta. O narrador faz um gesto de exemplo e para: clicar na área do jogo, apertar Enter para começar e apertar a barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima seção.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Jogue antes de construir\n\nRegravar no Estúdio atual. Mostrar somente a versão pronta. O narrador faz um gesto de exemplo e para: clicar na área do jogo, apertar Enter para começar e apertar a barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima parte.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-abertura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima seção."
+        "text": "Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima parte."
       }
     },
     {
@@ -1675,28 +1675,28 @@
     },
     {
       "key": "video-seu-caderno-do-aluno",
-      "plannedVideo": "Título: Seu Caderno do Aluno\n\nRegravar no Estúdio atual. Mostrar o PDF real deste curso, sem ensinar os controles do leitor. Anexar o arquivo antes de publicar.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Seu Mapa da Aventura\n\nRegravar no Estúdio atual. Mostrar a capa e uma página de montagem do Mapa da Aventura real deste curso (o PDF do caderno). No \"Olha aqui\", apontar o mapa. Ao falar em baixar, apontar o botão Baixar, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Anexar o arquivo antes de publicar. No fim, apontar Próxima parte.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-seu-caderno-do-aluno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "O caderno reúne os passos da montagem. Você pode consultar quando precisar. Para continuar, clique em Próxima seção."
+        "text": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "caderno",
       "content": {
         "kind": "materials",
-        "title": "Caderno do Aluno: Nave Contra Asteroides",
+        "title": "Mapa da Aventura: Nave Contra Asteroides",
         "bookPreview": true,
         "items": []
       }
     },
     {
       "key": "video-uma-vez-e-sempre",
-      "plannedVideo": "Título: Compare uma vez e sempre\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Mover a nave um pouquinho em Ao iniciar, clicar em Começar o jogo e mostrar a nave andar um pouquinho e parar, com Ações feitas em 1 e o botão em Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar a nave até sair da cena, com Ações feitas em 24. Meme na comparação: na frase da mochila e da bicicleta, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy fechando a mochila uma vez e depois pedalando sem parar, com a legenda \"Ao iniciar: uma vez · Enquanto estiver rodando: sempre\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare uma vez e sempre\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Mover a nave um pouquinho em Ao iniciar, clicar em Começar o jogo e mostrar a nave andar um pouquinho e parar, com Ações feitas em 1 e o botão em Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar a nave até sair da cena, com Ações feitas em 24. Meme na comparação: na frase da mochila e da bicicleta, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy fechando a mochila uma vez e depois pedalando sem parar, com a legenda \"Ao iniciar: uma vez · Enquanto estiver rodando: sempre\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-uma-vez-e-sempre",
@@ -1765,12 +1765,12 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira a etapa."
+        "text": "Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira esta parte."
       }
     },
     {
       "key": "video-coordenadas",
-      "plannedVideo": "Título: Escolha onde a nave aparece\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os controles x e y. Aumentar só o x de 400 para 480 e mostrar a nave ir para a direita com o y igual. Aumentar só o y de 40 para 120 e mostrar a nave descer. Colocar x em 0 e y em 0 e mostrar a nave no canto de cima, à esquerda. Não chamar x 400 de centro da nave; a referência é o canto superior esquerdo de sua caixa. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escolha onde a nave aparece\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os controles x e y. Aumentar só o x de 400 para 480 e mostrar a nave ir para a direita com o y igual. Aumentar só o y de 40 para 120 e mostrar a nave descer. Colocar x em 0 e y em 0 e mostrar a nave no canto de cima, à esquerda. Não chamar x 400 de centro da nave; a referência é o canto superior esquerdo de sua caixa. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-coordenadas",
@@ -1819,7 +1819,7 @@
     },
     {
       "key": "video-criar-e-mostrar",
-      "plannedVideo": "Título: Compare criar e mostrar\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Criar a nave e mostrar a nave nos bastidores, com a tela do jogo ainda vazia. Clicar em Mostrar a nave na tela e mostrar a mesma nave na tela do jogo. Meme na comparação: na frase da apresentação da escola, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy se arrumando atrás de uma cortina e depois entrando no palco, com a legenda \"bastidores · palco\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare criar e mostrar\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Criar a nave e mostrar a nave nos bastidores, com a tela do jogo ainda vazia. Clicar em Mostrar a nave na tela e mostrar a mesma nave na tela do jogo. Meme na comparação: na frase da apresentação de teatro para a família, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy se arrumando atrás de uma cortina e depois entrando no palco, com a legenda \"bastidores · palco\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-e-mostrar",
@@ -1865,7 +1865,7 @@
     },
     {
       "key": "video-desenho-por-quadro",
-      "plannedVideo": "Título: Compare o desenho no começo e em cada quadro\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy folheando um bloquinho com a nave desenhada um pouco mais à frente em cada folha, com a legenda \"1 quadro, 2 quadros, 3 quadros\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare o desenho no começo e em cada quadro\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy folheando um bloquinho com a nave desenhada um pouco mais à frente em cada folha, com a legenda \"1 quadro, 2 quadros, 3 quadros\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-primeira-nave.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-desenho-por-quadro",
@@ -1983,7 +1983,7 @@
       "key": "abertura",
       "title": "Jogue antes de construir",
       "intent": "presentation",
-      "objective": "Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima seção.",
+      "objective": "Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima parte.",
       "blockKeys": ["video-abertura", "fala-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1995,9 +1995,9 @@
     },
     {
       "key": "seu-caderno-do-aluno",
-      "title": "Seu Caderno do Aluno",
+      "title": "Seu Mapa da Aventura",
       "intent": "material",
-      "objective": "O caderno reúne os passos da montagem. Você pode consultar quando precisar. Para continuar, clique em Próxima seção.",
+      "objective": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
       "blockKeys": ["video-seu-caderno-do-aluno", "fala-seu-caderno-do-aluno", "caderno"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2025,7 +2025,7 @@
       "key": "montar-areas-e-tela",
       "title": "Prepare a tela do jogo",
       "intent": "application",
-      "objective": "Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira a etapa.",
+      "objective": "Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira esta parte.",
       "blockKeys": ["video-montar-areas-tela", "fala-montar-areas-e-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,

@@ -1,6 +1,6 @@
 # Roteiro falado: Cadê Todo Mundo? | Aula 1
 
-Um vídeo por seção. As falas em citação são lidas; as notas de tela são só para quem grava. Aponte para a atividade ao dizer "aqui", sem explicar layouts ou controles da plataforma. O botão atual se chama **Próxima seção**. O conteúdo precisa ser regravado antes de substituir os vídeos publicados.
+Um vídeo por seção. As falas em citação são lidas; as notas de tela são só para quem grava. Aponte para a atividade ao dizer "aqui", sem explicar layouts ou controles da plataforma. O botão atual se chama **Próxima parte**. O conteúdo precisa ser regravado antes de substituir os vídeos publicados.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("então", "por isso", "mas", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).
 
@@ -8,7 +8,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 35 a 45 segundos.
 
-**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No fim, apontar para a área jogável ao passar a vez e para **Próxima seção**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No fim, apontar para a área jogável ao passar a vez e para **Próxima parte**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
 
@@ -18,29 +18,29 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > E os outros dois? Esses eu deixo para você descobrir.
 >
-> Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima seção.”
+> Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima parte.”
 
-**Zappy abaixo do vídeo:** “Sua vez! Jogue a versão pronta e encontre os três personagens. Depois, clique em Próxima seção.”
+**Zappy abaixo do vídeo:** “Sua vez! Jogue a versão pronta e encontre os três personagens. Depois, clique em Próxima parte.”
 
 **Conferência de produção:** o vídeo é uma demonstração: mostra como se joga com UM achado, sem revelar os outros esconderijos, e só no fim passa a vez. A seção exige assistir ao vídeo e encontrar os três personagens. A cópia jogável é independente do projeto de construção. Pausa, replay, ampliação e reinício ficam no Como Fazer.
 
-## 2. Seu Caderno do Aluno
+## 2. Seu Mapa da Aventura
 
 **Duração alvo:** 25 a 35 segundos.
 
-**Na tela:** mostrar a capa e a página de orientação do caderno real. No "Olha aqui", apontar o caderno. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
+**Na tela:** mostrar a capa e a página de orientação do Mapa da Aventura, o caderno real. No "Olha aqui", apontar o mapa. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
 
 **Narração:**
 
-> “Olha aqui: este é o seu Caderno do Aluno! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o caderno.
+> “Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o mapa.
 >
-> Se quiser, você pode ler aqui mesmo, na aula. E, se preferir, também pode clicar em Baixar para guardar o caderno e consultar onde quiser.
+> Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.
 >
-> Agora clique em Próxima seção.”
+> Agora clique em Próxima parte.”
 
-**Zappy abaixo do vídeo:** “Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.”
+**Zappy abaixo do vídeo:** “Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.”
 
-**Conferência de produção:** o caderno é consulta opcional, e a fala oferece as duas escolhas como convite: ler na aula ou baixar para guardar. A fala não diz que a pessoa não precisa baixar ou imprimir: quem ouve entende como uma ordem para não fazer. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e a baixar o PDF.
+**Conferência de produção:** o caderno, que a criança vê como Mapa da Aventura, é consulta opcional, e a fala oferece as duas escolhas como convite: ler aqui mesmo ou baixar para guardar. A fala não diz que a pessoa não precisa baixar ou imprimir: quem ouve entende como uma ordem para não fazer. Só o vídeo é necessário para avançar. O tutorial de materiais ensina a folhear e a baixar o PDF.
 
 ## 3. O que um toque faz?
 
@@ -60,7 +60,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Por isso, eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
 
 **Zappy abaixo do vídeo:** “Sua vez! Faça os dois testes no mesmo arbusto e repare no que muda.”
 
@@ -74,7 +74,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Narração:**
 
-> “Lembra da experiência da seção anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso no seu jogo!
+> “Lembra da experiência da parte anterior? O arbusto só ficou invisível depois que você ligou a reação ao toque. Agora a gente vai fazer isso no seu jogo!
 >
 > Primeiro, toque num esconderijo do seu jogo. Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele.
 >
@@ -96,7 +96,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0.”
 
-**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta etapa** e mostrar **Objetivo da etapa cumprido!**. Mostrar **Salvo**, abrir **Enviar para o professor**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir aula**.
+**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Mostrar **Salvo**, abrir **Enviar para o guia**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir fase**.
 
 **Narração:**
 
@@ -104,12 +104,12 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se ninguém aparecer, confira se o bloco está encaixado dentro de Quando clicar ou tocar, se o nome é escolhido e se o número é 0. E, se sempre some o mesmo esconderijo, é porque o bloco ficou com o nome de um esconderijo só: troque para escolhido. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o professor e confirme em Enviar.
+> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar.
 >
-> Quando o envio terminar, clique em Concluir aula.”
+> Quando o envio terminar, clique em Concluir fase.”
 
-**Zappy abaixo do vídeo:** “Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta etapa antes de enviar para o professor.”
+**Zappy abaixo do vídeo:** “Agora monte a regra do toque no seu jogo! Depois, teste nos esconderijos e clique em Verificar esta parte antes de enviar para o guia.”
 
-**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite ___ com ___% de visibilidade e nasce com jogador e 50. A opção escolhido só existe com o bloco dentro do evento preparado e aparece no fim da lista de sprites, depois dos seis sprites com imagem; é preciso rolar a lista. A fala não diz que o jardim e os personagens estão preparados: a criança vê o que já está no projeto. O que vem pronto entra na conversa só quando ajuda a ação, como o evento que já está na área Quando acontecer. A seção exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.
+**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite ___ com ___% de visibilidade e nasce com jogador e 50. A opção escolhido só existe com o bloco dentro do evento preparado e aparece no fim da lista de sprites, depois dos seis sprites com imagem; é preciso rolar a lista. A fala não diz que o jardim e os personagens estão preparados: a criança vê o que já está no projeto. O que vem pronto entra na conversa só quando ajuda a ação, como o evento que já está na área Quando acontecer. A seção exige vídeo, aprovação em **Verificar esta parte** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.

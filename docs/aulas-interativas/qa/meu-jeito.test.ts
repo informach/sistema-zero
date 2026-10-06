@@ -55,7 +55,10 @@ for (const [index, manifest] of manifests.entries())
         expect(falasSecao(aulasMeuJeito[index]!.sections[i]!).join(' ')).toMatch(/confira|compare/i)
       }
     }
-    expect(script).not.toMatch(/Dia 5|Desafio do Primeiro Jogo|Verificar esta etapa|Meu jogo novo/)
+    // As aplicações externas não usam a verificação da fase (antes Verificar esta etapa).
+    expect(script).not.toMatch(
+      /Dia 5|Desafio do Primeiro Jogo|Verificar esta (?:etapa|parte)|Meu jogo novo/,
+    )
     if (index === 7) {
       expect(script).toContain('Publicado!') // A ferramenta externa usa sua própria confirmação.
       expect(script).toContain('Abrir o jogo')
@@ -279,7 +282,7 @@ for (const m of manifests)
   }
 // Decisão do responsável, 06/10/2026: o vídeo da experiência é uma demonstração na primeira pessoa.
 const PASSA_A_VEZ =
-  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.'
+  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
 /** Começo de frase que dá ordem a quem assiste. "Olha aqui:" é a abertura pedida e fica de fora. */
 const ORDEM =
   /^(Clique|Mude|Observe|Escolha|Ligue|Desligue|Coloque|Deixe|Aumente|Compare|Troque|Faça|Olhe|Veja|Repare|Use|Toque|Pinte|Volte|Experimente|Confira|Aproxime|Marque|Ajuste|Traga|Tente|Mexa)\b/
@@ -314,13 +317,78 @@ test('o jogo pronto apresenta o jogo, mostra um exemplo e só passa a vez no fim
   const jogo = aulasMeuJeito[0]!.sections.find((s) => s.play)!
   const fala = falasSecao(jogo)
   // Diz o que será construído antes de apresentar a versão pronta; o exemplo mostra o objetivo.
-  expect(fala[0]?.startsWith('Neste curso, você vai ')).toBe(true)
+  expect(fala[0]?.startsWith('Nesta aventura, você vai ')).toBe(true)
   expect(fala[0]).toContain('Esta é a versão pronta')
   expect(fala[1]?.startsWith('Olha aqui: ')).toBe(true)
   expect(fala[1]).toContain('O objetivo é')
   expect(fala.at(-1)?.startsWith('Agora é a sua vez: jogue')).toBe(true)
-  expect(fala.at(-1)).toMatch(/Quando terminar, clique em Próxima seção\.$/)
+  expect(fala.at(-1)).toMatch(/Quando terminar, clique em Próxima parte\.$/)
   expect(frases(fala.slice(0, -1)).filter((f) => ORDEM.test(f))).toEqual([])
+})
+// Vocabulário da aventura (Diretrizes, seção 6, 06/10/2026). O validador de roteiros e o teste
+// `vocabulario-crianca` barram as palavras da escola na narração e nos manifestos; aqui a fonte
+// também não pode falar de tarefa escolar nem dizer o que é opcional como negação.
+const ESCOLA_E_TAREFA =
+  /\b(?:aulas?|cursos?|professor(?:a|as|es)?|alun[oa]s?|seç(?:ão|ões)|cadernos?|etapas?|nota m[ií]nima|sala|atividades?|entregas?|entregue|entregou|trabalhos?)\b/i
+const textos = (valor: unknown): string[] =>
+  typeof valor === 'string'
+    ? [valor]
+    : Array.isArray(valor)
+      ? valor.flatMap(textos)
+      : valor && typeof valor === 'object'
+        ? Object.values(valor).flatMap(textos)
+        : []
+test('o que a criança vê e ouve fala de aventura, fase, parte, mapa e guia', () => {
+  for (const lesson of aulasMeuJeito) {
+    const visiveis = [
+      lesson.title,
+      ...lesson.sections.flatMap((s) => [
+        s.title,
+        s.bridge,
+        ...falasSecao(s),
+        ...textos(s.activity),
+        ...textos(s.questions),
+      ]),
+    ]
+    for (const texto of visiveis) {
+      expect(texto, lesson.slug).not.toMatch(ESCOLA_E_TAREFA)
+      expect(texto, lesson.slug).not.toMatch(/não precisa|Próxima seção|Concluir aula/i)
+    }
+  }
+  // Envio pela galeria: os rótulos novos, na ordem em que aparecem na tela.
+  for (const [index, lesson] of aulasMeuJeito.entries()) {
+    const envio = falasSecao(lesson.sections.at(-1)!).join(' ')
+    const tool = index >= 1 && index <= 4 ? 'Pinta' : 'Estúdio'
+    let desde = 0
+    for (const rotulo of [
+      `Escolher no ${tool}`,
+      `Minhas criações do ${tool}`,
+      'Recado para o guia',
+      `Enviar para o guia (${index === 4 ? 2 : 1})`,
+      'Recebido pelo seu guia.',
+      'Concluir fase.',
+    ]) {
+      const onde = envio.indexOf(rotulo, desde)
+      expect(onde, `${lesson.slug}: ${rotulo}`).toBeGreaterThan(-1)
+      desde = onde
+    }
+  }
+})
+test('o Mapa da Aventura é apresentado à criança, com ler e baixar como convite', () => {
+  const secao = aulasMeuJeito[0]!.sections.find((s) => s.materials)!
+  expect(secao.title).toBe('Seu Mapa da Aventura')
+  const fala = falasSecao(secao)
+  expect(fala[0]?.startsWith('Olha aqui: este é o seu Mapa da Aventura!')).toBe(true)
+  expect(fala).toContain(
+    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.',
+  )
+  expect(secao.bridge).toBe(
+    'Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.',
+  )
+  const material = conteudoBloco(manifests[0]!.blocks.find((b) => b.key === 'materiais-caderno'))
+  expect(material?.kind === 'materials' ? material.title : undefined).toBe(
+    'Mapa da Aventura: O Jogo do Meu Jeito',
+  )
 })
 test('todos os percursos de experiência estão cobertos', () => {
   const scenes = manifests

@@ -13,7 +13,7 @@ describe('o que o menu oferece', () => {
   it('mostra só as ferramentas que a criança pode abrir', () => {
     // A régua é a mesma da página de destino: o menu não leva a porta trancada.
     expect(rotulos('/criar', ['estudio-completo', 'pinta'])).toEqual([
-      'Meus trabalhos',
+      'Minhas criações',
       'Estúdio',
       'Pinta',
     ])
@@ -30,7 +30,7 @@ describe('o que o menu oferece', () => {
     // Um soluço de rede não pode encolher o menu na cara da criança; a página de
     // destino já tem a tela de "tente de novo".
     expect(rotulos('/criar', null)).toEqual([
-      'Meus trabalhos',
+      'Minhas criações',
       'Estúdio',
       'Pinta',
       'Pensa',

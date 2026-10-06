@@ -27,7 +27,7 @@ export function KidsLessonProgress({
       <div
         className="sz-progress flex-1"
         role="progressbar"
-        aria-label="Progresso da aula"
+        aria-label="Progresso da fase"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(vista.percent)}

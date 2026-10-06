@@ -40,7 +40,7 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 **Zappy na página (não gravar):** Crie pontos com valor 0 em Ao iniciar.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No Ao iniciar, crie a variável pontos com valor 0.
 
@@ -52,7 +52,7 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 **Zappy na página (não gravar):** Mostre Pontos: lendo a variável pontos somente dentro de jogando.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.
 
@@ -74,7 +74,7 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 **Zappy na página (não gravar):** Some 1 em pontos dentro de um relógio próprio protegido por Se jogando.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.
 - Use um único Somar em variável pontos no projeto inteiro.
@@ -87,7 +87,7 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 **Zappy na página (não gravar):** Monte a frase com texto, valor de pontos e texto no subtítulo final.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No subtítulo do andar de fim, junte texto, o valor de pontos e texto, nessa ordem.
 
@@ -103,13 +103,13 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 ### Seção 8. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - No Ao iniciar, crie a variável pontos com valor 0.
 - Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.

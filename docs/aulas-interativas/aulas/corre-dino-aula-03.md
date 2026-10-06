@@ -39,7 +39,7 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 
 **Zappy na página (não gravar):** Aplique a gravidade depois da floresta e antes do desenho.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Deixe a gravidade depois da floresta.
 - Aplique gravidade ao dino dentro do quadro, antes de desenhar.
@@ -62,7 +62,7 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 
 **Zappy na página (não gravar):** Teste espaço, seta para cima e toque, com gravidade antes do controle.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Aplique gravidade ao dino antes do controle do pulo.
 - Deixe a gravidade depois da floresta.
@@ -80,13 +80,13 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 
 ### Seção 6. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - Aplique gravidade ao dino antes do controle do pulo.
 - Controle o dino com a sua força de pulo, antes de desenhá-lo.

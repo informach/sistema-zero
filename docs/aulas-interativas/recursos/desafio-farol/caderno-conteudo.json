@@ -1,7 +1,7 @@
 [
   {
     "id": "p1",
-    "kicker": "Caderno do Aluno",
+    "kicker": "Mapa da Aventura",
     "title": "A Chave do Farol",
     "subtitle": "Um barco precisa chegar à costa. Você vai programar as regras para a aventura acontecer.",
     "items": [
@@ -12,7 +12,7 @@
       {
         "kind": "box",
         "title": "Use quando precisar",
-        "text": "Este caderno reúne os caminhos dos blocos, os encaixes e os testes. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Leia na aula ou baixe para guardar e consultar onde quiser.",
+        "text": "Este mapa reúne os caminhos dos blocos, os encaixes e os testes. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Leia na tela ou baixe para guardar e consultar onde quiser.",
         "tone": "note"
       },
       {
@@ -35,7 +35,7 @@
     "items": [
       {
         "kind": "text",
-        "text": "Na experiência da aula, cada repetição do jogo é um <b>quadro</b>. O <b>x</b> mostra onde o personagem está."
+        "text": "Na experiência, cada repetição do jogo é um <b>quadro</b>. O <b>x</b> mostra onde o personagem está."
       },
       {
         "kind": "step",
@@ -50,7 +50,7 @@
       {
         "kind": "step",
         "title": "3. Deixe rodar",
-        "text": "Clique em <b>Rodar</b> e veja o personagem andar. Depois clique em <b>Próxima seção</b> para montar o movimento no seu jogo."
+        "text": "Clique em <b>Rodar</b> e veja o personagem andar. Depois clique em <b>Próxima parte</b> para montar o movimento no seu jogo."
       }
     ]
   },
@@ -79,7 +79,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Espere o jogo atualizar e segure uma seta da tela. No computador, pode clicar no jogo e usar o teclado. Se não andar, confira o nome personagem e o encaixe dentro de A cada quadro do jogo. Depois clique em <b>Verificar esta etapa</b>, espere <b>Salvo</b> e clique em <b>Próxima seção</b>."
+        "text": "Espere o jogo atualizar e segure uma seta da tela. No computador, pode clicar no jogo e usar o teclado. Se não andar, confira o nome personagem e o encaixe dentro de A cada quadro do jogo. Depois clique em <b>Verificar esta parte</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -108,7 +108,7 @@
       {
         "kind": "box",
         "title": "Verifique esta parte",
-        "text": "Clique em <b>Verificar esta etapa</b>: ela confere se o movimento continua no lugar, com qualquer velocidade. Quando aparecer <b>Objetivo da etapa cumprido!</b>, espere <b>Salvo</b> e clique em <b>Próxima seção</b>.",
+        "text": "Clique em <b>Verificar esta parte</b>: ela confere se o movimento continua no lugar, com qualquer velocidade. Quando aparecer <b>Objetivo cumprido!</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>.",
         "tone": "test"
       }
     ]
@@ -132,14 +132,14 @@
       {
         "kind": "box",
         "title": "Da experiência para o seu jogo",
-        "text": "Depois dos dois testes, clique em <b>Próxima seção</b>. No seu jogo, o personagem também sai pela beirada. O limite vai logo abaixo do bloco de movimento.",
+        "text": "Depois dos dois testes, clique em <b>Próxima parte</b>. No seu jogo, o personagem também sai pela beirada. O limite vai logo abaixo do bloco de movimento.",
         "tone": "experience"
       }
     ]
   },
   {
     "id": "p3",
-    "kicker": "Dia 1 · Montagem e entrega",
+    "kicker": "Dia 1 · Montagem e envio",
     "title": "Mantenha o personagem na tela",
     "subtitle": "O personagem anda. Agora ele precisa continuar inteiro na tela quando chega ao limite.",
     "items": [
@@ -166,7 +166,7 @@
       },
       {
         "kind": "delivery",
-        "finish": "Concluir aula"
+        "finish": "Concluir fase"
       }
     ]
   },
@@ -179,7 +179,7 @@
       {
         "kind": "text",
         "title": "",
-        "text": "Na experiência da aula, acompanhe <b>temChave</b>. Uma variável guarda um valor que pode mudar. Aqui, <b>falso</b> quer dizer que o personagem ainda não está com a chave."
+        "text": "Na experiência, acompanhe <b>temChave</b>. Uma variável guarda um valor que pode mudar. Aqui, <b>falso</b> quer dizer que o personagem ainda não está com a chave."
       },
       {
         "kind": "step",
@@ -194,7 +194,7 @@
       {
         "kind": "step",
         "title": "3. Afaste e recomece",
-        "text": "Clique em <b>Afastar</b> e olhe temChave. Depois clique em <b>Recomeçar a partida</b> e confira o que voltou ao começo. Para construir essa regra no seu jogo, clique em <b>Próxima seção</b>."
+        "text": "Clique em <b>Afastar</b> e olhe temChave. Depois clique em <b>Recomeçar a partida</b> e confira o que voltou ao começo. Para construir essa regra no seu jogo, clique em <b>Próxima parte</b>."
       },
       {
         "kind": "box",
@@ -223,7 +223,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Leve o personagem até a chave: ela deve sumir. Clique em <b>Atualizar</b>, logo acima do jogo: a chave volta ao chão. Depois clique em <b>Verificar esta etapa</b>, espere <b>Salvo</b> e clique em <b>Próxima seção</b>."
+        "text": "Leve o personagem até a chave: ela deve sumir. Clique em <b>Atualizar</b>, logo acima do jogo: a chave volta ao chão. Depois clique em <b>Verificar esta parte</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -250,7 +250,7 @@
       {
         "kind": "box",
         "title": "Verifique esta parte",
-        "text": "Você ainda não vê temChave no jogo: a porta do farol vai usá-la no Dia 3. Clique em <b>Verificar esta etapa</b>, espere <b>Salvo</b> e clique em <b>Próxima seção</b>.",
+        "text": "Você ainda não vê temChave no jogo: a porta do farol vai usá-la no Dia 3. Clique em <b>Verificar esta parte</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>.",
         "tone": "test"
       }
     ]
@@ -270,7 +270,7 @@
   },
   {
     "id": "coleta-testes",
-    "kicker": "Dia 2 · Teste e entrega",
+    "kicker": "Dia 2 · Teste e envio",
     "title": "Teste a coleta e envie",
     "subtitle": "Retire a chave, guarde a informação e conte o que aconteceu a quem está jogando.",
     "items": [
@@ -281,7 +281,7 @@
       },
       {
         "kind": "delivery",
-        "finish": "Concluir aula"
+        "finish": "Concluir fase"
       }
     ]
   },
@@ -294,7 +294,7 @@
       {
         "kind": "text",
         "title": "",
-        "text": "Uma <b>condição</b> é uma pergunta que o jogo confere. Na experiência da aula, veja o mostrador <b>temChave</b>, a pergunta da porta e as duas respostas."
+        "text": "Uma <b>condição</b> é uma pergunta que o jogo confere. Na experiência, veja o mostrador <b>temChave</b>, a pergunta da porta e as duas respostas."
       },
       {
         "kind": "step",
@@ -309,7 +309,7 @@
       {
         "kind": "box",
         "title": "Da experiência para o seu jogo",
-        "text": "Depois dos dois testes, clique em <b>Próxima seção</b>. Você vai montar primeiro o aviso de falta da chave e, na seção seguinte, completar a luz e a chegada do barco.",
+        "text": "Depois dos dois testes, clique em <b>Próxima parte</b>. Você vai montar primeiro o aviso de falta da chave e, na parte seguinte, completar a luz e a chegada do barco.",
         "tone": "experience"
       }
     ]
@@ -333,7 +333,7 @@
       {
         "kind": "step",
         "title": "3. Prepare a resposta sem chave",
-        "text": "Logo abaixo do bloco Se, aparecem <b>+ senão se</b> e <b>+ senão</b>. Clique no <b>+</b> de <b>senão</b>. Com a parte <b>senão</b> à vista, em <b>Programação &gt; Variáveis</b>, pegue <b>Alterar variável para</b> e solte dentro de <b>senão</b>. Escolha <b>aviso</b>. Para trocar o número desse bloco por um texto, abra <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima dele. Apague <b>Olá</b> e escreva:<br/><b>A porta não abriu. Falta a chave.</b>"
+        "text": "Logo abaixo do bloco Se, aparecem <b>+ senão se</b> e <b>+ senão</b>. Clique no <b>+</b> de <b>senão</b>. Com o espaço do <b>senão</b> à vista, em <b>Programação &gt; Variáveis</b>, pegue <b>Alterar variável para</b> e solte dentro de <b>senão</b>. Escolha <b>aviso</b>. Para trocar o número desse bloco por um texto, abra <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima dele. Apague <b>Olá</b> e escreva:<br/><b>A porta não abriu. Falta a chave.</b>"
       },
       {
         "kind": "step",
@@ -343,7 +343,7 @@
       {
         "kind": "box",
         "title": "Verifique esta parte",
-        "text": "Clique em <b>Verificar esta etapa</b>. Corrija as pendências e verifique de novo. Quando aparecer <b>Objetivo da etapa cumprido!</b>, espere <b>Salvo</b> e clique em <b>Próxima seção</b>. O envio fica para depois de completar a resposta com chave.",
+        "text": "Clique em <b>Verificar esta parte</b>. Corrija as pendências e verifique de novo. Quando aparecer <b>Objetivo cumprido!</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>. O envio fica para depois de completar a resposta com chave.",
         "tone": "test"
       }
     ]
@@ -352,12 +352,12 @@
     "id": "p7",
     "kicker": "Dia 3 · Resposta com chave",
     "title": "Acenda o farol com a chave",
-    "subtitle": "Com a chave, o farol ainda não acende: a parte então está vazia. Complete essa resposta no mesmo Se.",
+    "subtitle": "Com a chave, o farol ainda não acende: o espaço do então está vazio. Complete essa resposta no mesmo Se.",
     "items": [
       {
         "kind": "step",
         "title": "4. Ligue a chegada do barco",
-        "text": "Deixe à vista a parte <b>então</b>, ainda vazia.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b>, solte dentro de <b>então</b> e escolha <b>ganhou</b>. Para trocar o número desse bloco, abra <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b> e solte em cima dele. A variável ganhou já veio preparada: quando ela fica verdadeira, o barco começa a chegar."
+        "text": "Deixe à vista o espaço do <b>então</b>, ainda vazio.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b>, solte dentro de <b>então</b> e escolha <b>ganhou</b>. Para trocar o número desse bloco, abra <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b> e solte em cima dele. A variável ganhou já veio preparada: quando ela fica verdadeira, o barco começa a chegar."
       },
       {
         "kind": "step",
@@ -382,7 +382,7 @@
   },
   {
     "id": "p8",
-    "kicker": "Dia 3 · Teste e entrega",
+    "kicker": "Dia 3 · Teste e envio",
     "title": "Teste a aventura inteira",
     "subtitle": "A condição está montada. Confira se cada situação recebe a resposta certa.",
     "items": [
@@ -411,7 +411,7 @@
       },
       {
         "kind": "delivery",
-        "finish": "Próxima seção"
+        "finish": "Próxima parte"
       }
     ]
   },
@@ -434,7 +434,7 @@
       {
         "kind": "step",
         "title": "Teste",
-        "text": "Clique em <b>Atualizar</b>, vá ao farol sem a chave, pegue a chave e volte ao farol. Leia as suas mensagens. Se um desenho ficar estranho, clique de novo no nome da imagem e escolha um personagem. Depois clique em <b>Próxima seção</b>."
+        "text": "Clique em <b>Atualizar</b>, vá ao farol sem a chave, pegue a chave e volte ao farol. Leia as suas mensagens. Se um desenho ficar estranho, clique de novo no nome da imagem e escolha um personagem. Depois clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -442,12 +442,12 @@
     "id": "p9",
     "kicker": "Dia 3 · Publicação",
     "title": "Publique seu jogo",
-    "subtitle": "Você enviou o jogo para o professor. Agora outras pessoas também podem jogar.",
+    "subtitle": "Você enviou o jogo para o seu guia. Agora outras pessoas também podem jogar.",
     "items": [
       {
         "kind": "step",
         "title": "1. Abra Compartilhar",
-        "text": "Continue no mesmo Estúdio da aula. No alto do Estúdio, clique em <b>Compartilhar</b>. Na aula, ele pode aparecer só como um ícone. O resumo do projeto já vem preenchido. Deixe como está."
+        "text": "Continue no mesmo Estúdio da fase. No alto do Estúdio, clique em <b>Compartilhar</b>. Ele pode aparecer só como um ícone. O resumo do projeto já vem preenchido. Deixe como está."
       },
       {
         "kind": "step",
@@ -457,18 +457,18 @@
       {
         "kind": "step",
         "title": "3. Publique e comemore",
-        "text": "Clique em <b>Publicar</b> e comemore: <b>Seu jogo está no Mural!</b> Clique em <b>Copiar link de jogar</b> e mande para a sua família e seus amigos. Depois clique em <b>Fechar</b> e em <b>Concluir aula</b>."
+        "text": "Clique em <b>Publicar</b> e comemore: <b>Seu jogo está no Mural!</b> Clique em <b>Copiar link de jogar</b> e mande para a sua família e seus amigos. Depois clique em <b>Fechar</b> e em <b>Concluir fase</b>."
       },
       {
         "kind": "box",
         "title": "Quer rever um passo?",
-        "text": "Na seção de publicação, abra o link <b>Como publicar seu jogo no Mural e copiar o link</b>. Ele leva ao Como Fazer, nossa área de ajuda. Você pode consultar o passo a passo e usar a opção de voltar para a aula.",
+        "text": "Na parte de publicação, abra o link <b>Como publicar seu jogo no Mural e copiar o link</b>. Ele leva ao Como Fazer, nossa área de ajuda. Você pode consultar o passo a passo e usar a opção de voltar para a fase.",
         "tone": "experience"
       },
       {
         "kind": "box",
         "title": "Se Compartilhar não estiver disponível",
-        "text": "Confira se terminou o envio para o professor na seção Acenda o farol com a chave. Se continuar sem conseguir, use <b>Preciso de ajuda</b> na aula e conte o que aparece. O acesso para publicar também precisa estar ativo na conta.",
+        "text": "Confira se terminou o envio para o guia na parte Acenda o farol com a chave. Se continuar sem conseguir, use <b>Preciso de ajuda</b> e conte o que aparece. O acesso para publicar também precisa estar ativo na conta.",
         "tone": "note"
       }
     ]
@@ -482,24 +482,24 @@
       {
         "kind": "box",
         "title": "Seu certificado",
-        "text": "Na aula do certificado, clique em <b>Pegar meu certificado</b>. Se já tiver emitido, use <b>Baixar certificado (PDF)</b>. Depois, clique em <b>Concluir aula</b>.",
+        "text": "Na fase do certificado, clique em <b>Pegar meu certificado</b>. Se já tiver emitido, use <b>Baixar certificado (PDF)</b>. Depois, clique em <b>Concluir fase</b>.",
         "tone": "test"
       },
       {
         "kind": "step",
-        "title": "Se travar em alguma atividade",
-        "text": "Volte ao trecho do vídeo que mostra aquele encaixe e compare com o seu projeto. Você também pode consultar a página correspondente deste caderno."
+        "title": "Se travar em alguma parte",
+        "text": "Volte ao trecho do vídeo que mostra aquele encaixe e compare com o seu projeto. Você também pode consultar a página correspondente deste mapa."
       },
       {
         "kind": "box",
         "title": "Preciso de ajuda",
-        "text": "No rodapé da seção da aula, use <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou no Dia 3. Peguei a chave, mas o farol continua apagado. Conferi o bloco temChave.</b><br/>Isso ajuda o professor a entender em que ponto você está.",
+        "text": "No rodapé da fase, use <b>Preciso de ajuda</b>. Conte o que tentou fazer e o que aconteceu. Por exemplo: <b>Estou no Dia 3. Peguei a chave, mas o farol continua apagado. Conferi o bloco temChave.</b><br/>Isso ajuda o seu guia a entender em que ponto você está.",
         "tone": "experience"
       },
       {
         "kind": "step",
-        "title": "Para guardar e para entregar",
-        "text": "<b>Salvo</b> indica que a mudança ficou guardada.<br/><b>Verificar esta etapa</b> confere os blocos pedidos na atividade.<br/><b>Enviar para o professor</b>, com a confirmação em <b>Enviar</b>, entrega seu trabalho.<br/>São passos diferentes. O caderno e o Como Fazer podem ser consultados quando precisar."
+        "title": "Para guardar e para enviar",
+        "text": "<b>Salvo</b> indica que a mudança ficou guardada.<br/><b>Verificar esta parte</b> confere os blocos pedidos.<br/><b>Enviar para o guia</b>, com a confirmação em <b>Enviar</b>, manda o seu projeto.<br/>São passos diferentes. O Mapa da Aventura e o Como Fazer podem ser consultados quando precisar."
       }
     ]
   }

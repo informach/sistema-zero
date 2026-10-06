@@ -40,7 +40,7 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 **Zappy na página (não gravar):** Crie cactos em Ao iniciar e prepare um relógio separado de 1.4 segundo.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Crie o grupo cactos em Ao iniciar.
 - Prepare o relógio de 1.4 segundo em Enquanto estiver rodando.
@@ -63,7 +63,7 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 **Zappy na página (não gravar):** Crie cactos em x 560, tamanho 44 e velocidade -5 a cada 1.4 segundo.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.
 - Deixe a criação fora de A cada quadro.
@@ -77,7 +77,7 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 **Zappy na página (não gravar):** Mova e desenhe cactos a cada quadro, depois do Dino.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Atualize o grupo cactos a cada quadro, antes de desenhá-lo.
 - Desenhe o grupo cactos a cada quadro.
@@ -85,13 +85,13 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 ### Seção 6. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - Crie o grupo cactos em Ao iniciar.
 - Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.

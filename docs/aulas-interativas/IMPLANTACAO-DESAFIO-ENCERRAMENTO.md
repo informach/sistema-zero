@@ -21,7 +21,7 @@ Esta mudança prepara o redesenho em código e arquivos de autoria. Ela não alt
 
 ## Ensaio de ponta a ponta
 
-Usar um perfil novo com acesso ao Desafio. Antes de concluir o Dia 5, o certificado permanece bloqueado. Depois do Dia 5, emitir o certificado e conferir o PDF, inclusive nome longo, assinaturas e QR. A segunda seção deve liberar nesse momento, enquanto a aula e o curso seguem incompletos. Assistir a 89% do vídeo: **Concluir aula** segue bloqueado. Chegar a 90%: a seção termina e o botão libera. Clicar nele conclui a aula e leva o curso a 100%. Abrir a oferta ou assinar não participa dessa checagem.
+Usar um perfil novo com acesso ao Desafio. Antes de concluir o Dia 5, o certificado permanece bloqueado. Depois do Dia 5, emitir o certificado e conferir o PDF, inclusive nome longo, assinaturas e QR. A segunda seção deve liberar nesse momento, enquanto a aula e o curso seguem incompletos. Assistir a 89% do vídeo: **Concluir fase** segue bloqueado. Chegar a 90%: a seção termina e o botão libera. Clicar nele conclui a aula e leva o curso a 100%. Abrir a oferta ou assinar não participa dessa checagem.
 
 Repetir a abertura da aula com um perfil que já tinha certificado emitido antes da mudança. O certificado existente deve continuar disponível. Se a aula já estiver marcada como concluída no histórico, o progresso antigo permanece concluído; a regra nova vale para quem ainda não terminou a aula.
 

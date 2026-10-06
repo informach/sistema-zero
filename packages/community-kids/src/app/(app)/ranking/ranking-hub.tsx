@@ -4,7 +4,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import {
   ArrowRight,
   Crown,
-  GraduationCap,
+  Flag,
   ListChecks,
   RefreshCw,
   Rocket,
@@ -87,7 +87,7 @@ const FONTE: Record<
   XpSourceId,
   { icone: ComponentType<{ className?: string }>; fundo: string; tinta: string; tamanho?: string }
 > = {
-  aula: { icone: GraduationCap, fundo: 'var(--tool-estudio)', tinta: 'var(--tool-estudio-fg)' },
+  aula: { icone: Flag, fundo: 'var(--tool-estudio)', tinta: 'var(--tool-estudio-fg)' },
   publicar: { icone: Rocket, fundo: 'var(--tool-pensa)', tinta: 'var(--tool-pensa-fg)' },
   quiz: {
     icone: ListChecks,
@@ -221,7 +221,7 @@ function GeneralRanking({
         icon={Sparkles}
         titleAs="h2"
         title="O placar está só começando!"
-        description="Complete uma atividade que dá XP para aparecer aqui junto com os outros criadores."
+        description="Conclua uma fase ou passe num quiz para ganhar XP e aparecer aqui junto com os outros criadores."
       />
     )
   }
@@ -441,7 +441,7 @@ function HowToClimb({ canPublish }: { canPublish: boolean }) {
       <KidsSectionHeader
         id="como-subir-no-placar"
         title="XP é o que move o placar"
-        subtitle="Cada aula concluída, quiz acertado e jogo publicado no Mural soma. Continue criando e a sua posição sobe sozinha."
+        subtitle="Cada fase concluída, quiz acertado e jogo publicado no Mural soma. Continue criando e a sua posição sobe sozinha."
         actions={
           <Link
             href="/cursos"

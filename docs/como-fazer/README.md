@@ -9,7 +9,7 @@
 **"Como fazer"** é uma biblioteca de tutoriais curtos, por tarefa, separada dos cursos. A criança
 chega por três portas: o atalho no rodapé do menu (acima dos Recados), o ícone de interrogação na
 barra de cima do celular, e links `/como-fazer/<slug>` dentro das aulas (bloco de materiais e
-texto), que abrem em **nova aba** com o botão "Voltar para a aula".
+texto), que abrem na **mesma aba** com o botão "Voltar para a fase".
 
 - **Todo perfil infantil vê**, inclusive o gratuito e o do Desafio. Ler um tutorial **nunca libera**
   Pinta, Estúdio, Molda ou Pensa: quando o tutorial fala de uma ferramenta que o perfil não tem, a
@@ -26,7 +26,7 @@ texto), que abrem em **nova aba** com o botão "Voltar para a aula".
 
 Voz de "você", frases curtas, um passo por cartão. Sem travessão. Sem jargão de IA.
 
-1. **Nome de botão só do jeito que está na tela**, em negrito: **Próxima seção**, **Mais opções**,
+1. **Nome de botão só do jeito que está na tela**, em negrito: **Próxima parte**, **Mais opções**,
    **Usar no Estúdio**. Antes de escrever, confira em
    `docs/aulas-interativas/REFERENCIA-PLATAFORMA.md` (o menu, as ações de plataforma, o menu ⋯ do
    Estúdio, a lista de projetos, o Pinta), em `packages/studio/src/core/i18n/pt-BR.ts`, em
@@ -78,6 +78,17 @@ de cada ambiente. Houve backup, comparação com a versão anterior, transação
 e 44 leituras HTTP 200 por ambiente. Recibos locais: `.cache/activity-*-help-*.json`.
 O mapa está em
 [revisão do curso](../aulas-interativas/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
+
+Na revisão de **06/10/2026** os 42 tutoriais passaram para o **vocabulário da aventura**, o mesmo
+das telas do Kids ([Diretrizes pedagógicas](../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md),
+seção 6): fase, parte, aventura, guia, Mapa da Aventura e Explorar no lugar de aula, seção, curso,
+professor, Caderno do Aluno e Aprender. Mudaram 13 títulos, resumos, passos, textos alternativos,
+palavras alternativas e os nomes dos botões; slugs, ids dos passos, links e imagens ficaram iguais.
+As palavras antigas que a criança ainda digita por costume (aula, curso, professor, caderno,
+atividade) ficam só nas palavras alternativas, para a busca continuar achando o tutorial. Tutorial
+novo segue o mesmo vocabulário. Os prints ainda mostram os rótulos antigos: a lista do que refazer
+está em [PRINTS-A-REFAZER-2026-10-06.md](PRINTS-A-REFAZER-2026-10-06.md).
+
 `bun docs/como-fazer/validar.ts` roda o **mesmo validador do members** sobre o arquivo e confere
 os slugs cruzados (`related` e links no corpo). Rode antes de importar.
 

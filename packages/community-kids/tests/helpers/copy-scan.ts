@@ -1,5 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
+import ts from 'typescript'
 
 /**
  * Máquina compartilhada dos guardas de COPY (`copy-sem-travessao`, `copy-vocabulario`).
@@ -85,4 +86,89 @@ export function varrerCopy(casa: (texto: string) => boolean): string[] {
     }
   }
   return achados
+}
+
+export interface LiteralVisivel {
+  linha: number
+  texto: string
+  /**
+   * Quem recebe o texto, quando isso decide se ele é de tela: `erro` (argumento de
+   * `new …Error(…)`), `log` (`console.*`), `tipo` (literal de um tipo TS) ou `modulo`
+   * (caminho de `import`/`export`).
+   */
+  papel?: 'erro' | 'log' | 'tipo' | 'modulo'
+}
+
+/**
+ * O texto de TELA de um arquivo, lido pelo parser do próprio TypeScript (TSX de verdade, sem
+ * regex): os literais de string, as crases (cada `${…}` vira um espaço) e o texto solto de JSX
+ * (inclusive o que fica colado numa expressão, como `Voltar à seção: {titulo}`). Comentário
+ * não é nó da árvore, então fica de fora sozinho. É a régua do guarda de vocabulário da
+ * criança (`copy-vocabulario`), que precisa ignorar o CÓDIGO: `const curso = …`, `/cursos/…` e o
+ * `lessonId` são lógica e continuam com os nomes de sempre.
+ */
+export function literaisVisiveis(fonte: string, nome = 'arquivo.tsx'): LiteralVisivel[] {
+  const tipo = nome.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+  const arquivo = ts.createSourceFile(nome, fonte, ts.ScriptTarget.Latest, true, tipo)
+  const saida: LiteralVisivel[] = []
+  const linhaDe = (no: ts.Node) =>
+    arquivo.getLineAndCharacterOfPosition(no.getStart(arquivo)).line + 1
+  const papelDe = (no: ts.Node): LiteralVisivel['papel'] => {
+    let atual: ts.Node = no
+    // Sobe pelas expressões que só embrulham o texto (crase, parênteses, `+`, condicional).
+    while (
+      ts.isTemplateSpan(atual.parent) ||
+      ts.isTemplateExpression(atual.parent) ||
+      ts.isParenthesizedExpression(atual.parent) ||
+      ts.isBinaryExpression(atual.parent) ||
+      ts.isConditionalExpression(atual.parent)
+    )
+      atual = atual.parent
+    const pai = atual.parent
+    if (ts.isLiteralTypeNode(pai)) return 'tipo'
+    if (
+      ts.isImportDeclaration(pai) ||
+      ts.isExportDeclaration(pai) ||
+      ts.isExternalModuleReference(pai)
+    )
+      return 'modulo'
+    if (ts.isCallExpression(pai) && ts.isImportKeyword(pai.expression)) return 'modulo'
+    if (ts.isNewExpression(pai) && /Error$/.test(pai.expression.getText(arquivo))) return 'erro'
+    if (
+      ts.isCallExpression(pai) &&
+      ts.isPropertyAccessExpression(pai.expression) &&
+      pai.expression.expression.getText(arquivo) === 'console'
+    )
+      return 'log'
+    return undefined
+  }
+  const visitar = (no: ts.Node) => {
+    if (ts.isStringLiteral(no) || ts.isNoSubstitutionTemplateLiteral(no)) {
+      saida.push({ linha: linhaDe(no), texto: no.text, papel: papelDe(no) })
+    } else if (ts.isTemplateExpression(no)) {
+      const texto = [no.head.text, ...no.templateSpans.map((span) => span.literal.text)].join(' ')
+      saida.push({ linha: linhaDe(no), texto, papel: papelDe(no) })
+    } else if (ts.isJsxText(no)) {
+      if (no.text.trim()) saida.push({ linha: linhaDe(no), texto: no.text })
+    }
+    ts.forEachChild(no, visitar)
+  }
+  visitar(arquivo)
+  return saida
+}
+
+/**
+ * Um literal que não é texto de tela: caminho, identificador, classe CSS, tipo, `import`,
+ * mensagem de `new Error(…)` (o error boundary mostra uma frase própria, nunca a do erro) ou de
+ * `console.*` (log).
+ */
+export function naoETextoDeTela({ texto, papel }: LiteralVisivel): boolean {
+  if (papel) return true
+  const t = texto.trim()
+  if (!t) return true
+  if (/^[/@.#]/.test(t)) return true
+  if (!/\s/.test(t) && /^[\w\-./:[\]#=?&%]+$/.test(t)) return true
+  const tokens = t.split(/\s+/)
+  const classe = /^[a-z0-9\-:[\]()/.%_!#=,>&@*]+$/
+  return tokens.every((token) => classe.test(token)) && tokens.some((token) => /[-:]/.test(token))
 }

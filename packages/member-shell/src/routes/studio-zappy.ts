@@ -321,7 +321,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
         return complete(
           {
             id: crypto.randomUUID(),
-            text: 'Não consegui consultar as aulas agora. Rode o jogo ou selecione o bloco e tente novamente.',
+            text: 'Não consegui consultar as fases agora. Rode o jogo ou selecione o bloco e tente novamente.',
             scope: 'needs-context',
             blockReferences: [],
             createdAt: new Date().toISOString(),

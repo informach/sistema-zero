@@ -128,7 +128,7 @@ export function evaluateExperimentation(
     feedback: !valid
       ? 'Esta descoberta mudou. Recomece a experiência; seu projeto está guardado.'
       : !temMissao
-        ? 'Esta atividade está sem descobertas para cobrar. Avise quem montou a aula.'
+        ? 'Esta experiência está sem descobertas para cobrar. Avise a equipe.'
         : // ⚠️ O PEDIDO antes do rótulo: o "Ainda falta" não pode contar o resultado do gesto que
           // ela ainda não fez ("Velocidade negativa levou para cima" é a resposta do palpite).
           ((missing ? (missing.pedido ?? missing.label) : undefined) ??

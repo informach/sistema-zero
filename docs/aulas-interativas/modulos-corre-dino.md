@@ -4,9 +4,11 @@
 
 **Descrição curta:** Construa uma corrida com Dino, cactos, pontos e dificuldade que aumenta.
 
-**Descrição:** Em 13 aulas, prepare a tela, faça o Dino pular e coloque cactos na pista. Monte sons, telas de começo e fim, reinício e placar. Depois, varie os obstáculos e ajuste a dificuldade com um limite.
+**Descrição:** Em 13 fases, prepare a tela, faça o Dino pular e coloque cactos na pista. Monte sons, telas de começo e fim, reinício e placar. Depois, varie os obstáculos e ajuste a dificuldade com um limite.
 
-Revisão local de 05/10/2026, com os vídeos de experiência reescritos como demonstração em 06/10/2026: **13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes**. Os 13 identificadores e os 13 programas originais foram preservados. O [Caderno do Aluno](../../output/pdf/corre-dino-caderno.pdf) acompanha os roteiros; [fontes e reprodução](recursos/corre-dino/README.md).
+Revisão local de 05/10/2026, com os vídeos de experiência reescritos como demonstração em 06/10/2026: **13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes**. Os 13 identificadores e os 13 programas originais foram preservados. O [Caderno do Aluno](../../output/pdf/corre-dino-caderno.pdf), que a criança vê como **Mapa da Aventura**, acompanha os roteiros; [fontes e reprodução](recursos/corre-dino/README.md).
+
+**Revisão de 06/10/2026 (vocabulário da aventura).** O que a criança vê ou ouve fala de fase, parte, Mapa da Aventura e guia (Diretrizes, seção 6); chaves, slugs e arquivos não mudaram. Falas, Zappy e Mapa citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**; a ponte da entrega virou conversa e as retomadas usam "Lembra da experiência da parte anterior?". A seção 2 da aula 1 virou **Seu Mapa da Aventura**, com o material **Mapa da Aventura: Corre, Dino!** e as escolhas como convite (ler aqui mesmo ou clicar em **Baixar** para guardar). Nas aulas 6 e 11, a comparação usa um bloquinho no lugar do caderno. O PDF foi gerado de novo, sem "Você não precisa baixar ou imprimir". A descrição do curso diz "Em 13 fases"; atualizar também no admin.
 
 ## Módulo 1 — O Dino ganha vida
 
@@ -46,7 +48,7 @@ Revisão local de 05/10/2026, com os vídeos de experiência reescritos como dem
 
 Pré-requisitos: ler instruções curtas, usar teclado ou toque e acompanhar os encaixes guiados. Cadê Todo Mundo? e A Chave do Farol ajudam, mas a montagem não pressupõe lembrar os nomes dos blocos ou os caminhos da paleta. Programação e Jogo 2D ficam disponíveis conforme as peças de cada etapa.
 
-A abertura jogável e a apresentação do caderno estão na primeira aula, junto da construção. Jogar pede participação, sem recorde obrigatório. O caderno é uma consulta opcional: não é preciso ler, baixar ou imprimir para avançar.
+A abertura jogável e a apresentação do caderno estão na primeira aula, junto da construção. Jogar pede participação, sem recorde obrigatório. O caderno é uma consulta opcional, fora da conclusão; a fala o apresenta como o Mapa da Aventura da criança e oferece ler na fase ou baixar para guardar como convite.
 
 A primeira aula começa com o projeto vazio e termina com a tela preparada e o Dino criado. A experiência de criação e desenho explica antes da montagem por que esse objeto ainda não aparece. A aula 2 faz o desenho: não se muda o marco original nem se apresenta a invisibilidade como defeito misterioso. Nas demais aulas, continuar o próprio projeto enviado. O projeto inicial é alternativa quando não houver envio anterior.
 
@@ -60,7 +62,7 @@ Os roteiros usam os caminhos e nomes atuais do Estúdio, inclusive **Mostrar a c
 
 Cinco revisões curtas, nas aulas 3, 6, 9, 11 e 13, retomam o que foi montado e testado. Cada seção contém apenas Zappy → quiz, com explicação após responder, acerto de todas as questões e novas tentativas sem limite nem espera. Essa política também precisa estar configurada no admin.
 
-As etapas de montagem terminam em **Verificar esta etapa → correção, se necessária → Objetivo da etapa cumprido! → Salvo → Próxima seção**. A entrega final acrescenta **Enviar para o professor → Enviar → Concluir aula**. Publicar no Mural não é condição de conclusão.
+As etapas de montagem terminam em **Verificar esta parte → correção, se necessária → Objetivo cumprido! → Salvo → Próxima parte**. A entrega final acrescenta **Enviar para o guia → Enviar → Concluir fase**. Publicar no Mural não é condição de conclusão.
 
 ## Continuidade do jogo
 

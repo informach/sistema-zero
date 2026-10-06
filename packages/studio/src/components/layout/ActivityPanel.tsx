@@ -41,13 +41,13 @@ export function ActivityPanel(): JSX.Element | null {
       }
     >
       <div className="flex items-center justify-between gap-2 border-b border-sz-border px-4 py-3">
-        <h2 className="text-sm font-semibold text-sz-fg">Atividade</h2>
+        <h2 className="text-sm font-semibold text-sz-fg">Objetivo do projeto</h2>
         {result ? (
           <span className="text-xs font-medium text-sz-fg-soft">
             {result.score}/100
             {activity.passingScore !== undefined ? (
               <span className={result.passed ? ' text-emerald-500' : ' text-red-500'}>
-                {result.passed ? ' · aprovado' : ` · mín. ${activity.passingScore}`}
+                {result.passed ? ' · meta alcançada' : ` · meta: ${activity.passingScore}`}
               </span>
             ) : null}
           </span>

@@ -151,13 +151,13 @@ describe('ShareDialog', () => {
     )
   })
 
-  it('usa a capa do curso (preset) → publica com useAdminCover e sem coverDataUrl', async () => {
+  it('usa a capa da aventura (preset) → publica com useAdminCover e sem coverDataUrl', async () => {
     seedProject()
     const adapter = makeAdapter({ presetCoverUrl: 'https://cdn.example.com/capa.webp' })
     render(<ShareDialog open onClose={() => {}} adapter={adapter} />)
 
     await screen.findByDisplayValue('Um jogo de nave que desvia de asteroides.')
-    fireEvent.click(screen.getByRole('button', { name: 'Usar a capa do curso' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Usar a capa da aventura' }))
     await waitFor(() =>
       expect((screen.getByRole('button', { name: 'Publicar' }) as HTMLButtonElement).disabled).toBe(
         false,

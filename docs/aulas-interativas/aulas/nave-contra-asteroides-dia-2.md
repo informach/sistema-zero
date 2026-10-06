@@ -61,7 +61,7 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Crie o grupo tiros e programe o disparo dentro da tecla Espaço.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Crie o grupo tiros em Ao iniciar.
 - Em Quando acontecer, coloque Quando apertar a tecla: barra de espaço.
@@ -78,7 +78,7 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Coloque movimento e desenho do grupo em cada quadro. Atire de dois lugares.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Mova o grupo tiros a cada quadro.
 - Desenhe o grupo tiros a cada quadro.
@@ -101,7 +101,7 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Encaixe a limpeza entre mover e desenhar os tiros. Teste e envie.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
 - Crie o grupo tiros em Ao iniciar.

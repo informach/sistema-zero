@@ -51,7 +51,7 @@ for (const ampliado of [false, true]) {
     await tocar(310, 226)
     await tocar(483, 210)
     const status = page.locator('.sz-project-play-card p[role="status"]').last()
-    await expect(status).toHaveText('Atividade salva.', { timeout: 10_000 })
+    await expect(status).toHaveText('Guardado.', { timeout: 10_000 })
     expect(await deslocamentos(page)).toEqual([])
     expect(await palco.boundingBox()).toEqual(antes)
 

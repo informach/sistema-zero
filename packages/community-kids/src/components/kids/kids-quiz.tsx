@@ -207,8 +207,8 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         {cooldownLeft !== null ? (
           <div className="flex flex-col gap-1">
             <p className="text-sm">
-              Enquanto o relógio corre, olhe a correção aqui em cima, que assim a próxima tentativa
-              fica ainda melhor!
+              Enquanto o relógio corre, olhe as respostas aqui em cima, que assim a próxima
+              tentativa fica ainda melhor!
             </p>
             <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">
               <Timer className="size-4" />
@@ -259,7 +259,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         <div>
           <h3 className="sz-display text-2xl">Hora do desafio!</h3>
           <p className="mt-1 text-muted-foreground text-sm">
-            Mostre o que você aprendeu nesta aula.
+            Mostre o que você aprendeu nesta fase.
           </p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
@@ -267,7 +267,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
             {questions.length} {questions.length === 1 ? 'pergunta' : 'perguntas'}
           </span>
           <span className="rounded-full border-2 border-border px-3 py-1 font-bold text-xs uppercase tracking-wide [font-family:var(--font-display)]">
-            {content.passingScore != null ? `Nota mínima ${passingScore}%` : 'Só para treinar'}
+            {content.passingScore != null ? `Meta: ${passingScore}% de acertos` : 'Só para treinar'}
           </span>
         </div>
         {lastScore !== null ? (

@@ -70,9 +70,9 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
-### Seção 7. Entregue o jogo com sua nave
+### Seção 7. Envie o jogo com sua nave
 
-**Tarefa / Zappy na página:** Confira a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais nesta aula. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.
+**Tarefa / Zappy na página:** Confira: a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais por enquanto. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 

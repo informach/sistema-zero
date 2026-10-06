@@ -17,23 +17,23 @@ export function KidsJourneyLockedStudio({ reason = 'level' }: { reason?: 'level'
       art={<KidsMascot expression="sleeping" className="kid-float size-24" />}
       chip="Próxima conquista"
       chipIcon={Sparkles}
-      title={semBlocos ? 'Suas ferramentas vêm dos cursos' : 'Acenda sua Faísca primeiro!'}
+      title={semBlocos ? 'Suas ferramentas vêm das aventuras' : 'Acenda sua Faísca primeiro!'}
       actions={
         <Link href="/cursos" className="sz-btn-gradient">
-          <BookOpen className="size-4" aria-hidden /> Ir para os cursos
+          <BookOpen className="size-4" aria-hidden /> Ir para as aventuras
         </Link>
       }
-      footnote="Nas aulas, você continua usando o Estúdio normalmente para aprender e praticar."
+      footnote="Nas fases, você continua usando o Estúdio normalmente para aprender e praticar."
     >
       {semBlocos ? (
         <p>
-          O Estúdio livre usa as ferramentas que você ganha ao terminar um curso e publicar o
-          projeto no Mural. Termine o próximo curso para ganhar as primeiras.
+          O Estúdio livre usa as ferramentas que você ganha ao terminar uma aventura e publicar o
+          projeto no Mural. Termine a próxima aventura para ganhar as primeiras.
         </p>
       ) : (
         <p>
-          Termine o seu primeiro curso e publique o projeto no Mural. Depois disso, o Estúdio livre
-          abre com as ferramentas que você já aprendeu a usar.
+          Termine a sua primeira aventura e publique o projeto no Mural. Depois disso, o Estúdio
+          livre abre com as ferramentas que você já aprendeu a usar.
         </p>
       )}
     </KidsRecado>

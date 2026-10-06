@@ -178,7 +178,7 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
       startAvailable: true,
     })
     expect(steps.map((step) => step.id)).toEqual(['avatar', ...EXPLICACAO])
-    expect(steps.map((step) => step.text).join(' ')).not.toContain('primeira aula')
+    expect(steps.map((step) => step.text).join(' ')).not.toContain('primeira fase')
   })
 
   it('boas-vindas sem curso liberado não manda tocar em um Começar inexistente', () => {
@@ -200,7 +200,7 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
     expect(steps[0]).toEqual({
       id: 'start',
       emoji: '▶️',
-      text: 'Toque em "Começar" e a sua primeira aula abre na hora.',
+      text: 'Toque em "Começar" e a sua primeira fase abre na hora.',
     })
   })
 

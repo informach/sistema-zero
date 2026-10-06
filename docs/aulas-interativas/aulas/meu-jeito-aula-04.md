@@ -62,9 +62,9 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
-### Seção 6. Entregue seu asteroide
+### Seção 6. Envie seu asteroide
 
-**Tarefa / Zappy na página:** Confira asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Envie a arte desta aula pela galeria do Pinta desta seção.
+**Tarefa / Zappy na página:** Confira: asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Depois, envie o seu asteroide para o guia pela galeria do Pinta.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 

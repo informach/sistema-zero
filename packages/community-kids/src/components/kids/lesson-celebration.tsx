@@ -68,7 +68,7 @@ export function LessonCelebration({
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label="Aula concluída"
+        aria-label="Fase concluída"
         onClick={(e) => e.stopPropagation()}
         className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl outline-none md:p-8"
       >
@@ -77,10 +77,10 @@ export function LessonCelebration({
           className="mx-auto size-24"
           stillClassName="kid-wiggle"
         />
-        <h2 className="sz-display mt-3 text-2xl">Aula concluída!</h2>
+        <h2 className="sz-display mt-3 text-2xl">Fase concluída!</h2>
         <p className="mt-1 text-muted-foreground text-sm">
           {publicationPending
-            ? 'As aulas deste curso estão concluídas. Confira a publicação do projeto para registrar a conquista na jornada.'
+            ? 'As fases desta aventura estão concluídas. Confira a publicação do projeto para registrar a conquista na jornada.'
             : 'Seu progresso está guardado. Você pode continuar ou fazer uma pausa.'}
         </p>
 
@@ -101,17 +101,17 @@ export function LessonCelebration({
             {publicationPending
               ? 'Conferir publicação do projeto'
               : nextHref
-                ? 'Próxima aula'
-                : 'Voltar ao curso'}
+                ? 'Próxima fase'
+                : 'Voltar à aventura'}
           </Link>
           {nextHref ? (
             <Link
               href={courseHref}
               // min-h-11: alvo de toque de mão pequena (a régua da casa) — era um
-              // link de texto puro de ~20px num modal que abre a cada aula concluída.
+              // link de texto puro de ~20px num modal que abre a cada fase concluída.
               className="inline-flex min-h-11 items-center justify-center px-4 text-muted-foreground text-sm transition-colors hover:text-foreground"
             >
-              Voltar ao curso
+              Voltar à aventura
             </Link>
           ) : null}
           <button
@@ -119,7 +119,7 @@ export function LessonCelebration({
             onClick={onClose}
             className="inline-flex min-h-11 items-center justify-center px-4 text-muted-foreground text-sm transition-colors hover:text-foreground"
           >
-            Ficar nesta aula
+            Ficar nesta fase
           </button>
         </div>
       </div>
@@ -172,7 +172,7 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
       {unitCompleted ? (
         <p className="inline-flex items-center gap-1.5 font-semibold text-sm">
           <Gift className="size-4 text-(--kids-ouro-texto)" />
-          Você terminou a unidade! Tem um baú te esperando na trilha.
+          Você terminou o Mundo! Tem um baú te esperando na trilha.
         </p>
       ) : null}
 

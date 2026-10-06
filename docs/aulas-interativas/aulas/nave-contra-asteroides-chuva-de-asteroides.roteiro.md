@@ -14,7 +14,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila do escorregador, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados num escorregador e depois descendo um de cada vez, com o Zappy organizando a fila, com a legenda "um de cada vez"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila do escorregador, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados num escorregador e depois descendo um de cada vez, com o Zappy organizando a fila, com a legenda "um de cada vez"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender o intervalo: quanto tempo o jogo espera entre uma pedra e outra.
@@ -27,7 +27,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas das outras. Mas cada pedra desce o mesmo tanto: 180 em 60 quadros, igual antes. O intervalo muda quantas pedras nascem, não a velocidade de cada uma. No seu jogo, o relógio vai criar uma pedra a cada 40 quadros.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras.
 
@@ -37,10 +37,10 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a diferença entre encaixar depois do bloco inteiro e dentro de BODY. O intervalo começa vazio. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Mostrar a diferença entre encaixar depois do bloco inteiro e dentro de BODY. O intervalo começa vazio. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Na experiência da seção anterior, você comparou criar em cada quadro com esperar um intervalo. No seu jogo ainda não nascem pedras. Agora prepare o grupo e o relógio de 40 quadros.
+> "Lembra da experiência da parte anterior? Você comparou criar em cada quadro com esperar um intervalo. No seu jogo ainda não nascem pedras. Agora prepare o grupo e o relógio de 40 quadros.
 >
 > Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
 >
@@ -50,7 +50,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > O bloco A cada quadro do jogo cuida de cada imagem da partida. O bloco A cada 40 quadros espera esse intervalo para executar o que estiver dentro dele. Confira que o bloco de 40 quadros não ficou encaixado dentro do outro.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Crie o grupo asteroides e um intervalo de 40 quadros, ao lado de A cada quadro do jogo.
 
@@ -60,7 +60,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Sortear lugar na régua de cima até sair pelo menos um segundo lugar diferente, apontando as marcas na régua entre x 90 e x 390. Mostrar a pedra acima da borda de cima, clicar em Tempo e acompanhar a pedra entrando na tela. Meme na comparação: na frase do dado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando um dado gigante com asteroides nas faces, com a legenda "Sortear lugar"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Sortear lugar na régua de cima até sair pelo menos um segundo lugar diferente, apontando as marcas na régua entre x 90 e x 390. Mostrar a pedra acima da borda de cima, clicar em Tempo e acompanhar a pedra entrando na tela. Meme na comparação: na frase do dado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando um dado gigante com asteroides nas faces, com a legenda "Sortear lugar"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender o sorteio: como o jogo escolhe onde cada pedra nasce.
@@ -69,7 +69,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e ela desce e entra caindo pela borda de cima. Assim, ninguém vê a pedra aparecer do nada. No seu jogo, o x do asteroide vai ser sorteado, e o y vai começar em -30, acima da tela.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela.
 
@@ -79,10 +79,10 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar criação no intervalo e movimento/limpeza/desenho no bloco de cada quadro. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Mostrar criação no intervalo e movimento/limpeza/desenho no bloco de cada quadro. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Na experiência da seção anterior, você sorteou posições e acompanhou a entrada de uma pedra. No seu jogo, o grupo e o relógio estão prontos, mas ainda falta criar o asteroide. Agora monte essa criação.
+> "Lembra da experiência da parte anterior? Você sorteou posições e acompanhou a entrada de uma pedra. No seu jogo, o grupo e o relógio estão prontos, mas ainda falta criar o asteroide. Agora monte essa criação.
 >
 > Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
 >
@@ -98,9 +98,9 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > Deixe à vista o encaixe abaixo da limpeza dos asteroides. Abra Jogo 2D, depois Grupos e Desenho e ordem. Pegue Desenhar o grupo, encaixe abaixo da limpeza dos asteroides e escolha asteroides.
 >
-> Observe o jogo. As pedras devem entrar pela parte de cima e cair. Atire em uma delas. Por enquanto, o tiro atravessa a pedra: ainda não programamos o acerto. Se nenhuma pedra aparecer, confira o grupo nos quatro blocos e se o criador está dentro de A cada 40 quadros.
+> Observe o jogo. As pedras devem entrar pela parte de cima e cair. Atire em uma delas. Por enquanto, o tiro atravessa a pedra: você ainda não programou o acerto. Se nenhuma pedra aparecer, confira o grupo nos quatro blocos e se o criador está dentro de A cada 40 quadros.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Monte o asteroide no intervalo e o ciclo do grupo em cada quadro.
 
@@ -110,7 +110,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Dar tempo para observar alguns nascimentos em cada intervalo. Restaurar 40 antes da verificação. Não confundir quadros com segundos. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Dar tempo para observar alguns nascimentos em cada intervalo. Restaurar 40 antes da verificação. Não confundir quadros com segundos. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
 > "Vamos comparar o espaço de tempo entre as pedras. No bloco A cada 40 quadros, troque 40 por 80. Observe a chegada de algumas pedras. Depois volte para 40 e observe de novo.
@@ -119,6 +119,6 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > Teste também as setas e os tiros. A nave deve continuar funcionando como antes, agora com as pedras caindo.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar. Quando o envio terminar, clique em Concluir fase."
 
 **Zappy na página (não gravar):** Teste 80 e 40 no intervalo, mantenha 40 e envie o projeto.

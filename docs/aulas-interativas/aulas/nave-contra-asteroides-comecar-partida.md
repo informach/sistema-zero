@@ -40,7 +40,7 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 **Zappy na página (não gravar):** Leve os blocos da partida para Se jogando e crie o ramo da abertura.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Vá para inicio em Ao iniciar.
 - Leve a sequência para o então de Se jogando, começando por Limpar.
@@ -56,7 +56,7 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 **Zappy na página (não gravar):** Coloque uma condição jogando no intervalo e outra dentro da barra de espaço.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.
 - Não deixe outro criador de asteroides fora da condição.
@@ -71,7 +71,7 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 **Zappy na página (não gravar):** Programe Enter, teste a abertura e a partida e envie.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - Vá para inicio em Ao iniciar.
 - Leve a sequência para o então de Se jogando, começando por Limpar.

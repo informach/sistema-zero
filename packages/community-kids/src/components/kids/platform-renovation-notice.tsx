@@ -63,8 +63,8 @@ export function PlatformRenovationNotice({
           <KidsMascot expression="happy" className="mx-auto size-20" />
           <p>Ouvimos vocês e estamos melhorando a plataforma!</p>
           <p>
-            Vamos regravar todos os cursos e trocar as aulas aos poucos. Alguns vídeos ainda mostram
-            a versão antiga, mas você pode continuar estudando.
+            Vamos regravar todas as aventuras e trocar as fases aos poucos. Alguns vídeos ainda
+            mostram a versão antiga, mas você pode continuar a sua aventura.
           </p>
           <p>
             Na área <strong>Como fazer</strong>, vamos colocar tutoriais para ajudar você a usar as

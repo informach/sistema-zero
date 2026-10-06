@@ -21,7 +21,7 @@ export function RecadosBell({ variant = 'bell' }: { variant?: 'bell' | 'pill' })
   const active = pathname === '/recados' || pathname.startsWith('/recados/')
 
   const countLabel = count > 9 ? '9+' : String(count)
-  const label = count > 0 ? `${count} recados novos do professor` : 'Recados do professor'
+  const label = count > 0 ? `${count} recados novos do guia` : 'Recados do guia'
 
   if (variant === 'pill') {
     return (
@@ -41,7 +41,7 @@ export function RecadosBell({ variant = 'bell' }: { variant?: 'bell' | 'pill' })
         {/* O nome falado COMEÇA pelo texto visível (WCAG 2.5.3) e o número entra
             depois, por extenso: o selo é só para os olhos. */}
         <span className="min-w-0 flex-1 truncate">
-          Recados do professor
+          Recados do guia
           {count > 0 ? <span className="sr-only">, {count} novos</span> : null}
         </span>
         {count > 0 ? (

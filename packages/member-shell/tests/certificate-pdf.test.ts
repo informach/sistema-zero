@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { inflateSync } from 'node:zlib'
 import { PDFDocument } from '@cantoo/pdf-lib'
 import sharp from 'sharp'
 
@@ -32,6 +33,25 @@ function pdfHeader(bytes: Uint8Array): string {
   return Buffer.from(bytes.slice(0, 5)).toString('latin1')
 }
 
+/**
+ * O texto desenhado, para conferir O QUE o certificado diz. O pdf-lib comprime cada fluxo de
+ * conteúdo (FlateDecode) e escreve o texto das fontes padrão como hexadecimal WinAnsi
+ * (`<…> Tj`); por isso a busca é pelo hexadecimal da frase.
+ */
+function textoDesenhado(bytes: Uint8Array): string {
+  const bruto = Buffer.from(bytes).toString('latin1')
+  let texto = ''
+  for (const fluxo of bruto.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
+    try {
+      texto += inflateSync(Buffer.from(fluxo[1] ?? '', 'latin1')).toString('latin1')
+    } catch {
+      // Fluxo que não é Flate (imagem, por exemplo): não tem texto.
+    }
+  }
+  return texto.toLowerCase()
+}
+const hex = (frase: string) => Buffer.from(frase, 'latin1').toString('hex')
+
 describe('renderCertificatePdf', () => {
   test('gera um PDF válido com QR (config + verifyUrl)', async () => {
     const bytes = await renderCertificatePdf({
@@ -42,6 +62,39 @@ describe('renderCertificatePdf', () => {
     expect(pdfHeader(bytes)).toBe('%PDF-')
     // QR + texto + moldura → bem acima do PDF vazio.
     expect(bytes.byteLength).toBeGreaterThan(2000)
+  })
+
+  test('sem imagem base: a frase do curso no lugar da linha genérica, e o parágrafo sai (06/10/2026)', async () => {
+    // O PDF dizia "concluiu" duas vezes ("concluiu com êxito o curso / Cadê Todo Mundo? /
+    // concluiu Cadê Todo Mundo?") e não imprimia o parágrafo do que a criança programou.
+    const bytes = await renderCertificatePdf({
+      certificate: CERT,
+      config: {
+        title: 'Certificado de Criador',
+        introLine: 'Certificamos que',
+        coursePhrase: 'completou a aventura Cadê Todo Mundo?',
+        bodyText: 'Programou o toque que revela os personagens e a contagem dos achados.',
+      },
+      verifyUrl: '',
+    })
+    const texto = textoDesenhado(bytes)
+    // Anti-vácuo: a extração acha o nome, então a ausência abaixo quer dizer alguma coisa.
+    expect(texto).toContain(hex('Maria Silva'))
+    expect(texto).toContain(hex('CERTIFICADO DE CRIADOR'))
+    expect(texto).toContain(hex('completou a aventura Cad'))
+    expect(texto).not.toContain(hex('concluiu'))
+    expect(texto).not.toContain(hex('Curso de L'))
+    expect(texto).toContain(hex('Programou o toque'))
+  })
+
+  test('sem imagem base e sem frase: a linha genérica com o título, sem "o aluno"', async () => {
+    const texto = textoDesenhado(
+      await renderCertificatePdf({ certificate: CERT, config: {}, verifyUrl: '' }),
+    )
+    expect(texto).toContain(hex('Certificamos que'))
+    expect(texto).not.toContain(hex('o aluno'))
+    expect(texto).toContain(hex('concluiu com '))
+    expect(texto).toContain(hex('Curso de L'))
   })
 
   test('tolera config vazia e verifyUrl vazio (sem QR)', async () => {

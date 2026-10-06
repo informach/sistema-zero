@@ -27,6 +27,7 @@ import { requestPersistentStorage } from '../../lib/persistent-storage'
 import { resolvePintaSeed } from '../../lib/pinta-seed'
 import { preparePintaSubmission } from '../../lib/pinta-submission'
 import type { PintaBlock, PintaStateView, PintaSubmissionResultView } from '../../lib/types'
+import { useLessonCopy } from '../lesson-copy-context'
 import { useLessonPlayer } from '../lesson-player-context'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { loadPintaLessonModule, type PintaLessonModule } from './pinta-loader'
@@ -63,6 +64,7 @@ export function PintaBlockView({
   fillHeight?: boolean
 }) {
   const player = useLessonPlayer()
+  const { pinta } = useLessonCopy()
   const lessonId = player?.lessonId ?? ''
 
   const [mod, setMod] = useState<PintaLessonModule | null>(null)
@@ -94,7 +96,7 @@ export function PintaBlockView({
       const result = await loadPintaLessonModule()
       if (!active) return
       if (!result.module) {
-        console.error('Não foi possível carregar o Pinta na aula.', result.error)
+        console.error('Não foi possível carregar o Pinta do bloco.', result.error)
         setLoadError(true)
         return
       }
@@ -235,7 +237,7 @@ export function PintaBlockView({
             player.submissionAllowedBlockIds.includes(blockId)) && (
             <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
               {submitting ? <Spinner /> : <Send className="size-4" />}
-              {submitted ? 'Enviar de novo' : 'Enviar para o professor'}
+              {submitted ? 'Enviar de novo' : pinta.enviar}
             </Button>
           )}
       </div>
@@ -282,20 +284,21 @@ export function PintaBlockView({
         <div className="space-y-1">
           <p className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
             <CheckCircle2 className="size-4" />
-            Desenho enviado ao professor
+            {pinta.enviado}
             {submittedAt ? ` em ${new Date(submittedAt).toLocaleString('pt-BR')}` : ''}.
           </p>
           {reviewed ? (
             <p className="flex items-center gap-2 text-sm text-success">
-              <CheckCheck className="size-4" />O professor já viu o seu desenho.
+              <CheckCheck className="size-4" />
+              {pinta.visto}
             </p>
           ) : null}
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">
           {player?.submissionAllowedBlockIds && !player.submissionAllowedBlockIds.includes(blockId)
-            ? 'Continue desenhando. A entrega fica no fechamento.'
-            : 'Envie o seu desenho ao professor para poder concluir a aula.'}
+            ? pinta.continueDesenhando
+            : pinta.paraConcluir}
         </p>
       )}
 
@@ -328,11 +331,7 @@ export function PintaBlockView({
         }
       >
         <div className="space-y-3 text-sm">
-          <p className="text-muted-foreground">
-            {submitted
-              ? 'O professor vai ver esta versão no lugar da anterior.'
-              : 'O professor vai ver o seu desenho do jeito que ele está agora.'}
-          </p>
+          <p className="text-muted-foreground">{submitted ? pinta.vaiVerDeNovo : pinta.vaiVer}</p>
           <label className="block space-y-1">
             <span className="font-medium">Quer escrever um recado? (opcional)</span>
             <Textarea

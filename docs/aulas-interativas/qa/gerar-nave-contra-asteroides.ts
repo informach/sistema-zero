@@ -46,9 +46,11 @@ export const aulasNave = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'nave-contra-asteroides.conteudo.json'), 'utf8'),
 ) as AulaNave[]
 const CURSO = 'nave-contra-asteroides'
+// Vocabulário da aventura (Diretrizes, seção 6, 06/10/2026): as falas citam os botões da fase
+// pelo nome exato. Por dentro, a equipe continua dizendo aula, seção e caderno.
 const checkExit =
-  'Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo.'
-const send = 'Clique em Enviar para o professor e confirme em Enviar.'
+  'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
+const send = 'Depois, clique em Enviar para o guia e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo de título e já traz o resumo do curso. A comemoração
 // do Mural oferece Copiar link de jogar antes de Fechar (ajuste do responsável em 06/10/2026).
 const publish =
@@ -59,7 +61,7 @@ export function falasSecao(section: SecaoNave): string[] {
   if (section.checks?.length) {
     speech.push(
       // Depois da publicação, o fecho diz "Por último": a fala já termina em "Depois de copiar o link".
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último` : 'Depois'}, clique em Concluir aula.` : 'Depois, clique em Próxima seção.'}`,
+      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando o envio terminar, clique em Concluir fase.'}` : 'Depois, clique em Próxima parte.'}`,
     )
   }
   return speech
@@ -125,7 +127,7 @@ export function gerarManifestoNave(lesson: AulaNave, index: number): LearningMan
     if (s.materials)
       add('caderno', {
         kind: 'materials',
-        title: 'Caderno do Aluno: Nave Contra Asteroides',
+        title: 'Mapa da Aventura: Nave Contra Asteroides',
         bookPreview: true,
         items: [],
       })
@@ -207,7 +209,7 @@ function roteiro(lesson: AulaNave, index: number) {
         '',
         `**Estimativa de gravação:** aproximadamente ${voice} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.`,
         '',
-        `**Na tela:** ${s.screen} ${s.checks?.length ? 'Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
+        `**Na tela:** ${s.screen} ${s.checks?.length ? 'Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
         '',
         '**Narração:**',
         `> "${speech.join('\n>\n> ')}"`,
@@ -271,13 +273,13 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.',
+        'Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno, que aparece na tela como Mapa da Aventura: Nave Contra Asteroides. Ler aqui mesmo ou clicar em Baixar para guardar são convites e não entram na conclusão. A fala não diz que não precisa baixar ou imprimir: soa como uma ordem para não fazer.',
         '',
       )
     if (s.checks?.length)
       lines.push(
-        '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa' +
-          (s.final ? ', com envio confirmado ao professor.' : '.'),
+        '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte' +
+          (s.final ? ', com o envio confirmado em Enviar para o guia → Enviar.' : '.'),
         '',
         ...s.checks.map((c) => `- ${c.label}`),
         '',
@@ -289,7 +291,7 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       )
     if (s.publish)
       lines.push(
-        'Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.',
+        'Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.',
         '',
       )
   })

@@ -23,7 +23,7 @@ export function QuizReview({
   )
   return (
     <div className="flex flex-col gap-3">
-      <p className="sz-display text-muted-foreground text-sm uppercase tracking-wide">Correção</p>
+      <p className="sz-display text-muted-foreground text-sm uppercase tracking-wide">Respostas</p>
       {questions.map((question, questionIndex) => {
         const correction = corrections.get(question.id)
         if (!correction) return null

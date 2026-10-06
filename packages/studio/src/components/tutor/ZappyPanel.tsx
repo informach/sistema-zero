@@ -526,9 +526,9 @@ export function ZappyPanel(): JSX.Element | null {
                         type="button"
                         onClick={() => config.openLesson?.(reference)}
                         className="rounded-full border border-sz-border bg-sz-surface px-2.5 py-1 font-semibold text-sz-fg-soft text-xs hover:border-sz-accent hover:text-sz-accent"
-                        title="Abrir aula em nova aba"
+                        title="Abrir a fase em nova aba"
                       >
-                        Aula: {reference.title} ↗
+                        Fase: {reference.title} ↗
                       </button>
                     ) : null,
                   )}

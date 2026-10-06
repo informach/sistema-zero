@@ -405,16 +405,16 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     group: 'world',
     title: 'A cópia e o original',
     instruction:
-      'Exporte o jogo da aula, importe o arquivo no Estúdio e pinte a nave de um lado só.',
+      'Exporte o jogo da fase, importe o arquivo no Estúdio e pinte a nave de um lado só.',
     manipulates: 'Exportar, importar e a cor da nave em cada painel',
     success:
       'Exportar tira uma cópia, importar transforma a cópia num projeto seu, e daí em diante cada um segue o seu caminho.',
-    extra: 'E se você pintar a nave na aula depois de exportar, antes de importar?',
+    extra: 'E se você pintar a nave na fase depois de exportar, antes de importar?',
     goals: [
       {
         id: 'exported',
-        label: 'O arquivo saiu, e o jogo continuou na aula',
-        pedido: 'Aperte Exportar e olhe o lado da aula.',
+        label: 'O arquivo saiu, e o jogo continuou na fase',
+        pedido: 'Aperte Exportar e olhe o lado da fase.',
       },
       {
         id: 'imported',
@@ -428,9 +428,9 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       },
     ],
     hints: [
-      'Aperte Exportar e olhe o lado da aula antes de olhar o arquivo.',
+      'Aperte Exportar e olhe o lado da fase antes de olhar o arquivo.',
       'Com o arquivo no meio, aperte Importar e compare as duas telas.',
-      'Pinte a nave do lado do Estúdio e olhe a nave do lado da aula.',
+      'Pinte a nave do lado do Estúdio e olhe a nave do lado da fase.',
     ],
   },
   'published-copy': {

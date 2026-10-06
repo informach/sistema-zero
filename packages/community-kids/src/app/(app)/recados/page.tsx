@@ -15,10 +15,10 @@ export const dynamic = 'force-dynamic'
 const PASSOS = [
   {
     title: 'Você envia um projeto ou uma dúvida',
-    text: 'Pode ser uma entrega do Estúdio, um jogo publicado no Mural ou uma pergunta na aula.',
+    text: 'Pode ser um projeto enviado do Estúdio, um jogo publicado no Mural ou uma pergunta na fase.',
   },
   {
-    title: 'O professor olha com calma',
+    title: 'O seu guia olha com calma',
     text: 'Ele joga o que você fez, lê o que você escreveu e responde por aqui.',
   },
   {
@@ -28,7 +28,7 @@ const PASSOS = [
 ]
 
 /**
- * Caixa de entrada dos "Recados do professor" (canal de retorno), no desenho da
+ * Caixa de entrada dos "Recados do guia" (canal de retorno), no desenho da
  * tela-modelo (11/09/2026): creme, azul-claro e lilás. Server Component: busca as
  * conversas do aluno (readonly, sem refresh de cookie) e entrega ao client.
  */
@@ -44,8 +44,8 @@ export default async function RecadosPage() {
           back={backToSection('/recados')}
           eyebrow="Comunidade"
           eyebrowIcon={Mail}
-          title="Recados do professor"
-          subtitle="De vez em quando o professor deixa um recado para você aqui."
+          title="Recados do guia"
+          subtitle="De vez em quando o seu guia deixa um recado para você aqui."
         />
       </KidsBand>
       <KidsBand tone="ceu">
@@ -56,7 +56,7 @@ export default async function RecadosPage() {
           <KidsSectionHeader
             id="como-funciona-heading"
             title="Como funciona um recado"
-            subtitle="Nada se perde: todo recado do professor fica guardado nesta página."
+            subtitle="Nada se perde: todo recado do seu guia fica guardado nesta página."
           />
           <ol className="grid gap-5 md:grid-cols-3">
             {PASSOS.map((passo, i) => (

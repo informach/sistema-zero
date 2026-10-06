@@ -244,7 +244,7 @@ describe('KidsSpaceContent — comportamento do boundary de apresentação', () 
 
     fireEvent.click(screen.getByRole('button', { name: 'Voltar aos projetos' }))
     fireEvent.click(screen.getByRole('button', { name: 'Carregar mais respostas' }))
-    fireEvent.click(screen.getAllByRole('button', { name: 'Avisar professor' })[0]!)
+    fireEvent.click(screen.getAllByRole('button', { name: 'Avisar a equipe' })[0]!)
     fireEvent.click(screen.getByRole('button', { name: 'Comentar' }))
 
     expect(onBackFromThread).toHaveBeenCalledTimes(1)
@@ -324,7 +324,7 @@ describe('KidsSpaceContent — comportamento do boundary de apresentação', () 
     // O nome acessível diz que está trancado (o cadeado é só ícone) e por quê. As ferramentas
     // vêm dos cursos, não de um nível: o selo não promete "no nível X".
     const botao = screen.getByRole('button', {
-      name: 'Fazer a minha versão (trancado: conclua mais cursos para ter as ferramentas deste jogo)',
+      name: 'Fazer a minha versão (trancado: conclua mais aventuras para ter as ferramentas deste jogo)',
     })
     expect(screen.queryByText(/no nível/)).toBeNull()
     fireEvent.click(botao)

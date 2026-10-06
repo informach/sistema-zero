@@ -377,7 +377,7 @@ export interface CertificateBlock {
   kind: 'certificate'
   /** Imagem base do certificado (fundo A4 paisagem, por curso) — URL http(s). */
   baseImageUrl?: string
-  /** Linha fixa antes do nome (default "Certificamos que o aluno"). */
+  /** Linha fixa antes do nome (default "Certificamos que"). */
   introLine?: string
   /** Frase curta específica do curso (o que o aluno concluiu), abaixo do nome. */
   coursePhrase?: string

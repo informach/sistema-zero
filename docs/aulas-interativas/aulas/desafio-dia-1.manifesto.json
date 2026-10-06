@@ -14,7 +14,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima seção."
+        "text": "Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima parte."
       }
     },
     {
@@ -1275,21 +1275,21 @@
     },
     {
       "key": "video-intro-caderno",
-      "plannedVideo": "Título: Seu Caderno do Aluno\n\nChamar a atenção para o Caderno do Aluno (Olha aqui: este é o seu Caderno do Aluno!), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo, na aula, ou clicar em Baixar para guardar o caderno e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar material de mapa nem ensinar o leitor.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Seu Mapa da Aventura\n\nChamar a atenção para o caderno, que a criança conhece como Mapa da Aventura (Olha aqui: este é o seu Mapa da Aventura!), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo ou clicar em Baixar para guardar o mapa e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar material de mapa nem ensinar o leitor.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-intro-caderno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção."
+        "text": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "materiais-farol",
       "content": {
         "kind": "materials",
-        "title": "Caderno do Aluno: A Chave do Farol",
+        "title": "Mapa da Aventura: A Chave do Farol",
         "bookPreview": true,
         "items": []
       }
@@ -1304,44 +1304,44 @@
             "id": "link-plataforma-baixar-materiais",
             "kind": "link",
             "url": "/como-fazer/plataforma-baixar-materiais",
-            "label": "Como ler o caderno na tela ou baixar os materiais"
+            "label": "Como ler o Mapa da Aventura na tela ou baixar os materiais"
           },
           {
             "id": "link-plataforma-abrir-uma-aula",
             "kind": "link",
             "url": "/como-fazer/plataforma-abrir-uma-aula",
-            "label": "Como abrir uma aula e trocar de seção"
+            "label": "Como abrir uma fase e trocar de parte"
           },
           {
             "id": "link-plataforma-ampliar-a-atividade",
             "kind": "link",
             "url": "/como-fazer/plataforma-ampliar-a-atividade",
-            "label": "Como dar mais espaço para a atividade na aula"
+            "label": "Como dar mais espaço ao jogo e à experiência"
           },
           {
             "id": "link-plataforma-mostrar-o-menu",
             "kind": "link",
             "url": "/como-fazer/plataforma-mostrar-o-menu",
-            "label": "Como mostrar o menu dentro da aula ou da ferramenta"
+            "label": "Como mostrar o menu dentro da fase ou da ferramenta"
           },
           {
             "id": "link-plataforma-voltar-para-a-aula",
             "kind": "link",
             "url": "/como-fazer/plataforma-voltar-para-a-aula",
-            "label": "Como voltar para a aula de onde parei"
+            "label": "Como voltar para a fase de onde parei"
           },
           {
             "id": "link-plataforma-pedir-ajuda",
             "kind": "link",
             "url": "/como-fazer/plataforma-pedir-ajuda",
-            "label": "Como pedir ajuda ao professor"
+            "label": "Como pedir ajuda ao seu guia"
           }
         ]
       }
     },
     {
       "key": "video-d1-quadro",
-      "plannedVideo": "Título: Como o personagem anda\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o x fica igual) e com a seta (o x sobe), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Como o personagem anda\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o x fica igual) e com a seta (o x sobe), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima parte.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-quadro",
@@ -1372,19 +1372,19 @@
     },
     {
       "key": "video-d1-andar",
-      "plannedVideo": "Título: Faça o personagem andar\n\nComeçar pela retomada: a experiência mostrou o andar a cada quadro; no jogo, o personagem está parado e não há setas. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com velocidade 3. Testar as setas, Verificar esta etapa, Salvo e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Faça o personagem andar\n\nComeçar pela retomada: a experiência mostrou o andar a cada quadro; no jogo, o personagem está parado e não há setas. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com velocidade 3. Testar as setas, Verificar esta parte, Salvo e Próxima parte, sem envio.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-andar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta etapa."
+        "text": "Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte."
       }
     },
     {
       "key": "video-d1-tanto",
-      "plannedVideo": "Título: O tanto que ele anda\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a velocidade é o tamanho do passo. Mostrar Velocidade 3 e Velocidade 1 avançando quadros, com o x e as marcas, e dizer a diferença. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: O tanto que ele anda\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a velocidade é o tamanho do passo. Mostrar Velocidade 3 e Velocidade 1 avançando quadros, com o x e as marcas, e dizer a diferença. Terminar com Agora é a sua vez e Próxima parte.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-tanto",
@@ -1415,19 +1415,19 @@
     },
     {
       "key": "video-d1-velocidade",
-      "plannedVideo": "Título: Escolha a velocidade\n\nMexa e veja numa seção própria. Começar pela retomada: no jogo, segurar uma seta e notar o tanto que ele anda com 3. Com o bloco de movimento à vista, trocar o 3 por um número de 1 a 6, testar alguns e deixar o preferido; a escolha fica no jogo. Verificar esta etapa (confere só o movimento, com qualquer velocidade), Salvo e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Escolha a velocidade\n\nMexa e veja numa seção própria. Começar pela retomada: no jogo, segurar uma seta e notar o tanto que ele anda com 3. Com o bloco de movimento à vista, trocar o 3 por um número de 1 a 6, testar alguns e deixar o preferido; a escolha fica no jogo. Verificar esta parte (confere só o movimento, com qualquer velocidade), Salvo e Próxima parte, sem envio.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-velocidade",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Escolha a velocidade do seu personagem: troque o 3 por um número de 1 a 6, teste e deixe o que você mais gostar. Depois clique em Verificar esta etapa."
+        "text": "Escolha a velocidade do seu personagem: troque o 3 por um número de 1 a 6, teste e deixe o que você mais gostar. Depois clique em Verificar esta parte."
       }
     },
     {
       "key": "video-d1-limite",
-      "plannedVideo": "Título: Até onde ele pode ir?\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Até onde ele pode ir?\n\nAbrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado. Terminar com Agora é a sua vez e Próxima parte.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-limite",
@@ -1458,14 +1458,14 @@
     },
     {
       "key": "video-d1-borda",
-      "plannedVideo": "Título: Mantenha o personagem na tela\n\nComeçar pela retomada: a experiência mostrou o limite; no jogo, ainda sem limite, mostrar o personagem saindo pela beirada. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo. Testar as quatro beiradas, Verificar esta etapa, Objetivo da etapa cumprido!, Salvo, envio com confirmação e Concluir aula.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Mantenha o personagem na tela\n\nComeçar pela retomada: a experiência mostrou o limite; no jogo, ainda sem limite, mostrar o personagem saindo pela beirada. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo. Testar as quatro beiradas, Verificar esta parte, Objetivo cumprido!, Salvo, envio com confirmação e Concluir fase.\n\nRoteiro falado: desafio-dia-1.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d1-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta etapa antes de enviar para o professor."
+        "text": "Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte antes de enviar para o guia."
       }
     },
     {
@@ -2453,13 +2453,13 @@
             "id": "link-plataforma-ampliar-a-atividade",
             "kind": "link",
             "url": "/como-fazer/plataforma-ampliar-a-atividade",
-            "label": "Como dar mais espaço para a atividade"
+            "label": "Como dar mais espaço ao jogo e à experiência"
           },
           {
             "id": "link-plataforma-pedir-ajuda",
             "kind": "link",
             "url": "/como-fazer/plataforma-pedir-ajuda",
-            "label": "Como pedir ajuda ao professor"
+            "label": "Como pedir ajuda ao seu guia"
           }
         ]
       }
@@ -2482,7 +2482,7 @@
     },
     {
       "key": "caderno",
-      "title": "Seu Caderno do Aluno",
+      "title": "Seu Mapa da Aventura",
       "intent": "material",
       "objective": "Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.",
       "blockKeys": [

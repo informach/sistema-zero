@@ -120,7 +120,7 @@ test('a etapa da abertura espera Enter e preserva movimento, tiros e asteroides 
 })
 
 const FIM_DA_EXPERIENCIA =
-  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.'
+  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
 // Uma ordem dirigida a quem assiste, no começo de uma frase. Antes da vez dela, o vídeo só mostra.
 const ORDEM =
   /(?:^|[.:!?;]\s+)(Clique|Coloque|Observe|Mude|Deixe|Leve|Escolha|Ligue|Troque|Aumente|Atire|Compare|Avance|Use|Volte|Espere|Acompanhe|Arraste|Toque|Aperte|Olhe|Repita|Teste|Sorteie|Experimente|Jogue)\b/
@@ -141,7 +141,7 @@ test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez
       } else {
         expect(fala[0], id).toMatch(/^Esta é a versão pronta\b/)
         expect(fala.at(-1), id).toMatch(
-          /^Agora é a sua vez: jogue .*Quando terminar, clique em Próxima seção\.$/,
+          /^Agora é a sua vez: jogue .*Quando terminar, clique em Próxima parte\.$/,
         )
       }
       expect(demonstracao.match(/Olha aqui: /g), id).toHaveLength(1)
@@ -171,8 +171,37 @@ test('falas para a criança: sem o nome interno da seção e com a publicação 
   expect(fala).toContain('O resumo do projeto já vem preenchido. Deixe como está.')
   expect(fala).toContain('Seu jogo está no Mural! Que conquista!')
   expect(fala).toContain('Clique em Copiar link de jogar')
-  expect(fala).toMatch(/clique em Fechar\. Por último, clique em Concluir aula\.$/)
+  expect(fala).toMatch(/clique em Fechar\. Por último, clique em Concluir fase\.$/)
   expect(fala).not.toContain('Confira o título')
+})
+
+test('falas para a criança: botões da fase pelo nome novo e o Mapa como convite (06/10/2026)', () => {
+  const verificacao =
+    'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
+  for (const aula of aulasNave)
+    for (const s of aula.sections) {
+      if (!s.checks?.length) continue
+      const id = `${aula.slug}/${s.key}`
+      const fim = falasSecao(s).at(-1) ?? ''
+      expect(fim, id).toStartWith(verificacao)
+      if (!s.final) expect(fim, id).toEndWith('Depois, clique em Próxima parte.')
+      else {
+        expect(fim, id).toContain('Depois, clique em Enviar para o guia e confirme em Enviar.')
+        expect(fim, id).toEndWith(
+          s.publish
+            ? 'Por último, clique em Concluir fase.'
+            : 'Quando o envio terminar, clique em Concluir fase.',
+        )
+      }
+    }
+  const mapa = aulasNave[0]!.sections.find((s) => s.materials)!
+  const falaDoMapa = [mapa.bridge, ...(mapa.speech ?? [])].join(' ')
+  expect(mapa.title).toBe('Seu Mapa da Aventura')
+  expect(mapa.speech?.[0]).toStartWith('Olha aqui: este é o seu Mapa da Aventura!')
+  expect(falaDoMapa).toContain(
+    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.',
+  )
+  expect(falaDoMapa).not.toMatch(/não precisa/i)
 })
 
 const seconds = (n: number): SceneAction[] =>

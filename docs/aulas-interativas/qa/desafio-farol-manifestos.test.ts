@@ -333,6 +333,11 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(m.sections.map((s) => s.key)).toEqual(['revisao-final', 'certificado'])
     expect(m.sections[1]?.completion?.blockIds).toEqual(['video-certificado-farol', 'certificado'])
     expect(m.blocks.find((block) => block.key === 'certificado')?.content?.kind).toBe('certificate')
+    // Vocabulário da aventura (06/10/2026): a criança recebe um certificado de criador.
+    expect(m.blocks.find((block) => block.key === 'certificado')?.content).toMatchObject({
+      title: 'Certificado de Criador',
+      coursePhrase: 'completou o Desafio do Primeiro Jogo',
+    })
     expect(m.retireBlockKeys).toContain('video-pitch-farol')
     expect(m.retireBlockKeys).toContain('link-comunidade')
     expect(m.blocks.some((block) => block.key.includes('pitch'))).toBe(false)

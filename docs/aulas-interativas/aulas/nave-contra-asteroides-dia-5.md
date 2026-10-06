@@ -31,7 +31,7 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 **Zappy na página (não gravar):** Crie a meta e acrescente as condições de vitória e derrota dentro de jogando.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No final da partida, se pontos ≥ alvo, vá para vitoria.
 - Na partida, coloque a pergunta de vitória antes da pergunta de derrota.
@@ -46,7 +46,7 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 **Zappy na página (não gravar):** Acrescente os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No senão se inicio, encaixe Mostrar tela com a dica de Enter.
 - No senão se vitoria, encaixe Mostrar tela com a dica de Enter.
@@ -70,17 +70,17 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 **Zappy na página (não gravar):** Amplie o evento Enter com os ramos fim e vitoria. Em cada um, use Reiniciar o jogo.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.
 
 ### Seção 5. Confira o que você construiu
 
-**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
@@ -92,7 +92,7 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 **Zappy na página (não gravar):** Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - Crie a constante alvo = 26 em Ao iniciar.
 - Vá para inicio em Ao iniciar.
@@ -115,7 +115,7 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 - A colisão que tira vida fica na partida.
 - Dê 3 vidas à nave em Ao iniciar.
 
-Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.
+Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.
 
 ## Blocos disponíveis
 

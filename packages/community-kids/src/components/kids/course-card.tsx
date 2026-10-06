@@ -17,7 +17,7 @@ interface CourseCardProps {
  *
  * Desenho das telas-modelo (11/09/2026): cartão branco de cantos de 24px, a capa em cima
  * (sem capa, a caixa clara com o livro), o sobretítulo, o título em Baloo, a frase, o
- * "N de M aulas" com a porcentagem em verde, a barra verde e o botão de largura toda:
+ * "N de M fases" com a porcentagem em verde, a barra verde e o botão de largura toda:
  * azul para continuar, creme para começar ou revisar.
  */
 export function CourseCard({ course }: CourseCardProps) {
@@ -28,7 +28,7 @@ export function CourseCard({ course }: CourseCardProps) {
   const cta = publishing
     ? 'Preparar publicação'
     : done
-      ? 'Revisar curso'
+      ? 'Revisar aventura'
       : started
         ? 'Continuar'
         : 'Começar agora'
@@ -63,18 +63,18 @@ export function CourseCard({ course }: CourseCardProps) {
           </div>
         )}
         {/* Só o que FALTA: "pronta" aqui seria redundante com a barra em 100% e o
-            "Revisar curso" logo abaixo. O que a home precisa dizer é o pendente. */}
+            "Revisar aventura" logo abaixo. O que a home precisa dizer é o pendente. */}
         <CourseBadgeChip course={course} only="publicar" className="absolute top-2 left-2" />
       </div>
       <div className="flex flex-1 flex-col p-5">
         <p className="font-bold text-muted-foreground text-xs">
           {course.journeyRole === 'extra'
-            ? 'Curso extra'
+            ? 'Aventura extra'
             : course.careerSlot === 1
-              ? 'Primeiro da trilha'
+              ? 'Primeira da trilha'
               : typeof course.careerSlot === 'number'
-                ? 'Curso da jornada'
-                : 'Curso bônus'}
+                ? 'Aventura da jornada'
+                : 'Aventura bônus'}
         </p>
         <h3 className="sz-display mt-1.5 text-lg md:text-xl">{course.title}</h3>
         {course.subtitle ? (
@@ -88,7 +88,7 @@ export function CourseCard({ course }: CourseCardProps) {
           <CourseAccessExpiry expiresAt={course.access.expiresAt} className="mb-3" />
           <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
             <span>
-              {progress.completedLessons} de {progress.totalLessons} aulas
+              {progress.completedLessons} de {progress.totalLessons} fases
             </span>
             <span
               className={cn(

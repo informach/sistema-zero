@@ -260,7 +260,7 @@ function leituras(
       ]
     case 'copy-vs-original':
       return [
-        { label: 'jogo da aula', value: state.copies.lessonColor, tone: 'a' },
+        { label: 'jogo da fase', value: state.copies.lessonColor, tone: 'a' },
         { label: 'arquivo', value: state.copies.fileColor ?? 'ainda não existe', tone: 'plain' },
         { label: 'projeto no Estúdio', value: state.copies.studioColor ?? 'vazio', tone: 'b' },
       ]
@@ -1036,7 +1036,7 @@ function situacao(scene: SceneId, state: SceneState): string {
     case 'two-clocks':
       return `Quadro ${state.twoClocks.frames}. Nasceram ${state.twoClocks.born} pedras; cada uma troca desenhos a ${state.twoClocks.animationRate} por segundo. A última nasceu no quadro ${state.twoClocks.lastBornAt}.`
     case 'copy-vs-original':
-      return `O jogo da aula está ${state.copies.lessonColor}. ${state.copies.fileColor ? 'O arquivo foi exportado.' : 'Ainda não há arquivo.'} ${state.copies.studioColor ? `O projeto do Estúdio está ${state.copies.studioColor}.` : 'O Estúdio ainda não tem projeto.'}`
+      return `O jogo da fase está ${state.copies.lessonColor}. ${state.copies.fileColor ? 'O arquivo foi exportado.' : 'Ainda não há arquivo.'} ${state.copies.studioColor ? `O projeto do Estúdio está ${state.copies.studioColor}.` : 'O Estúdio ainda não tem projeto.'}`
     case 'published-copy':
       return `Seu projeto está ${state.copies.projectColor}. O Mural tem ${state.copies.posts.length} ${state.copies.posts.length === 1 ? 'publicação' : 'publicações'}; ${state.copies.posts.length ? `a mais recente está ${state.copies.posts.at(-1)?.color}.` : 'a tela está vazia.'}`
     case 'same-rules-new-skin':

@@ -40,7 +40,7 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 **Zappy na página (não gravar):** Crie o grupo asteroides e um intervalo de 40 quadros, ao lado de A cada quadro do jogo.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Crie o grupo asteroides em Ao iniciar.
 - Use A cada 40 quadros como vizinho de A cada quadro do jogo.
@@ -64,7 +64,7 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 **Zappy na página (não gravar):** Monte o asteroide no intervalo e o ciclo do grupo em cada quadro.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.
 - Mantenha um único comando de criar asteroide.
@@ -80,7 +80,7 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 **Zappy na página (não gravar):** Teste 80 e 40 no intervalo, mantenha 40 e envie o projeto.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - Crie o grupo asteroides em Ao iniciar.
 - Use A cada 40 quadros como vizinho de A cada quadro do jogo.

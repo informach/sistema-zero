@@ -21,6 +21,7 @@ import {
 import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
+import { KidsLessonCopy } from '../src/components/kids/kids-lesson-copy'
 
 const lesson: LessonDetailView = {
   id: 'lesson',
@@ -472,6 +473,28 @@ describe('aula por seções', () => {
     await screen.findByRole('heading', { name: 'Preparar' })
     // Navegar FECHA o menu: aberto, ele cobriria justamente o começo da seção nova.
     expect(summary.closest('details')?.open).toBe(false)
+  })
+  test('no Kids, com o vocabulário da aventura, a fase fala parte e guia', () => {
+    // Os testes acima montam a aula SEM o provedor do Kids e leem o texto adulto. Este monta
+    // como a página da fase monta (`KidsLessonCopy` no layout), e é ele que garante que a
+    // troca de 06/10/2026 chega à tela: parte no lugar de seção e guia no lugar de professor.
+    render(
+      <KidsLessonCopy>
+        <LessonPlayerProvider value={player}>
+          <LessonSections
+            lesson={{ ...lesson, sectionProgress: progression(1) }}
+            kids
+            renderBlocks={() => null}
+          />
+        </LessonPlayerProvider>
+      </KidsLessonCopy>,
+    )
+    expect(screen.getByText('Partes da fase')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Próxima parte' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: /Preciso de ajuda/ }))
+    expect(screen.getByRole('button', { name: 'Enviar para o guia' })).toBeTruthy()
+    for (const adulto of ['Índice da aula', 'Próxima seção', 'Enviar ao professor'])
+      expect(screen.queryByText(adulto)).toBeNull()
   })
   test('falha de navegação mantém a seção atual; a nova tentativa preserva o projeto', async () => {
     let fail = true

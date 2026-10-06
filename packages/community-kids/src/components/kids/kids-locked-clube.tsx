@@ -4,7 +4,7 @@ import { KidsLockedProduct } from './kids-locked-product'
 const PREVIEW = [
   { emoji: '💬', text: 'Converse com a turma e faça amizades' },
   { emoji: '🎨', text: 'Mostre as suas criações e descobertas' },
-  { emoji: '📣', text: 'Veja os recados e novidades dos professores' },
+  { emoji: '📣', text: 'Veja os recados e novidades da equipe' },
 ] as const
 
 /**

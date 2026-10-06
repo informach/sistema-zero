@@ -14,7 +14,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e o Zappy segurando a bandeira, com a legenda "só depois da largada"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e o Zappy segurando a bandeira, com a legenda "só depois da largada"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender o estado do jogo: ele guarda em que momento o jogo está. Vamos usar inicio, para a abertura, e jogando, para a partida.
@@ -25,7 +25,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > Por último, eu clico em Toque para começar, na tela da experiência. O estado vira jogando, e as pedras voltam a nascer. Aqui, o começo por toque já veio pronto. No seu jogo, você vai programar o Enter para começar a partida.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Compare criar asteroides fora e dentro de Se jogando, antes e depois de começar.
 
@@ -35,10 +35,10 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** O bloco de estado inicial entra depois de criar os ramos para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. Não colocar o relógio de 40 quadros dentro do quadro principal. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** O bloco de estado inicial entra depois de criar os ramos para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. Não colocar o relógio de 40 quadros dentro do quadro principal. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Na experiência da seção anterior, você comparou a criação de pedras com e sem a pergunta sobre o estado. No seu jogo, as pedras começam a cair assim que ele abre. Agora separe a abertura da partida com essa pergunta.
+> "Lembra da experiência da parte anterior? Você comparou a criação de pedras com e sem a pergunta sobre o estado. No seu jogo, as pedras começam a cair assim que ele abre. Agora separe a abertura da partida com essa pergunta.
 >
 > Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
 >
@@ -52,9 +52,9 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > Deixe à vista o então do ramo inicio. Na mesma categoria Telas e partida, pegue Mostrar tela com título subtítulo dica fundo e encaixe no então desse senão se. Confira o título Nave contra Asteroides. No subtítulo, escreva Destrua os asteroides. Na dica, escreva Aperte Enter para começar. Escolha um fundo escuro que deixe o texto legível.
 >
-> Deixe à vista o fim de Ao iniciar. Ainda em Jogo 2D, Jogo e telas, Telas e partida, pegue Mudar o estado do jogo para. Encaixe no fim de Ao iniciar e escolha inicio. Agora a abertura deve aparecer. Se a tela ficar vazia, confira se o senão se pergunta por inicio e se Mostrar tela está dentro desse ramo. Enter ainda não começa porque vamos montar essa resposta em outra seção.
+> Deixe à vista o fim de Ao iniciar. Ainda em Jogo 2D, Jogo e telas, Telas e partida, pegue Mudar o estado do jogo para. Encaixe no fim de Ao iniciar e escolha inicio. Agora a abertura deve aparecer. Se a tela ficar vazia, confira se o senão se pergunta por inicio e se Mostrar tela está dentro desse ramo. Enter ainda não começa porque vamos montar essa resposta em outra parte.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Leve os blocos da partida para Se jogando e crie o ramo da abertura.
 
@@ -64,7 +64,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
 > "A abertura já aparece, mas criar pedras e disparar estão em outros lugares do projeto. Vamos fazer essas ações esperarem a partida também.
@@ -81,7 +81,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > Clique no jogo e toque na barra de espaço na abertura. Não deve haver som de tiro. Confira os dois encaixes: criar asteroide dentro de Se jogando, no intervalo; criar tiro e tocar som dentro de Se jogando, no evento. A tela de abertura cobre o jogo, então olhar só a imagem não prova que nenhuma pedra foi criada.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Coloque uma condição jogando no intervalo e outra dentro da barra de espaço.
 
@@ -91,7 +91,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
 > "Agora programe a tecla que começa a partida. Deixe à vista o encaixe depois do evento inteiro da barra de espaço, em Quando acontecer. Abra Jogo 2D, depois Controles e Teclado, ações e toque. Pegue Quando apertar a tecla e encaixe dentro de Quando acontecer, abaixo do evento inteiro da barra de espaço. Escolha Enter.
@@ -102,10 +102,10 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > Deixe à vista o então dessa condição. Na mesma categoria Telas e partida, pegue Mudar o estado do jogo para, encaixe dentro do então e escolha jogando. Essa regra faz Enter começar a partida somente na abertura.
 >
-> Clique na área do jogo. Confira a abertura, toque em Enter e teste setas e tiros. As pedras devem cair, os pontos devem contar e as batidas devem tirar vidas. Toque em Enter durante a partida: ela deve continuar, sem recomeçar. Ainda não montamos o encerramento; ficar sem vidas não muda de tela nesta etapa.
+> Clique na área do jogo. Confira a abertura, toque em Enter e teste setas e tiros. As pedras devem cair, os pontos devem contar e as batidas devem tirar vidas. Toque em Enter durante a partida: ela deve continuar, sem recomeçar. Você ainda não montou o encerramento; por enquanto, ficar sem vidas não muda de tela.
 >
 > Se Enter não começar, confira a tecla escolhida, a condição inicio e a mudança para jogando dentro do então.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar. Quando o envio terminar, clique em Concluir fase."
 
 **Zappy na página (não gravar):** Programe Enter, teste a abertura e a partida e envie.

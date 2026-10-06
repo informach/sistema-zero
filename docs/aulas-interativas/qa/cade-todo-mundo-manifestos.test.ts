@@ -120,7 +120,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       caderno && 'content' in caderno && caderno.content.kind === 'materials'
         ? caderno.content.title
         : undefined,
-    ).toBe('Caderno do Aluno: Cadê Todo Mundo?')
+    ).toBe('Mapa da Aventura: Cadê Todo Mundo?')
     const experience = m.blocks.find((block) => block.key === 'experiencia-toque')
     expect(experience?.content?.kind).toBe('interactive')
     if (experience?.content?.kind === 'interactive') {
@@ -255,6 +255,16 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
         ),
       ).toBe(false)
     }
+  })
+
+  test('o certificado fala de aventura e de criador', () => {
+    // Vocabulário da aventura (06/10/2026).
+    const certificado = manifesto('certificado').blocks.find((b) => b.key === 'certificado')
+    expect(certificado?.content).toMatchObject({
+      kind: 'certificate',
+      title: 'Certificado de Criador',
+      coursePhrase: 'completou a aventura Cadê Todo Mundo?',
+    })
   })
 
   test('a cena exige vídeo e descoberta; a prática exige vídeo e projeto', () => {

@@ -4,7 +4,7 @@
 
 **Descrição curta:** Programe sua primeira aventura: encontre a chave e acenda o farol para guiar um barco.
 
-**Descrição:** Conheça a aventura jogando uma versão pronta. Depois, em três dias, programe as regras do seu jogo: faça o personagem andar pelo mapa, recolher a chave e abrir a porta do farol quando estiver com ela. O cenário, os desenhos e o movimento do barco já vêm preparados. Você constrói as regras que ligam esses momentos, testa cada parte e aprende a publicar seu jogo no Mural. O Estúdio aparece dentro das aulas. Não é preciso usar o Pinta nem o Estúdio completo.
+**Descrição:** Conheça a aventura jogando uma versão pronta. Depois, em três dias, programe as regras do seu jogo: faça o personagem andar pelo mapa, recolher a chave e abrir a porta do farol quando estiver com ela. O cenário, os desenhos e o movimento do barco já vêm preparados. Você constrói as regras que ligam esses momentos, testa cada parte e aprende a publicar seu jogo no Mural. O Estúdio aparece dentro das fases. Não é preciso usar o Pinta nem o Estúdio completo.
 
 Revisão de 03/10/2026: aplicação do formato testado no Cadê Todo Mundo. Contexto pertinente antes de cada tarefa, instruções completas, menos navegação obrigatória, verificação antes do envio e publicação orientada.
 
@@ -38,14 +38,27 @@ A revisão de linguagem não mudou seções nem critérios. A divisão em seçõ
 
 **Revisão de 06/10/2026: falas que conversam com a criança.** A pedido do responsável, como no Cadê Todo Mundo?, e registrada nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6:
 
-- na apresentação do caderno, saiu o "Não precisa baixar nem imprimir", que a criança entendia como uma ordem para não baixar. O vídeo diz "Olha aqui: este é o seu Caderno do Aluno!" e oferece as duas escolhas: ler aqui mesmo, na aula, ou clicar em **Baixar** para guardar e consultar onde quiser. O Zappy da seção e a primeira página do caderno seguem a mesma ideia;
+- na apresentação do caderno, saiu o "Não precisa baixar nem imprimir", que a criança entendia como uma ordem para não baixar. O vídeo diz "Olha aqui: este é o seu Mapa da Aventura!" e oferece as duas escolhas: ler aqui mesmo ou clicar em **Baixar** para guardar o mapa e consultar onde quiser. O Zappy da seção e a primeira página do caderno seguem a mesma ideia;
 - a narração chama a atenção para a tela nos momentos que importam: "Olha aqui", "Olha só" quando aparece um resultado, "Repare" num detalhe e "Tá vendo?" depois do teste da retomada;
-- na segunda rodada do mesmo dia, cada fala virou uma conversa contínua: as frases se ligam, cada resultado vem com o porquê e cada experiência diz o que é cada coisa no próprio jogo. No Dia 3, "então" não é usado como palavra de ligação, porque é o nome de uma parte do Se;
+- na segunda rodada do mesmo dia, cada fala virou uma conversa contínua: as frases se ligam, cada resultado vem com o porquê e cada experiência diz o que é cada coisa no próprio jogo. No Dia 3, "então" não é usado como palavra de ligação, porque é o nome de um espaço do Se;
 - saíram das montagens as frases soltas sobre o que já vem preparado ("O cenário e os desenhos já estão preparados", "A variável ganhou já veio preparada", "O encontro com a chave já está pronto no seu projeto"). No lugar, a fala diz o papel de cada coisa no momento em que a criança a usa ("É essa variável que chama o barco");
 - as pontes do Zappy começam convidando ("Sua vez!", "Agora…!", "Hora de…!") e falam do jogo da criança;
 - o certificado comemora ("Parabéns pelo seu jogo!") e diz em voz ativa que quem montou as regras foi ela.
 
 Seções, blocos, critérios e identificadores não mudaram, e a fórmula de verificação continua a mesma dos outros cursos. Com as explicações, algumas experiências ficaram um pouco mais longas (as durações estão nos roteiros e nas tabelas das propostas). Os vídeos precisam ser gravados com as falas novas; o PDF do caderno foi regerado.
+
+**Revisão de 06/10/2026 (vocabulário da aventura).** A pedido do responsável, como no Cadê Todo Mundo?, tudo o que a criança vê e ouve usa o vocabulário da aventura das [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6. Por dentro (chaves, identificadores, `plannedVideo`, objetivos e documentos da equipe), curso, aula, seção e caderno continuam:
+
+- os botões citados nas falas, nas pontes e nas notas de gravação passaram a ser **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**; as retomadas dizem "Lembra da experiência da parte anterior?" e "Lembra da experiência da primeira parte desta fase?", e na publicação "Na aula, ele pode aparecer só como um ícone" virou "Aqui, ele pode aparecer…";
+- a seção 2 do Dia 1 se chama **Seu Mapa da Aventura**, o material é **Mapa da Aventura: A Chave do Farol** e o vídeo diz "Olha aqui: este é o seu Mapa da Aventura! (…) Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.";
+- no Dia 2, a comparação da variável passou de "anotar num caderno" para "anotar num bloquinho", também no meme e na partida nova, que "começa com o bloquinho em branco";
+- no Dia 3, como "parte" passou a ser o nome da seção, os ramos do bloco Se deixaram de ser "a parte então" e "a parte senão": a fala, a ponte do Zappy e o caderno dizem "o espaço do então" e "o espaço do senão" ("Complete o espaço do então"), como o Cadê fala do espaço vazio ao lado de fazer, e "na parte de baixo do bloco Se" virou "na linha de baixo do bloco Se";
+- os links do Como Fazer usam os títulos novos dos tutoriais, como "Como abrir uma fase e trocar de parte" e "Como pedir ajuda ao seu guia", com os mesmos endereços;
+- o PDF diz Mapa da Aventura na capa, no título e no rodapé, troca seção por parte e professor por guia e, nos cabeçalhos, "entrega" por "envio"; o arquivo continua `output/pdf/desafio-farol-caderno.pdf`, com 21 páginas;
+- sem imagem base, o certificado tem o título **Certificado de Criador**, e a frase passou de "concluiu o Desafio do Primeiro Jogo" para "completou o Desafio do Primeiro Jogo";
+- a descrição do curso diz "O Estúdio aparece dentro das fases".
+
+Seções, blocos, critérios, identificadores e durações não mudaram. No Admin, atualizar a descrição do curso, substituir o anexo do caderno e conferir os títulos das seções e o bloco do certificado.
 
 ## Módulo 1 · Sua aventura no farol
 
@@ -68,7 +81,7 @@ Identificador do curso e cadeia: `desafio-primeiro-jogo`. Aulas: `dia-1`, `dia-2
 
 A cadeia prioriza o envio anterior da criança. Os projetos embutidos dos Dias 2 e 3 são retomadas somente quando não há trabalho anterior. O jogo pronto do Dia 1 é uma atividade isolada e nunca deve substituir o projeto da criança.
 
-Cada entrega ensina testar, **Verificar esta etapa**, corrigir pendências, conferir **Objetivo da etapa cumprido!**, esperar **Salvo**, **Enviar para o professor** e confirmar **Enviar**. Testes manuais do comportamento complementam a verificação dos blocos.
+Cada entrega ensina testar, **Verificar esta parte**, corrigir pendências, conferir **Objetivo cumprido!**, esperar **Salvo**, **Enviar para o guia** e confirmar **Enviar**. Testes manuais do comportamento complementam a verificação dos blocos.
 
 No Dia 1, as experiências `quadro`, `tanto` e `limite` antecedem as montagens `andar`, `velocidade` e `borda`; só `borda` envia. No Dia 2, a primeira seção compara a coleta com e sem memória, o afastamento e o reinício. Depois, `recolher` e `guardar` verificam sem enviar, e `programar-chave` monta o aviso e envia. No Dia 3, `sem-chave` constrói e verifica a resposta em senão; `decisao` completa então e recebe a entrega única; `personalizar` (mexa e veja, sem critério) troca o personagem e os avisos antes da publicação. Os critérios são cumulativos:
 
@@ -86,12 +99,12 @@ No Dia 3, a seção de publicação usa o mesmo Estúdio da montagem. **Comparti
 
 ## Materiais de consulta
 
-- **Caderno do Aluno:** [desafio-farol-caderno.pdf](../../output/pdf/desafio-farol-caderno.pdf). PDF único com passos de montagem, testes, entrega, publicação e ajuda. Anexar em `materiais-farol`, com `bookPreview: true`.
+- **Mapa da Aventura (o caderno):** [desafio-farol-caderno.pdf](../../output/pdf/desafio-farol-caderno.pdf). PDF único com passos de montagem, testes, entrega, publicação e ajuda. Anexar em `materiais-farol`, com `bookPreview: true`.
 - **Como Fazer:** links contextuais no caderno e na primeira montagem do Dia 1 e na publicação. Abrem na mesma aba e permitem voltar à aula. Não exigir consulta, impressão ou download para concluir.
 
-O [gerador do caderno](recursos/desafio-farol/gerar-materiais.py) usa o conteúdo de `caderno-conteudo.json` e a composição de `gerar-caderno.ts`, com o mesmo CSS, fontes locais e blocos desenhados do Cadê Todo Mundo. O PDF tem 20 páginas, incluindo capa, montagens ilustradas, testes, publicação e certificado. O caderno deve ser anexado antes da gravação que o apresenta.
+O [gerador do caderno](recursos/desafio-farol/gerar-materiais.py) usa o conteúdo de `caderno-conteudo.json` e a composição de `gerar-caderno.ts`, com o mesmo CSS, fontes locais e blocos desenhados do Cadê Todo Mundo. O PDF tem 21 páginas, incluindo capa, montagens ilustradas, testes, publicação e certificado. O caderno deve ser anexado antes da gravação que o apresenta.
 
-O conteúdo do caderno acompanha as seções reais: visão geral, passos de montagem, testes, publicação, certificado e ajuda. Não existe um mapa como material ou atividade adicional. Por orientação posterior do responsável em 03/10/2026, o PDF do mapa para responsáveis foi retirado do repositório e não será gerado. O único material para anexar é o Caderno do Aluno.
+O conteúdo do caderno acompanha as seções reais: visão geral, passos de montagem, testes, publicação, certificado e ajuda. Não existe um mapa como material ou atividade adicional. Por orientação posterior do responsável em 03/10/2026, o PDF do mapa para responsáveis foi retirado do repositório e não será gerado. O único material para anexar é o caderno, que a criança vê como Mapa da Aventura.
 
 ## Atualização de aulas existentes
 

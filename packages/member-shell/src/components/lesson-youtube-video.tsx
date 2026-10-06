@@ -3,6 +3,7 @@
 import { mergeVideoCoverage, type VideoWatchCoverage } from '@sistemazero/core/learning'
 import { useEffect, useRef, useState } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
+import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
 
 interface YouTubePlayer {
@@ -61,6 +62,7 @@ function youtubeApi(): Promise<YouTubeApi> {
 /** YouTube exposes no played ranges. Sample only uninterrupted playback; seeks start a new range. */
 export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
   const context = useLessonPlayer()
+  const { video } = useLessonCopy()
   const callbacks = useRef(context)
   callbacks.current = context
   const host = useRef<HTMLDivElement>(null)
@@ -100,7 +102,7 @@ export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
         // The SDK owns this iframe and may remove it on destroy; React owns only the host.
         const iframe = document.createElement('iframe')
         iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`
-        iframe.title = 'Vídeo da aula'
+        iframe.title = video.titulo
         iframe.allow =
           'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
         iframe.allowFullscreen = true
@@ -149,18 +151,14 @@ export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
       player?.destroy()
       container.replaceChildren()
     }
-  }, [videoId])
+  }, [videoId, video.titulo])
   return (
     <div className="space-y-2">
       <div
         ref={host}
         className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-black"
       />
-      {error && (
-        <p role="alert">
-          Não foi possível carregar o vídeo. Confira sua conexão e reabra a aula para continuar.
-        </p>
-      )}
+      {error && <p role="alert">{video.erroAoCarregar}</p>}
     </div>
   )
 }

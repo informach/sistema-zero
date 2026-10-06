@@ -148,7 +148,7 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       return (
         <div className="kids-unit-lime flex flex-col gap-3">
           <BlockChip icon={Award} label="Conquiste" themeClass="kids-unit-lime" />
-          <CertificateBlockView blockId={block.id} content={content} tone="kids" />
+          <CertificateBlockView blockId={block.id} content={content} />
         </div>
       )
     case 'studio':
@@ -194,7 +194,7 @@ function Materials({
 }) {
   return (
     <div className="kids-unit-cyan flex flex-col gap-3">
-      <BlockChip icon={Backpack} label="Materiais" themeClass="kids-unit-cyan" />
+      <BlockChip icon={Backpack} label="Baixe" themeClass="kids-unit-cyan" />
       <MaterialsBlockView blockId={blockId} blockRevision={blockRevision} content={content} />
     </div>
   )
@@ -219,7 +219,7 @@ function ComingSoon({ content }: { content: ComingSoonBlock }) {
         <KidsMascot expression="sleeping" className="size-20" />
         {/* O título precisa ser verdade mesmo quando a autora escreve o recado dela
             ("essa aula chega em setembro") — por isso não promete "quase pronta". */}
-        <p className="sz-display text-lg">Essa aula ainda está sendo preparada</p>
+        <p className="sz-display text-lg">Essa fase ainda está sendo preparada</p>
         {/* Numa aula "em breve" este parágrafo é o CONTEÚDO INTEIRO da aula — não pode
             ficar tipografado como legenda secundária (`text-sm text-muted-foreground`). */}
         <p className="max-w-md text-base text-foreground">
@@ -276,7 +276,7 @@ function StudioBlockKids({
 // ── rich_text: markdown SIMPLES renderizado de forma controlada (sem HTML cru) ─
 function RichText({ content }: { content: RichTextBlock }) {
   // Um link para o "Como fazer" escrito no texto da aula leva o caminho DESTA aula de volta
-  // (`?voltar=`), para o tutorial oferecer "Voltar para a aula". Fora de aula, sem `voltar`.
+  // (`?voltar=`), para o tutorial oferecer "Voltar para a fase". Fora de aula, sem `voltar`.
   const pathname = usePathname()
   const markdown = content.markdown ?? ''
   if (!markdown) return null

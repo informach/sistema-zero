@@ -64,15 +64,15 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 ### Seção 6. Confira sua nave animada
 
-**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.
+**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
 **Quiz formativo:** somente Zappy → quiz, sem vídeo ou ferramenta. Todas corretas, explicação após responder e tentativas ilimitadas, sem espera.
 
-### Seção 7. Entregue a nave animada
+### Seção 7. Envie a nave animada
 
-**Tarefa / Zappy na página:** Confira nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Envie a arte desta aula pela galeria do Pinta desta seção.
+**Tarefa / Zappy na página:** Confira: nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Depois, envie a sua nave para o guia pela galeria do Pinta.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 

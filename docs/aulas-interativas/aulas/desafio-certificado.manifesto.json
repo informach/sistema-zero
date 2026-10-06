@@ -104,22 +104,23 @@
     },
     {
       "key": "video-certificado-farol",
-      "plannedVideo": "Título: Comemore sua criação\n\nReconhecer movimento, coleta e decisão programados pela criança. Mostrar Pegar meu certificado e encerrar em Concluir aula. Não incluir pitch comercial.\n\nRoteiro falado: desafio-certificado.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Comemore sua criação\n\nReconhecer movimento, coleta e decisão programados pela criança. Mostrar Pegar meu certificado e encerrar em Concluir fase. Não incluir pitch comercial.\n\nRoteiro falado: desafio-certificado.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "fala-certificado",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir aula."
+        "text": "Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir fase."
       }
     },
     {
       "key": "certificado",
       "content": {
         "kind": "certificate",
+        "title": "Certificado de Criador",
         "introLine": "Certificamos que",
-        "coursePhrase": "concluiu o Desafio do Primeiro Jogo",
+        "coursePhrase": "completou o Desafio do Primeiro Jogo",
         "bodyText": "Criou A Chave do Farol: movimento, coleta da chave e uma decisão que acende a luz."
       }
     }

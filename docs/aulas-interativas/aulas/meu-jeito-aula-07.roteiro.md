@@ -10,13 +10,15 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
 
+Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos títulos, a criança ouve e lê fase, parte, Mapa da Aventura e guia, e os botões pelo nome novo (Próxima parte, Concluir fase, Enviar para o guia, Recebido pelo seu guia.). Aula, seção e caderno ficam só nas notas da equipe.
+
 ## Seção 1. Compare nascer e animar
 
 ### Clipe `video-dois-relogios` · Compare nascer e animar
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 0, com uma pedra a cada 40 quadros e 8 desenhos por segundo: escolher 20 quadros em A cada quantos quadros nasce uma pedra, deixar 8 por segundo, clicar em Voltar ao começo e no Tempo. Deixar o tempo passar até o contador mostrar Quadro 60 e três pedras, mostrando o quadro 0 em cada pedra ao entrar; parar o Tempo. Escolher 40 quadros e 16 por segundo, dizendo que cada relógio vai para um lado, clicar em Voltar ao começo, ligar o Tempo por três segundos e deixar ver duas pedras com o número trocando mais depressa. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 0, com uma pedra a cada 40 quadros e 8 desenhos por segundo: escolher 20 quadros em A cada quantos quadros nasce uma pedra, deixar 8 por segundo, clicar em Voltar ao começo e no Tempo. Deixar o tempo passar até o contador mostrar Quadro 60 e três pedras, mostrando o quadro 0 em cada pedra ao entrar; parar o Tempo. Escolher 40 quadros e 16 por segundo, dizendo que cada relógio vai para um lado, clicar em Voltar ao começo, ligar o Tempo por três segundos e deixar ver duas pedras com o número trocando mais depressa. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender dois relógios que trabalham ao mesmo tempo: um faz as pedras nascerem, e o outro troca os desenhos de cada pedra.
@@ -31,7 +33,7 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > No seu jogo, o bloco A cada 40 quadros faz cada pedra nascer, e a animação chamada girando troca os desenhos de cada pedra 8 vezes por segundo. No bloco, isso aparece como 8 fps.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Agora mude os dois relógios e compare as pedras que nascem.
 
@@ -44,11 +46,11 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 **Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Abra meu Estúdio e retome o mesmo cartão da aula anterior. Deixe à vista o fim de Ao iniciar, logo depois da animação da nave. A nova folha vai entrar ali. Em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro.
+> "Clique em Abrir meu Estúdio e retome o mesmo cartão da fase anterior. Deixe à vista o fim de Ao iniciar, logo depois da animação da nave. A nova folha vai entrar ali. Em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro.
 >
 > Encaixe no fim de Ao iniciar, depois da animação da nave. Confira as duas folhas: folha-nave continua 32 por 32; folha-asteroide usa 64 por 64. Carregar a folha ainda não troca as pedras do jogo. Aguarde Salvo.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
+> Pause aqui para fazer esta parte no seu jogo. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que a gente acabou de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima parte."
 
 **Zappy na página (não gravar):** Carregue folha-asteroide com quadros de 64 por 64.
 
@@ -69,7 +71,7 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > Comece a partida e veja se caem suas imagens em lugares diferentes. Ainda pode aparecer a folha inteira espremida: falta ligar a animação de cada pedra. Confira o grupo asteroides e o nome asteroide, que são diferentes. Aguarde Salvo.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
+> Pause aqui para fazer esta parte no seu jogo. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que a gente acabou de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima parte."
 
 **Zappy na página (não gravar):** Substitua o criador das pedras, preservando o grupo, o sorteio e a velocidade.
 
@@ -88,27 +90,27 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > Comece uma partida. Observe pelo menos três pedras entrando com a animação, mova a nave e atire. Acerte uma pedra para conferir os pontos e deixe uma encostar na nave para conferir a perda de vida. Se a arte não aparecer inteira, confira folha-asteroide e recorte 64 por 64. Aguarde Salvo.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
+> Pause aqui para fazer esta parte no seu jogo. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que a gente acabou de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima parte."
 
 **Zappy na página (não gravar):** Coloque a animação girando logo abaixo do criador, dentro do mesmo Se.
 
 ## Seção 5. Confira as artes dentro do jogo
 
-**Zappy na página (não gravar):** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.
+**Zappy na página (não gravar):** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte.
 
 Sem vídeo nem ferramenta. O quiz vem imediatamente depois do Zappy. Correção com explicação, tentativas ilimitadas e sem espera.
 
-## Seção 6. Entregue o jogo com as duas artes
+## Seção 6. Envie o jogo com as duas artes
 
-### Clipe `video-entrega` · Entregue o jogo com as duas artes
+### Clipe `video-entrega` · Envie o jogo com as duas artes
 
 **Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Antes de enviar, confira no seu trabalho: nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.
+> "Antes de enviar, confira no seu jogo: nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.
 >
-> Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+> Volte para a aba da fase. Clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. Se quiser, escreva uma mensagem em Recado para o guia. Clique em Enviar para o guia (1). Espere aparecer Recebido pelo seu guia. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir fase."
 
-**Zappy na página (não gravar):** Confira nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.
+**Zappy na página (não gravar):** Confira: nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.

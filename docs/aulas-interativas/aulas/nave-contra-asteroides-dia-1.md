@@ -41,7 +41,7 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 **Zappy na página (não gravar):** Coloque o movimento antes do desenho da nave e teste as duas setas.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Mova nave com as setas, velocidade 7, antes de desenhá-la.
 
@@ -53,7 +53,7 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 **Zappy na página (não gravar):** Encaixe Limpar a tela antes de mover e desenhar. Repita o teste da seta.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Limpe a tela antes de mover e desenhar a nave.
 
@@ -75,7 +75,7 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 **Zappy na página (não gravar):** Teste as duas bordas e coloque o limite entre mover e desenhar.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Mova nave antes de prendê-la à tela.
 - Mantenha nave dentro da tela antes de desenhá-la.
@@ -98,30 +98,30 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 **Zappy na página (não gravar):** Adicione as estrelas e confira a ordem dos cinco blocos.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Limpe antes de desenhar o céu estrelado.
 - Desenhe as estrelas com velocidade 1 antes da nave.
 
 ### Seção 8. Confira o que você construiu
 
-**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 9. Teste e envie sua nave
 
-**Tarefa:** Confira o movimento nas duas bordas, verifique a etapa e envie o projeto.
+**Tarefa:** Confira o movimento nas duas bordas, verifique esta parte e envie o projeto.
 
 **Blocos na página:** video-teste-e-envio → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Confira o movimento nas duas bordas, verifique a etapa e envie o projeto.
+**Zappy na página (não gravar):** Confira o movimento nas duas bordas, verifique esta parte e envie o projeto.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - Deixe a tela de 800 × 480 em Ao iniciar.
 - Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.

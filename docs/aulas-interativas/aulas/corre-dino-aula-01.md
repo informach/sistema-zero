@@ -25,21 +25,21 @@ A abertura e o caderno ficam junto da primeira construção. Preparação, taman
 
 ### Seção 1. Jogue antes de construir
 
-**Tarefa:** Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.
+**Tarefa:** Jogue um pouco para conhecer os controles. Depois clique em Próxima parte.
 
 **Blocos na página:** video-abertura → fala-apresentacao → jogo-pronto.
 
-**Zappy na página (não gravar):** Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.
+**Zappy na página (não gravar):** Jogue um pouco para conhecer os controles. Depois clique em Próxima parte.
 
 Versão completa do mesmo jogo, derivada do marco original 13. Conclusão por participação; vencer não é exigência para conhecer o jogo.
 
-### Seção 2. Seu Caderno do Aluno
+### Seção 2. Seu Mapa da Aventura
 
-**Tarefa:** O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção.
+**Tarefa:** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
 **Blocos na página:** video-caderno → fala-caderno → caderno.
 
-**Zappy na página (não gravar):** O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção.
+**Zappy na página (não gravar):** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
 Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.
 
@@ -71,7 +71,7 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Prepare a tela em Ao iniciar com largura 480 e altura 270.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Coloque a área Ao iniciar no projeto.
 - Prepare a tela de 480 por 270 dentro de Ao iniciar.
@@ -84,7 +84,7 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Confira o contorno da tela e a espessura 4.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Prepare a tela de 480 por 270 antes de mostrar a borda.
 - Coloque Mostrar a borda da tela em Ao iniciar, com espessura 4.
@@ -117,20 +117,20 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Crie dino em x 110, y 150 e tamanho 64, abaixo da borda.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Deixe o Criar dinossauro logo abaixo da borda da tela.
 - Crie o dinossauro dino em Ao iniciar: x 110, y 150 e tamanho 64.
 
 ### Seção 10. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - Coloque a área Ao iniciar no projeto.
 - Prepare a tela de 480 por 270, antes da borda.

@@ -110,7 +110,7 @@ const aberturaBlocks = [
   ),
   fala(
     'ponte-intro-farol',
-    'Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima seção.',
+    'Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima parte.',
   ),
   {
     key: 'jogo-pronto',
@@ -132,31 +132,31 @@ const aberturaBlocks = [
   },
   video(
     'video-intro-caderno',
-    'Seu Caderno do Aluno',
+    'Seu Mapa da Aventura',
     'desafio-dia-1.roteiro.md',
-    'Chamar a atenção para o Caderno do Aluno (Olha aqui: este é o seu Caderno do Aluno!), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo, na aula, ou clicar em Baixar para guardar o caderno e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar material de mapa nem ensinar o leitor.',
+    'Chamar a atenção para o caderno, que a criança conhece como Mapa da Aventura (Olha aqui: este é o seu Mapa da Aventura!), a consulta que acompanha as seções do curso: montagem, testes, publicação e certificado. Oferecer as duas escolhas como convite: ler aqui mesmo ou clicar em Baixar para guardar o mapa e consultar onde quiser. Não dizer que não precisa baixar ou imprimir: soa como uma ordem para não fazer. Apontar Baixar sem demonstrar o download. Não inventar material de mapa nem ensinar o leitor.',
   ),
   fala(
     'ponte-intro-caderno',
-    'Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.',
+    'Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.',
   ),
   {
     key: 'materiais-farol',
     content: {
       kind: 'materials',
-      title: 'Caderno do Aluno: A Chave do Farol',
+      title: 'Mapa da Aventura: A Chave do Farol',
       bookPreview: true,
       items: [],
     },
   },
   // Consultar a ajuda é opcional. O jogo e a tarefa vêm antes dos tutoriais de interface.
   ajudaComoFazer('ajuda-como-fazer-intro', 'Como Fazer: ajuda para usar a plataforma', [
-    ['plataforma-baixar-materiais', 'Como ler o caderno na tela ou baixar os materiais'],
-    ['plataforma-abrir-uma-aula', 'Como abrir uma aula e trocar de seção'],
-    ['plataforma-ampliar-a-atividade', 'Como dar mais espaço para a atividade na aula'],
-    ['plataforma-mostrar-o-menu', 'Como mostrar o menu dentro da aula ou da ferramenta'],
-    ['plataforma-voltar-para-a-aula', 'Como voltar para a aula de onde parei'],
-    ['plataforma-pedir-ajuda', 'Como pedir ajuda ao professor'],
+    ['plataforma-baixar-materiais', 'Como ler o Mapa da Aventura na tela ou baixar os materiais'],
+    ['plataforma-abrir-uma-aula', 'Como abrir uma fase e trocar de parte'],
+    ['plataforma-ampliar-a-atividade', 'Como dar mais espaço ao jogo e à experiência'],
+    ['plataforma-mostrar-o-menu', 'Como mostrar o menu dentro da fase ou da ferramenta'],
+    ['plataforma-voltar-para-a-aula', 'Como voltar para a fase de onde parei'],
+    ['plataforma-pedir-ajuda', 'Como pedir ajuda ao seu guia'],
   ]),
 ]
 const aberturaSections = [
@@ -170,7 +170,7 @@ const aberturaSections = [
   ),
   secao(
     'caderno',
-    'Seu Caderno do Aluno',
+    'Seu Mapa da Aventura',
     'material',
     'Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.',
     ['video-intro-caderno', 'ponte-intro-caderno', 'materiais-farol', 'ajuda-como-fazer-intro'],
@@ -214,7 +214,7 @@ const dia1 = {
       'video-d1-quadro',
       'Como o personagem anda',
       'desafio-dia-1.roteiro.md',
-      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o x fica igual) e com a seta (o x sobe), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima seção.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o x fica igual) e com a seta (o x sobe), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima parte.',
     ),
     fala('ponte-d1-quadro', 'Sua vez! Avance um quadro de cada vez e fique de olho no x.'),
     experienciaAndar(
@@ -227,17 +227,17 @@ const dia1 = {
       'video-d1-andar',
       'Faça o personagem andar',
       'desafio-dia-1.roteiro.md',
-      'Começar pela retomada: a experiência mostrou o andar a cada quadro; no jogo, o personagem está parado e não há setas. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com velocidade 3. Testar as setas, Verificar esta etapa, Salvo e Próxima seção, sem envio.',
+      'Começar pela retomada: a experiência mostrou o andar a cada quadro; no jogo, o personagem está parado e não há setas. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com velocidade 3. Testar as setas, Verificar esta parte, Salvo e Próxima parte, sem envio.',
     ),
     fala(
       'ponte-d1-andar',
-      'Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta etapa.',
+      'Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte.',
     ),
     video(
       'video-d1-tanto',
       'O tanto que ele anda',
       'desafio-dia-1.roteiro.md',
-      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a velocidade é o tamanho do passo. Mostrar Velocidade 3 e Velocidade 1 avançando quadros, com o x e as marcas, e dizer a diferença. Terminar com Agora é a sua vez e Próxima seção.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a velocidade é o tamanho do passo. Mostrar Velocidade 3 e Velocidade 1 avançando quadros, com o x e as marcas, e dizer a diferença. Terminar com Agora é a sua vez e Próxima parte.',
     ),
     fala('ponte-d1-tanto', 'Sua vez! Compare as duas velocidades e repare nas marcas no chão.'),
     experienciaAndar(
@@ -250,17 +250,17 @@ const dia1 = {
       'video-d1-velocidade',
       'Escolha a velocidade',
       'desafio-dia-1.roteiro.md',
-      'Mexa e veja numa seção própria. Começar pela retomada: no jogo, segurar uma seta e notar o tanto que ele anda com 3. Com o bloco de movimento à vista, trocar o 3 por um número de 1 a 6, testar alguns e deixar o preferido; a escolha fica no jogo. Verificar esta etapa (confere só o movimento, com qualquer velocidade), Salvo e Próxima seção, sem envio.',
+      'Mexa e veja numa seção própria. Começar pela retomada: no jogo, segurar uma seta e notar o tanto que ele anda com 3. Com o bloco de movimento à vista, trocar o 3 por um número de 1 a 6, testar alguns e deixar o preferido; a escolha fica no jogo. Verificar esta parte (confere só o movimento, com qualquer velocidade), Salvo e Próxima parte, sem envio.',
     ),
     fala(
       'ponte-d1-velocidade',
-      'Escolha a velocidade do seu personagem: troque o 3 por um número de 1 a 6, teste e deixe o que você mais gostar. Depois clique em Verificar esta etapa.',
+      'Escolha a velocidade do seu personagem: troque o 3 por um número de 1 a 6, teste e deixe o que você mais gostar. Depois clique em Verificar esta parte.',
     ),
     video(
       'video-d1-limite',
       'Até onde ele pode ir?',
       'desafio-dia-1.roteiro.md',
-      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado. Terminar com Agora é a sua vez e Próxima seção.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado. Terminar com Agora é a sua vez e Próxima parte.',
     ),
     fala(
       'ponte-d1-limite',
@@ -276,16 +276,16 @@ const dia1 = {
       'video-d1-borda',
       'Mantenha o personagem na tela',
       'desafio-dia-1.roteiro.md',
-      'Começar pela retomada: a experiência mostrou o limite; no jogo, ainda sem limite, mostrar o personagem saindo pela beirada. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo. Testar as quatro beiradas, Verificar esta etapa, Objetivo da etapa cumprido!, Salvo, envio com confirmação e Concluir aula.',
+      'Começar pela retomada: a experiência mostrou o limite; no jogo, ainda sem limite, mostrar o personagem saindo pela beirada. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo. Testar as quatro beiradas, Verificar esta parte, Objetivo cumprido!, Salvo, envio com confirmação e Concluir fase.',
     ),
     fala(
       'ponte-d1-borda',
-      'Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta etapa antes de enviar para o professor.',
+      'Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte antes de enviar para o guia.',
     ),
     projeto('dia-1'),
     ajudaComoFazer('ajuda-d1', 'Se precisar de ajuda', [
-      ['plataforma-ampliar-a-atividade', 'Como dar mais espaço para a atividade'],
-      ['plataforma-pedir-ajuda', 'Como pedir ajuda ao professor'],
+      ['plataforma-ampliar-a-atividade', 'Como dar mais espaço ao jogo e à experiência'],
+      ['plataforma-pedir-ajuda', 'Como pedir ajuda ao seu guia'],
     ]),
   ],
   sections: [
@@ -360,7 +360,7 @@ const dia2 = {
       'video-d2-contexto',
       'O jogo guardou a chave?',
       'desafio-dia-2.roteiro.md',
-      'Situar a coleta que falta. Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: encostar na chave é um evento, e guardar é como anotar num caderno. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima seção.',
+      'Situar a coleta que falta. Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: encostar na chave é um evento, e guardar é como anotar num bloquinho. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima parte.',
     ),
     fala(
       'ponte-d2-contexto',
@@ -383,31 +383,31 @@ const dia2 = {
       'video-d2-recolher',
       'Recolha a chave',
       'desafio-dia-2.roteiro.md',
-      'Começar pela retomada: no jogo, o personagem passa pela chave e nada acontece, porque nenhuma ação está ligada ao encontro. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar o encontro personagem/chave dentro dela e Destruir o sprite chave dentro dele. Testar a chave sumindo e voltando com Atualizar. Verificar esta etapa, Salvo e Próxima seção, sem envio.',
+      'Começar pela retomada: no jogo, o personagem passa pela chave e nada acontece, porque nenhuma ação está ligada ao encontro. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar o encontro personagem/chave dentro dela e Destruir o sprite chave dentro dele. Testar a chave sumindo e voltando com Atualizar. Verificar esta parte, Salvo e Próxima parte, sem envio.',
     ),
     fala(
       'ponte-d2-recolher',
-      'Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta etapa.',
+      'Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte.',
     ),
     video(
       'video-d2-guardar',
       'Guarde que a chave foi encontrada',
       'desafio-dia-2.roteiro.md',
-      'Começar pela retomada: como na experiência com Guardar a coleta desligado, a chave some, mas nada guarda a coleta. Criar temChave começando em falso no fim de Ao iniciar e mudar para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite. Verificar esta etapa, Salvo e Próxima seção, sem envio.',
+      'Começar pela retomada: como na experiência com Guardar a coleta desligado, a chave some, mas nada guarda a coleta. Criar temChave começando em falso no fim de Ao iniciar e mudar para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite. Verificar esta parte, Salvo e Próxima parte, sem envio.',
     ),
     fala(
       'ponte-d2-guardar',
-      'Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa.',
+      'Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte.',
     ),
     video(
       'video-d2-programar',
       'Avise quem está jogando',
       'desafio-dia-2.roteiro.md',
-      'Começar pela retomada: no jogo, a chave some, mas a mensagem continua a inicial. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo, envio confirmado e Concluir aula.',
+      'Começar pela retomada: no jogo, a chave some, mas a mensagem continua a inicial. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo, envio confirmado e Concluir fase.',
     ),
     fala(
       'ponte-d2-programar',
-      'Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor.',
+      'Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar para o guia.',
     ),
     projeto('dia-2'),
   ],
@@ -463,7 +463,7 @@ const dia3 = {
       'video-d3-condicao',
       'Quando a porta pode abrir?',
       'desafio-dia-3.roteiro.md',
-      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: condição é a pergunta que a porta confere, como a porta de casa que só abre com a chave. Testar a porta sem a chave (senão) e com a chave (então), nomeando temChave. Terminar com Agora é a sua vez e Próxima seção.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: condição é a pergunta que a porta confere, como a porta de casa que só abre com a chave. Testar a porta sem a chave (senão) e com a chave (então), nomeando temChave. Terminar com Agora é a sua vez e Próxima parte.',
     ),
     fala(
       'ponte-d3-condicao',
@@ -490,41 +490,41 @@ const dia3 = {
       'video-d3-sem-chave',
       'Avise quando faltar a chave',
       'desafio-dia-3.roteiro.md',
-      'Começar pela retomada: no jogo, o personagem chega ao farol e nada acontece. No projeto enviado no Dia 2, guiar evento separado personagem/farol, Se consultando temChave e aviso em senão. Explicitar então ainda vazio. Testar sem chave, Verificar esta etapa, corrigir pendências, esperar Salvo e Próxima seção. Não enviar nesta etapa intermediária.',
+      'Começar pela retomada: no jogo, o personagem chega ao farol e nada acontece. No projeto enviado no Dia 2, guiar evento separado personagem/farol, Se consultando temChave e aviso em senão. Explicitar então ainda vazio. Testar sem chave, Verificar esta parte, corrigir pendências, esperar Salvo e Próxima parte. Não enviar nesta etapa intermediária.',
     ),
     fala(
       'ponte-d3-sem-chave',
-      'Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir.',
+      'Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta parte antes de seguir.',
     ),
     video(
       'video-d3-decisao',
       'Acenda o farol com a chave',
       'desafio-dia-3.roteiro.md',
-      'Começar pela retomada: no jogo, com a chave, a luz não acende porque então está vazio. Continuar no mesmo Se e projeto da seção anterior. Completar então com ganhou, imagem e aviso. Testar sem chave, buscar e voltar na mesma partida, depois reiniciar e conferir sem chave. Verificação cumulativa, Salvo, envio único com confirmação e Próxima seção.',
+      'Começar pela retomada: no jogo, com a chave, a luz não acende porque então está vazio. Continuar no mesmo Se e projeto da seção anterior. Completar então com ganhou, imagem e aviso. Testar sem chave, buscar e voltar na mesma partida, depois reiniciar e conferir sem chave. Verificação cumulativa, Salvo, envio único com confirmação e Próxima parte.',
     ),
     fala(
       'ponte-d3-decisao',
-      'Agora acenda o farol! Complete a parte então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor.',
+      'Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta parte e envie para o guia.',
     ),
     video(
       'video-d3-personalizar',
       'Deixe o jogo com a sua cara',
       'desafio-dia-3.roteiro.md',
-      'Mexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e o bloco Criar sprite personagem; no fim dele, clicar no nome da imagem e escolher outro personagem. Dizer que todos têm o mesmo tamanho, então andar, pegar a chave e chegar ao farol continuam iguais. Depois, em Quando acontecer, escrever os avisos com as próprias palavras. Ensinar a voltar a um personagem se outra imagem for escolhida. Testar a aventura e terminar em Próxima seção. As escolhas não viram critério.',
+      'Mexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e o bloco Criar sprite personagem; no fim dele, clicar no nome da imagem e escolher outro personagem. Dizer que todos têm o mesmo tamanho, então andar, pegar a chave e chegar ao farol continuam iguais. Depois, em Quando acontecer, escrever os avisos com as próprias palavras. Ensinar a voltar a um personagem se outra imagem for escolhida. Testar a aventura e terminar em Próxima parte. As escolhas não viram critério.',
     ),
     fala(
       'ponte-d3-personalizar',
-      'Hora de deixar o jogo com a sua cara! Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção.',
+      'Hora de deixar o jogo com a sua cara! Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima parte.',
     ),
     video(
       'video-d3-fecho',
       'Publique seu jogo',
       'desafio-dia-3.roteiro.md',
-      'Usar o mesmo projeto da seção anterior. Compartilhar, manter o resumo (na aula o título vem do curso e não aparece), Gerar capa, conferir, Publicar e comemorar com a criança (Seu jogo está no Mural! Agora a família e os amigos podem jogar), Copiar link de jogar e convidar a mandar para a família e os amigos, com ajuda de um adulto se precisar, Fechar e Concluir aula. Outra capa fica no Como Fazer.',
+      'Usar o mesmo projeto da seção anterior. Compartilhar, manter o resumo (na aula o título vem do curso e não aparece), Gerar capa, conferir, Publicar e comemorar com a criança (Seu jogo está no Mural! Agora a família e os amigos podem jogar), Copiar link de jogar e convidar a mandar para a família e os amigos, com ajuda de um adulto se precisar, Fechar e Concluir fase. Outra capa fica no Como Fazer.',
     ),
     fala(
       'ponte-d3-publicar',
-      'Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.',
+      'Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir fase.',
     ),
     projeto('dia-3'),
     ajudaComoFazer('ajuda-publicar', 'Para consultar ao publicar', [
@@ -613,18 +613,19 @@ const certificado = {
       'video-certificado-farol',
       'Comemore sua criação',
       'desafio-certificado.roteiro.md',
-      'Reconhecer movimento, coleta e decisão programados pela criança. Mostrar Pegar meu certificado e encerrar em Concluir aula. Não incluir pitch comercial.',
+      'Reconhecer movimento, coleta e decisão programados pela criança. Mostrar Pegar meu certificado e encerrar em Concluir fase. Não incluir pitch comercial.',
     ),
     fala(
       'fala-certificado',
-      'Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir aula.',
+      'Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir fase.',
     ),
     {
       key: 'certificado',
       content: {
         kind: 'certificate',
+        title: 'Certificado de Criador',
         introLine: 'Certificamos que',
-        coursePhrase: 'concluiu o Desafio do Primeiro Jogo',
+        coursePhrase: 'completou o Desafio do Primeiro Jogo',
         bodyText:
           'Criou A Chave do Farol: movimento, coleta da chave e uma decisão que acende a luz.',
       },

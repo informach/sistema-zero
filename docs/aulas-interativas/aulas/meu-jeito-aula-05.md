@@ -72,15 +72,15 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 7. Confira as duas artes
 
-**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.
+**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
 **Quiz formativo:** somente Zappy → quiz, sem vídeo ou ferramenta. Todas corretas, explicação após responder e tentativas ilimitadas, sem espera.
 
-### Seção 8. Entregue suas duas artes
+### Seção 8. Envie suas duas artes
 
-**Tarefa / Zappy na página:** Confira nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Envie a nave e o asteroide pela galeria do Pinta desta seção.
+**Tarefa / Zappy na página:** Confira: nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Depois, envie a nave e o asteroide para o guia pela galeria do Pinta.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 

@@ -20,7 +20,7 @@ test('completion keeps the server progress on a retry instead of adding another 
   })
   expect(screen.getByText('50%')).toBeTruthy()
   expect(screen.queryByText('100%')).toBeNull()
-  expect(screen.getByRole('link', { name: 'Próxima aula' }).getAttribute('href')).toBe('/aula-2')
+  expect(screen.getByRole('link', { name: 'Próxima fase' }).getAttribute('href')).toBe('/aula-2')
 })
 
 test('finishing mandatory lessons points to publication without claiming a rank upgrade', () => {

@@ -157,7 +157,7 @@ describe('modo foco — onde o botão do menu é oferecido', () => {
     )
     expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
     // A lista de aulas segue EXCLUSIVA da aula.
-    expect(screen.getByRole('button', { name: 'Mostrar lista de aulas' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Mostrar lista de fases' })).toBeDefined()
     fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
     expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()
     expect(localStorage.getItem('sz:kids:hide-nav:perfil-1')).toBeNull()
@@ -175,7 +175,7 @@ describe('modo foco — onde o botão do menu é oferecido', () => {
       </FocusModeProvider>,
     )
     expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
-    expect(screen.getByRole('button', { name: 'Mostrar lista de aulas' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Mostrar lista de fases' })).toBeDefined()
     fireEvent.click(screen.getByRole('button', { name: 'Mostrar menu' }))
     pathname = '/cursos/meu-curso/aulas/segunda'
     rerender(
@@ -197,8 +197,8 @@ describe('modo foco — onde o botão do menu é oferecido', () => {
       </FocusModeProvider>,
     )
     expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Mostrar lista de aulas' }))
-    expect(screen.getByRole('button', { name: 'Esconder lista de aulas' })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: 'Mostrar lista de fases' }))
+    expect(screen.getByRole('button', { name: 'Esconder lista de fases' })).toBeDefined()
   })
 
   it('ao trocar de perfil, a aula volta ao estado recolhido', () => {
@@ -241,7 +241,7 @@ describe('modo foco — onde o botão do menu é oferecido', () => {
         <FocusModeToggle target="outline" />
       </FocusModeProvider>,
     )
-    expect(screen.queryByRole('button', { name: /lista de aulas/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /lista de fases/i })).toBeNull()
   })
 })
 

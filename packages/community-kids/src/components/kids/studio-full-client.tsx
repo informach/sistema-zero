@@ -806,7 +806,7 @@ export function StudioFullClient({
       ) : openingProject === 'error' ? (
         <div className="grid h-full place-items-center p-6 text-center">
           <div className="flex max-w-md flex-col gap-3">
-            <h2 className="sz-display text-xl">Não conseguimos abrir este trabalho</h2>
+            <h2 className="sz-display text-xl">Não conseguimos abrir este jogo</h2>
             <p className="text-sm text-muted-foreground">
               Ele pode estar em outro aparelho ou aguardando conexão. Tente novamente ou procure na
               sua galeria.
@@ -827,7 +827,7 @@ export function StudioFullClient({
           </div>
         </div>
       ) : openingProject === 'loading' ? (
-        <EmbeddedAppLoadingBody label="Abrindo seu trabalho…" />
+        <EmbeddedAppLoadingBody label="Abrindo seu jogo…" />
       ) : // Espera do guia da tarefa (deep link do Pensa) e espera do pacote viram
       // UMA só: os dois correm em paralelo, e mostrar dois textos diferentes em
       // sequência fazia `/estudio?tarefa=` ter uma tela a mais.

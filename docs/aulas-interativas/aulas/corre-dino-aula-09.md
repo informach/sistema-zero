@@ -40,7 +40,7 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Zappy na página (não gravar):** Mude para fim dentro da colisão entre Dino e cactos.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a faxina, confira a colisão com os cactos e use Mudar o estado do jogo para fim.
 
@@ -52,7 +52,7 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Zappy na página (não gravar):** Mostre a tela de fim no ramo que consulta fim.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No segundo senão se, quando o estado do jogo é fim, desenhe a tela de fim. O título, o subtítulo e a cor do fundo são seus.
 
@@ -64,7 +64,7 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Zappy na página (não gravar):** Na colisão, exploda cacto, trema em 8, toque derrota e mude para fim.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Exploda o cacto que bateu antes da tremida. A cor da explosão é sua.
 - Use tremida 8 antes do som de derrota.
@@ -88,7 +88,7 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Zappy na página (não gravar):** Reinicie no senão se fim do evento de qualquer tecla ou toque.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No mesmo evento de entrada, reinicie somente no senão se o estado do jogo é fim.
 - Mantenha um único evento de qualquer tecla ou toque.
@@ -105,13 +105,13 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 ### Seção 8. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - Dentro do Se o estado do jogo é jogando, entre o Desenhar o grupo e a faxina, confira a colisão com os cactos e use Mudar o estado do jogo para fim.
 - Mantenha uma única conferência de colisão com os cactos.

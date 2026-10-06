@@ -28,7 +28,7 @@ export function ChestReward({
       className="sz-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       role="dialog"
       aria-modal="true"
-      aria-label={`Baú da unidade ${unitNumber} aberto`}
+      aria-label={`Baú do Mundo ${unitNumber} aberto`}
     >
       <KidsConfetti />
       <div
@@ -43,7 +43,7 @@ export function ChestReward({
         />
         <h2 className="sz-display mt-3 text-2xl">Baú aberto!</h2>
         <p className="mt-1 text-muted-foreground text-sm">
-          Você terminou a unidade {unitNumber}. Olha o que estava lá dentro:
+          Você terminou o Mundo {unitNumber}. Olha o que estava lá dentro:
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           <span className="kid-pop inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 [background-image:var(--sz-gradient)] [font-family:var(--font-display)] font-bold text-(--sz-primary-fg) text-base">

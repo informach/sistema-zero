@@ -44,7 +44,7 @@ export default async function CriarPage() {
           subtitle={
             available.length
               ? 'Retome seus projetos nas ferramentas abaixo. Tudo o que você aprende amplia sua oficina.'
-              : 'Comece criando dentro das aulas. Sua oficina cresce junto com a Jornada do Criador.'
+              : 'Comece criando dentro das fases. Sua oficina cresce junto com a Jornada do Criador.'
           }
         />
         <div className="mt-6">
@@ -52,7 +52,7 @@ export default async function CriarPage() {
             <ContinueHero courses={journey.courses} />
           ) : (
             <p role="status" className="kids-carta p-5 font-semibold">
-              Não conseguimos consultar seus cursos agora. Tente atualizar esta página.
+              Não conseguimos consultar suas aventuras agora. Tente atualizar esta página.
             </p>
           )}
         </div>
@@ -63,7 +63,7 @@ export default async function CriarPage() {
           <Suspense
             fallback={
               <p role="status" className="font-semibold text-muted-foreground text-sm">
-                Buscando seus trabalhos…
+                Buscando suas criações…
               </p>
             }
           >

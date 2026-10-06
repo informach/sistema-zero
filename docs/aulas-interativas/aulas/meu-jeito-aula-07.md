@@ -56,15 +56,15 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 ### Seção 5. Confira as artes dentro do jogo
 
-**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.
+**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
 **Quiz formativo:** somente Zappy → quiz, sem vídeo ou ferramenta. Todas corretas, explicação após responder e tentativas ilimitadas, sem espera.
 
-### Seção 6. Entregue o jogo com as duas artes
+### Seção 6. Envie o jogo com as duas artes
 
-**Tarefa / Zappy na página:** Confira nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.
+**Tarefa / Zappy na página:** Confira: nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 

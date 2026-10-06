@@ -68,7 +68,7 @@ describe('ImportButton', () => {
       await chooseFile(fileInput(container), jsonFile(JSON.stringify(projeto)))
 
       await waitFor(() => {
-        expect(screen.getByText(/ainda vai ganhar nos cursos/)).toBeTruthy()
+        expect(screen.getByText(/ainda vai ganhar nas aventuras/)).toBeTruthy()
       })
       const tela = document.body.textContent ?? ''
       expect(tela).toContain('Jogo 2D')

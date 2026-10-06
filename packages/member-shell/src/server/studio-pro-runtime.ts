@@ -99,16 +99,10 @@ export async function buildStudioProProject(options: {
     throw new StudioProRuntimeInputError(400, 'O projeto Pro não tem arquivos para compilar.')
   }
   if (limitError === 'TOO_MANY_FILES') {
-    throw new StudioProRuntimeInputError(
-      400,
-      'O projeto Pro tem arquivos demais para esta atividade.',
-    )
+    throw new StudioProRuntimeInputError(400, 'O projeto Pro tem arquivos demais.')
   }
   if (limitError === 'FILE_TOO_LARGE' || limitError === 'TOTAL_TOO_LARGE') {
-    throw new StudioProRuntimeInputError(
-      413,
-      'O projeto Pro ficou grande demais para esta atividade.',
-    )
+    throw new StudioProRuntimeInputError(413, 'O projeto Pro ficou grande demais.')
   }
   if (limitError === 'REQUEST_TOO_LARGE') {
     throw new StudioProRuntimeInputError(

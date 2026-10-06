@@ -62,7 +62,7 @@ export default async function ComoFazerPage() {
             <KidsEmptyState
               icon={CircleHelp}
               title="Os primeiros tutoriais estão a caminho"
-              description="Enquanto isso, o botão Preciso de ajuda dentro da aula fala com o professor."
+              description="Enquanto isso, o botão Preciso de ajuda dentro da fase fala com o seu guia."
             />
           ) : (
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
@@ -78,7 +78,7 @@ export default async function ComoFazerPage() {
         <KidsClosingCard
           icon={MessageCircle}
           title="Não achou o que precisava?"
-          description="Dentro de qualquer aula, o botão Preciso de ajuda manda a sua dúvida para o professor. A resposta chega nos Recados."
+          description="Dentro de qualquer fase, o botão Preciso de ajuda manda a sua dúvida para o seu guia. A resposta chega nos Recados."
           action={
             <Link
               href="/recados"

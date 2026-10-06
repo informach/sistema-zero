@@ -1,4 +1,7 @@
-/** Caderno derivado da mesma fonte das aulas; CSS e fontes do Cadê Todo Mundo. */
+/**
+ * Caderno derivado da mesma fonte das aulas; CSS e fontes do Cadê Todo Mundo. Para a criança, ele
+ * é o Mapa da Aventura, com fases e partes (Diretrizes, seção 6, 06/10/2026).
+ */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
@@ -48,7 +51,7 @@ function block(type: string, label: string, children = '') {
   const color = blockColor(type)
   return `<div class="block" data-block-type="${type}" style="background-color:${color}">${label}${children ? `<div class="event-body">${children}</div>` : ''}</div>`
 }
-const former = '<div class="former">Blocos que você já montou nas aulas anteriores</div>'
+const former = '<div class="former">Blocos que você já montou nas fases anteriores</div>'
 const frame = (body: string) =>
   block(
     'sz_frame_loops',
@@ -189,7 +192,7 @@ const diagrams = [
         `A cada ${field('40')} quadros`,
         condition(
           'jogando',
-          block('sz_g2d_spawn_asteroid', 'Criar o asteroide com os valores da aula 4'),
+          block('sz_g2d_spawn_asteroid', 'Criar o asteroide com os valores da fase 4'),
         ),
       ),
     ) +
@@ -201,7 +204,7 @@ const diagrams = [
         'Quando apertar barra de espaço',
         condition(
           'jogando',
-          block('sz_g2d_spawn_bullet', 'Criar o tiro com os valores da aula 3') +
+          block('sz_g2d_spawn_bullet', 'Criar o tiro com os valores da fase 3') +
             block('sz_g2d_play_fx', 'Tocar efeito tiro'),
         ),
       ),
@@ -237,7 +240,7 @@ const chapters = aulasNave.map((lesson, i) => {
     const heading = `<h3 class="section-head">${escapeHtml(section.title)}</h3>`
     if (section.questions) {
       chunks.push(
-        `${heading}<div class="note">${escapeHtml(section.bridge)} As perguntas ficam na aula.</div>`,
+        `${heading}<div class="note">${escapeHtml(section.bridge)} As perguntas ficam na fase.</div>`,
       )
       continue
     }
@@ -257,19 +260,19 @@ const chapters = aulasNave.map((lesson, i) => {
   }
   return {
     title: lesson.title,
-    label: `Aula ${i + 1}`,
+    label: `Fase ${i + 1}`,
     chunks,
-    diagram: `<div class="blocks">${diagrams[i]}</div><p class="small">Esquema dos encaixes desta aula, com as cores dos blocos do Estúdio. Os passos anteriores trazem os caminhos, os campos e os testes completos.</p>`,
+    diagram: `<div class="blocks">${diagrams[i]}</div><p class="small">Esquema dos encaixes desta fase, com as cores dos blocos do Estúdio. Os passos anteriores trazem os caminhos, os campos e os testes completos.</p>`,
   }
 })
 const data = JSON.stringify(chapters).replaceAll('<', '\u003c')
 const zappy = `data:image/webp;base64,${readFileSync(resolve(root, 'packages/community-kids/public/zappy/happy.webp')).toString('base64')}`
-const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Nave Contra Asteroides · Caderno do Aluno</title><style>${css}
+const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Nave Contra Asteroides · Mapa da Aventura</title><style>${css}
 .content{padding-top:4mm}.content>.entry{margin-bottom:4mm}.content .section-head{margin-top:2mm}.content .step{font-size:11pt}.content .blocks{margin:0;display:grid;gap:10px}.former{font:700 10pt Nunito;color:#585a7a;padding:7px;background:#f2f3fa;border-radius:6px}.branch{font:800 10pt Nunito;color:#1f2042;padding:6px}.field{white-space:normal}.value-block{display:inline-block;border-radius:12px;padding:3px 8px;color:#fff;font-weight:800;line-height:1.6}.value-block .field{padding:1px 5px;font-size:inherit}.cover-art{height:48%;background:#07162e;display:flex;align-items:center}.cover-art img{width:100%;height:auto!important;object-fit:contain!important}.cover h1{font-size:38pt}.cover .cover-bottom{margin-top:10mm}.lesson-title{font-size:24pt;margin-top:3mm}.index{display:grid;gap:12px;margin-top:6mm}.index p{font-size:11pt}.diagram-page .content .block{font-size:9.5pt}.diagram-page .event-body{gap:5px;padding:6px;margin-top:6px}
-</style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="O jogo Nave Contra Asteroides em funcionamento"></div><div class="cover-copy"><span class="badge">Caderno do Aluno</span><h1>Nave Contra<br><em>Asteroides</em></h1><p>Os passos para construir, testar e recomeçar seu jogo.</p><div class="cover-bottom">Da primeira nave à partida completa.</div></div><img class="zappy" src="${zappy}" alt="Zappy"></section>
+</style></head><body><section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="jogo.png" alt="O jogo Nave Contra Asteroides em funcionamento"></div><div class="cover-copy"><span class="badge">Mapa da Aventura</span><h1>Nave Contra<br><em>Asteroides</em></h1><p>Os passos para construir, testar e recomeçar seu jogo.</p><div class="cover-bottom">Da primeira nave à partida completa.</div></div><img class="zappy" src="${zappy}" alt="Zappy"></section>
 <script>const chapters=${data};
-function page(chapter, more=false, diagram=false){const p=document.createElement('section');p.className='page'+(diagram?' diagram-page':'');p.dataset.id=chapter.label; p.innerHTML='<div class="inner"><div class="kicker">'+chapter.label+(more?' · continuação':'')+'</div><h2 class="lesson-title">'+chapter.title+'</h2><div class="content"></div></div><div class="page-no"><span class="brand">Nave Contra Asteroides | Caderno do Aluno</span><span class="count"></span></div>';document.body.append(p);return p;}
-async function layout(){await document.fonts.ready;const index=page({label:'Seu percurso',title:'Uma parte do jogo por aula'});const content=index.querySelector('.content');content.innerHTML='<p class="lead">Consulte este caderno quando precisar de um passo, um valor ou um teste. Você não precisa baixar ou imprimir para fazer as aulas.</p><div class="index">'+chapters.map(c=>'<p><strong>'+c.label+'.</strong> '+c.title+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">Os desenhos da nave, das estrelas e dos efeitos vêm nos blocos. Você vai programar como eles participam do jogo. Continue sempre no projeto que você enviou na aula anterior.</div>';
+function page(chapter, more=false, diagram=false){const p=document.createElement('section');p.className='page'+(diagram?' diagram-page':'');p.dataset.id=chapter.label; p.innerHTML='<div class="inner"><div class="kicker">'+chapter.label+(more?' · continuação':'')+'</div><h2 class="lesson-title">'+chapter.title+'</h2><div class="content"></div></div><div class="page-no"><span class="brand">Nave Contra Asteroides | Mapa da Aventura</span><span class="count"></span></div>';document.body.append(p);return p;}
+async function layout(){await document.fonts.ready;const index=page({label:'Seu percurso',title:'Uma parte do jogo por fase'});const content=index.querySelector('.content');content.innerHTML='<p class="lead">Consulte este mapa quando precisar de um passo, um valor ou um teste: leia aqui na fase ou baixe para guardar.</p><div class="index">'+chapters.map(c=>'<p><strong>'+c.label+'.</strong> '+c.title+'</p>').join('')+'</div><div class="note" style="margin-top:6mm">Os desenhos da nave, das estrelas e dos efeitos vêm nos blocos. Você vai programar como eles participam do jogo. Continue sempre no projeto que você enviou na fase anterior.</div>';
 for(const chapter of chapters){let sheet=page(chapter);for(const chunk of chapter.chunks){const node=document.createElement('div');node.className='entry';node.innerHTML=chunk;sheet.querySelector('.content').append(node);const limit=sheet.querySelector('.page-no').getBoundingClientRect().top-24;if(node.getBoundingClientRect().bottom>limit){node.remove();sheet=page(chapter,true);sheet.querySelector('.content').append(node);}}
 
 const diagram=document.createElement('div');diagram.className='entry';diagram.innerHTML='<h3 class="section-head">Confira os encaixes</h3>'+chapter.diagram;sheet.classList.add('diagram-page');sheet.querySelector('.content').append(diagram);if(diagram.getBoundingClientRect().bottom>sheet.querySelector('.page-no').getBoundingClientRect().top-24){diagram.remove();sheet.classList.remove('diagram-page');const lastContent=sheet.querySelector('.content');const prior=sheet.previousElementSibling;if(prior?.dataset.id===chapter.label){const priorContent=prior.querySelector('.content');const limit=sheet.querySelector('.page-no').getBoundingClientRect().top-24;const minimum=(limit-lastContent.getBoundingClientRect().top)*0.3;while(lastContent.getBoundingClientRect().height<minimum&&priorContent.children.length>1){const moved=priorContent.lastElementChild;lastContent.prepend(moved);if(lastContent.getBoundingClientRect().bottom>limit){priorContent.append(moved);break;}}}const drawing=page({label:chapter.label+' · confira os encaixes',title:chapter.title},false,true);drawing.querySelector('.content').innerHTML=chapter.diagram;}}

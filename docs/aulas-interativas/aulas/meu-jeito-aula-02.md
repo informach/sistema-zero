@@ -79,9 +79,9 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
-### Seção 8. Entregue o desenho da nave
+### Seção 8. Envie o desenho da nave
 
-**Tarefa / Zappy na página:** Confira a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Envie a arte desta aula pela galeria do Pinta desta seção.
+**Tarefa / Zappy na página:** Confira: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Depois, envie a sua nave para o guia pela galeria do Pinta.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 

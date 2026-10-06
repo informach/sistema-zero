@@ -19,6 +19,8 @@ import {
   Wrench,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { ADULT_LESSON_COPY, type LessonCopy } from '../lib/lesson-copy'
+import { useLessonCopy } from './lesson-copy-context'
 
 /**
  * "O que falta para seguir": a faixa do rodapé da aula (30/09/2026).
@@ -67,9 +69,17 @@ function iconeDe(item: SectionPendingItem) {
 }
 
 export const PREPARANDO = 'Esta parte ainda está sendo preparada'
-/** O texto que a CRIANÇA lê: a mensagem de autoria só sai inteira no ensaio (`preview`). */
-export function textoDoItem(item: SectionPendingItem, preview: boolean) {
-  return item.kind === 'authoring' && !preview ? PREPARANDO : item.text
+/**
+ * O texto que a CRIANÇA lê: a mensagem de autoria só sai inteira no ensaio (`preview`), e o resto
+ * passa pelo vocabulário do app (`LessonCopy.itemPendente`: no Kids, "Envie seu projeto para o
+ * guia" no lugar do "para o professor" que o members manda).
+ */
+export function textoDoItem(
+  item: SectionPendingItem,
+  preview: boolean,
+  copy: LessonCopy = ADULT_LESSON_COPY,
+) {
+  return item.kind === 'authoring' && !preview ? PREPARANDO : copy.itemPendente(item)
 }
 /**
  * "Para seguir:" só antecede uma AÇÃO da criança. A razão da aula toda (`lesson`), a aula em
@@ -93,7 +103,7 @@ function Item({
   preview: boolean
 }) {
   const Icone = iconeDe(item)
-  const texto = textoDoItem(item, preview)
+  const texto = textoDoItem(item, preview, useLessonCopy())
   return (
     <span className="sz-lesson-status-item inline-flex items-center gap-2" data-kind={item.kind}>
       <span className="sz-lesson-status-icone inline-grid shrink-0 place-items-center" aria-hidden>
@@ -131,6 +141,7 @@ export function LessonSectionStatus({
   /** A última seção: "Pode seguir!" não faz sentido ao lado de "Concluir aula". */
   ultima?: boolean
 }) {
+  const copy = useLessonCopy()
   const raiz = `sz-lesson-status text-sm${className ? ` ${className}` : ''}`
   if (completed)
     return (
@@ -153,7 +164,7 @@ export function LessonSectionStatus({
   // parte ainda está sendo preparada" e um "+1" que abria a mesma frase (full review de 30/09, B1).
   const vistos = new Set<string>()
   const unicos = lista.filter((item) => {
-    const texto = textoDoItem(item, preview)
+    const texto = textoDoItem(item, preview, copy)
     if (vistos.has(texto)) return false
     vistos.add(texto)
     return true

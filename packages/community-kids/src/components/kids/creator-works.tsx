@@ -96,8 +96,8 @@ export async function CreatorWorks({ available }: { available: CreativeToolId[] 
     <section aria-labelledby="creator-works-heading">
       <KidsSectionHeader
         id="creator-works-heading"
-        title="Meus trabalhos"
-        subtitle="Criações guardadas na conta e seus planos. Trabalhos que ainda estão só neste aparelho ficam na galeria de cada ferramenta."
+        title="Minhas criações"
+        subtitle="Criações guardadas na conta e seus planos. O que ainda está só neste aparelho fica na galeria de cada ferramenta."
       />
       <div className="grid gap-6 md:grid-cols-2">
         {groups.map((space) => {
@@ -112,8 +112,7 @@ export async function CreatorWorks({ available }: { available: CreativeToolId[] 
                   role="status"
                   className="mt-5 mb-1.5 font-semibold text-muted-foreground text-sm"
                 >
-                  Não conseguimos consultar os trabalhos agora. Abra a galeria para tentar
-                  novamente.
+                  Não conseguimos consultar as criações agora. Abra a galeria para tentar novamente.
                 </p>
               ) : items.length ? (
                 <ul className="mt-5 mb-1.5 space-y-1">
@@ -135,7 +134,7 @@ export async function CreatorWorks({ available }: { available: CreativeToolId[] 
               ) : (
                 <p className="mt-5 mb-1.5 font-semibold text-muted-foreground text-sm">
                   {space.response?.body?.nextCursor
-                    ? 'Abra a galeria para ver os demais trabalhos.'
+                    ? 'Abra a galeria para ver as outras criações.'
                     : 'Ainda não há criações guardadas na conta nesta ferramenta.'}
                 </p>
               )}

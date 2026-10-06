@@ -163,7 +163,7 @@ function renderItem(item: Item): string {
       : `<div class="text-section"><h3>${item.title}</h3><p>${item.text}</p></div>`
   }
   if (item.kind === 'delivery')
-    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta etapa</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo da etapa cumprido!</strong>, espere aparecer <strong>Salvo</strong>. Clique em <strong>Enviar para o professor</strong> e confirme em <strong>Enviar</strong>. Quando o envio terminar, clique em <strong>${item.finish}</strong>.</p></div>`
+    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta parte</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo cumprido!</strong>, espere aparecer <strong>Salvo</strong>. Clique em <strong>Enviar para o guia</strong> e confirme em <strong>Enviar</strong>. Quando o envio terminar, clique em <strong>${item.finish}</strong>.</p></div>`
   if (item.kind === 'box')
     return `<div class="soft-box box-${item.tone ?? 'note'}"><h3>${item.title}</h3><p>${item.text}</p></div>`
   return '' // Os diagramas antigos em texto foram substituídos por encaixes desenhados.
@@ -221,7 +221,7 @@ for (const page of pages) {
       title: 'As regras da sua aventura',
       subtitle:
         'Você programou o movimento, a coleta e a decisão do farol. Agora confira o que faz essas regras funcionarem.',
-      body: '<div class="soft-box activity"><span class="pill pill--experience">Na aula, antes do certificado</span><p>Leia a fala do Zappy e responda às quatro perguntas sobre seu jogo. Esta seção tem somente a conversa do Zappy e o quiz, sem vídeo.</p></div><div class="step"><span class="number">1</span><div><h3>Pense no que você construiu</h3><p>As perguntas retomam o movimento, a informação da chave, a resposta do farol e os testes da porta. Escolha uma resposta para cada pergunta e envie para conferir.</p></div></div><div class="step"><span class="number">2</span><div><h3>Leia e confira</h3><p>Depois do envio, leia as explicações. Se algo precisar mudar, corrija e envie novamente. Você pode tentar de novo sem esperar.</p></div></div><div class="step"><span class="number">3</span><div><h3>Siga para a celebração</h3><p>Quando todas as respostas estiverem corretas, clique em <strong>Próxima seção</strong>. O vídeo e o certificado ficam na seção seguinte.</p></div></div><div class="note">Se quiser rever uma regra, volte ao seu jogo e aos passos deste caderno. A revisão ajuda a entender a aventura que você programou.</div>',
+      body: '<div class="soft-box activity"><span class="pill pill--experience">Na fase, antes do certificado</span><p>Leia a fala do Zappy e responda às quatro perguntas sobre seu jogo. Esta parte tem somente a conversa do Zappy e o quiz, sem vídeo.</p></div><div class="step"><span class="number">1</span><div><h3>Pense no que você construiu</h3><p>As perguntas retomam o movimento, a informação da chave, a resposta do farol e os testes da porta. Escolha uma resposta para cada pergunta e envie para conferir.</p></div></div><div class="step"><span class="number">2</span><div><h3>Leia e confira</h3><p>Depois do envio, leia as explicações. Se algo precisar mudar, corrija e envie novamente. Você pode tentar de novo sem esperar.</p></div></div><div class="step"><span class="number">3</span><div><h3>Siga para a celebração</h3><p>Quando todas as respostas estiverem corretas, clique em <strong>Próxima parte</strong>. O vídeo e o certificado ficam na parte seguinte.</p></div></div><div class="note">Se quiser rever uma regra, volte ao seu jogo e aos passos deste mapa. A revisão ajuda a entender a aventura que você programou.</div>',
     })
   sheets.push({ ...page, theme, body, lit: page.id === 'p10' })
   if (page.id === 'p7')
@@ -249,11 +249,11 @@ const courseIndex = renderItem({
 })
 for (const sheet of sheets) sheet.body = sheet.body.replace('<!-- course-index -->', courseIndex)
 const total = sheets.length + 1
-const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${scene(true)}" alt="Ilustração da aventura com o farol aceso"></div><div class="cover-copy"><span class="badge">Caderno do Aluno</span><h1>A Chave<br>do <em>Farol</em></h1><p>Todos os passos para construir as regras da sua aventura.</p><div class="cover-bottom">Do primeiro movimento<br>à luz que guia o barco.</div></div><img class="zappy" src="${zappy}" alt="Zappy feliz"></section>`
+const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${scene(true)}" alt="Ilustração da aventura com o farol aceso"></div><div class="cover-copy"><span class="badge">Mapa da Aventura</span><h1>A Chave<br>do <em>Farol</em></h1><p>Todos os passos para construir as regras da sua aventura.</p><div class="cover-bottom">Do primeiro movimento<br>à luz que guia o barco.</div></div><img class="zappy" src="${zappy}" alt="Zappy feliz"></section>`
 const body = sheets
   .map(
     (sheet, index) =>
-      `<section class="page ${sheet.theme}" data-id="${sheet.id}"><div class="inner"><div class="lesson-hero"><img class="scene" src="${scene(sheet.lit)}" alt="Ilustração do jogo A Chave do Farol"><div class="lesson-hero-text"><div class="kicker">${sheet.kicker}</div><h2>${sheet.title}</h2><p>${sheet.subtitle}</p></div></div><div class="content">${sheet.body}</div></div><div class="page-no"><span class="brand">A Chave do Farol | Caderno do Aluno</span><span>${index + 2} / ${total}</span></div></section>`,
+      `<section class="page ${sheet.theme}" data-id="${sheet.id}"><div class="inner"><div class="lesson-hero"><img class="scene" src="${scene(sheet.lit)}" alt="Ilustração do jogo A Chave do Farol"><div class="lesson-hero-text"><div class="kicker">${sheet.kicker}</div><h2>${sheet.title}</h2><p>${sheet.subtitle}</p></div></div><div class="content">${sheet.body}</div></div><div class="page-no"><span class="brand">A Chave do Farol | Mapa da Aventura</span><span>${index + 2} / ${total}</span></div></section>`,
   )
   .join('\n')
 const extraCss = `
@@ -289,7 +289,7 @@ const extraCss = `
 .cover .cover-bottom { margin-top: 12mm; }
 .cover .zappy { bottom: 10mm; }
 `
-const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Caderno do Aluno - A Chave do Farol</title><style>${css}\n${extraCss}</style></head><body>${cover}${body}</body></html>`
+const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Mapa da Aventura - A Chave do Farol</title><style>${css}\n${extraCss}</style></head><body>${cover}${body}</body></html>`
 if (html.includes('{{')) throw new Error('Campo do caderno sem preencher.')
 const out = resolve(root, 'tmp/pdfs/desafio-farol')
 mkdirSync(out, { recursive: true })

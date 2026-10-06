@@ -4,7 +4,7 @@ import {
   Box,
   CircleHelp,
   CircleUserRound,
-  GraduationCap,
+  Compass,
   Home,
   Lightbulb,
   type LucideIcon,
@@ -52,16 +52,17 @@ export interface NavItem {
 /** Stable destinations across desktop and mobile, regardless of earned tools. */
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home, backLabel: 'Voltar ao início' },
-  // ⭐ "Aprender", e não "Jornada" (decisão da dona, 03/10/2026): o menu diz o que a criança FAZ
-  // ali, em par com o "Criar" logo abaixo (aprender o caminho guiado × criar livre). A página
-  // continua se chamando "Jornada do Criador" e é o mapa, e é assim que a trilha já chamava a volta.
-  { href: '/cursos', label: 'Aprender', icon: GraduationCap, backLabel: 'Voltar ao mapa' },
+  // ⭐ "Explorar" (decisão da dona, 06/10/2026; era "Aprender" desde 03/10): o menu diz o que a
+  // criança FAZ ali, em par com o "Criar" logo abaixo (explorar o caminho das aventuras × criar
+  // livre), e sem o chapéu de formatura, que lembrava a escola. A página continua sendo o mapa da
+  // Jornada do Criador, e é assim que a trilha já chamava a volta.
+  { href: '/cursos', label: 'Explorar', icon: Compass, backLabel: 'Voltar ao mapa' },
   {
     href: '/criar',
     label: 'Criar',
     icon: Sparkles,
     children: [
-      { href: '/criar', label: 'Meus trabalhos', icon: Sparkles },
+      { href: '/criar', label: 'Minhas criações', icon: Sparkles },
       { href: '/estudio', label: 'Estúdio', icon: Blocks, tool: 'estudio-completo' },
       { href: '/pinta', label: 'Pinta', icon: Palette, tool: 'pinta' },
       { href: '/pensa', label: 'Pensa', icon: Lightbulb, tool: 'pensa' },

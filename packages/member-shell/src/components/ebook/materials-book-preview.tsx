@@ -3,6 +3,7 @@
 import { BookOpenText } from 'lucide-react'
 import { lessonAttachmentUrl } from '../../lib/attachment-download'
 import type { MaterialItem, MaterialsBlock } from '../../lib/types'
+import { useLessonCopy } from '../lesson-copy-context'
 import { useLessonPlayer } from '../lesson-player-context'
 import { PdfBookView } from './pdf-book-view'
 
@@ -18,6 +19,7 @@ function firstPdf(content: MaterialsBlock): Extract<MaterialItem, { kind: 'file'
 /** Leitura do mesmo anexo PDF oferecido para download no bloco de materiais. */
 export function MaterialsBookPreview({ content }: { content: MaterialsBlock }) {
   const player = useLessonPlayer()
+  const { material } = useLessonCopy()
   const pdf = firstPdf(content)
   return (
     <div className="sz-lesson-block space-y-3 scroll-mt-6">
@@ -29,20 +31,20 @@ export function MaterialsBookPreview({ content }: { content: MaterialsBlock }) {
           <BookOpenText size={14} aria-hidden />
           Leia
         </p>
-        <h3 className="font-semibold text-xl">{content.title ?? 'Caderno do Aluno'}</h3>
+        <h3 className="font-semibold text-xl">{content.title ?? material.caderno}</h3>
       </div>
       {pdf && player ? (
         <PdfBookView
           pdfUrl={lessonAttachmentUrl(player.courseSlug, player.lessonId, pdf.attachmentId)}
-          title={content.title ?? 'Caderno do Aluno'}
+          title={content.title ?? material.caderno}
         />
       ) : (
         <p className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
           {pdf
-            ? 'O livro fica disponível na aula publicada.'
+            ? material.livroNaAulaPublicada
             : player
-              ? 'O caderno ainda não está disponível nesta aula. Você pode continuar.'
-              : 'Vincule um PDF a este bloco de materiais para mostrar o caderno aqui.'}
+              ? material.cadernoIndisponivel
+              : material.vincularPdf}
         </p>
       )}
     </div>

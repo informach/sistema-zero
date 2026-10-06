@@ -16,7 +16,7 @@ describe('a barra do topo da aula', () => {
     expect(vista.medivel).toBe(true)
     expect(Math.round(vista.percent)).toBe(67)
     expect(vista.numero).toBe('67%')
-    expect(vista.texto).toBe('2 de 3 seções concluídas')
+    expect(vista.texto).toBe('2 de 3 partes concluídas')
   })
 
   test('o progresso do servidor VENCE a posição', () => {
@@ -32,8 +32,8 @@ describe('a barra do topo da aula', () => {
     const vista = vistaProgressoAula(undefined, { index: 1, total: 5 })
     expect(vista.medivel).toBe(true)
     expect(vista.percent).toBe(40)
-    expect(vista.numero).toBe('Seção 2 de 5')
-    expect(vista.texto).toBe('Seção 2 de 5')
+    expect(vista.numero).toBe('Parte 2 de 5')
+    expect(vista.texto).toBe('Parte 2 de 5')
   })
 
   test('com uma seção só, mede as ATIVIDADES obrigatórias', () => {
@@ -45,14 +45,14 @@ describe('a barra do topo da aula', () => {
       { complete: false },
     ])
     expect(vista.percent).toBe(50)
-    expect(vista.numero).toBe('1 de 2 atividades')
-    expect(vista.texto).toBe('1 de 2 atividades concluídas nesta aula')
+    expect(vista.numero).toBe('1 de 2 passos')
+    expect(vista.texto).toBe('1 de 2 passos concluídos nesta fase')
   })
 
   test('uma atividade só concorda no singular', () => {
     const vista = vistaProgressoAula(undefined, { index: 0, total: 1 }, [{ complete: false }])
-    expect(vista.numero).toBe('0 de 1 atividade')
-    expect(vista.texto).toBe('0 de 1 atividade concluída nesta aula')
+    expect(vista.numero).toBe('0 de 1 passo')
+    expect(vista.texto).toBe('0 de 1 passo concluído nesta fase')
   })
 
   test('sem NADA a medir, não inventa número', () => {
@@ -67,6 +67,6 @@ describe('a barra do topo da aula', () => {
     // cai nas atividades em vez de lançar.
     const vista = vistaProgressoAula(undefined, null, [{ complete: true }, { complete: true }])
     expect(vista.percent).toBe(100)
-    expect(vista.numero).toBe('2 de 2 atividades')
+    expect(vista.numero).toBe('2 de 2 passos')
   })
 })

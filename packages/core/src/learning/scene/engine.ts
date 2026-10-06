@@ -589,8 +589,8 @@ export function stepScene(
       break
     case 'export-file':
       s.copies.fileColor = s.copies.lessonColor
-      observe(s, 'exported', 'O arquivo saiu, e o jogo continuou na aula')
-      s.caption = 'O arquivo levou uma cópia. O jogo ainda está na aula.'
+      observe(s, 'exported', 'O arquivo saiu, e o jogo continuou na fase')
+      s.caption = 'O arquivo levou uma cópia. O jogo ainda está na fase.'
       break
     case 'import-file':
       if (s.copies.fileColor === null) return previous

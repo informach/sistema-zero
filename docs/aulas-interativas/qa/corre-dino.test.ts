@@ -144,6 +144,39 @@ test('a abertura é jogável e o caderno aparece uma vez, com consulta opcional'
   expect(
     manifests.flatMap((m) => m.blocks).filter((b) => b.content?.kind === 'materials'),
   ).toHaveLength(1)
+  expect(first.blocks.find((b) => b.key === 'caderno')?.content).toMatchObject({
+    title: 'Mapa da Aventura: Corre, Dino!',
+  })
+})
+
+// Vocabulário da aventura (Diretrizes, seção 6): a mesma lista do validador de roteiros e de
+// vocabulario-crianca.test.ts. Os passos do Mapa da Aventura (`caderno`) viram PDF e os critérios
+// aparecem em Objetivos desta parte, fora desses guardas; por isso são conferidos aqui, junto com
+// títulos, Zappy e falas.
+const palavrasDaEscola =
+  /\b(?:aulas?|cursos?|professor(?:a|as|es)?|alun[oa]s?|seç(?:ão|ões)|cadernos?|etapas?|nota m[ií]nima)\b/i
+test('a criança lê aventura: falas, Zappy e Mapa da Aventura sem palavras da escola', () => {
+  for (const aula of aulasDino) {
+    expect(aula.title).not.toMatch(palavrasDaEscola)
+    for (const section of aula.sections)
+      for (const texto of [
+        section.title,
+        section.bridge,
+        ...falasSecao(section),
+        ...(section.caderno ?? []),
+        ...(section.checks ?? []).map((check) => check.label),
+      ])
+        expect(texto, `${aula.slug}/${section.key}`).not.toMatch(palavrasDaEscola)
+  }
+  // Diretrizes, seção 5: o mapa é apresentado à criança e as escolhas são convite.
+  const mapa = aulasDino[0]!.sections[1]!
+  expect(mapa.title).toBe('Seu Mapa da Aventura')
+  const fala = falasSecao(mapa).join(' ')
+  expect(fala).toStartWith('Olha aqui: este é o seu Mapa da Aventura!')
+  expect(fala).toContain(
+    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.',
+  )
+  expect(`${fala} ${mapa.bridge}`).not.toMatch(/não precisa/i)
 })
 
 // Diretrizes, seção 2 (06/10/2026): o vídeo da experiência e o do jogo pronto são demonstrações.
@@ -179,7 +212,7 @@ test('experiências: o conceito primeiro, a demonstração na primeira pessoa e 
       expect(tela).not.toContain('antecipar')
       if (section.meme) expect(tela).toContain('Meme ilustrado')
       // O caderno é da criança: continua com os passos no imperativo, sem a demonstração.
-      expect(section.caderno?.join(' '), section.key).toMatch(/Próxima seção\.$/)
+      expect(section.caderno?.join(' '), section.key).toMatch(/Próxima parte\.$/)
       expect(section.caderno?.join(' ')).not.toMatch(/\beu\b|Olha aqui/)
     }
   expect(total).toBe(24)
@@ -193,7 +226,7 @@ test('jogo pronto: um exemplo só, na primeira pessoa, e a vez passa no fim', ()
   expect(falas[1]).toStartWith('Olha aqui: ')
   expect(falas.slice(0, -1).join(' ')).not.toMatch(ordemParaQuemAssiste)
   expect(falas.at(-1)).toStartWith('Agora é a sua vez: jogue')
-  expect(falas.at(-1)).toEndWith('Quando terminar, clique em Próxima seção.')
+  expect(falas.at(-1)).toEndWith('Quando terminar, clique em Próxima parte.')
   expect(abertura.caderno?.join(' ')).toContain('Clique na área do jogo para começar.')
 })
 
@@ -214,7 +247,7 @@ test('montagens seguem no imperativo e a publicação comemora com o link', () =
     'Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar',
   )
   expect(fala).toEndWith(
-    'Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.',
+    'Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.',
   )
 })
 

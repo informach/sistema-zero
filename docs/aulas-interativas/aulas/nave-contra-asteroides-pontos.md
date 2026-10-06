@@ -39,7 +39,7 @@ Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um
 
 **Zappy na página (não gravar):** Crie pontos, some dentro da colisão e mostre o valor no placar. Teste erro e acerto antes de enviar.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - Crie a variável pontos com 0 em Ao iniciar.
 - Some 1 em pontos dentro da colisão tiros × asteroides.

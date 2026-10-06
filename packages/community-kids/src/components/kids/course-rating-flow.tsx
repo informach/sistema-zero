@@ -45,20 +45,20 @@ interface Props {
 type Step = 1 | 2 | 3 | 4 | 5
 
 const TITLES: Record<Step, string> = {
-  1: 'O que você achou deste curso?',
-  2: 'Por que você deu esta nota?',
+  1: 'O que você achou desta aventura?',
+  2: 'Por que você deu essas estrelas?',
   3: 'Conte mais pra gente (se quiser).',
   4: 'Valeu por ajudar a gente!',
-  5: 'Compartilhar este curso',
+  5: 'Compartilhar esta aventura',
 }
 
 /** Perguntas fixas do passo opcional — chaves espelham o members (domain/rating). */
 const QUESTIONS: { key: CourseFeedbackQuestionKey; label: string }[] = [
   { key: 'importantInfo', label: 'Você está aprendendo coisas importantes?' },
   { key: 'clearExplanations', label: 'As explicações são fáceis de entender?' },
-  { key: 'engagingInstructor', label: 'As aulas são divertidas de assistir?' },
+  { key: 'engagingInstructor', label: 'Os vídeos são divertidos de assistir?' },
   { key: 'enoughPractice', label: 'Dá para praticar bastante o que você aprende?' },
-  { key: 'meetsExpectations', label: 'O curso é do jeito que você esperava?' },
+  { key: 'meetsExpectations', label: 'A aventura é do jeito que você esperava?' },
   { key: 'knowledgeable', label: 'Quem ensina entende do assunto?' },
 ]
 
@@ -215,13 +215,13 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
             setStep(1)
             setOpen(true)
           }}
-          // A pílula AMARELA de largura toda do índice da aula (telas-modelo de 11/09/2026).
+          // A pílula AMARELA de largura toda do índice da fase (telas-modelo de 11/09/2026).
           // O amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele. O
           // 3D do Brilliant (`.kids-3d--sol`) põe embaixo um amarelo mais fundo.
           className="kids-3d kids-3d--sol mt-3 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-(--sz-kids-tinta) text-xs uppercase tracking-[0.12em] hover:brightness-95 any-pointer-coarse:min-h-11"
         >
           <Star className="size-3.5" aria-hidden />
-          Avalie este curso
+          Avalie esta aventura
         </button>
       ) : null}
 
@@ -249,7 +249,7 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
             <Textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Conta pra gente como foi aprender com este curso!"
+              placeholder="Conta pra gente como foi esta aventura!"
               rows={5}
               maxLength={5000}
               className="w-full"
@@ -323,7 +323,7 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
               value={shareUrl ?? ''}
               className="flex-1"
               onFocus={(e) => e.currentTarget.select()}
-              aria-label="Link da página do curso"
+              aria-label="Link da página da aventura"
             />
             <Button onClick={copyShareUrl}>Copiar</Button>
           </div>

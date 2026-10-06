@@ -10,13 +10,15 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
 
+Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos títulos, a criança ouve e lê fase, parte, Mapa da Aventura e guia, e os botões pelo nome novo (Próxima parte, Concluir fase, Enviar para o guia, Recebido pelo seu guia.). Aula, seção e caderno ficam só nas notas da equipe.
+
 ## Seção 1. Separe os nomes que os blocos procuram
 
 ### Clipe `video-nomes` · Separe os nomes que os blocos procuram
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase dos nomes, a nave e a folha da nave com o mesmo crachá "nave" olhando ao mesmo tempo quando o Zappy chama, com a legenda "nave? qual das duas?". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, o Zappy de técnico, com apito, chamando "nave!", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda "nave? qual das duas?". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender por que cada coisa do jogo precisa de um nome só dela.
@@ -27,13 +29,13 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > Eu clico em Pôr de volta, e os avisos somem. Agora, em Nome do bloco de baixo, eu escolho nave. Aparece outro aviso: o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.
 >
-> Sabe quando duas pessoas da sua sala têm o mesmo nome? Se a professora chama esse nome, as duas olham. Por isso, cada uma ganha um jeito próprio de ser chamada, como o sobrenome.
+> Sabe quando dois jogadores do mesmo time têm o mesmo nome? Se o técnico chama esse nome, os dois olham. Por isso, cada um ganha um jeito próprio de ser chamado, como o sobrenome ou um apelido.
 >
 > Então eu escolho folha-nave. Os avisos somem, e a nave volta a voar na prévia. A folha ganhou um nome só dela, e a nave continua com o nome nave.
 >
 > Daqui a pouco, no seu jogo, a folha da nave vai se chamar folha-nave, e o sprite continua com o nome nave.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Agora tire o bloco, troque o nome e veja quando os avisos aparecem.
 
@@ -46,13 +48,13 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 **Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Clique em Abrir meu Estúdio. Em Meus Jogos, abra o cartão que você nomeou e entregou na aula 1. Abra Mais opções, depois Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.
+> "Clique em Abrir meu Estúdio. Em Meus Jogos, abra o cartão que você nomeou e enviou na fase 1. Abra Mais opções, depois Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.
 >
 > Nos cartões nave e asteroide, clique em Adicionar ao projeto. Confira a marca no projeto nos dois. Feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.
 >
-> Olhe a partida: os desenhos do jogo ainda são os antigos. As novas imagens estão disponíveis nos materiais, mas os blocos ainda não mandaram usá-las. Aguarde Salvo antes de voltar à aula.
+> Olhe a partida: os desenhos do jogo ainda são os antigos. As novas imagens estão disponíveis nos materiais, mas os blocos ainda não mandaram usá-las. Aguarde Salvo antes de voltar a esta aba.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
+> Pause aqui para fazer esta parte no seu jogo. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que a gente acabou de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima parte."
 
 **Zappy na página (não gravar):** Adicione nave e asteroide aos materiais da cópia do seu jogo.
 
@@ -62,7 +64,7 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda "um quadro de cada vez". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda "um quadro de cada vez". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender o recorte, que é o jeito de o jogo pegar um desenho da folha.
@@ -79,7 +81,7 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > No seu jogo vai ser assim: o recorte da folha-nave fica 32 por 32, e o tamanho da nave na tela continua 54 por 54, no criador.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
 **Zappy na página (não gravar):** Agora mude a Largura do recorte até aparecer uma nave inteira.
 
@@ -98,7 +100,7 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > O nome nave mantém os controles e as colisões procurando o mesmo sprite. A imagem pode mostrar os dois desenhos espremidos por enquanto: o criador está usando a folha inteira. Confira os seis campos do bloco; na próxima parte vamos recortar cada quadro. Aguarde Salvo.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
+> Pause aqui para fazer esta parte no seu jogo. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que a gente acabou de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima parte."
 
 **Zappy na página (não gravar):** Troque o criador da nave por um sprite com imagem, conservando o nome nave.
 
@@ -115,7 +117,7 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali. Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador: aquele é o tamanho da nave na tela. A folha está preparada, mas ainda falta mandar animar. Aguarde Salvo.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
+> Pause aqui para fazer esta parte no seu jogo. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que a gente acabou de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima parte."
 
 **Zappy na página (não gravar):** Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar.
 
@@ -134,21 +136,21 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > Clique na prévia e comece a partida com Enter. Mova com as setas e atire com Espaço. Confira uma nave inteira com fogo pulsando, sem dois desenhos espremidos. Se voando não aparecer, confira a animação salva no Pinta e a imagem trazida ao projeto antes de escolher novamente. Aguarde Salvo.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
+> Pause aqui para fazer esta parte no seu jogo. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que a gente acabou de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima parte."
 
 **Zappy na página (não gravar):** Anime nave com folha-nave e confira os dois quadros no jogo.
 
-## Seção 7. Entregue o jogo com sua nave
+## Seção 7. Envie o jogo com sua nave
 
-### Clipe `video-entrega` · Entregue o jogo com sua nave
+### Clipe `video-entrega` · Envie o jogo com sua nave
 
 **Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Antes de enviar, confira no seu trabalho: a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais nesta aula. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.
+> "Antes de enviar, confira no seu jogo: a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais por enquanto. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.
 >
-> Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+> Volte para a aba da fase. Clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. Se quiser, escreva uma mensagem em Recado para o guia. Clique em Enviar para o guia (1). Espere aparecer Recebido pelo seu guia. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir fase."
 
-**Zappy na página (não gravar):** Confira a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais nesta aula. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.
+**Zappy na página (não gravar):** Confira: a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais por enquanto. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.

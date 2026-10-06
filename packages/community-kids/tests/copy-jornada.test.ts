@@ -1,7 +1,8 @@
 // Guarda de vocabulário (decisão de 2026-09-22): a **Carreira do Criador** virou
-// **Jornada do Criador**. O título de `/cursos` é **Cursos da Jornada do Criador** e o
-// `/perfil` diz **Minha jornada**. O item do MENU chama **Aprender** desde 03/10/2026, em par
-// com o **Criar** (o menu diz o que a criança faz; a página diz como aquilo se chama).
+// **Jornada do Criador**. O título de `/cursos` é **Aventuras da Jornada do Criador** e o
+// `/perfil` diz **Minha jornada**. O item do MENU chama **Explorar** desde 06/10/2026 (era
+// **Aprender** desde 03/10), em par com o **Criar**: o menu diz o que a criança faz, a página
+// diz como aquilo se chama, e nenhum dos dois lembra a escola (o vocabulário da aventura).
 //
 // Esta guarda varre o `src/` inteiro — copy E comentário. É de propósito: o motivo da
 // troca foi o app falar duas línguas ao mesmo tempo ("Minha carreira" logo acima de
@@ -51,22 +52,22 @@ describe('copy do kids — a palavra é jornada, não carreira', () => {
       (caminho) => relative(SRC, caminho).replaceAll('\\', '/') === 'components/kids/nav.ts',
     )
     expect(nav).toBeTruthy()
-    expect(readFileSync(nav as string, 'utf8')).toContain("label: 'Aprender'")
+    expect(readFileSync(nav as string, 'utf8')).toContain("label: 'Explorar'")
   })
 })
 
-describe('o menu: Aprender ao lado de Criar', () => {
-  test('o item da Jornada chama Aprender e a página dele continua sendo a Jornada do Criador', async () => {
+describe('o menu: Explorar ao lado de Criar', () => {
+  test('o item da Jornada chama Explorar e a página dele continua sendo a Jornada do Criador', async () => {
     const { NAV_ITEMS } = await import('../src/components/kids/nav')
     expect(NAV_ITEMS.map((item) => item.label)).toEqual([
       'Início',
-      'Aprender',
+      'Explorar',
       'Criar',
       'Comunidade',
       'Meu espaço',
     ])
-    expect(NAV_ITEMS.find((item) => item.label === 'Aprender')?.href).toBe('/cursos')
+    expect(NAV_ITEMS.find((item) => item.label === 'Explorar')?.href).toBe('/cursos')
     const cursos = readFileSync(join(SRC, 'app', '(app)', 'cursos', 'page.tsx'), 'utf8')
-    expect(cursos).toContain('Cursos da Jornada do Criador')
+    expect(cursos).toContain('Aventuras da Jornada do Criador')
   })
 })

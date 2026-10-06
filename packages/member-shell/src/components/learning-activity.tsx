@@ -17,6 +17,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import type { LessonBlockView } from '../lib/types'
 import { LearningHtml } from './learning-html'
+import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { ProjectPlayActivityView } from './project-play-activity'
@@ -24,14 +25,7 @@ import { SceneActivityView } from './scene-activity'
 
 const PREVIA = 'Prévia: nada é guardado.'
 
-function message(error: unknown) {
-  return typeof error === 'object' &&
-    error !== null &&
-    'message' in error &&
-    typeof error.message === 'string'
-    ? error.message
-    : 'Não foi possível salvar. Suas respostas continuam neste navegador.'
-}
+const NAO_SALVOU = 'Não foi possível salvar. Suas respostas continuam neste navegador.'
 export function InteractiveLessonBlock({
   block,
   previewContent,
@@ -41,7 +35,7 @@ export function InteractiveLessonBlock({
 }) {
   const player = useLessonPlayer()
   if (!isPublicInteractiveBlock(block.content))
-    return <p role="alert">Esta atividade precisa de uma configuração válida.</p>
+    return <p role="alert">Este bloco precisa de uma configuração válida.</p>
   const activity = block.content.activity
   if (activity.type === 'experimentation')
     return (
@@ -74,6 +68,7 @@ function Activity({
 }) {
   const player = useLessonPlayer()
   const rehearsal = useLessonPreview()
+  const { erroDoServidor } = useLessonCopy()
   const saved = player?.learningProgress?.blocks.find(
     (p) => p.blockId === block.id && p.revision === block.blockRevision,
   )
@@ -159,7 +154,7 @@ function Activity({
         setError('')
       } catch (e) {
         current.current.dirty = true
-        setError(message(e))
+        setError(erroDoServidor(e, NAO_SALVOU))
         setStatus('Salvo neste navegador.')
       }
     })
@@ -221,7 +216,7 @@ function Activity({
         )
         setStatus(PREVIA)
       } catch (e) {
-        setError(message(e))
+        setError(erroDoServidor(e, NAO_SALVOU))
       } finally {
         checking.current = false
         setBusy(false)
@@ -252,7 +247,7 @@ function Activity({
       )
       setResult(data.attempt.result)
       callback.current?.(data.progress)
-      setStatus('Atividade salva.')
+      setStatus('Guardado.')
       player?.refreshAfterLearning?.()
       if (key && current.current.answers === submitted.answers)
         try {
@@ -261,7 +256,7 @@ function Activity({
           /* Storage failure must not hide a server acknowledgement. */
         }
     } catch (e) {
-      setError(message(e))
+      setError(erroDoServidor(e, NAO_SALVOU))
     } finally {
       checking.current = false
       setBusy(false)

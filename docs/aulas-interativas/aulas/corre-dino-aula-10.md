@@ -39,7 +39,7 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 **Zappy na página (não gravar):** Mostre o contorno da área de dino depois do desenho.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Desenhe a área de colisão do dino a cada quadro.
 
@@ -51,7 +51,7 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 **Zappy na página (não gravar):** Ajuste somente a área de colisão, mantendo o desenho em tamanho 64.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
 - Desenhe a área de colisão do dino a cada quadro.
@@ -65,7 +65,7 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 **Zappy na página (não gravar):** Retire apenas o desenho do contorno e conserve o ajuste da área.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
 - Retire o desenho provisório da área de colisão.
@@ -73,13 +73,13 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 ### Seção 5. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
 - Retire o desenho provisório da área de colisão.

@@ -20,12 +20,18 @@ reação (o esconderijo ficar invisível). Saiu da montagem a frase solta "O jar
 já estão preparados": a criança vê o que já está no projeto, e o que vem pronto só entra na fala
 quando ajuda a ação, como o evento que já está em **Quando acontecer**.
 
+Ainda em 06/10/2026, o vocabulário da aventura (Diretrizes, seção 6): no que a criança vê e ouve,
+aula virou fase, seção virou parte, o caderno virou Mapa da Aventura (a seção se chama **Seu Mapa
+da Aventura**) e professor virou guia. As falas citam os botões novos (**Próxima parte**,
+**Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia**, **Concluir fase**);
+seções, blocos e critérios não mudaram.
+
 ## Sequência
 
 | Seção | Vídeo | O que fazer | Conclusão |
 | --- | --- | --- | --- |
 | Bem-vindo ao jardim | 35 a 45 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
-| Seu Caderno do Aluno | 25 a 35 s | conhecer o caderno e seguir; ler na aula ou baixar, se quiser | vídeo |
+| Seu Mapa da Aventura | 25 a 35 s | conhecer o mapa e seguir; ler aqui mesmo ou baixar, se quiser | vídeo |
 | O que um toque faz? | 70 a 90 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
 | Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
 
@@ -39,21 +45,21 @@ apresentação para atingir uma duração mínima.
 A primeira fala diz qual jogo será construído e apresenta a versão pronta. O vídeo é uma
 demonstração, como nas experiências: o narrador mostra como se joga com UM achado ("Olha aqui:
 quando eu toco num esconderijo…"), deixa os outros para a criança descobrir e só no fim passa a
-vez: jogar até encontrar os três, pois a seção exige esse resultado, e clicar em **Próxima seção**.
+vez: jogar até encontrar os três, pois a seção exige esse resultado, e clicar em **Próxima parte**.
 
 O jogo pronto é uma cópia separada do projeto de construção. O Zappy resume a ação. O vídeo
 não apresenta seções, player, ampliação, reinício, caderno ou Estúdio.
 
-### Seu Caderno do Aluno
+### Seu Mapa da Aventura
 
-Chamar a atenção para o caderno real ("Olha aqui: este é o seu Caderno do Aluno!") e dizer que
+Chamar a atenção para o caderno real ("Olha aqui: este é o seu Mapa da Aventura!") e dizer que
 ele tem os passos para consultar se surgir dúvida. Ler e baixar são escolhas, oferecidas como
-convite: ler aqui mesmo, na aula, ou clicar em **Baixar** para guardar o caderno e consultar onde
+convite: ler aqui mesmo ou clicar em **Baixar** para guardar o mapa e consultar onde
 quiser. A fala não diz que a criança não precisa baixar ou imprimir: ela entenderia como uma ordem
 para não fazer (ajuste do responsável, 06/10/2026). Encaminhar diretamente para a próxima seção.
 Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
 
-**Zappy abaixo do vídeo:** “Este é o seu caderno! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima seção.”
+**Zappy abaixo do vídeo:** “Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.”
 
 ### O que um toque faz?
 
@@ -88,10 +94,10 @@ ensinar o caminho **Jogo 2D > Sprites > Aparência** e o bloco de visibilidade, 
 A prévia atualiza automaticamente. Pedir o toque em dois esconderijos e conferir a revelação.
 Se não funcionar, conferir encaixe, sprite e valor. **Achados** ainda fica em zero nesta aula.
 
-Após o teste, clicar em **Verificar esta etapa**. Se faltar algo, corrigir os blocos e verificar
-novamente. Quando aparecer **Objetivo da etapa cumprido!**, esperar **Salvo**, usar **Enviar
-para o professor**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
-aula**. O recado ao professor é opcional. A verificação exige esse clique; o envio não a
+Após o teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e verificar
+novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar **Enviar
+para o guia**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
+fase**. O recado para o guia é opcional. A verificação exige esse clique; o envio não a
 executa automaticamente.
 
 ## Tutoriais retirados do vídeo

@@ -2,6 +2,8 @@
 
 O visual acompanha o caderno de Cadê Todo Mundo: capa com arte e painel escuro, fontes Baloo 2/Nunito, cores, cartões, passos numerados, campos brancos e blocos desenhados. O CSS de referência é lido diretamente de `../cade-todo-mundo/caderno-do-aluno.template.html`; não alterar esse arquivo para corrigir só o Farol.
 
+Para a criança, o caderno se chama **Mapa da Aventura** desde 06/10/2026 (capa, título do PDF e rodapé), e o texto usa o vocabulário da aventura das [Diretrizes](../../DIRETRIZES-PEDAGOGICAS.md), seção 6: fase, parte, guia e os botões novos (**Próxima parte**, **Verificar esta parte**, **Enviar para o guia**, **Concluir fase**). Os nomes dos arquivos não mudaram.
+
 - `caderno-conteudo.json`: textos e passos das aulas, preservados da revisão pedagógica.
 - `gerar-caderno.ts`: composição das páginas, ilustrações com a arte local do jogo, encaixes e fontes. Identifica as partes preparadas; não apresenta os desenhos como screenshots.
 - As cores de cada bloco, área e valor são importadas das definições finais do Estúdio, incluindo os tons das famílias de Jogo 2D e Programação. Não usar a cor genérica da categoria nem escolher outra cor para combinar com a página. O renderizador confere a cor aplicada no navegador contra essas definições.

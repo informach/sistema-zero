@@ -6,7 +6,7 @@ A criança retoma o projeto da Aula 1 e acrescenta a contagem. A experiência,
 o projeto inicial de retomada, a cadeia de continuidade e os critérios de conclusão permanecem.
 A revisão de 27/09/2026 dá comandos diretos e retira os tutoriais gerais de interface.
 O complemento de 28/09/2026 transforma o fechamento em uma publicação guiada pelo caminho
-mínimo, com ajuda direta no Como fazer e saída em **Concluir aula**.
+mínimo, com ajuda direta no Como fazer e saída em **Concluir fase**.
 A revisão de 29/09/2026 aplica os ajustes da Aula 1 já gravada: apresentar a experiência
 antes dos testes e orientar a verificação da etapa antes do envio.
 A revisão de 05/10/2026 faz a experiência explicar enquanto faz, abre a montagem com a retomada
@@ -16,6 +16,10 @@ A revisão de 06/10/2026 faz todas as falas conversarem com a criança e chamare
 para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"), sem mudar seções nem critérios.
 Cada fala virou uma conversa contínua, com o porquê de cada resultado. A mensagem de vitória deixou
 de ser apresentada como "já estava preparada": a fala a liga à contagem que a criança montou.
+No mesmo dia, o vocabulário da aventura (Diretrizes, seção 6): na fala, "do jeito que ficou na
+Aula 1" virou "na Fase 1", "nesta aula" virou "agora", "Na aula, ele pode aparecer só como um ícone"
+virou "Aqui, ele pode aparecer…", e os botões citados passaram a ser **Próxima parte**,
+**Verificar esta parte**, **Objetivo cumprido!**, **Enviar para o guia** e **Concluir fase**.
 
 ## Sequência
 
@@ -33,10 +37,10 @@ de ser apresentada como "já estava preparada": a fala a liga à contagem que a 
 
 Começar dizendo que a tarefa é fazer o jogo contar os personagens encontrados. Mostrar um toque
 revelando o personagem ("Olha aqui…") e chamar a atenção para **Achados**, que continua em zero
-("Mas repare no número Achados…"). Encaminhar para **Próxima seção**.
+("Mas repare no número Achados…"). Encaminhar para **Próxima parte**.
 A seção tem vídeo e ponte do Zappy, sem ferramenta. A fala não pode pedir que a criança manipule um projeto ali.
 
-**Zappy abaixo do vídeo:** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima seção para começar.”
+**Zappy abaixo do vídeo:** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima parte para começar.”
 
 ### Um número que acompanha a busca
 
@@ -64,10 +68,10 @@ Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória, que
 **Achados** chega a 3; a fala diz que quem faz a mensagem aparecer é a contagem que a criança montou. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
 outro toque. Se não funcionar, conferir encaixe, ordem, número e variável.
 
-Depois do teste, clicar em **Verificar esta etapa**. Se faltar algo, corrigir os blocos e
-verificar novamente. Quando aparecer **Objetivo da etapa cumprido!**, esperar **Salvo**, usar
-**Enviar para o professor**, confirmar em **Enviar**, esperar o envio terminar e seguir em
-**Próxima seção**. O recado ao professor é opcional. A verificação exige esse clique; o envio
+Depois do teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e
+verificar novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar
+**Enviar para o guia**, confirmar em **Enviar**, esperar o envio terminar e seguir em
+**Próxima parte**. O recado para o guia é opcional. A verificação exige esse clique; o envio
 não a executa automaticamente. Não ensinar o layout da Pré-visualização ou o compartilhamento.
 O caderno continua disponível na Aula 1, sem novo upload ou bloco.
 
@@ -93,7 +97,7 @@ um esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bic
 esconderijo fica pequeno e deixa o bicho de trás à vista. A fala diz: "Se algum bicho aparecer antes
 do toque, ou um desenho ficar grande demais, clique de novo no nome da imagem e escolha um desenho do
 mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo." Testar encontrando todo
-mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em **Próxima seção**.
+mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em **Próxima parte**.
 
 O projeto traz sete bichos (coelho, raposa, coruja, gato, sapo, tartaruga, esquilo) e seis
 esconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com uma caixa única
@@ -101,7 +105,7 @@ esconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com u
 **esconderijo3**, para o nome não contradizer a imagem escolhida. A troca é escolha da criança e
 não vira critério: a seção conclui pelo vídeo.
 
-**Zappy abaixo do vídeo:** “Hora de deixar o jogo com a sua cara! Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção.”
+**Zappy abaixo do vídeo:** “Hora de deixar o jogo com a sua cara! Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
 
 ### Publique seu jogo
 
@@ -111,7 +115,7 @@ a janela não mostra o campo Título: o título vem do curso, e a fala não o ci
 **Gerar capa**, esperar a imagem e conferir. Clicar em **Publicar** e comemorar com a criança na
 tela do Zappy (**Seu jogo está no Mural!**): agora a família e os amigos podem jogar. Clicar em
 **Copiar link de jogar** e convidar a mandar o link para a família e os amigos, com ajuda de um
-adulto se precisar. Clicar em **Fechar** e terminar em **Concluir aula**.
+adulto se precisar. Clicar em **Fechar** e terminar em **Concluir fase**.
 
 Gerar capa já inclui a imagem, sem download ou upload manual. Trocar a capa por outra imagem e
 resolver problemas ficam no Como fazer. Decisão de 06/10/2026: a publicação do primeiro jogo é
@@ -123,7 +127,7 @@ Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Pub
 esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer
 “compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala.
 
-**Zappy abaixo do vídeo:** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.”
+**Zappy abaixo do vídeo:** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir fase.”
 
 ## Conferência antes de regravar
 
@@ -145,7 +149,7 @@ e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para 
 pixels mais baixo. Conferir uma troca num projeto salvo antes da revisão.
 
 Conferir Compartilhar liberado após o envio, resumo preenchido, capa gerada, publicação,
-comemoração, **Copiar link de jogar** e **Link copiado!**, Fechar e Concluir aula. Manter a conclusão possível sem publicação ou visita ao Mural.
+comemoração, **Copiar link de jogar** e **Link copiado!**, Fechar e Concluir fase. Manter a conclusão possível sem publicação ou visita ao Mural.
 O tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas
 de capa e link público. As novas falas precisam ser regravadas antes de substituir os vídeos
 atuais e o caminho precisa de ensaio com crianças.

@@ -3,6 +3,7 @@
 import { Award, Download, Loader2, Lock } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import type { CertificateBlock, CertificateStateView } from '../lib/types'
+import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
 
 /** Nome do arquivo do `content-disposition` do servidor (por curso: `certificado-<slug>.pdf`). */
@@ -11,29 +12,6 @@ function filenameFromDisposition(header: string | null): string | null {
   const m = /filename="?([^";]+)"?/i.exec(header)
   return m?.[1]?.trim() || null
 }
-
-/**
- * Copy por tom: `default` (adulto) e `kids` (8–13 anos — voz humana/fluida, sem
- * jargão como "emissão", sem travessão). A semântica/estado é idêntica nos dois.
- */
-const CERTIFICATE_COPY = {
-  default: {
-    locked: 'Conclua as aulas anteriores ao certificado para liberar a emissão.',
-    eligibleDesc: 'Você concluiu as aulas necessárias. Emita seu certificado de conclusão.',
-    eligibleBtn: 'Emitir meu certificado',
-    issuedDesc: 'Seu certificado está pronto. Baixe quantas vezes quiser, é sempre o mesmo.',
-    issuedBtn: 'Baixar certificado (PDF)',
-    notEligible: 'Conclua as aulas anteriores ao certificado para emitir.',
-  },
-  kids: {
-    locked: 'Conclua as aulas de antes e seu certificado aparece aqui!',
-    eligibleDesc: 'Você arrasou! Toque no botão para pegar o seu certificado.',
-    eligibleBtn: 'Pegar meu certificado',
-    issuedDesc: 'Seu certificado está pronto! Pode baixar quantas vezes quiser.',
-    issuedBtn: 'Baixar certificado (PDF)',
-    notEligible: 'Conclua as aulas de antes para pegar o seu certificado.',
-  },
-} as const
 
 /**
  * Bloco CERTIFICADO (pode ficar em qualquer aula do curso). Lê o estado no members
@@ -45,14 +23,13 @@ const CERTIFICATE_COPY = {
 export function CertificateBlockView({
   blockId,
   content,
-  tone = 'default',
 }: {
   blockId: string
   content: CertificateBlock
-  /** Voz do texto: `kids` suaviza a copy para crianças (default = adulto). */
-  tone?: 'default' | 'kids'
 }) {
-  const copy = CERTIFICATE_COPY[tone]
+  // A voz vem do app (`LessonCopy.certificado`): o adulto "emite", o Kids "pega" o certificado,
+  // sem jargão e sem travessão. A semântica e os estados são os mesmos nos dois.
+  const copy = useLessonCopy().certificado
   const player = useLessonPlayer()
   const lessonId = player?.lessonId ?? null
   const [state, setState] = useState<CertificateStateView | null>(null)

@@ -48,15 +48,15 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 ### Seção 4. Confira o que você transformou
 
-**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.
+**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
 **Quiz formativo:** somente Zappy → quiz, sem vídeo ou ferramenta. Todas corretas, explicação após responder e tentativas ilimitadas, sem espera.
 
-### Seção 5. Entregue seu jogo do seu jeito
+### Seção 5. Envie seu jogo do seu jeito
 
-**Tarefa / Zappy na página:** Confira as duas artes aparecem inteiras e animadas; uma partida completa termina e recomeça corretamente. Publicar e escrever recado continuam opcionais. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.
+**Tarefa / Zappy na página:** Confira: as duas artes aparecem inteiras e animadas; uma partida completa termina e recomeça corretamente. Publicar e escrever um recado ficam à sua escolha. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 

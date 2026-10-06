@@ -206,7 +206,7 @@ export const gameKitBlockDefinitions05: BlockDefinition[] = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Entra no seu time (até 6). O inicial que a professora dá, o presente, o ovo que chocou. Pendure num "Quando conversar com…".',
+      'Entra no seu time (até 6). O inicial que você ganha no começo, o presente, o ovo que chocou. Pendure num "Quando conversar com…".',
   },
 
   {

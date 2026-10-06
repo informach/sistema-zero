@@ -217,7 +217,7 @@ describe('journeyProgress', () => {
     // regra "não diga quanto falta com o degrau pela metade" deixa de silenciar aqui.
     const level = studentLevel('noob', 'coder', { 'primeiros-passos-2d': 1 })
     expect(nextLevelHintWithin(level, [entrada()])).toBe(
-      'Falta 1 curso para você virar Construtor(a). Termine e publique o seu jogo no Mural!',
+      'Falta 1 aventura para você virar Construtor(a). Termine e publique o seu jogo no Mural!',
     )
   })
 
@@ -286,11 +286,11 @@ describe('nextLevelHintWithin', () => {
   test('⭐ degrau CHEIO volta a dizer, com o número VERDADEIRO do members', () => {
     const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
     expect(nextLevelHintWithin(level, fullTier('iniciante', '2d'))).toBe(
-      'Faltam 7 cursos para você virar Inventor(a). Termine e publique os seus jogos no Mural!',
+      'Faltam 7 aventuras para você virar Inventor(a). Termine e publique os seus jogos no Mural!',
     )
     const quaseLa = studentLevel('coder', 'hacker', { 'iniciante-2d': 1 })
     expect(nextLevelHintWithin(quaseLa, fullTier('iniciante', '2d'))).toBe(
-      'Falta 1 curso para você virar Inventor(a). Termine e publique o seu jogo no Mural!',
+      'Falta 1 aventura para você virar Inventor(a). Termine e publique o seu jogo no Mural!',
     )
   })
 

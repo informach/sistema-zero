@@ -5,6 +5,7 @@ import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { useReportActivityExpanded } from '../lib/lesson-activity-expansion'
+import { useLessonCopy } from './lesson-copy-context'
 import { EXPANDED_EXIT_ATTR, LessonVideoToggle } from './lesson-video-float'
 
 /** Amplia a mesma árvore: nem o controlador nem os controles da cena são remontados. */
@@ -17,6 +18,7 @@ export function SceneWorkspace({
   header: ReactNode
   children: ReactNode
 }) {
+  const { voltarDaAmpliacao } = useLessonCopy()
   // Reserva o lugar na aula enquanto a experiência ocupa a janela.
   const [inlineHeight, setInlineHeight] = useState<number | null>(null)
   const expanded = inlineHeight !== null
@@ -60,7 +62,7 @@ export function SceneWorkspace({
                 ) : (
                   <Maximize2 size={16} aria-hidden />
                 )}
-                {expanded ? 'Voltar à aula' : 'Ampliar experiência'}
+                {expanded ? voltarDaAmpliacao : 'Ampliar experiência'}
               </Button>
             </div>
           </header>

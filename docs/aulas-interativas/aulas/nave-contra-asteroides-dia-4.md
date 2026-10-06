@@ -40,7 +40,7 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 **Zappy na página (não gravar):** Dê as três vidas em Ao iniciar e desenhe os corações a cada quadro.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Dê 3 vidas à nave em Ao iniciar.
 - Desenhe corações da nave em x 12, y 48, tamanho 22.
@@ -63,7 +63,7 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 **Zappy na página (não gravar):** Dê as vidas em Ao iniciar. Na colisão, retire a pedra e machuque a nave. Desenhe os corações em cada quadro.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Na colisão nave × asteroides, remova inimigo antes da explosão.
 - A explosão da batida usa inimigo, antes de machucar a nave.
@@ -71,23 +71,23 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 ### Seção 5. Confira o que você construiu
 
-**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 6. Teste os pontos e as vidas
 
-**Tarefa:** Confira acerto, erro e batida. Verifique a etapa e envie.
+**Tarefa:** Confira acerto, erro e batida. Verifique esta parte e envie.
 
 **Blocos na página:** video-fecho → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Confira acerto, erro e batida. Verifique a etapa e envie.
+**Zappy na página (não gravar):** Confira acerto, erro e batida. Verifique esta parte e envie.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - Crie a variável pontos com 0 em Ao iniciar.
 - Some 1 em pontos dentro da colisão tiros × asteroides.

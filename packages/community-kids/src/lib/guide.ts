@@ -133,19 +133,19 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
     steps.push({
       id: 'start',
       emoji: '▶️',
-      text: 'Toque em "Começar" e a sua primeira aula abre na hora.',
+      text: 'Toque em "Começar" e a sua primeira fase abre na hora.',
     })
   }
   steps.push(
     {
       id: 'aulas',
-      emoji: '📚',
-      text: 'As suas aulas ficam em Cursos. Assista, faça a atividade e conclua.',
+      emoji: '🧭',
+      text: 'As suas aventuras ficam em Explorar. Assista, jogue, crie e conclua cada fase.',
     },
     {
       id: 'xp',
       emoji: '⚡',
-      text: 'Cada aula te dá XP e mantém o seu foguinho aceso mais um dia.',
+      text: 'Cada fase te dá XP e mantém o seu foguinho aceso mais um dia.',
     },
     {
       id: 'criar',
@@ -160,7 +160,7 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
     {
       id: 'jornada',
       emoji: '🗺️',
-      text: 'Terminou um curso e publicou o jogo? O mapa mostra o seu progresso na jornada.',
+      text: 'Terminou uma aventura e publicou o jogo? O mapa mostra o seu progresso na jornada.',
     },
     // A biblioteca de ajuda (26/09/2026): consulta, não onboarding. O guia só aponta a porta.
     {
@@ -208,7 +208,7 @@ export function parentWelcomeSteps({
       {
         id: 'parent-3',
         emoji: '3️⃣',
-        text: 'Pronto! Na hora de estudar, é só tocar na bolinha com o nome dela.',
+        text: 'Pronto! Na hora de criar, é só tocar na bolinha com o nome dela.',
       },
     ]
   }

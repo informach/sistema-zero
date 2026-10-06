@@ -193,7 +193,7 @@ describe('ZappyPanel', () => {
       }),
     )
 
-    fireEvent.click(await view.findByText('Aula: Criando movimentos ↗'))
+    fireEvent.click(await view.findByText('Fase: Criando movimentos ↗'))
 
     expect(opened).toEqual([reference])
   })

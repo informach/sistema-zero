@@ -41,9 +41,11 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar m
 - **Conclui quando:** vídeo e certificado emitido.
 - **Blocos:** `video-certificado-farol`, `fala-certificado`, bloco existente `certificado`.
 
-**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir fase.
 
-Nomear o que a criança programou; orientar **Pegar meu certificado** e **Concluir aula**. Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
+Nomear o que a criança programou; orientar **Pegar meu certificado** e **Concluir fase**. Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
+
+Vocabulário da aventura (06/10/2026): o PDF sem imagem base tem o título **Certificado de Criador**, e a frase passou de "concluiu o Desafio do Primeiro Jogo" para "completou o Desafio do Primeiro Jogo".
 
 A nova pergunta apresenta uma chave que sumiu com aviso, enquanto a porta, que consulta temChave corretamente, ainda diz que falta a chave. A criança escolhe conferir a atribuição de verdadeiro na coleta; a explicação distingue retirada, aviso e memória. Não antecipar esse gabarito no caderno.
 

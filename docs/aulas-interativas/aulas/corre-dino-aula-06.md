@@ -39,7 +39,7 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 **Zappy na página (não gravar):** Limpe o grupo cactos a cada quadro e conserve o intervalo 1.4.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Remova do grupo cactos quem saiu da tela, a cada quadro.
 - Mantenha a criação de cactos no relógio de 1.4 s.
@@ -57,13 +57,13 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - Remova do grupo cactos quem saiu da tela, a cada quadro.
 - Mantenha a criação de cactos no relógio de 1.4 s.

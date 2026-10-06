@@ -39,7 +39,7 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 
 **Zappy na página (não gravar):** Escolha os grupos e os apelidos. Retire o par atingido e adicione explosão e som.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
@@ -48,11 +48,11 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 
 ### Seção 3. Confira o que você construiu
 
-**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
@@ -64,7 +64,7 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 
 **Zappy na página (não gravar):** Acerte pedras de posições diferentes e confira se as outras continuam caindo.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - No evento Espaço, use Tocar efeito e escolha tiro.
 - No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.

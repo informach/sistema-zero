@@ -24,23 +24,23 @@ A primeira aula conserva jogo pronto e caderno, mas termina com a nave construí
 
 ### Seção 1. Jogue antes de construir
 
-**Tarefa:** Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima seção.
+**Tarefa:** Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima parte.
 
 **Blocos na página:** video-abertura → fala-abertura → jogo-pronto.
 
-**Zappy na página (não gravar):** Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima seção.
+**Zappy na página (não gravar):** Jogue a versão pronta: Enter começa, as setas movem a nave e a barra de espaço atira. Depois clique em Próxima parte.
 
 Versão completa do mesmo jogo, derivada do marco original 5. Conclusão por participação; vencer não é exigência para conhecer o jogo.
 
-### Seção 2. Seu Caderno do Aluno
+### Seção 2. Seu Mapa da Aventura
 
-**Tarefa:** O caderno reúne os passos da montagem. Você pode consultar quando precisar. Para continuar, clique em Próxima seção.
+**Tarefa:** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
 **Blocos na página:** video-seu-caderno-do-aluno → fala-seu-caderno-do-aluno → caderno.
 
-**Zappy na página (não gravar):** O caderno reúne os passos da montagem. Você pode consultar quando precisar. Para continuar, clique em Próxima seção.
+**Zappy na página (não gravar):** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
-Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.
+Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno, que aparece na tela como Mapa da Aventura: Nave Contra Asteroides. Ler aqui mesmo ou clicar em Baixar para guardar são convites e não entram na conclusão. A fala não diz que não precisa baixar ou imprimir: soa como uma ordem para não fazer.
 
 ### Seção 3. Compare uma vez e sempre
 
@@ -54,13 +54,13 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno.
 
 ### Seção 4. Prepare a tela do jogo
 
-**Tarefa:** Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira a etapa.
+**Tarefa:** Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira esta parte.
 
 **Blocos na página:** video-montar-areas-tela → fala-montar-areas-e-tela.
 
-**Zappy na página (não gravar):** Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira a etapa.
+**Zappy na página (não gravar):** Monte Ao iniciar e Enquanto estiver rodando. Prepare a tela e confira esta parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Coloque Ao iniciar.
 - Coloque Enquanto estiver rodando.
@@ -94,7 +94,7 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno.
 
 **Zappy na página (não gravar):** Crie nave em Ao iniciar, com posição e tamanho definidos. O desenho será ligado na próxima montagem.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
 - Deixe a tela de 800 × 480 em Ao iniciar.
@@ -117,7 +117,7 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno.
 
 **Zappy na página (não gravar):** Desenhe a nave em cada quadro e confira se ela aparece antes de enviar.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar para o guia → Enviar.
 
 - Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
 - Coloque A cada quadro do jogo em Enquanto estiver rodando.

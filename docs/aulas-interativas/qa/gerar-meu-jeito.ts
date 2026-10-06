@@ -42,17 +42,21 @@ export interface AulaMeuJeito {
 export const aulasMeuJeito = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'meu-jeito.conteudo.json'), 'utf8'),
 ) as AulaMeuJeito[]
+/**
+ * A fala completa da seção. As frases fixas falam o vocabulário da aventura (Diretrizes, seção 6,
+ * 06/10/2026): a criança ouve fase, parte e guia, e os botões pelo nome novo (Próxima parte).
+ */
 export function falasSecao(s: SecaoMeuJeito): string[] {
   const speech = [...(s.speech ?? [])]
   if (s.key === 'compartilhar') {
     // Publicar é opcional e não tem uma conferência anterior para comparar (revisão de 06/10/2026).
     speech.push(
-      'Pause aqui se escolheu publicar. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Depois de clicar em Fechar, volte a esta aba e clique em Próxima seção.',
+      'Pause aqui se escolheu publicar. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Depois de clicar em Fechar, volte a esta aba e clique em Próxima parte.',
     )
   } else if (s.externalTool && !s.final) {
     const tool = s.externalTool === 'pinta' ? 'Pinta' : 'Estúdio'
     speech.push(
-      `Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu ${tool} se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere ${tool === 'Pinta' ? 'Guardado na sua conta' : 'Salvo'}. Volte a esta aba e clique em Próxima seção.`,
+      `Pause aqui para fazer esta parte no seu ${tool === 'Pinta' ? 'desenho' : 'jogo'}. Use Abrir meu ${tool} se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que a gente acabou de fazer. Antes de sair, espere ${tool === 'Pinta' ? 'Guardado na sua conta' : 'Salvo'}. Volte a esta aba e clique em Próxima parte.`,
     )
   }
   return speech
@@ -67,7 +71,7 @@ export function telaSecao(s: SecaoMeuJeito): string {
   const meme = s.meme
     ? ` Meme na comparação: ${s.meme} Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele.`
     : ''
-  return `Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. ${s.screen}${meme} No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.`
+  return `Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. ${s.screen}${meme} No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.`
 }
 export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
   const blocks: LearningManifest['blocks'] = []
@@ -98,7 +102,7 @@ export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
           required: true,
           title: 'Experimente uma versão com artes próprias',
           instructions:
-            'Clique no jogo. Enter começa; as setas movem a nave e Espaço atira. Depois que a partida terminar, Enter volta à abertura e outro Enter começa. Observe as artes; não há pontuação mínima para seguir.',
+            'Clique no jogo. Enter começa; as setas movem a nave e Espaço atira. Depois que a partida terminar, Enter volta à abertura e outro Enter começa. Observe as artes. Você pode seguir mesmo sem vencer.',
           hints: [],
           activity: {
             type: 'project-play',
@@ -111,9 +115,10 @@ export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
         true,
       )
     if (s.materials)
+      // A chave continua `materiais-caderno`; para a criança, o caderno é o Mapa da Aventura.
       add('materiais-caderno', {
         kind: 'materials',
-        title: 'Caderno do Aluno: O Jogo do Meu Jeito',
+        title: 'Mapa da Aventura: O Jogo do Meu Jeito',
         bookPreview: true,
         items: [],
       })
@@ -157,6 +162,8 @@ function roteiro(lesson: AulaMeuJeito, index: number) {
     'Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.',
     '',
     'Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.',
+    '',
+    'Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos títulos, a criança ouve e lê fase, parte, Mapa da Aventura e guia, e os botões pelo nome novo (Próxima parte, Concluir fase, Enviar para o guia, Recebido pelo seu guia.). Aula, seção e caderno ficam só nas notas da equipe.',
     '',
   ]
   lesson.sections.forEach((s, i) => {
@@ -235,7 +242,7 @@ function proposta(lesson: AulaMeuJeito, index: number, m: LearningManifest) {
       )
     if (s.materials)
       lines.push(
-        'Anexar `output/pdf/meu-jeito-caderno.pdf` a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão.',
+        'Anexar `output/pdf/meu-jeito-caderno.pdf`, que a criança conhece como Mapa da Aventura, a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.',
         '',
       )
     if (s.questions)

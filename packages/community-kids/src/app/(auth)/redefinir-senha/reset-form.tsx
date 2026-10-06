@@ -93,7 +93,7 @@ export function ResetForm({ token }: { token: string }) {
     <Card className={AUTH_CARD}>
       <CardHeader>
         <CardTitle className={AUTH_TITLE}>Definir senha</CardTitle>
-        <CardDescription>Crie a senha de acesso à sua área de aluno.</CardDescription>
+        <CardDescription>Crie a senha de acesso à sua conta.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">

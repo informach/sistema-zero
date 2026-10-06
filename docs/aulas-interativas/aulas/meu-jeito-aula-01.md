@@ -30,13 +30,13 @@ A antiga abertura exigia um projeto vazio e a falta artificial de extensão ante
 
 Jogo derivado do marco original 8, com artes ilustrativas de dois quadros. Conclusão por participação. As artes são exemplos; não substituem as criações do aluno.
 
-### Seção 2. Consulte os passos do curso
+### Seção 2. Seu Mapa da Aventura
 
-**Tarefa / Zappy na página:** O caderno fica aqui para consultar, baixar ou imprimir se você quiser.
+**Tarefa / Zappy na página:** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
 **Blocos na página:** video-caderno → fala-caderno → materiais-caderno.
 
-Anexar `output/pdf/meu-jeito-caderno.pdf` a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão.
+Anexar `output/pdf/meu-jeito-caderno.pdf`, que a criança conhece como Mapa da Aventura, a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.
 
 ### Seção 3. Troque a história, observe as regras
 
@@ -52,7 +52,7 @@ Anexar `output/pdf/meu-jeito-caderno.pdf` a `materiais-caderno`. Ler, baixar e i
 
 **Blocos na página:** video-copias → fala-copias → experiencia-copia.
 
-**Experiência existente:** `copy-vs-original`. Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados. Sem palpite, pistas ou pergunta final.
+**Experiência existente:** `copy-vs-original`. Clique em Exportar e observe o arquivo e o jogo da fase. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados. Sem palpite, pistas ou pergunta final.
 
 ### Seção 5. Baixe o seu jogo concluído
 
@@ -70,9 +70,9 @@ Anexar `output/pdf/meu-jeito-caderno.pdf` a `materiais-caderno`. Ler, baixar e i
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
-### Seção 7. Entregue a cópia do jogo
+### Seção 7. Envie a cópia do jogo
 
-**Tarefa / Zappy na página:** Confira o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.
+**Tarefa / Zappy na página:** Confira: o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Depois, envie o cartão do seu jogo para o guia pela galeria do Estúdio.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 

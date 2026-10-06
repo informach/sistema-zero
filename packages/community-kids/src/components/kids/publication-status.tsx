@@ -46,7 +46,7 @@ export function PublicationStatus({ state }: { state: 'pending' | 'delivered' })
           Abrir o Mural
         </Link>
         <Link href="/recados" className="inline-flex min-h-11 items-center font-bold text-primary">
-          Pedir ajuda ao professor
+          Pedir ajuda ao guia
         </Link>
       </div>
     </section>

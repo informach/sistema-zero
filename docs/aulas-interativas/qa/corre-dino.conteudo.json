@@ -29,30 +29,31 @@
         "title": "Jogue antes de construir",
         "kind": "presentation",
         "videoKey": "video-abertura",
-        "bridge": "Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.",
+        "bridge": "Jogue um pouco para conhecer os controles. Depois clique em Próxima parte.",
         "screen": "Demonstração: o narrador mostra como se joga com um exemplo só. Mostrar somente o jogo pronto, na abertura. Clicar na área do jogo, esperar o primeiro cacto e fazer um salto com a barra de espaço. Parar a demonstração depois desse salto, sem jogar a partida até o fim e sem mostrar a tela de fim. Em Agora é a sua vez, deixar o jogo pronto à vista para quem faz a aula; participação basta para concluir.",
         "speech": [
           "Esta é a versão pronta do Corre, Dino!, para você ver como o jogo funciona antes de montar o seu. Nesse jogo, o Dino corre e pula os cactos. A corrida fica cada vez mais rápida, e os pontos crescem enquanto você continua na partida.",
           "Olha aqui: quando eu clico na área do jogo, a abertura some e a corrida começa. Quando um cacto chega perto, eu aperto a barra de espaço, e o Dino pula por cima dele. A seta para cima e um toque na tela também fazem o Dino pular.",
-          "Agora é a sua vez: jogue o Corre, Dino! pronto. Você não precisa bater recorde para continuar. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: jogue o Corre, Dino! pronto. Você pode continuar mesmo sem bater recorde. Quando terminar, clique em Próxima parte."
         ],
         "caderno": [
           "Você vai construir Corre, Dino! O Dino pula os cactos numa corrida que fica mais rápida. Tente passar pelos obstáculos e somar pontos pelo tempo que conseguir continuar na partida.",
           "Experimente a versão pronta. Clique na área do jogo para começar. Toque e solte a barra de espaço, a seta para cima ou a tela para pular. Espere o Dino voltar ao chão para pular outra vez.",
-          "Quando perder, toque uma vez para voltar à abertura e outra para começar uma nova partida. Você não precisa bater recorde para seguir. Depois de experimentar os controles, clique em Próxima seção."
+          "Quando perder, toque uma vez para voltar à abertura e outra para começar uma nova partida. Você pode seguir mesmo sem bater recorde. Depois de experimentar os controles, clique em Próxima parte."
         ],
         "play": true
       },
       {
         "key": "caderno",
-        "title": "Seu Caderno do Aluno",
+        "title": "Seu Mapa da Aventura",
         "kind": "material",
         "videoKey": "video-caderno",
-        "bridge": "O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção.",
-        "screen": "Mostrar o PDF real anexado ao curso. Não ensinar os controles do leitor.",
+        "bridge": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
+        "screen": "Mostrar o PDF real do Mapa da Aventura, anexado ao curso. No Olha aqui, apontar o mapa. Ao falar em baixar, apontar o botão Baixar, sem clicar. Não demonstrar o download nem ensinar os controles do leitor.",
         "speech": [
-          "O Caderno do Aluno reúne os passos para montar e testar o Corre, Dino! Você pode consultar um encaixe ou um valor quando precisar.",
-          "Ler, baixar e imprimir são escolhas suas. Não precisa fazer isso agora. Clique em Próxima seção."
+          "Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos para montar e testar o seu jogo, com os encaixes e os valores de cada bloco. Por isso, quando precisar conferir um passo, é só voltar aqui e abrir o mapa.",
+          "Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.",
+          "Agora clique em Próxima parte."
         ],
         "materials": true
       },
@@ -74,7 +75,7 @@
           "Antes de preparar seu jogo, compare uma ação feita uma vez com a mesma ação repetida.",
           "Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação.",
           "Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -139,13 +140,13 @@
           "Esta é uma experiência para a gente entender o tamanho da tela do jogo: a largura e a altura.",
           "Olha aqui: a tela começa em 800 por 480, com a borda escondida. Quando eu clico em Ligue a borda, aparece um contorno em volta da tela. A borda mostra onde a tela acaba.",
           "Agora eu mudo a largura para 600 e a altura para 300. O contorno fica mais estreito e mais baixo: a largura mede de um lado ao outro, e a altura, de cima a baixo.",
-          "Por último, eu coloco largura 480 e altura 270. Essa é a tela do nosso jogo. É como escolher o tamanho da folha antes de desenhar: tudo o que o jogo mostrar vai caber dentro dela. Na montagem, você vai escrever 480 e 270 no bloco que prepara a tela e depois mostrar a borda para ver esse limite."
+          "Por último, eu coloco largura 480 e altura 270. Essa é a tela do seu jogo. É como escolher o tamanho da folha antes de desenhar: tudo o que o jogo mostrar vai caber dentro dela. Na montagem, você vai escrever 480 e 270 no bloco que prepara a tela e depois mostrar a borda para ver esse limite."
         ],
         "caderno": [
           "Seu jogo vai ocupar uma tela de 480 por 270. Antes de preparar essa tela, veja o que os dois números mudam.",
           "Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo.",
           "Depois coloque largura 480 e altura 270. Compare com o tamanho anterior.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -170,7 +171,7 @@
         "bridge": "Prepare a tela em Ao iniciar com largura 480 e altura 270.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você mudou o tamanho da tela. Seu projeto ainda está vazio. Agora prepare essa tela para o jogo.",
+          "Lembra da experiência da parte anterior? Você mudou o tamanho da tela. Seu projeto ainda está vazio. Agora prepare essa tela para o jogo.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe um espaço vazio da montagem à vista. Abra Áreas do projeto. Pegue Ao iniciar e solte nesse espaço. Essa área recebe a preparação feita uma vez no começo.",
           "Deixe à vista o interior de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e Preparar a área do jogo. Pegue Preparar o jogo em tela cheia e encaixe dentro de Ao iniciar.",
@@ -262,7 +263,7 @@
           "Para criar o Dino numa posição, vamos usar x e y. Esses números indicam um lugar na tela.",
           "Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções.",
           "Por último, coloque x em 0 e y em 0. Observe onde fica essa posição.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -291,13 +292,13 @@
           "Esta é uma experiência para a gente entender que criar o Dino e mostrar o Dino na tela são duas coisas diferentes.",
           "Olha aqui: quando eu clico em Criar o Dino, ele aparece nos bastidores, mas a tela do jogo continua vazia. O Dino já existe no jogo. Ele só não foi desenhado.",
           "Quando eu clico em Mostrar o Dino na tela, o mesmo Dino aparece na tela do jogo. Mostrar não cria outro Dino: desenha aquele que já estava nos bastidores.",
-          "É como um ator no camarim: ele já chegou ao teatro, mas a plateia só vê quando ele entra no palco. Na montagem desta aula, você vai criar o Dino. Ele ainda não vai aparecer, porque o desenho fica para a próxima aula."
+          "É como um ator no camarim: ele já chegou ao teatro, mas a plateia só vê quando ele entra no palco. Agora, na montagem, você vai criar o Dino. Ele ainda não vai aparecer, porque o desenho fica para a próxima fase."
         ],
         "caderno": [
           "Você já escolheu posições. Agora observe a diferença entre criar um objeto e desenhá-lo na tela.",
           "Clique em Criar o Dino. Compare os bastidores com a tela do jogo.",
           "Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -322,10 +323,10 @@
         "bridge": "Crie dino em x 110, y 150 e tamanho 64, abaixo da borda.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você criou e depois mostrou o Dino. No seu jogo só existe a tela preparada. Agora crie o Dino; nesta montagem ele ainda não será desenhado.",
+          "Lembra da experiência da parte anterior? Você criou e depois mostrou o Dino. No seu jogo só existe a tela preparada. Agora crie o Dino; nesta montagem ele ainda não será desenhado.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o encaixe abaixo de Mostrar a borda da tela, dentro de Ao iniciar. Abra Jogo 2D, depois Kits prontos e Dino. Pegue Criar dinossauro e encaixe abaixo da borda.",
-          "Mantenha o nome dino. Sprite é um objeto do jogo que você pode programar; esse nome identifica o nosso. Coloque x 110, y 150 e tamanho 64. Escolha a cor do Dino.",
+          "Mantenha o nome dino. Sprite é um objeto do jogo que você pode programar, e esse nome identifica o seu Dino. Coloque x 110, y 150 e tamanho 64. Escolha a cor do Dino.",
           "Confira a sequência: preparar a tela, mostrar a borda e criar o Dino. Confira os campos 110, 150 e 64. A tela continua sem Dino porque ainda não há uma ordem de desenho. Não duplique o bloco para tentar fazê-lo aparecer."
         ],
         "checks": [
@@ -366,7 +367,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu projeto agora prepara a tela e cria o Dino. Confira a borda, a largura 480 e a altura 270. O Dino está criado, ainda sem desenho.",
@@ -530,7 +531,7 @@
           "Seu Dino foi criado, mas ainda não aparece. Antes de desenhá-lo, compare uma imagem feita no começo com imagens que acompanham o movimento.",
           "Nesta experiência, deixe Desenhar o Dino em Só no começo. Clique em Avançar 1 quadro algumas vezes e compare o desenho com o x mostrado.",
           "Troque para A cada quadro e avance mais alguns quadros. Por último, ligue Limpar a tela antes e avance de novo. Compare os três jeitos.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -555,7 +556,7 @@
         "bridge": "Desenhe dino dentro de A cada quadro do jogo.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou quando o desenho é feito. Seu Dino ainda não aparece porque o projeto só cria o objeto. Agora coloque o desenho na repetição.",
+          "Lembra da experiência da parte anterior? Você comparou quando o desenho é feito. Seu Dino ainda não aparece porque o projeto só cria o objeto. Agora coloque o desenho na repetição.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe um espaço vazio ao lado de Ao iniciar à vista. Abra Áreas do projeto. Pegue Enquanto estiver rodando e solte separado de Ao iniciar, com espaço entre as áreas.",
           "Deixe à vista o interior de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e Quadros e intervalos. Pegue A cada quadro do jogo e encaixe nessa área.",
@@ -632,7 +633,7 @@
           "Seu jogo já desenha o Dino. Antes de colocar o fundo, compare como a ordem dos desenhos muda o que aparece.",
           "Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela.",
           "Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -657,7 +658,7 @@
         "bridge": "Desenhe uma floresta em velocidade 5 antes do Dino.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou o fundo antes e depois do Dino. No seu jogo ainda não há floresta. Coloque o fundo antes do personagem.",
+          "Lembra da experiência da parte anterior? Você comparou o fundo antes e depois do Dino. No seu jogo ainda não há floresta. Coloque o fundo antes do personagem.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o encaixe entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Abra Jogo 2D, depois Cenários e Fundos. Pegue Desenhar fundo de floresta e encaixe nesse espaço.",
           "Deixe a velocidade em 5. Esse número controla quanto o fundo anda por quadro. A floresta deve passar atrás do Dino. Se o Dino sumir, confira a ordem: limpar, floresta e Dino. Se houver duas florestas, retire a repetida."
@@ -767,7 +768,7 @@
           "Quem usa um leitor de tela precisa ouvir o que fazer no jogo. Compare uma tela sem descrição com uma frase que explica a tarefa e o controle.",
           "Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente.",
           "Compare o que foi lido antes e depois da frase.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -792,7 +793,7 @@
         "bridge": "Escreva a tarefa e o controle na descrição para o leitor de tela.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você ouviu o que a frase acrescenta à tela. Seu projeto ainda não tem essa descrição. Escreva a orientação do jogo que está construindo.",
+          "Lembra da experiência da parte anterior? Você ouviu o que a frase acrescenta à tela. Seu projeto ainda não tem essa descrição. Escreva a orientação do jogo que está construindo.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro, em Ao iniciar. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue Descrever o jogo para leitor de tela e encaixe nesse espaço.",
           "No texto, escreva Corra com o dino e pule os cactos apertando espaço. Essa descrição não vira uma legenda desenhada sobre a floresta; fica disponível para a ferramenta de leitura. O pulo ainda será montado, então a frase descreve o jogo completo.",
@@ -818,7 +819,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu jogo já mostra o Dino diante da floresta. Observe se o fundo passa e se o Dino permanece visível.",
@@ -992,7 +993,7 @@
           "Seu Dino ainda está parado. Antes de fazê-lo pular no jogo, observe o que traz um personagem de volta ao chão.",
           "Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer.",
           "Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -1017,7 +1018,7 @@
         "bridge": "Aplique a gravidade depois da floresta e antes do desenho.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou o movimento no ar com e sem gravidade. Seu Dino está parado na posição em que foi criado. Agora faça a gravidade agir nele.",
+          "Lembra da experiência da parte anterior? Você comparou o movimento no ar com e sem gravidade. Seu Dino está parado na posição em que foi criado. Agora faça a gravidade agir nele.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o espaço entre a floresta e o desenho do Dino, dentro de A cada quadro do jogo. Abra Jogo 2D, depois Movimento e Velocidade e gravidade. Pegue Aplicar a gravidade do mundo ao sprite e encaixe nesse lugar. Escolha dino.",
           "Observe o Dino descer até o chão. Se continuar suspenso, confira o nome e se a gravidade está dentro do quadro, antes do desenho. O controle de pulo ainda não está montado."
@@ -1071,7 +1072,7 @@
           "Seu Dino já chega ao chão. Agora compare a força que inicia um salto, mantendo a mesma gravidade.",
           "Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura.",
           "Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -1096,7 +1097,7 @@
         "bridge": "Teste espaço, seta para cima e toque, com gravidade antes do controle.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você mudou o impulso e comparou os saltos. Clique no seu jogo e toque na barra de espaço: ainda não há um controle ligado ao Dino. Agora monte essa resposta.",
+          "Lembra da experiência da parte anterior? Você mudou o impulso e comparou os saltos. Clique no seu jogo e toque na barra de espaço: ainda não há um controle ligado ao Dino. Agora monte essa resposta.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite. Abra Jogo 2D, depois Kits prontos e Dino. Pegue Controlar o dinossauro e encaixe nesse espaço. Escolha dino e coloque força do pulo 14.",
           "Clique na área do jogo, toque e solte a barra de espaço e espere o Dino pousar. Faça outro salto com a seta para cima. Depois teste tocando na tela. O bloco já oferece os três controles.",
@@ -1220,7 +1221,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu Dino já pula e volta ao chão. Teste espaço, seta para cima e toque. Espere pousar entre os saltos.",
@@ -1365,7 +1366,7 @@
         "screen": "Começar com as peças em Ações disponíveis. Colocar Tocar efeito · pulo em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado, com o contador da peça em 0 vezes. Clicar em Apertar a tecla e mostrar a nota ♪ no palco e o contador em 1 vez.",
         "meme": "o Zappy apertando a campainha de uma casa, com uma nota musical saindo dela.",
         "speech": [
-          "Esta é a mesma experiência da primeira aula, agora para a gente entender uma área que espera um acontecimento para agir. Ela ganhou uma área nova, Quando acontecer.",
+          "Esta é a mesma experiência da primeira fase, agora para a gente entender uma área que espera um acontecimento para agir. Ela ganhou uma área nova, Quando acontecer.",
           "Olha aqui: eu coloco Tocar efeito · pulo em Quando acontecer e clico em Começar o jogo. O jogo roda até o teste terminar, e o contador continua em 0 vezes. A peça ficou esperando, porque eu não cliquei em Apertar a tecla.",
           "Agora eu clico em Apertar a tecla. Na mesma hora, aparece a notinha ♪ no jogo, e o contador vai para 1 vez. Quando acontecer não age no começo nem repete sozinho: age quando o acontecimento chega.",
           "É como a campainha de casa: ela fica quieta o dia inteiro e só toca quando alguém aperta o botão. No seu jogo, o som vai em Quando acontecer, esperando o pulo do Dino."
@@ -1374,7 +1375,7 @@
           "Seu Dino já pula. Para tocar um som no momento certo, observe uma ação que espera um acontecimento.",
           "Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar em Apertar a tecla. Observe o contador.",
           "Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -1437,7 +1438,7 @@
           "Um comando de tecla e um salto nem sempre acontecem juntos. Compare esses dois momentos antes de escolher o evento do som.",
           "Deixe Tocar efeito em Quando apertar Espaço. Clique em Apertar Espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, clique em Tocar para pular.",
           "Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: Apertar Espaço duas vezes no mesmo salto e Tocar para pular uma vez. Compare os contadores.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -1462,7 +1463,7 @@
         "bridge": "Coloque um único Tocar efeito pulo dentro de Quando o sprite pular.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou ouvir a tecla com ouvir o pulo. Teste um salto no seu jogo: o Dino já pula, mas ainda sem som. Agora ligue um efeito ao salto.",
+          "Lembra da experiência da parte anterior? Você comparou ouvir a tecla com ouvir o pulo. Teste um salto no seu jogo: o Dino já pula, mas ainda sem som. Agora ligue um efeito ao salto.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe um espaço vazio da montagem à vista, separado de Ao iniciar e Enquanto estiver rodando. Abra Áreas do projeto. Pegue Quando acontecer e solte nesse espaço.",
           "Deixe à vista o interior de Quando acontecer. Abra Jogo 2D, depois Controles e Teclado, ações e toque. Pegue Quando o sprite pular e encaixe nessa área. Escolha dino.",
@@ -1513,7 +1514,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu Dino pula com som. Teste um salto por espaço, outro por seta para cima e outro por toque, esperando pousar entre eles.",
@@ -1681,7 +1682,7 @@
           "Seu jogo já tem um Dino. Antes de criar os obstáculos, compare vários cactos nascendo a cada quadro com cactos nascendo num intervalo.",
           "Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe o grupo de cactos.",
           "Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -1706,7 +1707,7 @@
         "bridge": "Crie cactos em Ao iniciar e prepare um relógio separado de 1.4 segundo.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou os intervalos entre os cactos. No seu jogo só aparece o Dino. Prepare um grupo para reunir os obstáculos e um relógio para criá-los.",
+          "Lembra da experiência da parte anterior? Você comparou os intervalos entre os cactos. No seu jogo só aparece o Dino. Prepare um grupo para reunir os obstáculos e um relógio para criá-los.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o fim de Ao iniciar, depois de Criar dinossauro. Abra Jogo 2D, depois Grupos e Criar e percorrer. Pegue Criar grupo de sprites e encaixe no fim de Ao iniciar. Escreva cactos no nome. O grupo guarda os objetos que serão criados por essa regra.",
           "Deixe à vista um espaço dentro de Enquanto estiver rodando, abaixo e fora de A cada quadro do jogo. Abra Jogo 2D, depois Tempo e Quadros e intervalos. Pegue A cada 2 segundos e encaixe nesse espaço. Troque o intervalo por 1.4, um segundo e quatro décimos.",
@@ -1756,7 +1757,7 @@
           "O relógio já está preparado. Antes de criar um cacto que entra pela direita, compare a direção que cada número de velocidade produz.",
           "Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x.",
           "Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -1787,11 +1788,11 @@
         "bridge": "Crie cactos em x 560, tamanho 44 e velocidade -5 a cada 1.4 segundo.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou o movimento com número positivo, negativo e zero. O relógio do seu projeto está vazio. Agora crie cactos que vão entrar pela direita.",
+          "Lembra da experiência da parte anterior? Você comparou o movimento com número positivo, negativo e zero. O relógio do seu projeto está vazio. Agora crie cactos que vão entrar pela direita.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o interior de A cada 1.4 segundos. Abra Jogo 2D, depois Kits prontos e Dino. Pegue No grupo criar obstáculo e encaixe dentro desse relógio. Escolha o grupo cactos e a forma cacto.",
-          "Coloque x em 560, velocidade em -5 e tamanho em 44. Nossa tela tem largura 480: x 560 começa além da borda direita. A velocidade negativa leva o cacto para a esquerda.",
-          "Confira os campos e o encaixe dentro do relógio. Os cactos já são criados, mas ainda faltam as ordens para atualizar suas posições e desenhá-los. A tela continua mostrando apenas Dino e floresta nesta etapa."
+          "Coloque x em 560, velocidade em -5 e tamanho em 44. A tela do seu jogo tem largura 480, por isso x 560 começa além da borda direita. A velocidade negativa leva o cacto para a esquerda.",
+          "Confira os campos e o encaixe dentro do relógio. Os cactos já são criados, mas ainda faltam as ordens para atualizar suas posições e desenhá-los. Por enquanto, a tela continua mostrando apenas Dino e floresta."
         ],
         "checks": [
           {
@@ -1905,11 +1906,11 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu Dino agora encontra cactos vindo da direita. Espere pelo menos dois nascimentos e teste o pulo.",
-          "Confira o intervalo 1.4, o x 560, a velocidade -5 e o tamanho 44. A batida ainda não termina o jogo; o resultado desta aula é a entrada e o movimento dos obstáculos."
+          "Confira o intervalo 1.4, o x 560, a velocidade -5 e o tamanho 44. A batida ainda não termina o jogo; o resultado desta fase é a entrada e o movimento dos obstáculos."
         ],
         "checks": [
           {
@@ -2127,13 +2128,13 @@
           "Esta é uma experiência para a gente entender o que acontece com um cacto que sai da tela.",
           "Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os cactos passam e saem pela esquerda. Na tela do jogo eles somem, mas nos bastidores continuam no grupo, na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.",
           "Depois que dois cactos saem, a chave abre. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.",
-          "É como uma mochila: o caderno que você não usa mais continua lá dentro, pesando, até alguém tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos."
+          "É como uma mochila: o bloquinho que você não usa mais continua lá dentro, pesando, até alguém tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos."
         ],
         "caderno": [
           "Os cactos saem pela esquerda no seu jogo. Agora observe o grupo por dentro para descobrir o que acontece com esses objetos.",
           "Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste.",
           "Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -2158,7 +2159,7 @@
         "bridge": "Limpe o grupo cactos a cada quadro e conserve o intervalo 1.4.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou a tela com o grupo guardado. Seu jogo ainda não tem a regra que retira os cactos antigos. Ela muda o grupo por dentro, sem desenhar uma nova imagem.",
+          "Lembra da experiência da parte anterior? Você comparou a tela com o grupo guardado. Seu jogo ainda não tem a regra que retira os cactos antigos. Ela muda o grupo por dentro, sem desenhar uma nova imagem.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o fim de A cada quadro do jogo, depois de Desenhar o grupo cactos. Abra Jogo 2D, depois Grupos e Participação e limpeza. Pegue Tirar do grupo quem sair da tela e encaixe depois do desenho dos cactos. Escolha cactos.",
           "Mantenha o nome cacto no campo de item. Esse nome identifica cada objeto examinado pela limpeza. Não coloque outros blocos no interior dessa peça.",
@@ -2283,11 +2284,11 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Sua corrida agora tem a regra de limpeza do grupo. Espere novos cactos entrarem e passarem pela tela. Eles devem continuar vindo no mesmo ritmo.",
-          "Confira o nome cactos na limpeza e o relógio em 1.4 segundo. O jogo continua sem regra de derrota; não é preciso evitar todas as batidas neste teste."
+          "Confira o nome cactos na limpeza e o relógio em 1.4 segundo. O jogo ainda não tem regra de derrota, por isso você pode seguir o teste mesmo se um cacto bater no Dino."
         ],
         "checks": [
           {
@@ -2427,7 +2428,7 @@
           "Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto.",
           "Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador.",
           "Depois toque na tela para começar a partida e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -2452,7 +2453,7 @@
         "bridge": "Guarde inicio em Ao iniciar e observe que isso sozinho não protege as ações.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou início e partida. Seu jogo ainda não declara esse momento na preparação. Primeiro, guarde o estado inicio.",
+          "Lembra da experiência da parte anterior? Você comparou início e partida. Seu jogo ainda não declara esse momento na preparação. Primeiro, guarde o estado inicio.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o fim de Ao iniciar, depois de Criar grupo de sprites. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue Mudar o estado do jogo para e encaixe no fim de Ao iniciar. Escolha inicio.",
           "Observe o jogo. O Dino e os cactos continuam agindo porque ainda não há uma condição consultando esse estado. O bloco guarda o nome do momento; ele não move os outros blocos sozinho.",
@@ -2680,7 +2681,7 @@
         "bridge": "Proteja também a criação no relógio e termine com inicio em Ao iniciar.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na mesma experiência desta aula, a criação também só acontecia durante a partida. No seu projeto, proteger o quadro não protegeu o relógio de 1.4 segundo: ele está em outro lugar. Agora aplique a mesma pergunta ali.",
+          "Na mesma experiência desta fase, a criação também só acontecia durante a partida. No seu projeto, proteger o quadro não protegeu o relógio de 1.4 segundo: ele está em outro lugar. Agora aplique a mesma pergunta ali.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o interior do relógio de 1.4 segundo. Retire temporariamente No grupo criar obstáculo e deixe a peça num espaço livre.",
           "Deixe à vista o interior vazio do relógio. Abra Programação e depois Lógica e Se. Pegue Se e encaixe ali. Retire a pergunta x > 0 que veio nele.",
@@ -2726,7 +2727,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu jogo agora espera no estado inicio. Confira os dois lugares: a condição no quadro e a condição no relógio dos cactos.",
@@ -3081,7 +3082,7 @@
         "bridge": "Mostre a abertura no senão se inicio, com título e convite para começar.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Seu jogo já espera em inicio, mas só mostra a floresta. A condição da aula anterior separou os momentos. Agora acrescente uma resposta para desenhar a abertura.",
+          "Seu jogo já espera em inicio, mas só mostra a floresta. A condição da fase anterior separou os momentos. Agora acrescente uma resposta para desenhar a abertura.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o Se jogando dentro de A cada quadro do jogo. Clique uma vez no + ao lado de senão, na parte de baixo do bloco. Ele acrescenta um ramo senão se.",
           "Deixe à vista a pergunta x > 0 desse novo ramo e retire-a. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe na pergunta e escolha inicio.",
@@ -3139,7 +3140,7 @@
           "A abertura do seu jogo convida a usar tecla ou toque. Compare como escolher um evento que atende aos dois.",
           "Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início.",
           "Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -3164,7 +3165,7 @@
         "bridge": "Comece a partida somente quando uma tecla ou toque encontrar o estado inicio.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou os eventos que respondem à entrada. Toque na abertura do seu jogo: ela ainda não começa. Agora faça o evento mudar inicio para jogando.",
+          "Lembra da experiência da parte anterior? Você comparou os eventos que respondem à entrada. Toque na abertura do seu jogo: ela ainda não começa. Agora faça o evento mudar inicio para jogando.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista um espaço dentro de Quando acontecer, separado do evento de pulo. Abra Jogo 2D, depois Controles e Teclado, ações e toque. Pegue Quando apertar qualquer tecla ou tocar na tela e encaixe nessa área.",
           "Deixe à vista o interior do novo evento. Abra Programação e depois Lógica e Se. Pegue Se e encaixe ali. Retire a pergunta x > 0 que veio nele.",
@@ -3248,7 +3249,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Sua abertura agora começa uma partida. Confira o convite escrito e teste a entrada por tecla e por toque desde a abertura. Para repetir o teste, clique na seta circular Atualizar, no alto da prévia do jogo.",
@@ -3440,7 +3441,7 @@
           "No seu jogo o Dino atravessa os cactos. Antes de usar uma colisão para encerrar a partida, observe quando a regra reconhece um contato.",
           "Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU.",
           "Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -3468,7 +3469,7 @@
         "bridge": "Mude para fim dentro da colisão entre Dino e cactos.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você observou a indicação de contato. No seu jogo, comece a partida e deixe um cacto alcançar o Dino: a corrida continua. Agora faça a batida mudar o estado para fim.",
+          "Lembra da experiência da parte anterior? Você observou a indicação de contato. No seu jogo, comece a partida e deixe um cacto alcançar o Dino: a corrida continua. Agora faça a batida mudar o estado para fim.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o espaço entre Desenhar o grupo cactos e a limpeza, dentro do então de Se jogando no quadro. Abra Jogo 2D, depois Colisões e Encostar e bloquear. Pegue Para cada sprite do grupo que colidir com o sprite e encaixe nesse espaço.",
           "Escolha grupo cactos, sprite dino e apelido cacto. O apelido identifica o objeto que participou desta batida.",
@@ -3560,7 +3561,7 @@
         "bridge": "Na colisão, exploda cacto, trema em 8, toque derrota e mude para fim.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Sua colisão já encerra a partida e mostra o fim. Você já ligou som a um acontecimento na aula 4. Agora coloque os efeitos dentro da batida, antes da mudança de estado.",
+          "Sua colisão já encerra a partida e mostra o fim. Você já ligou som a um acontecimento na fase 4. Agora coloque os efeitos dentro da batida, antes da mudança de estado.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o encaixe antes de Mudar o estado do jogo para fim, dentro da colisão. Abra Jogo 2D, depois Desenho e efeitos e Partículas. Pegue Soltar explosão no sprite e encaixe antes da mudança de estado. Escolha cacto no nome e uma cor para a explosão.",
           "Deixe à vista o espaço entre a explosão e a mudança de estado. Abra Jogo 2D, depois Desenho e efeitos e Efeitos. Pegue Tremer a tela e encaixe nesse espaço. Coloque intensidade 8.",
@@ -3631,7 +3632,7 @@
           "Sua corrida já termina. Antes de programar outra partida, compare voltar à abertura com refazer a preparação do jogo.",
           "Na experiência, em No fim, o toque faz, escolha Mudar o estado do jogo para inicio. Clique em Tocar na tela para começar e espere a partida terminar. Clique em Tocar na tela para voltar à abertura e outra vez para jogar. Observe os cactos e os números da nova partida.",
           "Quando terminar novamente, troque a ação para Reiniciar o jogo. Clique em Tocar na tela para voltar e outra vez para começar. Compare os cactos e os números com a tentativa anterior.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -3656,7 +3657,7 @@
         "bridge": "Reinicie no senão se fim do evento de qualquer tecla ou toque.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou voltar à abertura com reiniciar a preparação. No seu jogo, toque na tela de fim: ainda não há resposta. Agora programe o reinício.",
+          "Lembra da experiência da parte anterior? Você comparou voltar à abertura com reiniciar a preparação. No seu jogo, toque na tela de fim: ainda não há resposta. Agora programe o reinício.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o Se inicio dentro de Quando apertar qualquer tecla ou tocar na tela. Clique uma vez no + ao lado de senão, na parte de baixo. Retire a comparação do novo senão se.",
           "Deixe à vista a pergunta desse ramo. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe e escolha fim.",
@@ -3785,7 +3786,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu jogo tem um ciclo completo. Comece, pule um cacto, deixe ocorrer uma batida e confira efeitos e tela de fim.",
@@ -4020,7 +4021,7 @@
         "bridge": "Mude apenas a área com o cacto parado; depois compare o contato com 40%.",
         "screen": "Começar com a área em 100% e o cacto longe. Aproximar até o primeiro BATEU e apontar o vão entre os desenhos. Diminuir a área para 80% sem mexer na distância. Aproximar até os desenhos se encostarem e, por último, diminuir a área para 40%, com a indicação da batida à vista a cada mudança.",
         "speech": [
-          "Esta é a mesma experiência da aula anterior, agora para a gente entender o tamanho da área que decide a batida.",
+          "Esta é a mesma experiência da fase anterior, agora para a gente entender o tamanho da área que decide a batida.",
           "Olha aqui: com a área do Dino em 100%, eu aproximo o cacto até aparecer BATEU. Os desenhos ainda nem se encostaram: a área pega um pedaço vazio em volta do desenho.",
           "Sem mudar a distância, eu diminuo Tamanho da área do Dino para 80%. O BATEU some. O Dino continua do mesmo tamanho; só a área ficou menor.",
           "Agora eu aproximo o cacto até encostar no desenho do Dino. Com 80%, aparece BATEU, e os desenhos também se encostam. Essa batida parece justa. Por último, eu diminuo a área para 40%. Os desenhos se tocam, mas o jogo não marca a batida: a área ficou pequena demais. No seu jogo, você vai mostrar o contorno da área e deixar a área do Dino em 80%."
@@ -4029,7 +4030,7 @@
           "Seu jogo já reconhece a batida. Agora compare o tamanho do desenho com a área usada para decidir esse contato.",
           "Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU. Observe os desenhos nesse momento.",
           "Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -4054,7 +4055,7 @@
         "bridge": "Mostre o contorno da área de dino depois do desenho.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou o desenho com a área de contato. No seu jogo essa área está invisível. Mostre um contorno para conferir o ajuste.",
+          "Lembra da experiência da parte anterior? Você comparou o desenho com a área de contato. No seu jogo essa área está invisível. Mostre um contorno para conferir o ajuste.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o encaixe depois de Desenhar o sprite dino, dentro do então de Se jogando no quadro. Abra Jogo 2D, depois Colisões e Área de contato. Pegue Mostrar a caixa de colisão do sprite e encaixe depois do desenho do Dino. Escolha dino.",
           "Comece a partida e compare o contorno com o desenho. O contorno só mostra a área; não muda a batida. Se não aparecer, confira se foi desenhado depois do Dino e dentro de jogando."
@@ -4185,7 +4186,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu jogo usa uma área ajustada para a batida. Comece, pule e deixe ocorrer uma colisão para conferir o ciclo de fim e reinício.",
@@ -4289,19 +4290,19 @@
         "videoKey": "video-guardar-mudar-mostrar",
         "bridge": "Mude a memória com o placar desligado e depois acompanhe os dois juntos.",
         "screen": "Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas.",
-        "meme": "o Zappy abrindo um caderno em que está escrito pontos: 2.",
+        "meme": "o Zappy abrindo um bloquinho em que está escrito pontos: 2.",
         "speech": [
           "Esta é uma experiência para a gente entender a variável: um lugar que guarda um número, que pode mudar e aparecer na tela.",
           "Olha aqui: quando eu coloco o número guardado em pontos em 1, a caixa pontos é criada e guarda 1. Depois eu coloco 0, e ela passa a guardar 0.",
           "Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. A caixa vai de 0 para 1 e depois para 2, mas a tela não mostra nenhum número. O jogo mudou o valor sem desenhar nada.",
           "Quando eu ligo Mostrar placar, a tela mostra 2, o mesmo número da caixa. Eu clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Mostrar só lê o que está guardado.",
-          "É como anotar os pontos num caderno: a conta fica guardada mesmo com o caderno fechado, e mostrar o placar é abrir o caderno para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar."
+          "É como anotar os pontos num bloquinho: a conta fica guardada mesmo com o bloquinho fechado, e mostrar o placar é abrir o bloquinho para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar."
         ],
         "caderno": [
           "Seu jogo ainda não conta pontos. Uma variável guarda um valor; o mostrador pode ler esse valor. Compare essas duas partes antes de montar.",
           "Na experiência, coloque o número guardado em 1 e depois em 0. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado.",
           "Ligue Mostrar placar. Compare o que aparece na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -4326,7 +4327,7 @@
         "bridge": "Crie pontos com valor 0 em Ao iniciar.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você guardou um número e mudou esse valor. Seu projeto ainda não tem uma variável de pontos. Primeiro, prepare zero no começo de cada partida.",
+          "Lembra da experiência da parte anterior? Você guardou um número e mudou esse valor. Seu projeto ainda não tem uma variável de pontos. Primeiro, prepare zero no começo de cada partida.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o fim de Ao iniciar. Abra Programação e depois Variáveis. Pegue Criar variável com valor e encaixe nesse fim. No nome, troque contador por pontos. Mantenha o valor em 0.",
           "Confira pontos e 0 em Ao iniciar. Ainda não há mostrador na tela; guardar um número não desenha o placar. Quando Reiniciar o jogo repetir essa preparação, o valor voltará a zero."
@@ -4419,7 +4420,7 @@
           "Na experiência, coloque Somar ponto em A cada quadro do jogo e deixe Tempo passar um segundo. Observe o placar.",
           "Deixe Somar ponto solto, fora do relógio e da condição. Na tela de início, deixe passar mais um segundo e observe.",
           "Leve Somar ponto para dentro de o estado do jogo é jogando ?, no relógio de um segundo. Ainda no início, deixe Tempo passar. Clique em Próxima tela até Jogando e observe os pontos crescerem. Depois clique em Próxima tela até Fim e deixe passar mais tempo.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -4444,7 +4445,7 @@
         "bridge": "Some 1 em pontos dentro de um relógio próprio protegido por Se jogando.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou o ritmo e o estado da soma. No seu jogo os pontos ainda ficam em zero. Agora some um por segundo enquanto a partida acontece.",
+          "Lembra da experiência da parte anterior? Você comparou o ritmo e o estado da soma. No seu jogo os pontos ainda ficam em zero. Agora some um por segundo enquanto a partida acontece.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e do relógio dos cactos. Abra Jogo 2D, depois Tempo e Quadros e intervalos. Pegue A cada 2 segundos, encaixe nesse espaço e mude o intervalo para 1.",
           "Deixe à vista o interior do novo relógio. Abra Programação e depois Lógica e Se. Pegue Se e encaixe ali. Retire a comparação x > 0.",
@@ -4635,7 +4636,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Sua corrida já conta os pontos e mostra o resultado. Espere na abertura: o placar não deve aparecer. Comece e observe os pontos crescerem.",
@@ -4858,7 +4859,7 @@
           "Os cactos do seu jogo nascem no mesmo lugar e com a mesma velocidade. Observe um sorteio que escolhe um valor a cada nascimento.",
           "Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem.",
           "Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -4889,7 +4890,7 @@
         "bridge": "Sorteie o x de 500 a 560 dentro do único criador de cactos.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você sorteou posições e viu que um lugar pode repetir. No seu jogo, todo cacto ainda nasce em x 560. Agora substitua esse valor fixo por um sorteio.",
+          "Lembra da experiência da parte anterior? Você sorteou posições e viu que um lugar pode repetir. No seu jogo, todo cacto ainda nasce em x 560. Agora substitua esse valor fixo por um sorteio.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o x 560 do bloco No grupo criar obstáculo, dentro de Se jogando no relógio de 1.4 segundo. Abra Jogo 2D, depois Sorteios. Pegue um número entre e solte sobre o 560 do campo x.",
           "No sorteio, coloque mínimo 500 e máximo 560. A tela termina em x 480, então a faixa inteira fica além da borda direita. Mantenha tamanho 44 e velocidade -5 no criador.",
@@ -5044,10 +5045,10 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Sua corrida já varia os nascimentos. Jogue duas partidas, observe os cactos e confira o placar, a batida e o reinício. Não é necessário ver um resultado diferente em todo sorteio.",
+          "Sua corrida já varia os nascimentos. Jogue duas partidas, observe os cactos e confira o placar, a batida e o reinício. Você pode seguir mesmo se dois cactos nascerem no mesmo lugar, porque um sorteio pode repetir o resultado.",
           "Confira x entre 500 e 560 e a conta -5 menos um número de 0 a 1. O tamanho e o intervalo não mudaram."
         ],
         "checks": [
@@ -5208,7 +5209,7 @@
         "meme": "o Dino de cachecol olhando dois termômetros, um em -5 e outro em -9.",
         "speech": [
           "Esta é uma experiência para a gente entender os números negativos e como comparar esses números numa régua.",
-          "Olha aqui: quando eu clico em Somar -1 três vezes, o marcador sai do -5 e anda até o -8, sempre para a esquerda. Somar um número negativo deixa o valor menor. No nosso jogo, velocidade mais para a esquerda é cacto mais rápido.",
+          "Olha aqui: quando eu clico em Somar -1 três vezes, o marcador sai do -5 e anda até o -8, sempre para a esquerda. Somar um número negativo deixa o valor menor. No seu jogo, velocidade mais para a esquerda é cacto mais rápido.",
           "Eu clico em Voltar ao começo e escolho o sinal maior que, o símbolo >. Com o marcador em -5, a pergunta -5 > -9 responde sim. Na régua, -5 fica à direita do -9, então é maior. Quando eu mudo valor da base para -9, a resposta vira não, porque -9 não é maior que ele mesmo.",
           "Por último, eu volto ao começo, escolho o sinal de igual e clico em Somar -1 quatro vezes. A resposta é não em -6, -7 e -8, e só vira sim quando o marcador chega em -9.",
           "É como o termômetro num dia muito frio: -9 graus é mais frio que -5 graus, e mais frio é um número menor. No seu jogo, a pergunta velocidade > -9 vai decidir quando a base ainda pode diminuir."
@@ -5218,7 +5219,7 @@
           "Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >.",
           "Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta.",
           "Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -5255,7 +5256,7 @@
           "Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram.",
           "Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base.",
           "Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número.",
-          "Depois dos testes, clique em Próxima seção."
+          "Depois dos testes, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
@@ -5286,7 +5287,7 @@
         "bridge": "Prepare velocidade em -5 e use sua leitura à esquerda da conta do vx.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Na experiência da seção anterior, você comparou a base com a velocidade dos cactos. No seu criador, o lado esquerdo da conta ainda contém -5 escrito. Agora guarde essa base numa variável que poderá mudar.",
+          "Lembra da experiência da parte anterior? Você comparou a base com a velocidade dos cactos. No seu criador, o lado esquerdo da conta ainda contém -5 escrito. Agora guarde essa base numa variável que poderá mudar.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista o fim de Ao iniciar, depois de Criar variável pontos. Abra Programação e depois Variáveis. Pegue Criar variável com valor e encaixe no fim. Troque contador por velocidade e o valor por -5.",
           "Deixe à vista o -5 à esquerda da Conta matemática no vx do criador de cactos. Abra Programação e depois Valores. Pegue valor da variável e solte sobre esse -5. Escolha velocidade. Preserve o sinal de menos e o sorteio de 0 a 1 à direita.",
@@ -5377,7 +5378,7 @@
           "Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e dos dois relógios existentes. Abra Jogo 2D, depois Tempo e Quadros e intervalos. Pegue A cada 2 segundos, encaixe nesse espaço e mude o valor para 5.",
           "Deixe à vista o interior desse relógio. Abra Programação e depois Lógica e Se. Pegue Se e encaixe ali. Retire a pergunta x > 0.",
           "Deixe à vista o lugar da pergunta. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe e escolha jogando.",
-          "Confira três relógios separados: cactos em 1.4 segundo, pontos no intervalo escolhido e dificuldade em 5 segundos. O então do novo relógio ainda está vazio; não muda a base nesta etapa."
+          "Confira três relógios separados: cactos em 1.4 segundo, pontos no intervalo escolhido e dificuldade em 5 segundos. O então do novo relógio ainda está vazio; por enquanto, ele não muda a base."
         ],
         "checks": [
           {
@@ -5495,7 +5496,7 @@
         "bridge": "Descreva a tarefa e os três controles que já funcionam.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
-          "Seu jogo aceita três controles de pulo. A descrição escrita na aula 2 citava apenas espaço. Complete essa frase para quem usa o leitor de tela.",
+          "Seu jogo aceita três controles de pulo. A descrição escrita na fase 2 citava apenas espaço. Complete essa frase para quem usa o leitor de tela.",
           "Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.",
           "Deixe à vista Descrever o jogo para leitor de tela, em Ao iniciar. No texto, escreva Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela.",
           "Confira a frase inteira e teste os três controles no jogo. A descrição explica os controles existentes; não cria um controle novo. O objetivo e as três entradas precisam estar no texto."
@@ -5579,7 +5580,7 @@
               }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "O criador lê a base no nascimento. Essa leitura entrega um valor ao novo cacto; não mantém todos ligados à variável."
+            "explanation": "O criador lê a base no nascimento. Essa leitura dá um valor ao novo cacto; não mantém todos ligados à variável."
           }
         ]
       },
@@ -5588,7 +5589,7 @@
         "title": "Teste e envie seu jogo",
         "kind": "delivery",
         "videoKey": "video-entrega",
-        "bridge": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+        "bridge": "Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.",
         "screen": "Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.",
         "speech": [
           "Seu Corre, Dino! já tem começo, pulo com som, obstáculos, pontos, derrota, reinício e dificuldade que aumenta. Teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu.",
@@ -5783,7 +5784,7 @@
           },
           {
             "id": "relogio-pontos",
-            "label": "Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Aula 11.",
+            "label": "Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Fase 11.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",

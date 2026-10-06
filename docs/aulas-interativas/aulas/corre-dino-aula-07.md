@@ -39,7 +39,7 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 
 **Zappy na página (não gravar):** Guarde inicio em Ao iniciar e observe que isso sozinho não protege as ações.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 
@@ -51,7 +51,7 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 
 **Zappy na página (não gravar):** Proteja as ações da partida e mantenha limpar e floresta antes do Se.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.
 - Controlar o dinossauro fica no então de Se o estado do jogo é jogando, na ordem da montagem.
@@ -70,19 +70,19 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 
 **Zappy na página (não gravar):** Proteja também a criação no relógio e termine com inicio em Ao iniciar.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.
 
 ### Seção 5. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 - Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.

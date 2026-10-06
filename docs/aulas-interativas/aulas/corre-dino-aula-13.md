@@ -50,7 +50,7 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 **Zappy na página (não gravar):** Prepare velocidade em -5 e use sua leitura à esquerda da conta do vx.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No Ao iniciar, crie a variável velocidade com valor -5.
 - No vx dos novos cactos, use o valor da variável velocidade menos um número de 0 a 1.
@@ -64,7 +64,7 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 **Zappy na página (não gravar):** Prepare um relógio de 5 segundos com Se jogando, separado dos outros.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Prepare um relógio de 5 segundos com Se jogando.
 
@@ -76,7 +76,7 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 **Zappy na página (não gravar):** Some -1 em velocidade somente jogando e enquanto a base for maior que -9.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Num relógio próprio, se o estado do jogo é jogando e a velocidade é maior que o limite, some -1 em velocidade. O relógio é seu, de 2 a 10 segundos, e o limite também, de -14 a -7.
 - Use um único Somar em variável velocidade no projeto inteiro.
@@ -89,7 +89,7 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 **Zappy na página (não gravar):** Descreva a tarefa e os três controles que já funcionam.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Descreva objetivo e os três controles em Ao iniciar.
 
@@ -105,13 +105,13 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 ### Seção 8. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Teste o seu jogo, clique em Verificar esta parte e envie o projeto para o guia. Confirme em Enviar e clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar para o guia confirmado em Enviar.
 
 - No Ao iniciar, crie a variável velocidade com valor -5.
 - No vx dos novos cactos, use o valor da variável velocidade menos um número de 0 a 1.
@@ -121,11 +121,11 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 - Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
 - Use um único bloco de criar cacto no projeto inteiro.
 - No Ao iniciar, mantenha a variável pontos com valor 0.
-- Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Aula 11.
+- Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Fase 11.
 - Mantenha retirado o desenho provisório da área de colisão.
 - Descreva objetivo e os três controles em Ao iniciar.
 
-Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.
+Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.
 
 ## Blocos disponíveis
 

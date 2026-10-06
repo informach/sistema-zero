@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Caderno do Aluno - Cadê Todo Mundo?</title>
+  <title>Mapa da Aventura - Cadê Todo Mundo?</title>
   <style>
     /* {{FONT_FACES}} */
     :root {
@@ -124,9 +124,9 @@
   <section class="page cover">
     <div class="cover-art"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com coelho, raposa e coruja"></div>
     <div class="cover-copy">
-      <span class="badge">Caderno do Aluno</span>
+      <span class="badge">Mapa da Aventura</span>
       <h1>Cadê <em>Todo Mundo?</em></h1>
-      <p>Todos os passos para construir o nosso jogo.</p>
+      <p>Todos os passos para construir o seu jogo.</p>
       <div class="cover-bottom">Do primeiro toque aos três personagens encontrados.</div>
     </div>
     <img class="zappy" src="{{ZAPPY}}" alt="Zappy feliz">
@@ -143,15 +143,15 @@
         <div class="map-card"><div class="number">1</div><div><h3>O primeiro achado</h3><p>Experimente o toque e faça um personagem aparecer quando alguém tocar no esconderijo.</p></div></div>
         <div class="map-card"><div class="number">2</div><div><h3>Complete a busca</h3><p>Faça cada descoberta aumentar o número Achados. Teste os três esconderijos e veja o jogo comemorar.</p></div></div>
       </div>
-      <div class="note map-end">Consulte quando precisar: leia na aula ou baixe para guardar. Montagem nas páginas 3 e 4; personalização e publicação na 5; revisão e certificado na 6.</div>
+      <div class="note map-end">Consulte quando precisar: leia na tela ou baixe para guardar. Montagem nas páginas 3 e 4; personalização e publicação na 5; revisão e certificado na 6.</div>
     </div>
-    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>2 / 6</span></div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Mapa da Aventura</span><span>2 / 6</span></div>
   </section>
 
   <section class="page lesson-one construction">
     <div class="inner">
-      <div class="lesson-hero"><img class="scene" src="{{SCENE_HIDDEN}}" alt="Jardim com personagens escondidos"><div class="lesson-hero-text"><div class="kicker">Aula 1</div><h2>O primeiro achado</h2><p>Você vai ligar o toque no esconderijo a uma ação.</p></div></div>
-      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>Toque no esconderijo da atividade. Depois clique em <strong>Ligar a reação ao toque</strong> e toque de novo. <strong>O que mudou?</strong> No seu jogo, ainda não há ação ligada ao toque: toque num esconderijo e nada acontece. Os passos abaixo fazem essa ligação.</p></div>
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_HIDDEN}}" alt="Jardim com personagens escondidos"><div class="lesson-hero-text"><div class="kicker">Fase 1</div><h2>O primeiro achado</h2><p>Você vai ligar o toque no esconderijo a uma ação.</p></div></div>
+      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>Toque no esconderijo da experiência. Depois clique em <strong>Ligar a reação ao toque</strong> e toque de novo. <strong>O que mudou?</strong> No seu jogo, ainda não há ação ligada ao toque: toque num esconderijo e nada acontece. Os passos abaixo fazem essa ligação.</p></div>
       <span class="pill pill--build">Montar no Estúdio</span>
       <h3 class="section-head">Faça o personagem aparecer</h3>
       <div class="steps">
@@ -160,15 +160,15 @@
         <div class="step"><span class="number">3</span><p>Troque <strong>jogador</strong> por <strong>escolhido</strong>, no fim da lista, e <strong>50</strong> por <strong>0</strong>. O esconderijo some e revela o personagem.</p></div>
       </div>
       <div class="blocks"><h3>Confira se os blocos ficaram assim</h3><div class="event-block" data-block-type="sz_frame_events"><span class="tag">Áreas do projeto · Quando acontecer</span><div class="event-body"><div class="block" data-block-type="sz_g2d_on_group_click">Quando clicar/tocar num sprite do grupo <span class="field">esconderijos</span> chamá-lo de <span class="field">escolhido</span><div class="do-row"><span class="do-label">fazer</span><div class="event-body"><div class="block block--game" data-block-type="sz_g2d_set_opacity">Deixar o sprite <span class="field">escolhido</span> com <span class="value-block" data-block-type="sz_val_number"><span class="field">0</span></span>% de visibilidade</div></div></div></div></div></div></div>
-      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Toque nos esconderijos. Os personagens aparecem; Achados ainda fica em zero. Clique em <strong>Verificar esta etapa</strong>. Corrija o que faltar e confira <strong>Objetivo da etapa cumprido!</strong> Espere <strong>Salvo</strong>, clique em <strong>Enviar para o professor</strong> e confirme <strong>Enviar</strong>. Termine em <strong>Concluir aula</strong>.</p></div>
+      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Toque nos esconderijos. Os personagens aparecem; Achados ainda fica em zero. Clique em <strong>Verificar esta parte</strong>. Corrija o que faltar e confira <strong>Objetivo cumprido!</strong> Espere <strong>Salvo</strong>, clique em <strong>Enviar para o guia</strong> e confirme <strong>Enviar</strong>. Termine em <strong>Concluir fase</strong>.</p></div>
     </div>
-    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>3 / 6</span></div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Mapa da Aventura</span><span>3 / 6</span></div>
   </section>
 
   <section class="page lesson-two construction">
     <div class="inner">
-      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Aula 2</div><h2>Complete a busca</h2><p>Agora o jogo vai contar cada descoberta.</p></div></div>
-      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>Na experiência da seção anterior, cada achado somava um. No seu jogo, ainda não: toque num esconderijo e veja Achados em zero.</p></div>
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Fase 2</div><h2>Complete a busca</h2><p>Agora o jogo vai contar cada descoberta.</p></div></div>
+      <div class="soft-box activity"><span class="pill pill--experience">Experiência</span><p>Na experiência da parte anterior, cada achado somava um. No seu jogo, ainda não: toque num esconderijo e veja Achados em zero.</p></div>
       <span class="pill pill--build" style="margin-top:7mm">Montar no Estúdio</span>
       <h3 class="section-head">Cada personagem vale um achado</h3>
       <div class="steps">
@@ -177,38 +177,38 @@
         <div class="step"><span class="number">3</span><p>Deixe <strong>1</strong>. Troque <strong>contador</strong> por <strong>achados</strong>, o número do jogo.</p></div>
       </div>
       <div class="blocks"><h3>Confira se os blocos ficaram assim</h3><div class="event-block" data-block-type="sz_frame_events"><span class="tag">Áreas do projeto · Quando acontecer</span><div class="event-body"><div class="block" data-block-type="sz_g2d_on_group_click">Quando clicar/tocar num sprite do grupo <span class="field">esconderijos</span> chamá-lo de <span class="field">escolhido</span><div class="do-row"><span class="do-label">fazer</span><div class="event-body"><div class="block block--game" data-block-type="sz_g2d_set_opacity">Deixar o sprite <span class="field">escolhido</span> com <span class="value-block" data-block-type="sz_val_number"><span class="field">0</span></span>% de visibilidade</div><div class="block block--program" data-block-type="sz_js_var_increment">Somar <span class="value-block" data-block-type="sz_val_number"><span class="field">1</span></span> em variável <span class="field">achados</span></div></div></div></div></div></div></div>
-      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Toque nos três esconderijos: Achados vai a <strong>1, 2 e 3</strong>. Clique em <strong>Verificar esta etapa</strong> até aparecer <strong>Objetivo da etapa cumprido!</strong> Espere <strong>Salvo</strong>, clique em <strong>Enviar para o professor</strong> e confirme <strong>Enviar</strong>. Avance em <strong>Próxima seção</strong>.</p></div>
+      <div class="check"><span class="pill pill--test">Testar e enviar</span><p class="endline">Toque nos três esconderijos: Achados vai a <strong>1, 2 e 3</strong>. Clique em <strong>Verificar esta parte</strong> até aparecer <strong>Objetivo cumprido!</strong> Espere <strong>Salvo</strong>, clique em <strong>Enviar para o guia</strong> e confirme <strong>Enviar</strong>. Avance em <strong>Próxima parte</strong>.</p></div>
     </div>
-    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>4 / 6</span></div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Mapa da Aventura</span><span>4 / 6</span></div>
   </section>
   <section class="page lesson-two">
     <div class="inner">
-      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="O jogo com os personagens encontrados"><div class="lesson-hero-text"><div class="kicker">Aula 2 · Fechamento</div><h2>Deixe o jogo com a sua cara e publique</h2><p>Deixe o jardim com a sua cara antes de outras pessoas jogarem.</p></div></div>
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="O jogo com os personagens encontrados"><div class="lesson-hero-text"><div class="kicker">Fase 2 · Fechamento</div><h2>Deixe o jogo com a sua cara e publique</h2><p>Deixe o jardim com a sua cara antes de outras pessoas jogarem.</p></div></div>
       <div class="steps">
         <div class="step"><span class="number">1</span><p>Na área <strong>Ao iniciar</strong>, no fim de um bloco <strong>Criar sprite</strong>, depois de <strong>com imagem</strong>, clique no nome da imagem, como <strong>coelho</strong> ou <strong>arbusto</strong>. Abre a lista com as imagens do jogo: escolha outro bicho ou outro esconderijo. Se não achar, role a lista. Escolha um desenho do mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo. Se algum bicho aparecer antes do toque, clique de novo no nome e troque.</p></div>
         <div class="step"><span class="number">2</span><p>Em <strong>Enquanto estiver rodando</strong>, troque o texto <strong>Você achou todo mundo!</strong> por uma frase curta sua. Encontre todo mundo de novo.</p></div>
-        <div class="step"><span class="number">3</span><p>No alto do Estúdio da aula, depois de enviar o projeto, clique em <strong>Compartilhar</strong>. Ele pode aparecer só como ícone.</p></div>
+        <div class="step"><span class="number">3</span><p>No alto do Estúdio da fase, depois de enviar o projeto, clique em <strong>Compartilhar</strong>. Ele pode aparecer só como ícone.</p></div>
         <div class="step"><span class="number">4</span><p>O resumo do projeto já vem preenchido. Deixe como está. Clique em <strong>Gerar capa</strong> e confira a imagem do seu jogo.</p></div>
-        <div class="step"><span class="number">5</span><p>Clique em <strong>Publicar</strong> e comemore: <strong>Seu jogo está no Mural!</strong> Clique em <strong>Copiar link de jogar</strong> e mande para a sua família e seus amigos. Depois clique em <strong>Fechar</strong> e em <strong>Concluir aula</strong>.</p></div>
+        <div class="step"><span class="number">5</span><p>Clique em <strong>Publicar</strong> e comemore: <strong>Seu jogo está no Mural!</strong> Clique em <strong>Copiar link de jogar</strong> e mande para a sua família e seus amigos. Depois clique em <strong>Fechar</strong> e em <strong>Concluir fase</strong>.</p></div>
       </div>
-      <div class="soft-box activity" style="margin-top:8mm"><span class="pill pill--experience">Se precisar de ajuda</span><p>Na área <strong>Como fazer</strong>, o tutorial <strong>Como publicar seu jogo no Mural</strong> explica também como trocar a capa e copiar o link. Abra a ajuda pelo link da aula e use o retorno para continuar de onde estava.</p></div>
+      <div class="soft-box activity" style="margin-top:8mm"><span class="pill pill--experience">Se precisar de ajuda</span><p>Na área <strong>Como fazer</strong>, o tutorial <strong>Como publicar seu jogo no Mural</strong> explica também como trocar a capa e copiar o link. Abra a ajuda pelo link da fase e use o retorno para continuar de onde estava.</p></div>
       <div class="note">O cenário e os desenhos já vieram preparados. Você programou a reação ao toque e a contagem que fazem a busca funcionar.</div>
     </div>
-    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>5 / 6</span></div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Mapa da Aventura</span><span>5 / 6</span></div>
   </section>
   <section class="page lesson-one">
     <div class="inner">
-      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Aula 3 · Seu certificado</div><h2>Reveja o que criou</h2><p>Você fez os personagens aparecerem e o jogo contar cada achado.</p></div></div>
-      <div class="soft-box activity"><span class="pill pill--experience">Como o seu jardim funciona</span><p>Na primeira seção desta aula, leia a fala do Zappy e responda às três perguntas sobre seu jogo. Essa seção não tem vídeo.</p></div>
+      <div class="lesson-hero"><img class="scene" src="{{SCENE_REVEALED}}" alt="Jardim com os três personagens"><div class="lesson-hero-text"><div class="kicker">Fase 3 · Seu certificado</div><h2>Reveja o que criou</h2><p>Você fez os personagens aparecerem e o jogo contar cada achado.</p></div></div>
+      <div class="soft-box activity"><span class="pill pill--experience">Como o seu jardim funciona</span><p>Na primeira parte desta fase, leia a fala do Zappy e responda às três perguntas sobre seu jogo. Essa parte não tem vídeo.</p></div>
       <div class="steps">
         <div class="step"><span class="number">1</span><p>Clique em <strong>Começar!</strong>. Escolha uma resposta em cada pergunta e clique em <strong>Próxima</strong>; na última, clique em <strong>Responder!</strong>.</p></div>
-        <div class="step"><span class="number">2</span><p>Leia o porquê de cada resposta. Se alguma estiver errada, clique em <strong>Tentar de novo!</strong> e responda outra vez, sem esperar. Quando todas estiverem corretas, clique em <strong>Próxima seção</strong>.</p></div>
+        <div class="step"><span class="number">2</span><p>Leia o porquê de cada resposta. Se alguma estiver errada, clique em <strong>Tentar de novo!</strong> e responda outra vez, sem esperar. Quando todas estiverem corretas, clique em <strong>Próxima parte</strong>.</p></div>
       </div>
       <h3 class="section-head">Comemore sua criação</h3>
-      <div class="check"><p>Na seção seguinte, assista ao vídeo e clique em <strong>Pegar meu certificado</strong>. Depois que baixar, clique em <strong>Concluir aula</strong>. Se já pegou o certificado, o botão mostra <strong>Baixar certificado (PDF)</strong>.</p></div>
-      <div class="note" style="margin-top:7mm">Ficou com uma dúvida da atividade? Use <strong>Preciso de ajuda</strong> no rodapé da aula e conte onde parou. Para usar a plataforma, consulte <strong>Como fazer</strong>.</div>
+      <div class="check"><p>Na parte seguinte, assista ao vídeo e clique em <strong>Pegar meu certificado</strong>. Depois que baixar, clique em <strong>Concluir fase</strong>. Se já pegou o certificado, o botão mostra <strong>Baixar certificado (PDF)</strong>.</p></div>
+      <div class="note" style="margin-top:7mm">Ficou com alguma dúvida? Use <strong>Preciso de ajuda</strong> no rodapé da fase e conte onde parou. Para usar a plataforma, consulte <strong>Como fazer</strong>.</div>
     </div>
-    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Caderno do Aluno</span><span>6 / 6</span></div>
+    <div class="page-no"><span class="brand">Cadê Todo Mundo? | Mapa da Aventura</span><span>6 / 6</span></div>
   </section>
 </body>
 </html>

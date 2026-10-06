@@ -30,7 +30,7 @@ function pdfFilename(courseRef: string): string {
     .replace(/[^a-zA-Z0-9._-]+/g, '-')
     .replace(/-{2,}/g, '-')
     .slice(0, 80)
-  return `certificado-${slug || 'curso'}.pdf`
+  return slug ? `certificado-${slug}.pdf` : 'certificado.pdf'
 }
 
 /**

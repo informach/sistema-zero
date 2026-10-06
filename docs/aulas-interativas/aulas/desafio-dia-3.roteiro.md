@@ -2,7 +2,7 @@
 
 Cinco seções: experiência com a porta, resposta sem chave, resposta com chave, a seção de mexa e veja (Deixe o jogo com a sua cara) e publicação. Manter o projeto enviado no Dia 2 e o mesmo Estúdio nas quatro últimas seções. A verificação intermediária não pede envio; a seção decisao recebe a entrega única do dia. Ajustar as durações no ensaio, sem acelerar encaixes, percursos ou a espera do barco. Não atribuir à pessoa a arte ou a animação preparada. Só a narração é falada.
 
-Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste dia, "então" não serve de palavra de ligação: é o nome de uma parte do bloco Se. O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste dia, "então" não serve de palavra de ligação: é o nome de um espaço do bloco Se. O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).
 
 ## Seção 1. O que a porta precisa?
 
@@ -23,7 +23,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Ou seja: a pergunta é sempre a mesma, mas a resposta muda conforme o valor de temChave.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Sua vez! Teste a mesma porta sem a chave e com a chave e repare na resposta que fica marcada.
 
@@ -38,7 +38,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Na tela:** retomar o projeto da pessoa. Começar pela retomada, antes de qualquer bloco: levar o personagem até o farol e, no "Tá vendo?", mostrar que nada acontece. Em cada encaixe, primeiro deixar o destino à vista; só então abrir a categoria e pegar o bloco. Mostrar o encontro com a chave já montado e o espaço abaixo dele, na área **Quando acontecer**; se for preciso, arrastar um espaço vazio entre os blocos. Abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite começar a encostar no sprite**, soltar abaixo do encontro com a chave e configurar `personagem` e `farol`.
 
 **Narração:**
-> "Lembra da experiência da seção anterior? A porta conferia temChave antes de abrir. Agora a gente vai ensinar o farol do seu jogo a fazer o mesmo!
+> "Lembra da experiência da parte anterior? A porta conferia temChave antes de abrir. Agora a gente vai ensinar o farol do seu jogo a fazer o mesmo!
 >
 > Primeiro, leve o personagem até o farol. Tá vendo? Não acontece nada, porque o farol ainda não confere nada.
 >
@@ -67,14 +67,14 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Pronto: agora, quando o personagem encostar no farol, o jogo confere se temChave é verdadeiro."
 
-**Na tela:** apontar a linha logo abaixo do bloco **Se**, com **+ senão se** e **+ senão**, e clicar no **+** de **senão**. Com a parte **senão** à vista, abrir **Programação → Variáveis**, pegar **Alterar variável para**, soltar em **senão** e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o número, apagar `Olá` e escrever `A porta não abriu. Falta a chave.`.
+**Na tela:** apontar a linha logo abaixo do bloco **Se**, com **+ senão se** e **+ senão**, e clicar no **+** de **senão**. Com o espaço do **senão** à vista, abrir **Programação → Variáveis**, pegar **Alterar variável para**, soltar em **senão** e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o número, apagar `Olá` e escrever `A porta não abriu. Falta a chave.`.
 
 **Narração:**
-> "Agora falta a resposta para quando o personagem chega sem a chave. Olha aqui, na parte de baixo do bloco Se, depois de então. Aparecem duas opções com um sinal de mais: senão se e senão.
+> "Agora falta a resposta para quando o personagem chega sem a chave. Olha aqui, na linha de baixo do bloco Se, depois de então. Aparecem duas opções com um sinal de mais: senão se e senão.
 >
 > Clique no sinal de mais ao lado de senão. Não clique no mais de senão se.
 >
-> A parte senão guarda a resposta para quando temChave é falso, ou seja, para quando o personagem chega sem a chave. É dentro dela que vai o aviso, por isso deixe a parte senão à vista.
+> O espaço do senão guarda a resposta para quando temChave é falso, ou seja, para quando o personagem chega sem a chave. É dentro dele que vai o aviso, por isso deixe o espaço do senão à vista.
 >
 > Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 >
@@ -82,11 +82,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora a gente troca o número desse bloco pela mensagem. Abra Programação e depois Valores, pegue o bloco texto e solte em cima do número. Depois, apague Olá e escreva: A porta não abriu. Falta a chave.
 >
-> A parte então fica vazia por enquanto, porque ela é a resposta para quem chega com a chave.
+> O espaço do então fica vazio por enquanto, porque é nele que vai a resposta para quem chega com a chave.
 >
 > Confira se ficou assim: dentro do encontro com o farol está o Se com temChave, e dentro de senão está o aviso de que falta a chave."
 
-**Na tela:** clicar em **Atualizar**, na barra logo acima do jogo; em barra estreita, o botão aparece só como ⟳. Levar o personagem ao farol sem passar pela chave e mostrar a mensagem que aparece de verdade. Não programar a parte **então** neste vídeo.
+**Na tela:** clicar em **Atualizar**, na barra logo acima do jogo; em barra estreita, o botão aparece só como ⟳. Levar o personagem ao farol sem passar pela chave e mostrar a mensagem que aparece de verdade. Não programar o espaço do **então** neste vídeo.
 
 **Narração:**
 > "Agora vamos testar! Clique em Atualizar, logo acima do jogo, para começar uma partida nova.
@@ -95,14 +95,14 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se o aviso não apareceu, confira se o encontro tem personagem e farol, se o Se pergunta temChave e se o aviso está dentro de senão. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta etapa** e mostrar o resultado real da verificação intermediária. Esperar **Salvo** e apontar **Próxima seção**. O envio não faz parte desta seção.
+**Na tela:** clicar em **Verificar esta parte** e mostrar o resultado real da verificação intermediária. Esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Narração:**
-> "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+> "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo e clique em Próxima seção."
+> Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir.
+**Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta parte antes de seguir.
 
 **Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O envio único do dia acontece na seção seguinte.
 
@@ -112,14 +112,14 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 4 a 5 minutos, incluindo encaixes, os três testes e o envio. Não acelerar os percursos nem a espera do barco.
 
-**Na tela:** manter o mesmo Estúdio e o mesmo **Se**. Começar pela retomada, antes de qualquer bloco: clicar em **Atualizar**, pegar a chave, ir ao farol e, no "Tá vendo?", mostrar que a luz não acende. Depois deixar à vista o aviso em **senão** e a parte **então**, ainda vazia; só então abrir **Programação → Variáveis**, pegar **Alterar variável para**, soltar em **então** e escolher `ganhou`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**. Não recarregar a retomada preparada nem duplicar o evento do farol.
+**Na tela:** manter o mesmo Estúdio e o mesmo **Se**. Começar pela retomada, antes de qualquer bloco: clicar em **Atualizar**, pegar a chave, ir ao farol e, no "Tá vendo?", mostrar que a luz não acende. Depois deixar à vista o aviso em **senão** e o espaço do **então**, ainda vazio; só então abrir **Programação → Variáveis**, pegar **Alterar variável para**, soltar em **então** e escolher `ganhou`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**. Não recarregar a retomada preparada nem duplicar o evento do farol.
 
 **Narração:**
-> "Lembra da experiência da primeira seção desta aula? Quando temChave era verdadeiro, a porta escolhia a resposta então e acendia o farol. Agora a gente vai programar essa resposta no seu jogo!
+> "Lembra da experiência da primeira parte desta fase? Quando temChave era verdadeiro, a porta escolhia a resposta então e acendia o farol. Agora a gente vai programar essa resposta no seu jogo!
 >
-> Primeiro, clique em Atualizar, pegue a chave e vá ao farol. Tá vendo? A luz não acende, porque a parte então ainda está vazia, sem nenhuma ação.
+> Primeiro, clique em Atualizar, pegue a chave e vá ao farol. Tá vendo? A luz não acende, porque o espaço do então ainda está vazio, sem nenhuma ação.
 >
-> A gente vai continuar no mesmo Se do encontro com o farol. Deixe à vista a parte então, porque é nela que vão as ações para quando o personagem chega com a chave.
+> A gente vai continuar no mesmo Se do encontro com o farol. Deixe à vista o espaço do então, porque é nele que vão as ações para quando o personagem chega com a chave.
 >
 > Abra Programação e depois Variáveis, e pegue o bloco Alterar variável para.
 >
@@ -168,16 +168,16 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Depois de corrigir, repita os testes."
 
-**Na tela:** clicar em **Verificar esta etapa**, mostrar eventuais pendências reais e corrigir. Depois de **Objetivo da etapa cumprido!**, esperar **Salvo**, clicar em **Enviar para o professor**, confirmar em **Enviar** e aguardar. Apontar **Próxima seção**. Manter o mesmo projeto para publicar.
+**Na tela:** clicar em **Verificar esta parte**, mostrar eventuais pendências reais e corrigir. Depois de **Objetivo cumprido!**, esperar **Salvo**, clicar em **Enviar para o guia**, confirmar em **Enviar** e aguardar. Apontar **Próxima parte**. Manter o mesmo projeto para publicar.
 
 **Narração:**
-> "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+> "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o professor e confirme em Enviar.
+> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar para o guia e confirme em Enviar.
 >
-> Quando o envio terminar, clique em Próxima seção."
+> Quando o envio terminar, clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete a parte então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor.
+**Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta parte e envie para o guia.
 
 **Conferência de produção:** a verificação é cumulativa e confere as regras dos dias anteriores. A seção exige o vídeo, a aprovação e o envio confirmado. A verificação não exige copiar literalmente as frases dos avisos.
 
@@ -187,7 +187,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 100 a 130 segundos.
 
-**Na tela:** no mesmo Estúdio, com o projeto já enviado. Trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e o bloco **Criar sprite personagem**. No fim dele, depois de **com imagem**, clicar no nome **personagem**, mostrar a lista de imagens que se abre (sem título; role se for preciso) e escolher a menina. No "Olha só", mostrar a menina no lugar do personagem, do mesmo tamanho. Depois trazer à vista a área **Quando acontecer**, clicar no texto do aviso da chave e trocar por uma frase curta; fazer o mesmo com o aviso de **então**. Clicar em **Atualizar**, ir ao farol sem a chave, pegar a chave, voltar ao farol e mostrar as mensagens novas. Apontar **Próxima seção**.
+**Na tela:** no mesmo Estúdio, com o projeto já enviado. Trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e o bloco **Criar sprite personagem**. No fim dele, depois de **com imagem**, clicar no nome **personagem**, mostrar a lista de imagens que se abre (sem título; role se for preciso) e escolher a menina. No "Olha só", mostrar a menina no lugar do personagem, do mesmo tamanho. Depois trazer à vista a área **Quando acontecer**, clicar no texto do aviso da chave e trocar por uma frase curta; fazer o mesmo com o aviso de **então**. Clicar em **Atualizar**, ir ao farol sem a chave, pegar a chave, voltar ao farol e mostrar as mensagens novas. Apontar **Próxima parte**.
 
 **Narração:**
 > "Agora o jogo vai ficar com a sua cara! Você pode escolher quem vive a aventura e escrever os avisos do seu jeito. E tudo o que você mudar fica no seu jogo.
@@ -204,9 +204,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora teste: clique em Atualizar, vá ao farol sem a chave, depois pegue a chave e volte ao farol. Leia as suas mensagens!
 >
-> Quando terminar, clique em Próxima seção."
+> Quando terminar, clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Hora de deixar o jogo com a sua cara! Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção.
+**Ponte do Zappy na página (não gravar):** Hora de deixar o jogo com a sua cara! Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima parte.
 
 **Conferência de produção:** é a seção de mexa e veja do curso: vem depois do envio e antes de publicar, para o jogo publicado ter a cara da criança. As mudanças ficam no jogo; nada aqui vira critério, e a seção conclui pelo vídeo. O bloco é Criar sprite personagem em x ___ y ___ largura ___ altura ___ com imagem ___; a imagem aparece pelo nome, no fim do bloco. Todos os personagens têm a caixa 64 × 64 e a mesma área de contato, então a troca não muda o tamanho, o limite da tela nem os encontros. Uma imagem de outro tamanho (o barco, o farol) muda a caixa; a fala ensina a voltar a um personagem. Projetos salvos antes de 05/10/2026 recebem os personagens novos ao abrir a aula. A verificação não cobra o texto dos avisos.
 
@@ -221,11 +221,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Narração:**
 > "Agora chegou a hora de publicar o seu jogo, para a sua família e os seus amigos jogarem!
 >
-> Para isso, clique em Compartilhar, no alto do Estúdio. Na aula, ele pode aparecer só como um ícone. Repare que o resumo do projeto já vem preenchido, por isso pode deixar como está.
+> Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como um ícone. Repare que o resumo do projeto já vem preenchido, por isso pode deixar como está.
 >
 > Depois, clique em Gerar capa e espere a imagem aparecer. Olha só: essa é a capa que vai apresentar o seu jogo!"
 
-**Na tela:** conferir a capa, clicar em **Publicar** e esperar a comemoração do Zappy com **Seu jogo está no Mural!**. Clicar em **Copiar link de jogar** e mostrar **Link copiado!**. Clicar em **Fechar** e apontar **Concluir aula**. Encerrar sem abrir outra aula.
+**Na tela:** conferir a capa, clicar em **Publicar** e esperar a comemoração do Zappy com **Seu jogo está no Mural!**. Clicar em **Copiar link de jogar** e mostrar **Link copiado!**. Clicar em **Fechar** e apontar **Concluir fase**. Encerrar sem abrir outra aula.
 
 **Narração:**
 > "Confira se a capa ficou boa e clique em Publicar. Agora é só esperar um pouquinho…
@@ -234,9 +234,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Para eles jogarem, clique em Copiar link de jogar e mande esse link para eles. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.
 >
-> Depois de copiar o link, clique em Fechar e, por fim, em Concluir aula."
+> Depois de copiar o link, clique em Fechar e, por fim, em Concluir fase."
 
-**Ponte do Zappy na página (não gravar):** Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir fase.
 
 Ajuda escrita junto ao vídeo, fora da narração: [Como publicar seu jogo no Mural e copiar o link](/como-fazer/plataforma-publicar-no-mural). O tutorial abre na mesma aba e oferece retorno à aula.
 

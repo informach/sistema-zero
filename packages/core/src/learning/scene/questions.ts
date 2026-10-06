@@ -134,7 +134,7 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
   'copy-vs-original': {
     label: 'Um arquivo entre dois jogos',
     explanation:
-      'Nesta experiência, você exporta um jogo da aula e importa o arquivo no Estúdio. Depois pode mudar cada lado separadamente.',
+      'Nesta experiência, você exporta um jogo da fase e importa o arquivo no Estúdio. Depois pode mudar cada lado separadamente.',
   },
   'published-copy': {
     label: 'O projeto e o Mural',
@@ -591,20 +591,20 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
   'copy-vs-original': {
     prediction: {
       prompt:
-        'Você exporta o jogo que está na aula do Desafio. O que acontece com o jogo que estava lá?',
+        'Você exporta o jogo que está na fase do Desafio. O que acontece com o jogo que estava lá?',
       choices: [
-        { id: 'continua', label: 'Ele continua na aula, inteiro' },
+        { id: 'continua', label: 'Ele continua na fase, inteiro' },
         {
           id: 'sai',
-          label: 'Ele sai da aula e vai para dentro do arquivo',
-          shows: 'O jogo continuou na aula. O arquivo levou uma cópia.',
+          label: 'Ele sai da fase e vai para dentro do arquivo',
+          shows: 'O jogo continuou na fase. O arquivo levou uma cópia.',
         },
       ],
       correctChoiceId: 'continua',
       revealOn: 'exported',
     },
     explain: {
-      prompt: 'Você pintou a nave de outra cor no projeto do Estúdio. E a nave do jogo da aula?',
+      prompt: 'Você pintou a nave de outra cor no projeto do Estúdio. E a nave do jogo da fase?',
       choices: [
         { id: 'junto', label: 'Muda junto, porque é o mesmo jogo' },
         { id: 'antes', label: 'Continua com a cor de antes' },
