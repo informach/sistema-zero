@@ -1,0 +1,941 @@
+{
+  "version": 5,
+  "courseSlug": "nave-contra-asteroides",
+  "lessonSlug": "chuva-de-asteroides",
+  "title": "Faça os asteroides cair",
+  "retireBlockKeys": [],
+  "blocks": [
+    {
+      "key": "video-intervalo-das-pedras",
+      "plannedVideo": "Título: Compare o intervalo entre as pedras\n\nRegravar no Estúdio atual. Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-intervalo-das-pedras",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras."
+      }
+    },
+    {
+      "key": "experiencia-relogio",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Compare o intervalo entre as pedras",
+        "instructions": "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para o relógio de 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "spawn",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "preset": {
+              "id": "pedra-quadros",
+              "unit": "frames",
+              "intervals": [20, 40, 80],
+              "falling": true
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-grupo-e-relogio",
+      "plannedVideo": "Título: Prepare a criação dos asteroides\n\nRegravar no Estúdio atual. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro de BODY. O intervalo começa vazio.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-relogio",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Crie o grupo asteroides e um intervalo de 40 quadros, ao lado de A cada quadro do jogo."
+      }
+    },
+    {
+      "key": "video-posicao-sorteada",
+      "plannedVideo": "Título: Sorteie onde a pedra nasce\n\nRegravar no Estúdio atual. Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-posicao-sorteada",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela."
+      }
+    },
+    {
+      "key": "experiencia-sorteio",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Sorteie onde a pedra nasce",
+        "instructions": "Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "random",
+          "cast": {
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "preset": {
+              "id": "pedra-acima",
+              "axis": "above",
+              "speedModule": false
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-asteroide",
+      "plannedVideo": "Título: Crie e mostre as pedras caindo\n\nRegravar no Estúdio atual. Mostrar criação no intervalo e movimento/limpeza/desenho no bloco de cada quadro. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-asteroide",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Monte o asteroide no intervalo e o ciclo do grupo em cada quadro."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Compare o intervalo e guarde sua chuva\n\nRegravar no Estúdio atual. Dar tempo para observar alguns nascimentos em cada intervalo. Restaurar 40 antes da verificação. Não confundir quadros com segundos.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste 80 e 40 no intervalo, mantenha 40 e envie o projeto."
+      }
+    },
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "nave-contra-asteroides",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_arrows_x",
+          "sz_g2d_center_x",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_clear",
+          "sz_g2d_create_group",
+          "sz_g2d_create_ship",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_every_frames",
+          "sz_g2d_on_key",
+          "sz_g2d_play_fx",
+          "sz_g2d_prune_offscreen",
+          "sz_g2d_random_x",
+          "sz_g2d_setup_stage",
+          "sz_g2d_spawn_asteroid",
+          "sz_g2d_spawn_bullet",
+          "sz_g2d_sprite_y",
+          "sz_g2d_starfield",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_update_group",
+          "sz_val_number"
+        ],
+        "showcase": {
+          "enabled": false,
+          "title": "Nave contra Asteroides",
+          "summary": "Mova a nave, acerte os asteroides e tente chegar a 26 pontos sem perder as três vidas."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-nave-etapa-3",
+          "name": "Nave contra Asteroides",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07162e\");\n  const nave = SZGame2D.createShip({ x: 400, y: 410, w: 54, h: 62, body: \"#35e8ff\", wings: \"#2568ff\" });\n  const tiros = SZGame2D.createGroup();\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    SZGame2D.spawnBullet(tiros, { x: SZGame2D.centerX(nave), y: SZGame2D.spriteY(nave), radius: 5, color: \"#9cff57\", vx: 0, vy: -9 });\n    SZGame2D.playFx(\"shoot\");\n  }, \"nave-ref-23\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawStarfield(ctx, 1);\n    SZGame2D.arrowsX(nave, 7);\n    SZGame2D.clampToScreen(nave, ctx);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.updateGroup(tiros);\n    SZGame2D.pruneOffscreen(ctx, tiros, 40, (sprite) => {\n\n    });\n    SZGame2D.drawGroup(ctx, tiros);\n  }, \"nave-ref-11\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 800,
+                    "__id": "nave-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "nave-ref-3"
+                  },
+                  "bg": "#07162e",
+                  "__id": "nave-ref-1"
+                },
+                {
+                  "type": "g2d:createShip",
+                  "varName": "nave",
+                  "x": {
+                    "type": "num",
+                    "value": 400,
+                    "__id": "nave-ref-5"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 410,
+                    "__id": "nave-ref-6"
+                  },
+                  "w": {
+                    "type": "num",
+                    "value": 54,
+                    "__id": "nave-ref-7"
+                  },
+                  "h": {
+                    "type": "num",
+                    "value": 62,
+                    "__id": "nave-ref-8"
+                  },
+                  "bodyColor": "#35e8ff",
+                  "wingColor": "#2568ff",
+                  "__id": "nave-ref-4"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "tiros",
+                  "__id": "nave-ref-9"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onKey",
+                  "key": "Space",
+                  "body": [
+                    {
+                      "type": "g2d:spawnBullet",
+                      "groupVar": "tiros",
+                      "x": {
+                        "type": "g2d:centerX",
+                        "spriteVar": "nave",
+                        "__id": "nave-ref-25"
+                      },
+                      "y": {
+                        "type": "g2d:spriteY",
+                        "spriteVar": "nave",
+                        "__id": "nave-ref-26"
+                      },
+                      "radius": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "nave-ref-27"
+                      },
+                      "color": "#9cff57",
+                      "vx": {
+                        "type": "num",
+                        "value": 0,
+                        "__id": "nave-ref-28"
+                      },
+                      "vy": {
+                        "type": "num",
+                        "value": -9,
+                        "__id": "nave-ref-29"
+                      },
+                      "__id": "nave-ref-24"
+                    },
+                    {
+                      "type": "g2d:playFx",
+                      "fx": "shoot",
+                      "__id": "nave-ref-30"
+                    }
+                  ],
+                  "__id": "nave-ref-23"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "nave-ref-12"
+                    },
+                    {
+                      "type": "g2d:starfield",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 1,
+                        "__id": "nave-ref-14"
+                      },
+                      "__id": "nave-ref-13"
+                    },
+                    {
+                      "type": "g2d:arrowsX",
+                      "spriteVar": "nave",
+                      "speed": {
+                        "type": "num",
+                        "value": 7,
+                        "__id": "nave-ref-16"
+                      },
+                      "__id": "nave-ref-15"
+                    },
+                    {
+                      "type": "g2d:clampToScreen",
+                      "spriteVar": "nave",
+                      "ctxVar": "ctx",
+                      "__id": "nave-ref-17"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "nave",
+                      "ctxVar": "ctx",
+                      "__id": "nave-ref-18"
+                    },
+                    {
+                      "type": "g2d:updateGroup",
+                      "groupVar": "tiros",
+                      "__id": "nave-ref-19"
+                    },
+                    {
+                      "type": "g2d:pruneOffscreen",
+                      "groupVar": "tiros",
+                      "ctxVar": "ctx",
+                      "itemName": "sprite",
+                      "body": [],
+                      "__id": "nave-ref-20"
+                    },
+                    {
+                      "type": "g2d:drawGroup",
+                      "groupVar": "tiros",
+                      "ctxVar": "ctx",
+                      "__id": "nave-ref-21"
+                    }
+                  ],
+                  "__id": "nave-ref-11"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#07162e"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 800
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_ship",
+                            "fields": {
+                              "NAME": "nave",
+                              "BODY": "#35e8ff",
+                              "WINGS": "#2568ff"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 400
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 410
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 54
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 62
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_group",
+                                "fields": {
+                                  "NAME": "tiros"
+                                },
+                                "inputs": {}
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_starfield",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 1
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_arrows_x",
+                                      "fields": {
+                                        "SPRITE": "nave"
+                                      },
+                                      "inputs": {
+                                        "SPEED": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 7
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_clamp_to_screen",
+                                          "fields": {
+                                            "SPRITE": "nave"
+                                          },
+                                          "inputs": {},
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "nave"
+                                              },
+                                              "inputs": {},
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_update_group",
+                                                  "fields": {
+                                                    "GROUP": "tiros"
+                                                  },
+                                                  "inputs": {},
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_prune_offscreen",
+                                                      "fields": {
+                                                        "GROUP": "tiros",
+                                                        "ITEM": "sprite"
+                                                      },
+                                                      "inputs": {},
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_group",
+                                                          "fields": {
+                                                            "GROUP": "tiros"
+                                                          },
+                                                          "inputs": {}
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_events",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_key",
+                        "fields": {
+                          "KEY": "Space"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_spawn_bullet",
+                              "fields": {
+                                "GROUP": "tiros",
+                                "COLOR": "#9cff57"
+                              },
+                              "inputs": {
+                                "X": {
+                                  "block": {
+                                    "type": "sz_g2d_center_x",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "Y": {
+                                  "block": {
+                                    "type": "sz_g2d_sprite_y",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "R": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 5
+                                    }
+                                  }
+                                },
+                                "VX": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 0
+                                    }
+                                  }
+                                },
+                                "VY": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": -9
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_play_fx",
+                                  "fields": {
+                                    "FX": "shoot"
+                                  },
+                                  "inputs": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "intervalo-das-pedras",
+      "title": "Compare o intervalo entre as pedras",
+      "intent": "exploration",
+      "objective": "Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras.",
+      "blockKeys": [
+        "video-intervalo-das-pedras",
+        "fala-intervalo-das-pedras",
+        "experiencia-relogio"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-intervalo-das-pedras", "experiencia-relogio"]
+      }
+    },
+    {
+      "key": "relogio",
+      "title": "Prepare a criação dos asteroides",
+      "intent": "application",
+      "objective": "Crie o grupo asteroides e um intervalo de 40 quadros, ao lado de A cada quadro do jogo.",
+      "blockKeys": ["video-grupo-e-relogio", "fala-relogio"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-grupo-e-relogio"],
+        "projectChecks": [
+          {
+            "id": "grupo-asteroides",
+            "label": "Crie o grupo asteroides em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "asteroides"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "relogio",
+            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "area": "loops",
+              "inputs": {
+                "N": 40
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "relogios-vizinhos",
+            "label": "Os dois relógios são vizinhos em Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "beforeBlock": "sz_g2d_every_frames"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "posicao-sorteada",
+      "title": "Sorteie onde a pedra nasce",
+      "intent": "exploration",
+      "objective": "Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela.",
+      "blockKeys": ["video-posicao-sorteada", "fala-posicao-sorteada", "experiencia-sorteio"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-posicao-sorteada", "experiencia-sorteio"]
+      }
+    },
+    {
+      "key": "asteroide",
+      "title": "Crie e mostre as pedras caindo",
+      "intent": "application",
+      "objective": "Monte o asteroide no intervalo e o ciclo do grupo em cada quadro.",
+      "blockKeys": ["video-asteroide", "fala-asteroide"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-asteroide"],
+        "projectChecks": [
+          {
+            "id": "asteroide",
+            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "inputs": {
+                "Y": -30,
+                "SIZE": 40,
+                "VX": 0,
+                "VY": 3
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_x"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_frames",
+              "count": 1
+            }
+          },
+          {
+            "id": "criador-unico",
+            "label": "Mantenha um único comando de criar asteroide.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "count": 1
+            }
+          },
+          {
+            "id": "mover-asteroides",
+            "label": "Mova asteroides antes de limpar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "beforeBlock": "sz_g2d_prune_offscreen"
+            }
+          },
+          {
+            "id": "limpar-asteroides",
+            "label": "Retire os asteroides que saem e depois desenhe esse grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-asteroides",
+            "label": "Desenhe o grupo asteroides a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Compare o intervalo e guarde sua chuva",
+      "intent": "delivery",
+      "objective": "Teste 80 e 40 no intervalo, mantenha 40 e envie o projeto.",
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-entrega", "projeto"],
+        "projectChecks": [
+          {
+            "id": "grupo-asteroides",
+            "label": "Crie o grupo asteroides em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_group",
+              "area": "start",
+              "fields": {
+                "NAME": "asteroides"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "relogio",
+            "label": "Use A cada 40 quadros como vizinho de A cada quadro do jogo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_frames",
+              "area": "loops",
+              "inputs": {
+                "N": 40
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "relogios-vizinhos",
+            "label": "Os dois relógios são vizinhos em Enquanto estiver rodando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "beforeBlock": "sz_g2d_every_frames"
+            }
+          },
+          {
+            "id": "asteroide",
+            "label": "No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "inputs": {
+                "Y": -30,
+                "SIZE": 40,
+                "VX": 0,
+                "VY": 3
+              },
+              "inputBlocks": {
+                "X": {
+                  "blockType": "sz_g2d_random_x"
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_frames",
+              "count": 1
+            }
+          },
+          {
+            "id": "criador-unico",
+            "label": "Mantenha um único comando de criar asteroide.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_spawn_asteroid",
+              "count": 1
+            }
+          },
+          {
+            "id": "mover-asteroides",
+            "label": "Mova asteroides antes de limpar o grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "beforeBlock": "sz_g2d_prune_offscreen"
+            }
+          },
+          {
+            "id": "limpar-asteroides",
+            "label": "Retire os asteroides que saem e depois desenhe esse grupo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              },
+              "beforeBlock": "sz_g2d_draw_group"
+            }
+          },
+          {
+            "id": "desenhar-asteroides",
+            "label": "Desenhe o grupo asteroides a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_group",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "asteroides"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,124 +1,93 @@
-# Roteiro de gravação · Corre Dino · Aula 12 · Duas partidas nunca mais iguais
+# Roteiro de gravação · Corre, Dino! · Aula 12
 
-## Especificações
+**Varie o lugar e a velocidade dos cactos**
 
-- **Formato:** gravação de tela com narração, no Estúdio embutido.
-- **Duração:** 230 a 285 segundos de clipes; 516 palavras de narração, cerca de 3.8 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** o jogo completo da Aula 11. Dino que corre, pula e faz barulho, cactos nascendo a cada 1,4 s em x 560 com vx -5, faxina tirando quem saiu, os três estados do jogo, colisão com área de 80%, placar de pontos e tela de fim com a marca. O raio-X da Aula 10 já foi retirado.
-- **Conceitos nomeados:** sorteio de posição, conta matemática e sorteio de velocidade.
-- **Dor desta aula:** Partidas repetem os mesmos cactos porque x, vx e intervalo têm sempre os mesmos números.
-- **Vitória do dia:** o espaço entre um cacto e outro muda a cada nascimento, e uns cactos vêm um pouco mais rápidos que os outros. O jogo dela deixa de ser decorável.
-- **Valores:** Conferir base vx -5 e relógio 1.4; x sorteado entre 500 e 560; vx igual a -5 menos sorteio de 0 a 1.
-- **Campos livres:** Nenhum campo livre na construção guiada desta aula.
-- **Nota de produção:** Mostrar partidas repetidas antes da solução. Manter 500 e 560 à direita do limite 480, na mesma escala.
-- **O que NÃO entra, e por quê:** Não mudar o relógio para simular variedade; a diferença vem dos sorteios.
+Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.
 
-## Seção 1. Dá para decorar o seu jogo
+Entrada: Cactos nascendo sempre em x 560 e velocidade -5; partida completa com pontos. Saída: Nascimento com x de 500 a 560 e vx igual a -5 menos um número de 0 a 1.
 
-### Clipe `video-padrao-fixo` · Dá para decorar o seu jogo
-**Duração alvo:** 60 a 75 segundos; recalibrar após gravar.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
-**Na tela:** Mostrar várias partidas curtas, uma após a outra, com cactos percorrendo lugares e tempos iguais.
+## Seção 1. Compare os resultados de um sorteio
+
+### Clipe `video-sorteio-tira-na-hora` · Compare os resultados de um sorteio
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Até agora, os cactos seguem sempre as mesmas regras de nascimento. Hoje vamos deixar
-> cada partida menos previsível."
+> "Os cactos do seu jogo nascem no mesmo lugar e com a mesma velocidade. Observe um sorteio que escolhe um valor a cada nascimento.
+>
+> Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem.
+>
+> Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias e leia as contas -5 - 0 e -5 - 1.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Abrir No grupo criar obstáculo e relógio; apontar x 560, vx -5 e intervalo 1.4.
+**Zappy na página (não gravar):** Sorteie posições até comparar diferenças e repetições; depois compare as duas velocidades.
 
-**Narração:**
-> "Vamos manter o ritmo do relógio e ensinar o jogo a sortear o lugar e a velocidade de
-> cada cacto."
+## Seção 2. Sorteie onde cada cacto nasce
 
-**Na tela:** Conferir no projeto do aluno vx -5 e relógio 1.4, corrigindo se necessário.
+### Clipe `video-lugar-diferente` · Sorteie onde cada cacto nasce
 
-**Narração:**
-> "Depois vamos conferir os números no seu projeto e testar como os sorteios mudam a corrida."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-## Seção 3. Cada cacto nasce num lugar diferente
-
-### Clipe `video-sortear-lugar` · Um número sorteado, e o ritmo inteiro muda
-**Duração alvo:** 55 a 65 segundos · **Palavras:** 148
-
-**Na tela:** Abrir Jogo 2D > Sorteios > Números e posições; pegar um número de a como bloco de valor.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Primeiro o lugar. Em **Jogo 2D**, abre **Sorteios**, depois **Números e posições**. Pega **um
-> número de a**. Essa peça devolve um número diferente dentro da faixa que você escolher."
+> "Na experiência da seção anterior, você sorteou posições e viu que um lugar pode repetir. No seu jogo, todo cacto ainda nasce em x 560. Agora substitua esse valor fixo por um sorteio.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o x 560 do bloco No grupo criar obstáculo, dentro de Se jogando no relógio de 1.4 segundo. Abra Jogo 2D, depois Sorteios. Pegue um número entre e solte sobre o 560 do campo x.
+>
+> No sorteio, coloque mínimo 500 e máximo 560. A tela termina em x 480, então a faixa inteira fica além da borda direita. Mantenha tamanho 44 e velocidade -5 no criador.
+>
+> Comece e observe vários cactos entrarem. O lugar é sorteado na criação, então dois cactos podem receber o mesmo valor. Confira que o sorteio está no x do único criador, e que o relógio permanece em 1.4 segundo.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Arrastar por cima do 560 no x do No grupo criar obstáculo, dentro do relógio de 1.4.
+**Zappy na página (não gravar):** Sorteie o x de 500 a 560 dentro do único criador de cactos.
 
-**Narração:**
-> "Arrasta a peça por cima do **560** no campo x do **No grupo criar obstáculo**, dentro do
-> relógio de **1.4**. É um bloco de valor: ele substitui o número que estava no espaço, em vez
-> de ficar solto na pilha."
+## Seção 3. Sorteie uma variação na velocidade
 
-**Na tela:** Zoom nos dois campos do sorteio: trocar 1 e 6 por 500 e 560; mostrar limite 480.
+### Clipe `video-velocidade-propria` · Sorteie uma variação na velocidade
 
-**Narração:**
-> "A faixa vem de **1 a 6**, como um dado. Troca por **500 a 560**. Os dois ficam depois do
-> limite da tela, que é **480**. Todo cacto continua nascendo fora do quadro, só que agora em
-> lugares diferentes."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Jogar sem cortes, mostrando intervalos aparentes diferentes; manter relógio 1.4.
-
-**Narração:**
-> "Olha a pista. O relógio continua batendo a cada **1.4 segundo**, mas um cacto nasce mais
-> longe e demora mais a chegar; outro nasce mais perto. Um sorteio de lugar mudou a distância
-> que você sente entre eles."
-
-## Seção 4. Cada cacto ganha a sua velocidade
-
-### Clipe `video-sortear-velocidade` · Menos 5, menos um pouquinho
-**Duração alvo:** 60 a 75 segundos · **Palavras:** 149
-
-**Na tela:** Mostrar vx -5 do criador; abrir Programação > Matemática e pegar Conta matemática.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Agora a velocidade. Em **Programação**, abre **Matemática** e pega **Conta matemática**.
-> Arrasta por cima do **menos 5** no campo vx do mesmo bloco que cria cactos."
+> "Na experiência Compare os resultados de um sorteio, você viu as contas -5 - 0 e -5 - 1. Seu jogo já sorteia o lugar, mas a velocidade ainda é sempre -5. Agora aplique a outra comparação.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o campo vx -5 do criador de cactos. Abra Programação e depois Matemática. Pegue Conta matemática e solte sobre esse número.
+>
+> Na conta, coloque -5 à esquerda e escolha o sinal de menos. Deixe à vista o número à direita. Abra Jogo 2D, depois Sorteios. Pegue um número entre e solte sobre esse número. Coloque mínimo 0 e máximo 1.
+>
+> Confira a conta: -5 menos um número de 0 a 1. Se sair 0, a velocidade é -5. Se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use mais, pois essa conta produziria outra faixa.
+>
+> Comece e compare vários cactos. Cada um conserva a velocidade que recebeu ao nascer. Confira o sorteio do x e o da velocidade no mesmo criador, com tamanho 44 e relógio 1.4 preservados.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Zoom nos três pedaços da conta; abrir menu do sinal, escolher menos; no lado esquerdo, escrever -5.
+**Zappy na página (não gravar):** Use -5 menos um sorteio de 0 a 1 no vx do mesmo criador.
 
-**Narração:**
-> "A conta tem dois espaços e um sinal no meio. O sinal vem no **mais**. Abre a lista e escolhe
-> **menos**. No espaço da esquerda, escreve **menos 5** por cima do número de fábrica."
+## Seção 4. Teste e envie seu jogo
 
-**Na tela:** Abrir Jogo 2D > Sorteios > Números e posições; encaixar outro um número de a no lado direito da conta, por cima do valor; trocar 1 e 6 por 0 e 1.
+### Clipe `video-entrega` · Teste e envie seu jogo
 
-**Narração:**
-> "No espaço da direita entra outro sorteio. Em **Jogo 2D**, abre **Sorteios**, depois **Números
-> e posições**. Pega **um número de a**, encaixa por cima do valor da direita e troca a faixa de
-> **1 a 6** por **0 a 1**."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Ler conta montada e mostrar cactos de velocidades diferentes.
-
-**Narração:**
-> "Lê o bloco inteiro: **menos 5 menos um número sorteado entre zero e um**. Se sair zero, o vx
-> fica menos 5. Se sair um, fica menos 6. Na experiência você já viu qual chega mais longe.
-> Agora olha duas partidas: o movimento deixa de repetir o mesmo ritmo."
-
-## Seção 5. Teste, entregue e guarde as duas ideias
-
-### Clipe `video-teste-e-envio` · Dois sorteios em partidas diferentes
-**Duração alvo:** 55 a 70 segundos · **Palavras:** 105
-
-**Na tela:** Jogar três partidas curtas sem mexer no relógio; enquadrar a borda direita e dois cactos seguidos.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Vamos conferir os dois sorteios em partidas diferentes. Todo cacto ainda nasce fora da tela e
-> anda para a esquerda. Às vezes dois lugares podem se repetir; sorteio permite repetir, e isso
-> não é erro."
+> "Sua corrida já varia os nascimentos. Jogue duas partidas, observe os cactos e confira o placar, a batida e o reinício. Não é necessário ver um resultado diferente em todo sorteio.
+>
+> Confira x entre 500 e 560 e a conta -5 menos um número de 0 a 1. O tamanho e o intervalo não mudaram.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
 
-**Na tela:** Mostrar x 500 a 560 e conta vx -5 menos 0 a 1; conferir objetivos.
-
-**Narração:**
-> "Confere as faixas no bloco: x de **500 a 560**, vx com **menos 5 menos um número de zero a
-> um**. O relógio continua em **1.4**. O jogo escolhe novos números quando cria cada cacto."
-
-**Na tela:** Esperar Salvo, clicar Enviar para o professor; fechar com jogo rodando.
-
-**Narração:**
-> "Quando os objetivos estiverem certos, espera **Salvo** e clica em **Enviar para o
-> professor**. Hoje você trocou números fixos por duas faixas. Na última aula, a velocidade base
-> vai mudar também enquanto você joga."
+**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.

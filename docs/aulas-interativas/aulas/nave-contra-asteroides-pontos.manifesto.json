@@ -1,0 +1,937 @@
+{
+  "version": 5,
+  "courseSlug": "nave-contra-asteroides",
+  "lessonSlug": "pontos",
+  "title": "Conte os acertos",
+  "retireBlockKeys": [],
+  "blocks": [
+    {
+      "key": "video-variavel",
+      "plannedVideo": "Título: Guarde e mostre um número\n\nRegravar no Estúdio atual. Apontar o valor e a chave sem executar as somas. Não substituir a tarefa por metáfora de caixa.\n\nFala completa em nave-contra-asteroides-pontos.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-caixa-de-pontos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Mude pontos com o placar desligado. Depois ligue Mostrar placar e compare."
+      }
+    },
+    {
+      "key": "experiencia-variavel",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Guardar, mudar e mostrar",
+        "instructions": "Mude pontos para 1 e volte para 0 com Mostrar placar desligado. Some 1 duas vezes e observe o número guardado. Ligue Mostrar placar, compare e some 1 novamente.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "variable",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "obstacle": {
+              "name": "asteroide",
+              "gender": "m"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["stored", "changed-hidden", "shown"]
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-pontos-e-placar",
+      "plannedVideo": "Título: Some um ponto a cada acerto\n\nRegravar no Estúdio atual. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela.\n\nFala completa em nave-contra-asteroides-pontos.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-placar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Crie pontos, some dentro da colisão e mostre o valor no placar. Teste erro e acerto antes de enviar."
+      }
+    },
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "nave-contra-asteroides",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_events",
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_arrows_x",
+          "sz_g2d_center_x",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_clear",
+          "sz_g2d_create_group",
+          "sz_g2d_create_ship",
+          "sz_g2d_draw_group",
+          "sz_g2d_draw_score",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_every_frames",
+          "sz_g2d_explode",
+          "sz_g2d_on_group_overlap",
+          "sz_g2d_on_key",
+          "sz_g2d_play_fx",
+          "sz_g2d_prune_offscreen",
+          "sz_g2d_random_x",
+          "sz_g2d_remove_from_group",
+          "sz_g2d_setup_stage",
+          "sz_g2d_spawn_asteroid",
+          "sz_g2d_spawn_bullet",
+          "sz_g2d_sprite_y",
+          "sz_g2d_starfield",
+          "sz_g2d_update_each_frame",
+          "sz_g2d_update_group",
+          "sz_js_var_create",
+          "sz_js_var_increment",
+          "sz_val_number",
+          "sz_val_variable"
+        ],
+        "showcase": {
+          "enabled": false,
+          "title": "Nave contra Asteroides",
+          "summary": "Mova a nave, acerte os asteroides e tente chegar a 26 pontos sem perder as três vidas."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-nave-etapa-5",
+          "name": "Nave contra Asteroides",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07162e\");\n  const nave = SZGame2D.createShip({ x: 400, y: 410, w: 54, h: 62, body: \"#35e8ff\", wings: \"#2568ff\" });\n  const tiros = SZGame2D.createGroup();\n  const asteroides = SZGame2D.createGroup();\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    SZGame2D.spawnBullet(tiros, { x: SZGame2D.centerX(nave), y: SZGame2D.spriteY(nave), radius: 5, color: \"#9cff57\", vx: 0, vy: -9 });\n    SZGame2D.playFx(\"shoot\");\n  }, \"nave-ref-40\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawStarfield(ctx, 1);\n    SZGame2D.arrowsX(nave, 7);\n    SZGame2D.clampToScreen(nave, ctx);\n    SZGame2D.drawSprite(ctx, nave);\n    SZGame2D.updateGroup(tiros);\n    SZGame2D.pruneOffscreen(ctx, tiros, 40, (sprite) => {\n\n    });\n    SZGame2D.drawGroup(ctx, tiros);\n    SZGame2D.updateGroup(asteroides);\n    SZGame2D.pruneOffscreen(ctx, asteroides, 40, (sprite) => {\n\n    });\n    SZGame2D.drawGroup(ctx, asteroides);\n    SZGame2D.overlapGroups(tiros, asteroides, (tiro, asteroide) => {\n      SZGame2D.removeFromGroup(tiros, tiro);\n      SZGame2D.removeFromGroup(asteroides, asteroide);\n      SZGame2D.explodeSprite(asteroide, \"#ffb13b\");\n      SZGame2D.playFx(\"explosion\");\n    });\n  }, \"nave-ref-12\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everyFrames(\"cada\", 40)) {\n      SZGame2D.spawnAsteroid(asteroides, { x: SZGame2D.randomX(), y: -30, size: 40, color: \"#8d8f9b\", vx: 0, vy: 3 });\n    }\n  });\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 800,
+                    "__id": "nave-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "nave-ref-3"
+                  },
+                  "bg": "#07162e",
+                  "__id": "nave-ref-1"
+                },
+                {
+                  "type": "g2d:createShip",
+                  "varName": "nave",
+                  "x": {
+                    "type": "num",
+                    "value": 400,
+                    "__id": "nave-ref-5"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 410,
+                    "__id": "nave-ref-6"
+                  },
+                  "w": {
+                    "type": "num",
+                    "value": 54,
+                    "__id": "nave-ref-7"
+                  },
+                  "h": {
+                    "type": "num",
+                    "value": 62,
+                    "__id": "nave-ref-8"
+                  },
+                  "bodyColor": "#35e8ff",
+                  "wingColor": "#2568ff",
+                  "__id": "nave-ref-4"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "tiros",
+                  "__id": "nave-ref-9"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "asteroides",
+                  "__id": "nave-ref-10"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onKey",
+                  "key": "Space",
+                  "body": [
+                    {
+                      "type": "g2d:spawnBullet",
+                      "groupVar": "tiros",
+                      "x": {
+                        "type": "g2d:centerX",
+                        "spriteVar": "nave",
+                        "__id": "nave-ref-42"
+                      },
+                      "y": {
+                        "type": "g2d:spriteY",
+                        "spriteVar": "nave",
+                        "__id": "nave-ref-43"
+                      },
+                      "radius": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "nave-ref-44"
+                      },
+                      "color": "#9cff57",
+                      "vx": {
+                        "type": "num",
+                        "value": 0,
+                        "__id": "nave-ref-45"
+                      },
+                      "vy": {
+                        "type": "num",
+                        "value": -9,
+                        "__id": "nave-ref-46"
+                      },
+                      "__id": "nave-ref-41"
+                    },
+                    {
+                      "type": "g2d:playFx",
+                      "fx": "shoot",
+                      "__id": "nave-ref-47"
+                    }
+                  ],
+                  "__id": "nave-ref-40"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "nave-ref-13"
+                    },
+                    {
+                      "type": "g2d:starfield",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 1,
+                        "__id": "nave-ref-15"
+                      },
+                      "__id": "nave-ref-14"
+                    },
+                    {
+                      "type": "g2d:arrowsX",
+                      "spriteVar": "nave",
+                      "speed": {
+                        "type": "num",
+                        "value": 7,
+                        "__id": "nave-ref-17"
+                      },
+                      "__id": "nave-ref-16"
+                    },
+                    {
+                      "type": "g2d:clampToScreen",
+                      "spriteVar": "nave",
+                      "ctxVar": "ctx",
+                      "__id": "nave-ref-18"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "nave",
+                      "ctxVar": "ctx",
+                      "__id": "nave-ref-19"
+                    },
+                    {
+                      "type": "g2d:updateGroup",
+                      "groupVar": "tiros",
+                      "__id": "nave-ref-20"
+                    },
+                    {
+                      "type": "g2d:pruneOffscreen",
+                      "groupVar": "tiros",
+                      "ctxVar": "ctx",
+                      "itemName": "sprite",
+                      "body": [],
+                      "__id": "nave-ref-21"
+                    },
+                    {
+                      "type": "g2d:drawGroup",
+                      "groupVar": "tiros",
+                      "ctxVar": "ctx",
+                      "__id": "nave-ref-22"
+                    },
+                    {
+                      "type": "g2d:updateGroup",
+                      "groupVar": "asteroides",
+                      "__id": "nave-ref-23"
+                    },
+                    {
+                      "type": "g2d:pruneOffscreen",
+                      "groupVar": "asteroides",
+                      "ctxVar": "ctx",
+                      "itemName": "sprite",
+                      "body": [],
+                      "__id": "nave-ref-24"
+                    },
+                    {
+                      "type": "g2d:drawGroup",
+                      "groupVar": "asteroides",
+                      "ctxVar": "ctx",
+                      "__id": "nave-ref-25"
+                    },
+                    {
+                      "type": "g2d:onGroupOverlap",
+                      "aGroup": "tiros",
+                      "aName": "tiro",
+                      "bGroup": "asteroides",
+                      "bName": "asteroide",
+                      "body": [
+                        {
+                          "type": "g2d:removeFromGroup",
+                          "spriteVar": "tiro",
+                          "groupVar": "tiros",
+                          "__id": "nave-ref-27"
+                        },
+                        {
+                          "type": "g2d:removeFromGroup",
+                          "spriteVar": "asteroide",
+                          "groupVar": "asteroides",
+                          "__id": "nave-ref-28"
+                        },
+                        {
+                          "type": "g2d:explode",
+                          "spriteVar": "asteroide",
+                          "color": "#ffb13b",
+                          "__id": "nave-ref-29"
+                        },
+                        {
+                          "type": "g2d:playFx",
+                          "fx": "explosion",
+                          "__id": "nave-ref-30"
+                        }
+                      ],
+                      "__id": "nave-ref-26"
+                    }
+                  ],
+                  "__id": "nave-ref-12"
+                },
+                {
+                  "type": "g2d:everyFrames",
+                  "n": {
+                    "type": "num",
+                    "value": 40,
+                    "__id": "nave-ref-32"
+                  },
+                  "body": [
+                    {
+                      "type": "g2d:spawnAsteroid",
+                      "groupVar": "asteroides",
+                      "x": {
+                        "type": "g2d:randomX",
+                        "__id": "nave-ref-34"
+                      },
+                      "y": {
+                        "type": "num",
+                        "value": -30,
+                        "__id": "nave-ref-35"
+                      },
+                      "size": {
+                        "type": "num",
+                        "value": 40,
+                        "__id": "nave-ref-36"
+                      },
+                      "color": "#8d8f9b",
+                      "vx": {
+                        "type": "num",
+                        "value": 0,
+                        "__id": "nave-ref-37"
+                      },
+                      "vy": {
+                        "type": "num",
+                        "value": 3,
+                        "__id": "nave-ref-38"
+                      },
+                      "__id": "nave-ref-33"
+                    }
+                  ],
+                  "__id": "nave-ref-31"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#07162e"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 800
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_ship",
+                            "fields": {
+                              "NAME": "nave",
+                              "BODY": "#35e8ff",
+                              "WINGS": "#2568ff"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 400
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 410
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 54
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 62
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_group",
+                                "fields": {
+                                  "NAME": "tiros"
+                                },
+                                "inputs": {},
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_create_group",
+                                    "fields": {
+                                      "NAME": "asteroides"
+                                    },
+                                    "inputs": {}
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "fields": {},
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_starfield",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SPEED": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 1
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_arrows_x",
+                                      "fields": {
+                                        "SPRITE": "nave"
+                                      },
+                                      "inputs": {
+                                        "SPEED": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 7
+                                            }
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_clamp_to_screen",
+                                          "fields": {
+                                            "SPRITE": "nave"
+                                          },
+                                          "inputs": {},
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "fields": {
+                                                "SPRITE": "nave"
+                                              },
+                                              "inputs": {},
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_update_group",
+                                                  "fields": {
+                                                    "GROUP": "tiros"
+                                                  },
+                                                  "inputs": {},
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_prune_offscreen",
+                                                      "fields": {
+                                                        "GROUP": "tiros",
+                                                        "ITEM": "sprite"
+                                                      },
+                                                      "inputs": {},
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_group",
+                                                          "fields": {
+                                                            "GROUP": "tiros"
+                                                          },
+                                                          "inputs": {},
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_update_group",
+                                                              "fields": {
+                                                                "GROUP": "asteroides"
+                                                              },
+                                                              "inputs": {},
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_prune_offscreen",
+                                                                  "fields": {
+                                                                    "GROUP": "asteroides",
+                                                                    "ITEM": "sprite"
+                                                                  },
+                                                                  "inputs": {},
+                                                                  "next": {
+                                                                    "block": {
+                                                                      "type": "sz_g2d_draw_group",
+                                                                      "fields": {
+                                                                        "GROUP": "asteroides"
+                                                                      },
+                                                                      "inputs": {},
+                                                                      "next": {
+                                                                        "block": {
+                                                                          "type": "sz_g2d_on_group_overlap",
+                                                                          "fields": {
+                                                                            "A": "tiros",
+                                                                            "B": "asteroides",
+                                                                            "ANAME": "tiro",
+                                                                            "BNAME": "asteroide"
+                                                                          },
+                                                                          "inputs": {
+                                                                            "BODY": {
+                                                                              "block": {
+                                                                                "type": "sz_g2d_remove_from_group",
+                                                                                "fields": {
+                                                                                  "SPRITE": "tiro",
+                                                                                  "GROUP": "tiros"
+                                                                                },
+                                                                                "inputs": {},
+                                                                                "next": {
+                                                                                  "block": {
+                                                                                    "type": "sz_g2d_remove_from_group",
+                                                                                    "fields": {
+                                                                                      "SPRITE": "asteroide",
+                                                                                      "GROUP": "asteroides"
+                                                                                    },
+                                                                                    "inputs": {},
+                                                                                    "next": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g2d_explode",
+                                                                                        "fields": {
+                                                                                          "SPRITE": "asteroide",
+                                                                                          "COLOR": "#ffb13b"
+                                                                                        },
+                                                                                        "inputs": {},
+                                                                                        "next": {
+                                                                                          "block": {
+                                                                                            "type": "sz_g2d_play_fx",
+                                                                                            "fields": {
+                                                                                              "FX": "explosion"
+                                                                                            },
+                                                                                            "inputs": {}
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_every_frames",
+                            "fields": {},
+                            "inputs": {
+                              "N": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 40
+                                  }
+                                }
+                              },
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_g2d_spawn_asteroid",
+                                  "fields": {
+                                    "GROUP": "asteroides",
+                                    "COLOR": "#8d8f9b"
+                                  },
+                                  "inputs": {
+                                    "X": {
+                                      "block": {
+                                        "type": "sz_g2d_random_x",
+                                        "fields": {},
+                                        "inputs": {}
+                                      }
+                                    },
+                                    "Y": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": -30
+                                        }
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 40
+                                        }
+                                      }
+                                    },
+                                    "VX": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 0
+                                        }
+                                      }
+                                    },
+                                    "VY": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 3
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_events",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_key",
+                        "fields": {
+                          "KEY": "Space"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_spawn_bullet",
+                              "fields": {
+                                "GROUP": "tiros",
+                                "COLOR": "#9cff57"
+                              },
+                              "inputs": {
+                                "X": {
+                                  "block": {
+                                    "type": "sz_g2d_center_x",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "Y": {
+                                  "block": {
+                                    "type": "sz_g2d_sprite_y",
+                                    "fields": {
+                                      "SPRITE": "nave"
+                                    },
+                                    "inputs": {}
+                                  }
+                                },
+                                "R": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 5
+                                    }
+                                  }
+                                },
+                                "VX": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 0
+                                    }
+                                  }
+                                },
+                                "VY": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": -9
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_play_fx",
+                                  "fields": {
+                                    "FX": "shoot"
+                                  },
+                                  "inputs": {}
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "caixa-de-pontos",
+      "title": "Guarde e mostre um número",
+      "intent": "exploration",
+      "objective": "Mude pontos com o placar desligado. Depois ligue Mostrar placar e compare.",
+      "blockKeys": ["video-variavel", "fala-caixa-de-pontos", "experiencia-variavel"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-variavel", "experiencia-variavel"]
+      }
+    },
+    {
+      "key": "placar",
+      "title": "Some um ponto a cada acerto",
+      "intent": "delivery",
+      "objective": "Crie pontos, some dentro da colisão e mostre o valor no placar. Teste erro e acerto antes de enviar.",
+      "blockKeys": ["video-pontos-e-placar", "fala-placar", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-pontos-e-placar", "projeto"],
+        "projectChecks": [
+          {
+            "id": "pontos",
+            "label": "Crie a variável pontos com 0 em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "inputs": {
+                "VALUE": 0
+              }
+            }
+          },
+          {
+            "id": "somar-no-acerto",
+            "label": "Some 1 em pontos dentro da colisão tiros × asteroides.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_group_overlap",
+              "fields": {
+                "A": "tiros",
+                "B": "asteroides",
+                "ANAME": "tiro",
+                "BNAME": "asteroide"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_increment",
+                  "fields": {
+                    "NAME": "pontos",
+                    "DELTA": 1
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          },
+          {
+            "id": "soma-unica",
+            "label": "Mantenha um único Somar 1 em pontos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "fields": {
+                "NAME": "pontos"
+              },
+              "count": 1
+            }
+          },
+          {
+            "id": "placar",
+            "label": "Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_score",
+              "fields": {
+                "LABEL": "Pontos:"
+              },
+              "inputs": {
+                "X": 12,
+                "Y": 30,
+                "SIZE": 24
+              },
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_variable",
+                  "fields": {
+                    "NAME": "pontos"
+                  }
+                }
+              },
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

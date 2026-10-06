@@ -1,205 +1,203 @@
-# Roteiro de gravação · Corre Dino · Aula 01 · A telinha do jogo e o Dino que ainda não aparece
+# Roteiro de gravação · Corre, Dino! · Aula 1
 
-## Especificações
+**Prepare a tela e crie o Dino**
 
-- **Formato:** gravação de tela com narração, no Estúdio embutido.
-- **Duração:** 310 a 395 segundos de clipes; cerca de 825 palavras de narração, 6 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** projeto vazio, com a extensão Jogo 2D preparada pelo professor. É o primeiro curso da trilha Iniciante 2D e não tem pré-requisito de programação: a criança pode nunca ter programado na vida. O curso pressupõe apenas que ela sabe se virar no Estúdio (achar um bloco na coluna da esquerda, arrastar, encaixar, trocar um número). A Aula 0, de tour, saiu do curso.
-- **Conceitos nomeados:** Ao iniciar, tela do jogo, borda, coordenadas x e y, sprite, criar e mostrar.
-- **Dor desta aula:** Depois de preparar 480 por 270, a cor ocupa a área inteira; depois de criar o Dino, ele ainda não aparece. Os dois sintomas aparecem no projeto real.
-- **Vitória do dia:** a telinha de 480 por 270 aparece dentro da área do jogo, com a borda e a cor que ela escolheu. O Dino termina criado e invisível, de propósito, com a pergunta "cadê o Dino" aberta para a Aula 2.
-- **Valores:** Tela 480 por 270, borda de espessura 4, dino em x 110 e y 150, tamanho 64.
-- **Campos livres:** Cor do fundo, cor contrastante da borda e cor do Dino.
-- **Nota de produção:** Abrir com o jogo completo; gravar a construção a partir de projeto vazio. Segurar as duas perguntas visuais sem antecipar a experiência seguinte.
-- **O que NÃO entra, e por quê:** Não mostrar o Dino na tela ainda. O bloco que o desenha entra na Aula 2.
+Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.
 
-## Seção 1. Conheça o jogo que você vai fazer
+Entrada: Projeto vazio, com Programação e Jogo 2D disponíveis. Saída: Tela 480 × 270, borda 4 e Dino criado em (110, 150), tamanho 64, ainda sem desenho.
 
-### Clipe `video-abertura` · O jogo que você vai fazer
-**Duração alvo:** 45 a 60 segundos · **Palavras:** 94
+Começar com o projeto vazio preparado para esta aula. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
-**Na tela:** Mostrar a tela de início do Corre, Dino! pronto; apertar Enter e deixar o Dino correr.
+## Seção 1. Jogue antes de construir
+
+### Clipe `video-abertura` · Jogue antes de construir
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar somente o jogo pronto em funcionamento. Apontar os controles citados; participação basta para concluir.
 
 **Narração:**
-> "Oi! Você vai criar o Corre, Dino! Olha a tela de início. Quando a partida começa, o Dino
-> corre pela floresta e os cactos vêm na direção dele."
+> "Você vai construir Corre, Dino! O Dino pula os cactos numa corrida que fica mais rápida. Tente passar pelos obstáculos e somar pontos pelo tempo que conseguir continuar na partida.
+>
+> Experimente a versão pronta. Clique na área do jogo para começar. Toque e solte a barra de espaço, a seta para cima ou a tela para pular. Espere o Dino voltar ao chão para pular outra vez.
+>
+> Quando perder, toque uma vez para voltar à abertura e outra para começar uma nova partida. Você não precisa bater recorde para seguir. Depois de experimentar os controles, clique em Próxima seção."
 
-**Na tela:** Pular um cacto, enquadrar o placar subindo e a batida que termina a partida.
+**Zappy na página (não gravar):** Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.
 
-**Narração:**
-> "Você aperta espaço para pular, ganha pontos enquanto resiste e vê o que acontece quando bate.
-> Esse é o jogo inteiro que vamos construir, uma peça de cada vez."
+## Seção 2. Seu Caderno do Aluno
 
-**Na tela:** Voltar ao projeto vazio e indicar as três etapas de hoje na tela.
+### Clipe `video-caderno` · Seu Caderno do Aluno
 
-**Narração:**
-> "Hoje são três passos: abrir o lugar que prepara o jogo, montar a telinha com a cor que você
-> escolher e criar o seu Dino. No fim ele ainda não aparece. A gente vai entender por quê."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-## Seção 2. Seu caderno do Corre, Dino!
-
-### Clipe `video-caderno` · Seu caderno do Corre, Dino!
-**Duração alvo:** 20 a 30 segundos · **Palavras:** cerca de 60
-
-**Na tela:** Mostrar o bloco de materiais logo abaixo deste vídeo, tocar em **Baixar** e mostrar o botão virar **Baixado**. Abrir uma página real do PDF ligada a esta aula, sem inventar uma página antes de o caderno estar pronto.
+**Na tela:** Mostrar o PDF real anexado ao curso. Não ensinar os controles do leitor.
 
 **Narração:**
-> "Este é o seu caderno do Corre, Dino! Ele reúne os passos do jogo para você consultar quando
-> quiser. Se alguma parte ficar diferente da que aparece no vídeo, abra a página daquela aula e
-> compare. O botão **Baixar** está logo abaixo. Você pode ler o PDF na tela ou guardá-lo para depois.
-> Agora vamos montar a telinha do jogo."
+> "O Caderno do Aluno reúne os passos para montar e testar o Corre, Dino! Você pode consultar um encaixe ou um valor quando precisar.
+>
+> Ler, baixar e imprimir são escolhas suas. Não precisa fazer isso agora. Clique em Próxima seção."
 
-**Abaixo do clipe:** bloco `materiais-caderno`, com o PDF enviado pelo admin. O download não é exigido para avançar; assistir a 90% do clipe conclui esta seção. O caderno continua acessível aqui na Aula 1.
+**Zappy na página (não gravar):** O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção.
 
-## Seção 3. Abra o lugar onde o jogo se arruma
+## Seção 3. Compare uma vez e sempre
 
-### Clipe `video-area-e-tela` · A área que arruma o jogo, e a tela do Dino
-**Duração alvo:** 70 a 85 segundos · **Palavras:** 181
+### Clipe `video-uma-vez-e-sempre` · Compare uma vez e sempre
 
-**Na tela:** Enquadrar a área de montar vazia; abrir Áreas do projeto e arrastar Ao iniciar para o meio.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Narração:**
-> "Na categoria **Áreas do projeto**, pega **Ao iniciar**, segura e arrasta para a área de
-> montar. Solta ali, com espaço em volta. Tudo o que ficar dentro dessa área acontece uma vez,
-> quando a partida começa."
-
-**Na tela:** Mostrar a caixa vazia, como um lugar esperando peças.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "É como preparar um jogo de tabuleiro: você abre o tabuleiro, separa as peças e dá as cartas
-> antes de jogar. O **Ao iniciar** guarda essa preparação. Agora ele está vazio e vai receber a
-> telinha."
+> "Antes de preparar seu jogo, compare uma ação feita uma vez com a mesma ação repetida.
+>
+> Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação.
+>
+> Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Abrir Jogo 2D > Jogo e telas > Preparar a área do jogo; encaixar Preparar o jogo em tela cheia no primeiro lugar do Ao iniciar.
+**Zappy na página (não gravar):** Compare a mesma peça nas duas áreas, começando um teste em cada uma.
 
-**Narração:**
-> "Na categoria **Jogo 2D**, abre **Jogo e telas**, depois **Preparar a área do jogo**. Pega
-> **Preparar o jogo em tela cheia** e encaixa dentro do **Ao iniciar**, que está vazio, no
-> primeiro lugar."
+## Seção 4. Escolha o tamanho da tela
 
-**Na tela:** Aproximar os campos; trocar largura 800 por 480 e altura 480 por 270, clicando fora de cada campo. Escolher fundo azul claro no exemplo.
+### Clipe `video-limite-da-tela` · Escolha o tamanho da tela
 
-**Narração:**
-> "A largura vem em **800**. Troca por **480** e clica fora para confirmar. A altura vem em
-> **480**. Troca por **270** e confirma também. No fundo, o meu vai ser azul bem claro. O seu
-> pode ter outra cor."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Manter a área do jogo inteira, pintada, sem contorno algum.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Olha só. A cor pintou a área inteira. Você escreveu 480 por 270, mas onde está essa telinha?
-> Ainda não dá para ver onde ela começa e termina. Guarda essa pergunta para a experiência que
-> vem agora."
+> "Seu jogo vai ocupar uma tela de 480 por 270. Antes de preparar essa tela, veja o que os dois números mudam.
+>
+> Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo.
+>
+> Depois coloque largura 480 e altura 270. Compare com o tamanho anterior.
+>
+> Depois dos testes, clique em Próxima seção."
 
-## Seção 5. Mostre o limite no seu jogo
+**Zappy na página (não gravar):** Mude largura e altura com a borda visível e termine em 480 por 270.
 
-### Clipe `video-borda` · A borda que mostra o limite
-**Duração alvo:** 55 a 65 segundos · **Palavras:** 135
+## Seção 5. Prepare a tela do jogo
 
-**Na tela:** Mostrar a pilha com Preparar o jogo em tela cheia; abrir Jogo 2D > Jogo e telas > Preparar a área do jogo.
+### Clipe `video-area-e-tela` · Prepare a tela do jogo
 
-**Narração:**
-> "A experiência mostrou o limite com uma borda. Vamos trazer essa borda para o seu projeto. Na
-> categoria **Jogo 2D**, abre **Jogo e telas**, depois **Preparar a área do jogo**. Pega
-> **Mostrar a borda da tela**."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Encaixar Mostrar a borda da tela no Ao iniciar, logo abaixo de Preparar o jogo em tela cheia; enquadrar o retângulo surgindo.
-
-**Narração:**
-> "Encaixa dentro do **Ao iniciar**, logo abaixo do **Preparar o jogo em tela cheia**. Apareceu
-> um retângulo. É ele que mede 480 por 270. A parte de fora continua com a cor que você escolheu
-> para o fundo."
-
-**Na tela:** Aproximar os campos de cor e espessura; manter 4 e escolher borda cinza escura sobre o azul claro.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "A espessura já vem **4**, deixa assim. Na cor, escolhe uma que apareça sobre o seu fundo. O
-> meu fundo é claro, então vou usar um cinza escuro. Agora dá para apontar onde a telinha
-> termina."
+> "Na experiência da seção anterior, você mudou o tamanho da tela. Seu projeto ainda está vazio. Agora prepare essa tela para o jogo.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe um espaço vazio da montagem à vista. Abra Áreas do projeto. Pegue Ao iniciar e solte nesse espaço. Essa área recebe a preparação feita uma vez no começo.
+>
+> Deixe à vista o interior de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e Preparar a área do jogo. Pegue Preparar o jogo em tela cheia e encaixe dentro de Ao iniciar.
+>
+> Confira largura 480 e altura 270. Se os números estiverem diferentes, troque por esses valores. Escolha um azul claro no campo da cor.
+>
+> Confira: o bloco de preparar está dentro de Ao iniciar. A cor aparece na área do jogo. O fundo sozinho ainda não mostra o contorno da tela; a borda vai deixar esse limite visível.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Mostrar jogo e pilha juntos.
+**Zappy na página (não gravar):** Prepare a tela em Ao iniciar com largura 480 e altura 270.
 
-**Narração:**
-> "A borda é um instrumento para enxergar o limite hoje. Na próxima aula a floresta vai marcar
-> esse limite sozinha, e a borda poderá sair."
+## Seção 6. Mostre o limite da tela
 
-## Seção 6. Onde o Dino vai ficar na tela
+### Clipe `video-borda` · Mostre o limite da tela
 
-### Clipe `video-coordenadas` · O x, o y, e o y que cresce para baixo
-**Duração alvo:** 20 a 30 segundos · **Palavras:** 81
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a telinha de 480 por 270 com os eixos x e y e o canto superior esquerdo marcado 0, 0, sem mover um personagem no vídeo.
-
-**Narração:**
-> "Para criar um personagem, você precisa dizer onde ele fica. Esse endereço tem dois números. O
-> **x** diz esquerda ou direita. O **y** diz cima ou baixo. O zero dos dois fica no canto de
-> cima, à esquerda."
-
-**Na tela:** Destacar a seta horizontal para a direita e a vertical para baixo.
-
-**Narração:**
-> "O x cresce para a direita. O y cresce para baixo, e isso costuma surpreender. Quanto maior o
-> y, mais perto da parte de baixo da tela. Na bancada de agora, você muda um número de cada vez
-> e vê o Dino acompanhar."
-
-## Seção 7. Crie o seu dinossauro
-
-### Clipe `video-criar-dino` · O seu dinossauro nasce
-**Duração alvo:** 50 a 60 segundos · **Palavras:** 144
-
-**Na tela:** Mostrar a pilha do Ao iniciar com a borda como último bloco; abrir Jogo 2D > Kits prontos > Dino.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Agora vamos criar o personagem. Quem faz jogo chama cada objeto assim de **sprite**. O seu
-> primeiro sprite é o Dino. Na categoria **Jogo 2D**, abre **Kits prontos**, depois **Dino**.
-> Pega **Criar dinossauro**."
+> "Na experiência Escolha o tamanho da tela, você usou a borda para enxergar o limite. No seu jogo, a cor ainda ocupa o fundo sem indicar esse contorno. Agora mostre a borda.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o encaixe abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e Preparar a área do jogo. Pegue Mostrar a borda da tela e encaixe nesse lugar.
+>
+> Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco. Confira o retângulo ao redor da área do jogo. Se não aparecer, confira se o bloco ficou abaixo da preparação e se as cores são diferentes.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Encaixar Criar dinossauro dentro do Ao iniciar, logo abaixo de Mostrar a borda da tela.
+**Zappy na página (não gravar):** Confira o contorno da tela e a espessura 4.
 
-**Narração:**
-> "Encaixa dentro do **Ao iniciar**, logo abaixo do **Mostrar a borda da tela**. Esse é o lugar
-> da preparação, porque o Dino precisa existir antes de começar a partida."
+## Seção 7. Escolha onde o Dino fica
 
-**Na tela:** Zoom nos campos, um de cada vez: nome dino, x 120 para 110, y 150, tamanho 64 e cor escolhida.
+### Clipe `video-coordenadas` · Escolha onde o Dino fica
 
-**Narração:**
-> "No nome já vem **dino**. Deixa assim: os próximos blocos vão procurar esse nome. O x vem em
-> **120**; troca por **110** e confirma fora do campo. O y já é **150**, e o tamanho já é
-> **64**. Deixa esses dois. Na cor, escolhe a sua."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a área do jogo ainda sem Dino, com a pilha visível.
-
-**Narração:**
-> "Olha a área do jogo. A borda está lá, mas o Dino não apareceu. Não mude os números para
-> tentar achá-lo. Criar e mostrar são duas coisas diferentes. A próxima experiência vai deixar
-> isso visível."
-
-## Seção 9. Teste, envie e fecha
-
-### Clipe `video-fecho` · Os três passos de hoje
-**Duração alvo:** 50 a 65 segundos · **Palavras:** 130
-
-**Na tela:** Zoom num número do bloco do Dino; clicar fora do campo para confirmar.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Antes de conferir, lembra do gesto: sempre que escrever um número, clica fora do campo para
-> ele valer. Agora olha a telinha com a borda em volta e o restante na sua cor."
+> "Para criar o Dino numa posição, vamos usar x e y. Esses números indicam um lugar na tela.
+>
+> Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções.
+>
+> Por último, coloque x em 0 e y em 0. Observe onde fica essa posição.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Enquadrar a tela vazia e a pilha inteira do Ao iniciar.
+**Zappy na página (não gravar):** Mude um eixo de cada vez e termine em x 0, y 0.
+
+## Seção 8. Compare criar e mostrar
+
+### Clipe `video-criar-e-mostrar` · Compare criar e mostrar
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "O Dino continua invisível, e hoje é para ser assim. Confere a pilha comigo: **Ao iniciar**
-> guarda a tela, depois a borda, depois o Dino criado com nome dino, x 110, y 150 e tamanho 64."
+> "Você já escolheu posições. Agora observe a diferença entre criar um objeto e desenhá-lo na tela.
+>
+> Clique em Criar o Dino. Compare os bastidores com a tela do jogo.
+>
+> Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Mostrar a lista de objetivos; esperar Salvo e clicar Enviar para o professor.
+**Zappy na página (não gravar):** Crie o Dino nos bastidores e depois mostre-o na tela.
+
+## Seção 9. Crie o Dino nos bastidores
+
+### Clipe `video-criar-dino` · Crie o Dino nos bastidores
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Se algum objetivo estiver pendente, volta à pilha e corrige aquele bloco. Quando estiver tudo
-> certo, espera aparecer **Salvo** e clica em **Enviar para o professor**."
+> "Na experiência da seção anterior, você criou e depois mostrou o Dino. No seu jogo só existe a tela preparada. Agora crie o Dino; nesta montagem ele ainda não será desenhado.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o encaixe abaixo de Mostrar a borda da tela, dentro de Ao iniciar. Abra Jogo 2D, depois Kits prontos e Dino. Pegue Criar dinossauro e encaixe abaixo da borda.
+>
+> Mantenha o nome dino. Sprite é um objeto do jogo que você pode programar; esse nome identifica o nosso. Coloque x 110, y 150 e tamanho 64. Escolha a cor do Dino.
+>
+> Confira a sequência: preparar a tela, mostrar a borda e criar o Dino. Confira os campos 110, 150 e 64. A tela continua sem Dino porque ainda não há uma ordem de desenho. Não duplique o bloco para tentar fazê-lo aparecer.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Mostrar a telinha e três cartões curtos com os passos; terminar no quiz.
+**Zappy na página (não gravar):** Crie dino em x 110, y 150 e tamanho 64, abaixo da borda.
+
+## Seção 10. Teste e envie seu jogo
+
+### Clipe `video-entrega` · Teste e envie seu jogo
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Você abriu a área que arruma o jogo, preparou a telinha e criou o Dino. Na próxima aula ele
-> aparece correndo, com a floresta se mexendo atrás. Antes, responde ao quiz logo depois deste
-> vídeo."
+> "Seu projeto agora prepara a tela e cria o Dino. Confira a borda, a largura 480 e a altura 270. O Dino está criado, ainda sem desenho.
+>
+> Confira o bloco Criar dinossauro dentro de Ao iniciar, com nome dino, x 110, y 150 e tamanho 64. Se algum campo estiver diferente, corrija antes de enviar.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
+
+**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.

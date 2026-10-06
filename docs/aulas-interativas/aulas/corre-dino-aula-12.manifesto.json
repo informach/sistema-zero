@@ -2,7 +2,7 @@
   "version": 5,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-12",
-  "title": "Duas partidas nunca mais iguais",
+  "title": "Varie o lugar e a velocidade dos cactos",
   "retireBlockKeys": [
     "video-abertura-editorial",
     "experiencia-sorteio-controlado",
@@ -12,12 +12,89 @@
     "demonstracao-conta-velocidade",
     "fala-sortear-velocidade",
     "fala-entrega-editorial",
-    "video-fecho-editorial"
+    "video-fecho-editorial",
+    "video-teste-e-envio",
+    "video-padrao-fixo",
+    "fala-sorteio",
+    "fala-arrastar-por-cima",
+    "fala-faixa-do-x",
+    "video-sortear-lugar",
+    "fala-conta-matematica",
+    "fala-campos-da-conta",
+    "video-sortear-velocidade",
+    "quiz-final",
+    "fala-proxima-aula"
   ],
   "blocks": [
     {
-      "key": "video-teste-e-envio",
-      "plannedVideo": "Título: Dois sorteios em partidas diferentes\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 55 a 70 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo, e uma partida jogada até o fim.\n2. Uma segunda partida e uma terceira, as duas curtas. O relógio não é tocado em nenhum momento.\n3. A borda direita enquadrada nas três partidas, porque é ali que dá para ver que cada cacto entra de um lugar diferente e anda numa velocidade própria.\n4. Um lugar repetido deixado no clipe de propósito, com a fala dizendo que repetir não é erro.\n\nConferir junto, olhando a tela: todo cacto continua nascendo fora do quadro, todo cacto continua andando para a esquerda, e duas partidas seguidas não ficam iguais.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: o seu jogo tem duas coisas sorteadas agora, o lugar onde cada cacto nasce e a velocidade que ele recebe. Você deu uma faixa em vez de um número, e o jogo tira o número na hora.\n\nO gancho da Aula 13 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
+      "key": "video-sorteio-tira-na-hora",
+      "plannedVideo": "Título: Compare os resultados de um sorteio\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-sorteio-tira-na-hora",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sorteie posições até comparar diferenças e repetições; depois compare as duas velocidades."
+      }
+    },
+    {
+      "key": "experiencia-random",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare os resultados de um sorteio",
+        "instructions": "Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem. Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias e leia as contas -5 - 0 e -5 - 1.",
+        "hints": [],
+        "required": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "random",
+          "cenario": "corre-dino",
+          "cast": {
+            "obstacle": {
+              "name": "cacto",
+              "gender": "m"
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-lugar-diferente",
+      "plannedVideo": "Título: Sorteie onde cada cacto nasce\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-lugar-diferente",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sorteie o x de 500 a 560 dentro do único criador de cactos."
+      }
+    },
+    {
+      "key": "video-velocidade-propria",
+      "plannedVideo": "Título: Sorteie uma variação na velocidade\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-velocidade-propria",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Use -5 menos um sorteio de 0 a 1 no vx do mesmo criador."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+      }
     },
     {
       "key": "projeto",
@@ -69,22 +146,459 @@
           "sz_val_text",
           "sz_val_variable"
         ],
+        "showcase": {
+          "enabled": false,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-corre-dino-12",
+          "id": "manifest-dino-etapa-11",
           "name": "Corre, Dino!",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": ""
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos apertando espaço\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  const cactos = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  SZGame2D.setHitboxScale(dino, 80);\n  let pontos = 0;\n  // Quando acontecer\n  SZGame2D.onJump(() => dino, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"dino-ref-67\");\n  SZGame2D.onAnyInput(() => {\n      if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.restart();\n    }\n    }, \"dino-ref-69\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.applyGravity(dino);\n      SZGame2D.controlDino(dino, ctx, 14);\n      SZGame2D.drawSprite(ctx, dino);\n      SZGame2D.updateGroup(cactos);\n      SZGame2D.drawGroup(ctx, cactos);\n      SZGame2D.overlapSpriteGroup(() => dino, cactos, (cacto) => {\n        SZGame2D.explodeSprite(cacto, \"#ffab00\");\n        SZGame2D.shake(ctx, 8);\n        SZGame2D.playFx(\"gameover\");\n        SZGame2D.setScene(\"fim\");\n      });\n      SZGame2D.pruneOffscreen(ctx, cactos, 40, (cacto) => {\n\n      });\n      SZGame2D.drawScore(ctx, \"Pontos:\", pontos, 12, 30, \"#102030\", 24);\n    } else if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.showScreen(ctx, \"Corre, Dino!\", \"Pule os cactos!\", \"Aperte qualquer tecla ou toque na tela para começar\", \"#102030\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.showScreen(ctx, \"Fim de jogo\", `Você fez ${pontos} pontos. Tente bater essa marca!`, \"Aperte qualquer tecla ou toque para jogar de novo\", \"#102030\");\n    }\n  }, \"dino-ref-16\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        SZGame2D.spawnObstacle(cactos, ctx, { type: \"cactus\", x: 560, size: 44, vx: -5 });\n      }\n    }\n  });\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada_2\", 1)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        pontos = pontos + 1;\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [],
-          "ir": null,
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "dino-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 270,
+                    "__id": "dino-ref-3"
+                  },
+                  "bg": "#81d4fa",
+                  "__id": "dino-ref-1"
+                },
+                {
+                  "type": "g2d:setStageDescription",
+                  "description": "Corra com o dino e pule os cactos apertando espaço",
+                  "__id": "dino-ref-4"
+                },
+                {
+                  "type": "g2d:createDino",
+                  "varName": "dino",
+                  "x": {
+                    "type": "num",
+                    "value": 110,
+                    "__id": "dino-ref-6"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 150,
+                    "__id": "dino-ref-7"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 64,
+                    "__id": "dino-ref-8"
+                  },
+                  "color": "#8b5cf6",
+                  "__id": "dino-ref-5"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "cactos",
+                  "__id": "dino-ref-9"
+                },
+                {
+                  "type": "g2d:setScene",
+                  "name": "inicio",
+                  "__id": "dino-ref-10"
+                },
+                {
+                  "type": "g2d:setHitboxScale",
+                  "spriteVar": "dino",
+                  "percent": {
+                    "type": "num",
+                    "value": 80,
+                    "__id": "dino-ref-12"
+                  },
+                  "__id": "dino-ref-11"
+                },
+                {
+                  "type": "var",
+                  "name": "pontos",
+                  "value": {
+                    "type": "num",
+                    "value": 0,
+                    "__id": "dino-ref-14"
+                  },
+                  "__id": "dino-ref-13"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onJump",
+                  "spriteVar": "dino",
+                  "body": [
+                    {
+                      "type": "g2d:playFx",
+                      "fx": "jump",
+                      "__id": "dino-ref-68"
+                    }
+                  ],
+                  "__id": "dino-ref-67"
+                },
+                {
+                  "type": "g2d:onAnyInput",
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "inicio",
+                        "__id": "dino-ref-71"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:setScene",
+                          "name": "jogando",
+                          "__id": "dino-ref-72"
+                        }
+                      ],
+                      "elseif": [
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "fim",
+                            "__id": "dino-ref-73"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:restart",
+                              "__id": "dino-ref-74"
+                            }
+                          ]
+                        }
+                      ],
+                      "__id": "dino-ref-70"
+                    }
+                  ],
+                  "__id": "dino-ref-69"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "dino-ref-17"
+                    },
+                    {
+                      "type": "g2d:forest",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "dino-ref-19"
+                      },
+                      "__id": "dino-ref-18"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-21"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:applyGravity",
+                          "spriteVar": "dino",
+                          "__id": "dino-ref-22"
+                        },
+                        {
+                          "type": "g2d:controlDino",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "jump": {
+                            "type": "num",
+                            "value": 14,
+                            "__id": "dino-ref-24"
+                          },
+                          "__id": "dino-ref-23"
+                        },
+                        {
+                          "type": "g2d:drawSprite",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-25"
+                        },
+                        {
+                          "type": "g2d:updateGroup",
+                          "groupVar": "cactos",
+                          "__id": "dino-ref-26"
+                        },
+                        {
+                          "type": "g2d:drawGroup",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-27"
+                        },
+                        {
+                          "type": "g2d:onSpriteGroupOverlap",
+                          "spriteVar": "dino",
+                          "groupVar": "cactos",
+                          "itemName": "cacto",
+                          "body": [
+                            {
+                              "type": "g2d:explode",
+                              "spriteVar": "cacto",
+                              "color": "#ffab00",
+                              "__id": "dino-ref-29"
+                            },
+                            {
+                              "type": "g2d:shake",
+                              "ctxVar": "ctx",
+                              "intensity": {
+                                "type": "num",
+                                "value": 8,
+                                "__id": "dino-ref-31"
+                              },
+                              "__id": "dino-ref-30"
+                            },
+                            {
+                              "type": "g2d:playFx",
+                              "fx": "gameover",
+                              "__id": "dino-ref-32"
+                            },
+                            {
+                              "type": "g2d:setScene",
+                              "name": "fim",
+                              "__id": "dino-ref-33"
+                            }
+                          ],
+                          "__id": "dino-ref-28"
+                        },
+                        {
+                          "type": "g2d:pruneOffscreen",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "itemName": "cacto",
+                          "body": [],
+                          "__id": "dino-ref-34"
+                        },
+                        {
+                          "type": "g2d:drawScore",
+                          "ctxVar": "ctx",
+                          "label": "Pontos:",
+                          "value": {
+                            "type": "var",
+                            "name": "pontos",
+                            "__id": "dino-ref-36"
+                          },
+                          "x": {
+                            "type": "num",
+                            "value": 12,
+                            "__id": "dino-ref-37"
+                          },
+                          "y": {
+                            "type": "num",
+                            "value": 30,
+                            "__id": "dino-ref-38"
+                          },
+                          "color": "#102030",
+                          "size": {
+                            "type": "num",
+                            "value": 24,
+                            "__id": "dino-ref-39"
+                          },
+                          "__id": "dino-ref-35"
+                        }
+                      ],
+                      "elseif": [
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "inicio",
+                            "__id": "dino-ref-40"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:showScreen",
+                              "ctxVar": "ctx",
+                              "title": {
+                                "type": "str",
+                                "value": "Corre, Dino!",
+                                "__id": "dino-ref-42"
+                              },
+                              "subtitle": {
+                                "type": "str",
+                                "value": "Pule os cactos!",
+                                "__id": "dino-ref-43"
+                              },
+                              "hint": {
+                                "type": "str",
+                                "value": "Aperte qualquer tecla ou toque na tela para começar",
+                                "__id": "dino-ref-44"
+                              },
+                              "bg": "#102030",
+                              "__id": "dino-ref-41"
+                            }
+                          ]
+                        },
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "fim",
+                            "__id": "dino-ref-45"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:showScreen",
+                              "ctxVar": "ctx",
+                              "title": {
+                                "type": "str",
+                                "value": "Fim de jogo",
+                                "__id": "dino-ref-47"
+                              },
+                              "subtitle": {
+                                "type": "concat",
+                                "parts": [
+                                  {
+                                    "type": "str",
+                                    "value": "Você fez ",
+                                    "__id": "dino-ref-49"
+                                  },
+                                  {
+                                    "type": "var",
+                                    "name": "pontos",
+                                    "__id": "dino-ref-50"
+                                  },
+                                  {
+                                    "type": "str",
+                                    "value": " pontos. Tente bater essa marca!",
+                                    "__id": "dino-ref-51"
+                                  }
+                                ],
+                                "__id": "dino-ref-48"
+                              },
+                              "hint": {
+                                "type": "str",
+                                "value": "Aperte qualquer tecla ou toque para jogar de novo",
+                                "__id": "dino-ref-52"
+                              },
+                              "bg": "#102030",
+                              "__id": "dino-ref-46"
+                            }
+                          ]
+                        }
+                      ],
+                      "__id": "dino-ref-20"
+                    }
+                  ],
+                  "__id": "dino-ref-16"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 1.4,
+                    "__id": "dino-ref-54"
+                  },
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-56"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:spawnObstacle",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "shape": "cactus",
+                          "x": {
+                            "type": "num",
+                            "value": 560,
+                            "__id": "dino-ref-58"
+                          },
+                          "size": {
+                            "type": "num",
+                            "value": 44,
+                            "__id": "dino-ref-60"
+                          },
+                          "vx": {
+                            "type": "num",
+                            "value": -5,
+                            "__id": "dino-ref-59"
+                          },
+                          "__id": "dino-ref-57"
+                        }
+                      ],
+                      "__id": "dino-ref-55"
+                    }
+                  ],
+                  "__id": "dino-ref-53"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 1,
+                    "__id": "dino-ref-62"
+                  },
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-64"
+                      },
+                      "then": [
+                        {
+                          "type": "assign",
+                          "name": "pontos",
+                          "value": {
+                            "type": "binop",
+                            "op": "+",
+                            "left": {
+                              "type": "var",
+                              "name": "pontos"
+                            },
+                            "right": {
+                              "type": "num",
+                              "value": 1
+                            }
+                          },
+                          "__id": "dino-ref-65"
+                        }
+                      ],
+                      "__id": "dino-ref-63"
+                    }
+                  ],
+                  "__id": "dino-ref-61"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
@@ -757,212 +1271,39 @@
           ]
         }
       }
-    },
-    {
-      "key": "video-padrao-fixo",
-      "plannedVideo": "Título: Dá para decorar o seu jogo\n\nCinco ou seis partidas seguidas, uma atrás da outra, e o percurso é sempre o mesmo. Os cactos vêm nas mesmas distâncias, na mesma ordem, e dá para ver a repetição sem ninguém apontar.\n\nDepois o clipe abre o bloco No grupo criar obstáculo em x tamanho com vx, que mora dentro do A cada 1,4 segundos, e aponta um número de cada vez. O x em 560, sempre 560. O vx em -5, sempre -5. O relógio em 1,4, sempre 1,4.\n\nA fala fecha a conta: mesmo lugar, mesma velocidade, mesmo tempo, e aí é impossível ficar diferente. O jogo está fazendo certinho o que foi mandado, e o que foi mandado é sempre a mesma coisa.\n\nDentro deste mesmo clipe entra a conferência dos dois números canônicos, com fala de conferir e não de afirmar: “olha o vx do seu bloco de criar cacto. Se estiver em menos 5, está certo. Se estiver em outro número, põe menos 5 agora. E olha o relógio: ele tem que estar em 1,4.”\n\nA conferência mora aqui de propósito. A aula 13 parte desses dois números, e a dor é o único momento em que olhar para eles é natural, porque eles são a causa do problema.\n\nTermina com a virada do dia, em afirmação e não em pergunta: o computador faz exatamente o que a gente manda, então a gente vai mandar ele sortear.\n\nFunde video-abertura-editorial e video-padrao-fixo, que hoje contam a mesma história em duas seções: uma promete, a outra mostra. A fala se aproveita, a tela é regravada na edição jogo-2d-1.0-documento-2.\n\nDuração alvo: 60 a 75 segundos."
-    },
-    {
-      "key": "fala-sorteio",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Em vez de dar um número pronto pro jogo, a gente dá uma faixa e deixa ele tirar um número de dentro dela, na hora. É parecido com um saquinho de papelzinho: você escreve os números, põe todos lá dentro e tira um sem olhar. Isso tem nome: sorteio."
-      }
-    },
-    {
-      "key": "experiencia-random",
-      "content": {
-        "kind": "interactive",
-        "title": "Cada cacto pode nascer diferente",
-        "instructions": "Aperte Sortear lugar várias vezes e olhe onde as marquinhas caem na régua. Depois compare as duas raias de velocidade e leia a conta embaixo de cada uma.",
-        "hints": [
-          "A régua mostra onde um cacto pode nascer, depois da borda da tela, que está marcada em 480.",
-          "Aperte Sortear lugar até sair um lugar diferente do primeiro.",
-          "Aperte Sortear lugar mais oito vezes e olhe se alguma marquinha ganha um 2 vezes.",
-          "Nas raias, veja quanto cada cacto andou em 1 segundo e leia a conta embaixo: -5 - 0 e -5 - 1."
-        ],
-        "required": true,
-        "prediction": {
-          "context": {
-            "label": "O sorteio do lugar",
-            "explanation": "A faixa vai de 500 a 560, e cada aperto tira um número de dentro dela. As marquinhas ficam na régua, uma por sorteio."
-          },
-          "prompt": "Sorteando o lugar, dois cactos podem nascer no mesmo ponto?",
-          "choices": [
-            {
-              "id": "podem",
-              "label": "Podem sim"
-            },
-            {
-              "id": "nunca",
-              "label": "Nunca, o sorteio evita repetir",
-              "shows": "Continue apertando e olhe as marquinhas: uma delas vai sair de novo e ganhar um 2 vezes."
-            }
-          ],
-          "correctChoiceId": "podem",
-          "revealOn": "repeat"
-        },
-        "activity": {
-          "type": "experimentation",
-          "scene": "random",
-          "cenario": "corre-dino",
-          "cast": {
-            "obstacle": {
-              "name": "cacto",
-              "gender": "m"
-            }
-          }
-        }
-      }
-    },
-    {
-      "key": "fala-arrastar-por-cima",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Em Jogo 2D, Sorteios, Números e posições, pega o bloco um número de a. Ele é um bloco de valor, então você arrasta ele por cima do número que já está lá, igual você fez com o valor da variável na Aula 11."
-      }
-    },
-    {
-      "key": "fala-faixa-do-x",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Arrasta por cima do 560, que é o campo x do bloco No grupo criar obstáculo em x tamanho com vx, lá dentro do relógio de 1,4. Ele tem dois campos, e vêm com 1 e 6, que é a faixa de um dado. Troca por 500 e 560. Os dois são maiores que 480, que é onde a tela acaba. O relógio fica em 1,4, sem tocar nele."
-      }
-    },
-    {
-      "key": "video-sortear-lugar",
-      "plannedVideo": "Título: Um número sorteado, e o ritmo inteiro muda\n\nO gesto de arrastar o um número de a por cima do 560, e a troca dos dois campos de 1 e 6 para 500 e 560. Zoom no bloco montado, com o sorteio encaixado no campo x.\n\nDepois a partida rodando, sem cortes, com os espaços entre os cactos variando de um nascimento para o outro.\n\nA fala guarda a observação boa do trecho gravado, e ela é o conteúdo desta seção: o relógio continua batendo no mesmo compasso, sempre 1,4, mas como o cacto nasce mais longe ou mais perto, ele demora mais ou menos para chegar no dino. Um número sorteado, e o ritmo inteiro do jogo mudou.\n\nUma linha só sobre nascer fora da tela, sem virar assunto: 500 e 560 ficam depois de 480, então todo cacto continua nascendo fora da tela, como desde a aula 5.\n\nVem de video-sortear-posicao. A fala se aproveita, com a correção do endereço da paleta.\n\nCorreção de endereço obrigatória: o bloco se chama um número de a e mora em Jogo 2D, Sorteios, Números e posições. A fala gravada manda ir em Mira e contas, que não existe mais.\n\nDuração alvo: 55 a 65 segundos."
-    },
-    {
-      "key": "fala-conta-matematica",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora a velocidade. Em Programação, Matemática, pega o bloco Conta matemática. Ele é novo. Arrasta ele por cima do -5, que é o campo vx do mesmo bloco de criar cacto."
-      }
-    },
-    {
-      "key": "fala-campos-da-conta",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Esse bloco tem três pedaços: o espaço da esquerda, o sinal do meio e o espaço da direita. O sinal vem no mais, e hoje não é o mais: abre a listinha e escolhe o menos. No espaço da esquerda escreve -5 por cima do número que já está lá. No espaço da direita arrasta outro um número de a, e nele põe 0 e 1."
-      }
-    },
-    {
-      "key": "video-sortear-velocidade",
-      "plannedVideo": "Título: Menos 5, menos um pouquinho\n\nO gesto das três peças: a Conta matemática arrastada por cima do -5, o sinal trocado de mais para menos na listinha, o -5 escrito no espaço da esquerda, e o segundo um número de a encaixado no espaço da direita com 0 e 1.\n\nDepois a leitura da conta em voz alta, com zoom no bloco, que é o que precisa ser levado daqui: menos 5, menos um número sorteado entre 0 e 1. Se sair 0, o cacto anda a -5. Se sair 1, ele anda a -6.\n\nA única remissão da seção, e ela é para trás e para dentro da própria aula: “o de -6 é aquele que chegou mais longe na experiência de hoje.”\n\nTermina com a partida rodando: agora nem o ritmo nem a velocidade dão para decorar.\n\nFunde video-sortear-velocidade e video-menos-corre-mais.\n\nCorte obrigatório: sai da gravação a explicação dos números negativos, o trecho que ensina que tirar 1 de menos 5 dá menos 6 e que menos 6 é mais rápido. Essa explicação passou a ser conteúdo da cena da seção 2, onde as duas raias mostram a distância percorrida e a conta aparece escrita embaixo de cada uma. Narrar de novo aqui seria descrever o que já foi visto acontecendo.\n\nDuração alvo: 60 a 75 segundos."
-    },
-    {
-      "key": "quiz-final",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "Um sorteio pode produzir o mesmo resultado de novo?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Sim, repetir é possível."
-              },
-              {
-                "id": "b",
-                "label": "Não, sorteio nunca repete."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "A faixa limita os resultados, e ela não exige que sejam sempre diferentes."
-          },
-          {
-            "id": "q2",
-            "prompt": "Por que os limites do x ficam acima de 480?",
-            "choices": [
-              {
-                "id": "b",
-                "label": "Para o cacto virar um ponto no placar."
-              },
-              {
-                "id": "a",
-                "label": "Para o cacto começar fora da tela."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "A borda direita do palco está em x 480, então tudo acima disso nasce fora da vista."
-          },
-          {
-            "id": "q3",
-            "prompt": "Quanto dá -5 menos 1?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "-6, que anda mais rápido para a esquerda que -5."
-              },
-              {
-                "id": "b",
-                "label": "-4, que anda mais rápido para a direita."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Tirar 1 deixa a velocidade mais negativa, e mais negativo é mais rápido para a esquerda."
-          }
-        ]
-      }
-    },
-    {
-      "key": "fala-proxima-aula",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Na Aula 13, a última, essa velocidade vai virar um número que muda sozinho enquanto você joga."
-      }
     }
   ],
   "sections": [
     {
-      "key": "padrao-fixo",
-      "title": "Dá para decorar o seu jogo",
-      "intent": "presentation",
-      "objective": "Ver o percurso se repetir partida após partida, encontrar os três números fixos que causam isso, e conferir o vx em -5 e o relógio em 1,4.",
-      "blockKeys": ["video-padrao-fixo"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-padrao-fixo"]
-      }
-    },
-    {
       "key": "sorteio-tira-na-hora",
-      "title": "O sorteio tira o número na hora",
+      "title": "Compare os resultados de um sorteio",
       "intent": "exploration",
-      "objective": "Sentir o que sai de uma faixa, descobrir que o sorteio pode repetir, e ver que o cacto de -6 chega mais longe que o de -5.",
-      "blockKeys": ["fala-sorteio", "experiencia-random"],
+      "objective": "Sorteie posições até comparar diferenças e repetições; depois compare as duas velocidades.",
+      "blockKeys": [
+        "video-sorteio-tira-na-hora",
+        "fala-sorteio-tira-na-hora",
+        "experiencia-random"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-random"]
+        "blockIds": ["video-sorteio-tira-na-hora", "experiencia-random"]
       }
     },
     {
       "key": "lugar-diferente",
-      "title": "Cada cacto nasce num lugar diferente",
+      "title": "Sorteie onde cada cacto nasce",
       "intent": "application",
-      "objective": "Encaixar o sorteio no campo x do nascimento e ver o espaço entre os cactos mudar sem o relógio mudar.",
-      "blockKeys": ["fala-arrastar-por-cima", "fala-faixa-do-x", "video-sortear-lugar"],
+      "objective": "Sorteie o x de 500 a 560 dentro do único criador de cactos.",
+      "blockKeys": ["video-lugar-diferente", "fala-lugar-diferente"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-lugar-diferente"],
         "projectChecks": [
           {
             "id": "sortear-x",
@@ -1031,16 +1372,16 @@
     },
     {
       "key": "velocidade-propria",
-      "title": "Cada cacto ganha a sua velocidade",
+      "title": "Sorteie uma variação na velocidade",
       "intent": "application",
-      "objective": "Montar a Conta matemática no campo vx, com -5 de um lado e um sorteio de 0 a 1 do outro, e ler a conta em voz alta.",
-      "blockKeys": ["fala-conta-matematica", "fala-campos-da-conta", "video-sortear-velocidade"],
+      "objective": "Use -5 menos um sorteio de 0 a 1 no vx do mesmo criador.",
+      "blockKeys": ["video-velocidade-propria", "fala-velocidade-propria"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-velocidade-propria"],
         "projectChecks": [
           {
             "id": "sortear-x",
@@ -1107,17 +1448,17 @@
       }
     },
     {
-      "key": "teste-e-duas-ideias",
-      "title": "Teste, entregue e guarde as duas ideias",
+      "key": "entrega",
+      "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Jogar algumas partidas e conferir os dois sorteios, entregar o projeto, e guardar o que a Aula 13 vai usar.",
-      "blockKeys": ["video-teste-e-envio", "fala-proxima-aula", "quiz-final", "projeto"],
+      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste-e-envio", "projeto", "quiz-final"],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "sortear-x",

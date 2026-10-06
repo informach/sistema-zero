@@ -1,91 +1,121 @@
-# Nave Contra Asteroides · Dia 3 · A chuva de pedras
+# Nave Contra Asteroides · Aula 5 · Faça o tiro acertar o asteroide
 
-## Resultado pedagógico
+Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](../modulos-nave-contra-asteroides.md).
 
-O projeto chega do Dia 2 com nave, tiros e som. A criança termina o Dia 3 com asteroides
-nascendo acima da tela em x sorteado, um a cada 40 quadros, caindo com vy 3. Cada tiro que
-acerta um asteroide remove apenas o par envolvido, cria explosão e toca o efeito. O Dia 4
-recebe intactos o intervalo 40, y −30, tamanho base 40, vx 0, vy 3 e os apelidos `tiro` e
-`asteroide`. Cores da pedra e da explosão são livres.
+## Resumo
 
-São 10 seções, nove vídeos planejados e três experiências. O quiz fica sozinho na seção 9,
-seguido pela entrega. Em cada conceito, há um vídeo curto que ensina a ideia e uma experiência
-que deixa a criança comprovar a diferença. A fala do Zappy só leva do vídeo à ação. Na
-construção, o vídeo mostra o gesto no Estúdio e o Zappy dá uma tarefa breve, sem repetir a
-narração nem substituir a instrução. O avanço exige o vídeo e a experiência ou os critérios
-do projeto.
+- Estado de entrada: Asteroides nascem a cada 40 quadros, caem e saem do grupo; tiros ainda atravessam as pedras.
+- Resultado da aula: Cada colisão retira somente o tiro e o asteroide envolvidos, com explosão e som.
+- Seções: 4. Vídeos: 3.
 
-No clipe da colisão, a narração acompanha cada um dos quatro blocos do `fazer`: diz de onde ele
-sai, onde entra e quais menus mudar. Ver a montagem na tela não substitui ouvir essas etapas.
+## Diagnóstico e decisão
 
-## Diagnóstico e decisões
+Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimento, sorteio e pontuação.
 
-| Risco didático anterior | Correção |
-|---|---|
-| O relógio era descoberto sem vídeo conceitual; o controle de frequência podia ser confundido com velocidade. | `video-intervalo` parte da avalanche que surgiria se o motor criasse pedra a cada quadro. Compara com o relógio de 40 quadros sem mudar a queda. Em `spawn`, a criança testa 40 e 20. |
-| Sorteio de x e y −30 pareciam detalhes de copiar no bloco. | `video-sorteio` parte do problema de pedras nascerem sempre na mesma coluna; separa posição horizontal sorteada, possível repetição e nascimento acima da tela. Em `random`, a criança sorteia e vê a pedra entrar. |
-| “Cada vez um lugar novo” prometia algo falso, mas exigir um lugar repetido entre 61 possíveis podia prender a criança num sorteio demorado. | O roteiro diz que o sorteio não tem memória. A experiência exige observar dois lugares diferentes e a pedra entrar pela borda; uma repetição aparece na régua quando ocorrer, sem ser condição de conclusão. As pistas deste caso não mencionam o controle de velocidade, que não existe nele. |
-| Grupo inteiro versus participantes de uma colisão ficava só em fala. | `video-apelidos` apresenta a ideia; `collision-pair` permite comparar comandos sobre os grupos inteiros e sobre `tiro`/`asteroide`. O palpite testa a crença inicial útil; a pergunta redundante após a ação foi retirada. |
-| O roteiro mostrava pedras antes de instalar os blocos que as desenham e dizia que o tiro atravessava sem mostrar esse teste. | `video-asteroide` termina com a regra de nascimento pronta e a tela ainda sem pedras. `video-ciclo-asteroides` instala mover, retirar e desenhar, mostra as pedras caindo e só então o tiro atravessando uma delas. |
-| Várias falas do Zappy detalhavam todo o passo a passo. | Uma ponte breve após o vídeo em cada seção. Categoria, subcategoria, bloco e ponto de encaixe ficam no vídeo prático e nos critérios do Estúdio. |
-| Quiz misturado à entrega. | Quiz em seção própria, sem vídeo, com uma frase introdutória e conclusão só pelo quiz. |
+## Triagem dos conceitos
 
-## Percurso por seção
+| Conceito | Como e quando trabalhar | Razão |
+| --- | --- | --- |
+| Grupo e objeto da colisão | collision-pair antes de remover os sprites | Comparar apagar grupos inteiros e retirar apenas o par envolvido. |
+| Colisão | Checagem dentro de A cada quadro do jogo | Este bloco confere encontros a cada quadro; não pertence à área de eventos. |
 
-| # | Seção | Vídeo | Ação e conclusão |
-|---|---|---|---|
-| 1 | Abertura | `video-abertura`: pedras chegando e um acerto | Assistir. Não prometer placar ainda. |
-| 2 | Uma pedra de cada vez | `video-intervalo`: frequência não é velocidade | `experiencia-relogio` (`spawn`, preset `pedra-quadros`): comparar sem relógio, 40 e 20 quadros. Assistir e experimentar. |
-| 3 | Grupo e relógio | `video-grupo-e-relogio`: grupo `asteroides` e relógio vizinho ao motor | Estúdio: grupo em Ao iniciar; `A cada 40 quadros` fora, não dentro, de `A cada quadro do jogo`. Vídeo e critérios. |
-| 4 | De onde vem a pedra | `video-sorteio`: por que sortear x; y −30 como lugar | `experiencia-sorteio` (`random`, preset `pedra-acima`): nascimentos sorteados e entrada pela borda superior. Assistir e experimentar. |
-| 5 | Pedra fora da tela | `video-asteroide`: montagem com x aleatório, y −30, tamanho 40, vx 0, vy 3; tela ainda sem pedras desenhadas | Estúdio: um único criador no relógio de 40 quadros. Vídeo e critérios. |
-| 6 | As pedras caem | `video-ciclo-asteroides`: mover, retirar, desenhar e testar o tiro que atravessa | Estúdio: trio aplicado ao grupo asteroides. A falta da colisão se torna visível. Vídeo e critérios. |
-| 7 | Quem some na trombada | `video-apelidos`: grupo e par não são a mesma coisa | `experiencia-trombada` (`collision-pair`): comparar remover grupo inteiro com remover só os participantes. Assistir e experimentar. |
-| 8 | Faça o acerto | `video-colisao`: evento da colisão e quatro comandos | Estúdio: remover tiro, remover asteroide, explodir o atingido e tocar efeito. Vídeo e critérios. |
-| 9 | Quiz | Nenhum; Zappy introduz em uma frase | Duas questões sobre intervalo e participante. Só o quiz conclui. |
-| 10 | Entrega | `video-fecho`: teste, conferência, envio e ponte para o Dia 4 | Estúdio: critérios de todo o dia; vídeo e projeto concluem. |
+## Proposta final
 
-## Auditoria das experiências
+### Seção 1. Escolha quem sai no acerto
 
-**`spawn`, preset `pedra-quadros`.** O cenário é espacial, sem chão ou cacto. A criança vê
-uma “parede” se a criação acontece a cada quadro, depois deixa nascer pelo menos duas pedras
-com intervalo 40 e compara com 20. A instrução dá tempo suficiente em cada etapa para observar
-o caminho das pedras. É essencial que a cena não acelere individualmente as
-pedras ao mudar o intervalo. A instrução manda observar quantidade e trajetória, sem declarar
-o resultado. O antigo checkpoint repetia a própria comparação e foi retirado. As metas da
-cena devem depender da ação da criança, não do vídeo.
+**Tarefa:** Compare os grupos inteiros com tiro e asteroide. No teste com os apelidos, deixe o tempo passar até as outras duas pedras saírem da tela.
 
-**`random`, preset `pedra-acima`.** A régua do x fica acima da borda, com marca para cada
-sorteio. A criança pode observar posições próximas ou iguais; não há promessa de unicidade nem
-exigência de repetir um lugar específico entre as 61 posições possíveis.
-O y −30 indica nascimento fora da tela e o vy 3 indica queda posterior. A instrução separa
-sortear de deixar o tempo passar até uma pedra entrar. O checkpoint antigo cobrava a mesma
-inferência sobre repetição e foi retirado para evitar uma pergunta extra depois de observar.
+**Blocos na página:** video-apelidos → fala-trombada → experiencia-trombada.
 
-**`collision-pair`.** Três tiros e três pedras; apenas um par está alinhado. A primeira
-tentativa remove o grupo inteiro, a segunda usa os apelidos dos participantes. A criança
-compara os dois contadores e observa que os demais objetos ficam. O palpite prévio é
-justificado porque testa a concepção “grupo = peça atingida”, mas não bloqueia a manipulação.
-A pergunta final redundante foi retirada. A experiência só se completa após as duas
-configurações e a comparação com os demais preservados.
+**Zappy na página (não gravar):** Compare os grupos inteiros com tiro e asteroide. No teste com os apelidos, deixe o tempo passar até as outras duas pedras saírem da tela.
 
-Em todas as experiências, o contexto visual (HUD e cena) aparece antes; a instrução fica
-próxima dos controles, abaixo ou à direita conforme a largura. No palpite, só cena, pergunta
-e alternativas ficam visíveis. A criança deve conseguir agir e ver a consequência sem
-rolagem entre controles e resultado.
+**Experiência existente:** `collision-pair`. Teste a colisão com tiros e asteroides, os grupos inteiros. Volte ao começo e repita com tiro e asteroide, os apelidos. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
-## Gravação e continuidade
+### Seção 2. Programe o acerto
 
-Os três vídeos novos (`video-intervalo`, `video-sorteio`, `video-apelidos`) são planos de
-gravação, não arquivos de mídia já publicados. O [roteiro](nave-contra-asteroides-dia-3.roteiro.md) detalha
-fala, enquadramento e gesto dos nove clipes. Na gravação dos práticos, mostrar o nome real
-do bloco, as três gavetas da paleta e o ponto de encaixe. Não reutilizar “Tocar som de
-explosão”: o nome atual é `Tocar efeito`, opção explosão. A explosão está em Jogo 2D ›
-Desenho e efeitos › Partículas. Evitar contagem de seis passos e não convidar a mudar
-o intervalo 40 ou vy 3, que o Dia 4 toma como dados.
+**Tarefa:** Escolha os grupos e os apelidos. Retire o par atingido e adicione explosão e som.
 
-A transição central do dia é verificável no jogo da criança: antes do bloco de colisão,
-o tiro atravessa o asteroide; depois, só o tiro e o asteroide atingidos desaparecem, com
-explosão e som, enquanto os outros continuam. O vídeo final deve mostrar as duas situações
-relevantes de teste: acertar uma pedra e disparar no vazio. O envio só vem depois da
-conferência do projeto salvo. A introdução e o certificado do Desafio do Primeiro Jogo não fazem parte deste curso.
+**Blocos na página:** video-colisao → fala-colisao.
+
+**Zappy na página (não gravar):** Escolha os grupos e os apelidos. Retire o par atingido e adicione explosão e som.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+
+- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
+- Na colisão tiros × asteroides, remova o tiro do grupo tiros.
+- Na mesma colisão, remova o asteroide e então solte a explosão.
+- Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
+
+### Seção 3. Confira o que você construiu
+
+**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+
+**Blocos na página:** fala-quiz-final → quiz.
+
+**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+
+**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
+
+### Seção 4. Confira os acertos e envie
+
+**Tarefa:** Acerte pedras de posições diferentes e confira se as outras continuam caindo.
+
+**Blocos na página:** video-fecho → fala-entrega → projeto.
+
+**Zappy na página (não gravar):** Acerte pedras de posições diferentes e confira se as outras continuam caindo.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+
+- No evento Espaço, use Tocar efeito e escolha tiro.
+- No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.
+- Mantenha apenas um comando de criar tiro.
+- Crie o grupo asteroides em Ao iniciar.
+- Use A cada 40 quadros como vizinho de A cada quadro do jogo.
+- Os dois relógios são vizinhos em Enquanto estiver rodando.
+- No relógio, crie asteroide com x sorteado, y −30, tamanho 40, vx 0 e vy 3.
+- Mantenha um único comando de criar asteroide.
+- Mova asteroides antes de limpar o grupo.
+- Retire os asteroides que saem e depois desenhe esse grupo.
+- Desenhe o grupo asteroides a cada quadro.
+- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
+- Na colisão tiros × asteroides, remova o tiro do grupo tiros.
+- Na mesma colisão, remova o asteroide e então solte a explosão.
+- Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
+
+## Blocos disponíveis
+
+| Bloco | Caminho na paleta |
+| --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |
+| Mover o sprite com as setas <- -> (velocidade ) | Jogo 2D → Movimento → Movimentos prontos |
+| o centro x do sprite | Jogo 2D → Movimento → Posição e tamanho |
+| Manter o sprite dentro da tela | Jogo 2D → Movimento → Bordas e rebatidas |
+| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |
+| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |
+| Criar nave em x y largura altura , cor do corpo cor das asas | Jogo 2D → Kits prontos → Espaço |
+| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |
+| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |
+| A cada quadros | Jogo 2D → Tempo → Quadros e intervalos |
+| Soltar explosão no sprite cor | Jogo 2D → Desenho e efeitos → Partículas |
+| Para cada colisão entre os grupos e | Jogo 2D → Colisões → Encostar e bloquear |
+| Quando apertar a tecla | Jogo 2D → Controles → Teclado, ações e toque |
+| Tocar efeito | Jogo 2D → Som → Efeitos prontos |
+| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |
+| um x aleatório na tela | Jogo 2D → Sorteios → Números e posições |
+| Tirar o sprite do grupo | Jogo 2D → Grupos → Participação e limpeza |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |
+| No grupo criar um asteroide em x y tamanho cor com vx vy | Jogo 2D → Kits prontos → Espaço |
+| Criar tiro no grupo em x y raio cor vx vy | Jogo 2D → Grupos → Criar e percorrer |
+| a posição y do sprite | Jogo 2D → Movimento → Posição e tamanho |
+| Desenhar fundo de estrelas (velocidade ) | Jogo 2D → Cenários → Fundos |
+| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |
+| Número | Programação → 🔣 Valores |
+
+## Continuidade e produção
+
+Aula 5 na cadeia `nave-contra-asteroides`. Entrada: etapa 4; saída: etapa 5 de `qa/nave-contra-asteroides-etapas.ts`. Os cinco marcos originais e o código do jogo permanecem preservados.
+
+A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.

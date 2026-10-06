@@ -2,21 +2,102 @@
   "version": 5,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-10",
-  "title": "A caixa que decide a batida",
+  "title": "Ajuste a área da batida",
   "retireBlockKeys": [
     "video-abertura-editorial",
-    "video-ligar-raio-x",
     "video-desenho-e-area",
     "experiencia-comparar-area",
     "video-tirar-raio-x",
     "fala-tirar-raio-x",
     "fala-entrega-editorial",
-    "video-fecho-editorial"
+    "video-fecho-editorial",
+    "video-teste-e-envio",
+    "video-batida-injusta",
+    "fala-campo-do-raio-x",
+    "video-raio-x",
+    "fala-cena-hitbox",
+    "fala-campos-do-ajuste",
+    "video-dial",
+    "fala-dial",
+    "fala-escolha-do-dial",
+    "quiz-final"
   ],
   "blocks": [
     {
-      "key": "video-teste-e-envio",
-      "plannedVideo": "Título: Raspar, bater e tirar o raio-X\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 60 a 75 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. O único gesto de montagem aqui é a retirada do instrumento, e ela vem depois do teste. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, nesta ordem:\n\n1. O clique dentro da área do jogo, e uma rodada jogada com o contorno da área de colisão ainda à vista.\n2. Uma passagem raspando num cacto, sem perder. Com o contorno ligado dá para ver o vão entre o desenho e a caixa, e é esse vão que a aula ajustou.\n3. Uma batida de propósito, para mostrar que a colisão continua funcionando depois do ajuste.\n4. A retirada do instrumento: o Mostrar a caixa de colisão arrastado para a lixeira. Ele é o último bloco de lá, então nada vem junto com ele. Enquadrar a lista antes e depois, para ficar visível que só ele saiu.\n5. Uma última rodada curta, já sem o contorno na tela, com a mesma batida acontecendo.\n\nConferir junto, olhando a tela: o ajuste continua no Ao iniciar, onde sempre esteve, e nenhum contorno aparece mais em volta do Dino.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: o raio-X entrou, mostrou o que estava escondido, e saiu. Você já tinha feito isso uma vez, com o medidor da Aula 6. Lembra disso: sempre que uma colisão do seu jogo estiver estranha, liga o raio-X e olha. É assim que se investiga."
+      "key": "video-caixa-decide",
+      "plannedVideo": "Título: Compare a área com o desenho\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-caixa-decide",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Mude apenas a área com o cacto parado; depois compare o contato com 40%."
+      }
+    },
+    {
+      "key": "experiencia-hitbox",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare a área com o desenho",
+        "instructions": "Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU. Observe os desenhos nesse momento. Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo.",
+        "hints": [],
+        "required": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "hitbox",
+          "cenario": "corre-dino"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-ligar-raio-x",
+      "plannedVideo": "Título: Mostre a área no seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-ligar-raio-x",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Mostre o contorno da área de dino depois do desenho."
+      }
+    },
+    {
+      "key": "video-ajustar-area",
+      "plannedVideo": "Título: Ajuste a área sem mudar o desenho\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-ajustar-area",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Ajuste somente a área de colisão, mantendo o desenho em tamanho 64."
+      }
+    },
+    {
+      "key": "video-retirar-contorno",
+      "plannedVideo": "Título: Retire o contorno de teste\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-retirar-contorno",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Retire apenas o desenho do contorno e conserve o ajuste da área."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+      }
     },
     {
       "key": "projeto",
@@ -62,22 +143,357 @@
           "sz_val_number",
           "sz_val_text"
         ],
+        "showcase": {
+          "enabled": false,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-corre-dino-10",
+          "id": "manifest-dino-etapa-9",
           "name": "Corre, Dino!",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": ""
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos apertando espaço\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  const cactos = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onJump(() => dino, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"dino-ref-50\");\n  SZGame2D.onAnyInput(() => {\n      if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.restart();\n    }\n    }, \"dino-ref-52\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.applyGravity(dino);\n      SZGame2D.controlDino(dino, ctx, 14);\n      SZGame2D.drawSprite(ctx, dino);\n      SZGame2D.updateGroup(cactos);\n      SZGame2D.drawGroup(ctx, cactos);\n      SZGame2D.overlapSpriteGroup(() => dino, cactos, (cacto) => {\n        SZGame2D.explodeSprite(cacto, \"#ffab00\");\n        SZGame2D.shake(ctx, 8);\n        SZGame2D.playFx(\"gameover\");\n        SZGame2D.setScene(\"fim\");\n      });\n      SZGame2D.pruneOffscreen(ctx, cactos, 40, (cacto) => {\n\n      });\n    } else if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.showScreen(ctx, \"Corre, Dino!\", \"Pule os cactos!\", \"Aperte qualquer tecla ou toque na tela para começar\", \"#102030\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.showScreen(ctx, \"Fim de jogo\", \"Boa tentativa!\", \"Aperte qualquer tecla ou toque para jogar de novo\", \"#102030\");\n    }\n  }, \"dino-ref-12\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        SZGame2D.spawnObstacle(cactos, ctx, { type: \"cactus\", x: 560, size: 44, vx: -5 });\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [],
-          "ir": null,
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "dino-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 270,
+                    "__id": "dino-ref-3"
+                  },
+                  "bg": "#81d4fa",
+                  "__id": "dino-ref-1"
+                },
+                {
+                  "type": "g2d:setStageDescription",
+                  "description": "Corra com o dino e pule os cactos apertando espaço",
+                  "__id": "dino-ref-4"
+                },
+                {
+                  "type": "g2d:createDino",
+                  "varName": "dino",
+                  "x": {
+                    "type": "num",
+                    "value": 110,
+                    "__id": "dino-ref-6"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 150,
+                    "__id": "dino-ref-7"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 64,
+                    "__id": "dino-ref-8"
+                  },
+                  "color": "#8b5cf6",
+                  "__id": "dino-ref-5"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "cactos",
+                  "__id": "dino-ref-9"
+                },
+                {
+                  "type": "g2d:setScene",
+                  "name": "inicio",
+                  "__id": "dino-ref-10"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onJump",
+                  "spriteVar": "dino",
+                  "body": [
+                    {
+                      "type": "g2d:playFx",
+                      "fx": "jump",
+                      "__id": "dino-ref-51"
+                    }
+                  ],
+                  "__id": "dino-ref-50"
+                },
+                {
+                  "type": "g2d:onAnyInput",
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "inicio",
+                        "__id": "dino-ref-54"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:setScene",
+                          "name": "jogando",
+                          "__id": "dino-ref-55"
+                        }
+                      ],
+                      "elseif": [
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "fim",
+                            "__id": "dino-ref-56"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:restart",
+                              "__id": "dino-ref-57"
+                            }
+                          ]
+                        }
+                      ],
+                      "__id": "dino-ref-53"
+                    }
+                  ],
+                  "__id": "dino-ref-52"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "dino-ref-13"
+                    },
+                    {
+                      "type": "g2d:forest",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "dino-ref-15"
+                      },
+                      "__id": "dino-ref-14"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-17"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:applyGravity",
+                          "spriteVar": "dino",
+                          "__id": "dino-ref-18"
+                        },
+                        {
+                          "type": "g2d:controlDino",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "jump": {
+                            "type": "num",
+                            "value": 14,
+                            "__id": "dino-ref-20"
+                          },
+                          "__id": "dino-ref-19"
+                        },
+                        {
+                          "type": "g2d:drawSprite",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-21"
+                        },
+                        {
+                          "type": "g2d:updateGroup",
+                          "groupVar": "cactos",
+                          "__id": "dino-ref-22"
+                        },
+                        {
+                          "type": "g2d:drawGroup",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-23"
+                        },
+                        {
+                          "type": "g2d:onSpriteGroupOverlap",
+                          "spriteVar": "dino",
+                          "groupVar": "cactos",
+                          "itemName": "cacto",
+                          "body": [
+                            {
+                              "type": "g2d:explode",
+                              "spriteVar": "cacto",
+                              "color": "#ffab00",
+                              "__id": "dino-ref-25"
+                            },
+                            {
+                              "type": "g2d:shake",
+                              "ctxVar": "ctx",
+                              "intensity": {
+                                "type": "num",
+                                "value": 8,
+                                "__id": "dino-ref-27"
+                              },
+                              "__id": "dino-ref-26"
+                            },
+                            {
+                              "type": "g2d:playFx",
+                              "fx": "gameover",
+                              "__id": "dino-ref-28"
+                            },
+                            {
+                              "type": "g2d:setScene",
+                              "name": "fim",
+                              "__id": "dino-ref-29"
+                            }
+                          ],
+                          "__id": "dino-ref-24"
+                        },
+                        {
+                          "type": "g2d:pruneOffscreen",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "itemName": "cacto",
+                          "body": [],
+                          "__id": "dino-ref-30"
+                        }
+                      ],
+                      "elseif": [
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "inicio",
+                            "__id": "dino-ref-31"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:showScreen",
+                              "ctxVar": "ctx",
+                              "title": {
+                                "type": "str",
+                                "value": "Corre, Dino!",
+                                "__id": "dino-ref-33"
+                              },
+                              "subtitle": {
+                                "type": "str",
+                                "value": "Pule os cactos!",
+                                "__id": "dino-ref-34"
+                              },
+                              "hint": {
+                                "type": "str",
+                                "value": "Aperte qualquer tecla ou toque na tela para começar",
+                                "__id": "dino-ref-35"
+                              },
+                              "bg": "#102030",
+                              "__id": "dino-ref-32"
+                            }
+                          ]
+                        },
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "fim",
+                            "__id": "dino-ref-36"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:showScreen",
+                              "ctxVar": "ctx",
+                              "title": {
+                                "type": "str",
+                                "value": "Fim de jogo",
+                                "__id": "dino-ref-38"
+                              },
+                              "subtitle": {
+                                "type": "str",
+                                "value": "Boa tentativa!",
+                                "__id": "dino-ref-39"
+                              },
+                              "hint": {
+                                "type": "str",
+                                "value": "Aperte qualquer tecla ou toque para jogar de novo",
+                                "__id": "dino-ref-40"
+                              },
+                              "bg": "#102030",
+                              "__id": "dino-ref-37"
+                            }
+                          ]
+                        }
+                      ],
+                      "__id": "dino-ref-16"
+                    }
+                  ],
+                  "__id": "dino-ref-12"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 1.4,
+                    "__id": "dino-ref-42"
+                  },
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-44"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:spawnObstacle",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "shape": "cactus",
+                          "x": {
+                            "type": "num",
+                            "value": 560,
+                            "__id": "dino-ref-46"
+                          },
+                          "size": {
+                            "type": "num",
+                            "value": 44,
+                            "__id": "dino-ref-48"
+                          },
+                          "vx": {
+                            "type": "num",
+                            "value": -5,
+                            "__id": "dino-ref-47"
+                          },
+                          "__id": "dino-ref-45"
+                        }
+                      ],
+                      "__id": "dino-ref-43"
+                    }
+                  ],
+                  "__id": "dino-ref-41"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
@@ -599,202 +1015,35 @@
           ]
         }
       }
-    },
-    {
-      "key": "video-batida-injusta",
-      "plannedVideo": "Título: A batida que você não deu\n\nUma partida de verdade no jogo do fim da aula 9, jogada até o caso acontecer na tela. O dino passa perto de um cacto, os dois desenhos não se tocam, e a partida acaba.\n\nO quadro congela no instante da batida e a imagem aproxima o vão entre o bico do cacto e a barriga do dino.\n\nFala: “Olha de novo, bem devagar. O dino não encostou no cacto. Tem um espaço entre os dois, dá para ver. E mesmo assim a partida acabou. O jogo contou uma batida que não teve. Tem uma coisa acontecendo no seu jogo que você ainda não consegue enxergar. Hoje a gente enxerga, e depois arruma.”\n\nHonestidade da dor: a gravação joga até o caso sair sozinho. O desenho do dino tem o rabo para trás, o focinho para frente e as perninhas embaixo, e a caixa é um retângulo, então sobra espaço vazio nos cantos. Proibido montar o efeito na edição: o que a tela mostra tem que ter acontecido na partida.\n\nDuração alvo: 25 a 35 segundos."
-    },
-    {
-      "key": "fala-ligar-raio-x",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Em Jogo 2D, Colisões, Área de contato, pega o bloco Mostrar a caixa de colisão do sprite. Arrasta para dentro do Se o estado do jogo é jogando e solta no fim de tudo, logo abaixo do Tirar do grupo cactos quem sair da tela, que hoje é o último bloco de lá."
-      }
-    },
-    {
-      "key": "fala-campo-do-raio-x",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Esse bloco tem um campo só, que é o sprite. Abre a listinha e escolhe o dino. Na mesma gaveta, logo acima dele, mora um bloco comprido que você vai usar daqui a pouco. São dois blocos diferentes: um desenha a caixa, o outro muda o tamanho dela. Agora é só o de desenhar."
-      }
-    },
-    {
-      "key": "video-raio-x",
-      "plannedVideo": "Título: O contorno que aparece em volta do dino\n\nO gesto, e depois a revelação. Clicar na área do jogo, apertar Enter, e o contorno cor de rosa aparece em volta do dino.\n\nDepois o clipe para a partida com o dino parado e aproxima o contorno, apontando um vazio de cada vez: em cima da cabeça, na frente do focinho, e embaixo, entre os pés.\n\nFala que fecha: “O jogo não olha para o desenho do dinossauro. Ele olha para esse retângulo. Para o computador, o seu dino é essa caixa.”\n\nFunde os dois clipes de hoje (video-ligar-raio-x e video-desenho-e-area): montar o instrumento e olhar o que ele revelou é um movimento só. A observação dos cantos vazios deixa de ser clipe separado e vira o segundo tempo deste.\n\nTrocar na fala o endereço antigo pelo atual: Jogo 2D, Colisões, Área de contato.\n\nDuração alvo: 60 a 70 segundos."
-    },
-    {
-      "key": "fala-cena-hitbox",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "No seu jogo o cacto vem correndo e não dá para segurar ele no lugar exato para medir. Aqui dá. O cacto anda um toque de cada vez, e o tamanho da área do Dino é um número que você escolhe. A área começa igual à do seu jogo agora."
-      }
-    },
-    {
-      "key": "experiencia-hitbox",
-      "content": {
-        "kind": "interactive",
-        "title": "Onde a batida acontece?",
-        "instructions": "Traga o cacto um toque de cada vez até aparecer BATEU. Depois deixe o cacto no lugar e mude só o tamanho da área do Dino, para baixo e para cima.",
-        "hints": [
-          "Aproxime o cacto um toque de cada vez e olhe os dois desenhos quando aparecer BATEU.",
-          "Deixe o cacto onde bateu. Mude só a área do Dino.",
-          "Agora encoste o cacto no desenho do Dino e leve a área para 40%. Olhe se aparece BATEU."
-        ],
-        "required": true,
-        "prediction": {
-          "context": {
-            "label": "A área que o jogo usa",
-            "explanation": "A área do Dino está aberta em 100%, do mesmo tamanho que a do seu jogo antes do conserto. O cacto vai chegando um toque de cada vez."
-          },
-          "prompt": "Com esta área grande, quando vai aparecer BATEU?",
-          "choices": [
-            {
-              "id": "antes",
-              "label": "Antes de os desenhos se encostarem"
-            },
-            {
-              "id": "no-encosto",
-              "label": "Só quando os desenhos se encostarem",
-              "shows": "Olhe o contorno pontilhado do Dino, e não o desenho dele: o BATEU aparece quando os dois contornos se tocam."
-            }
-          ],
-          "correctChoiceId": "antes"
-        },
-        "activity": {
-          "type": "experimentation",
-          "scene": "hitbox",
-          "cenario": "corre-dino"
-        }
-      }
-    },
-    {
-      "key": "fala-ajustar-area",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Em Jogo 2D, Colisões, Área de contato, na mesma gaveta de onde veio o raio-X, pega o bloco comprido, o Usar área de colisão de tanto por cento do tamanho para o sprite. Arrasta para dentro do Ao iniciar e encaixa no fim de tudo, logo abaixo do Mudar o estado do jogo para inicio, que hoje é o último bloco de lá."
-      }
-    },
-    {
-      "key": "fala-campos-do-ajuste",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Ele tem dois campos. O primeiro é a porcentagem, e já vem 80, que é o que a gente quer agora, então deixa como veio. No segundo, que é o sprite, escolhe o dino. O dino entra em toda batida do jogo, e o cacto é um entre muitos. Ajustando o dino, você arruma todas as batidas de uma vez."
-      }
-    },
-    {
-      "key": "video-ajustar-area",
-      "plannedVideo": "Título: A caixa encolhe, o dino continua igual\n\nO gesto de encaixar o bloco, e depois três observações em ordem, com o raio-X ainda ligado.\n\n1. A caixa encolhe e fica grudada no dino.\n2. O desenho do dino continua do mesmo tamanho.\n3. Na partida, o dino passa raspando num cacto de propósito e escapa.\n\nManter a explicação de por que o bloco mora no Ao iniciar: “isso é coisa de preparação, acontece uma vez, quando o jogo liga. Aqui dentro a ordem não muda nada, só uma coisa importa: ele vem depois do Criar dinossauro, senão ele ajustaria um dino que ainda não existe.”\n\nTrocar na fala o rótulo antigo “Ir para a tela inicio” pelo atual, Mudar o estado do jogo para inicio.\n\nDuração alvo: 55 a 65 segundos."
-    },
-    {
-      "key": "video-dial",
-      "plannedVideo": "Título: O botão que decide o quanto o jogo perdoa\n\nOs dois extremos conduzidos pela narração, com o raio-X ligado, e uma partida curta em cada um.\n\nEm 40, a caixa fica minúscula no meio do dino, o cacto passa por dentro dele e não acontece nada. Em 100, a caixa volta ao tamanho cheio e voltam as batidas do começo da aula. Depois o número volta para a faixa boa.\n\nCuidado de escopo: 80 é a escolha desta versão do Corre Dino, não uma regra universal de justiça. A fala diz “o meu fica em 80”, nunca “o certo é 80”.\n\nO clipe vem de video-tirar-raio-x, primeira metade. A retirada do instrumento sai daqui e vira instrução de teste na entrega.\n\nDuração alvo: 60 a 70 segundos."
-    },
-    {
-      "key": "fala-dial",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Esse número tem nome entre quem cria jogos: dial de dificuldade, que é como um botão de ajuste. Para coisa que machuca o jogador, área menor que 100 deixa o jogo mais justo, e isso vale na grande maioria dos jogos que você vai fazer. Para coisa que o jogador quer pegar, é o contrário: área maior que 100 deixa mais fácil de alcançar."
-      }
-    },
-    {
-      "key": "fala-escolha-do-dial",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Agora põe um número entre 70 e 85 e joga. O meu fica em 80, e o seu pode ser outro. A conferência aceita qualquer número dessa faixa, então escolhe o que o seu jogo pedir."
-      }
-    },
-    {
-      "key": "quiz-final",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "Ao ajustar a área para 80%, o desenho precisa encolher?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Não, a área de colisão e o desenho são coisas diferentes."
-              },
-              {
-                "id": "b",
-                "label": "Sim, são sempre a mesma coisa."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O ajuste atua na geometria da detecção, e o desenho fica do mesmo tamanho."
-          },
-          {
-            "id": "q2",
-            "prompt": "Para uma coisa que machuca o jogador, uma área menor que 100% deixa o jogo:",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Mais justo."
-              },
-              {
-                "id": "b",
-                "label": "Mais difícil."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Área menor perdoa mais: a batida só conta quando o encosto está perto do que o olho vê."
-          },
-          {
-            "id": "q3",
-            "prompt": "Apagar o desenho da área apaga o ajuste?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Não, o ajuste continua em Ao iniciar."
-              },
-              {
-                "id": "b",
-                "label": "Sim, o instrumento é a própria regra."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Um bloco mostra, o outro configura."
-          }
-        ]
-      }
     }
   ],
   "sections": [
     {
-      "key": "batida-injusta",
-      "title": "A batida que você não deu",
-      "intent": "presentation",
-      "objective": "Ver o jogo contar uma batida que não teve encosto, antes de qualquer bloco novo aparecer.",
-      "blockKeys": ["video-batida-injusta"],
+      "key": "caixa-decide",
+      "title": "Compare a área com o desenho",
+      "intent": "exploration",
+      "objective": "Mude apenas a área com o cacto parado; depois compare o contato com 40%.",
+      "blockKeys": ["video-caixa-decide", "fala-caixa-decide", "experiencia-hitbox"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-batida-injusta"]
+        "blockIds": ["video-caixa-decide", "experiencia-hitbox"]
       }
     },
     {
       "key": "ligar-raio-x",
-      "title": "Ligue o raio-X",
+      "title": "Mostre a área no seu jogo",
       "intent": "application",
-      "objective": "Pôr na tela do seu jogo a forma que a colisão usa, e olhar os cantos vazios no seu dino.",
-      "blockKeys": ["fala-ligar-raio-x", "fala-campo-do-raio-x", "video-raio-x"],
+      "objective": "Mostre o contorno da área de dino depois do desenho.",
+      "blockKeys": ["video-ligar-raio-x", "fala-ligar-raio-x"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-ligar-raio-x"],
         "projectChecks": [
           {
             "id": "raio-x",
@@ -810,34 +1059,20 @@
             }
           }
         ]
-      }
-    },
-    {
-      "key": "caixa-decide",
-      "title": "É a caixa que decide, não o desenho",
-      "intent": "exploration",
-      "objective": "Provar que o tamanho da área muda o veredito da batida sem mexer em mais nada, com o cacto parado onde você quiser.",
-      "blockKeys": ["fala-cena-hitbox", "experiencia-hitbox"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["experiencia-hitbox"]
       }
     },
     {
       "key": "ajustar-area",
-      "title": "Deixe a caixa do tamanho do seu dino",
+      "title": "Ajuste a área sem mudar o desenho",
       "intent": "application",
-      "objective": "Encaixar o ajuste da área no Ao iniciar com o raio-X ligado, e ver a caixa encolher enquanto o desenho fica igual.",
-      "blockKeys": ["fala-ajustar-area", "fala-campos-do-ajuste", "video-ajustar-area"],
+      "objective": "Ajuste somente a área de colisão, mantendo o desenho em tamanho 64.",
+      "blockKeys": ["video-ajustar-area", "fala-ajustar-area"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-ajustar-area"],
         "projectChecks": [
           {
             "id": "colisao-area",
@@ -881,17 +1116,17 @@
       }
     },
     {
-      "key": "dial-dificuldade",
-      "title": "O dial de dificuldade",
-      "intent": "explanation",
-      "objective": "Nomear o número que você acabou de escrever e escolher o seu, dentro da faixa de 70 a 85.",
-      "blockKeys": ["video-dial", "fala-dial", "fala-escolha-do-dial"],
+      "key": "retirar-contorno",
+      "title": "Retire o contorno de teste",
+      "intent": "application",
+      "objective": "Retire apenas o desenho do contorno e conserve o ajuste da área.",
+      "blockKeys": ["video-retirar-contorno", "fala-retirar-contorno"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-dial"],
+        "blockIds": ["video-retirar-contorno"],
         "projectChecks": [
           {
             "id": "colisao-area",
@@ -903,6 +1138,15 @@
               "fields": {
                 "SPRITE": "dino"
               }
+            }
+          },
+          {
+            "id": "sem-raio-x",
+            "label": "Retire o desenho provisório da área de colisão.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_hitbox",
+              "count": 0
             }
           },
           {
@@ -922,17 +1166,17 @@
       }
     },
     {
-      "key": "entrega-e-fecho",
-      "title": "Teste, guarde o raio-X e entregue",
+      "key": "entrega",
+      "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Área de colisão do dino entre 70 e 85, desenho do personagem preservado, instrumento retirado e projeto enviado.",
-      "blockKeys": ["video-teste-e-envio", "quiz-final", "projeto"],
+      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste-e-envio", "projeto", "quiz-final"],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "colisao-area",

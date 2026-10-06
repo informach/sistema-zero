@@ -1,91 +1,174 @@
-# Nave Contra Asteroides · Dia 5 · O jogo ganha começo e fim
+# Nave Contra Asteroides · Aula 9 · Termine e recomece a partida
 
-## Resultado pedagógico
+Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](../modulos-nave-contra-asteroides.md).
 
-O Dia 5 fecha o jogo dos quatro dias anteriores. A criança monta os momentos `inicio`,
-`jogando`, `vitoria` e `fim`, protege o motor, o relógio e o tiro com a pergunta `jogando`,
-desenha três telas, decide vitória por pontos ≥ `alvo` (26), decide derrota quando acabam
-as vidas e usa Enter para começar ou reiniciar. O jogo só compartilha depois do envio;
-publicar continua opcional.
+## Resumo
 
-São 12 seções, 11 vídeos planejados e duas experiências. A antiga seção com dois vídeos
-foi separada: primeiro a visão dos quatro momentos, depois a montagem de `alvo` e `inicio`.
-O fechamento deixou de ser um segundo vídeo na entrega e virou o fim do clipe de teste.
-Quiz em seção própria antes da entrega. Em cada exploração, vídeo + experiência são
-necessários; em cada prática, vídeo + critérios de projeto. Uma ponte breve do Zappy
-aparece depois do vídeo para conduzir à ação, sem copiar a instrução da experiência.
+- Estado de entrada: Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.
+- Resultado da aula: Jogo completo original: alvo 26, vitória, derrota, retorno à abertura e nova partida.
+- Seções: 6. Vídeos: 5.
 
-Nos vídeos práticos, repetir o caminho completo mesmo quando a peça é igual à anterior:
-categoria, seção, bloco, encaixe e menu. A criança não precisa deduzir o segundo e o terceiro
-ramo de uma frase como "a receita é a mesma". A duração dos clipes de montagem foi ampliada
-para caber essa condução sem acelerar os gestos.
+## Diagnóstico e decisão
 
-## Decisões críticas
+Amplia a abertura já testada. As regras de final e o reinício são construídos em etapas distintas; a publicação tem instruções completas.
 
-| Risco | Direção aplicada |
-|---|---|
-| Quatro momentos, constante e montagem dividiam uma seção com dois vídeos e três falas. | `video-telas` parte do percurso conhecido de abrir, jogar, ganhar ou perder antes de nomear os quatro momentos. `video-alvo` recupera a caixinha lacrada do roteiro original e mostra `alvo=26` e `inicio` numa seção prática própria. |
-| O estado do jogo era apresentado sem vídeo conceitual. | `video-estado-do-jogo` separa “o relógio tocou” de “a ação foi autorizada”. `game-state` permite comparar criação fora da pergunta, dentro da pergunta no início e dentro dela jogando. |
-| A longa montagem em `Se` podia parecer mera movimentação de blocos. | O vídeo prático mostra sem corte as quatro etapas e mantém zoom no contorno de `então`; a experiência anterior já mostrou por que a pergunta importa. |
-| O reinício era usado no Enter antes de a criança entender sua diferença para trocar de tela. | `video-reiniciar` e a cena `restart` agora vêm antes da montagem do Enter: primeiro a criança compara os dois retornos, depois usa Reiniciar nos finais. O checkpoint redundante saiu porque o quiz final já pergunta pelo retorno à abertura. |
-| Dois vídeos na entrega e quiz misturado ao envio. | `video-ciclo-completo` contém teste, envio, compartilhamento opcional e fecho. Quiz vem antes e sozinho. |
+## Triagem dos conceitos
 
-## Percurso por seção
+| Conceito | Como e quando trabalhar | Razão |
+| --- | --- | --- |
+| Constante e comparação | Meta de 26 pontos no projeto | A constante guarda uma meta que não muda durante a partida; comparar o valor atual com ela. |
+| Finais | Duas condições dentro da partida e dois ramos de tela | Conservar a ordem original: verificar vitória e depois derrota. |
+| Reinício | restart antes de ampliar Enter | Trocar só o estado não refaz pontos, vidas e grupos. |
+| Conclusão | Quiz formativo e teste do ciclo | Ganhar, perder, recomeçar e enviar; publicação opcional no Mural. |
 
-| # | Seção | Vídeo | Ação e critério |
-|---|---|---|---|
-| 1 | Abertura | `video-abertura` apresenta o jogo completo | Assistir. |
-| 2 | Os quatro momentos | `video-telas` mostra primeiro um percurso familiar de jogo, depois quatro cartões e transições | Assistir; ainda não montar o projeto. |
-| 3 | Meta e primeiro momento | `video-alvo` mostra a constante e o estado inicial | Estúdio: `alvo=26` e `inicio` em Ao iniciar. Vídeo + critérios. |
-| 4 | O relógio pode agir agora? | `video-estado-do-jogo` explica estado guardado e condição | `experiencia-estado` (`game-state`): comparar fora da pergunta, esperando no início e agindo na partida. Vídeo + experiência. |
-| 5 | Embrulhe a partida | `video-embrulhar` mostra a cadeia entrando no `então` | Estúdio: `Se jogando` com motor inteiro, começando por Limpar. Vídeo + critérios. |
-| 6 | Relógio e tiro perguntam | `video-relogio-e-tiro` aplica o mesmo padrão em dois lugares | Estúdio: criar asteroide e disparar só durante `jogando`. Vídeo + critérios. |
-| 7 | O jogo decide o fim | `video-finais` monta vitória e derrota em sequência | Estúdio: pontos ≥ alvo leva a `vitoria`, vidas esgotadas levam a `fim`. Vídeo + critérios. |
-| 8 | Três telas | `video-mostrar-telas` mostra abertura, vitória e derrota | Estúdio: ramos `inicio`, `vitoria` e `fim` com dicas fiéis ao Enter. Vídeo + critérios. |
-| 9 | Jogue outra vez | `video-reiniciar` explica troca de tela versus reinício completo | `experiencia-reiniciar` (`restart`): comparar estados após as duas escolhas antes de usar Reiniciar no Estúdio. Vídeo + experiência. |
-| 10 | O Enter comanda | `video-enter` mostra três respostas para a tecla | Estúdio: `inicio → jogando`; `fim` e `vitoria` reiniciam. Vídeo + critério. |
-| 11 | Quiz | Sem vídeo; uma frase do Zappy | Duas questões: proteger o evento da barra de espaço e voltar à abertura após reiniciar. |
-| 12 | Entrega | `video-ciclo-completo` mostra teste, envio, compartilhar opcional e fecho | Estúdio e verificação do projeto inteiro; vídeo + projeto. |
+## Proposta final
 
-## Auditoria das experiências
+### Seção 1. Defina quando ganhar e perder
 
-**`game-state`.** A cena mostra que o relógio continua tocando em `inicio`, mas a pergunta
-impede a criação. A criança observa três chamadas com Criar pedra fora da condição
-(`outside`), depois três chamadas com a peça dentro de `Se jogando` ainda no menu
-(`waiting`), e três após começar (`playing`). Contadores de chamadas e nascimentos
-devem estar visíveis ao lado da cena para que “tocou” e “criou” não se confundam. O
-vídeo ensina a lógica abstrata; a instrução propõe o contraste sem dizer de
-antemão quantas pedras haverá. O checkpoint antigo repetia o resultado e foi removido.
+**Tarefa:** Crie a meta e acrescente as condições de vitória e derrota dentro de jogando.
 
-**`restart`.** A comparação não é “apertar Enter ou não”; é o que o ramo do fim faz.
-Primeiro, Mudar o estado para `inicio` deixa pedras, pontos e vidas da partida anterior
-guardados (`screen-only`). Depois, Reiniciar roda Ao iniciar, recria grupos, zera pontos,
-devolve três vidas e termina no menu (`back-to-menu`). A criança precisa observar que
-um segundo Enter começa a nova partida. A instrução manda comparar o que persistiu e o
-momento final, sem enumerar a resposta. O quiz retoma a inferência em vez de um
-checkpoint logo após a cena.
+**Blocos na página:** video-finais → fala-finais.
 
-O HUD e a cena são o contexto visual. A instrução fica junto dos controles, abaixo
-da cena em largura estreita e ao lado em largura ampla ou no modo ampliado. No palpite,
-se houver, nenhum controle aparece desativado. Contadores e mudanças devem continuar
-visíveis durante a ação, sem exigir rolar para observar o que acabou de acontecer.
+**Zappy na página (não gravar):** Crie a meta e acrescente as condições de vitória e derrota dentro de jogando.
 
-## Continuidade, limites e gravação
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
 
-`alvo=26`, dicas “Aperte Enter para começar” e “Aperte Enter para voltar ao início”,
-comparação maior ou igual e nomes internos dos quatro momentos são canônicos.
-Títulos, subtítulos e cores das telas ficam a critério da criança, com contraste.
-`Mudar o estado do jogo para` não reinicia a partida. `Reiniciar o jogo` executa Ao
-iniciar e volta ao menu porque o último bloco inicial guarda `inicio`. Se vitória
-e derrota ocorrerem no mesmo quadro, a pergunta de derrota vem por último e pode
-prevalecer; não prometer prioridade à vitória.
+- No final da partida, se pontos ≥ alvo, vá para vitoria.
+- Na partida, coloque a pergunta de vitória antes da pergunta de derrota.
+- Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.
+- Crie a constante alvo = 26 em Ao iniciar.
 
-O [roteiro de gravação](nave-contra-asteroides-dia-5.roteiro.md) especifica os 11 clipes, com os dois
-novos vídeos conceituais. Não há duas gravações na mesma seção. Conferir rótulos
-atuais: `o estado do jogo é ?`, `Mudar o estado do jogo para` e Jogo 2D › Jogo e
-telas › Telas e partida. O teste final precisa mostrar menu, partida, um fim,
-retorno ao menu e outro Enter. Após o envio, Compartilhar fica disponível; o link só vem após a
-escolha de publicar. A janela de publicação e seus campos podem mudar e não são parte obrigatória
-da aula. O fecho
-celebra o que foi aprendido sem afirmar que a criança já publicou. Este curso termina no Dia 5;
-a introdução e o certificado ficam no Desafio do Primeiro Jogo.
+### Seção 2. Mostre a vitória e a derrota
+
+**Tarefa:** Acrescente os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela.
+
+**Blocos na página:** video-mostrar-telas → fala-telas.
+
+**Zappy na página (não gravar):** Acrescente os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+
+- No senão se inicio, encaixe Mostrar tela com a dica de Enter.
+- No senão se vitoria, encaixe Mostrar tela com a dica de Enter.
+- No senão se fim, encaixe Mostrar tela com a dica de Enter.
+
+### Seção 3. Compare voltar à abertura e reiniciar
+
+**Tarefa:** Depois de perder, compare mudar para inicio com Reiniciar o jogo. Observe os valores ao começar outra partida.
+
+**Blocos na página:** video-reiniciar → fala-reiniciar → experiencia-reiniciar.
+
+**Zappy na página (não gravar):** Depois de perder, compare mudar para inicio com Reiniciar o jogo. Observe os valores ao começar outra partida.
+
+**Experiência existente:** `restart`. Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+
+### Seção 4. Faça Enter preparar outra partida
+
+**Tarefa:** Amplie o evento Enter com os ramos fim e vitoria. Em cada um, use Reiniciar o jogo.
+
+**Blocos na página:** video-enter → fala-enter.
+
+**Zappy na página (não gravar):** Amplie o evento Enter com os ramos fim e vitoria. Em cada um, use Reiniciar o jogo.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+
+- Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.
+
+### Seção 5. Confira o que você construiu
+
+**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+
+**Blocos na página:** fala-quiz-final → quiz.
+
+**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+
+**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
+
+### Seção 6. Teste o jogo completo e compartilhe
+
+**Tarefa:** Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural.
+
+**Blocos na página:** video-ciclo-completo → fala-entrega → projeto.
+
+**Zappy na página (não gravar):** Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+
+- Crie a constante alvo = 26 em Ao iniciar.
+- Vá para inicio em Ao iniciar.
+- Leve a sequência para o então de Se jogando, começando por Limpar.
+- O movimento da nave fica dentro de Se jogando.
+- Os corações também ficam dentro de Se jogando.
+- Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.
+- Não deixe outro criador de asteroides fora da condição.
+- Dentro de Espaço, coloque criar tiro e som no então de Se jogando.
+- Não deixe outro criador de tiro fora da condição.
+- No final da partida, se pontos ≥ alvo, vá para vitoria.
+- Na partida, coloque a pergunta de vitória antes da pergunta de derrota.
+- Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.
+- No senão se inicio, encaixe Mostrar tela com a dica de Enter.
+- No senão se vitoria, encaixe Mostrar tela com a dica de Enter.
+- No senão se fim, encaixe Mostrar tela com a dica de Enter.
+- Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.
+- O placar da variável fica na partida.
+- A colisão que soma pontos fica na partida.
+- A colisão que tira vida fica na partida.
+- Dê 3 vidas à nave em Ao iniciar.
+
+Publicação opcional após o envio: Compartilhar → título e resumo → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Fechar → Concluir aula. Não bloquear a conclusão por publicação.
+
+## Blocos disponíveis
+
+| Bloco | Caminho na paleta |
+| --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |
+| Mover o sprite com as setas <- -> (velocidade ) | Jogo 2D → Movimento → Movimentos prontos |
+| o centro x do sprite | Jogo 2D → Movimento → Posição e tamanho |
+| Manter o sprite dentro da tela | Jogo 2D → Movimento → Bordas e rebatidas |
+| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |
+| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |
+| Criar nave em x y largura altura , cor do corpo cor das asas | Jogo 2D → Kits prontos → Espaço |
+| Machucar o sprite em e deixá-lo invencível por quadros | Jogo 2D → Vida e placar → Vida |
+| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |
+| Mostrar placar valor em x y cor tamanho | Jogo 2D → Vida e placar → Indicadores e texto na tela |
+| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |
+| Desenhar as vidas do sprite como em x y tamanho cor | Jogo 2D → Vida e placar → Vida |
+| A cada quadros | Jogo 2D → Tempo → Quadros e intervalos |
+| Soltar explosão no sprite cor | Jogo 2D → Desenho e efeitos → Partículas |
+| as vidas do sprite acabaram? | Jogo 2D → Vida e placar → Vida |
+| Para cada colisão entre os grupos e | Jogo 2D → Colisões → Encostar e bloquear |
+| Quando apertar a tecla | Jogo 2D → Controles → Teclado, ações e toque |
+| Para cada sprite do grupo que colidir com o sprite | Jogo 2D → Colisões → Encostar e bloquear |
+| Tocar efeito | Jogo 2D → Som → Efeitos prontos |
+| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |
+| um x aleatório na tela | Jogo 2D → Sorteios → Números e posições |
+| Tirar o sprite do grupo | Jogo 2D → Grupos → Participação e limpeza |
+| Reiniciar o jogo | Jogo 2D → Jogo e telas → Telas e partida |
+| o estado do jogo é ? | Jogo 2D → Jogo e telas → Telas e partida |
+| Dar ao sprite de vida | Jogo 2D → Vida e placar → Vida |
+| Mudar o estado do jogo para | Jogo 2D → Jogo e telas → Telas e partida |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |
+| Tremer a tela com intensidade | Jogo 2D → Desenho e efeitos → Efeitos |
+| Mostrar tela com título subtítulo dica fundo | Jogo 2D → Jogo e telas → Telas e partida |
+| No grupo criar um asteroide em x y tamanho cor com vx vy | Jogo 2D → Kits prontos → Espaço |
+| Criar tiro no grupo em x y raio cor vx vy | Jogo 2D → Grupos → Criar e percorrer |
+| a posição y do sprite | Jogo 2D → Movimento → Posição e tamanho |
+| Desenhar fundo de estrelas (velocidade ) | Jogo 2D → Cenários → Fundos |
+| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |
+| Criar constante com valor | Programação → 🏷️ Variáveis |
+| Condição se, senão se e senão | Programação → ❓ Lógica & Se |
+| Criar variável com valor | Programação → 🏷️ Variáveis |
+| Somar em variável | Programação → 🏷️ Variáveis |
+| Comparar dois valores | Programação → ❓ Lógica & Se |
+| Número | Programação → 🔣 Valores |
+| texto | Programação → 🔣 Valores |
+| valor da variável | Programação → 🔣 Valores |
+
+## Continuidade e produção
+
+Aula 9 na cadeia `nave-contra-asteroides`. Entrada: etapa 8; saída: etapa 9 de `qa/nave-contra-asteroides-etapas.ts`. Os cinco marcos originais e o código do jogo permanecem preservados.
+
+A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.

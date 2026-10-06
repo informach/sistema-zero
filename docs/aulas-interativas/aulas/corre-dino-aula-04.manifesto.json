@@ -2,7 +2,7 @@
   "version": 5,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-04",
-  "title": "O som que escuta o Dino",
+  "title": "Toque um som em cada pulo",
   "retireBlockKeys": [
     "abertura",
     "explicacao",
@@ -26,7 +26,6 @@
     "video-construir-4-1",
     "zappy-construir-4",
     "zappy-convite-construir-3",
-    "video-entrega",
     "zappy-entrega",
     "zappy-revisao",
     "video-abertura-editorial",
@@ -38,19 +37,29 @@
     "video-escutar-dino",
     "fala-escutar-dino",
     "fala-entrega-editorial",
-    "video-fecho-editorial"
+    "video-fecho-editorial",
+    "video-abertura",
+    "fala-tres-areas",
+    "fala-montar-evento",
+    "fala-montar-som",
+    "video-evento-e-som",
+    "video-quatro-testes",
+    "fala-mover-nao-copiar",
+    "video-teste-e-envio",
+    "quiz-final",
+    "fala-proxima-aula"
   ],
   "blocks": [
     {
-      "key": "video-abertura",
-      "plannedVideo": "Título: O pulo ganha som\n\nTela regravada. Origem: video-abertura-editorial.\n\nAbrir no jogo dela como ficou na Aula 3: o Dino correndo na floresta e pulando em silêncio. Deixar o silêncio incomodar por dois segundos antes de qualquer fala.\n\nDepois o mesmo pulo com som. Em seguida, o mesmo som saindo quando o pulo vem de um toque na metade de cima da área do jogo, que é como alguém vai jogar no celular.\n\nFala: o seu Dino já corre e já pula, e faz tudo isso sem barulho nenhum. Hoje o pulo ganha som. E não é só quando você aperta o espaço: vale também pela seta e pelo dedo na tela.\n\nNota de montagem obrigatória: uma marquinha na tela a cada som que toca, além do áudio. Quem está sem som precisa conseguir contar os sons com os olhos.\n\nDuração alvo: 25 a 35 segundos."
+      "key": "video-area-que-espera",
+      "plannedVideo": "Título: Compare esperar e repetir\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-04.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
-      "key": "fala-tres-areas",
+      "key": "fala-area-que-espera",
       "content": {
         "kind": "dialogue",
-        "pose": "thinking",
-        "text": "O seu projeto tem duas áreas. Uma roda uma vez no começo, a outra repete sem parar. Hoje entra a terceira, e ela é diferente das duas: ela fica parada esperando. Vamos ver as três lado a lado antes de montar."
+        "pose": "speaking",
+        "text": "Comece o teste sem tocar na tecla e depois acione a tecla uma vez."
       }
     },
     {
@@ -58,13 +67,9 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Uma vez, sempre, e na hora que acontecer",
-        "instructions": "Teste Tocar efeito · pulo em Quando acontecer. Comece o jogo e compare o contador antes e depois de apertar a tecla.",
-        "hints": [
-          "Ponha Tocar efeito · pulo em Quando acontecer e aperte Começar o jogo. Espere o teste parar sem apertar a tecla.",
-          "Olhe o contador de Tocar efeito · pulo. Agora aperte a tecla uma vez e compare.",
-          "Se o som não sair, confira se a ação está em Quando acontecer e aperte a tecla outra vez."
-        ],
+        "title": "Compare esperar e repetir",
+        "instructions": "Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar na tecla. Observe o contador. Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique.",
+        "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "once-vs-always",
@@ -95,61 +100,23 @@
                   "label": "Tocar efeito · pulo"
                 }
               ]
-            }
+            },
+            "goals": ["on-event", "key-fires"]
           }
         },
-        "prediction": {
-          "context": {
-            "label": "A área que fica esperando",
-            "explanation": "Nesta experiência, vamos observar quando a ação de tocar um som acontece no jogo."
-          },
-          "prompt": "Se o jogo estiver rodando e ninguém apertar a tecla, o som toca?",
-          "choices": [
-            {
-              "id": "nenhuma",
-              "label": "Não toca"
-            },
-            {
-              "id": "cinco",
-              "label": "Toca sozinho",
-              "shows": "O jogo rodou, mas o som não tocou sem a tecla."
-            }
-          ],
-          "correctChoiceId": "nenhuma",
-          "revealOn": "on-event"
-        }
+        "semPerguntaFinal": true
       }
     },
     {
-      "key": "fala-montar-evento",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Em Áreas do projeto, pega o Quando acontecer e solta ao lado das outras duas, com um espaço. Ela fica ao lado, nunca dentro delas. Depois, em Jogo 2D, Controles, Teclado, ações e toque, pega o Quando apertar a tecla e encaixa dentro do Quando acontecer, que está vazio. Ele tem um campo só, uma listinha de teclas: escolhe barra de espaço."
-      }
-    },
-    {
-      "key": "fala-montar-som",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora, em Jogo 2D, Som, Efeitos prontos, pega o Tocar efeito e encaixa dentro do Quando apertar a tecla. Ele já nasce escrito moeda, e a lista tem 27 efeitos. O do nosso jogo é o pulo. Se você quiser outro, o quicar e o zunido também combinam com um dinossauro. Agora clica na área do jogo e aperta o espaço."
-      }
-    },
-    {
-      "key": "video-evento-e-som",
-      "plannedVideo": "Título: A área nova, a tecla e o som\n\nTela regravada. Origem: video-evento-espaco e video-primeiro-som, fundidos num clipe só.\n\nO gesto das três peças de uma vez: o Quando acontecer solto ao lado das outras duas áreas, o Quando apertar a tecla encaixado dentro dele com barra de espaço escolhida, e o Tocar efeito encaixado dentro da tecla com pulo escolhido.\n\nDepois o teste com áudio de verdade, e uma marquinha na tela a cada som que toca. Quem está sem som precisa conseguir contar os sons com os olhos.\n\nTroca obrigatória na regravação: saem o Kit dino e o rótulo antigo do som, que não existe mais no Estúdio. Entra o caminho Jogo 2D, Som, Efeitos prontos, com o rótulo Tocar efeito e a opção pulo escolhida desde o primeiro encaixe.\n\nO clipe não termina num evento vazio: ele fecha com o primeiro som do jogo dela tocando.\n\nDuração alvo: 60 a 70 segundos."
-    },
-    {
-      "key": "video-quatro-testes",
-      "plannedVideo": "Título: Três jeitos de pular, um som só\n\nTela regravada. Origem: primeira metade de video-escutar-dino, sem o conserto.\n\nOs quatro testes, um de cada vez, com pausa entre eles para ela fazer junto, e com a marquinha visual a cada som.\n\nPrimeiro o espaço: pula e toca. Depois a seta para cima: pula e fica mudo. Depois o clique na metade de cima da área do jogo: pula e fica mudo, e esse é o jeito do celular. Por último, o espaço apertado cinco vezes com o Dino lá no alto: cinco sons e nenhum pulo.\n\nFecha na conta, sem prometer conserto: em três jeitos de pular, o som sai em um. E ainda sai quando não teve pulo nenhum.\n\nNenhuma ferramenta à vista neste clipe. O bloco novo só aparece depois da bancada.\n\nDuração alvo: 50 a 60 segundos."
+      "key": "video-dedo-e-pulo",
+      "plannedVideo": "Título: Compare a tecla com o pulo\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-04.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-dedo-e-pulo",
       "content": {
         "kind": "dialogue",
-        "pose": "thinking",
-        "text": "O bloco que a gente montou não está escutando o Dino. Ele está escutando o seu dedo na barra de espaço. São duas coisas diferentes, e aqui dá para ver as duas separadas, sem mexer no seu jogo."
+        "pose": "speaking",
+        "text": "Teste tecla repetida e toque nos dois lugares do som."
       }
     },
     {
@@ -157,43 +124,40 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "O som acompanha o pulo",
-        "instructions": "Com o Tocar efeito em Quando apertar Espaço, aperta Espaço duas vezes no mesmo pulo e conta os sons. Depois pula tocando no Dino. Por último, leva o Tocar efeito para Quando o Dino pular e testa os dois jeitos.",
-        "hints": [
-          "Aperte Espaço duas vezes no mesmo pulo. Compare o contador de sons com o contador de pulos.",
-          "Agora pule tocando no Dino. Tocou som?",
-          "Leve o Tocar efeito para Quando o Dino pular e teste a tecla e o toque."
-        ],
+        "title": "Compare a tecla com o pulo",
+        "instructions": "Deixe Tocar efeito em Quando apertar Espaço. Toque na barra de espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, pule tocando no Dino. Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: duas teclas no mesmo salto e um pulo tocando no Dino. Compare os contadores.",
+        "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "jump-sound",
           "cenario": "corre-dino"
-        }
+        },
+        "semPerguntaFinal": true
       }
+    },
+    {
+      "key": "video-som-no-pulo",
+      "plannedVideo": "Título: Ligue o som ao pulo do Dino\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-04.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-som-no-pulo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Controles, Teclado, ações e toque, do lado daquele Quando apertar a tecla, está o Quando o sprite pular. Pega ele e solta dentro do Quando acontecer, logo abaixo do evento da tecla que já está lá. Ele tem um campo, o nome do sprite, e já nasce escrito jogador: clica e troca para dino."
+        "text": "Coloque um único Tocar efeito pulo dentro de Quando o sprite pular."
       }
     },
     {
-      "key": "fala-mover-nao-copiar",
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-04.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora o gesto principal. Pega o Tocar efeito, que está dentro do evento da tecla, arrasta e solta dentro do Quando o sprite dino pular. É o mesmo bloco, arrastado, não copiado: copiar deixaria dois sons tocando ao mesmo tempo. O evento da tecla ficou vazio. Clica nele com o botão direito e escolhe Apagar este bloco, igual na Aula 2."
+        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
       }
-    },
-    {
-      "key": "video-som-no-pulo",
-      "plannedVideo": "Título: Agora quem avisa é o Dino\n\nTela regravada. Origem: segunda metade de video-escutar-dino, com a explicação do porquê encurtada.\n\nO bloco novo saindo da coluna, a troca do nome de jogador para dino, o arrasto do Tocar efeito de dentro do evento da tecla para dentro do evento do pulo, e o evento vazio sendo apagado pelo botão direito.\n\nDepois os quatro testes refeitos, com a marquinha visual: espaço com som, seta com som, toque com som, e cinco apertos no ar em silêncio.\n\nO porquê já foi dado na bancada, então aqui a fala é gesto e teste. Não repetir a explicação de entrada contra acontecimento.\n\nDuração alvo: 45 a 55 segundos."
-    },
-    {
-      "key": "video-teste-e-envio",
-      "plannedVideo": "Título: Ouvir os três pulos e enviar\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 50 a 60 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nO que passa na tela, um gesto de cada vez, com pausa entre eles e com uma marquinha visual a cada som que toca:\n\n1. O clique dentro da área do jogo, que é o que avisa o jogo que o teclado agora é dele.\n2. A barra de espaço: o Dino pula e o som sai.\n3. A seta para cima: o Dino pula e o som sai.\n4. Um toque na metade de cima da área do jogo: o Dino pula e o som sai. Esse é o jeito de quem joga no celular.\n5. Um pulo e, com o Dino ainda no alto, a barra de espaço apertada umas cinco vezes. Nenhum som, nenhuma marquinha.\n\nConferir junto, olhando a tela: três jeitos de pular, um som em cada um deles, e silêncio quando não houve pulo.\n\nQuem estiver sem som precisa conseguir contar os sons com os olhos, então a marquinha visual é obrigatória também neste clipe.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: hoje o seu jogo ganhou uma coisa que não dá para ver, só para ouvir. Antes, quem mandava tocar o som era o seu dedo no teclado. Agora quem manda é o próprio Dino, na hora exata em que ele sai do chão. Por isso o som funciona nos três jeitos de pular.\n\nO gancho da Aula 5 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar."
     },
     {
       "key": "projeto",
@@ -222,22 +186,126 @@
           "sz_g2d_update_each_frame",
           "sz_val_number"
         ],
+        "showcase": {
+          "enabled": false,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-corre-dino-4",
+          "id": "manifest-dino-etapa-3",
           "name": "Corre, Dino!",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": ""
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos apertando espaço\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  // Quando acontecer\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    SZGame2D.applyGravity(dino);\n    SZGame2D.controlDino(dino, ctx, 14);\n    SZGame2D.drawSprite(ctx, dino);\n  }, \"dino-ref-10\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [],
-          "ir": null,
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "dino-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 270,
+                    "__id": "dino-ref-3"
+                  },
+                  "bg": "#81d4fa",
+                  "__id": "dino-ref-1"
+                },
+                {
+                  "type": "g2d:setStageDescription",
+                  "description": "Corra com o dino e pule os cactos apertando espaço",
+                  "__id": "dino-ref-4"
+                },
+                {
+                  "type": "g2d:createDino",
+                  "varName": "dino",
+                  "x": {
+                    "type": "num",
+                    "value": 110,
+                    "__id": "dino-ref-6"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 150,
+                    "__id": "dino-ref-7"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 64,
+                    "__id": "dino-ref-8"
+                  },
+                  "color": "#8b5cf6",
+                  "__id": "dino-ref-5"
+                }
+              ],
+              "events": [],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "dino-ref-11"
+                    },
+                    {
+                      "type": "g2d:forest",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "dino-ref-13"
+                      },
+                      "__id": "dino-ref-12"
+                    },
+                    {
+                      "type": "g2d:applyGravity",
+                      "spriteVar": "dino",
+                      "__id": "dino-ref-14"
+                    },
+                    {
+                      "type": "g2d:controlDino",
+                      "spriteVar": "dino",
+                      "ctxVar": "ctx",
+                      "jump": {
+                        "type": "num",
+                        "value": 14,
+                        "__id": "dino-ref-16"
+                      },
+                      "__id": "dino-ref-15"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "dino",
+                      "ctxVar": "ctx",
+                      "__id": "dino-ref-17"
+                    }
+                  ],
+                  "__id": "dino-ref-10"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
@@ -403,187 +471,49 @@
           ]
         }
       }
-    },
-    {
-      "key": "quiz-final",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "Qual evento deve tocar o som?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Quando o Dino realmente pula."
-              },
-              {
-                "id": "b",
-                "label": "Sempre que uma tecla qualquer é apertada."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O som descreve o acontecimento, não apenas o dedo."
-          },
-          {
-            "id": "q2",
-            "prompt": "Por que mover o bloco de som?",
-            "choices": [
-              {
-                "id": "b",
-                "label": "Para mudar a altura do salto."
-              },
-              {
-                "id": "a",
-                "label": "Para não deixar dois sons ativos."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Uma cópia no evento antigo manteria o defeito."
-          },
-          {
-            "id": "q3",
-            "prompt": "Tocar na tela também pode produzir som de pulo?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Sim, quando o toque produz um pulo."
-              },
-              {
-                "id": "b",
-                "label": "Não, som de pulo só funciona com espaço."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O evento de pulo atende aos diferentes controles."
-          }
-        ]
-      }
-    },
-    {
-      "key": "fala-proxima-aula",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Na Aula 5 os cactos começam a vir na sua direção."
-      }
     }
   ],
   "sections": [
     {
-      "key": "abertura",
-      "title": "O que a gente vai fazer hoje",
-      "intent": "presentation",
-      "objective": "Ouvir o jogo mudo, ouvir o mesmo pulo com som, e ver que o som vale também para o dedo na tela.",
-      "blockKeys": ["video-abertura"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-abertura"]
-      }
-    },
-    {
       "key": "area-que-espera",
-      "title": "A área que fica esperando",
+      "title": "Compare esperar e repetir",
       "intent": "exploration",
-      "objective": "Ver as três áreas do projeto lado a lado e descobrir que a ação em Quando acontecer espera até alguém apertar a tecla.",
-      "blockKeys": ["fala-tres-areas", "experiencia-tres-areas"],
+      "objective": "Comece o teste sem tocar na tecla e depois acione a tecla uma vez.",
+      "blockKeys": ["video-area-que-espera", "fala-area-que-espera", "experiencia-tres-areas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-tres-areas"]
-      }
-    },
-    {
-      "key": "evento-e-som",
-      "title": "Monte a área e pendure o primeiro som",
-      "intent": "application",
-      "objective": "Soltar o Quando acontecer ao lado das outras áreas, encaixar o evento da barra de espaço dentro dele e pendurar o Tocar efeito com pulo. É o primeiro som do seu jogo.",
-      "blockKeys": ["fala-montar-evento", "fala-montar-som", "video-evento-e-som"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [],
-        "projectChecks": [
-          {
-            "id": "evento-inicial",
-            "label": "Coloque o evento da tecla espaço dentro de Quando acontecer.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
-              "area": "events",
-              "fields": {
-                "KEY": "Space"
-              }
-            }
-          },
-          {
-            "id": "som-na-tecla",
-            "label": "Encaixe o Tocar efeito, com o efeito que você escolheu, dentro do evento de espaço.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_on_key",
-              "area": "events",
-              "fields": {
-                "KEY": "Space"
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_play_fx"
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "quatro-testes",
-      "title": "Quatro jeitos de pular, um som só",
-      "intent": "presentation",
-      "objective": "Contar o estrago com as próprias mãos: o som sai em um dos três jeitos de pular, e ainda sai quando não teve pulo nenhum. Fecha sem nenhuma ferramenta à vista.",
-      "blockKeys": ["video-quatro-testes"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-quatro-testes"]
+        "blockIds": ["video-area-que-espera", "experiencia-tres-areas"]
       }
     },
     {
       "key": "dedo-e-pulo",
-      "title": "O seu dedo e o pulo do Dino não são a mesma coisa",
+      "title": "Compare a tecla com o pulo",
       "intent": "exploration",
-      "objective": "Mover a peça do som de um evento para o outro, com o contador de pulos e o contador de sons lado a lado, e ver a relação mudar sem tocar no seu jogo.",
-      "blockKeys": ["fala-dedo-e-pulo", "experiencia-dedo-e-pulo"],
+      "objective": "Teste tecla repetida e toque nos dois lugares do som.",
+      "blockKeys": ["video-dedo-e-pulo", "fala-dedo-e-pulo", "experiencia-dedo-e-pulo"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-dedo-e-pulo"]
+        "blockIds": ["video-dedo-e-pulo", "experiencia-dedo-e-pulo"]
       }
     },
     {
       "key": "som-no-pulo",
-      "title": "Um som que escuta o Dino",
+      "title": "Ligue o som ao pulo do Dino",
       "intent": "application",
-      "objective": "Montar o Quando o sprite dino pular, mover o mesmo Tocar efeito para dentro dele e apagar o evento da tecla que ficou vazio.",
-      "blockKeys": ["fala-som-no-pulo", "fala-mover-nao-copiar", "video-som-no-pulo"],
+      "objective": "Coloque um único Tocar efeito pulo dentro de Quando o sprite pular.",
+      "blockKeys": ["video-som-no-pulo", "fala-som-no-pulo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-som-no-pulo"],
         "projectChecks": [
           {
             "id": "som-pulo",
@@ -613,7 +543,7 @@
           },
           {
             "id": "sem-evento-tecla",
-            "label": "Retire o evento provisório de tecla.",
+            "label": "Use o acontecimento do pulo, sem um evento separado só para a tecla.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",
@@ -625,16 +555,16 @@
     },
     {
       "key": "entrega",
-      "title": "Teste, envie e fecha",
+      "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "O som sai em cada pulo de verdade, pelos três controles, e não sai mais quando não houve pulo. Enviar e guardar a ideia do dia no quiz.",
-      "blockKeys": ["video-teste-e-envio", "fala-proxima-aula", "quiz-final", "projeto"],
+      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste-e-envio", "projeto", "quiz-final"],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "som-pulo",
@@ -664,7 +594,7 @@
           },
           {
             "id": "sem-evento-tecla",
-            "label": "Retire o evento provisório de tecla.",
+            "label": "Use o acontecimento do pulo, sem um evento separado só para a tecla.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_key",

@@ -1,0 +1,18 @@
+{
+  "extends": "../../../packages/studio/tsconfig.json",
+  "compilerOptions": {
+    "types": ["bun"],
+    "typeRoots": ["../../../packages/studio/node_modules/@types"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"]
+  },
+  "include": [],
+  "exclude": [],
+  "files": [
+    "gerar-meu-jeito.ts",
+    "meu-jeito-etapas.ts",
+    "meu-jeito.test.ts",
+    "diretrizes-pedagogicas.ts",
+    "../recursos/meu-jeito/gerar-caderno.ts",
+    "../recursos/meu-jeito/artes-referencia.ts"
+  ]
+}

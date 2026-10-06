@@ -1,80 +1,151 @@
-# Nave Contra Asteroides · Dia 4 · O jogo passa a contar
+# Nave Contra Asteroides · Aula 7 · Dê três vidas à nave
 
-## Resultado pedagógico
+Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o roteiro e o manifesto são gerados juntos. Para a sequência completa e a implantação, consulte [o mapa do curso](../modulos-nave-contra-asteroides.md).
 
-O jogo chega do Dia 3 com tiros, asteroides e colisão. Ao fim deste dia, cada acerto soma 1
-na variável `pontos`, o placar lê esse valor, a nave começa com três vidas e uma batida tira
-uma, com 45 quadros de proteção. O Dia 5 recebe as duas contagens separadas, ainda sem tela
-de vitória ou derrota. Não prometer que o jogo já termina quando as vidas acabam.
+## Resumo
 
-São oito seções e sete vídeos planejados: três conceitos com experiências, duas montagens
-guiadas, quiz isolado e entrega. Vídeo e atividade são necessários para concluir cada seção.
-O Zappy aparece uma vez por seção como ponte ou tarefa, sem recontar os controles. O vídeo
-prático mostra categoria, gaveta, bloco e âncora de encaixe; a experiência testa a ideia.
+- Estado de entrada: Variável pontos começa em zero, aumenta somente no acerto e aparece no placar.
+- Resultado da aula: Três vidas, dano de uma vida, proteção de 45 quadros e corações na tela; jogo ainda sem encerramento.
+- Seções: 6. Vídeos: 5.
 
-## Diagnóstico e decisões
+## Diagnóstico e decisão
 
-| Questão | Decisão |
-|---|---|
-| Uma variável não é o mesmo que o número desenhado na tela. | `video-variavel` parte da pergunta concreta “como o jogo lembra quantos asteroides foram atingidos?” antes de apresentar a caixinha e nomear variável. `variable` deixa guardar, somar com placar escondido e só depois mostrar. |
-| A proteção parecia corrigir dano múltiplo da mesma pedra. | O roteiro explica que a pedra atingida já saiu do grupo; os 45 quadros protegem contra as *próximas* pedras. `invincibility` compara 0, 45 e 15 sem revelar de antemão a contagem. |
-| A prática de vida reúne muitos blocos. | Manter um clipe prático único como cadeia coerente — dar vidas, tratar colisão, desenhar corações — mas reservar tempo para zoom e pausas. Se a gravação real ficar longa demais, dividir a prática editorialmente antes de publicar; não pôr dois clipes na mesma seção. |
-| A experiência de Ao iniciar × motor concluía após só a primeira metade. | Meta nova `lives-loop` exige que a criança também observe três batidas com a ação no motor. A conclusão só chega com `once` e `lives-loop`; teste de regressão cobre as duas metades. |
-| Múltiplos balões duplicavam instruções e quiz dividia a entrega. | Uma fala curta após cada vídeo; quiz em seção própria antes de testar e enviar. |
+Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montagem própria; a comparação da proteção prepara a colisão da nave. Um quiz e o teste final retomam acertos, erros e batidas.
 
-## Percurso por seção
+## Triagem dos conceitos
 
-| # | Seção | Vídeo | Ação e critério |
-|---|---|---|---|
-| 1 | Abertura | `video-abertura` mostra pontos e corações | Assistir. |
-| 2 | A caixa dos pontos | `video-variavel` explica guardar, mudar e mostrar | `experiencia-variavel` (`variable`): metas `stored`, `changed-hidden`, `shown`. Vídeo + experiência. |
-| 3 | O acerto vira número | `video-pontos-e-placar` mostra a cadeia completa | Estúdio: criar `pontos=0` em Ao iniciar; somar 1 na colisão de tiro e pedra; desenhar `Pontos:` lendo a variável em x 12, y 30, tamanho 24. Vídeo + critérios. |
-| 4 | O respiro | `video-protecao` explica a proteção contra próximas pedras | `experiencia-protecao` (`invincibility`): comparar 0, 45 e 15 quadros; metas `no-shield`, `window`, `expires`. Vídeo + experiência. |
-| 5 | A batida machuca | `video-batida-e-coracoes` mostra as vidas e a colisão | Estúdio: três vidas em Ao iniciar; na colisão nave × asteroide, remover inimigo, explodir, tirar 1 vida com proteção 45 e tremer; corações em x 12, y 48, tamanho 22. Vídeo + critérios. |
-| 6 | As vidas são dadas uma vez | `video-vidas-uma-vez` retoma preparação e motor sem mostrar as contagens das batidas | `experiencia-uma-vez` (`once-vs-always`, preset `uma-ficha-vidas`): observar perda com a ação em Ao iniciar e reposição no motor. Metas `once` e `lives-loop`; vídeo + experiência. |
-| 7 | Quiz | Sem vídeo; uma ponte do Zappy | Duas questões sobre pontos e vidas; só o quiz conclui. |
-| 8 | Entrega | `video-fecho` mostra dois acertos, duas batidas, conferência e envio | Estúdio, com critérios de todo o dia; vídeo + projeto. |
+| Conceito | Como e quando trabalhar | Razão |
+| --- | --- | --- |
+| Preparar vidas | once-vs-always antes dos corações | Evitar devolver vidas a cada quadro. |
+| Dano e proteção | invincibility antes da batida | Comparar 0, 45 e 15 quadros antes de aplicar o dano. |
+| Colisão com a nave | Retomada de collision-pair | Usar inimigo para a pedra envolvida e nave para quem perde vida. |
 
-## Auditoria das experiências
+## Proposta final
 
-**`variable`.** O palco precisa distinguir caixa guardada e valor visível. A criança guarda
-um número, soma 1 com Mostrar placar desligado e só então liga a visualização. As três
-metas são encadeadas: um toque inicial não deve satisfazer “mudou escondido” nem “foi
-mostrado”. A fala não antecipa o resultado do teste; a pergunta de conclusão, se houver,
-deve versar sobre a diferença entre guardar e mostrar, não sobre o nome do interruptor.
+### Seção 1. Compare quando dar as vidas
 
-**`invincibility`.** Há três pedras agendadas nos quadros 1, 10 e 30. A comparação de
-0, 45 e 15 quadros de proteção tem de deixar observáveis tanto a janela que bloqueia dano
-quanto o fim dela. A experiência não deve dizer quantos corações sobram antes da ação;
-mandar observar é suficiente. A pedra que bate é removida, por isso a explicação não pode
-atribuir as perdas seguintes à mesma pedra.
+**Tarefa:** Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações.
 
-**`once-vs-always`, preset `uma-ficha-vidas`.** A cena usa nave e asteroide no céu estrelado,
-sem chão. A criança coloca Dar três vidas à nave em Ao iniciar e começa o jogo: nas batidas,
-as vidas diminuem (`once`). Ela então coloca a ação no motor e começa uma nova partida:
-as vidas voltam a encher enquanto o jogo roda (`lives-loop`). Cada teste para automaticamente
-após três batidas. A faixa mostra duas
-metas e a avaliação não conclui após a primeira. O teste do motor confirma a não-conclusão
-intermediária e a conclusão depois do contraste. O checkpoint antigo apenas repetia a
-decisão já observada e foi retirado.
+**Blocos na página:** video-vidas-no-comeco → fala-vidas-no-comeco → experiencia-uma-vez.
 
-O contexto de cada experiência (HUD e cena) precede a instrução, que fica junto aos
-controles; em largura suficiente, cena à esquerda e instrução/controles à direita. No
-palpite, não expor controles inativos. Em modo ampliado, preservar a vista simultânea
-do resultado e da ação.
+**Zappy na página (não gravar):** Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações.
 
-## Gravação e continuidade
+**Experiência existente:** `once-vs-always`. Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
-`video-variavel`, `video-protecao` e `video-vidas-uma-vez` ainda são planos de clipe.
-O [roteiro](nave-contra-asteroides-dia-4.roteiro.md) registra narração e enquadramento; conferir a
-gravação antes de importar como aula publicada. O vídeo prático da batida deve falar
-os nomes atuais dos blocos e mostrar o campo dos 45 quadros. A tremida é retorno visual,
-não dano extra. Na entrega, dois acertos elevam pontos de 0 a 2; duas batidas apagam
-dois corações e não reduzem pontos. Mostrar as duas contagens no mesmo enquadramento.
+### Seção 2. Dê e mostre as três vidas
 
-Valores canônicos para o Dia 5: `pontos=0` na partida, soma de 1 por acerto, rótulo
-`Pontos:`, placar (12, 30, 24), três vidas, dano 1, proteção 45, corações (12, 48, 22),
-apelido `inimigo`. Cores de placar, corações e explosão são livres se tiverem contraste
-com o fundo. Esses números, o rótulo do placar e o estilo corações já vêm nos blocos: os vídeos
-os conferem sem mandar redigitar. Já os campos de sprite de Dar vidas, Machucar e Desenhar vidas
-precisam ser trocados de `jogador` para `nave`. A introdução e o certificado são do Desafio do Primeiro Jogo, não deste curso.
+**Tarefa:** Dê as três vidas em Ao iniciar e desenhe os corações a cada quadro.
+
+**Blocos na página:** video-vidas → fala-vidas.
+
+**Zappy na página (não gravar):** Dê as três vidas em Ao iniciar e desenhe os corações a cada quadro.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+
+- Dê 3 vidas à nave em Ao iniciar.
+- Desenhe corações da nave em x 12, y 48, tamanho 22.
+
+### Seção 3. Compare as batidas com proteção
+
+**Tarefa:** Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes.
+
+**Blocos na página:** video-protecao → fala-respiro → experiencia-protecao.
+
+**Zappy na página (não gravar):** Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes.
+
+**Experiência existente:** `invincibility`. Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+
+### Seção 4. Programe as vidas e a batida
+
+**Tarefa:** Dê as vidas em Ao iniciar. Na colisão, retire a pedra e machuque a nave. Desenhe os corações em cada quadro.
+
+**Blocos na página:** video-batida-e-coracoes → fala-batida.
+
+**Zappy na página (não gravar):** Dê as vidas em Ao iniciar. Na colisão, retire a pedra e machuque a nave. Desenhe os corações em cada quadro.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+
+- Na colisão nave × asteroides, remova inimigo antes da explosão.
+- A explosão da batida usa inimigo, antes de machucar a nave.
+- Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.
+
+### Seção 5. Confira o que você construiu
+
+**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+
+**Blocos na página:** fala-quiz-final → quiz.
+
+**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+
+**Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
+
+### Seção 6. Teste os pontos e as vidas
+
+**Tarefa:** Confira acerto, erro e batida. Verifique a etapa e envie.
+
+**Blocos na página:** video-fecho → fala-entrega → projeto.
+
+**Zappy na página (não gravar):** Confira acerto, erro e batida. Verifique a etapa e envie.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+
+- Crie a variável pontos com 0 em Ao iniciar.
+- Some 1 em pontos dentro da colisão tiros × asteroides.
+- Mantenha um único Somar 1 em pontos.
+- Mostre Pontos: lendo a variável pontos, em x 12, y 30, tamanho 24.
+- Dê 3 vidas à nave em Ao iniciar.
+- Na colisão nave × asteroides, remova inimigo antes da explosão.
+- Nessa colisão, tire 1 vida da nave, proteja por 45 quadros e trema a tela.
+- A explosão da batida usa inimigo, antes de machucar a nave.
+- Desenhe corações da nave em x 12, y 48, tamanho 22.
+- Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
+- Na colisão tiros × asteroides, remova o tiro do grupo tiros.
+- Na mesma colisão, remova o asteroide e então solte a explosão.
+- Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
+
+## Blocos disponíveis
+
+| Bloco | Caminho na paleta |
+| --- | --- |
+| ⚡ Quando acontecer | 🗂️ Áreas do projeto |
+| 🔁 Enquanto estiver rodando | 🗂️ Áreas do projeto |
+| ⚙️ Ao iniciar | 🗂️ Áreas do projeto |
+| Mover o sprite com as setas <- -> (velocidade ) | Jogo 2D → Movimento → Movimentos prontos |
+| o centro x do sprite | Jogo 2D → Movimento → Posição e tamanho |
+| Manter o sprite dentro da tela | Jogo 2D → Movimento → Bordas e rebatidas |
+| Limpar a tela | Jogo 2D → Desenho e efeitos → Efeitos |
+| Criar grupo de sprites | Jogo 2D → Grupos → Criar e percorrer |
+| Criar nave em x y largura altura , cor do corpo cor das asas | Jogo 2D → Kits prontos → Espaço |
+| Machucar o sprite em e deixá-lo invencível por quadros | Jogo 2D → Vida e placar → Vida |
+| Desenhar o grupo | Jogo 2D → Grupos → Desenho e ordem |
+| Mostrar placar valor em x y cor tamanho | Jogo 2D → Vida e placar → Indicadores e texto na tela |
+| Desenhar o sprite | Jogo 2D → Sprites → Criar e trocar aparência |
+| Desenhar as vidas do sprite como em x y tamanho cor | Jogo 2D → Vida e placar → Vida |
+| A cada quadros | Jogo 2D → Tempo → Quadros e intervalos |
+| Soltar explosão no sprite cor | Jogo 2D → Desenho e efeitos → Partículas |
+| Para cada colisão entre os grupos e | Jogo 2D → Colisões → Encostar e bloquear |
+| Quando apertar a tecla | Jogo 2D → Controles → Teclado, ações e toque |
+| Para cada sprite do grupo que colidir com o sprite | Jogo 2D → Colisões → Encostar e bloquear |
+| Tocar efeito | Jogo 2D → Som → Efeitos prontos |
+| Tirar do grupo quem sair da tela, para cada um (chamado ) | Jogo 2D → Grupos → Participação e limpeza |
+| um x aleatório na tela | Jogo 2D → Sorteios → Números e posições |
+| Tirar o sprite do grupo | Jogo 2D → Grupos → Participação e limpeza |
+| Dar ao sprite de vida | Jogo 2D → Vida e placar → Vida |
+| Preparar o jogo em tela cheia, tela × , fundo | Jogo 2D → Jogo e telas → Preparar a área do jogo |
+| Tremer a tela com intensidade | Jogo 2D → Desenho e efeitos → Efeitos |
+| No grupo criar um asteroide em x y tamanho cor com vx vy | Jogo 2D → Kits prontos → Espaço |
+| Criar tiro no grupo em x y raio cor vx vy | Jogo 2D → Grupos → Criar e percorrer |
+| a posição y do sprite | Jogo 2D → Movimento → Posição e tamanho |
+| Desenhar fundo de estrelas (velocidade ) | Jogo 2D → Cenários → Fundos |
+| A cada quadro do jogo | Jogo 2D → Tempo → Quadros e intervalos |
+| Mover os sprites do grupo usando suas velocidades | Jogo 2D → Grupos → Movimento |
+| Criar variável com valor | Programação → 🏷️ Variáveis |
+| Somar em variável | Programação → 🏷️ Variáveis |
+| Número | Programação → 🔣 Valores |
+| valor da variável | Programação → 🔣 Valores |
+
+## Continuidade e produção
+
+Aula 7 na cadeia `nave-contra-asteroides`. Entrada: etapa 6; saída: etapa 7 de `qa/nave-contra-asteroides-etapas.ts`. Os cinco marcos originais e o código do jogo permanecem preservados.
+
+A ordem vídeo → Zappy → atividade é editorial. Configurar videoBeforeActivity no curso e conferir com perfil de aluno; não presumir que a ordem por si só ativa o bloqueio. Gravar os vídeos revisados, anexar o PDF quando aplicável e ensaiar com crianças antes de declarar o percurso validado.
