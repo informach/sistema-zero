@@ -27,8 +27,16 @@ export const quantos = (n: number, um: string, varios: string) => `${n} ${n === 
  * da recarga), o LEITOR (a faixa) e a BANCADA do member-shell (o valor ao lado do deslizante). A
  * instrução do Dia 2 escreve "−9" e a faixa escrevia "-9" com o hífen do teclado, na mesma tela.
  */
-export const decimal = (n: number) => String(Math.abs(n)).replace('.', ',')
-export const numero = (n: number) => (n < 0 ? `−${decimal(n)}` : decimal(n))
+// Duas casas por padrão: um relógio de 40 quadros dá 40/30 s, e a faixa mostrava
+// "a cada 1,3333333333333333 s" (06/10/2026). Valores redondos (0,6; 1,4; 3) ficam iguais.
+// Quem precisa de mais precisão pede (o aviso do editor do admin usa 3: "0,125 s").
+export const decimal = (n: number, casas = 2) =>
+  String(Number(Math.abs(n).toFixed(casas))).replace('.', ',')
+// Arredonda ANTES do sinal: -0,004 vira "0", e não "−0".
+export const numero = (n: number) => {
+  const r = Number(n.toFixed(2))
+  return r < 0 ? `−${decimal(r)}` : decimal(r)
+}
 
 /**
  * O ELENCO da cena: quem está no palco.

@@ -45,7 +45,8 @@ test('a atividade abre depois de ver o vídeo uma vez', async ({ page }, info) =
     video.playbackRate = 3
   })
   await expect(aviso).toHaveCount(0, { timeout: 15_000 })
-  await expect(page.getByText('Pronto! Agora assista de novo e faça junto')).toBeVisible()
+  // O ensaio usa o jogo pronto: o vídeo mostrou e explicou, e agora é a vez da criança.
+  await expect(page.getByText('Pronto! Agora é a sua vez')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Ampliar jogo' })).toBeVisible()
   await page.screenshot({ path: info.outputPath('liberado-1366.png') })
 })

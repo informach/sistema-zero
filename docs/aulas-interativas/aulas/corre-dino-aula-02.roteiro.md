@@ -12,18 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-quadros` · Compare o desenho no começo e a cada quadro
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Desenhar o Dino em Só no começo e Limpar a tela antes desligado. Clicar em Avançar 1 quadro e mostrar o x mudando na faixa, com a tela igual. Trocar para A cada quadro, avançar e mostrar os dois Dinos. Ligar Limpar a tela antes, avançar e mostrar um Dino só, no lugar novo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy folheando um bloquinho em que cada folha tem o Dino um pouco mais à frente. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu Dino foi criado, mas ainda não aparece. Antes de desenhá-lo, compare uma imagem feita no começo com imagens que acompanham o movimento.
+> "Esta é uma experiência para a gente entender o que é um quadro e por que o jogo desenha o Dino de novo em cada um. Um quadro é uma imagem do jogo, e muitas imagens seguidas fazem o movimento.
 >
-> Nesta experiência, deixe Desenhar o Dino em Só no começo. Clique em Avançar 1 quadro algumas vezes e compare o desenho com o x mostrado.
+> Olha aqui: com Desenhar o Dino em Só no começo, eu clico em Avançar 1 quadro. O x do Dino muda, mas a tela continua igual. O Dino andou por dentro do jogo, e ninguém desenhou o Dino de novo.
 >
-> Troque para A cada quadro e avance mais alguns quadros. Por último, ligue Limpar a tela antes e avance de novo. Compare os três jeitos.
+> Quando eu troco para A cada quadro e avanço, aparece um Dino novo no lugar novo, e o desenho velho continua lá. Agora são dois Dinos na tela.
 >
-> Depois dos testes, clique em Próxima seção."
+> Por último, eu ligo Limpar a tela antes e avanço de novo. Fica um Dino só, no lugar novo: o jogo apaga a imagem velha e desenha a nova. É como um desenho animado, feito com um desenho novo em cada folha. No seu jogo, você vai colocar Desenhar o sprite dentro de A cada quadro do jogo e, depois, Limpar a tela antes dele.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare desenho único, desenho a cada quadro e desenho com limpeza.
 
@@ -77,18 +79,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-camadas` · Compare a ordem dos desenhos
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy colando a figurinha do Dino por cima da figurinha da floresta. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu jogo já desenha o Dino. Antes de colocar o fundo, compare como a ordem dos desenhos muda o que aparece.
+> "Esta é uma experiência para a gente entender como a ordem dos desenhos decide quem fica na frente.
 >
-> Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela.
+> Olha aqui: no começo, a lista desenha o Dino primeiro e a floresta depois. Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.
 >
-> Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta.
+> Quando eu coloco o Dino depois da Floresta, ele aparece inteiro, sem nada na frente. Ninguém foi apagado: só a ordem mudou.
 >
-> Depois dos testes, clique em Próxima seção."
+> Se eu volto o Dino para antes da Floresta, ele se esconde de novo. Quando eu coloco o Dino depois da Floresta outra vez, ele volta para a frente. Quem é desenhado por último fica por cima. É como colar figurinhas no álbum: a última cobre a que já estava ali. No seu jogo, você vai encaixar Desenhar fundo de floresta antes de Desenhar o sprite.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Troque a ordem dos dois desenhos e compare o que fica visível.
 
@@ -138,18 +142,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-descricao` · Ouça a descrição do jogo
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Se o navegador não tiver voz, mostrar a leitura escrita. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Quem usa um leitor de tela precisa ouvir o que fazer no jogo. Compare uma tela sem descrição com uma frase que explica a tarefa e o controle.
+> "Esta é uma experiência para a gente entender o que ouve uma pessoa que usa leitor de tela. O leitor de tela é um programa que lê a tela em voz alta para quem não consegue ver bem.
 >
-> Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente.
+> Olha aqui: quando eu clico em Ouvir a tela com o campo vazio, ele diz só: Tela do jogo. Imagem. O programa não vê o desenho, então não tem como contar o que acontece.
 >
-> Compare o que foi lido antes e depois da frase.
+> Agora eu escrevo Corra com o dino e pule os cactos apertando espaço e clico em Ouvir a tela de novo. Ele lê a frase inteira, e as marcas mostram que ela diz o que fazer e como jogar.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como explicar uma brincadeira por telefone: quem está do outro lado não vê nada, então você conta o que fazer e como. No seu jogo, essa frase vai no bloco Descrever o jogo para leitor de tela.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Ouça a tela sem descrição e depois com a tarefa e o controle escritos.
 

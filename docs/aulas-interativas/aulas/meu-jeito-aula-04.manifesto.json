@@ -38,14 +38,14 @@
   "blocks": [
     {
       "key": "video-preenchimento-contorno",
-      "plannedVideo": "Título: Separe o miolo da borda\n\nRegravar nas ferramentas atuais. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe o miolo da borda\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda \"linha: Contorno · dentro: Preenchimento\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-preenchimento-contorno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões."
+        "text": "Agora tire a cor de uma parte de cada vez e compare a pedra."
       }
     },
     {
@@ -144,7 +144,7 @@
     {
       "key": "preenchimento-contorno",
       "title": "Separe o miolo da borda",
-      "objective": "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.",
+      "objective": "Agora tire a cor de uma parte de cada vez e compare a pedra.",
       "intent": "exploration",
       "blockKeys": [
         "video-preenchimento-contorno",

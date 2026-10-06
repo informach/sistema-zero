@@ -40,7 +40,7 @@ Anexar `output/pdf/meu-jeito-caderno.pdf` a `materiais-caderno`. Ler, baixar e i
 
 ### Seção 3. Troque a história, observe as regras
 
-**Tarefa / Zappy na página:** Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.
+**Tarefa / Zappy na página:** Agora troque o tema, desligue a regra de atirar e compare o que muda.
 
 **Blocos na página:** video-aparencia-e-regras → fala-aparencia-e-regras → experimento-tema-e-regra.
 
@@ -48,7 +48,7 @@ Anexar `output/pdf/meu-jeito-caderno.pdf` a `materiais-caderno`. Ler, baixar e i
 
 ### Seção 4. Veja o que uma cópia guarda
 
-**Tarefa / Zappy na página:** Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.
+**Tarefa / Zappy na página:** Agora faça a cópia e mude a cor só de um lado.
 
 **Blocos na página:** video-copias → fala-copias → experiencia-copia.
 

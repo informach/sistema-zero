@@ -97,6 +97,9 @@ describe('⚠️ o editor avisa o tempo que não cai em quadro inteiro (review d
   })
 
   test('quadro inteiro, e cena sem relógio: sem aviso', () => {
+    // Três casas no aviso do professor: numa cena de 8 quadros por segundo o quadro dura 0,125 s,
+    // e com duas casas o aviso recomendava o próprio valor que o disparava (revisão de 06/10/2026).
+    expect(avisoDoTempo('motion-amount', 0.13, false)).toContain('um quadro dura 0,125 s')
     expect(avisoDoTempo('draw-loop', 0.5, false)).toBeNull()
     expect(avisoDoTempo('entity-state', 3, true)).toBeNull()
     // A soma binária de 1/30 não pode virar aviso falso.

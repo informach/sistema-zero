@@ -24,11 +24,11 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 ### Seção 1. Compare nascer e animar
 
-**Tarefa / Zappy na página:** Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no botão Tempo com o triângulo para deixar passar dois segundos. Clique em Tempo para parar. Coloque nascimento em 40 e animação em 16. Volte ao começo e ligue Tempo de novo. Observe por três segundos, até nascerem pelo menos três pedras. Veja o número em cada uma ao entrar.
+**Tarefa / Zappy na página:** Agora mude os dois relógios e compare as pedras que nascem.
 
 **Blocos na página:** video-dois-relogios → fala-dois-relogios → experimento-dois-relogios.
 
-**Experiência existente:** `two-clocks`. Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no botão Tempo com o triângulo para deixar passar dois segundos. Clique em Tempo para parar. Coloque nascimento em 40 e animação em 16. Volte ao começo e ligue Tempo de novo. Observe por três segundos, até nascerem pelo menos três pedras. Veja o número em cada uma ao entrar. Sem palpite, pistas ou pergunta final.
+**Experiência existente:** `two-clocks`. Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no Tempo, o botão com o triângulo. Deixe nascerem três pedras e veja o número em cada uma ao entrar. Clique em Tempo para parar. Mude o nascimento para 40 e os desenhos por segundo para 16. Clique em Voltar ao começo, ligue Tempo e observe por três segundos. Sem palpite, pistas ou pergunta final.
 
 ### Seção 2. Prepare a folha do asteroide
 

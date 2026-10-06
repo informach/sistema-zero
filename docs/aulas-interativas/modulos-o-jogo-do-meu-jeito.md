@@ -6,7 +6,7 @@
 
 **Descrição:** Continue a partir de uma cópia do jogo que você concluiu em Nave Contra Asteroides. Crie uma nave em pixel art e um asteroide em vetor no Pinta, anime os dois e use essas artes no Estúdio. Teste as regras com os novos desenhos e, se quiser, publique sua versão no Mural dos Criadores.
 
-Revisão local de 05/10/2026: **8 aulas, 54 seções, 50 vídeos planejados, 14 experiências e quatro quizzes**. Os oito identificadores e a chave das entregas foram preservados. O [Caderno do Aluno](../../output/pdf/meu-jeito-caderno.pdf) acompanha o percurso; [fontes e reprodução](recursos/meu-jeito/README.md).
+Revisão local de 05/10/2026: **8 aulas, 54 seções, 50 vídeos planejados, 14 experiências e quatro quizzes**. Vídeos das experiências, do jogo pronto e da publicação revistos em 06/10/2026. Os oito identificadores e a chave das entregas foram preservados. O [Caderno do Aluno](../../output/pdf/meu-jeito-caderno.pdf) acompanha o percurso; [fontes e reprodução](recursos/meu-jeito/README.md).
 
 ## Módulo 1 — Seu jogo e sua nave
 
@@ -45,6 +45,8 @@ A versão completa jogável e o caderno abrem a primeira aula, junto da cópia d
 
 As 14 experiências vêm antes da aplicação: aparência e regras; cópia; pixel e vetor; simetria; luz e sombra; quadros e ritmo; fantasma; preenchimento e contorno; ordem das formas; mudança local; nomes; folha e recorte; relógio de nascimento e animação; versão publicada. Sem palpite, pistas ou pergunta final automática. Todos os gestos necessários estão nas instruções. Pixel e vetor são comparados na aula 2, antes da primeira escolha; a aula 4 retoma essa comparação.
 
+Desde 06/10/2026, o vídeo de cada experiência é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", mostra o resultado real da cena, explica o porquê e liga à aplicação seguinte. A comparação do dia a dia, quando existe, ganha um meme ilustrado descrito na nota de tela. Só no fim o vídeo passa a vez: "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção." O jogo pronto segue o mesmo raciocínio, com um exemplo só e sem jogar a partida. As instruções da experiência, as pontes do Zappy (uma frase curta que liga o vídeo à tarefa, sem repetir os passos) e as aplicações no Pinta e no Estúdio continuam no imperativo; o caderno usa as instruções da experiência, e não a fala da demonstração.
+
 Caneta, Linha, seleção e edição de pontos são operações demonstradas na criação real, com resultado visível e autoconferência. Não ganham experiências abstratas repetidas só por serem ferramentas novas. Cores, silhueta e detalhes continuam autorais; nomes e dimensões garantem a ligação entre artes e blocos.
 
 Na integração, o roteiro localiza o destino antes de buscar a peça. A troca do criador acontece numa aplicação, sem exigir uma seção inteira com o projeto quebrado. Preparar a folha e iniciar a animação ficam separados, com sinais do que cada comando faz. O nome girando identifica dois quadros; o curso não promete uma rotação completa da pedra.
@@ -59,7 +61,7 @@ Toda aplicação externa tem uma entrega posterior obrigatória da mesma ferrame
 
 Fluxo: **Escolher no Pinta/Estúdio → selecionar o cartão → Enviar ao professor (1 ou 2) → Trabalho recebido pelo professor. → Concluir aula**. Recado opcional. **Atualizar galeria** busca um trabalho recém-salvo. Após o primeiro envio, a entrada muda para **Enviar outra versão**.
 
-Na aula 8: **Compartilhar → título e resumo → Gerar capa → conferir → Publicar → Publicado! → Abrir o jogo → testar → Fechar**. Este é o fluxo do Estúdio completo; o Estúdio embutido usa outra celebração. Publicar guarda uma versão; editar não muda o cartão antigo. Publicação e link no recado não são exigidos para concluir.
+Na aula 8: **Compartilhar → título e resumo → Gerar capa → conferir → Publicar → Publicado! → Abrir o jogo → testar → Copiar link → Link copiado! → Fechar**. A fala começa dizendo que publicar é opcional, comemora a publicação e convida a mandar o link de jogar para a família e os amigos. Este é o fluxo do Estúdio completo; o Estúdio embutido usa outra celebração. Publicar guarda uma versão; editar não muda o cartão antigo. Publicação e link no recado não são exigidos para concluir.
 
 ## Continuidade e referências
 

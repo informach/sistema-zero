@@ -29,7 +29,7 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 **Zappy na página (não gravar):** Compare o grupo antes e depois de ligar a limpeza.
 
-**Experiência existente:** `cleanup`. Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `cleanup`. Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Retire do grupo quem já saiu
 

@@ -2283,8 +2283,9 @@ listado ali.
 ## Assistir ao vídeo antes da atividade (03/10/2026, migration `0099`)
 
 Opção por curso, `courses.video_before_activity boolean NOT NULL DEFAULT false` (decisão da
-dona: ligada só nos cursos de quem está começando). Ligada, em cada seção com vídeo e atividade
-na direita, o player do aluno tranca a atividade até o vídeo ser visto uma vez (90%).
+dona: ligada só nos cursos de quem está começando). Ligada, em cada seção com vídeo e jogo pronto
+ou experiência na direita (desde 06/10/2026 o Estúdio e o Pinta sozinhos não trancam), o player do
+aluno tranca a atividade até o vídeo ser visto uma vez (90%).
 
 - **O members só guarda e entrega.** Não há checagem no servidor: é guia de interface, e a régua
   da tranca mora no member-shell (`lib/video-gate.ts`). Nenhuma rota recusa nada por causa dela.

@@ -8,20 +8,34 @@ Entrada: Nave em pixel art com espaço reservado para o fogo. Saída: Nave com a
 
 Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
+Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
+
 ## Seção 1. Compare dois desenhos e uma animação
 
 ### Clipe `video-quadros` · Compare dois desenhos e uma animação
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar. Meme na comparação: na frase do livrinho, o Zappy folheando um livrinho em que a nave aparece com o fogo pequeno numa página e grande na outra, com a legenda "páginas rápidas viram movimento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.
+> "Esta é uma experiência para a gente entender como dois desenhos parados viram movimento.
 >
-> Compare os dois desenhos parados, o ritmo lento, o rápido e os quadros iguais. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: com a Prévia parada, eu escolho o Quadro 1, a nave com o fogo pequeno. Escolho o Quadro 2: a mesma nave, com o fogo grande. Cada quadro é um desenho parado.
+>
+> Agora eu coloco a Velocidade em 2 quadros por segundo e ligo a Prévia. Ela mostra um quadro, depois o outro, devagar. Dá para ver cada troca.
+>
+> Mudo a Velocidade para 8. Agora as trocas são tão rápidas que o fogo parece pulsar, e a nave fica no lugar. Quando eu paro a Prévia, fica um quadro só na tela: o movimento era a troca rápida.
+>
+> Sabe aqueles livrinhos com um desenho em cada página? Quando você passa as páginas bem rápido, o desenho parece se mexer. Na Prévia, cada quadro é uma página, e a Velocidade diz quantas páginas passam por segundo.
+>
+> Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. A Prévia continua trocando 8 quadros por segundo, mas o fogo parou de pulsar, porque os dois desenhos ficaram iguais. Sem diferença entre os quadros, não há movimento.
+>
+> Daqui a pouco, no Pinta, você vai desenhar o fogo do quadro 1 e o do quadro 2 da sua nave e deixar a Velocidade em 8 quadros por segundo.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.
+**Zappy na página (não gravar):** Agora mude a Velocidade da Prévia e veja quando o fogo pulsa.
 
 ## Seção 2. Desenhe o primeiro fogo
 
@@ -44,16 +58,26 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 ### Clipe `video-fantasma` · Use o quadro anterior como guia
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro. Meme na comparação: na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda "o de baixo é a guia". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.
+> "Esta é uma experiência para a gente entender o Fantasma, a guia que mostra o quadro anterior.
 >
-> Observe o fogo do quadro 2 com e sem a guia do anterior. Confira também o limite do quadro. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: eu escolho o Quadro 2, com o Fantasma desligado. O fogo 2 está tão grande que é cortado na borda do quadro. Eu diminuo o tamanho do fogo 2 para 7 quadradinhos. Ficou maior ou menor que o fogo do quadro 1? Não dá para saber, porque o fogo 1 não está na tela.
+>
+> Agora eu ligo o Fantasma. O fogo do quadro 1 aparece tracejado, por cima do fogo 2, com as marcas fogo 1 e fogo 2 nas pontas. As duas pontas estão quase juntas: o fogo 2 ficou quase igual ao fogo 1. Na animação, quase não ia dar para ver o fogo pulsar.
+>
+> Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: mostra o quadro anterior como guia.
+>
+> Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro. O Fantasma não entra na animação: ele só ajuda a comparar.
+>
+> Daqui a pouco, no Pinta, você vai ligar Fantasma do quadro anterior para mudar só o fogo no segundo quadro da sua nave.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.
+**Zappy na página (não gravar):** Agora use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1.
 
 ## Seção 4. Mude só o fogo no segundo quadro
 

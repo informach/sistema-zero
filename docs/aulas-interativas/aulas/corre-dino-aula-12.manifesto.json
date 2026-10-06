@@ -28,7 +28,7 @@
   "blocks": [
     {
       "key": "video-sorteio-tira-na-hora",
-      "plannedVideo": "Título: Compare os resultados de um sorteio\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare os resultados de um sorteio\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy tirando papeizinhos de um saquinho, com os números 500, 530 e 560. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-sorteio-tira-na-hora",
@@ -43,7 +43,7 @@
       "content": {
         "kind": "interactive",
         "title": "Compare os resultados de um sorteio",
-        "instructions": "Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem. Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias e leia as contas -5 - 0 e -5 - 1.",
+        "instructions": "Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem. Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias.",
         "hints": [],
         "required": true,
         "activity": {

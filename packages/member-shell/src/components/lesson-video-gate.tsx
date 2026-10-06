@@ -12,8 +12,9 @@ export const VIDEO_GATE_DONE_MS = 8000
 /**
  * "Assistir ao vídeo antes da atividade" (03/10/2026): a atividade da direita trancada, com um
  * aviso por cima, até a criança ver o vídeo da seção uma vez. Decisão da dona, a partir de uma
- * criança testando o Cadê Todo Mundo?: ela quis fazer junto já na primeira vez, se perdeu, e o
- * caminho que funciona é ver uma vez para entender e depois ver de novo fazendo.
+ * criança testando o Cadê Todo Mundo?: ela quis fazer junto já na primeira vez e se perdeu. Desde
+ * 06/10/2026 a tranca vale só para o jogo pronto e a experiência, onde o vídeo é uma demonstração
+ * que explica: primeiro ela entende, depois é a vez dela. No Estúdio e no Pinta ela monta junto.
  *
  * ⚠️ O invólucro existe SEMPRE (com a tranca desligada ele só passa os filhos): ele embrulha os
  * editores da aula, que ficam montados entre as seções, e trocar a árvore os remontaria.
@@ -66,7 +67,7 @@ export function LessonVideoGate({
             </h3>
             <p className="sz-lesson-video-gate-text text-muted-foreground">
               {kids
-                ? 'Veja o vídeo uma vez até o fim para descobrir o que vamos fazer. Depois esta parte abre, e você assiste de novo fazendo junto!'
+                ? 'Veja o vídeo uma vez até o fim para entender como funciona. Depois esta parte abre, e é a sua vez!'
                 : 'A atividade abre depois que você assistir ao vídeo uma vez.'}
             </p>
             {percent > 0 ? (
@@ -92,9 +93,10 @@ export function LessonVideoGate({
 }
 
 /**
- * O "Pronto! Agora assista de novo e faça junto" que acende quando a atividade ABRE nesta visita
- * (a transição trancada → aberta NA MESMA SEÇÃO; abrir a aula já destrancada ou trocar de seção
- * não acende nada).
+ * O "Pronto! Agora é a sua vez" que acende quando a atividade ABRE nesta visita (a transição
+ * trancada → aberta NA MESMA SEÇÃO; abrir a aula já destrancada ou trocar de seção não acende
+ * nada). Só a cena e o jogo pronto trancam (06/10/2026): o vídeo mostrou e explicou, e quem testa
+ * agora é ela.
  *
  * ⚠️⚠️ Fica FORA do fluxo e FORA do painel da atividade (full review de 03/10/2026). Dentro do
  * fluxo, sumir no primeiro toque puxava a atividade ~60px para cima entre o toque e o soltar, e o
@@ -141,7 +143,7 @@ export function LessonVideoGateDone({
         <p className="sz-lesson-video-gate-done flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-3 font-medium shadow-lg">
           {kids ? (
             <>
-              Pronto! Agora assista de novo e faça junto <span aria-hidden>🎉</span>
+              Pronto! Agora é a sua vez <span aria-hidden>🎉</span>
             </>
           ) : (
             'Atividade liberada.'

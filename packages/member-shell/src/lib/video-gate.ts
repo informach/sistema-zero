@@ -3,12 +3,7 @@ import {
   VIDEO_WATCH_THRESHOLD,
   videoWatchedFraction,
 } from '@sistemazero/core/learning'
-import {
-  ehAtividadeDeSecao,
-  ehEditorDeSecao,
-  ehPreviaDeLivro,
-  type SplitBlock,
-} from './lesson-split'
+import { ehAtividadeDeSecao, type SplitBlock } from './lesson-split'
 import { parseVimeo, youtubeId } from './video-ids'
 
 /**
@@ -33,12 +28,14 @@ export type VideoGate = {
 
 const ABERTA: VideoGate = { locked: false, videoBlockId: null, watchedFraction: 0 }
 
-/** A direita tem uma FERRAMENTA de verdade (editor, cena ou jogo pronto). A prévia de livro e a
- * entrega por galeria moram na direita, mas não são o "fazer" que o vídeo explica. */
-function temFerramenta(block: GateBlock): boolean {
-  if (ehPreviaDeLivro(block)) return false
-  return ehEditorDeSecao(block) || ehAtividadeDeSecao(block)
-}
+/**
+ * Só o JOGO PRONTO e a EXPERIÊNCIA trancam (decisão da dona, 06/10/2026). Neles o vídeo mostra e
+ * explica, e a criança precisa ouvir o porquê antes de brincar ou testar. No Estúdio e no Pinta o
+ * vídeo é passo a passo, para montar JUNTO: trancar obrigava a ver tudo uma vez e depois de novo.
+ * A prévia de livro e a entrega por galeria moram na direita, mas não são atividade.
+ * ⚠️ Numa seção MISTA (editor + cena) a tranca vale e cobre o painel inteiro; hoje nenhum curso tem.
+ */
+const trancavel = (block: GateBlock): boolean => ehAtividadeDeSecao(block)
 
 /**
  * Um vídeo que o `LessonVideo` desenha COM player (o mesmo critério dele). Um bloco de vídeo sem
@@ -84,7 +81,7 @@ export function videoGateFor({
   sectionCompleted: boolean
 }): VideoGate {
   if (!enabled || sectionCompleted) return ABERTA
-  if (!blocks.some(temFerramenta)) return ABERTA
+  if (!blocks.some(trancavel)) return ABERTA
   // O primeiro vídeo que o progresso consegue acompanhar: sem revisão, nada é guardado e a
   // tranca nunca abriria.
   const video = blocks.find((b) => isPlayableVideo(b) && Boolean(b.blockRevision))

@@ -12,16 +12,18 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-vidas-no-comeco` · Compare quando dar as vidas
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Seu jogo já conta pontos. Agora compare dois lugares para dar três vidas à nave.
+> "Esta é a mesma experiência da primeira aula, agora para a gente entender onde as vidas da nave devem ser dadas. Aqui, uma pedra bate na nave de tempos em tempos.
 >
-> Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas.
+> Olha aqui: eu coloco Dar três vidas à nave em Ao iniciar e clico em Começar o jogo. A nave começa com 3 vidas, e cada batida apaga um coração. No fim do teste, a tela mostra Vidas: 0 e Batidas: 3. As vidas foram dadas uma vez, no começo, e as batidas conseguiram tirar.
 >
-> Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações. Depois, clique em Próxima seção."
+> Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. A batida apaga um coração, mas no quadro seguinte as vidas voltam para 3. No fim do teste, aparece Vidas: 2, porque a última batida foi bem no último quadro. A peça devolve as vidas o tempo todo, e a nave nunca perderia. Por isso, no seu jogo, as vidas vão ser dadas em Ao iniciar.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações.
 
@@ -50,18 +52,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-protecao` · Compare as batidas com proteção
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Não prometer que a cena reproduz 45 quadros de jogo real em segundos.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Sua nave ainda atravessa as pedras sem perder vida. Vamos programar o dano e um pequeno tempo de proteção depois de uma batida. Durante essa proteção, outra batida não tira vida.
+> "Esta é uma experiência para a gente entender a proteção depois de uma batida: um tempinho em que outra batida não tira vida. Aqui, as pedras batem nos quadros 1, 10 e 30.
 >
-> Nesta experiência, escolha 0 quadros em Proteção em quadros. Clique em Avançar até a próxima pedra três vezes e observe os corações.
+> Olha aqui: eu escolho 0 quadros em Proteção em quadros e clico em Avançar até a próxima pedra três vezes. Cada batida apaga um coração, e a nave fica sem vidas. Sem proteção, as três batidas tiram as três vidas.
 >
-> Clique em Voltar ao começo, escolha 45 quadros e repita as três batidas. Acompanhe os corações e quantos quadros de proteção restam.
+> Eu clico em Voltar ao começo, escolho 45 quadros e repito as três batidas. A primeira tira uma vida, e a proteção começa com 45 quadros. Na batida do quadro 10, ainda restam 36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Só a primeira batida tirou vida.
 >
-> Volte ao começo mais uma vez. Escolha 15 quadros e avance pelas três pedras. Observe em qual batida a proteção ainda está ativa e em qual já acabou. Depois dos três testes, clique em Próxima seção."
+> Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida. Na batida do quadro 10, restam 6 quadros, e a vida não cai. Mas, no quadro 30, a proteção já acabou, e essa batida tira outra vida. A proteção é um respiro com prazo. No seu jogo, a batida vai dar 45 quadros de proteção.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes.
 

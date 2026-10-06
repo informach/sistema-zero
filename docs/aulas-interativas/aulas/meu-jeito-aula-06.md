@@ -24,11 +24,11 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 ### Seção 1. Separe os nomes que os blocos procuram
 
-**Tarefa / Zappy na página:** Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.
+**Tarefa / Zappy na página:** Agora tire o bloco, troque o nome e veja quando os avisos aparecem.
 
 **Blocos na página:** video-nomes → fala-nomes → experimento-nomes.
 
-**Experiência existente:** `unique-names`. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave. Sem palpite, pistas ou pergunta final.
+**Experiência existente:** `unique-names`. Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave. Sem palpite, pistas ou pergunta final.
 
 ### Seção 2. Traga seus desenhos para o projeto
 
@@ -40,7 +40,7 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 ### Seção 3. Separe o quadro do tamanho no jogo
 
-**Tarefa / Zappy na página:** Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.
+**Tarefa / Zappy na página:** Agora mude a Largura do recorte até aparecer uma nave inteira.
 
 **Blocos na página:** video-recorte → fala-recorte → experimento-recorte.
 

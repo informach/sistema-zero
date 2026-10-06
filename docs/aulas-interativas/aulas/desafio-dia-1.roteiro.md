@@ -3,8 +3,8 @@
 Oito seções, oito vídeos. Como na Aula 1 do Cadê Todo Mundo?, o dia começa pelo jogo pronto e pelo caderno. Depois, cada ideia tem sua seção: uma experiência mostra o conceito e a montagem seguinte o aplica no jogo (a cada quadro, a velocidade e o limite da tela). Até 05/10/2026, as duas primeiras seções formavam a aula separada de introdução, e as três ideias ficavam num só vídeo de montagem.
 
 - **Seções 1 e 2:** o jogo pronto é uma atividade separada do projeto que a pessoa vai construir. Não gravar uma partida resolvida, tour da plataforma nem tutorial do leitor. Conferir o PDF anexado antes de gravar a seção 2.
-- **Seções 3, 5 e 7:** a mesma experiência `lighthouse-walk`, com metas diferentes. O vídeo faz cada gesto no ritmo da fala e mostra o resultado real; depois, a pessoa repete os testes na experiência, que cobra as metas.
-- **Seções 4, 6 e 8:** o mesmo projeto. O cenário, os desenhos, o desenho de cada quadro e a regra do barco já vêm preparados; o projeto inicial ainda não tem controles nem movimento. A seção 4 verifica sem enviar; a seção 6 é a escolha da velocidade (mexa e veja), sem verificação; a seção 8 verifica e envia. Mostrar cada gesto no ritmo da fala, com pausa para acompanhar. Não fazer outra demonstração do jogo completo nem tour de abas, divisória ou ampliação.
+- **Seções 3, 5 e 7:** a mesma experiência `lighthouse-walk`, com metas diferentes. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.
+- **Seções 4, 6 e 8:** o mesmo projeto. O cenário, os desenhos, o desenho de cada quadro e a regra do barco já vêm preparados; o projeto inicial ainda não tem controles nem movimento. A seção 4 verifica sem enviar; a seção 6 é a escolha da velocidade (mexa e veja), com verificação e sem envio; a seção 8 verifica e envia. Mostrar cada gesto no ritmo da fala, com pausa para acompanhar. Não fazer outra demonstração do jogo completo nem tour de abas, divisória ou ampliação.
 
 Só a narração é falada; o botão atual se chama **Próxima seção**, e a última seção termina em **Concluir aula**.
 
@@ -14,22 +14,24 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 
 ### Vídeo `video-intro-farol` · Seu primeiro jogo: A Chave do Farol
 
-**Duração alvo:** 35 a 45 segundos.
+**Duração alvo:** 45 a 60 segundos.
 
-**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados, sem percorrer o caminho nem mostrar o barco chegando. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. No "Olha aqui", segurar a seta da tela para a direita por um instante e deixar ver o personagem andar um pouco; parar antes da chave. Não percorrer o caminho nem mostrar o barco chegando. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
-> "Oi! Neste desafio, você vai programar o jogo A Chave do Farol. Aqui está a versão pronta para você jogar antes de montar o seu.
+> "Oi! Neste desafio, você vai programar o jogo A Chave do Farol. Esta é a versão pronta, para você ver como o jogo funciona antes de montar o seu.
 >
-> Um barco precisa chegar à costa, mas o farol está apagado. Leve o personagem até a chave. Depois leve o personagem até o farol.
+> Um barco precisa chegar à costa, mas o farol está apagado. Para acender o farol, o personagem precisa pegar a chave e levar até lá.
 >
-> Para andar, segure as setas da tela. No computador, você também pode clicar dentro do jogo e usar as setas do teclado.
+> Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. No computador, também dá para clicar dentro do jogo e usar as setas do teclado.
 >
-> Quando o farol acender e o barco chegar, clique em Próxima seção."
+> O caminho até a chave e depois até o farol, eu deixo para você.
+>
+> Agora é a sua vez: jogue até o farol acender e o barco chegar. Quando terminar, clique em Próxima seção."
 
 **Ponte do Zappy na página (não gravar):** Jogue a versão pronta. Pegue a chave, leve o personagem até o farol e clique em Próxima seção.
 
-**Conferência de produção:** a seção exige o vídeo e a participação no jogo pronto; vencer não é requisito técnico. A fala dá o objetivo completo para quem quiser terminar. Pausa, replay, ampliação e reinício ficam no Como Fazer.
+**Conferência de produção:** o vídeo é uma demonstração: mostra como se anda com um gesto só, sem resolver o caminho, e só no fim passa a vez. A seção exige o vídeo e a participação no jogo pronto; vencer não é requisito técnico. A fala dá o objetivo completo para quem quiser terminar. Pausa, replay, ampliação e reinício ficam no Como Fazer.
 
 ## Seção 2. Seu Caderno do Aluno
 
@@ -59,21 +61,21 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 **Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o x fica igual), ligar a seta e avançar alguns quadros (o x sobe), depois Rodar. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase do desenho animado, um bloquinho folheado (flipbook) em que o personagem dá um passinho em cada folha. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
-> "Aqui está uma experiência para entender como um personagem anda num jogo.
+> "Esta é uma experiência para a gente entender os quadros do jogo e como o personagem anda.
 >
 > O jogo é como um desenho animado: mostra muitas imagens por segundo, e cada imagem é um quadro. O x mostra onde o personagem está.
 >
-> Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. O x não mudou: sem a seta, o personagem fica parado.
+> Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. O x não muda: sem a seta, o personagem fica parado.
 >
-> Agora ligue Segurar a seta para a direita e clique em Avançar 1 quadro algumas vezes. A cada quadro, o x aumenta um pouco. É assim que ele anda: um passinho em cada quadro.
+> Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. A cada quadro, o x aumenta um pouco. É assim que ele anda: um passinho em cada quadro. Olha a regra aqui embaixo: o movimento está dentro de A cada quadro do jogo. Por isso ele anda um pouquinho em cada quadro.
 >
-> Clique em Rodar. Os quadros passam rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela. Para ver de novo, clique em Recomeçar.
+> Quando eu clico em Rodar, os quadros passam rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela. Para ver de novo, eu clico em Recomeçar.
 >
-> Agora é a sua vez: faça esses testes na experiência e clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Ponte do Zappy na página (não gravar):** Agora veja como o personagem anda, um quadro de cada vez.
 
-**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
 ## Seção 4. Faça o personagem andar
 
@@ -139,19 +141,19 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 **Na tela:** mostrar a mesma experiência com **Velocidade 3**. Ligar a seta e avançar alguns quadros (o x sobe de 3 em 3). Clicar em **Recomeçar**, escolher **Velocidade 1** e avançar de novo, mostrando as marcas mais juntas. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase do tamanho do passo, o personagem dando passinhos curtos ao lado do mesmo personagem de pernas bem abertas num passo largo. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
-> "Aqui está a mesma experiência, agora para entender a velocidade.
+> "Esta é a mesma experiência, agora para a gente entender a velocidade.
 >
 > A velocidade diz quanto o personagem anda em cada quadro. É como o tamanho do passo: passos curtos ou passos largos.
 >
-> Com Velocidade 3, ligue Segurar a seta para a direita e clique em Avançar 1 quadro algumas vezes. O x aumenta 3 a cada quadro.
+> Olha aqui: com Velocidade 3, eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. O x aumenta 3 a cada quadro.
 >
-> Clique em Recomeçar e escolha Velocidade 1. Clique em Avançar 1 quadro de novo. Agora o x aumenta só 1, e as marcas no chão ficam mais juntas: são passos curtinhos.
+> Agora eu clico em Recomeçar, escolho Velocidade 1 e clico em Avançar 1 quadro de novo. O x aumenta só 1, e as marcas no chão ficam mais juntas: são passos curtinhos.
 >
-> Agora é a sua vez: teste as duas velocidades na experiência e clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Ponte do Zappy na página (não gravar):** Agora compare as duas velocidades.
 
-**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
 ## Seção 6. Escolha a velocidade
 
@@ -162,7 +164,7 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 **Na tela:** Começar pela retomada, antes de qualquer bloco: segurar uma seta no jogo e mostrar o tanto que o personagem anda com a velocidade 3. Depois deixar à vista, dentro de **A cada quadro do jogo**, o bloco de movimento com o número `3`. Trocar para `5`, clicar fora do campo e testar; trocar para `2` e testar; deixar o número escolhido. Clicar em **Verificar esta etapa**, esperar **Salvo** e apontar **Próxima seção**. A verificação confere só o movimento, com qualquer velocidade.
 
 **Narração:**
-> "Na experiência da seção anterior, a velocidade mudava o tamanho do passo do personagem em cada quadro. Agora mexa e veja: escolha a velocidade do seu personagem!
+> "Na experiência da seção anterior, a velocidade mudava o tamanho do passo do personagem em cada quadro. Agora escolha a velocidade do seu personagem!
 >
 > Primeiro, segure uma seta e repare quanto ele anda. A velocidade está em 3.
 >
@@ -191,19 +193,19 @@ Só a narração é falada; o botão atual se chama **Próxima seção**, e a ú
 **Na tela:** mostrar a mesma experiência com **Manter dentro da tela** desligado. Ligar a seta e Rodar até o personagem sair pela borda. Clicar em **Recomeçar**, ligar o limite e Rodar de novo, mostrando o personagem parado inteiro na borda. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase da parede invisível, o personagem fazendo mímica com as mãos espalmadas numa parede invisível na borda da tela. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
-> "Aqui está a mesma experiência, agora para entender o limite da tela.
+> "Esta é a mesma experiência, agora para a gente entender o limite da tela.
 >
 > A tela do jogo é como uma janela: o que passa da borda some de vista.
 >
-> Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. O personagem chega na borda e continua andando, até sair da tela.
+> Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. O personagem chega na borda e continua andando, até sair da tela.
 >
-> Clique em Recomeçar. Agora ligue Manter dentro da tela e clique em Rodar de novo. Ele para na borda e fica inteiro na tela. Manter dentro da tela funciona como uma parede invisível na borda dessa janela.
+> Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Ele para na borda e fica inteiro na tela. Manter dentro da tela funciona como uma parede invisível na borda dessa janela.
 >
-> Agora é a sua vez: faça os dois testes na experiência e clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Ponte do Zappy na página (não gravar):** Agora veja o que acontece na borda, sem o limite e com ele.
 
-**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
 ## Seção 8. Mantenha o personagem na tela
 

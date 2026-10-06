@@ -12,18 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-sorteio-tira-na-hora` · Compare os resultados de um sorteio
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy tirando papeizinhos de um saquinho, com os números 500, 530 e 560. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Os cactos do seu jogo nascem no mesmo lugar e com a mesma velocidade. Observe um sorteio que escolhe um valor a cada nascimento.
+> "Esta é uma experiência para a gente entender o sorteio, que escolhe um valor na hora em que cada cacto nasce.
 >
-> Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem.
+> Olha aqui: quando eu clico em Sortear lugar (velocidade fica −5), sai um lugar na régua. Clico de novo, e sai outro. Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu. Todos ficam entre 500 e 560, depois da borda 480, fora da tela. O sorteio respeita os limites, e um lugar pode repetir.
 >
-> Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias e leia as contas -5 - 0 e -5 - 1.
+> Depois eu clico em Sortear velocidade (lugar fica 500) até sair um cacto -5 e um -6. Nas raias, o -6 chega mais longe em um segundo: ele é mais rápido. A conta é -5 menos o número sorteado. Se sair 0, fica -5. Se sair 1, fica -6.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como tirar um papelzinho de um saquinho e devolver: cada vez sai um, e o mesmo pode sair de novo. No seu jogo, você vai trocar o x 560 por um número entre 500 e 560.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Sorteie posições até comparar diferenças e repetições; depois compare as duas velocidades.
 

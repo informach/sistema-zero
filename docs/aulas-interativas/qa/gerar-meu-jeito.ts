@@ -15,6 +15,8 @@ export interface SecaoMeuJeito {
   bridge: string
   kind: string
   screen?: string
+  /** Experiência com comparação do dia a dia: o meme ilustrado que aparece na frase dela. */
+  meme?: string
   speech?: string[]
   videoKey?: string
   externalTool?: 'pinta' | 'estudio'
@@ -42,13 +44,30 @@ export const aulasMeuJeito = JSON.parse(
 ) as AulaMeuJeito[]
 export function falasSecao(s: SecaoMeuJeito): string[] {
   const speech = [...(s.speech ?? [])]
-  if (s.externalTool && !s.final) {
+  if (s.key === 'compartilhar') {
+    // Publicar é opcional e não tem uma conferência anterior para comparar (revisão de 06/10/2026).
+    speech.push(
+      'Pause aqui se escolheu publicar. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Depois de clicar em Fechar, volte a esta aba e clique em Próxima seção.',
+    )
+  } else if (s.externalTool && !s.final) {
     const tool = s.externalTool === 'pinta' ? 'Pinta' : 'Estúdio'
     speech.push(
-      `Pause aqui ${s.key === 'compartilhar' ? 'se escolheu publicar' : 'para fazer esta parte no seu trabalho'}. Use Abrir meu ${tool} se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere ${tool === 'Pinta' ? 'Guardado na sua conta' : 'Salvo'}. Volte a esta aba e clique em Próxima seção.`,
+      `Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu ${tool} se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere ${tool === 'Pinta' ? 'Guardado na sua conta' : 'Salvo'}. Volte a esta aba e clique em Próxima seção.`,
     )
   }
   return speech
+}
+/**
+ * A nota "Na tela". Nas experiências o vídeo é uma DEMONSTRAÇÃO (Diretrizes, decisão de
+ * 06/10/2026): o narrador faz os testes na primeira pessoa e só no fim passa a vez. As montagens e
+ * o jogo pronto usam a nota da própria seção, sem este modelo.
+ */
+export function telaSecao(s: SecaoMeuJeito): string {
+  if (!s.activity) return s.screen ?? ''
+  const meme = s.meme
+    ? ` Meme na comparação: ${s.meme} Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele.`
+    : ''
+  return `Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. ${s.screen}${meme} No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.`
 }
 export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
   const blocks: LearningManifest['blocks'] = []
@@ -64,7 +83,7 @@ export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
     if (s.videoKey) {
       blocks.push({
         key: s.videoKey,
-        plannedVideo: `Título: ${s.title}\n\nRegravar nas ferramentas atuais. ${s.screen}\n\nFala completa em meu-jeito-${lesson.slug}.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.`,
+        plannedVideo: `Título: ${s.title}\n\nRegravar nas ferramentas atuais. ${telaSecao(s)}\n\nFala completa em meu-jeito-${lesson.slug}.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.`,
       })
       blockKeys.push(s.videoKey)
       required.push(s.videoKey)
@@ -79,7 +98,7 @@ export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
           required: true,
           title: 'Experimente uma versão com artes próprias',
           instructions:
-            'Clique no jogo. Enter começa; as setas movem a nave e Espaço atira. Depois de perder, Enter volta à abertura e outro Enter começa. Observe as artes; não há pontuação mínima para seguir.',
+            'Clique no jogo. Enter começa; as setas movem a nave e Espaço atira. Depois que a partida terminar, Enter volta à abertura e outro Enter começa. Observe as artes; não há pontuação mínima para seguir.',
           hints: [],
           activity: {
             type: 'project-play',
@@ -137,6 +156,8 @@ function roteiro(lesson: AulaMeuJeito, index: number) {
     '',
     'Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.',
     '',
+    'Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.',
+    '',
   ]
   lesson.sections.forEach((s, i) => {
     lines.push(`## Seção ${i + 1}. ${s.title}`, '')
@@ -147,7 +168,7 @@ function roteiro(lesson: AulaMeuJeito, index: number) {
         '',
         `**Estimativa de gravação:** aproximadamente ${Math.ceil(speech.join(' ').split(/\s+/).length / 130)} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.`,
         '',
-        `**Na tela:** ${s.screen} ${s.externalTool ? 'Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.' : ''}`.trimEnd(),
+        `**Na tela:** ${telaSecao(s)} ${s.externalTool ? 'Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.' : ''}`.trimEnd(),
         '',
         '**Narração:**',
         `> "${speech.join('\n>\n> ')}"`,

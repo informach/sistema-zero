@@ -12,20 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-condicao` · Escolha quando o jogo pode agir
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Criar cacto no relógio, fora do Se. Clicar em Tempo até nascer um cacto. Levar a peça para Se o estado do jogo é jogando e deixar passar três segundos, com os toques do relógio subindo e os nascimentos em 0 na faixa. Tocar na tela, deixar o tempo passar e mostrar os nascimentos voltando. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino diante de uma porta trancada, girando uma chave escrita jogando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Sua corrida começa assim que o projeto abre. Vamos separar a abertura da partida para poder esperar uma entrada antes de jogar.
+> "Esta é uma experiência para a gente entender a condição: uma pergunta que faz o jogo esperar a hora certa de agir.
 >
-> Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto.
+> Olha aqui: com Criar cacto fora de Se o estado do jogo é jogando, eu deixo o tempo passar na tela de início. Nascem cactos antes de alguém jogar. O relógio cria cactos sem perguntar nada.
 >
-> Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador.
+> Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Na tela de início, eu deixo passar três segundos. O relógio continua tocando, mas os nascimentos ficam em 0. A pergunta responde não, porque o estado ainda é inicio.
 >
-> Depois toque na tela para começar a partida e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos.
+> Quando eu toco na tela, a partida começa, e os cactos voltam a nascer: agora a resposta é sim. É como a porta de casa, que só abre com a chave certa. Aqui, a chave é o estado jogando. No seu jogo, você vai guardar o estado inicio e colocar as ações da corrida dentro de um Se jogando.
 >
-> Depois dos testes, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare o início e a partida com a criação fora e dentro da condição.
 

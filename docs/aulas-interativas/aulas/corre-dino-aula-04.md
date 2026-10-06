@@ -29,7 +29,7 @@ As duas experiências mostram espera por um evento e diferença entre tecla e pu
 
 **Zappy na página (não gravar):** Comece o teste sem tocar na tecla e depois acione a tecla uma vez.
 
-**Experiência existente:** `once-vs-always`. Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar na tecla. Observe o contador. Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `once-vs-always`. Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar em Apertar a tecla. Observe o contador. Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Compare a tecla com o pulo
 
@@ -39,7 +39,7 @@ As duas experiências mostram espera por um evento e diferença entre tecla e pu
 
 **Zappy na página (não gravar):** Teste tecla repetida e toque nos dois lugares do som.
 
-**Experiência existente:** `jump-sound`. Deixe Tocar efeito em Quando apertar Espaço. Toque na barra de espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, pule tocando no Dino. Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: duas teclas no mesmo salto e um pulo tocando no Dino. Compare os contadores. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `jump-sound`. Deixe Tocar efeito em Quando apertar Espaço. Clique em Apertar Espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, clique em Tocar para pular. Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: Apertar Espaço duas vezes no mesmo salto e Tocar para pular uma vez. Compare os contadores. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 3. Ligue o som ao pulo do Dino
 

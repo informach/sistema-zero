@@ -115,7 +115,7 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 - A colisão que tira vida fica na partida.
 - Dê 3 vidas à nave em Ao iniciar.
 
-Publicação opcional após o envio: Compartilhar → título e resumo → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Fechar → Concluir aula. Não bloquear a conclusão por publicação.
+Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.
 
 ## Blocos disponíveis
 

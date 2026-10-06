@@ -241,7 +241,14 @@ const chapters = aulasNave.map((lesson, i) => {
       )
       continue
     }
-    const speech = falasSecao(section)
+    // Os vídeos da experiência e do jogo pronto são demonstrações do narrador, na primeira pessoa
+    // (Diretrizes, 06/10/2026). O caderno é a consulta de quem faz: ali ficam os passos no imperativo.
+    const speech =
+      section.activity?.activity.type === 'experimentation'
+        ? [section.activity.instructions]
+        : section.play
+          ? [section.bridge]
+          : falasSecao(section)
     speech.forEach((paragraph, p) => {
       chunks.push(
         `${p === 0 ? heading : ''}<div class="step"><span class="number">${p + 1}</span><p>${escapeHtml(paragraph)}</p></div>`,

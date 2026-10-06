@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { type LessonLearningProgress, videoCoverageAnswers } from '@sistemazero/core/learning'
+import { createEmptyProject } from '@sistemazero/studio/project'
 import { type GateBlock, isPlayableVideo, videoGateFor } from '../src/lib/video-gate'
 
 /**
@@ -55,9 +56,17 @@ function assistido(fracao: number, revision = 'r1'): LessonLearningProgress {
 const base = { enabled: true, sectionCompleted: false, learningProgress: undefined }
 
 describe('a tranca da atividade', () => {
-  test('vídeo não visto + atividade na direita = trancada, apontando o vídeo', () => {
-    const gate = videoGateFor({ ...base, blocks: [texto, video, estudio] })
+  test('vídeo não visto + experiência na direita = trancada, apontando o vídeo', () => {
+    const gate = videoGateFor({ ...base, blocks: [texto, video, cena] })
     expect(gate).toEqual({ locked: true, videoBlockId: 'video', watchedFraction: 0 })
+  })
+
+  test('o Estúdio e o Pinta não trancam: a criança monta junto com o vídeo (06/10/2026)', () => {
+    expect(videoGateFor({ ...base, blocks: [texto, video, estudio] }).locked).toBe(false)
+    const pinta: GateBlock = { id: 'pinta', kind: 'pinta', content: { kind: 'pinta' } }
+    expect(videoGateFor({ ...base, blocks: [video, pinta] }).locked).toBe(false)
+    // Com uma experiência na mesma seção, a tranca volta: ela pede o vídeo antes.
+    expect(videoGateFor({ ...base, blocks: [video, estudio, cena] }).locked).toBe(true)
   })
 
   test('a cena também é atividade', () => {
@@ -67,14 +76,14 @@ describe('a tranca da atividade', () => {
   test('abre aos 90% assistidos, e conta o que foi visto', () => {
     const quase = videoGateFor({
       ...base,
-      blocks: [video, estudio],
+      blocks: [video, cena],
       learningProgress: assistido(0.45),
     })
     expect(quase.locked).toBe(true)
     expect(quase.watchedFraction).toBeCloseTo(0.45)
     const visto = videoGateFor({
       ...base,
-      blocks: [video, estudio],
+      blocks: [video, cena],
       learningProgress: assistido(0.9),
     })
     expect(visto.locked).toBe(false)
@@ -84,18 +93,18 @@ describe('a tranca da atividade', () => {
   test('o vídeo trocado pela autora (outra revisão) tranca de novo', () => {
     const gate = videoGateFor({
       ...base,
-      blocks: [video, estudio],
+      blocks: [video, cena],
       learningProgress: assistido(1, 'revisao-antiga'),
     })
     expect(gate.locked).toBe(true)
   })
 
   test('a opção desligada, ou sem player, nunca tranca', () => {
-    expect(videoGateFor({ ...base, enabled: false, blocks: [video, estudio] }).locked).toBe(false)
+    expect(videoGateFor({ ...base, enabled: false, blocks: [video, cena] }).locked).toBe(false)
   })
 
   test('seção já concluída não tranca ao revisitar', () => {
-    expect(videoGateFor({ ...base, sectionCompleted: true, blocks: [video, estudio] }).locked).toBe(
+    expect(videoGateFor({ ...base, sectionCompleted: true, blocks: [video, cena] }).locked).toBe(
       false,
     )
   })
@@ -112,20 +121,36 @@ describe('a tranca da atividade', () => {
     expect(videoGateFor({ ...base, blocks: [video, livro] }).locked).toBe(false)
   })
 
-  test('o Estúdio de entrega por galeria não é a atividade que o vídeo explica', () => {
-    expect(videoGateFor({ ...base, blocks: [video, { ...estudio, gallery: true }] }).locked).toBe(
-      false,
-    )
+  test('o jogo pronto tranca, como a experiência: o vídeo mostra como se joga', () => {
+    const jogoPronto: GateBlock = {
+      id: 'jogo',
+      kind: 'interactive',
+      content: {
+        kind: 'interactive',
+        title: 'Jogue o jogo pronto',
+        instructions: 'Encontre os três personagens.',
+        hints: [],
+        required: true,
+        activity: {
+          type: 'project-play',
+          completion: 'participation',
+          project: createEmptyProject('jardim', 'Jardim pronto'),
+          stage: { width: 640, height: 360 },
+          targets: [],
+        },
+      },
+    }
+    expect(videoGateFor({ ...base, blocks: [video, jogoPronto] }).locked).toBe(true)
   })
 
   test('sem vídeo acompanhável (sem revisão) nada tranca: a tranca nunca abriria', () => {
     const semRevisao: GateBlock = { ...video, blockRevision: undefined }
-    expect(videoGateFor({ ...base, blocks: [semRevisao, estudio] }).locked).toBe(false)
+    expect(videoGateFor({ ...base, blocks: [semRevisao, cena] }).locked).toBe(false)
   })
 
   test('vale o PRIMEIRO vídeo da seção', () => {
     const segundo: GateBlock = { ...video, id: 'video-2', blockRevision: 'r9' }
-    const gate = videoGateFor({ ...base, blocks: [video, segundo, estudio] })
+    const gate = videoGateFor({ ...base, blocks: [video, segundo, cena] })
     expect(gate.videoBlockId).toBe('video')
   })
 
@@ -136,14 +161,14 @@ describe('a tranca da atividade', () => {
       content: { kind: 'video', provider: 'youtube', src: 'https://exemplo.com/nada' },
     }
     const bom: GateBlock = { ...video, id: 'bom' }
-    expect(videoGateFor({ ...base, blocks: [quebrado, bom, estudio] }).videoBlockId).toBe('bom')
-    expect(videoGateFor({ ...base, blocks: [quebrado, estudio] }).locked).toBe(false)
+    expect(videoGateFor({ ...base, blocks: [quebrado, bom, cena] }).videoBlockId).toBe('bom')
+    expect(videoGateFor({ ...base, blocks: [quebrado, cena] }).locked).toBe(false)
   })
 
   test('o que o player mediu abre a tranca antes (e sem) a confirmação do servidor', () => {
     const gate = videoGateFor({
       ...base,
-      blocks: [video, estudio],
+      blocks: [video, cena],
       learningProgress: assistido(0.3),
       localWatched: { video: { revision: 'r1', fraction: 0.92 } },
     })
@@ -153,7 +178,7 @@ describe('a tranca da atividade', () => {
     expect(
       videoGateFor({
         ...base,
-        blocks: [video, estudio],
+        blocks: [video, cena],
         localWatched: { video: { revision: 'antiga', fraction: 1 } },
       }).locked,
     ).toBe(true)

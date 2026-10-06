@@ -12,18 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-gravidade-modelo` · Compare o salto com e sem gravidade
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy jogando uma bola para cima e a bola voltando para a mão dele. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu Dino ainda está parado. Antes de fazê-lo pular no jogo, observe o que traz um personagem de volta ao chão.
+> "Esta é uma experiência para a gente entender a gravidade, a força que traz o Dino de volta ao chão.
 >
-> Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer.
+> Olha aqui: com a gravidade desligada, eu toco no Dino. Ele pula e sobe sem parar: o número da altura só cresce. Nada puxa o Dino para baixo. A experiência para o tempo com ele lá no alto.
 >
-> Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão.
+> Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouquinho, cada vez mais devagar, para e cai até o chão. A gravidade puxa o Dino para baixo um pouco em cada quadro.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como jogar uma bola para cima: ela sobe, perde força e volta para a sua mão. No seu jogo, você vai encaixar Aplicar a gravidade do mundo ao sprite dentro de A cada quadro do jogo, para puxar o Dino em todos os quadros.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Pule sem gravidade e ligue a gravidade enquanto o Dino está no ar.
 
@@ -52,18 +54,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-impulso-modelo` · Compare duas alturas de pulo
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Impulso do salto em 9. Tocar no Dino e esperar o pouso, com a marca 68 à vista. Escolher Impulso 14, tocar no Dino de novo e esperar o pouso, com as duas marcas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino numa cama elástica, com uma marca baixa escrita 9 e uma marca alta escrita 14. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu Dino já chega ao chão. Agora compare a força que inicia um salto, mantendo a mesma gravidade.
+> "Esta é uma experiência para a gente entender o impulso, a força que começa o pulo.
 >
-> Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura.
+> Olha aqui: com o impulso em 9, eu toco no Dino. Ele sobe, volta ao chão e deixa uma marca na altura 68.
 >
-> Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas.
+> Agora eu mudo o impulso para 14 e toco no Dino de novo. A marca nova fica na altura 163, bem acima da primeira. A gravidade foi a mesma nos dois saltos. O que mudou foi a força do começo do pulo.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como pular numa cama elástica: com mais força, você vai mais alto, e mesmo assim volta para baixo. No seu jogo, você vai colocar força do pulo 14 no bloco Controlar o dinossauro.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Faça um salto com 9 e outro com 14, esperando a queda entre eles.
 

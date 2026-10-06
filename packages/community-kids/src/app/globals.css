@@ -1981,7 +1981,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   font-size: 1rem;
   font-weight: 800;
 }
-/* "Pronto! Agora assista de novo e faça junto" — some sozinho em 8 s ou no primeiro toque. */
+/* "Pronto! Agora é a sua vez" — some sozinho em 8 s ou no primeiro toque. */
 .sz-lesson-sections .sz-lesson-video-gate-done {
   border: 0;
   border-radius: 1rem;

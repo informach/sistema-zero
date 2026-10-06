@@ -24,7 +24,7 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 1. Troque o que fica na frente
 
-**Tarefa / Zappy na página:** Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.
+**Tarefa / Zappy na página:** Agora suba e desça a pedra na lista Camadas e veja qual fica na frente.
 
 **Blocos na página:** video-camadas → fala-camadas → experimento-camadas.
 
@@ -48,11 +48,11 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 4. Compare mudanças entre quadros
 
-**Tarefa / Zappy na página:** Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.
+**Tarefa / Zappy na página:** Agora mude só a cratera, depois a pedra inteira, e compare a Prévia.
 
 **Blocos na página:** video-mudanca-pequena → fala-mudanca-pequena → experimento-tanto-que-muda.
 
-**Experiência existente:** `motion-amount`. Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia. Sem palpite, pistas ou pergunta final.
+**Experiência existente:** `motion-amount`. Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0 e olhe a Prévia tocar por um instante. Se ela estiver parada, clique em Tocar a Prévia. Deixe a pedra em 0 e coloque a cratera em 4; olhe outra vez. Depois coloque a pedra inteira em 10 e compare a Prévia. Sem palpite, pistas ou pergunta final.
 
 ### Seção 5. Mude detalhes no segundo quadro
 

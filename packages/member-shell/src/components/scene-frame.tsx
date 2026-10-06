@@ -71,7 +71,7 @@ export function SceneReadoutBand({
 }) {
   const quadroEmAndamento = relogioAndando && sceneLongFrame(activity.scene)
   const leituras = (estado: SceneState) =>
-    sceneReadout(activity.scene, estado, activity.cast, activity.pilha)
+    sceneReadout(activity.scene, estado, activity.cast, activity.pilha, activity.cenario)
   /**
    * ⚠️⚠️ A faixa NÃO muda de altura no meio do gesto (full review de experiência, M3). Os valores mudam de
    * tamanho ("desligado" é mais longo que "ligado", "vazio" que "o Dino"), a faixa passava de duas linhas
@@ -82,7 +82,13 @@ export function SceneReadoutBand({
    */
   const moldes = useMemo(
     () => [
-      sceneReadout(activity.scene, openScene(sceneStart(activity)), activity.cast, activity.pilha),
+      sceneReadout(
+        activity.scene,
+        openScene(sceneStart(activity)),
+        activity.cast,
+        activity.pilha,
+        activity.cenario,
+      ),
       sceneDisplaySamples(activity.scene, activity.cast).readouts,
     ],
     [activity],

@@ -14,16 +14,18 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Confirmar rótulo Criar asteroide via cast. A cena game-state usa toque no palco para começar, diferente do Enter que será construído no projeto. Não antecipar resultados.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e o Zappy segurando a bandeira, com a legenda "só depois da largada"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Seu jogo começa assim que abre. Agora vamos colocar uma tela de abertura para esperar quem vai jogar. O estado do jogo guarda em que momento ele está. Vamos usar inicio para a abertura e jogando para a partida.
+> "Esta é uma experiência para a gente entender o estado do jogo: ele guarda em que momento o jogo está. Vamos usar inicio, para a abertura, e jogando, para a partida.
 >
-> Nesta experiência, deixe a peça Criar asteroide no relógio, fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo para soltar o tempo, se estiver parado. Espere aparecer uma pedra e observe o contador do relógio.
+> Olha aqui: a peça Criar asteroide está em No relógio, a cada 40 quadros, fora de Se o estado do jogo é jogando. Eu clico em Tempo, ainda na abertura. O relógio toca e as pedras nascem. O contador de asteroides criados sobe, mesmo sem ninguém jogando.
 >
-> Arraste a peça para dentro de Se o estado do jogo é jogando. Se o tempo estiver parado, clique em Tempo para continuar. Acompanhe o relógio por três segundos, ainda na abertura, e compare as pedras criadas.
+> Agora eu levo a peça para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Deixo o tempo passar uns quatro segundos na abertura. O relógio continua tocando, mas o contador mostra esperando, e nenhuma pedra nasce. O Se pergunta se o estado é jogando. Na abertura, a resposta é não, então Criar asteroide espera. É como uma corrida: todo mundo espera o sinal de largada, e ninguém sai correndo antes.
 >
-> Agora toque na tela da experiência para começar. Observe de novo as pedras. Aqui o toque já veio preparado; no seu projeto, você vai programar Enter. Depois dos testes, clique em Próxima seção."
+> Por último, eu clico em Toque para começar, na tela da experiência. O estado vira jogando, e as pedras voltam a nascer. Aqui, o começo por toque já veio pronto. No seu jogo, você vai programar o Enter para começar a partida.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare criar asteroides fora e dentro de Se jogando, antes e depois de começar.
 

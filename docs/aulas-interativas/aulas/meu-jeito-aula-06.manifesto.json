@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-nomes",
-      "plannedVideo": "Título: Separe os nomes que os blocos procuram\n\nRegravar nas ferramentas atuais. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe os nomes que os blocos procuram\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase dos nomes, a nave e a folha da nave com o mesmo crachá \"nave\" olhando ao mesmo tempo quando o Zappy chama, com a legenda \"nave? qual das duas?\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-nomes",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave."
+        "text": "Agora tire o bloco, troque o nome e veja quando os avisos aparecem."
       }
     },
     {
@@ -48,7 +48,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Separe os nomes que os blocos procuram",
-        "instructions": "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
+        "instructions": "Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -75,14 +75,14 @@
     },
     {
       "key": "video-recorte",
-      "plannedVideo": "Título: Separe o quadro do tamanho no jogo\n\nRegravar nas ferramentas atuais. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe o quadro do tamanho no jogo\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-recorte",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32."
+        "text": "Agora mude a Largura do recorte até aparecer uma nave inteira."
       }
     },
     {
@@ -208,7 +208,7 @@
     {
       "key": "nomes",
       "title": "Separe os nomes que os blocos procuram",
-      "objective": "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
+      "objective": "Agora tire o bloco, troque o nome e veja quando os avisos aparecem.",
       "intent": "exploration",
       "blockKeys": ["video-nomes", "fala-nomes", "experimento-nomes"],
       "workspaceKey": null,
@@ -236,7 +236,7 @@
     {
       "key": "recorte",
       "title": "Separe o quadro do tamanho no jogo",
-      "objective": "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.",
+      "objective": "Agora mude a Largura do recorte até aparecer uma nave inteira.",
       "intent": "exploration",
       "blockKeys": ["video-recorte", "fala-recorte", "experimento-recorte"],
       "workspaceKey": null,

@@ -8,20 +8,32 @@ Entrada: Cópia do jogo salva no Estúdio. Saída: Arte nave em pixel art, 32 ×
 
 Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
+Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
+
 ## Seção 1. Aproxime duas formas de desenhar
 
 ### Clipe `video-bordas` · Aproxime duas formas de desenhar
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo. Meme na comparação: na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda "de longe: redonda · de perto: degraus". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.
+> "Esta é uma experiência para a gente entender a diferença entre um desenho em pixel e um desenho em vetor.
 >
-> Olhe as bordas e os detalhes ao aproximar e afastar. Compare as duas técnicas na mesma ampliação. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: com Aproximar em 1 vez, a pedra de pixel e a pedra de vetor parecem a mesma pedra. Quando eu aumento Aproximar até 4, as bordas ficam diferentes: a pedra de pixel mostra degraus, e a de vetor continua lisa.
+>
+> Sabe um desenho feito com pecinhas de montar? De longe, ele parece redondo. De perto, você vê os degraus das pecinhas. A pedra de pixel é assim: ela é feita de quadradinhos. Quando eu aumento Aproximar, é como chegar perto das pecinhas.
+>
+> Eu continuo até 6. Na pedra de pixel, aparece a grade dos quadradinhos. Na pedra de vetor, aparecem pontos e curvas: ela é feita de pontos ligados por linhas, e o computador desenha essa linha de novo em qualquer tamanho. Por isso ela continua lisa.
+>
+> Agora eu volto Aproximar para 1. De longe, as duas parecem iguais de novo.
+>
+> Hoje você vai desenhar a nave em Pixel art, quadradinho por quadradinho. Na aula 4, a pedra vai ser em Vetor, feita com pontos.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.
+**Zappy na página (não gravar):** Agora aproxime as duas pedras e compare as bordas.
 
 ## Seção 2. Prepare a folha da nave
 
@@ -44,16 +56,28 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 ### Clipe `video-espelho` · Descubra o que o espelho repete
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho. Meme na comparação: na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda "um pingo, dois lados". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.
+> "Esta é uma experiência para a gente entender o que o espelho faz com cada traço.
 >
-> Observe onde cada espelho coloca a cópia do traço e o que acontece ao usar o balde. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: com os dois espelhos desligados, eu clico em Pintar a asa. Aparece uma asa só, do lado esquerdo da nave, onde eu pintei.
+>
+> Agora eu ligo só o Espelho lado a lado. Aparece uma linha marcada como meio. Eu clico em Pintar a asa de novo, e uma cópia da asa surge do outro lado dessa linha. Um traço meu virou dois.
+>
+> Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.
+>
+> Agora eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. A cópia da ponta aparece embaixo, de cabeça para baixo. O espelho que está ligado decide onde a cópia cai.
+>
+> Por último, eu deixo só o Espelho lado a lado ligado e clico em Balde de tinta: encher a asa. O Balde enche só a asa esquerda. O espelho continua ligado, mas não copia a tinta do Balde.
+>
+> Daqui a pouco, quando você desenhar o contorno da nave, o espelho vai fazer o outro lado. E, para pintar com o Balde, você vai clicar dentro de cada asa.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.
+**Zappy na página (não gravar):** Agora pinte com cada espelho e veja onde a cópia aparece.
 
 ## Seção 4. Feche o contorno da nave
 
@@ -93,16 +117,26 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 ### Clipe `video-luz` · Mude o lado da luz
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da bola no pátio, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda "lado do sol: claro · outro lado: escuro". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.
+> "Esta é uma experiência para a gente entender como a luz e a sombra deixam um desenho redondo.
 >
-> Compare a mesma forma com os tons ligados e desligados; acompanhe o lado do sol. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: a bola começa com um tom de azul só, e o sol está na esquerda. Quando eu ligo A sombra e a luz, a bola ganha três tons de azul: um mais claro perto do sol e um mais escuro do outro lado. Agora ela parece redonda.
+>
+> Quando eu desligo, a bola volta a ter um tom só e fica chapada, como um adesivo.
+>
+> Sabe uma bola no pátio, num dia de sol? O lado virado para o sol fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.
+>
+> Agora eu ligo de novo e mudo O sol para a direita. O azul mais claro passa para a direita, e o mais escuro vai para a esquerda. A luz e a sombra seguem o lado do sol.
+>
+> Daqui a pouco, na sua nave, você vai escolher de que lado vem a luz: um tom mais claro desse lado e um mais escuro do lado oposto.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.
+**Zappy na página (não gravar):** Agora ligue A sombra e a luz e mude o lado do sol.
 
 ## Seção 7. Escolha um lado para a luz
 

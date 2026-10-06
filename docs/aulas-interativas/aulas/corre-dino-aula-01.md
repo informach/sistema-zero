@@ -51,7 +51,7 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Compare a mesma peça nas duas áreas, começando um teste em cada uma.
 
-**Experiência existente:** `once-vs-always`. Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `once-vs-always`. Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 4. Escolha o tamanho da tela
 
@@ -61,7 +61,7 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Mude largura e altura com a borda visível e termine em 480 por 270.
 
-**Experiência existente:** `stage-size`. Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo. Depois coloque largura 480 e altura 270. Compare com o tamanho anterior. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `stage-size`. Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo. Depois coloque largura 480 e altura 270. Compare com o tamanho anterior. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 5. Prepare a tela do jogo
 
@@ -97,7 +97,7 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Mude um eixo de cada vez e termine em x 0, y 0.
 
-**Experiência existente:** `coordinates`. Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções. Por último, coloque x em 0 e y em 0. Observe onde fica essa posição. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `coordinates`. Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções. Por último, coloque x em 0 e y em 0. Observe onde fica essa posição. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 8. Compare criar e mostrar
 
@@ -107,7 +107,7 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Crie o Dino nos bastidores e depois mostre-o na tela.
 
-**Experiência existente:** `world`. Clique em Criar o Dino. Compare os bastidores com a tela do jogo. Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `world`. Clique em Criar o Dino. Compare os bastidores com a tela do jogo. Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 9. Crie o Dino nos bastidores
 

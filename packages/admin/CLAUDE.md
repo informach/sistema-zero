@@ -1183,7 +1183,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   Body de curso também aceita **`videoBeforeActivity`** (boolean, 03/10/2026): checkbox "Assistir
   ao vídeo antes da atividade" logo abaixo da trava sequencial, **desligado por padrão** (é para
   os cursos de quem está começando) e **sempre enviado** (o members preserva quando ausente).
-  Ligado, em cada seção com vídeo e atividade, o player do aluno tranca a atividade até o vídeo
+  Ligado, em cada seção com vídeo e jogo pronto ou experiência (desde 06/10/2026 o Estúdio e o
+  Pinta sozinhos NÃO trancam), o player do aluno tranca a atividade até o vídeo
   ser visto uma vez (90%), nos DOIS públicos (o texto da dica é neutro por isso); a equipe e a
   prévia do admin veem tudo liberado (para conferir a tranca é preciso uma conta de aluno: o
   "Ver como aluno" usa a conta da equipe). Trava: `tests/course-form-default.test.tsx`. `CourseView.videoBeforeActivity`

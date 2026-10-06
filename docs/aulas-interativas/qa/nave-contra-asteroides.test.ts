@@ -17,7 +17,7 @@ import { evaluateStudioSectionProject } from '../../../packages/studio/src/block
 import { exampleHarness } from '../../../packages/studio/src/official-extensions/game-2d/__tests__/examplePlaythroughHarness'
 import { asteroidsExample } from '../../../packages/studio/src/official-extensions/game-2d/examples/arcade'
 import { problemasPedagogicos } from './diretrizes-pedagogicas'
-import { aulasNave, gerarManifestoNave } from './gerar-nave-contra-asteroides'
+import { aulasNave, falasSecao, gerarManifestoNave } from './gerar-nave-contra-asteroides'
 import { etapasNave, ORDEM_NAVE, projetoNave } from './nave-contra-asteroides-etapas'
 import { courseProjects } from './nave-contra-asteroides-projetos-qa'
 
@@ -117,6 +117,62 @@ test('a etapa da abertura espera Enter e preserva movimento, tiros e asteroides 
   g.fireKey('Enter')
   g.fireKey('Enter', 'keyup')
   expect(g.api.sceneIs('jogando')).toBe(true)
+})
+
+const FIM_DA_EXPERIENCIA =
+  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.'
+// Uma ordem dirigida a quem assiste, no começo de uma frase. Antes da vez dela, o vídeo só mostra.
+const ORDEM =
+  /(?:^|[.:!?;]\s+)(Clique|Coloque|Observe|Mude|Deixe|Leve|Escolha|Ligue|Troque|Aumente|Atire|Compare|Avance|Use|Volte|Espere|Acompanhe|Arraste|Toque|Aperte|Olhe|Repita|Teste|Sorteie|Experimente|Jogue)\b/
+
+test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez (06/10/2026)', () => {
+  let experiencias = 0
+  for (const aula of aulasNave)
+    for (const s of aula.sections) {
+      const experiencia = s.activity?.activity.type === 'experimentation'
+      if (!experiencia && !s.play) continue
+      const id = `${aula.slug}/${s.key}`
+      const fala = s.speech ?? []
+      const demonstracao = fala.slice(0, -1).join(' ')
+      if (experiencia) {
+        experiencias++
+        expect(fala[0], id).toMatch(/^Esta é (uma|a mesma) experiência\b.* para a gente entender /)
+        expect(fala.at(-1), id).toBe(FIM_DA_EXPERIENCIA)
+      } else {
+        expect(fala[0], id).toMatch(/^Esta é a versão pronta\b/)
+        expect(fala.at(-1), id).toMatch(
+          /^Agora é a sua vez: jogue .*Quando terminar, clique em Próxima seção\.$/,
+        )
+      }
+      expect(demonstracao.match(/Olha aqui: /g), id).toHaveLength(1)
+      expect(demonstracao, id).not.toMatch(ORDEM)
+      expect(demonstracao, id).not.toContain('Agora é a sua vez')
+      expect(demonstracao, id).not.toContain('Vou te mostrar')
+      // A nota de tela acompanha: o vídeo faz os gestos e mostra o resultado real.
+      expect(s.screen, id).not.toMatch(/sem antecipar|sem realizar|Não executar|pela pessoa/)
+      if (/meme/i.test(s.screen ?? ''))
+        for (const regra of [
+          'desenho nosso',
+          'sem foto de pessoa real nem meme da internet',
+          '2 a 3 segundos',
+          'sem cobrir a experiência',
+        ])
+          expect(s.screen, id).toContain(regra)
+    }
+  expect(experiencias).toBe(19)
+})
+
+test('falas para a criança: sem o nome interno da seção e com a publicação comemorada', () => {
+  const falas = aulasNave.flatMap((a) => a.sections.flatMap((s) => [s.bridge, ...falasSecao(s)]))
+  expect(falas.filter((f) => /mexa e veja/i.test(f))).toEqual([])
+  const publicacao = aulasNave.flatMap((a) => a.sections).filter((s) => s.publish)
+  expect(publicacao).toHaveLength(1)
+  const fala = falasSecao(publicacao[0]!).join(' ')
+  expect(fala).toContain('O resumo do projeto já vem preenchido. Deixe como está.')
+  expect(fala).toContain('Seu jogo está no Mural! Que conquista!')
+  expect(fala).toContain('Clique em Copiar link de jogar')
+  expect(fala).toMatch(/clique em Fechar\. Por último, clique em Concluir aula\.$/)
+  expect(fala).not.toContain('Confira o título')
 })
 
 const seconds = (n: number): SceneAction[] =>
@@ -237,10 +293,11 @@ const spokenRoutes: Record<string, SceneAction[]> = {
         { type: 'advance-to' },
       ] as SceneAction[],
   ),
+  // Caso pedra-40-quadros: na abertura, a peça dentro do Se espera "uns quatro segundos".
   'game-state': [
     ...seconds(3),
     { type: 'connect', port: 'condition', enabled: true },
-    ...seconds(3),
+    ...seconds(4),
     { type: 'start', input: 'tap' },
     ...seconds(3),
   ],

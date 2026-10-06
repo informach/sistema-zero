@@ -35,8 +35,9 @@ de visibilidade. A prática termina com envio, confirmação e conclusão da aul
 A Aula 2 retoma o contador em zero, propõe quatro testes na experiência e ensina a soma no
 evento de toque. A montagem continua com caminho completo, encaixe, campos e teste de 1, 2, 3.
 O fechamento ensina a publicar o mesmo jogo no Mural: Compartilhar, gerar capa, publicar,
-esperar a confirmação, fechar e concluir a aula. A publicação é a tarefa ensinada, sem novo
-bloqueio técnico de conclusão. Trocar a capa e copiar o link ficam no Como Fazer. Antes de
+comemorar, copiar o link de jogar para a família e os amigos, fechar e concluir a aula. A
+publicação é a tarefa ensinada, sem novo bloqueio técnico de conclusão. Trocar a capa fica no
+Como Fazer. Antes de
 publicar, **Deixe o jogo com a sua cara** ensina a trocar bichos, esconderijos e a mensagem do final.
 
 Complemento de 03/10/2026: toda seção com vídeo tem uma ponte do Zappy logo após o vídeo.

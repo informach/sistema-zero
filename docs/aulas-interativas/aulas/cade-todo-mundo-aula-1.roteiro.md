@@ -4,21 +4,23 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 
 ## 1. Bem-vindo ao jardim
 
-**Duração alvo:** 25 a 35 segundos.
+**Duração alvo:** 30 a 40 segundos.
 
-**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. Apontar para a área jogável ao convidar a jogar. Não tocar nos esconderijos nem mostrar os resultados. No fim, apontar para **Próxima seção**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer e Achados virar 1. Não tocar nos outros esconderijos. No fim, apontar para a área jogável ao passar a vez e para **Próxima seção**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
 
-> “Oi! Você vai construir um jogo chamado Cadê Todo Mundo. Nele, três personagens estão escondidos no jardim, e você toca nos esconderijos para encontrar cada um.
+> “Oi! Você vai construir um jogo chamado Cadê Todo Mundo. Esta é a versão pronta, para você ver como o jogo funciona antes de montar o seu.
 >
-> Aqui está a versão pronta para você jogar antes de montar o seu. Toque nos esconderijos até encontrar os três.
+> No jardim, três personagens estão escondidos. Olha aqui: quando eu toco num esconderijo, ele some e aparece quem estava atrás. Achei um! E Achados virou 1.
 >
-> Quando encontrar todo mundo, clique em Próxima seção.”
+> Onde estão os outros? Isso eu deixo para você descobrir.
+>
+> Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima seção.”
 
 **Zappy abaixo do vídeo:** “Jogue a versão pronta. Encontre os três personagens e clique em Próxima seção.”
 
-**Conferência de produção:** a seção exige assistir ao vídeo e encontrar os três personagens. A cópia jogável é independente do projeto de construção. Pausa, replay, ampliação e reinício ficam no Como Fazer.
+**Conferência de produção:** o vídeo é uma demonstração: mostra como se joga com UM achado, sem revelar os outros esconderijos, e só no fim passa a vez. A seção exige assistir ao vídeo e encontrar os três personagens. A cópia jogável é independente do projeto de construção. Pausa, replay, ampliação e reinício ficam no Como Fazer.
 
 ## 2. Seu Caderno do Aluno
 
@@ -40,27 +42,27 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 
 ## 3. O que um toque faz?
 
-**Duração alvo:** 45 a 60 segundos.
+**Duração alvo:** 50 a 70 segundos.
 
 **Na tela:** mostrar a experiência com a reação desligada. Tocar no arbusto e deixar ver que nada acontece. Clicar em **Ligar a reação ao toque**, tocar de novo e deixar ver o arbusto invisível e o coelho. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase das cócegas, o Zappy morrendo de rir com uma pena fazendo cócegas, com a legenda "ação: cócega · reação: risada". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
 
-> “Aqui está uma experiência para entender ação e reação.
+> “Esta é uma experiência para a gente entender como funciona a ação e a reação.
 >
-> Toque no arbusto. Nada aconteceu: o jogo ainda não sabe o que fazer com o toque.
+> Olha aqui: quando eu toco no arbusto, nada acontece: o jogo ainda não sabe o que fazer com o toque.
 >
 > Na vida, toda ação tem uma reação. Se alguém faz cócegas em você, você ri. A cócega é a ação, e a risada é a reação.
 >
 > No nosso jogo, o toque é a ação. Para o jogo responder, a gente precisa ligar uma reação a essa ação.
 >
-> Agora clique em Ligar a reação ao toque e toque no arbusto de novo. Ele ficou invisível, e dá para ver o coelho que estava atrás. Essa é a reação que ligamos ao toque.
+> Por isso, eu clico em Ligar a reação ao toque e toco no arbusto de novo. Agora ele fica invisível, e dá para ver o coelho que estava atrás. Essa é a reação que eu liguei ao toque.
 >
-> Agora é a sua vez: faça os dois testes na experiência e clique em Próxima seção.”
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.”
 
 **Zappy abaixo do vídeo:** “Use o mesmo arbusto nos dois testes e compare o que acontece.”
 
-**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
 ## 4. Faça alguém aparecer
 

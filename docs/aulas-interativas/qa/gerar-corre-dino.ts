@@ -15,7 +15,14 @@ export interface SecaoDino {
   title: string
   bridge: string
   screen?: string
+  /** Experiência: o meme ilustrado que acompanha a comparação do dia a dia (nota de tela). */
+  meme?: string
   speech?: string[]
+  /**
+   * Os passos que o Caderno do Aluno imprime, no imperativo. Existe onde o vídeo é demonstração
+   * na primeira pessoa (experiências e jogo pronto), que não serve como passo para a criança.
+   */
+  caderno?: string[]
   videoKey?: string
   checks?: SectionProjectCheck[]
   final?: boolean
@@ -49,14 +56,35 @@ const CURSO = 'corre-dino'
 const checkExit =
   'Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo.'
 const send = 'Clique em Enviar para o professor e confirme em Enviar.'
+// Na aula, o Compartilhar não mostra o campo Título e traz o resumo do manifesto (showcase).
 const publish =
-  'Se quiser mostrar o jogo no Mural, clique em Compartilhar depois do envio. Confira o título e escreva um resumo do seu jogo. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Espere a mensagem Seu jogo está no Mural! e clique em Fechar. Publicar é opcional; você também pode deixar para outra hora.'
+  'Se quiser mostrar o jogo no Mural, clique em Compartilhar depois do envio. Publicar é opcional; você também pode deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
+/** O fim de todo vídeo de experiência: só aqui a vez passa para quem faz a aula. */
+export const SUA_VEZ =
+  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.'
+/** O modelo da nota de tela das experiências (Diretrizes, seção 2: o vídeo é uma demonstração). */
+const telaExperiencia =
+  'Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado.'
+
+export function ehExperiencia(section: SecaoDino): boolean {
+  return section.activity?.activity.type === 'experimentation'
+}
+
+/** A nota "Na tela" do vídeo. Nas montagens, é a nota da fonte; nas experiências, o modelo. */
+export function telaSecao(section: SecaoDino): string {
+  if (!ehExperiencia(section)) return section.screen ?? ''
+  const meme = section.meme
+    ? ` Meme ilustrado na frase da comparação, por 2 a 3 segundos: ${section.meme} Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência.`
+    : ''
+  return `${telaExperiencia} ${section.screen}${meme} Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.`
+}
 
 export function falasSecao(section: SecaoDino): string[] {
   const speech = [...(section.speech ?? [])]
+  if (ehExperiencia(section)) speech.push(SUA_VEZ)
   if (section.checks?.length) {
     speech.push(
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} ` : ''}Depois, clique em Concluir aula.` : 'Depois, clique em Próxima seção.'}`,
+      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último` : 'Depois'}, clique em Concluir aula.` : 'Depois, clique em Próxima seção.'}`,
     )
   }
   return speech
@@ -91,7 +119,7 @@ export function gerarManifestoDino(lesson: AulaDino, index: number): LearningMan
     if (s.videoKey) {
       blocks.push({
         key: s.videoKey,
-        plannedVideo: `Título: ${s.title}\n\nRegravar no Estúdio atual. ${s.screen}\n\nFala completa em ${CURSO}-${lesson.slug}.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.`,
+        plannedVideo: `Título: ${s.title}\n\nRegravar no Estúdio atual. ${telaSecao(s)}\n\nFala completa em ${CURSO}-${lesson.slug}.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.`,
       })
       blockKeys.push(s.videoKey)
       required.push(s.videoKey)
@@ -204,7 +232,7 @@ function roteiro(lesson: AulaDino, index: number) {
         '',
         `**Estimativa de gravação:** aproximadamente ${voice} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.`,
         '',
-        `**Na tela:** ${s.screen} ${s.checks?.length ? 'Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
+        `**Na tela:** ${telaSecao(s)} ${s.checks?.length ? 'Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.' : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
         '',
         '**Narração:**',
         `> "${speech.join('\n>\n> ')}"`,
@@ -258,7 +286,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
     )
     if (s.activity)
       lines.push(
-        `**Experiência existente:** \`${s.activity.activity.type === 'experimentation' ? s.activity.activity.scene : s.activity.activity.type}\`. ${s.activity.instructions} Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.`,
+        `**Experiência existente:** \`${s.activity.activity.type === 'experimentation' ? s.activity.activity.scene : s.activity.activity.type}\`. ${s.activity.instructions} Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.`,
         '',
       )
     if (s.play)
@@ -286,7 +314,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       )
     if (s.publish)
       lines.push(
-        'Publicação opcional após o envio: Compartilhar → título e resumo → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Fechar → Concluir aula. Não bloquear a conclusão por publicação.',
+        'Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.',
         '',
       )
   })

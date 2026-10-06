@@ -7,7 +7,7 @@
   "blocks": [
     {
       "key": "video-intervalo-das-pedras",
-      "plannedVideo": "Título: Compare o intervalo entre as pedras\n\nRegravar no Estúdio atual. Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare o intervalo entre as pedras\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila do escorregador, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados num escorregador e depois descendo um de cada vez, com o Zappy organizando a fila, com a legenda \"um de cada vez\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-intervalo-das-pedras",
@@ -23,7 +23,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Compare o intervalo entre as pedras",
-        "instructions": "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para o relógio de 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros.",
+        "instructions": "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -65,7 +65,7 @@
     },
     {
       "key": "video-posicao-sorteada",
-      "plannedVideo": "Título: Sorteie onde a pedra nasce\n\nRegravar no Estúdio atual. Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Sorteie onde a pedra nasce\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Sortear lugar na régua de cima até sair pelo menos um segundo lugar diferente, apontando as marcas na régua entre x 90 e x 390. Mostrar a pedra acima da borda de cima, clicar em Tempo e acompanhar a pedra entrando na tela. Meme na comparação: na frase do dado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando um dado gigante com asteroides nas faces, com a legenda \"Sortear lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-posicao-sorteada",

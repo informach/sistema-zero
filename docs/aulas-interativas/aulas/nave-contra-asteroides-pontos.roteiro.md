@@ -12,16 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-variavel` · Guarde e mostre um número
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar o valor e a chave sem executar as somas. Não substituir a tarefa por metáfora de caixa.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do caderno, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy anotando pontos: 2 num caderno, ao lado de um placar de estádio mostrando 2, com a legenda "guardar · mostrar"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Seu jogo já sabe quando o tiro acerta. Agora vamos contar esses acertos. Uma variável guarda um valor que pode mudar. Nesta experiência, ela se chama pontos.
+> "Esta é uma experiência para a gente entender a variável: o lugar onde o jogo guarda um número que pode mudar. Aqui, a variável se chama pontos.
 >
-> No controle número guardado em pontos, aumente para 1 e depois volte para 0. Isso registra o valor inicial da experiência. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado.
+> Olha aqui: eu mudo número guardado em pontos para 1 e depois volto para 0. Agora pontos existe e começa em 0, como no começo de uma partida. Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. O número guardado vai para 1 e depois para 2, mas a tela do jogo não mostra nada. O jogo guardou e mudou o número sem mostrar.
 >
-> Ligue Mostrar placar e compare o número na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois. Depois, clique em Próxima seção."
+> É como anotar os gols de um jogo num caderno. O número fica anotado, mesmo que ninguém esteja vendo. O placar do estádio só mostra o que já foi anotado.
+>
+> Agora eu ligo Mostrar placar. A tela mostra Pontos: 2, o mesmo número guardado. Clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Guardar, mudar e mostrar são três coisas diferentes. No seu jogo, a soma vai acontecer em cada acerto, e o placar vai mostrar o valor de pontos.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Mude pontos com o placar desligado. Depois ligue Mostrar placar e compare.
 

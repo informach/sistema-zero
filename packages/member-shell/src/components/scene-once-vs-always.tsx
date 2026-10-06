@@ -10,6 +10,7 @@ import {
   type OnceVsAlwaysPreset,
   oncePreset,
   onceRunFinished,
+  quantos,
   type SceneAction,
   type SceneCast,
   type SceneState,
@@ -125,7 +126,7 @@ export function OnceVsAlwaysStage({
           )}
           {sounds > 0 && (
             <Texto x={310} y={125} tamanho={18} className="fill-scene-b-ink" fontWeight="700">
-              {`♪ ${sounds} vezes`}
+              {`♪ ${quantos(sounds, 'vez', 'vezes')}`}
             </Texto>
           )}
           {isLives && (

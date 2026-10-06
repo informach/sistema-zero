@@ -12,18 +12,22 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-guardar-mudar-mostrar` · Compare guardar, mudar e mostrar
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy abrindo um caderno em que está escrito pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu jogo ainda não conta pontos. Uma variável guarda um valor; o mostrador pode ler esse valor. Compare essas duas partes antes de montar.
+> "Esta é uma experiência para a gente entender a variável: um lugar que guarda um número, que pode mudar e aparecer na tela.
 >
-> Na experiência, coloque o número guardado em 1 e depois em 0. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado.
+> Olha aqui: quando eu coloco o número guardado em pontos em 1, a caixa pontos é criada e guarda 1. Depois eu coloco 0, e ela passa a guardar 0.
 >
-> Ligue Mostrar placar. Compare o que aparece na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois.
+> Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. A caixa vai de 0 para 1 e depois para 2, mas a tela não mostra nenhum número. O jogo mudou o valor sem desenhar nada.
 >
-> Depois dos testes, clique em Próxima seção."
+> Quando eu ligo Mostrar placar, a tela mostra 2, o mesmo número da caixa. Eu clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Mostrar só lê o que está guardado.
+>
+> É como anotar os pontos num caderno: a conta fica guardada mesmo com o caderno fechado, e mostrar o placar é abrir o caderno para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Mude a memória com o placar desligado e depois acompanhe os dois juntos.
 
@@ -77,20 +81,22 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-quando-o-placar-cresce` · Compare quando somar os pontos
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Somar ponto em Solto. Levar a peça para A cada quadro do jogo e deixar o tempo passar um segundo. Voltar a peça para Solto e deixar passar mais um segundo. Levar para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?, e passar pelas telas com Próxima tela, deixando o tempo correr em cada uma, com o placar à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino na linha de largada com um cronômetro parado, e depois correndo com o cronômetro contando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Seu placar já mostra zero. Antes de programar a soma, compare quantas vezes ela acontece e em quais estados.
+> "Esta é uma experiência para a gente entender em que momento o placar deve crescer.
 >
-> Na experiência, coloque Somar ponto em A cada quadro do jogo e deixe Tempo passar um segundo. Observe o placar.
+> Olha aqui: quando eu coloco Somar ponto em A cada quadro do jogo e deixo o tempo passar um segundo, o placar dispara e chega a 60. Ele soma em cada quadro, e um segundo tem muitos quadros.
 >
-> Deixe Somar ponto solto, fora do relógio e da condição. Na tela de início, deixe passar mais um segundo e observe.
+> Com Somar ponto em Solto, na tela de início, eu deixo passar um segundo, e o placar já sobe, antes de alguém jogar.
 >
-> Leve Somar ponto para dentro de o estado do jogo é jogando ?, no relógio de um segundo. Ainda no início, deixe Tempo passar. Clique em Próxima tela até Jogando e observe os pontos crescerem. Depois clique em Próxima tela até Fim e deixe passar mais tempo.
+> Agora eu levo Somar ponto para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?. Na tela de início, o placar fica em 0, porque a pergunta responde não. Eu clico em Próxima tela até Jogando, e os pontos sobem, um por segundo. Clico em Próxima tela até Fim, e o placar para no valor que tinha.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como o cronômetro de uma corrida: ele só conta depois da largada e para na chegada. No seu jogo, você vai pôr Somar em variável dentro de um relógio de 1 segundo, num Se jogando.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare o ritmo da soma e depois os estados início, jogando e fim.
 

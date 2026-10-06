@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-camadas",
-      "plannedVideo": "Título: Troque o que fica na frente\n\nRegravar nas ferramentas atuais. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Troque o que fica na frente\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da chama na frente da pedra: apontar a lista Camadas, com a chama em cima. Clicar em Uma camada para a frente, na linha da pedra, e mostrar a pedra subir na lista e aparecer na frente. Clicar em Uma camada para trás, na linha da pedra, e mostrar a chama cobrindo de novo. Clicar em Uma camada para a frente outra vez e mostrar a pedra na frente. Meme na comparação: na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda \"a de cima fica na frente\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-camadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista."
+        "text": "Agora suba e desça a pedra na lista Camadas e veja qual fica na frente."
       }
     },
     {
@@ -68,8 +68,15 @@
           "setup": {
             "goals": ["front", "covered", "back-in-front"],
             "goalCopy": {
+              "front": {
+                "pedido": "Na linha da pedra, clique em Uma camada para a frente."
+              },
+              "covered": {
+                "pedido": "Com a pedra em cima da lista Camadas, clique em Uma camada para trás na linha da pedra."
+              },
               "back-in-front": {
-                "label": "A de cima na lista Camadas é a que aparece na frente"
+                "label": "A de cima na lista Camadas é a que aparece na frente",
+                "pedido": "Na linha da pedra, clique em Uma camada para a frente de novo."
               }
             }
           }
@@ -103,14 +110,14 @@
     },
     {
       "key": "video-mudanca-pequena",
-      "plannedVideo": "Título: Compare mudanças entre quadros\n\nRegravar nas ferramentas atuais. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare mudanças entre quadros\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia tocando, com os dois controles em 0: deixar ver a pedra parada na Prévia. Levar O tanto que a cratera anda até 4 e soltar; deixar ver as crateras mudarem no quadro 2 e a pedra parecer rolar na Prévia. Levar O tanto que a pedra inteira anda até 10 e soltar; deixar ver a pedra pular na Prévia. Meme na comparação: na frase do globo, o Zappy girando o globo da sala de aula, que fica no lugar enquanto os desenhos dos países andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-mudanca-pequena",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia."
+        "text": "Agora mude só a cratera, depois a pedra inteira, e compare a Prévia."
       }
     },
     {
@@ -119,7 +126,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Compare mudanças entre quadros",
-        "instructions": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.",
+        "instructions": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0 e olhe a Prévia tocar por um instante. Se ela estiver parada, clique em Tocar a Prévia. Deixe a pedra em 0 e coloque a cratera em 4; olhe outra vez. Depois coloque a pedra inteira em 10 e compare a Prévia.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -268,7 +275,7 @@
     {
       "key": "camadas",
       "title": "Troque o que fica na frente",
-      "objective": "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.",
+      "objective": "Agora suba e desça a pedra na lista Camadas e veja qual fica na frente.",
       "intent": "exploration",
       "blockKeys": ["video-camadas", "fala-camadas", "experimento-camadas"],
       "workspaceKey": null,
@@ -310,7 +317,7 @@
     {
       "key": "mudanca-pequena",
       "title": "Compare mudanças entre quadros",
-      "objective": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.",
+      "objective": "Agora mude só a cratera, depois a pedra inteira, e compare a Prévia.",
       "intent": "exploration",
       "blockKeys": ["video-mudanca-pequena", "fala-mudanca-pequena", "experimento-tanto-que-muda"],
       "workspaceKey": null,

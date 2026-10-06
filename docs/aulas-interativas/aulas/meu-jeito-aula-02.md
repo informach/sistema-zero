@@ -25,7 +25,7 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 ### Seção 1. Aproxime duas formas de desenhar
 
-**Tarefa / Zappy na página:** Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.
+**Tarefa / Zappy na página:** Agora aproxime as duas pedras e compare as bordas.
 
 **Blocos na página:** video-bordas → fala-bordas → experimento-bordas.
 
@@ -41,7 +41,7 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 ### Seção 3. Descubra o que o espelho repete
 
-**Tarefa / Zappy na página:** Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.
+**Tarefa / Zappy na página:** Agora pinte com cada espelho e veja onde a cópia aparece.
 
 **Blocos na página:** video-espelho → fala-espelho → experimento-espelho.
 
@@ -65,7 +65,7 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 ### Seção 6. Mude o lado da luz
 
-**Tarefa / Zappy na página:** Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.
+**Tarefa / Zappy na página:** Agora ligue A sombra e a luz e mude o lado do sol.
 
 **Blocos na página:** video-luz → fala-luz → experiencia-luz.
 

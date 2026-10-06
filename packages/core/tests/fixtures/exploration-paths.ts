@@ -221,12 +221,14 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
   spawn: [...tempo(2), { type: 'connect', port: 'timer', enabled: true }, ...tempo(2)],
   cleanup: [...tempo(6), { type: 'connect', port: 'cleanup', enabled: true }, ...tempo(2)],
   // "No início, nada nasceu" pede 2 s com a peça dentro do Se (lote 5 do Raio-X).
+  // Tempo que serve aos dois relógios: o de fábrica (0,6 s) e o caso pedra-40-quadros da Nave
+  // (40 quadros = 1,33 s, com a espera de 4 s na abertura; revisão de 06/10/2026).
   'game-state': [
-    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 3 },
     { type: 'connect', port: 'condition', enabled: true },
-    ...tempo(2),
+    ...tempo(4),
     { type: 'start', input: 'tap' },
-    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 3 },
   ],
   controls: [
     { type: 'start', input: 'tap' },

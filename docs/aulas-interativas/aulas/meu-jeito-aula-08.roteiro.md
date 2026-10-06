@@ -8,20 +8,32 @@ Entrada: Jogo com as duas artes animadas e regras preservadas. Saída: Jogo test
 
 Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
+Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
+
 ## Seção 1. Compare projeto e versão publicada
 
 ### Clipe `video-copia-publicada` · Compare projeto e versão publicada
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do projeto com a nave azul e do Mural vazio: clicar em Publicar e mostrar o cartão Publicação 1 azul. Em Cor da nave no seu projeto, escolher rosa e mostrar o projeto rosa e a Publicação 1 azul. Clicar em Publicar de novo e mostrar a Publicação 2 rosa ao lado da Publicação 1 azul, com a nota da bancada. Meme na comparação: na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda "a foto guarda aquele momento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.
+> "Esta é uma experiência para a gente entender o que é publicar um jogo no Mural. Esta bancada é um treino: nada daqui vai para o Mural de verdade.
 >
-> Compare a cor do projeto com cada cartão publicado. Esta bancada é uma simulação; você escolhe depois se quer publicar seu jogo real. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: na esquerda está o seu projeto, com a nave azul. Na direita, a versão no Mural, ainda sem nada publicado. Quando eu clico em Publicar, aparece o cartão Publicação 1, com a nave azul. As duas telas mostram a mesma nave.
+>
+> Agora, em Cor da nave no seu projeto, eu escolho rosa. A nave do projeto fica rosa, e a Publicação 1 continua azul. Publicar guardou uma cópia daquele momento, e o projeto continua seu para mexer.
+>
+> Sabe quando você manda a foto de um desenho para alguém da família? Se depois você pinta mais o desenho, a foto que a pessoa recebeu continua igual. Para ela ver o desenho novo, você manda outra foto.
+>
+> Então eu clico em Publicar de novo. Aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Cada publicação é um cartão novo, e o anterior fica no Mural.
+>
+> Mais adiante nesta aula, publicar o seu jogo de verdade vai ser uma escolha sua.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.
+**Zappy na página (não gravar):** Agora publique, mude a cor do projeto e publique de novo.
 
 ## Seção 2. Jogue do começo ao reinício
 
@@ -51,15 +63,15 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 **Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Com seu jogo salvo, clique em Compartilhar no Estúdio. Confira o título e escreva um resumo que conte como jogar. Clique em Gerar capa e confira se a imagem representa seu jogo. Com título, resumo e capa prontos, clique em Publicar.
+> "Publicar é opcional. Se quiser mostrar seu jogo para a família e os amigos, com o jogo salvo, clique em Compartilhar no Estúdio. Confira o título. O resumo pode já vir escrito: leia e deixe do seu jeito, contando como jogar. Clique em Gerar capa e confira se a imagem representa seu jogo. Com título, resumo e capa prontos, clique em Publicar.
 >
-> Espere a confirmação Publicado!. Clique em Abrir o jogo, teste uma partida na versão publicada e compare com seu projeto. Você pode usar Copiar link para guardar o endereço. Depois clique em Fechar na janela de compartilhamento.
+> Espere a confirmação Publicado! Seu jogo já está no Mural dos Criadores. Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Abrir o jogo: a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio. Depois, clique em Copiar link. O botão muda para Link copiado! Mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.
 >
-> Publicar é opcional. Se preferir guardar o jogo por enquanto, siga para a revisão e entregue pela galeria. Se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão; o cartão antigo conserva a anterior.
+> Se preferir guardar o jogo por enquanto, siga para a revisão e entregue pela galeria. Se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão; o cartão antigo conserva a anterior.
 >
-> Pause aqui se escolheu publicar. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
+> Pause aqui se escolheu publicar. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Depois de clicar em Fechar, volte a esta aba e clique em Próxima seção."
 
-**Zappy na página (não gravar):** Se quiser, publique uma versão no Mural e teste o cartão. Você pode seguir sem publicar.
+**Zappy na página (não gravar):** Se quiser, publique seu jogo no Mural e mande o link para a família e os amigos. Você pode seguir sem publicar.
 
 ## Seção 4. Confira o que você transformou
 

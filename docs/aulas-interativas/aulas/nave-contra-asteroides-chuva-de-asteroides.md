@@ -30,7 +30,7 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 **Zappy na página (não gravar):** Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras.
 
-**Experiência existente:** `spawn`. Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para o relógio de 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `spawn`. Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Prepare a criação dos asteroides
 

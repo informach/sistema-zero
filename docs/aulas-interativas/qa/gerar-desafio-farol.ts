@@ -106,7 +106,7 @@ const aberturaBlocks = [
     'video-intro-farol',
     'Seu primeiro jogo: A Chave do Farol',
     'desafio-dia-1.roteiro.md',
-    'Anunciar o jogo que será programado e o contexto do barco e do farol apagado; então convidar a jogar a versão pronta por toque ou teclado. Mostrar a cena inicial sem resolver o percurso. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.',
+    'Anunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso; só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.',
   ),
   fala(
     'ponte-intro-farol',
@@ -214,7 +214,7 @@ const dia1 = {
       'video-d1-quadro',
       'Como o personagem anda',
       'desafio-dia-1.roteiro.md',
-      'Explicar fazendo: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o x fica igual) e com a seta (o x sobe), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima seção.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o x fica igual) e com a seta (o x sobe), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima seção.',
     ),
     fala('ponte-d1-quadro', 'Agora veja como o personagem anda, um quadro de cada vez.'),
     experienciaAndar(
@@ -237,7 +237,7 @@ const dia1 = {
       'video-d1-tanto',
       'O tanto que ele anda',
       'desafio-dia-1.roteiro.md',
-      'Explicar fazendo: a velocidade é o tamanho do passo. Mostrar Velocidade 3 e Velocidade 1 avançando quadros, com o x e as marcas, e dizer a diferença. Terminar com Agora é a sua vez e Próxima seção.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a velocidade é o tamanho do passo. Mostrar Velocidade 3 e Velocidade 1 avançando quadros, com o x e as marcas, e dizer a diferença. Terminar com Agora é a sua vez e Próxima seção.',
     ),
     fala('ponte-d1-tanto', 'Agora compare as duas velocidades.'),
     experienciaAndar(
@@ -260,7 +260,7 @@ const dia1 = {
       'video-d1-limite',
       'Até onde ele pode ir?',
       'desafio-dia-1.roteiro.md',
-      'Explicar fazendo: a tela é uma janela, e o limite, uma parede invisível. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado. Terminar com Agora é a sua vez e Próxima seção.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado. Terminar com Agora é a sua vez e Próxima seção.',
     ),
     fala('ponte-d1-limite', 'Agora veja o que acontece na borda, sem o limite e com ele.'),
     experienciaAndar(
@@ -357,7 +357,7 @@ const dia2 = {
       'video-d2-contexto',
       'O jogo guardou a chave?',
       'desafio-dia-2.roteiro.md',
-      'Situar a coleta que falta e explicar fazendo: encostar na chave é um evento, e guardar é como anotar num caderno. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima seção.',
+      'Situar a coleta que falta. Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: encostar na chave é um evento, e guardar é como anotar num caderno. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima seção.',
     ),
     fala(
       'ponte-d2-contexto',
@@ -460,7 +460,7 @@ const dia3 = {
       'video-d3-condicao',
       'Quando a porta pode abrir?',
       'desafio-dia-3.roteiro.md',
-      'Explicar fazendo: condição é a pergunta que a porta confere, como a porta de casa que só abre com a chave. Testar a porta sem a chave (senão) e com a chave (então), nomeando temChave. Terminar com Agora é a sua vez e Próxima seção.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: condição é a pergunta que a porta confere, como a porta de casa que só abre com a chave. Testar a porta sem a chave (senão) e com a chave (então), nomeando temChave. Terminar com Agora é a sua vez e Próxima seção.',
     ),
     fala('ponte-d3-condicao', 'Agora teste a mesma porta sem a chave e com a chave.'),
     {
@@ -514,11 +514,11 @@ const dia3 = {
       'video-d3-fecho',
       'Publique seu jogo',
       'desafio-dia-3.roteiro.md',
-      'Usar o mesmo projeto da seção anterior. Compartilhar, manter o resumo (na aula o título vem do curso e não aparece), Gerar capa, conferir, Publicar, esperar Seu jogo está no Mural!, Fechar e Concluir aula. Outra capa e cópia do link ficam no Como Fazer.',
+      'Usar o mesmo projeto da seção anterior. Compartilhar, manter o resumo (na aula o título vem do curso e não aparece), Gerar capa, conferir, Publicar e comemorar com a criança (Seu jogo está no Mural! Agora a família e os amigos podem jogar), Copiar link de jogar e convidar a mandar para a família e os amigos, com ajuda de um adulto se precisar, Fechar e Concluir aula. Outra capa fica no Como Fazer.',
     ),
     fala(
       'ponte-d3-publicar',
-      'Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.',
+      'Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.',
     ),
     projeto('dia-3'),
     ajudaComoFazer('ajuda-publicar', 'Para consultar ao publicar', [

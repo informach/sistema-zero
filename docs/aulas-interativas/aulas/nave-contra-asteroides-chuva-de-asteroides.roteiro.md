@@ -12,18 +12,22 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-intervalo-das-pedras` · Compare o intervalo entre as pedras
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila do escorregador, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados num escorregador e depois descendo um de cada vez, com o Zappy organizando a fila, com a legenda "um de cada vez"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "Sua nave já atira. Antes de criar os asteroides, compare uma pedra criada a cada quadro com pedras criadas em intervalos.
+> "Esta é uma experiência para a gente entender o intervalo: quanto tempo o jogo espera entre uma pedra e outra.
 >
-> Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram.
+> Olha aqui: Criar asteroide está em A cada quadro. Eu clico em Tempo e deixo passar mais ou menos um segundo. Nascem umas 30 pedras, uma em cada quadro, grudadas umas nas outras. Vira um amontoado, e ninguém conseguiria passar por ali.
 >
-> Leve Criar asteroide para o relógio de 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras.
+> É como a fila do escorregador. Se todo mundo desce junto, vira um amontoado. Se cada um espera a sua vez, sobra espaço entre um e outro.
 >
-> Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros. Depois, clique em Próxima seção."
+> Agora eu levo Criar asteroide para a caixa A cada 40 quadros, e tudo recomeça do zero. Deixo passar uns quatro segundos. Nasce uma pedra, depois outra, depois outra, com espaço entre elas. O relógio espera 40 quadros antes de criar a próxima.
+>
+> Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas das outras. Mas cada pedra desce o mesmo tanto: 180 em 60 quadros, igual antes. O intervalo muda quantas pedras nascem, não a velocidade de cada uma. No seu jogo, o relógio vai criar uma pedra a cada 40 quadros.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare criar em cada quadro, a cada 40 e a cada 20 quadros. Observe o nascimento e a queda das pedras.
 
@@ -54,14 +58,18 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-posicao-sorteada` · Sorteie onde a pedra nasce
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apontar os controles citados e o que observar. Deixar os testes para quem faz a experiência, sem antecipar os resultados.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Sortear lugar na régua de cima até sair pelo menos um segundo lugar diferente, apontando as marcas na régua entre x 90 e x 390. Mostrar a pedra acima da borda de cima, clicar em Tempo e acompanhar a pedra entrando na tela. Meme na comparação: na frase do dado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando um dado gigante com asteroides nas faces, com a legenda "Sortear lugar"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
 
 **Narração:**
-> "O relógio já separa o nascimento das pedras. Agora teste de onde elas podem entrar.
+> "Esta é uma experiência para a gente entender o sorteio: como o jogo escolhe onde cada pedra nasce.
 >
-> Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela. Depois, clique em Próxima seção."
+> Olha aqui: eu clico em Sortear lugar na régua de cima. Sai um lugar, e uma marca aparece na régua. Eu clico de novo, e sai outro lugar. Cada clique é um sorteio novo, sempre entre x 90 e x 390. É como jogar um dado: você não sabe qual número vai sair, e o mesmo número pode sair de novo.
+>
+> A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e ela desce e entra caindo pela borda de cima. Assim, ninguém vê a pedra aparecer do nada. No seu jogo, o x do asteroide vai ser sorteado, e o y vai começar em -30, acima da tela.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Sorteie até observar lugares diferentes. Depois acompanhe uma pedra entrando na tela.
 

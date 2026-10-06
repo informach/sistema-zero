@@ -28,14 +28,14 @@
   "blocks": [
     {
       "key": "video-copia-publicada",
-      "plannedVideo": "Título: Compare projeto e versão publicada\n\nRegravar nas ferramentas atuais. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.\n\nFala completa em meu-jeito-aula-08.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare projeto e versão publicada\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do projeto com a nave azul e do Mural vazio: clicar em Publicar e mostrar o cartão Publicação 1 azul. Em Cor da nave no seu projeto, escolher rosa e mostrar o projeto rosa e a Publicação 1 azul. Clicar em Publicar de novo e mostrar a Publicação 2 rosa ao lado da Publicação 1 azul, com a nota da bancada. Meme na comparação: na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda \"a foto guarda aquele momento\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-08.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-copia-publicada",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo."
+        "text": "Agora publique, mude a cor do projeto e publique de novo."
       }
     },
     {
@@ -84,7 +84,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Se quiser, publique uma versão no Mural e teste o cartão. Você pode seguir sem publicar."
+        "text": "Se quiser, publique seu jogo no Mural e mande o link para a família e os amigos. Você pode seguir sem publicar."
       }
     },
     {
@@ -232,7 +232,7 @@
     {
       "key": "copia-publicada",
       "title": "Compare projeto e versão publicada",
-      "objective": "Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.",
+      "objective": "Agora publique, mude a cor do projeto e publique de novo.",
       "intent": "exploration",
       "blockKeys": ["video-copia-publicada", "fala-copia-publicada", "experimento-copia-publicada"],
       "workspaceKey": null,
@@ -260,7 +260,7 @@
     {
       "key": "compartilhar",
       "title": "Mostre o jogo se quiser",
-      "objective": "Se quiser, publique uma versão no Mural e teste o cartão. Você pode seguir sem publicar.",
+      "objective": "Se quiser, publique seu jogo no Mural e mande o link para a família e os amigos. Você pode seguir sem publicar.",
       "intent": "application",
       "blockKeys": ["video-compartilhar", "fala-compartilhar"],
       "workspaceKey": null,

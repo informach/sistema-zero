@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { type LearningBlockProgress, videoCoverageAnswers } from '@sistemazero/core/learning'
+import {
+  type InteractiveBlock,
+  type LearningBlockProgress,
+  videoCoverageAnswers,
+} from '@sistemazero/core/learning'
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
@@ -15,6 +19,7 @@ import {
 } from '@sistemazero/member-shell/components/lesson-video-float'
 import { useReportActivityExpanded } from '@sistemazero/member-shell/lib/lesson-activity-expansion'
 import type { LessonBlockView, LessonDetailView } from '@sistemazero/member-shell/lib/types'
+import { createEmptyProject } from '@sistemazero/studio/project'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
@@ -55,6 +60,39 @@ const lesson: LessonDetailView = {
       blockIds: ['video', 'jogo'],
       workspaceBlockId: null,
     },
+  ],
+}
+
+/**
+ * A tranca vale só para o jogo pronto e a experiência (06/10/2026): a mesma aula com um JOGO
+ * PRONTO de verdade no lugar do Estúdio. No Estúdio a criança monta junto com o vídeo.
+ */
+const projetoPronto = createEmptyProject('jardim', 'Jardim pronto')
+projetoPronto.mode = 'code'
+projetoPronto.files = {
+  'index.html': '<button type="button">Jogar</button>',
+  'style.css': '',
+  'script.js': '',
+}
+const jogoProntoConteudo: InteractiveBlock = {
+  kind: 'interactive',
+  title: 'Jogue o jogo pronto',
+  instructions: 'Encontre os três personagens.',
+  hints: [],
+  required: true,
+  activity: {
+    type: 'project-play',
+    completion: 'participation',
+    project: projetoPronto,
+    stage: { width: 640, height: 360 },
+    targets: [],
+  },
+}
+const jogoPronto: LessonDetailView = {
+  ...lesson,
+  blocks: [
+    lesson.blocks[0]!,
+    { id: 'jogo', kind: 'interactive', sortOrder: 1, content: jogoProntoConteudo },
   ],
 }
 
@@ -195,7 +233,7 @@ afterEach(() => {
 
 describe('assistir ao vídeo antes da atividade', () => {
   test('tranca a atividade com o aviso do Zappy, e a atividade fica fora do alcance', () => {
-    render(<Aula />)
+    render(<Aula aula={jogoPronto} />)
     expect(screen.getByRole('heading', { name: 'Primeiro, assista ao vídeo' })).toBeDefined()
     expect(screen.getByTestId('zappy')).toBeDefined()
     const ampliar = screen.getByRole('button', { name: 'Ampliar jogo', hidden: true })
@@ -205,22 +243,22 @@ describe('assistir ao vídeo antes da atividade', () => {
   })
 
   test('abre na hora em que o vídeo passa de 90%, com o "Pronto!", sem remontar a atividade', () => {
-    render(<Aula />)
+    render(<Aula aula={jogoPronto} />)
     const atividade = screen.getByRole('button', { name: 'Ampliar jogo', hidden: true })
     act(() => avancar?.(assistiu(0.45)))
     expect(screen.getByText('Você já viu 45% do vídeo')).toBeDefined()
     act(() => avancar?.(assistiu(0.95)))
     expect(screen.queryByRole('heading', { name: 'Primeiro, assista ao vídeo' })).toBeNull()
-    const pronto = screen.getByText(/Pronto! Agora assista de novo e faça junto/)
+    const pronto = screen.getByText(/Pronto! Agora é a sua vez/)
     // Fora do fluxo e fora do painel da atividade: não empurra nada e aparece em qualquer aba.
     expect(pronto.closest('[role="status"]')?.className).toContain('fixed')
     expect(pronto.closest('#lesson-tool')).toBeNull()
-    // ⚠️⚠️ O MESMO nó: destrancar não pode remontar o editor (Blockly caro, rascunho re-semeado).
+    // ⚠️⚠️ O MESMO nó: destrancar não pode remontar a atividade (o jogo recomeçaria do zero).
     expect(screen.getByRole('button', { name: 'Ampliar jogo' })).toBe(atividade)
     expect(atividade.closest('[inert]')).toBeNull()
     // O primeiro toque em qualquer lugar tira o recado.
     fireEvent.pointerDown(document.body)
-    expect(screen.queryByText(/Pronto! Agora assista de novo/)).toBeNull()
+    expect(screen.queryByText(/Pronto! Agora é a sua vez/)).toBeNull()
   })
 
   test('o que o player mediu abre a tranca mesmo com a gravação falhando', async () => {
@@ -229,7 +267,7 @@ describe('assistir ao vídeo antes da atividade', () => {
       throw new Error('sem rede')
     }) as unknown as typeof fetch
     try {
-      render(<Aula />)
+      render(<Aula aula={jogoPronto} />)
       await act(async () => {
         fireEvent.click(screen.getByRole('button', { name: 'ver quase tudo' }))
       })
@@ -241,23 +279,29 @@ describe('assistir ao vídeo antes da atividade', () => {
   })
 
   test('"Ver o vídeo" leva o foco ao vídeo e tenta dar play', () => {
-    render(<Aula />)
+    render(<Aula aula={jogoPronto} />)
     fireEvent.click(screen.getByRole('button', { name: 'Ver o vídeo' }))
     expect(document.activeElement?.id).toBe('lesson-block-video')
     expect(plays).toEqual(['play'])
   })
 
   test('curso sem a opção, ou a aula sem player (prévia do admin), nunca tranca', () => {
-    render(<Aula aula={{ ...lesson, videoBeforeActivity: false }} />)
+    render(<Aula aula={{ ...jogoPronto, videoBeforeActivity: false }} />)
     expect(screen.queryByRole('heading', { name: 'Primeiro, assista ao vídeo' })).toBeNull()
     cleanup()
-    render(<LessonSections lesson={lesson} kids renderBlocks={renderBlocks} />)
+    render(<LessonSections lesson={jogoPronto} kids renderBlocks={renderBlocks} />)
     expect(screen.queryByRole('heading', { name: 'Primeiro, assista ao vídeo' })).toBeNull()
   })
 
   test('seção já concluída não tranca ao revisitar', () => {
-    render(<Aula aula={{ ...lesson, completed: true }} />)
+    render(<Aula aula={{ ...jogoPronto, completed: true }} />)
     expect(screen.queryByRole('heading', { name: 'Primeiro, assista ao vídeo' })).toBeNull()
+  })
+
+  test('o Estúdio não tranca: a criança monta junto com o vídeo, já na primeira vez', () => {
+    render(<Aula />)
+    expect(screen.queryByRole('heading', { name: 'Primeiro, assista ao vídeo' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Ampliar jogo' }).closest('[inert]')).toBeNull()
   })
 })
 

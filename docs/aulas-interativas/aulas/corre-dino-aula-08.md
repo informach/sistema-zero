@@ -41,7 +41,7 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 **Zappy na página (não gravar):** Teste toque e Enter antes e depois de mudar o lugar da peça Começar.
 
-**Experiência existente:** `controls`. Na experiência, com Começar na opção que escuta Enter, toque na tela de início e observe. Depois use Enter para começar e volte ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência existente:** `controls`. Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 3. Ligue a entrada ao início da partida
 

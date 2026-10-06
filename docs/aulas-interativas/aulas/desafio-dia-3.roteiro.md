@@ -11,19 +11,19 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 **Na tela:** mostrar a cena da porta com o mostrador `temChave`. Clicar em **Testar a porta** sem a chave e deixar ver a resposta senão marcada. Clicar em **Levar a chave** e em **Testar a porta**, deixando ver a resposta então marcada. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase da porta de casa, a porta do farol trancada quando o personagem chega sem a chave e aberta quando ele chega com a chave. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
-> "Seu jogo já guarda a coleta da chave. Aqui está uma experiência para entender como a porta usa essa informação.
+> "Seu jogo já guarda a coleta da chave. Esta é uma experiência para a gente entender como funciona uma condição, a pergunta que a porta faz antes de abrir.
 >
 > Antes de abrir, a porta confere se temChave é verdadeiro. Uma pergunta assim se chama condição. É como a porta de casa: ela só abre se você tiver a chave.
 >
-> Clique em Testar a porta, sem levar a chave. temChave está falso, e a porta escolhe a resposta senão: avisa que falta a chave.
+> Olha aqui: sem levar a chave, eu clico em Testar a porta. temChave está falso, e a porta escolhe a resposta senão: avisa que falta a chave.
 >
-> Agora clique em Levar a chave e em Testar a porta de novo. temChave está verdadeiro, e a porta escolhe a resposta então: acender o farol.
+> Agora eu clico em Levar a chave e em Testar a porta de novo. temChave está verdadeiro, e a porta escolhe a resposta então: acender o farol.
 >
-> Agora é a sua vez: faça os dois testes na experiência e clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Ponte do Zappy na página (não gravar):** Agora teste a mesma porta sem a chave e com a chave.
 
-**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
+**Conferência de produção:** o vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa, no ritmo da fala, mostra o resultado real e explica o porquê. Ele não dá ordens antes da vez da pessoa; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
 ## Seção 2. Avise quando faltar a chave
 
@@ -188,7 +188,7 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 **Na tela:** no mesmo Estúdio, com o projeto já enviado. Trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e o bloco **Criar sprite personagem**. No fim dele, depois de **com imagem**, clicar no nome **personagem**, mostrar a lista de imagens que se abre (sem título; role se for preciso) e escolher a menina. Depois trazer à vista a área **Quando acontecer**, clicar no texto do aviso da chave e trocar por uma frase curta; fazer o mesmo com o aviso de **então**. Clicar em **Atualizar**, ir ao farol sem a chave, pegar a chave, voltar ao farol e mostrar as mensagens novas. Apontar **Próxima seção**.
 
 **Narração:**
-> "Agora mexa e veja: deixe o jogo com a sua cara. Você pode escolher quem vive a aventura e escrever os avisos do seu jeito. O que você mudar fica no seu jogo.
+> "Agora deixe o jogo com a sua cara! Você pode escolher quem vive a aventura e escrever os avisos do seu jeito. O que você mudar fica no seu jogo.
 >
 > Primeiro, o personagem. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ver. Nela está o bloco Criar sprite personagem.
 >
@@ -212,28 +212,30 @@ Cinco seções: experiência com a porta, resposta sem chave, resposta com chave
 
 ### Vídeo `video-d3-fecho` · Publique seu jogo
 
-**Duração alvo:** 45 a 60 segundos, incluindo a publicação e a confirmação.
+**Duração alvo:** 60 a 80 segundos, incluindo a publicação, a comemoração e a cópia do link.
 
-**Na tela:** manter o mesmo Estúdio da seção anterior, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone, e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** preenchido, sem editar; na aula, o título vem do curso e não aparece na janela. Clicar em **Gerar capa**, esperar a imagem e conferir. Não demonstrar upload, personalização nem cópia do link.
+**Na tela:** manter o mesmo Estúdio da seção anterior, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone, e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** preenchido, sem editar; na aula, o título vem do curso e não aparece na janela. Clicar em **Gerar capa**, esperar a imagem e conferir. Não demonstrar upload nem outra capa.
 
 **Narração:**
-> "Agora publique seu jogo para outras pessoas jogarem.
+> "Agora publique seu jogo para a sua família e seus amigos jogarem.
 >
 > No alto do Estúdio, clique em Compartilhar. Na aula, ele pode aparecer só como um ícone. O resumo do projeto já vem preenchido. Deixe como está.
 >
 > Clique em Gerar capa e espere a imagem aparecer. Essa é a imagem que vai apresentar seu jogo."
 
-**Na tela:** conferir a capa, clicar em **Publicar** e esperar **Seu jogo está no Mural!**. Clicar em **Fechar** na confirmação e apontar **Concluir aula**. Não sair para outra ferramenta ou outra aula.
+**Na tela:** conferir a capa, clicar em **Publicar** e esperar a comemoração do Zappy com **Seu jogo está no Mural!**. Clicar em **Copiar link de jogar** e mostrar **Link copiado!**. Clicar em **Fechar** e apontar **Concluir aula**. Encerrar sem abrir outra aula.
 
 **Narração:**
-> "Confira a capa, clique em Publicar e espere a confirmação.
+> "Confira a capa e clique em Publicar. Espere um pouquinho…
 >
-> Quando aparecer Seu jogo está no Mural, clique em Fechar.
+> Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou.
 >
-> Agora clique em Concluir aula."
+> Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.
+>
+> Depois de copiar o link, clique em Fechar. Agora clique em Concluir aula."
 
-**Ponte do Zappy na página (não gravar):** Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.
 
 Ajuda escrita junto ao vídeo, fora da narração: [Como publicar seu jogo no Mural e copiar o link](/como-fazer/plataforma-publicar-no-mural). O tutorial abre na mesma aba e oferece retorno à aula.
 
-**Conferência de produção:** o envio anterior libera **Compartilhar**. A configuração de publicação fica somente no projeto do Dia 3. Publicar é a tarefa ensinada; o critério técnico desta seção continua sendo o vídeo. Não transformar expiração do acesso ao Mural ou indisponibilidade momentânea em bloqueio de conclusão da aula. Personalização, outras capas, cópia do link e solução de problemas ficam no Como Fazer.
+**Conferência de produção:** o envio anterior libera **Compartilhar**. A configuração de publicação fica somente no projeto do Dia 3. Publicar é a tarefa ensinada; o critério técnico desta seção continua sendo o vídeo. Não transformar expiração do acesso ao Mural ou indisponibilidade momentânea em bloqueio de conclusão da aula. Outras capas e solução de problemas ficam no Como fazer. Copiar o link de jogar faz parte da comemoração e aparece no vídeo: o link é público e não mostra o nome da criança, e a fala sugere mandar para a família e os amigos, com ajuda de um adulto se precisar.

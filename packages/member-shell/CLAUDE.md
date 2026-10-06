@@ -1175,9 +1175,9 @@ ela ficou sem saber o que fazer.
 **1. A tranca (opção do curso, `LessonDetailView.videoBeforeActivity`).** Ligada pelo admin nos
 cursos de quem está começando; o members manda `false` para a equipe.
 - A régua é PURA: `lib/video-gate.ts` (`videoGateFor`). Tranca só com a opção ligada E player
-  (prévia e ensaio do admin ficam abertos), com uma FERRAMENTA na direita (`ehEditorDeSecao` ou
-  `ehAtividadeDeSecao`, que passou a ser exportada; prévia de livro e entrega por galeria não
-  contam) e um vídeo acompanhável (com `blockRevision`). Vale o PRIMEIRO vídeo da seção COM
+  (prévia e ensaio do admin ficam abertos), com uma ATIVIDADE na direita (`ehAtividadeDeSecao`:
+  cena ou jogo pronto; desde 06/10/2026 Estúdio e Pinta NÃO trancam, a criança monta junto com o
+  vídeo; prévia de livro e entrega por galeria não contam) e um vídeo acompanhável (com `blockRevision`). Vale o PRIMEIRO vídeo da seção COM
   player (`isPlayableVideo`, o mesmo critério do `LessonVideo`: sem link, ou com link do
   YouTube/Vimeo ilegível, o bloco vira "Vídeo indisponível" e trancaria para sempre), pela mesma
   conta do `BlockScope`: progresso do bloco com a MESMA revisão e
@@ -1189,7 +1189,7 @@ cursos de quem está começando; o members manda `false` para a equipe.
   e a régua usa o MAIOR entre isso e o progresso guardado (`localWatched`). Antes, a tranca só
   abria quando a gravação voltava do servidor: com a rede falhando, quem viu o vídeo inteiro
   ficava trancada (full review). É também o que faz a pílula "Você já viu N%" andar com o vídeo.
-- **O "Pronto! Agora assista de novo e faça junto 🎉"** (`LessonVideoGateDone`, `role="status"`
+- **O "Pronto! Agora é a sua vez 🎉"** (era "assista de novo e faça junto" até 06/10/2026, quando a tranca passou a valer só para o jogo pronto e a experiência) (`LessonVideoGateDone`, `role="status"`
   sempre montado) é um aviso FIXO acima do rodapé da aula (`--sz-lesson-nav-height`), fora do
   fluxo e FORA do painel da atividade, que deixa o toque passar e some em 8 s ou no primeiro
   toque em qualquer lugar. ⚠️⚠️ As duas coisas foram achados do full review: dentro do fluxo,

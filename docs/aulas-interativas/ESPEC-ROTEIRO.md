@@ -1,6 +1,6 @@
 # Especificação do roteiro de gravação
 
-Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças.
+Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças e atualizada em 06/10/2026 (experiência e jogo pronto como demonstração, publicação com comemoração).
 As [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md) são a referência única das regras. Esta especificação fornece exemplos e formato de execução para a gravação. Roteiros e moldes antigos não prevalecem sobre as Diretrizes.
 
 ## 1. A abertura situa a tarefa e convida à ação
@@ -9,8 +9,8 @@ A criança precisa entender a tarefa sem traduzir a intenção do professor. Con
 do usuário em 03/10/2026, toda seção tem um contexto inicial curto e pertinente. Primeiro situar
 o jogo, seu estado atual ou a necessidade; depois dizer o que fazer.
 
-- Apresentação: anunciar o jogo e sua situação; então convidar a jogar a versão pronta.
-- Experiência: "O esconderijo ainda não responde ao toque. Toque no arbusto. Depois ligue a reação e toque de novo."
+- Apresentação (jogo pronto, demonstração com UM exemplo): dizer qual jogo será construído e a situação; mostrar na primeira pessoa um exemplo ("Olha aqui: quando eu toco num esconderijo, aparece quem estava atrás"), sem resolver a partida; só no fim passar a vez ("Agora é a sua vez: jogue até encontrar os três personagens").
+- Experiência (demonstração na primeira pessoa): "Esta é uma experiência para a gente entender ação e reação. Olha aqui: quando eu toco no arbusto, nada acontece. Agora eu ligo a reação e toco de novo… Agora é a sua vez: faça esses mesmos testes na experiência."
 - Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Na experiência da seção anterior, cada personagem encontrado somava um em Achados. Agora vamos programar essa contagem no seu jogo! Primeiro, toque num esconderijo: o personagem aparece, mas Achados continua em zero. Vamos fazer cada personagem encontrado somar um." Sem mandar clicar em Anterior.
 - Material: "Para acompanhar a montagem, este caderno reúne os passos do jogo. Consulte quando precisar."
 - Encerramento: nomear o resultado e dar a próxima ação.
@@ -41,7 +41,7 @@ dentro dele. Abra Programação e depois Variáveis. Pegue Somar 1 em variável.
 abaixo do bloco de visibilidade. Deixe o número em 1 e escolha achados. Toque em um esconderijo e
 confira se Achados virou 1."
 
-Nunca trocar essa sequência por "faça como eu fiz", "monte a regra" ou "agora é sua vez" sem
+Na montagem, nunca trocar essa sequência por "faça como eu fiz", "monte a regra" ou "agora é sua vez" sem
 ensinar a montagem. Mostrar cada gesto com tempo para acompanhar; cortar enrolação não é acelerar
 o arrasto. Repetir o caminho ao pegar outra peça quando isso ajuda a criança a se localizar.
 
@@ -59,8 +59,8 @@ A aula ensina a criar o jogo. A biblioteca ensina a usar a plataforma.
 | Pausar o vídeo, voltar um trecho, ampliar e sair da tela cheia | Como Fazer |
 | Arrastar divisória, alternar abas, mostrar a Pré-visualização | Como Fazer |
 | Folhear o caderno, trocar a leitura, baixar e imprimir | Como Fazer |
-| Caminho mínimo para publicar, quando publicar é a tarefa da seção | Roteiro da aula: Compartilhar, manter título e resumo, Gerar capa, conferir, Publicar e esperar confirmação |
-| Personalizar a publicação, enviar outra capa, copiar link e resolver problemas | Como Fazer |
+| Caminho mínimo para publicar, quando publicar é a tarefa da seção | Roteiro da aula: Compartilhar, título e resumo, Gerar capa, conferir, Publicar, confirmação, comemoração, copiar o link de jogar e convidar a mandar para a família e os amigos, Fechar |
+| Personalizar a publicação, enviar outra capa e resolver problemas | Como Fazer |
 | Escolher um bloco, encaixar, preencher valores e testar a regra | Roteiro da aula |
 | Acionar um controle necessário à experiência | Comando da atividade, sem tour |
 | Enviar a atividade, confirmar o envio, avançar ou concluir | Encaminhamento curto no roteiro |
@@ -77,23 +77,33 @@ mesmo quando a conversa informal usa "sessão".
 
 ## 4. Experiências: explicar enquanto faz
 
-A experiência e a explicação andam juntas (Diretrizes, seção 2). O vídeo segue esta ordem:
+A experiência e a explicação andam juntas (Diretrizes, seção 2), e o vídeo é uma
+**demonstração**: o narrador faz os testes e explica na primeira pessoa. Ele não dá ordens à
+criança antes da vez dela. O vídeo segue esta ordem:
 
-1. Diz qual ideia vai mostrar.
-2. Faz cada gesto no ritmo da fala e mostra o resultado real.
-3. Diz por que aquilo aconteceu, com uma comparação curta do dia a dia quando ajudar.
+1. Diz qual ideia a experiência ensina, com o nome dela ("Esta é uma experiência para a gente
+   entender…").
+2. Puxa a atenção ("Olha aqui:"), faz cada gesto no ritmo da fala e mostra o resultado real.
+3. Diz por que aquilo aconteceu, ligado à regra que a criança vai montar, com uma comparação curta
+   do dia a dia quando ajudar.
 4. Muda a regra e explica a diferença.
-5. Termina em "Agora é a sua vez", para a pessoa repetir os testes na experiência.
+5. Termina em "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique
+   em Próxima seção."
 
-Exemplo do toque: "Aqui está uma experiência para entender ação e reação. Toque no arbusto.
-Nada aconteceu: o jogo ainda não sabe o que fazer com o toque. Na vida, toda ação tem uma reação.
+Exemplo do toque: "Esta é uma experiência para a gente entender como funciona a ação e a reação.
+Olha aqui: quando eu toco no arbusto,
+nada acontece: o jogo ainda não sabe o que fazer com o toque. Na vida, toda ação tem uma reação.
 Se alguém faz cócegas em você, você ri. No nosso jogo, o toque é a ação. Para o jogo responder, a
-gente precisa ligar uma reação a essa ação. Agora clique em Ligar a reação ao toque e toque de novo…"
+gente precisa ligar uma reação a essa ação. Por isso, eu clico em Ligar a reação ao toque e toco de
+novo…"
+
+Os passos para a criança ficam nas instruções da experiência, no imperativo. A ponte do Zappy liga o vídeo à experiência numa frase curta, sem repetir os passos.
+As montagens seguem no imperativo: ali a criança faz junto com o vídeo.
 
 A comparação parte de uma regra que a criança já vive e chega ao passo concreto, com a palavra do
 botão ou do bloco. Evitar frases abstratas como "na programação, nada é automático".
 
-Na frase da comparação, a nota de tela descreve um **meme ilustrado** de 2 a 3 segundos: um desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet. A narração explica sem depender dele.
+Na frase da comparação, a nota de tela descreve um **meme ilustrado** (regra completa nas Diretrizes, seção 2).
 
 A experiência continua cobrando as metas da própria pessoa; ver o vídeo não basta. Não esconder
 um passo obrigatório nas pistas. "Explore e descubra" sozinho não orienta. Não acrescentar
@@ -102,7 +112,7 @@ questionários ou mudar as experiências só para encurtar a fala.
 ## 5. Falar com quem está fazendo
 
 - Usar "você", verbos simples e frases que soem naturais em voz alta.
-- Ser acolhedor sem repetir "bora", "capricha", "olha só" e parabéns a cada gesto.
+- Ser acolhedor sem repetir "bora", "capricha", "olha só" e parabéns a cada gesto ("Olha aqui:" é a abertura fixa da demonstração, uma vez por vídeo).
 - Evitar perguntas que escondem um pedido. "Teste os dois jeitos" é mais claro que
   "Como será que essa ideia funciona no nosso jardim?".
 - Cada "aqui" precisa de um apontamento visível. Cada "isso" precisa de um referente claro.
@@ -129,8 +139,10 @@ solução de problemas desses fluxos ficam na biblioteca de ajuda.
 
 Encerrar a narração na ação de saída da seção atual. Não acrescentar uma instrução para a
 próxima seção ou aula depois de Próxima seção ou Concluir aula. O comando Pegar meu certificado
-pertence à seção do certificado. Na publicação do Kids, esperar **Seu jogo está no Mural!**,
-usar **Fechar** para sair da confirmação e só então orientar **Concluir aula**.
+pertence à seção do certificado. Na publicação pelo Estúdio da aula, esperar **Seu jogo está no
+Mural!**, comemorar, copiar com **Copiar link de jogar**, usar **Fechar** e só então orientar
+**Concluir aula**. Pelo Estúdio completo, esperar **Publicado! 🎉**, usar **Copiar link** e depois
+**Fechar**.
 
 ## 7. Formato para gravação
 
@@ -145,12 +157,14 @@ contexto ou consulta, encaminhar a continuação sem inventar uma atividade obri
 Separar sempre a nota de produção da fala, com uma linha em branco:
 
 ```markdown
-**Na tela:** mostrar o jogo pronto e apontar a área jogável. Não revelar os esconderijos.
+**Na tela:** mostrar o jogo pronto. No "Olha aqui", tocar em UM esconderijo só; não revelar os outros.
 
 **Narração:**
 
-> “Aqui está o jogo pronto. Toque nos esconderijos até encontrar os três personagens.
-> Quando encontrar todo mundo, clique em Próxima seção.”
+> “Você vai construir um jogo chamado Cadê Todo Mundo. Esta é a versão pronta, para você ver como
+> o jogo funciona antes de montar o seu. Olha aqui: quando eu toco num esconderijo, ele some e
+> aparece quem estava atrás. Agora é a sua vez: jogue até encontrar os três personagens. Quando
+> terminar, clique em Próxima seção.”
 ```
 
 Cada nota de tela tem sua narração correspondente. Um vídeo pode conter vários pares.
@@ -164,7 +178,7 @@ Manter os títulos de seção iguais aos do manifesto. Cadê Todo Mundo? usa um 
 cabeçalhos "## Seção N. Título" e "### Clipe `chave`" exigidos pelo validador.
 
 Estimar o tempo pela fala em voz alta, incluindo os gestos, sem acrescentar teoria para atingir
-uma duração mínima. Um convite para jogar pode durar 25 segundos; uma montagem precisa de tempo
+uma duração mínima. A demonstração do jogo pronto pode durar 30 a 40 segundos; uma montagem precisa de tempo
 para cada encaixe. Não acelerar a demonstração para caber numa duração arbitrária.
 
 Nas seções com ferramenta externa, manter a autoconferência visual: pedir que a pessoa compare

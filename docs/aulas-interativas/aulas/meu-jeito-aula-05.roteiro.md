@@ -8,20 +8,32 @@ Entrada: Asteroide em vetor com corpo e crateras. Saída: Nave e asteroide anima
 
 Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
+Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
+
 ## Seção 1. Troque o que fica na frente
 
 ### Clipe `video-camadas` · Troque o que fica na frente
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da chama na frente da pedra: apontar a lista Camadas, com a chama em cima. Clicar em Uma camada para a frente, na linha da pedra, e mostrar a pedra subir na lista e aparecer na frente. Clicar em Uma camada para trás, na linha da pedra, e mostrar a chama cobrindo de novo. Clicar em Uma camada para a frente outra vez e mostrar a pedra na frente. Meme na comparação: na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda "a de cima fica na frente". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.
+> "Esta é uma experiência para a gente entender as camadas, que decidem qual forma aparece na frente.
 >
-> Compare a ordem da lista com a parte da pedra que aparece em cada troca. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: no começo, a chama cobre quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima e a pedra está embaixo.
+>
+> Quando eu clico em Uma camada para a frente, na linha da pedra, a pedra sobe na lista e aparece na frente da chama, sem nada cobrindo. Nenhuma forma foi apagada: só a ordem mudou.
+>
+> Sabe quando você empilha figurinhas na mesa? A de cima tapa um pedaço da de baixo. Na lista Camadas é igual: a forma que está em cima aparece na frente.
+>
+> Agora eu clico em Uma camada para trás, na linha da pedra. A pedra desce na lista, e a chama volta a cobrir a pedra. Depois, clico em Uma camada para a frente de novo, e a pedra volta para a frente.
+>
+> Daqui a pouco, no seu asteroide, você vai desenhar a chama e usar Uma camada para trás até a pedra e as crateras ficarem na frente dela.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.
+**Zappy na página (não gravar):** Agora suba e desça a pedra na lista Camadas e veja qual fica na frente.
 
 ## Seção 2. Desenhe fogo atrás da pedra
 
@@ -61,16 +73,26 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 ### Clipe `video-mudanca-pequena` · Compare mudanças entre quadros
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia tocando, com os dois controles em 0: deixar ver a pedra parada na Prévia. Levar O tanto que a cratera anda até 4 e soltar; deixar ver as crateras mudarem no quadro 2 e a pedra parecer rolar na Prévia. Levar O tanto que a pedra inteira anda até 10 e soltar; deixar ver a pedra pular na Prévia. Meme na comparação: na frase do globo, o Zappy girando o globo da sala de aula, que fica no lugar enquanto os desenhos dos países andam um pouquinho, com a legenda "o corpo fica, os detalhes andam". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
 
 **Narração:**
-> "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.
+> "Esta é uma experiência para a gente entender quanto um desenho pode mudar de um quadro para o outro.
 >
-> Compare a prévia com os detalhes mudando e com o corpo inteiro mudando de lugar. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+> Olha aqui: a Prévia já está tocando, trocando os dois quadros 8 vezes por segundo. Com O tanto que a cratera anda e O tanto que a pedra inteira anda em 0, os dois quadros são iguais. Na Prévia, a pedra fica parada.
+>
+> Agora eu coloco O tanto que a cratera anda em 4 e deixo a pedra inteira em 0. No quadro 2, só as crateras mudam um pouco de lugar. Na Prévia, as crateras andam, o corpo fica no lugar, e a pedra parece rolar.
+>
+> Sabe o globo da sala de aula girando? Ele fica no mesmo lugar, e só os desenhos dos países andam um pouquinho. É essa mudança pequena que faz a gente ver o globo girar. No nosso jogo, essa mudança pequena é O tanto que a cratera anda.
+>
+> Agora eu coloco O tanto que a pedra inteira anda em 10. No quadro 2, a pedra toda muda de lugar. Na Prévia, o desenho pula de um lado para o outro, em vez de rolar. Uma mudança grande demais vira pulo.
+>
+> Daqui a pouco, no segundo quadro do seu asteroide, você vai mover uma cratera um pouco e deixar o corpo da pedra no mesmo lugar.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
-**Zappy na página (não gravar):** Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.
+**Zappy na página (não gravar):** Agora mude só a cratera, depois a pedra inteira, e compare a Prévia.
 
 ## Seção 5. Mude detalhes no segundo quadro
 

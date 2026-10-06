@@ -12,18 +12,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 ### Clipe `video-visivel-guardado` · Compare a tela com o grupo
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy com uma mochila cheia de cactos pesando nas costas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
 
 **Narração:**
-> "Os cactos saem pela esquerda no seu jogo. Agora observe o grupo por dentro para descobrir o que acontece com esses objetos.
+> "Esta é uma experiência para a gente entender o que acontece com um cacto que sai da tela.
 >
-> Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste.
+> Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os cactos passam e saem pela esquerda. Na tela do jogo eles somem, mas nos bastidores continuam no grupo, na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.
 >
-> Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita.
+> Depois que dois cactos saem, a chave abre. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.
 >
-> Depois dos testes, clique em Próxima seção."
+> É como uma mochila: o caderno que você não usa mais continua lá dentro, pesando, até alguém tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos.
+>
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
 
 **Zappy na página (não gravar):** Compare o grupo antes e depois de ligar a limpeza.
 
