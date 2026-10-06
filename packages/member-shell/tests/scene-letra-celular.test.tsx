@@ -280,9 +280,14 @@ describe('⭐⭐ a letra dos desenhos das 45 cenas, a 390 e a 600px', () => {
       expect([...new Set(abaixo)]).toEqual([])
       expect([...new Set(larguraErrada)]).toEqual([])
       // Anti-vácuo: as cenas foram MEDIDAS. A `mesh` não escreve nada no desenho, e no celular a
-      // `diagonal` também não (os nomes dos fantasmas moram na legenda embaixo dele).
-      const esperadas = largura === JANELAS[390] ? ['diagonal', 'mesh'] : ['mesh']
-      expect(semTexto).toEqual(esperadas)
+      // `diagonal` também não (os nomes dos fantasmas moram na legenda embaixo dele). A
+      // `lighthouse-position` (onde fica a chave do Farol, 06/10/2026) é só o mapa: a posição
+      // escolhida aparece nos controles ao lado, não dentro do desenho.
+      const esperadas =
+        largura === JANELAS[390]
+          ? ['diagonal', 'lighthouse-position', 'mesh']
+          : ['lighthouse-position', 'mesh']
+      expect([...semTexto].sort()).toEqual(esperadas)
       expect(Object.keys(menorPorCena)).toHaveLength(SCENE_IDS.length - esperadas.length)
       expect(medidos).toBeGreaterThan(2000)
     })

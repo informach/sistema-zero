@@ -24,10 +24,13 @@ import {
   type ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
+import { LessonCopyProvider } from '@sistemazero/member-shell/components/lesson-copy-context'
 import {
   type LessonPreviewContextValue,
   LessonPreviewProvider,
 } from '@sistemazero/member-shell/components/lesson-preview-context'
+import { ADULT_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy'
+import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
@@ -245,10 +248,16 @@ export function LearningBuilder({
   value,
   onChange,
   sectionCriteria = false,
+  kids = false,
 }: {
   value: InteractiveBlock
   onChange: (value: InteractiveBlock) => void
   sectionCriteria?: boolean
+  /**
+   * Aula de curso kids: a prévia fala o vocabulário da criança ("Voltar à fase", "Esta pergunta
+   * mudou. Abra a fase de novo."), como a prévia e o ensaio da aula inteira.
+   */
+  kids?: boolean
 }) {
   const id = useId()
   const [preview, setPreview] = useState(false)
@@ -867,19 +876,21 @@ export function LearningBuilder({
         // a prévia não tinha quem corrigisse: qualquer resposta da pergunta concluía sem recado, e o
         // professor que testava ali concluía que toda opção passava, sem nunca ler a explicação que
         // ele mesmo escreveu.
-        <LessonPreviewProvider value={ENSAIO_DA_PREVIA}>
-          <div className="sz-lesson-block">
-            <InteractiveLessonBlock
-              previewContent={value}
-              block={{
-                id: 'author-preview',
-                kind: 'interactive',
-                sortOrder: 0,
-                content: publicInteractiveBlock(value),
-              }}
-            />
-          </div>
-        </LessonPreviewProvider>
+        <LessonCopyProvider value={kids ? KIDS_LESSON_COPY : ADULT_LESSON_COPY}>
+          <LessonPreviewProvider value={ENSAIO_DA_PREVIA}>
+            <div className="sz-lesson-block">
+              <InteractiveLessonBlock
+                previewContent={value}
+                block={{
+                  id: 'author-preview',
+                  kind: 'interactive',
+                  sortOrder: 0,
+                  content: publicInteractiveBlock(value),
+                }}
+              />
+            </div>
+          </LessonPreviewProvider>
+        </LessonCopyProvider>
       )}
     </div>
   )

@@ -16,9 +16,12 @@ import { basename, dirname, join, resolve, sep } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import {
   JARDIM_ASSETS,
+  JARDIM_BICHOS,
+  JARDIM_ESCONDERIJOS,
   JARDIM_PARES,
   type JardimSpriteName,
   jardimSpriteRect,
+  jardimSvg,
 } from '../../../../packages/studio/src/arte/jardim-assets'
 import { FRAME_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/frames'
 import { JS_BLOCKS } from '../../../../packages/studio/src/blockly/blocks/js'
@@ -55,6 +58,15 @@ function scene(revealed: boolean) {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
 }
 
+function gallery(names: readonly JardimSpriteName[]) {
+  return names
+    .map((name) => {
+      const src = `data:image/svg+xml;base64,${Buffer.from(jardimSvg(name)).toString('base64')}`
+      return `<figure class="asset-option"><img src="${src}" alt="${name}"><figcaption>${name}</figcaption></figure>`
+    })
+    .join('')
+}
+
 const blockColors = new Map(
   [...FRAME_BLOCKS, ...JS_BLOCKS, ...VALUE_BLOCKS, ...gameTwoDBlocks].map((b) => [
     b.type,
@@ -66,6 +78,8 @@ const html = readFileSync(templatePath, 'utf8')
   .replace('/* {{FONT_FACES}} */', fontFaces)
   .replaceAll('{{SCENE_HIDDEN}}', scene(false))
   .replaceAll('{{SCENE_REVEALED}}', scene(true))
+  .replace('<!--BICHOS-->', gallery(JARDIM_BICHOS))
+  .replace('<!--ESCONDERIJOS-->', gallery(JARDIM_ESCONDERIJOS))
   .replace('{{ZAPPY}}', `data:image/webp;base64,${readFileSync(zappyPath).toString('base64')}`)
 
 const coloredHtml = html.replace(/data-block-type="([^"]+)"/g, (attribute, type: string) => {

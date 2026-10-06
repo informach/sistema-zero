@@ -37,9 +37,9 @@ const PORTAS = [
   },
   {
     href: '/recados',
-    title: 'Recados do professor',
+    title: 'Recados da equipe',
     icon: Mail,
-    text: 'Leia as devolutivas dos seus projetos e continue a conversa.',
+    text: 'Veja o que a equipe achou dos seus projetos e continue a conversa.',
     tom: 'pensa',
   },
   {
@@ -54,7 +54,7 @@ const PORTAS = [
 ] as const
 
 /** As três coisas que cabem em qualquer comentário, cada uma na cor de uma faixa. */
-const DEVOLUTIVA = [
+const BOM_COMENTARIO = [
   { text: 'Algo que você gostou', icon: ThumbsUp, fundo: 'bg-(--band-menta)' },
   { text: 'Uma dúvida que ficou', icon: MessageCircle, fundo: 'bg-(--band-ceu)' },
   { text: 'Uma ideia para melhorar', icon: Lightbulb, fundo: 'bg-(--band-lilas)' },
@@ -105,7 +105,7 @@ export default async function ComunidadePage() {
                 className="sz-btn-gradient sz-btn-inverso h-[3.125rem] gap-2.5 px-7 text-base"
               >
                 <Gamepad2 className="size-[1.125rem]" aria-hidden />
-                Explorar mural
+                Abrir o Mural
               </Link>
             }
             // 230px de largura dão ~217 de altura: o herói fecha nos 272px do modelo.
@@ -138,7 +138,7 @@ export default async function ComunidadePage() {
                   className="h-full"
                   footer={
                     <span className="flex items-center gap-2">
-                      Explorar <ArrowRight className="size-4" aria-hidden />
+                      Abrir <ArrowRight className="size-4" aria-hidden />
                     </span>
                   }
                 />
@@ -151,13 +151,13 @@ export default async function ComunidadePage() {
       <KidsBand tone="lilas">
         <KidsClosingCard
           icon={MessageCircleHeart}
-          title="Uma boa devolutiva ajuda a criar"
+          title="Um bom comentário ajuda a criar"
           description="Fale sobre o projeto com respeito a quem criou. Três coisas cabem em qualquer comentário:"
           chips={
             // Pílulas de 72px, canto de 18px e o ícone num quadradinho branco de 36px
             // com canto de 10px (medidas do modelo a 1440px).
             <ul className="grid w-full gap-4 md:grid-cols-3">
-              {DEVOLUTIVA.map(({ text, icon: Icon, fundo }) => (
+              {BOM_COMENTARIO.map(({ text, icon: Icon, fundo }) => (
                 <li
                   key={text}
                   className={`flex min-h-[4.5rem] items-center gap-3 rounded-[1.125rem] px-[1.125rem] py-3 font-extrabold text-[0.9375rem] ${fundo}`}

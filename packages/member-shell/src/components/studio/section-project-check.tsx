@@ -4,6 +4,8 @@ import type { StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { type RefObject, useState } from 'react'
 import { apiSend } from '../../lib/api'
+import { codigoDoErro } from '../../lib/lesson-copy'
+import { useLessonCopy } from '../lesson-copy-context'
 import { useLessonPlayer } from '../lesson-player-context'
 
 export function SectionProjectCheck({
@@ -21,6 +23,7 @@ export function SectionProjectCheck({
 
 function CheckStage({ handleRef }: { handleRef: RefObject<StudioHandle | null> }) {
   const player = useLessonPlayer()
+  const { verificacao, erroDoServidor } = useLessonCopy()
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState('')
   const [results, setResults] = useState<{ checkId: string; passed: boolean }[]>([])
@@ -40,18 +43,18 @@ function CheckStage({ handleRef }: { handleRef: RefObject<StudioHandle | null> }
         { revision: check.revision, project },
         { 'x-sz-viewer': player.viewerId ?? '' },
       )
-      setFeedback(
-        result.passed
-          ? 'Objetivo da etapa cumprido!'
-          : 'Confira os blocos pedidos nesta etapa e tente novamente.',
-      )
+      setFeedback(result.passed ? verificacao.cumprido : verificacao.faltou)
       setResults(result.results)
       player.refreshAfterLearning?.()
     } catch (error) {
+      const padrao = 'Não foi possível verificar. Seu projeto continua aqui; tente novamente.'
+      // ⚠️ O erro da API é um objeto simples (`ApiError`), não um `Error`: com `instanceof
+      // Error` a frase do servidor nunca chegava, e o `TypeError` da rede (sem `code`) é que
+      // passava. Quem decide é o `erroDoServidor`.
       setFeedback(
-        error instanceof Error
-          ? error.message
-          : 'Não foi possível verificar. Seu projeto continua aqui; tente novamente.',
+        codigoDoErro(error) === 'PAYLOAD_TOO_LARGE'
+          ? verificacao.grandeDemais
+          : erroDoServidor(error, padrao),
       )
     } finally {
       setBusy(false)
@@ -59,7 +62,7 @@ function CheckStage({ handleRef }: { handleRef: RefObject<StudioHandle | null> }
   }
   return (
     <div className="space-y-2">
-      <ul className="space-y-1 text-sm" aria-label="Objetivos desta etapa">
+      <ul className="space-y-1 text-sm" aria-label={verificacao.objetivos}>
         {player?.sectionProjectCheck?.objectives?.map((objective) => {
           const result = results.find((r) => r.checkId === objective.id)
           return (
@@ -71,7 +74,7 @@ function CheckStage({ handleRef }: { handleRef: RefObject<StudioHandle | null> }
         })}
       </ul>
       <Button variant="outline" disabled={busy} onClick={() => void verify()}>
-        {busy ? 'Verificando…' : 'Verificar esta etapa'}
+        {busy ? 'Verificando…' : verificacao.botao}
       </Button>
       {feedback && (
         <p role="status" className="text-sm">

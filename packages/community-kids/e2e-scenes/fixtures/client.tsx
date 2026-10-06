@@ -1,6 +1,8 @@
 import { isInteractiveBlock, publicInteractiveBlock } from '@sistemazero/core/learning'
+import { LessonCopyProvider } from '@sistemazero/member-shell/components/lesson-copy-context'
 import { LessonSectionProvider } from '@sistemazero/member-shell/components/lesson-section-context'
 import { SceneActivityView } from '@sistemazero/member-shell/components/scene-activity'
+import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import { resolveLessonSplit } from '@sistemazero/member-shell/lib/lesson-split'
 import { createRoot } from 'react-dom/client'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
@@ -87,45 +89,49 @@ const { contentMinimum, toolMinimum } = resolveLessonSplit({
   hasWorkspace: true,
 })
 
+// O vocabulário da criança, como o `KidsLessonCopy` em volta da área logada do app: sem ele o
+// ensaio montaria a experiência com as palavras do adulto ("Voltar à aula").
 createRoot(root).render(
-  <main className="sz-lesson-sections" style={{ padding: 16 }}>
-    <button type="button">Antes da experiência</button>
-    <div style={{ height: 64 }} />
-    {params.has('split') ? (
-      <PanelGroup direction="horizontal" className="h-auto! items-start overflow-visible!">
-        <Panel
-          id="lesson-content"
-          defaultSize={50}
-          minSize={contentMinimum}
-          maxSize={100 - toolMinimum}
-          className="min-w-0 overflow-visible!"
-        >
-          <div className="sz-lesson-block" style={{ aspectRatio: '16 / 9' }}>
-            Vídeo da aula
-          </div>
-        </Panel>
-        <PanelResizeHandle
-          aria-label="Mudar o tamanho dos dois lados"
-          hitAreaMargins={{ coarse: 20, fine: 6 }}
-          className="sz-lesson-split-handle relative flex w-6 shrink-0 self-stretch items-center justify-center"
-        >
-          <span className="sz-lesson-split-grip absolute inset-y-0" />
-        </PanelResizeHandle>
-        <Panel
-          id="lesson-tool"
-          defaultSize={50}
-          minSize={toolMinimum}
-          maxSize={100 - contentMinimum}
-          className="min-w-0 overflow-visible!"
-        >
+  <LessonCopyProvider value={KIDS_LESSON_COPY}>
+    <main className="sz-lesson-sections" style={{ padding: 16 }}>
+      <button type="button">Antes da experiência</button>
+      <div style={{ height: 64 }} />
+      {params.has('split') ? (
+        <PanelGroup direction="horizontal" className="h-auto! items-start overflow-visible!">
+          <Panel
+            id="lesson-content"
+            defaultSize={50}
+            minSize={contentMinimum}
+            maxSize={100 - toolMinimum}
+            className="min-w-0 overflow-visible!"
+          >
+            <div className="sz-lesson-block" style={{ aspectRatio: '16 / 9' }}>
+              Vídeo da fase
+            </div>
+          </Panel>
+          <PanelResizeHandle
+            aria-label="Mudar o tamanho dos dois lados"
+            hitAreaMargins={{ coarse: 20, fine: 6 }}
+            className="sz-lesson-split-handle relative flex w-6 shrink-0 self-stretch items-center justify-center"
+          >
+            <span className="sz-lesson-split-grip absolute inset-y-0" />
+          </PanelResizeHandle>
+          <Panel
+            id="lesson-tool"
+            defaultSize={50}
+            minSize={toolMinimum}
+            maxSize={100 - contentMinimum}
+            className="min-w-0 overflow-visible!"
+          >
+            {experience}
+          </Panel>
+        </PanelGroup>
+      ) : (
+        <div style={{ width: '100%', maxWidth: Number(params.get('width') ?? 620) }}>
           {experience}
-        </Panel>
-      </PanelGroup>
-    ) : (
-      <div style={{ width: '100%', maxWidth: Number(params.get('width') ?? 620) }}>
-        {experience}
-      </div>
-    )}
-    <button type="button">Depois da experiência</button>
-  </main>,
+        </div>
+      )}
+      <button type="button">Depois da experiência</button>
+    </main>
+  </LessonCopyProvider>,
 )

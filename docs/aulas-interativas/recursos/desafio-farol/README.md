@@ -2,6 +2,8 @@
 
 O visual acompanha o caderno de Cadê Todo Mundo: capa com arte e painel escuro, fontes Baloo 2/Nunito, cores, cartões, passos numerados, campos brancos e blocos desenhados. O CSS de referência é lido diretamente de `../cade-todo-mundo/caderno-do-aluno.template.html`; não alterar esse arquivo para corrigir só o Farol.
 
+Para a criança, o caderno se chama **Mapa da Aventura** desde 06/10/2026 (capa, título do PDF e rodapé), e o texto usa o vocabulário da aventura das [Diretrizes](../../DIRETRIZES-PEDAGOGICAS.md), seção 6: fase, parte, equipe e os botões novos (**Próxima parte**, **Verificar esta parte**, **Enviar meu projeto**, **Concluir fase**). Os nomes dos arquivos não mudaram.
+
 - `caderno-conteudo.json`: textos e passos das aulas, preservados da revisão pedagógica.
 - `gerar-caderno.ts`: composição das páginas, ilustrações com a arte local do jogo, encaixes e fontes. Identifica as partes preparadas; não apresenta os desenhos como screenshots.
 - As cores de cada bloco, área e valor são importadas das definições finais do Estúdio, incluindo os tons das famílias de Jogo 2D e Programação. Não usar a cor genérica da categoria nem escolher outra cor para combinar com a página. O renderizador confere a cor aplicada no navegador contra essas definições.
@@ -15,17 +17,21 @@ python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py
 
 Requisitos: Bun, Python com `playwright` e Chrome ou Edge instalado. A geração usa arquivos locais, sem baixar fontes ou imagens. Saída: [desafio-farol-caderno.pdf](../../../../output/pdf/desafio-farol-caderno.pdf). HTML e relatório de limites ficam em `tmp/pdfs/desafio-farol/` para inspeção.
 
-O PDF atual tem 21 páginas. Após editar passos ou diagramas, conferir também a navegação por páginas e renderizar o PDF inteiro para revisão visual. A validação de limites complementa essa revisão, não substitui a leitura. Não reduzir fonte ou omitir instruções para caber na página.
+O PDF atual tem 27 páginas e acompanha a personalização ampliada de 06/10/2026, com galerias e posição da chave. Após editar passos ou diagramas, conferir também a navegação por páginas e renderizar o PDF inteiro para revisão visual. A validação de limites complementa essa revisão, não substitui a leitura. Não reduzir fonte ou omitir instruções para caber na página.
 
 O mapa para responsáveis foi retirado por orientação de 03/10/2026. A revisão antes do certificado está implementada nos materiais locais. O caderno orienta responder na aula e corrigir com as explicações; não antecipa o gabarito.
 
-O mesmo verificador pode gerar o caderno do Cadê Todo Mundo com `python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo`: seis páginas com cores oficiais e verificação de limites.
+O mesmo verificador pode gerar o caderno do Cadê Todo Mundo com `python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo`: cores oficiais e verificação de limites.
 
-## Artes personalizadas — 03/10/2026
+## Artes e personalização · 06/10/2026
 
-Os sete SVGs do `pack-game-farol` e os quatro personagens desenhados em 05/10/2026 (`menina`, `marinheira`, `menino` e `exploradora`, com a caixa 64 × 64 e a área de contato do personagem original) ficam em `packages/studio/src/arte/assets/farol/`. O jogo usa `cenario-farol-limpo.svg` como fundo; `cenario-farol.svg` é a referência composta, pois já contém personagem, chave, torre e barco.
+O catálogo compartilhado em `packages/studio/src/arte/farol-assets.ts` reúne oito personagens, quatro cenários, quatro barcos, três chaves e quatro pares de faróis. Os SVGs nativos ficam em `packages/studio/src/arte/assets/farol/`. O cenário composto antigo continua como referência; o jogo usa cenários sem os sprites desenhados no fundo.
 
-O palco tem **480 × 360**, proporção original do cenário. `packages/studio/src/arte/farol-assets.ts` compartilha as posições e as áreas de contato entre o projeto preparado, a atividade da porta e as ilustrações do caderno. A luz não é área de contato. O barco parte fora da tela e chega à água em `(387, 240)`. Os nomes dos assets e a progressão das aulas foram preservados.
+As galerias do caderno leem `FAROL_PERSONAGENS`, `FAROL_CENARIOS`, `FAROL_BARCOS`, `FAROL_CHAVES` e `FAROL_FAROIS`. Cada etiqueta mostra o nome canônico da imagem (hífens, sem acentos) que a criança procura no campo. Em `caderno-conteudo.json`, os itens usam `kind: gallery` e `category: personagens|cenarios|barcos|chaves|farois`; a categoria farois mostra os pares apagado/aceso. Não duplicar listas de arte no renderizador.
+
+Todos os desenhos do mesmo tipo conservam dimensões e contato. Faróis apagados e acesos têm porta no mesmo lugar. Os cenários conservam a organização de terra, ponte e mar. A posição da chave é a mudança voluntária de x/y, ensinada depois da experiência: perto da trilha (211, 53), na parte de baixo (160, 250) e perto da ponte (280, 160). O caderno não pede troca de velocidade; a montagem usa 3. Os aliases antigos continuam válidos para trabalhos salvos.
+
+O palco tem **480 × 360**, proporção original do cenário. `packages/studio/src/arte/farol-assets.ts` compartilha as posições e as áreas de contato entre o projeto preparado, a atividade da porta e as ilustrações do caderno. A luz não é área de contato. O barco parte fora da tela e chega à água em `(387, 240)`. Os nomes dos sprites, a cadeia de projetos e os identificadores mantidos do curso são preservados; nomes de imagens novos descrevem os desenhos.
 
 Para regenerar tudo, a partir da raiz:
 
@@ -41,4 +47,6 @@ O gerador de arte mantém os SVGs originais e produz módulos TS sem dependênci
 
 Esses comandos atualizam os arquivos locais. Não importam os manifestos no catálogo nem substituem o PDF remoto ou projetos já salvos pelos alunos.
 
-Revisão visual: [jogo após a vitória](evidencias/jogo-personalizado.png), [três estados da experiência da porta](evidencias/porta-tres-estados.png) e [imagem na oferta pelo celular](evidencias/oferta-celular.png). O [registro da implementação](../../../superpowers/plans/2026-10-03-farol-artes-personalizadas.md) reúne os resultados de testes e builds.
+Revisão atual: [galeria completa](../../../../output/artes/farol-personalizacao.png), [quatro cenários](../../../../output/artes/farol-cenarios.png) e [jogo com robô e farol colorido](../../../../output/artes/farol-combinacao-vitoria.png). O [registro da personalização ampliada](../../../superpowers/plans/2026-10-06-farol-personalizacao.md) reúne as verificações e o estado de publicação.
+
+Histórico visual de 03/10: [jogo após a vitória](evidencias/jogo-personalizado.png), [três estados da experiência da porta](evidencias/porta-tres-estados.png) e [imagem na oferta pelo celular](evidencias/oferta-celular.png). O [registro anterior](../../../superpowers/plans/2026-10-03-farol-artes-personalizadas.md) conserva os resultados daquela implementação.

@@ -25,112 +25,112 @@ A abertura e o caderno ficam junto da primeira construção. Preparação, taman
 
 ### Seção 1. Jogue antes de construir
 
-**Tarefa:** Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.
+**Tarefa:** Sua vez! Jogue a versão pronta e pule os cactos com a barra de espaço, a seta para cima ou um toque na parte de cima da tela. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-abertura → fala-apresentacao → jogo-pronto.
 
-**Zappy na página (não gravar):** Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.
+**Zappy na página (não gravar):** Sua vez! Jogue a versão pronta e pule os cactos com a barra de espaço, a seta para cima ou um toque na parte de cima da tela. Quando terminar, clique em Próxima parte.
 
 Versão completa do mesmo jogo, derivada do marco original 13. Conclusão por participação; vencer não é exigência para conhecer o jogo.
 
-### Seção 2. Seu Caderno do Aluno
+### Seção 2. Seu Mapa da Aventura
 
-**Tarefa:** O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção.
+**Tarefa:** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
 **Blocos na página:** video-caderno → fala-caderno → caderno.
 
-**Zappy na página (não gravar):** O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção.
+**Zappy na página (não gravar):** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
 Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar e imprimir são opcionais; não entram na conclusão.
 
 ### Seção 3. Compare uma vez e sempre
 
-**Tarefa:** Compare a mesma peça nas duas áreas, começando um teste em cada uma.
+**Tarefa:** Sua vez! Coloque a mesma peça em Ao iniciar e depois em Enquanto estiver rodando, começando um teste em cada uma. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-uma-vez-e-sempre → fala-uma-vez-e-sempre → experiencia-uma-vez-e-sempre.
 
-**Zappy na página (não gravar):** Compare a mesma peça nas duas áreas, começando um teste em cada uma.
+**Zappy na página (não gravar):** Sua vez! Coloque a mesma peça em Ao iniciar e depois em Enquanto estiver rodando, começando um teste em cada uma. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `once-vs-always`. Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 4. Escolha o tamanho da tela
 
-**Tarefa:** Mude largura e altura com a borda visível e termine em 480 por 270.
+**Tarefa:** Sua vez! Ligue a borda, mude a largura e a altura e termine com a tela em 480 por 270. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-limite-da-tela → fala-limite-da-tela → experiencia-tela.
 
-**Zappy na página (não gravar):** Mude largura e altura com a borda visível e termine em 480 por 270.
+**Zappy na página (não gravar):** Sua vez! Ligue a borda, mude a largura e a altura e termine com a tela em 480 por 270. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `stage-size`. Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo. Depois coloque largura 480 e altura 270. Compare com o tamanho anterior. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 5. Prepare a tela do jogo
 
-**Tarefa:** Prepare a tela em Ao iniciar com largura 480 e altura 270.
+**Tarefa:** Agora prepare a tela do seu jogo! Coloque Ao iniciar no projeto e, dentro dela, a tela de 480 por 270. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-area-e-tela → fala-area-e-tela.
 
-**Zappy na página (não gravar):** Prepare a tela em Ao iniciar com largura 480 e altura 270.
+**Zappy na página (não gravar):** Agora prepare a tela do seu jogo! Coloque Ao iniciar no projeto e, dentro dela, a tela de 480 por 270. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Coloque a área Ao iniciar no projeto.
 - Prepare a tela de 480 por 270 dentro de Ao iniciar.
 
 ### Seção 6. Mostre o limite da tela
 
-**Tarefa:** Confira o contorno da tela e a espessura 4.
+**Tarefa:** Agora mostre onde a tela do seu jogo acaba! Coloque Mostrar a borda da tela logo abaixo da preparação, com espessura 4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-borda → fala-borda.
 
-**Zappy na página (não gravar):** Confira o contorno da tela e a espessura 4.
+**Zappy na página (não gravar):** Agora mostre onde a tela do seu jogo acaba! Coloque Mostrar a borda da tela logo abaixo da preparação, com espessura 4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Prepare a tela de 480 por 270 antes de mostrar a borda.
 - Coloque Mostrar a borda da tela em Ao iniciar, com espessura 4.
 
 ### Seção 7. Escolha onde o Dino fica
 
-**Tarefa:** Mude um eixo de cada vez e termine em x 0, y 0.
+**Tarefa:** Sua vez! Mude só o x, depois só o y, e termine com o Dino em x 0 e y 0. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-coordenadas → fala-coordenadas → experiencia-coordenadas.
 
-**Zappy na página (não gravar):** Mude um eixo de cada vez e termine em x 0, y 0.
+**Zappy na página (não gravar):** Sua vez! Mude só o x, depois só o y, e termine com o Dino em x 0 e y 0. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `coordinates`. Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções. Por último, coloque x em 0 e y em 0. Observe onde fica essa posição. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 8. Compare criar e mostrar
 
-**Tarefa:** Crie o Dino nos bastidores e depois mostre-o na tela.
+**Tarefa:** Sua vez! Clique em Criar o Dino, depois em Mostrar o Dino na tela, e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-criar-e-mostrar → fala-criar-e-mostrar → descoberta.
 
-**Zappy na página (não gravar):** Crie o Dino nos bastidores e depois mostre-o na tela.
+**Zappy na página (não gravar):** Sua vez! Clique em Criar o Dino, depois em Mostrar o Dino na tela, e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `world`. Clique em Criar o Dino. Compare os bastidores com a tela do jogo. Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 9. Crie o Dino nos bastidores
 
-**Tarefa:** Crie dino em x 110, y 150 e tamanho 64, abaixo da borda.
+**Tarefa:** Agora crie o seu Dino! Coloque Criar dinossauro logo abaixo da borda, com x 110, y 150 e tamanho 64. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-criar-dino → fala-criar-dino.
 
-**Zappy na página (não gravar):** Crie dino em x 110, y 150 e tamanho 64, abaixo da borda.
+**Zappy na página (não gravar):** Agora crie o seu Dino! Coloque Criar dinossauro logo abaixo da borda, com x 110, y 150 e tamanho 64. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Deixe o Criar dinossauro logo abaixo da borda da tela.
 - Crie o dinossauro dino em Ao iniciar: x 110, y 150 e tamanho 64.
 
 ### Seção 10. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de conferir e enviar o seu jogo! Confira a tela, a borda e o Dino, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de conferir e enviar o seu jogo! Confira a tela, a borda e o Dino, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Coloque a área Ao iniciar no projeto.
 - Prepare a tela de 480 por 270, antes da borda.

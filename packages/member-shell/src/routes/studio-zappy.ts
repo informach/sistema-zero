@@ -321,7 +321,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
         return complete(
           {
             id: crypto.randomUUID(),
-            text: 'Não consegui consultar as aulas agora. Rode o jogo ou selecione o bloco e tente novamente.',
+            text: 'Não consegui consultar as fases agora. Rode o jogo ou selecione o bloco e tente novamente.',
             scope: 'needs-context',
             blockReferences: [],
             createdAt: new Date().toISOString(),
@@ -386,7 +386,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
         response.scope = 'quota'
         response.text =
           quota.scope === 'day'
-            ? 'Por hoje a gente já estudou bastante! Amanhã tem mais ✨'
+            ? 'Por hoje a gente já conversou bastante! Amanhã tem mais ✨'
             : 'A ajuda deste mês acabou. No mês que vem tem mais ✨'
         return complete(response, 'quota')
       }

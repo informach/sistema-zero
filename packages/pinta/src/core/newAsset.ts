@@ -70,13 +70,27 @@ export const PINTA_LESSON_ASSET_OPTIONS = [
 export type PintaLessonAssetKind = (typeof PINTA_LESSON_ASSET_OPTIONS)[number]['kind']
 
 /**
+ * O nome padrão do desenho de um bloco de aula. Ele vira o nome do arquivo que a criança BAIXA
+ * ("Baixar o desenho") e o que aparece na barra do editor: é texto de tela, e o mesmo nos dois
+ * apps. "meu-desenho" não é de escola nem de aventura.
+ */
+export const LESSON_ASSET_DEFAULT_NAME = 'meu-desenho'
+
+/**
+ * O nome padrão ANTIGO (até 06/10/2026). Ele continua guardado no `initialAsset` das aulas que já
+ * existem e no rascunho de quem já abriu uma delas: o banco não é migrado. Quem troca é o
+ * `PintaLesson`, ao carregar (`nomeDoDesenhoDaAula`), só quando o nome é EXATAMENTE este.
+ */
+export const LEGACY_LESSON_ASSET_NAME = 'desenho-da-aula'
+
+/**
  * Monta o desenho inicial de um bloco de aula a partir do tipo + tamanho escolhidos.
  * Personagem usa quadro quadrado; cenário usa a medida nos dois lados.
  */
 export function createLessonAsset(
   kind: PintaLessonAssetKind,
   size: number,
-  name = 'desenho-da-aula',
+  name = LESSON_ASSET_DEFAULT_NAME,
 ): PintaAsset {
   if (kind === 'pixel-sprite' || kind === 'vector-sprite') {
     return createAsset({ kind, name, frameSize: size })

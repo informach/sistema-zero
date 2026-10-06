@@ -42,7 +42,8 @@ export const COPY = {
     loadError: 'Não consegui abrir a sua galeria. Tente de novo daqui a pouco.',
     /** Bloco de aula: não há galeria por trás, então a copy fala do DESENHO. */
     lessonLoadError: 'Não consegui abrir o seu desenho. Recarregue a página daqui a pouco.',
-    lessonBrokenAsset: 'Esse desenho veio com algum problema. Avise o seu professor.',
+    lessonBrokenAsset:
+      'Esse desenho veio com algum problema. Use o botão Preciso de ajuda para avisar a equipe.',
     /** Veio pelo botão "Editar" do Estúdio, mas o desenho já tinha sido apagado. */
     drawingGone: 'Esse desenho não está mais aqui. Escolha outro na sua galeria.',
     retry: 'Tentar de novo',

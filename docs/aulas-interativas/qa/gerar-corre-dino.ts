@@ -53,15 +53,16 @@ export const aulasDino = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'corre-dino.conteudo.json'), 'utf8'),
 ) as AulaDino[]
 const CURSO = 'corre-dino'
+// Fórmulas fixas do vocabulário da aventura (Diretrizes, seção 6): verificação, envio e saída.
 const checkExit =
-  'Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo.'
-const send = 'Clique em Enviar para o professor e confirme em Enviar.'
+  'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
+const send = 'Depois, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo Título e traz o resumo do manifesto (showcase).
 const publish =
-  'Se quiser mostrar o jogo no Mural, clique em Compartilhar depois do envio. Publicar é opcional; você também pode deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
+  'Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
 /** O fim de todo vídeo de experiência: só aqui a vez passa para quem faz a aula. */
 export const SUA_VEZ =
-  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.'
+  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
 /** O modelo da nota de tela das experiências (Diretrizes, seção 2: o vídeo é uma demonstração). */
 const telaExperiencia =
   'Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado.'
@@ -76,7 +77,7 @@ export function telaSecao(section: SecaoDino): string {
   const meme = section.meme
     ? ` Meme ilustrado na frase da comparação, por 2 a 3 segundos: ${section.meme} Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência.`
     : ''
-  return `${telaExperiencia} ${section.screen}${meme} Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.`
+  return `${telaExperiencia} ${section.screen}${meme} Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.`
 }
 
 export function falasSecao(section: SecaoDino): string[] {
@@ -84,7 +85,7 @@ export function falasSecao(section: SecaoDino): string[] {
   if (ehExperiencia(section)) speech.push(SUA_VEZ)
   if (section.checks?.length) {
     speech.push(
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último` : 'Depois'}, clique em Concluir aula.` : 'Depois, clique em Próxima seção.'}`,
+      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando o envio terminar, clique em Concluir fase.'}` : 'Depois, clique em Próxima parte.'}`,
     )
   }
   return speech
@@ -135,7 +136,7 @@ export function gerarManifestoDino(lesson: AulaDino, index: number): LearningMan
           required: true,
           title: 'Experimente o jogo pronto',
           instructions:
-            'Clique na área do jogo para começar. Toque e solte a barra de espaço, a seta para cima ou a tela para pular. Tente passar pelos cactos. Depois de perder, uma entrada volta à abertura e outra começa. Você não precisa bater recorde para continuar.',
+            'Clique na área do jogo para começar. Toque e solte a barra de espaço ou a seta para cima, ou toque na parte de cima da tela, para pular. Tente passar pelos cactos. Depois de perder, uma entrada volta à abertura e outra começa. Você pode continuar mesmo sem bater recorde.',
           hints: [],
           activity: {
             type: 'project-play',
@@ -150,7 +151,7 @@ export function gerarManifestoDino(lesson: AulaDino, index: number): LearningMan
     if (s.materials)
       add('caderno', {
         kind: 'materials',
-        title: 'Caderno do Aluno: Corre, Dino!',
+        title: 'Mapa da Aventura: Corre, Dino!',
         bookPreview: true,
         items: [],
       })
@@ -220,6 +221,8 @@ function roteiro(lesson: AulaDino, index: number) {
     '',
     `${index === 0 ? 'Começar com o projeto vazio preparado para esta aula.' : 'Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo.'} Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.`,
     '',
+    'Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "agora que", "ou seja"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e a ponte do Zappy convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026).',
+    '',
   ]
   lesson.sections.forEach((s, i) => {
     lines.push(`## Seção ${i + 1}. ${s.title}`, '')
@@ -232,7 +235,7 @@ function roteiro(lesson: AulaDino, index: number) {
         '',
         `**Estimativa de gravação:** aproximadamente ${voice} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.`,
         '',
-        `**Na tela:** ${telaSecao(s)} ${s.checks?.length ? 'Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.' : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
+        `**Na tela:** ${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado${s.final ? ' (Enviar meu projeto, Enviar e Concluir fase)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
         '',
         '**Narração:**',
         `> "${speech.join('\n>\n> ')}"`,
@@ -301,8 +304,8 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       )
     if (s.checks?.length)
       lines.push(
-        '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa' +
-          (s.final ? ', com envio confirmado ao professor.' : '.'),
+        '**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte' +
+          (s.final ? ', com o envio em Enviar meu projeto confirmado em Enviar.' : '.'),
         '',
         ...s.checks.map((c) => `- ${c.label}`),
         '',
@@ -314,7 +317,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       )
     if (s.publish)
       lines.push(
-        'Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.',
+        'Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.',
         '',
       )
   })

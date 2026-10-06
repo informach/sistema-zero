@@ -8,26 +8,28 @@ Entrada: Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro
 
 Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando ("Sua vez!", "Agora…!", "Hora de…!") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Tá vendo?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").
+
 ## Seção 1. Compare esperar a tecla e repetir tiros
 
 ### Clipe `video-tecla-e-repeticao` · Compare esperar a tecla e repetir tiros
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy apertando a campainha de uma porta, com a legenda "apertou, tocou"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy apertando a campainha de uma porta, com a legenda "apertou, tocou"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
-> "Esta é a mesma experiência da primeira aula, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.
+> "Esta é a mesma experiência da primeira fase, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.
 >
-> Olha aqui: eu coloco Criar um tiro em Quando acontecer e clico em Começar o jogo. O jogo roda e o teste para, mas nenhum tiro nasce. A peça mostra 0 vezes. Quando acontecer espera um acontecimento, e ninguém apertou a tecla.
+> Olha aqui: eu coloco Criar um tiro em Quando acontecer e clico em Começar o jogo. O jogo roda e o teste para, mas tá vendo? Nenhum tiro nasce, e a peça mostra 0 vezes. É que Quando acontecer espera um acontecimento, e ninguém clicou em Apertar a tecla.
 >
-> Agora eu clico em Apertar a tecla. Na mesma hora, nasce um tiro, e a peça mostra 1 vez. A tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém apertar o botão.
+> Agora eu clico em Apertar a tecla. Olha só: na mesma hora, nasce um tiro, e a peça mostra 1 vez, porque a tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém apertar o botão.
 >
-> Por último, eu levo Criar um tiro para Enquanto estiver rodando e clico em Começar o jogo. Nascem tiros sem parar, um em cada quadro, e o teste termina com 5 tiros. Ninguém apertou nada. Por isso, no seu jogo, Criar tiro vai ficar dentro de Quando acontecer, esperando a barra de espaço.
+> Por último, eu levo Criar um tiro para Enquanto estiver rodando e clico em Começar o jogo. Nascem tiros sem parar, um em cada quadro, e o teste termina com 5 tiros, mesmo sem ninguém clicar em Apertar a tecla. Por isso, no seu jogo, Criar tiro vai ficar dentro de Quando acontecer, esperando a barra de espaço.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Compare Criar um tiro em Quando acontecer e Enquanto estiver rodando. No primeiro teste, espere e depois clique em Apertar a tecla.
+**Zappy na página (não gravar):** Sua vez! Compare Criar um tiro em Quando acontecer e em Enquanto estiver rodando. No primeiro teste, espere parar e só depois clique em Apertar a tecla. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Faça o tiro acompanhar a nave
 
@@ -35,22 +37,22 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy conferindo o relógio de pulso antes de responder, com a legenda "ler na hora"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy conferindo o relógio de pulso antes de responder, com a legenda "ler na hora"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender a diferença entre um número escrito e um número lido na hora. É isso que faz o tiro nascer na nave, mesmo quando ela muda de lugar.
 >
-> Olha aqui: em De onde vem o x do tiro, está escolhido O número 400. A nave está em x 400. Eu clico em Atirar, e o tiro nasce em 400, bem na nave. Agora eu mudo x da nave para 640 e atiro de novo. O tiro nasce em 400 outra vez, longe da nave. O número escrito não muda quando a nave anda.
+> Olha aqui: em De onde vem o x do tiro, está escolhido O número 400, e a nave está em x 400. Eu clico em Atirar, e o tiro nasce em 400, bem na nave. Agora eu mudo x da nave para 640 e atiro de novo. Tá vendo? O tiro nasce em 400 outra vez, longe da nave, porque o número escrito não muda quando a nave anda.
 >
-> É como responder que horas são sempre com o mesmo horário, sem olhar o relógio. Às vezes você acerta, mas quase sempre erra. Para acertar, é preciso olhar o relógio na hora.
+> É como responder que horas são sempre com o mesmo horário, sem olhar o relógio: às vezes você acerta, mas quase sempre erra. Para acertar, é preciso olhar o relógio na hora.
 >
-> Agora eu troco para O centro x da nave e clico em Atirar. O tiro nasce em 640, onde a nave está. Mudo a nave para 200 e atiro: o tiro nasce em 200. O jogo lê a posição da nave na hora do disparo.
+> Agora eu troco para O centro x da nave e clico em Atirar. Olha só: o tiro nasce em 640, onde a nave está. Mudo a nave para 200 e atiro, e o tiro nasce em 200. É que agora o jogo lê a posição da nave na hora do disparo.
 >
-> Por último, eu ligo Marcas da caixa e atiro mais uma vez. As marcas mostram a caixa da nave e a linha do centro x. O tiro sai do meio da caixa, na borda de cima. No seu jogo, o campo x do tiro vai ler o centro x da nave.
+> Por último, eu ligo Marcas da caixa e atiro mais uma vez. Repare nas marcas: elas mostram a caixa da nave e a linha do centro x, e o tiro sai do meio da caixa, na borda de cima. No seu jogo, o campo x do tiro vai ler o centro x da nave.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Atire de dois lugares com cada opção de x. Depois ligue Marcas da caixa e atire de novo com O centro x da nave.
+**Zappy na página (não gravar):** Sua vez! Atire de dois lugares com cada opção de x e depois ligue Marcas da caixa e atire de novo. Quando terminar, clique em Próxima parte.
 
 ## Seção 3. Compare a direção do tiro
 
@@ -58,70 +60,82 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender como a velocidade decide para onde o tiro vai depois de nascer. Aqui, a velocidade para o lado fica em 0, e o tiro não anda para os lados.
 >
-> Olha aqui: eu coloco velocidade para baixo em -9 e clico em Avançar 1 quadro algumas vezes. O y vai de 135 para 126, depois 117, depois 108, e o tiro sobe. Em cada quadro, o jogo soma a velocidade ao y. Somar um número negativo diminui o y, e na tela y menor fica mais para cima.
+> Olha aqui: eu coloco velocidade para baixo em -9 e clico em Avançar 1 quadro algumas vezes. Tá vendo? O y vai de 135 para 126, depois 117, depois 108, e o tiro sobe. É que, em cada quadro, o jogo soma a velocidade ao y. Somar um número negativo diminui o y, e, na tela, y menor fica mais para cima.
 >
-> Agora eu troco velocidade para baixo para 9 e avanço outros quadros. O y aumenta 9 em cada quadro, e o tiro desce. O tamanho do número é o mesmo; o sinal de menos mudou a direção. No seu jogo, o tiro vai usar vy -9 para subir na direção das pedras.
+> Agora eu troco velocidade para baixo para 9 e avanço outros quadros, e o y aumenta 9 em cada quadro: o tiro desce. O tamanho do número é o mesmo, mas o sinal de menos mudou a direção. No seu jogo, o tiro vai usar vy -9 para subir na direção das pedras.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Compare -9 e 9 na velocidade para baixo. Avance os quadros e observe o y em cada teste.
+**Zappy na página (não gravar):** Sua vez! Compare -9 e 9 em velocidade para baixo, avançando os quadros e olhando o y. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Monte o disparo da barra de espaço
 
 ### Clipe `video-criar-tiro` · Monte o disparo da barra de espaço
 
-**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Abrir cada caminho. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no "Tá vendo?", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Nas experiências desta aula, você comparou esperar a tecla, ler a posição da nave e mudar a direção com a velocidade. No seu jogo, toque na barra de espaço: ainda não há disparo. Agora monte essa resposta.
+> "Clique no seu jogo e toque na barra de espaço. Tá vendo? Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
+> Lembra das três experiências desta fase? O tiro esperava a tecla, nascia na nave e subia. Agora a gente vai montar esse disparo no seu jogo!
 >
-> Agora monte o disparo no seu projeto. Um grupo reúne objetos que o jogo vai mover e desenhar juntos. Deixe à vista o fim de Ao iniciar. Abra Jogo 2D, depois Grupos e Criar e percorrer. Pegue Criar grupo de sprites e encaixe no fim de Ao iniciar. Escreva tiros no nome e clique fora.
+> Como vão ser muitos tiros, eles ficam juntos num grupo, que é um conjunto de objetos que o jogo move e desenha de uma vez. O grupo é criado uma vez só, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar nave.
 >
-> Deixe um espaço vazio da montagem à vista. Abra Áreas do projeto, pegue Quando acontecer e solte na área de montagem. Apertar uma tecla é um evento. Os blocos dentro desse evento só são executados quando a tecla é apertada.
+> Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo.
 >
-> Deixe à vista o interior de Quando acontecer. Abra Jogo 2D, depois Controles e Teclado, ações e toque. Pegue Quando apertar a tecla e encaixe dentro de Quando acontecer. Escolha barra de espaço no menu.
+> Agora o disparo. Tocar numa tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.
 >
-> Deixe à vista o interior do evento da barra de espaço. Abra Jogo 2D, depois Grupos e Criar e percorrer. Pegue Criar tiro no grupo e encaixe dentro de Quando apertar a tecla. Escolha o grupo tiros. Mantenha raio 5; ele define o tamanho do tiro. Escolha uma cor que apareça no fundo escuro.
+> Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço.
 >
-> No campo x do tiro, vamos colocar a posição da nave. Abra Jogo 2D, depois Movimento e Posição e tamanho. Pegue o centro x do sprite e solte sobre o número que está em x. Escolha nave. Agora deixe à vista o número do campo y do tiro. Nessa mesma categoria, pegue a posição y do sprite e solte sobre o número que está em y. Escolha nave também. A cada disparo, esses blocos leem onde a nave está.
+> O tiro nasce dentro desse evento: deixe à vista o espaço vazio dentro de Quando apertar a tecla. Abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar tiro no grupo e solte nesse espaço. O grupo já vem tiros, e o raio já vem em 5, que é o tamanho do tiro: mantenha os dois. E escolha uma cor que apareça bem no fundo escuro.
 >
-> No bloco do tiro, coloque vx em 0 e vy em -9. Vx é a velocidade para os lados. Zero deixa o tiro sem movimento para os lados. Vy muda a posição vertical. Como y cresce para baixo, o número negativo faz o tiro subir.
+> Agora o lugar de onde o tiro sai: o x vai ler a posição da nave. Deixe à vista o número do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.
 >
-> Deixe à vista o encaixe logo abaixo de Criar tiro, dentro da tecla. Abra Jogo 2D, depois Som e Efeitos prontos. Pegue Tocar efeito e encaixe logo depois de Criar tiro, dentro da tecla. Escolha tiro no menu. Confira: o evento cria o tiro e depois toca o som. O tiro ainda não aparece porque falta mover e desenhar o grupo.
+> Faça o mesmo com o y: deixe à vista o número do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a posição y do sprite, solte em cima desse número e escolha nave também.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Falta a direção. No bloco do tiro, vx é a velocidade para os lados e já vem em 0: mantenha. Já vy é a velocidade para baixo: troque para -9, com o sinal de menos, para o tiro subir.
+>
+> Por último, o som. Deixe à vista o encaixe logo abaixo de Criar tiro, ainda dentro da tecla. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte logo abaixo de Criar tiro. No menu, escolha tiro grande.
+>
+> Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites tiros. Em Quando acontecer, dentro de Quando apertar a tecla barra de espaço, vem primeiro Criar tiro no grupo tiros, com o centro x e a posição y da nave, raio 5, vx 0 e vy -9, e logo abaixo vem Tocar efeito tiro grande.
+>
+> O tiro ainda não aparece na tela, porque o jogo ainda não move nem desenha o grupo tiros. Isso vem na próxima parte.
+>
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Crie o grupo tiros e programe o disparo dentro da tecla Espaço.
+**Zappy na página (não gravar):** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 ## Seção 5. Mova e desenhe os tiros
 
 ### Clipe `video-tiros-voam` · Mova e desenhe os tiros
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar mostrando o som sem tiro: tocar na barra de espaço e, no "Repare", deixar ouvir o som com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "O evento já cria tiros. Agora faça o jogo mostrar esses tiros se movendo. Deixe à vista o fim de A cada quadro do jogo, depois do desenho da nave. Abra Jogo 2D, depois Grupos e Movimento. Pegue Mover os sprites do grupo usando suas velocidades. Encaixe no fim de A cada quadro do jogo, depois de Desenhar o sprite nave. Escolha tiros.
+> "Repare: quando você toca na barra de espaço, dá para ouvir o som do tiro, mas nenhum tiro aparece. É que o seu jogo já cria o tiro, só que ainda não manda mover nem desenhar os tiros. Agora faça o jogo mostrar esses tiros subindo.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
+> Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
 >
-> Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e Desenho e ordem. Pegue Desenhar o grupo e encaixe logo abaixo do movimento dos tiros. Escolha tiros nesse bloco também.
+> Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima.
 >
-> Clique na área do jogo. Toque e solte a barra de espaço. O tiro deve sair da nave e subir. Mova a nave para outro lugar e atire novamente. Se o tiro não aparecer, confira os três nomes: grupo criado, grupo do disparo e grupo do desenho. Todos precisam ser tiros. Se ele descer, confira se vy está em -9, com o sinal de menos.
+> Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe. Escolha tiros nesse bloco também.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Agora teste: clique na área do jogo, toque na barra de espaço e solte. Olha só: o tiro sai da nave e sobe! Depois, mova a nave para outro lugar e atire de novo. O tiro nasce na nave outra vez, porque o jogo lê a posição dela a cada disparo.
+>
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. Depois de corrigir, teste de novo.
+>
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Coloque movimento e desenho do grupo em cada quadro. Atire de dois lugares.
+**Zappy na página (não gravar):** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 ## Seção 6. O tiro saiu da tela. E do grupo?
 
@@ -129,20 +143,20 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Começar no estado inicial. Clicar em Tempo e deixar os tiros saírem pela borda de cima, mostrando a prateleira Fora da tela, no grupo encher e o número no grupo crescer. A chave Tirar do grupo quem sair da tela só abre depois da saída de dois tiros. Ligar a chave e deixar o tempo passar (se o tempo estiver parado, clicar em Tempo), mostrando a prateleira vazia, Removidos do grupo e o número no grupo igual ao da tela. Meme na comparação: na frase da lista de chamada, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy com uma prancheta riscando da lista um tiro que saiu pela porta, com a legenda "saiu da tela, sai da lista"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Começar no estado inicial. Clicar em Tempo e deixar os tiros saírem pela borda de cima, mostrando a prateleira Fora da tela, no grupo encher e o número no grupo crescer. A chave Tirar do grupo quem sair da tela só abre depois da saída de dois tiros. Ligar a chave e deixar o tempo passar (se o tempo estiver parado, clicar em Tempo), mostrando a prateleira vazia, Removidos do grupo e o número no grupo igual ao da tela. Meme na comparação: na frase da lista de convidados, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy na porta de uma festa, com uma prancheta, riscando da lista de convidados um tiro que saiu pela porta, com a legenda "saiu da tela, sai da lista"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender o que acontece com um tiro que sai da tela. Aqui dá para ver a tela do jogo e, ao lado, os bastidores do grupo tiros.
 >
-> Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os tiros sobem e saem pela borda de cima. Na tela, eles somem. Mas, nos bastidores, cada tiro que saiu vai para a prateleira Fora da tela, no grupo. O número no grupo só cresce, enquanto na tela continuam poucos tiros. Sair da tela não tira o tiro do grupo.
+> Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os tiros sobem e saem pela borda de cima, e, na tela, eles somem. Mas tá vendo? Nos bastidores, cada tiro que saiu vai para a prateleira Fora da tela, no grupo, e o número no grupo só cresce, enquanto na tela continuam poucos tiros. Ou seja, sair da tela não tira o tiro do grupo.
 >
-> É como a lista de chamada da escola. Se alguém sai da sala para beber água, o nome continua na lista. Só sai da lista se alguém riscar.
+> É como a lista de convidados de uma festa: se um convidado vai embora, o nome dele continua na lista. Só sai da lista se alguém riscar.
 >
-> Agora eu ligo Tirar do grupo quem sair da tela. A prateleira fica vazia, e aparece Removidos do grupo. O número no grupo fica igual ao número na tela. A regra risca da lista quem saiu da tela. No seu jogo, esse mesmo bloco vai limpar o grupo dos tiros.
+> Agora eu ligo Tirar do grupo quem sair da tela. Olha só: a prateleira fica vazia, aparece Removidos do grupo, e o número no grupo fica igual ao número na tela. É que a regra risca da lista quem saiu da tela. No seu jogo, esse mesmo bloco vai limpar o grupo dos tiros.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Deixe dois tiros saírem com a limpeza desligada. Depois ligue a regra e observe o grupo.
+**Zappy na página (não gravar):** Sua vez! Deixe dois tiros saírem com a limpeza desligada, depois ligue a regra e compare o grupo. Quando terminar, clique em Próxima parte.
 
 ## Seção 7. Retire os tiros que saíram
 
@@ -150,19 +164,23 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada: atirar algumas vezes e, no "Tá vendo?", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Na experiência da seção anterior, o tiro saiu da tela e continuou guardado até a limpeza ser ligada. No seu jogo, o tiro também sai pela parte de cima, mas a imagem sozinha não mostra se ele deixou o grupo. Agora acrescente a regra de limpeza.
+> "Clique no seu jogo e atire. Tá vendo? Os tiros somem lá em cima, mas continuam no grupo, porque ainda falta a regra de limpeza.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
+> Lembra da experiência da parte anterior? Ligada, a regra tirava do grupo quem saía da tela. Agora a gente vai pôr essa regra no seu jogo!
 >
-> Vamos retirar do grupo os tiros que saem da tela. Deixe à vista o espaço entre mover e desenhar o grupo tiros, dentro de A cada quadro do jogo. Abra Jogo 2D, depois Grupos e Participação e limpeza. Pegue Tirar do grupo quem sair da tela. Encaixe entre Mover os sprites do grupo e Desenhar o grupo dos tiros, dentro de A cada quadro do jogo.
+> A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, deixe à vista o espaço entre Mover os sprites do grupo tiros e Desenhar o grupo tiros, dentro de A cada quadro do jogo.
 >
-> Escolha tiros no grupo. Mantenha sprite no campo chamado. Esse nome serve para identificar cada objeto retirado, se houver alguma ação dentro do bloco. Nesta montagem, deixe o interior vazio.
+> Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.
 >
-> Confira a sequência dos tiros: mover, tirar quem saiu da tela e desenhar. Clique no jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros devem nascer na nave e subir. O teste visual mostra o disparo; confira os blocos para garantir que a limpeza também foi montada.
+> No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o espaço de dentro do bloco, porque aqui ele só precisa tirar os tiros do grupo.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
+> Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem.
+>
+> Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.
+>
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase."
 
-**Zappy na página (não gravar):** Encaixe a limpeza entre mover e desenhar os tiros. Teste e envie.
+**Zappy na página (não gravar):** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.

@@ -194,7 +194,7 @@ export interface CertificateSignature {
 export interface CertificateConfig {
   /** Imagem base (fundo A4 paisagem, por curso) — o conteúdo é desenhado por cima. */
   baseImageUrl?: string
-  /** Linha fixa antes do nome (default "Certificamos que o aluno"). */
+  /** Linha fixa antes do nome (default "Certificamos que"). */
   introLine?: string
   /** Frase curta específica do curso (o que concluiu), abaixo do nome. */
   coursePhrase?: string

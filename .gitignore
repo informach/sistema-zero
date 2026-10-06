@@ -58,6 +58,8 @@ packages/fiscal/.local-fonts/
 # Arquivos gerados ao executar ou editar as ferramentas.
 **/.claude/**/__pycache__/
 **/.agents/**/__pycache__/
+# Cache do Python dos scripts de geração (ex.: packages/studio/scripts).
+__pycache__/
 **/.claude/**/*.pyc
 **/.agents/**/*.pyc
 **/.claude/**/*.backup

@@ -25,14 +25,14 @@
   "blocks": [
     {
       "key": "video-caixa-decide",
-      "plannedVideo": "Título: Compare a área com o desenho\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Aproximar até o primeiro BATEU e apontar o vão entre os desenhos. Diminuir a área para 80% sem mexer na distância. Aproximar até os desenhos se encostarem e, por último, diminuir a área para 40%, com a indicação da batida à vista a cada mudança. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare a área com o desenho\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Aproximar até o primeiro BATEU! e apontar o vão entre os desenhos. Diminuir a área para 80% sem mexer na distância. Aproximar com o botão −, que anda de 10 em 10, até os desenhos se encostarem (com o deslizante, BATEU! aparece antes, ainda com vão) e, por último, diminuir a área para 40%, com a indicação da batida à vista a cada mudança. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-caixa-decide",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mude apenas a área com o cacto parado; depois compare o contato com 40%."
+        "text": "Sua vez! Mude só a área com o cacto parado e, depois, compare a batida com a área em 40%. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -40,7 +40,7 @@
       "content": {
         "kind": "interactive",
         "title": "Compare a área com o desenho",
-        "instructions": "Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU. Observe os desenhos nesse momento. Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo.",
+        "instructions": "Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU! Observe os desenhos nesse momento. Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo.",
         "hints": [],
         "required": true,
         "activity": {
@@ -53,38 +53,38 @@
     },
     {
       "key": "video-ligar-raio-x",
-      "plannedVideo": "Título: Mostre a área no seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre a área no seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-ligar-raio-x",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mostre o contorno da área de dino depois do desenho."
+        "text": "Agora mostre a área da batida no seu jogo! Coloque Mostrar a caixa de colisão do sprite logo depois do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-ajustar-area",
-      "plannedVideo": "Título: Ajuste a área sem mudar o desenho\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Ajuste a área sem mudar o desenho\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-ajustar-area",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Ajuste somente a área de colisão, mantendo o desenho em tamanho 64."
+        "text": "Agora ajuste a área da batida! Coloque Usar área de colisão no fim de Ao iniciar, com dino e 80%, sem mudar o tamanho 64 do desenho. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-retirar-contorno",
-      "plannedVideo": "Título: Retire o contorno de teste\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Retire o contorno de teste\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. No “Repare” da abertura, apontar no jogo ou no projeto o que ainda falta. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-10.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-retirar-contorno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Retire apenas o desenho do contorno e conserve o ajuste da área."
+        "text": "Agora retire o contorno de teste! Tire só Mostrar a caixa de colisão do sprite e deixe o ajuste da área em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
@@ -96,7 +96,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Jogue até a batida e confira o recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase."
       }
     },
     {
@@ -1022,7 +1022,7 @@
       "key": "caixa-decide",
       "title": "Compare a área com o desenho",
       "intent": "exploration",
-      "objective": "Mude apenas a área com o cacto parado; depois compare o contato com 40%.",
+      "objective": "Sua vez! Mude só a área com o cacto parado e, depois, compare a batida com a área em 40%. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-caixa-decide", "fala-caixa-decide", "experiencia-hitbox"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1036,7 +1036,7 @@
       "key": "ligar-raio-x",
       "title": "Mostre a área no seu jogo",
       "intent": "application",
-      "objective": "Mostre o contorno da área de dino depois do desenho.",
+      "objective": "Agora mostre a área da batida no seu jogo! Coloque Mostrar a caixa de colisão do sprite logo depois do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-ligar-raio-x", "fala-ligar-raio-x"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1065,7 +1065,7 @@
       "key": "ajustar-area",
       "title": "Ajuste a área sem mudar o desenho",
       "intent": "application",
-      "objective": "Ajuste somente a área de colisão, mantendo o desenho em tamanho 64.",
+      "objective": "Agora ajuste a área da batida! Coloque Usar área de colisão no fim de Ao iniciar, com dino e 80%, sem mudar o tamanho 64 do desenho. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-ajustar-area", "fala-ajustar-area"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1119,7 +1119,7 @@
       "key": "retirar-contorno",
       "title": "Retire o contorno de teste",
       "intent": "application",
-      "objective": "Retire apenas o desenho do contorno e conserve o ajuste da área.",
+      "objective": "Agora retire o contorno de teste! Tire só Mostrar a caixa de colisão do sprite e deixe o ajuste da área em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-retirar-contorno", "fala-retirar-contorno"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1169,7 +1169,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Jogue até a batida e confira o recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

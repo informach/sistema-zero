@@ -69,9 +69,9 @@ export const ROOM_ITEM_INFO: Record<string, RoomItemInfo> = {
     h: 1,
     stackable: true,
   },
-  'trofeu-diploma': { labelPt: 'Diploma na Parede', emoji: '📜', w: 1, h: 1, mount: 'wall' },
+  'trofeu-diploma': { labelPt: 'Certificado na Parede', emoji: '📜', w: 1, h: 1, mount: 'wall' },
   'trofeu-chama': { labelPt: 'Chama dos 30 Dias', emoji: '🔥', w: 1, h: 1, stackable: true },
-  'trofeu-medalha-mil': { labelPt: 'Medalha Nota Mil', emoji: '🥇', w: 1, h: 1, mount: 'wall' },
+  'trofeu-medalha-mil': { labelPt: 'Medalha na Mosca', emoji: '🥇', w: 1, h: 1, mount: 'wall' },
   'trofeu-foguete': { labelPt: 'Foguete do Lançamento', emoji: '🚀', w: 1, h: 2, stackable: true },
   'trofeu-console': { labelPt: 'Console de Criador', emoji: '🕹️', w: 1, h: 1, stackable: true },
   'trofeu-estrela-do-mural': {
@@ -94,11 +94,11 @@ export const TROPHY_SHELF_ITEM_ID = 'estante-trofeus'
  */
 export const TROPHY_HINT: Record<string, string> = {
   'trofeu-primeiro-jogo': 'Publique o seu primeiro jogo no Mural!',
-  'trofeu-diploma': 'Complete um curso inteirinho!',
+  'trofeu-diploma': 'Complete uma aventura inteirinha!',
   'trofeu-chama': 'Faça uma sequência de 30 dias!',
-  'trofeu-medalha-mil': 'Tire nota mil em 10 quizzes!',
+  'trofeu-medalha-mil': 'Acerte tudo em 10 quizzes!',
   'trofeu-foguete': 'Lance a Versão 1 de um plano no Pensa!',
-  'trofeu-console': 'Complete 3 atividades do Estúdio com nota!',
+  'trofeu-console': 'Alcance a meta em 3 projetos do Estúdio!',
   'trofeu-estrela-do-mural': 'Tenha um jogo seu jogado 100 vezes!',
   'estante-trofeus': 'Ganhe o seu primeiro troféu e a estante vem junto!',
 }

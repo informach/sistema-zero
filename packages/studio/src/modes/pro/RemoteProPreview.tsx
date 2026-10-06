@@ -127,7 +127,7 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
             key={reloadNonce}
             ref={iframeRef}
             srcDoc={html}
-            title="Pré-visualização da atividade Pro"
+            title="Pré-visualização do projeto Pro"
             sandbox="allow-scripts allow-pointer-lock"
             referrerPolicy="no-referrer"
             className="h-full w-full border-0"
@@ -152,7 +152,7 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
 
   return (
     <PreviewOverlay>
-      <p className="text-sz-fg-soft">Preparando a atividade Pro…</p>
+      <p className="text-sz-fg-soft">Preparando o projeto Pro…</p>
       <p className="max-w-md text-sz-fg-mute">
         O projeto está sendo compilado em um ambiente seguro. Isso pode levar alguns segundos na
         primeira vez.

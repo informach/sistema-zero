@@ -7,6 +7,12 @@
 - Seções na entrada deste review: 2 · Seções finais: 4 (05/10/2026: uma ideia por seção).
 - Clipes na entrada deste review: 2 · Clipes finais: 4.
 
+**Revisão de 06/10/2026:** todas as falas conversam com a criança e chamam a atenção dela para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"); as pontes do Zappy começam convidando. Cada fala virou uma conversa contínua, com o porquê de cada resultado. Em vez de dizer que a variável aviso "já veio preparada", a fala diz o que ela faz: mostra a mensagem na tela. Seções, blocos e critérios não mudaram.
+
+**Vocabulário da aventura, 06/10/2026:** a comparação da variável passou de "anotar num caderno" para "anotar num bloquinho" (o caderno lembra a escola), também no meme e na partida nova que "começa com o bloquinho em branco". As retomadas dizem "Lembra da experiência da parte anterior?" e "Lembra da experiência da primeira parte desta fase?", e as falas citam **Próxima parte**, **Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir fase**.
+
+**Full review de 06/10/2026:** "então" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram "por isso", "para o jogo responder" ou duas frases. A abertura da experiência ganhou o porquê ("Para o jogo saber que a chave foi pega, ele precisa guardar essa informação") e o evento passou a ser "uma coisa que acontece no jogo". Na criação da área **Quando acontecer**, o destino virou "um lugar sem blocos, ao lado das áreas", para não se confundir com o "espaço vazio" que se arrasta para abrir lugar. A ponte da experiência termina em "Quando terminar, clique em Próxima parte.". Seções, blocos e critérios não mudaram.
+
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
@@ -37,7 +43,7 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Conclui quando:** vídeo e quatro descobertas reais na experiência.
 - **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`, novo `experiencia-memoria`. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.
 
-**Ponte do Zappy na página (não gravar):** Agora compare o que some da tela com o que fica guardado em temChave.
+**Ponte do Zappy na página (não gravar):** Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado. Quando terminar, clique em Próxima parte.
 
 ### Seção 2. Recolha a chave
 
@@ -46,7 +52,7 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Conclui quando:** vídeo e aprovação dos três critérios de movimento mais a retirada dentro do encontro.
 - **Blocos:** `video-d2-recolher`, `ponte-d2-recolher`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Programe o encontro com a chave e faça a chave sair do chão. Teste e clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte.
 
 O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só cria as áreas que têm blocos. A fala ensina a pegá-la em **Áreas do projeto** e soltar num espaço vazio, e só depois o encontro vai para dentro dela. O critério `recolher` exige o encontro nessa área.
 
@@ -57,7 +63,7 @@ O projeto do Dia 1 ainda não tem a área **Quando acontecer**: o Estúdio só c
 - **Conclui quando:** vídeo e aprovação de sete critérios: movimento, retirada, temChave em falso e verdadeiro no encontro, depois da retirada.
 - **Blocos:** `video-d2-guardar`, `ponte-d2-guardar`; Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa.
+**Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte.
 
 A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: quem usa a informação é a porta, no Dia 3, e por enquanto quem confere é a verificação.
 
@@ -68,9 +74,9 @@ A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: qu
 - **Conclui quando:** vídeo, aprovação dos oito critérios e envio confirmado do projeto.
 - **Blocos:** `video-d2-programar`, `ponte-d2-programar` e o Estúdio `projeto` com a cadeia existente.
 
-**Ponte do Zappy na página (não gravar):** Mostre um aviso quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor.
+**Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar o seu projeto.
 
-Testar coleta, mudança do aviso e reinício por Atualizar. O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Concluir aula**.
+Testar coleta, mudança do aviso e reinício por Atualizar. O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta parte → Objetivo cumprido! → Salvo → Enviar meu projeto → Enviar → Concluir fase**.
 
 ## Experiências e demonstrações desta aula
 
@@ -82,10 +88,12 @@ A verificação é cumulativa em cada montagem: a seção 2 confere o movimento 
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d2-contexto` | Demonstração explicada da memória | Retomada e nova experiência | 80 a 100 s | Regravar |
+| `video-d2-contexto` | Demonstração explicada da memória | Retomada e nova experiência | 90 a 110 s | Regravar |
 | `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 2 a 3 min | Gravar |
 | `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 2 a 3 min | Gravar |
-| `video-d2-programar` | Aviso, teste, aviso próprio e envio | Mesmo projeto | 2 a 3 min | Regravar |
+| `video-d2-programar` | Aviso, teste e envio (o aviso com as palavras da criança fica para o Dia 3) | Mesmo projeto | 2 a 3 min | Regravar |
+
+**Personalização de 06/10/2026:** os projetos recebem o catálogo ampliado de imagens, com nomes reconhecíveis. Os sprites continuam `personagem`, `chave`, `farol` e `barco`; os passos e os critérios de coleta usam esses nomes e não dependem do desenho escolhido. A escolha de velocidade saiu do Dia 1; o movimento preparado permanece em 3.
 
 ## Continuidade
 

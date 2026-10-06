@@ -24,60 +24,60 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 ### Seção 1. Compare o intervalo entre cactos
 
-**Tarefa:** Compare os nascimentos por quadro com o relógio de 1,4 segundo.
+**Tarefa:** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-espaco-e-tempo → fala-espaco-e-tempo → experiencia-ritmo.
 
-**Zappy na página (não gravar):** Compare os nascimentos por quadro com o relógio de 1,4 segundo.
+**Zappy na página (não gravar):** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.
 
-**Experiência existente:** `spawn`. Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe o grupo de cactos. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência existente:** `spawn`. Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Prepare o grupo e o relógio
 
-**Tarefa:** Crie cactos em Ao iniciar e prepare um relógio separado de 1.4 segundo.
+**Tarefa:** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-grupo-e-relogio → fala-grupo-e-relogio.
 
-**Zappy na página (não gravar):** Crie cactos em Ao iniciar e prepare um relógio separado de 1.4 segundo.
+**Zappy na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Crie o grupo cactos em Ao iniciar.
 - Prepare o relógio de 1.4 segundo em Enquanto estiver rodando.
 
 ### Seção 3. Compare a direção da velocidade
 
-**Tarefa:** Compare velocidade lateral 5, -5 e 0, observando o x.
+**Tarefa:** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-numero-negativo → fala-numero-negativo → experiencia-velocidade.
 
-**Zappy na página (não gravar):** Compare velocidade lateral 5, -5 e 0, observando o x.
+**Zappy na página (não gravar):** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `velocity`. Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 4. Crie os cactos no relógio
 
-**Tarefa:** Crie cactos em x 560, tamanho 44 e velocidade -5 a cada 1.4 segundo.
+**Tarefa:** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-criar-cactos → fala-criar-cactos.
 
-**Zappy na página (não gravar):** Crie cactos em x 560, tamanho 44 e velocidade -5 a cada 1.4 segundo.
+**Zappy na página (não gravar):** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
-- Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.
+- Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.
 - Deixe a criação fora de A cada quadro.
 - Mantenha apenas um bloco de criação de cacto.
 
 ### Seção 5. Mova e mostre o grupo de cactos
 
-**Tarefa:** Mova e desenhe cactos a cada quadro, depois do Dino.
+**Tarefa:** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-mover-e-desenhar → fala-mover-e-desenhar.
 
-**Zappy na página (não gravar):** Mova e desenhe cactos a cada quadro, depois do Dino.
+**Zappy na página (não gravar):** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Atualize o grupo cactos a cada quadro, antes de desenhá-lo.
 - Desenhe o grupo cactos a cada quadro.
@@ -85,16 +85,16 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 ### Seção 6. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Espere os cactos entrarem, pule um deles, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Crie o grupo cactos em Ao iniciar.
-- Crie um cacto em x 560, tamanho 44 e velocidade -5 a cada 1,4 s.
+- Crie um cacto em x 560, tamanho 44 e vx -5 a cada 1,4 s.
 - Atualize o grupo cactos a cada quadro, antes de desenhá-lo.
 - Desenhe o grupo cactos a cada quadro.
 - Mantenha apenas um bloco de criação de cacto.

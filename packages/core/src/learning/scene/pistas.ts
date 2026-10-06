@@ -70,6 +70,11 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
     ['opened-with-key'],
     ['locked-without-key', 'opened-with-key'],
   ],
+  'lighthouse-position': [
+    ['mover-horizontal'],
+    ['mover-vertical'],
+    ['mover-horizontal', 'mover-vertical'],
+  ],
   // ⚠️ A escada é a da missão de fábrica (o andar). Os casos da velocidade e do limite são missões
   // RESTRITAS: lá o player mostra o pedido da meta que falta (`missaoRestrita`), e não esta escada.
   'lighthouse-walk': [

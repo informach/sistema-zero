@@ -154,7 +154,7 @@ test('Desafio Dia 1 imports and reimports keeping the notebook in the Farol mate
   const first = await apply()
   expect(first.document.sections).toHaveLength(document.sections.length)
   expect(first.document.blocks.find((b) => b.content.kind === 'materials')?.content).toMatchObject({
-    title: 'Caderno do Aluno: A Chave do Farol',
+    title: 'Mapa da Aventura: A Chave do Farol',
     items: [notebook],
   })
   expect((await apply()).document).toEqual(first.document)

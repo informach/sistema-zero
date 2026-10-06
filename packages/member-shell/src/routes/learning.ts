@@ -7,7 +7,7 @@ import type { SessionModule } from '../server/session'
 
 const invalidInput = () =>
   NextResponse.json(
-    { error: { code: 'VALIDATION_ERROR', message: 'Dados da atividade inválidos.' } },
+    { error: { code: 'VALIDATION_ERROR', message: 'Os dados enviados são inválidos.' } },
     { status: 400 },
   )
 
@@ -70,7 +70,7 @@ export function createLearningRoutes({
           {
             error: {
               code: 'VIEWER_CHANGED',
-              message: 'O perfil mudou. Abra a aula novamente para continuar no perfil atual.',
+              message: 'O perfil mudou. Abra esta página de novo para continuar no perfil atual.',
             },
           },
           { status: 409 },

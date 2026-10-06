@@ -44,7 +44,7 @@ export const LESSON_SECTION_TEMPLATES: ReadonlyArray<{
   {
     intent: 'material',
     label: 'Material do curso',
-    title: 'Seu caderno de aventuras',
+    title: 'Material para explorar',
     guidance:
       'Apresente o material com vídeo e Zappy. O Livro 3D e os arquivos para baixar são independentes. Escolha explicitamente se o avanço exige abrir o livro, baixar arquivos e/ou assistir ao vídeo.',
   },

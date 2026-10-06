@@ -147,7 +147,7 @@ describe('⚠️⚠️ MÉDIO-1: o player não fica prometendo uma gravação qu
       await waitFor(() => expect(screen.getByText(/Ainda não é essa/)).toBeTruthy(), {
         timeout: 5000,
       })
-      expect(screen.queryByText('Esta atividade mudou.')).toBeNull()
+      expect(screen.queryByText('Esta experiência mudou.')).toBeNull()
       expect(screen.getByText('Agora explique')).toBeTruthy()
     } finally {
       restaurar()
@@ -165,7 +165,7 @@ describe('⚠️⚠️ MÉDIO-1: o player não fica prometendo uma gravação qu
       )
       fireEvent.click(await screen.findByRole('button', { name: 'Criar o Dino' }))
       await waitFor(
-        () => expect(screen.getByRole('alert').textContent).toBe('Esta atividade mudou.'),
+        () => expect(screen.getByRole('alert').textContent).toBe('Esta experiência mudou.'),
         {
           timeout: 5000,
         },
@@ -190,7 +190,7 @@ describe('⚠️⚠️ MÉDIO-1: o player não fica prometendo uma gravação qu
       await waitFor(
         () =>
           expect(screen.getByRole('alert').textContent).toBe(
-            'Esta atividade mudou ou está aberta em outro lugar.',
+            'Esta experiência mudou ou está aberta em outro lugar.',
           ),
         { timeout: 5000 },
       )

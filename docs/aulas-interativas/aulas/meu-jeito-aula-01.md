@@ -24,23 +24,23 @@ A antiga abertura exigia um projeto vazio e a falta artificial de extensão ante
 
 ### Seção 1. Jogue uma versão com artes próprias
 
-**Tarefa / Zappy na página:** Experimente mover a nave e atirar. Observe os desenhos e o fogo; você vai criar as suas próprias artes.
+**Tarefa / Zappy na página:** Sua vez! Jogue um pouco: mova a nave, atire e repare nos desenhos e no fogo, porque logo você vai criar as suas próprias artes. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-jogo-pronto → fala-jogo-pronto → jogo-pronto.
 
 Jogo derivado do marco original 8, com artes ilustrativas de dois quadros. Conclusão por participação. As artes são exemplos; não substituem as criações do aluno.
 
-### Seção 2. Consulte os passos do curso
+### Seção 2. Seu Mapa da Aventura
 
-**Tarefa / Zappy na página:** O caderno fica aqui para consultar, baixar ou imprimir se você quiser.
+**Tarefa / Zappy na página:** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
 **Blocos na página:** video-caderno → fala-caderno → materiais-caderno.
 
-Anexar `output/pdf/meu-jeito-caderno.pdf` a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão.
+Anexar `output/pdf/meu-jeito-caderno.pdf`, que a criança conhece como Mapa da Aventura, a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.
 
 ### Seção 3. Troque a história, observe as regras
 
-**Tarefa / Zappy na página:** Agora troque o tema, desligue a regra de atirar e compare o que muda.
+**Tarefa / Zappy na página:** Sua vez! Troque os temas, desligue a regra de atirar e compare o que muda. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-aparencia-e-regras → fala-aparencia-e-regras → experimento-tema-e-regra.
 
@@ -48,35 +48,35 @@ Anexar `output/pdf/meu-jeito-caderno.pdf` a `materiais-caderno`. Ler, baixar e i
 
 ### Seção 4. Veja o que uma cópia guarda
 
-**Tarefa / Zappy na página:** Agora faça a cópia e mude a cor só de um lado.
+**Tarefa / Zappy na página:** Sua vez! Faça a cópia e mude a cor só de um lado. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-copias → fala-copias → experiencia-copia.
 
-**Experiência existente:** `copy-vs-original`. Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados. Sem palpite, pistas ou pergunta final.
+**Experiência existente:** `copy-vs-original`. Clique em Exportar e observe o arquivo e o jogo da fase. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados. Sem palpite, pistas ou pergunta final.
 
 ### Seção 5. Baixe o seu jogo concluído
 
-**Tarefa / Zappy na página:** Baixe o projeto que você terminou em Nave Contra Asteroides.
+**Tarefa / Zappy na página:** Agora baixe o jogo que você terminou em Nave Contra Asteroides! No Estúdio da última fase dessa aventura, abra Mais opções e clique em Baixar o projeto. Quando o arquivo .szproject.json aparecer nos seus downloads, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-exportar → fala-exportar.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 6. Abra a cópia no seu Estúdio
 
-**Tarefa / Zappy na página:** Importe o arquivo do seu jogo e escolha um nome para reconhecer a cópia.
+**Tarefa / Zappy na página:** Agora abra a cópia no seu Estúdio! Importe o arquivo e escolha um nome para reconhecer o seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-importar → fala-importar.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
-### Seção 7. Entregue a cópia do jogo
+### Seção 7. Envie a cópia do jogo
 
-**Tarefa / Zappy na página:** Confira o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.
+**Tarefa / Zappy na página:** Hora de enviar a cópia do seu jogo! Confira se o cartão tem o nome que você escolheu. Depois clique em Escolher no Estúdio, selecione esse cartão e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
+**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
 
 ## Continuidade e produção
 

@@ -40,7 +40,7 @@ const PILULA_APAGADA =
  * Desenho das telas-modelo (11/09/2026, Trilha e Jornada): cartão branco de cantos de
  * 24px, sem borda nem cor de unidade; na trilha, a capa larga em cima, título em Baloo,
  * a frase e, embaixo, o progresso com o próximo passo, como na home. Sem progresso,
- * mostra o selo menta "Liberado" com a pílula azul "Acessar curso".
+ * mostra o selo menta "Liberado" com a pílula azul "Acessar aventura".
  */
 export function CatalogCourseCard({
   course,
@@ -120,12 +120,12 @@ export function CatalogCourseCard({
       {linha ? (
         <p className="font-bold text-muted-foreground text-xs">
           {course.journeyRole === 'extra'
-            ? 'Curso extra'
+            ? 'Aventura extra'
             : course.careerSlot === 1
-              ? 'Primeiro da trilha'
+              ? 'Primeira da trilha'
               : typeof course.careerSlot === 'number'
-                ? 'Curso da jornada'
-                : 'Curso bônus'}
+                ? 'Aventura da jornada'
+                : 'Aventura bônus'}
         </p>
       ) : null}
       <h3
@@ -155,10 +155,10 @@ export function CatalogCourseCard({
     // apagado não-tocável (o card é um <div>, não pode parecer botão).
     foundationFirst ? (
       <span className="sz-btn-gradient-block">
-        <span className="font-normal text-[11px]">Comece por este:</span>
+        <span className="font-normal text-[11px]">Comece por esta:</span>
         <span className="flex items-center gap-1.5">
           <span className="line-clamp-1 flex-1 font-semibold text-sm">
-            {foundationTitle ?? 'O primeiro curso'}
+            {foundationTitle ?? 'A primeira aventura'}
           </span>
           <ArrowRight className="size-4 shrink-0" aria-hidden />
         </span>
@@ -192,7 +192,7 @@ export function CatalogCourseCard({
       <span className={cn(salesUrl || available ? 'sz-btn-gradient gap-2 px-5' : PILULA_APAGADA)}>
         {available ? (
           <>
-            <Play className="size-4" aria-hidden /> Acessar curso
+            <Play className="size-4" aria-hidden /> Acessar aventura
           </>
         ) : salesUrl ? (
           'Mostrar ao responsável'
@@ -231,7 +231,7 @@ export function CatalogCourseCard({
   )
 }
 
-/** O "N de M aulas", a barra verde e o botão do próximo passo, nos dois layouts. */
+/** O "N de M fases", a barra verde e o botão do próximo passo, nos dois layouts. */
 function MyProgress({ mine }: { mine: MyCourseView }) {
   const { progress } = mine
   const state = courseJourneyState(mine)
@@ -240,7 +240,7 @@ function MyProgress({ mine }: { mine: MyCourseView }) {
     state === 'publish'
       ? 'Preparar publicação'
       : state === 'review'
-        ? 'Revisar curso'
+        ? 'Revisar aventura'
         : started
           ? 'Continuar'
           : 'Começar agora'
@@ -255,7 +255,7 @@ function MyProgress({ mine }: { mine: MyCourseView }) {
         <>
           <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
             <span>
-              {progress.completedLessons} de {progress.totalLessons} aulas
+              {progress.completedLessons} de {progress.totalLessons} fases
             </span>
             <span
               className={cn(

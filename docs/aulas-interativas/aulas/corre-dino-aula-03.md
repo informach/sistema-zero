@@ -23,46 +23,46 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 
 ### Seção 1. Compare o salto com e sem gravidade
 
-**Tarefa:** Pule sem gravidade e ligue a gravidade enquanto o Dino está no ar.
+**Tarefa:** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-gravidade-modelo → fala-gravidade-modelo → experiencia-gravidade.
 
-**Zappy na página (não gravar):** Pule sem gravidade e ligue a gravidade enquanto o Dino está no ar.
+**Zappy na página (não gravar):** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `gravity`. Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
-### Seção 2. Faça o Dino cair até o chão
+### Seção 2. Deixe a gravidade pronta
 
-**Tarefa:** Aplique a gravidade depois da floresta e antes do desenho.
+**Tarefa:** Agora deixe a gravidade pronta no seu Dino! Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-aplicar-gravidade → fala-aplicar-gravidade.
 
-**Zappy na página (não gravar):** Aplique a gravidade depois da floresta e antes do desenho.
+**Zappy na página (não gravar):** Agora deixe a gravidade pronta no seu Dino! Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Deixe a gravidade depois da floresta.
 - Aplique gravidade ao dino dentro do quadro, antes de desenhar.
 
 ### Seção 3. Compare duas alturas de pulo
 
-**Tarefa:** Faça um salto com 9 e outro com 14, esperando a queda entre eles.
+**Tarefa:** Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-impulso-modelo → fala-impulso-modelo → experiencia-impulso.
 
-**Zappy na página (não gravar):** Faça um salto com 9 e outro com 14, esperando a queda entre eles.
+**Zappy na página (não gravar):** Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `impulse`. Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura. Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 4. Dê os controles de pulo ao Dino
 
-**Tarefa:** Teste espaço, seta para cima e toque, com gravidade antes do controle.
+**Tarefa:** Agora dê os controles de pulo ao seu Dino! Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-comando-de-pulo → fala-comando-de-pulo.
 
-**Zappy na página (não gravar):** Teste espaço, seta para cima e toque, com gravidade antes do controle.
+**Zappy na página (não gravar):** Agora dê os controles de pulo ao seu Dino! Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Aplique gravidade ao dino antes do controle do pulo.
 - Deixe a gravidade depois da floresta.
@@ -70,23 +70,23 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 
 ### Seção 5. Confira o que você construiu
 
-**Tarefa:** Retome a tela e os movimentos do Dino nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Tarefa:** Hora de lembrar o que você construiu! As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
-**Zappy na página (não gravar):** Retome a tela e os movimentos do Dino nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Zappy na página (não gravar):** Hora de lembrar o que você construiu! As perguntas falam da tela e dos movimentos do seu Dino. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 6. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Teste os três controles de pulo, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Teste os três controles de pulo, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Aplique gravidade ao dino antes do controle do pulo.
 - Controle o dino com a sua força de pulo, antes de desenhá-lo.

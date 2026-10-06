@@ -45,6 +45,7 @@ import { FixedVsReadStage } from './scene-fixed-vs-read'
 import { FoundCounterStage } from './scene-found-counter'
 import { InvincibilityStage } from './scene-invincibility'
 import { LighthouseKeyStage } from './scene-lighthouse-key'
+import { LighthousePositionStage } from './scene-lighthouse-position'
 import { LighthouseWalkStage } from './scene-lighthouse-walk'
 import { MotionAmountStage } from './scene-motion-amount'
 import {
@@ -312,6 +313,7 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
   if (m === 'touch-response') return <TouchResponseStage state={state} dispatch={podeInteragir} />
   if (m === 'found-counter') return <FoundCounterStage state={state} dispatch={podeInteragir} />
   if (m === 'lighthouse-key') return <LighthouseKeyStage state={state} />
+  if (m === 'lighthouse-position') return <LighthousePositionStage state={state} />
   if (m === 'collect-and-remember') return <CollectionMemoryStage state={state} />
   if (m === 'lighthouse-walk') return <LighthouseWalkStage state={state} />
   if (m === 'draw-loop') return <DrawLoopStage state={state} cast={cast} />

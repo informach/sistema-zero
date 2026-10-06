@@ -11,16 +11,8 @@ import { Check, ExternalLink, Images, Send } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { apiGet, apiSend } from '../lib/api'
 import type { CreationIndexView, CreationSummaryView, LessonBlockView } from '../lib/types'
+import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
-
-function errorMessage(error: unknown) {
-  return typeof error === 'object' &&
-    error !== null &&
-    'message' in error &&
-    typeof error.message === 'string'
-    ? error.message
-    : 'Não foi possível carregar seus trabalhos. Tente novamente.'
-}
 
 export function LessonGalleryDelivery({
   block,
@@ -32,6 +24,7 @@ export function LessonGalleryDelivery({
   config: GalleryDeliveryConfig
 }) {
   const player = useLessonPlayer()
+  const { galeria, erroDoServidor } = useLessonCopy()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<CreationSummaryView[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
@@ -76,7 +69,7 @@ export function LessonGalleryDelivery({
         request.current = null
       }
     } catch (cause) {
-      setError(errorMessage(cause))
+      setError(erroDoServidor(cause, galeria.erro))
     } finally {
       busy.current = false
       setLoading(false)
@@ -113,7 +106,7 @@ export function LessonGalleryDelivery({
       player.refreshAfterStudio?.()
       player.refreshAfterLearning?.()
     } catch (cause) {
-      setError(errorMessage(cause))
+      setError(erroDoServidor(cause, galeria.erro))
     } finally {
       busy.current = false
       setSending(false)
@@ -130,16 +123,13 @@ export function LessonGalleryDelivery({
             : previous,
     )
   }
-  const instruction =
-    tool === 'pinta'
-      ? 'Escolha os desenhos que você fez para esta missão e envie ao professor.'
-      : 'Escolha o projeto desta missão na sua galeria e envie ao professor.'
+  const instruction = tool === 'pinta' ? galeria.instrucaoPinta : galeria.instrucaoEstudio
   return (
     <div className="space-y-4 rounded-2xl border bg-card p-5">
       {player?.renderInstruction?.(instruction) ?? <p>{instruction}</p>}
       {submitted && (
         <p role="status" className="flex items-center gap-2 text-sm">
-          <Check aria-hidden className="size-5" /> Trabalho recebido pelo professor.
+          <Check aria-hidden className="size-5" /> {galeria.recebido}
         </p>
       )}
       <div className="flex flex-wrap gap-3">
@@ -169,7 +159,7 @@ export function LessonGalleryDelivery({
         onClose={() => {
           if (!busy.current) setOpen(false)
         }}
-        title={`Meus trabalhos do ${label}`}
+        title={galeria.janela(label)}
         description={
           config.maxItems === 1
             ? 'Escolha um projeto para enviar.'
@@ -183,15 +173,13 @@ export function LessonGalleryDelivery({
             disabled={loading || sending || selected.length < config.minItems}
           >
             <Send aria-hidden className="size-4" />
-            {sending
-              ? 'Enviando…'
-              : `Enviar ao professor${selected.length ? ` (${selected.length})` : ''}`}
+            {sending ? 'Enviando…' : galeria.enviar(selected.length)}
           </Button>
         }
       >
         <div className="space-y-4">
           <div className="flex justify-between gap-3">
-            <p className="text-sm text-muted-foreground">Trabalhos guardados na sua conta.</p>
+            <p className="text-sm text-muted-foreground">{galeria.guardados}</p>
             <Button
               type="button"
               variant="outline"
@@ -208,11 +196,7 @@ export function LessonGalleryDelivery({
             </p>
           )}
           {loading && <p role="status">Abrindo sua galeria…</p>}
-          {!loading && !error && items.length === 0 && (
-            <p>
-              Faça seu trabalho no {label}, guarde na sua conta e volte para atualizar a galeria.
-            </p>
-          )}
+          {!loading && !error && items.length === 0 && <p>{galeria.vazio(label)}</p>}
           <div className="grid max-h-[45dvh] grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3">
             {items.map((item) => {
               const checked = selected.some((entry) => entry.itemId === item.itemId)
@@ -256,11 +240,11 @@ export function LessonGalleryDelivery({
               disabled={loading || sending}
               onClick={() => load(cursor)}
             >
-              Mostrar mais trabalhos
+              {galeria.maisItens}
             </Button>
           )}
           <label className="block space-y-1 text-sm">
-            Recado para o professor (opcional)
+            {galeria.recado}
             <textarea
               value={message}
               onChange={(event) => setMessage(event.target.value)}

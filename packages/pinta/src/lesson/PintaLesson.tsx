@@ -16,6 +16,7 @@ import { type PintaAppContextValue, PintaAppProvider } from '../components/appCo
 import { EditorScreen } from '../components/editor/EditorScreen'
 import { ToastProvider } from '../components/ui/Toast'
 import { COPY } from '../core/copy'
+import { LEGACY_LESSON_ASSET_NAME, LESSON_ASSET_DEFAULT_NAME } from '../core/newAsset'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
 import type { PintaHostAdapter } from '../core/types'
 import { createClipboardStore } from '../state/clipboardStore'
@@ -68,6 +69,17 @@ export interface PintaLessonProps {
   handleRef?: Ref<PintaHandle | null>
 }
 
+/**
+ * O desenho de uma aula criada antes de 06/10/2026 nasceu com o nome "desenho-da-aula", e ele
+ * aparecia na barra do editor e no arquivo baixado. O nome antigo vira o novo aqui, na carga, sem
+ * mexer no banco: no desenho do professor (`initialAsset`) e no rascunho que a criança já tem.
+ */
+function nomeDoDesenhoDaAula(asset: PintaAsset): PintaAsset {
+  return asset.name === LEGACY_LESSON_ASSET_NAME
+    ? { ...asset, name: LESSON_ASSET_DEFAULT_NAME }
+    : asset
+}
+
 function resolvePersistence(
   mode: PintaLessonProps['persistence'],
   initialAsset: PintaAsset,
@@ -99,8 +111,9 @@ export function PintaLesson({
    * desenho, remonte com `key`.
    */
   const [boot] = useState(() => {
-    const seed = sanitizePintaAsset(initialAsset)
-    if (!seed) return null
+    const saneado = sanitizePintaAsset(initialAsset)
+    if (!saneado) return null
+    const seed = nomeDoDesenhoDaAula(saneado)
     const resolved = resolvePersistence(persistence, seed)
     return {
       seed,
@@ -130,10 +143,17 @@ export function PintaLesson({
     void (async () => {
       try {
         await boot.gallery.getState().load()
-        const conhecido = boot.gallery.getState().assets.some((a) => a.id === boot.seed.id)
-        if (!conhecido) {
+        const guardado = boot.gallery.getState().assets.find((a) => a.id === boot.seed.id)
+        if (!guardado) {
           await boot.persistence.persistAsset(boot.seed)
           boot.gallery.getState().absorbMany([boot.seed])
+        } else if (guardado.name === LEGACY_LESSON_ASSET_NAME) {
+          // O rascunho de quem abriu a aula antes da troca guarda o nome antigo. Renomear é
+          // só cosmético: se falhar, o desenho abre com o nome velho, nunca deixa de abrir.
+          await boot.gallery
+            .getState()
+            .rename(boot.seed.id, LESSON_ASSET_DEFAULT_NAME)
+            .catch(() => false)
         }
         if (vivo) setStatus('ready')
       } catch {

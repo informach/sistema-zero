@@ -67,19 +67,19 @@ function missionLabel(m: MissionView): string {
   const n = m.target
   switch (m.goalType) {
     case 'lesson_complete':
-      return n === 1 ? 'Conclua 1 aula' : `Conclua ${n} aulas`
+      return n === 1 ? 'Conclua 1 fase' : `Conclua ${n} fases`
     case 'quiz_passed':
       return n === 1 ? 'Acerte 1 quiz' : `Acerte ${n} quizzes`
     case 'unit_complete':
-      return n === 1 ? 'Abra 1 baú de unidade' : `Abra ${n} baús`
+      return n === 1 ? 'Abra o baú de um Mundo' : `Abra ${n} baús`
     case 'studio_submitted':
-      return n === 1 ? 'Envie uma atividade ao professor' : `Envie ${n} atividades ao professor`
+      return n === 1 ? 'Envie um projeto' : `Envie ${n} projetos`
     case 'studio_passed':
       return n === 1 ? 'Crie 1 projeto no Estúdio' : `Crie ${n} projetos no Estúdio`
     case 'course_showcased':
       return n === 1 ? 'Publique um jogo no Mural' : `Publique ${n} jogos no Mural`
     case 'course_rated':
-      return n === 1 ? 'Classifique um curso' : `Classifique ${n} cursos`
+      return n === 1 ? 'Avalie uma aventura' : `Avalie ${n} aventuras`
     case 'room_item_buy':
       return n === 1 ? 'Decore seu quarto' : `Ganhe ${n} itens para o quarto`
     case 'avatar_part_buy':

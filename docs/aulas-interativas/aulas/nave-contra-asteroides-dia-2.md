@@ -25,87 +25,87 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 ### Seção 1. Compare esperar a tecla e repetir tiros
 
-**Tarefa:** Compare Criar um tiro em Quando acontecer e Enquanto estiver rodando. No primeiro teste, espere e depois clique em Apertar a tecla.
+**Tarefa:** Sua vez! Compare Criar um tiro em Quando acontecer e em Enquanto estiver rodando. No primeiro teste, espere parar e só depois clique em Apertar a tecla. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-tecla-e-repeticao → fala-tecla-e-repeticao → experiencia-tres-areas.
 
-**Zappy na página (não gravar):** Compare Criar um tiro em Quando acontecer e Enquanto estiver rodando. No primeiro teste, espere e depois clique em Apertar a tecla.
+**Zappy na página (não gravar):** Sua vez! Compare Criar um tiro em Quando acontecer e em Enquanto estiver rodando. No primeiro teste, espere parar e só depois clique em Apertar a tecla. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `once-vs-always`. Coloque Criar um tiro em Quando acontecer. Clique em Começar o jogo e espere o teste parar, sem clicar em Apertar a tecla. Observe o contador de tiros. Depois clique em Apertar a tecla e observe de novo. Leve Criar um tiro para Enquanto estiver rodando. Clique em Começar o jogo e espere o teste parar. Compare com o primeiro teste. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Faça o tiro acompanhar a nave
 
-**Tarefa:** Atire de dois lugares com cada opção de x. Depois ligue Marcas da caixa e atire de novo com O centro x da nave.
+**Tarefa:** Sua vez! Atire de dois lugares com cada opção de x e depois ligue Marcas da caixa e atire de novo. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-escrito-e-lido → fala-escrito-e-lido → experiencia-escrito-e-lido.
 
-**Zappy na página (não gravar):** Atire de dois lugares com cada opção de x. Depois ligue Marcas da caixa e atire de novo com O centro x da nave.
+**Zappy na página (não gravar):** Sua vez! Atire de dois lugares com cada opção de x e depois ligue Marcas da caixa e atire de novo. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `fixed-vs-read`. Com O número 400, atire, mude x da nave e atire de novo. Repita com O centro x da nave. Depois ligue Marcas da caixa e atire mais uma vez, mantendo O centro x da nave. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 3. Compare a direção do tiro
 
-**Tarefa:** Compare -9 e 9 na velocidade para baixo. Avance os quadros e observe o y em cada teste.
+**Tarefa:** Sua vez! Compare -9 e 9 em velocidade para baixo, avançando os quadros e olhando o y. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-direcao-do-tiro → fala-direcao-do-tiro → experiencia-direcao.
 
-**Zappy na página (não gravar):** Compare -9 e 9 na velocidade para baixo. Avance os quadros e observe o y em cada teste.
+**Zappy na página (não gravar):** Sua vez! Compare -9 e 9 em velocidade para baixo, avançando os quadros e olhando o y. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `velocity`. Na experiência, mantenha velocidade para o lado em 0. Coloque velocidade para baixo em -9 e clique em Avançar 1 quadro algumas vezes. Observe o tiro e o y. Troque velocidade para baixo para 9 e avance outros quadros. Compare a direção e o y nos dois testes. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Monte o disparo da barra de espaço
 
-**Tarefa:** Crie o grupo tiros e programe o disparo dentro da tecla Espaço.
+**Tarefa:** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-criar-tiro → fala-criar-tiro.
 
-**Zappy na página (não gravar):** Crie o grupo tiros e programe o disparo dentro da tecla Espaço.
+**Zappy na página (não gravar):** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Crie o grupo tiros em Ao iniciar.
 - Em Quando acontecer, coloque Quando apertar a tecla: barra de espaço.
 - Dentro de Espaço, crie o tiro usando centro x e posição y da nave.
-- No evento Espaço, use Tocar efeito e escolha tiro.
+- No evento Espaço, use Tocar efeito e escolha tiro grande.
 - No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.
 - Mantenha apenas um comando de criar tiro.
 
 ### Seção 5. Mova e desenhe os tiros
 
-**Tarefa:** Coloque movimento e desenho do grupo em cada quadro. Atire de dois lugares.
+**Tarefa:** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-tiros-voam → fala-tiros-voam.
 
-**Zappy na página (não gravar):** Coloque movimento e desenho do grupo em cada quadro. Atire de dois lugares.
+**Zappy na página (não gravar):** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Mova o grupo tiros a cada quadro.
 - Desenhe o grupo tiros a cada quadro.
 
 ### Seção 6. O tiro saiu da tela. E do grupo?
 
-**Tarefa:** Deixe dois tiros saírem com a limpeza desligada. Depois ligue a regra e observe o grupo.
+**Tarefa:** Sua vez! Deixe dois tiros saírem com a limpeza desligada, depois ligue a regra e compare o grupo. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-tiro-fora-da-tela → fala-tiro-que-sai-da-tela → experiencia-faxina.
 
-**Zappy na página (não gravar):** Deixe dois tiros saírem com a limpeza desligada. Depois ligue a regra e observe o grupo.
+**Zappy na página (não gravar):** Sua vez! Deixe dois tiros saírem com a limpeza desligada, depois ligue a regra e compare o grupo. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `cleanup`. Use Tempo para soltar o tempo se estiver parado. Com Tirar do grupo quem sair da tela desligado, deixe dois tiros saírem e observe o grupo. Depois ligue a regra, deixe o tempo passar novamente e compare. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 7. Retire os tiros que saíram
 
-**Tarefa:** Encaixe a limpeza entre mover e desenhar os tiros. Teste e envie.
+**Tarefa:** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
 **Blocos na página:** video-faxina → fala-faxina → projeto.
 
-**Zappy na página (não gravar):** Encaixe a limpeza entre mover e desenhar os tiros. Teste e envie.
+**Zappy na página (não gravar):** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie nave em x 400, y 410, largura 54 e altura 62, em Ao iniciar.
 - Crie o grupo tiros em Ao iniciar.
-- No evento Espaço, use Tocar efeito e escolha tiro.
+- No evento Espaço, use Tocar efeito e escolha tiro grande.
 - No evento Espaço: tiro com vx 0, vy −9 e depois som de tiro.
 - Mantenha apenas um comando de criar tiro.
 - Mova tiros antes de limpar o grupo.

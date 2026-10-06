@@ -54,7 +54,9 @@ export function createGalleryDeliveryRoutes(
         )
       if (request.headers.get('x-sz-viewer') !== user.id)
         return NextResponse.json(
-          { error: { code: 'VIEWER_CHANGED', message: 'O perfil mudou. Abra a aula novamente.' } },
+          {
+            error: { code: 'VIEWER_CHANGED', message: 'O perfil mudou. Abra esta página de novo.' },
+          },
           { status: 409 },
         )
       const { lessonId, blockId } = await ctx.params
@@ -89,7 +91,7 @@ export function createGalleryDeliveryRoutes(
         let program: unknown = null
         for (const item of plan.snapshot.items) {
           const source = plan.copies.find((copy) => copy.destination === item.storageKey)
-          if (!source) throw new Error('Referência de entrega indisponível.')
+          if (!source) throw new Error('Referência do envio indisponível.')
           const sourceJson = await storage.read(source.source)
           if (plan.snapshot.tool === 'pinta') {
             const asset = assetFromJson(JSON.stringify(sourceJson)).asset
@@ -109,7 +111,7 @@ export function createGalleryDeliveryRoutes(
             const { assets: _assets, ...withoutAssets } = full
             program = withoutAssets
             if (JSON.stringify(program).length > 1_500_000)
-              throw new Error('O programa deste projeto excede o limite da entrega.')
+              throw new Error('O programa deste projeto passa do limite do envio.')
           }
         }
         let cursor = 0

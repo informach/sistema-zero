@@ -6,6 +6,7 @@ import { AppSidebar } from '@/components/kids/app-sidebar'
 import { CelebrationWatcher } from '@/components/kids/celebration-watcher'
 import { FocusModeProvider, SidebarFallback } from '@/components/kids/focus-mode'
 import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
+import { KidsLessonCopy } from '@/components/kids/kids-lesson-copy'
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { PlatformRenovationNotice } from '@/components/kids/platform-renovation-notice'
@@ -190,7 +191,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               >
                 <TopbarChrome session={session} />
               </Suspense>
-              <MainContainer>{children}</MainContainer>
+              <MainContainer>
+                {/* O vocabulário da criança (fase, parte, equipe) nas telas de aula do member-shell. */}
+                <KidsLessonCopy>{children}</KidsLessonCopy>
+              </MainContainer>
               {/* ⚠️ Com `<Suspense>`: a barra de abas virou Server Component (espera a posse
                 das ferramentas para não oferecer porta trancada), e sem o boundary o
                 celular esperaria a ida ao gateway para ver QUALQUER menu — o oposto do

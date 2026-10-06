@@ -120,7 +120,7 @@ test('a etapa da abertura espera Enter e preserva movimento, tiros e asteroides 
 })
 
 const FIM_DA_EXPERIENCIA =
-  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção.'
+  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
 // Uma ordem dirigida a quem assiste, no começo de uma frase. Antes da vez dela, o vídeo só mostra.
 const ORDEM =
   /(?:^|[.:!?;]\s+)(Clique|Coloque|Observe|Mude|Deixe|Leve|Escolha|Ligue|Troque|Aumente|Atire|Compare|Avance|Use|Volte|Espere|Acompanhe|Arraste|Toque|Aperte|Olhe|Repita|Teste|Sorteie|Experimente|Jogue)\b/
@@ -139,9 +139,18 @@ test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez
         expect(fala[0], id).toMatch(/^Esta é (uma|a mesma) experiência\b.* para a gente entender /)
         expect(fala.at(-1), id).toBe(FIM_DA_EXPERIENCIA)
       } else {
-        expect(fala[0], id).toMatch(/^Esta é a versão pronta\b/)
+        // Três vozes (06/10/2026): a autoria é dela e o convite é junto.
+        expect(fala[0], id).toStartWith(
+          'Oi! Você vai construir um jogo chamado Nave Contra Asteroides. Nesse jogo, a nave atira nas pedras que caem do espaço, e cada acerto vale um ponto.',
+        )
+        expect(fala[0], id).toContain(
+          'Você ganha ao chegar a 26 pontos e perde se as três vidas acabarem.',
+        )
+        expect(fala[0], id).toEndWith(
+          'Antes de montar o seu, vamos ver como ele funciona nesta versão pronta.',
+        )
         expect(fala.at(-1), id).toMatch(
-          /^Agora é a sua vez: jogue .*Quando terminar, clique em Próxima seção\.$/,
+          /^Agora é a sua vez: jogue .*Quando terminar, clique em Próxima parte\.$/,
         )
       }
       expect(demonstracao.match(/Olha aqui: /g), id).toHaveLength(1)
@@ -171,8 +180,165 @@ test('falas para a criança: sem o nome interno da seção e com a publicação 
   expect(fala).toContain('O resumo do projeto já vem preenchido. Deixe como está.')
   expect(fala).toContain('Seu jogo está no Mural! Que conquista!')
   expect(fala).toContain('Clique em Copiar link de jogar')
-  expect(fala).toMatch(/clique em Fechar\. Por último, clique em Concluir aula\.$/)
+  expect(fala).toMatch(/clique em Fechar\. Por último, clique em Concluir fase\.$/)
   expect(fala).not.toContain('Confira o título')
+})
+
+test('falas para a criança: botões da fase pelo nome novo e o Mapa como convite (06/10/2026)', () => {
+  const verificacao =
+    'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
+  for (const aula of aulasNave)
+    for (const s of aula.sections) {
+      if (!s.checks?.length) continue
+      const id = `${aula.slug}/${s.key}`
+      const fim = falasSecao(s).at(-1) ?? ''
+      expect(fim, id).toStartWith(verificacao)
+      if (!s.final) expect(fim, id).toEndWith('Depois, clique em Próxima parte.')
+      else {
+        expect(fim, id).toContain('Depois, clique em Enviar meu projeto e confirme em Enviar.')
+        expect(fim, id).toEndWith(
+          s.publish
+            ? 'Por último, clique em Concluir fase.'
+            : 'Quando o envio terminar, clique em Concluir fase.',
+        )
+      }
+    }
+  const mapa = aulasNave[0]!.sections.find((s) => s.materials)!
+  const falaDoMapa = [mapa.bridge, ...(mapa.speech ?? [])].join(' ')
+  expect(mapa.title).toBe('Seu Mapa da Aventura')
+  expect(mapa.speech?.[0]).toStartWith('Olha aqui: este é o seu Mapa da Aventura!')
+  expect(falaDoMapa).toContain(
+    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.',
+  )
+  expect(falaDoMapa).not.toMatch(/não precisa/i)
+})
+
+// Régua de 06/10/2026 (Diretrizes, seção 6): pontes que convidam e terminam na saída, retomadas
+// que testam no próprio jogo e conversa sem "então" de ligação, porque o Se tem o encaixe então.
+const SAIDA = /(?:clique em Próxima parte|clique em Concluir fase)\.$/
+const CONVITE = /^(?:Sua vez!|Agora\b[^.!?]*!|Hora d[eo]\b[^.!?]*!)/
+// Efeito invisível no jogo: a retomada só lembra a experiência, sem inventar teste.
+const RETOMADA_SEM_TESTE = new Set(['primeira-nave/criar-nave'])
+
+test('pontes do Zappy: convidam e terminam na ação de saída (06/10/2026)', () => {
+  for (const aula of aulasNave)
+    for (const s of aula.sections) {
+      const id = `${aula.slug}/${s.key}`
+      expect(s.bridge, id).toMatch(SAIDA)
+      // O Mapa repete a ponte aprovada no Cadê e no Farol: "Este é o seu Mapa da Aventura!".
+      if (s.materials) expect(s.bridge, id).toStartWith('Este é o seu Mapa da Aventura!')
+      else expect(s.bridge, id).toMatch(CONVITE)
+      if (s.activity?.activity.type === 'experimentation' || s.play)
+        expect(s.bridge, id).toStartWith('Sua vez!')
+      if (s.checks?.length)
+        expect(s.bridge, id).toContain(
+          s.final
+            ? 'clique em Verificar esta parte e envie o seu projeto.'
+            : 'clique em Verificar esta parte. Depois, clique em Próxima parte.',
+        )
+    }
+})
+
+// A retomada é uma ponte, não um segundo vídeo da experiência: umas 50 palavras (Diretrizes, §2,
+// 06/10/2026, à noite). O teto impede a volta da versão longa, que tinha de 60 a 99.
+const TETO_DA_RETOMADA = 55
+const LEMBRANCA = /\bLembra d[ao]s? [^?]*experiências?\b[^?]*\?/
+
+test('retomadas: primeiro o problema no seu jogo, depois a lembrança e um anúncio só (06/10/2026)', () => {
+  let retomadas = 0
+  for (const aula of aulasNave)
+    for (const s of aula.sections) {
+      const fala = s.speech ?? []
+      // A lembrança abre a retomada sem teste ou vem logo depois do teste no jogo da criança.
+      const i = fala.slice(0, 2).findIndex((p) => LEMBRANCA.test(p))
+      if (i < 0) continue
+      const id = `${aula.slug}/${s.key}`
+      retomadas++
+      const retomada = fala.slice(0, i + 1).join(' ')
+      // O anúncio vem uma vez só, no fim da lembrança, colado ao primeiro passo da montagem.
+      expect(fala[i], id).toMatch(/Agora a gente vai [^.!?]*\bseu jogo\b[^.!?]*!$/)
+      expect(retomada.match(/Agora a gente vai/g), id).toHaveLength(1)
+      expect(retomada, id).not.toMatch(/\bvamos\b/)
+      expect(fala[i + 1] ?? '', id).not.toMatch(/^(?:Por isso|Para [^,.!?]*|Agora), vamos\b/)
+      expect(retomada, id).not.toMatch(/clique em Anterior/i)
+      expect(retomada.split(/\s+/).length, id).toBeLessThanOrEqual(TETO_DA_RETOMADA)
+      if (RETOMADA_SEM_TESTE.has(id)) {
+        // Efeito invisível: só a lembrança e o anúncio, sem inventar teste.
+        expect(i, id).toBe(0)
+        expect(retomada, id).not.toContain('Tá vendo?')
+        continue
+      }
+      // Primeiro o problema: o teste no jogo dela, com "Tá vendo?" e o porquê numa frase só.
+      expect(i, id).toBe(1)
+      expect(fala[0], id).toMatch(/\bseu jogo\b[^?]*\. Tá vendo\? [^.!?]*\bporque\b[^.!?]*\.$/)
+    }
+  expect(retomadas).toBe(17)
+})
+
+test('conferência: uma lista só por montagem e, com teste, depois dele (06/10/2026)', () => {
+  let depoisDoTeste = 0
+  for (const aula of aulasNave)
+    for (const s of aula.sections) {
+      if (s.activity || s.play) continue
+      const id = `${aula.slug}/${s.key}`
+      for (const meio of ['video', 'mapa'] as const) {
+        const fala = falasSecao(s, meio)
+        const listas = fala.filter((p) => /confira se ficou assim/i.test(p))
+        expect(listas.length, `${id} (${meio})`).toBeLessThanOrEqual(1)
+        // Quando a lista é o caminho da correção, ela vem depois do teste e manda voltar aos blocos.
+        const k = fala.findIndex((p) => /volte aos blocos e confira se ficou assim/.test(p))
+        if (k < 0) continue
+        if (meio === 'video') depoisDoTeste++
+        expect(fala.slice(0, k).join(' '), `${id} (${meio})`).toMatch(
+          /\b(?:teste|Teste|olhe|Olhe|Olha só|olha só|clique na área do jogo)\b/,
+        )
+      }
+    }
+  expect(depoisDoTeste).toBeGreaterThan(15)
+})
+
+test('mapa e rótulos: o Mapa não aponta para o vídeo e o som do disparo é tiro grande (06/10/2026)', () => {
+  const chamado = /(?:^|[.!?:]\s)(?:Olha aqui|Olha só:|Tá vendo\?|Repare)/
+  let montagens = 0
+  for (const aula of aulasNave)
+    for (const s of aula.sections) {
+      if (s.activity || s.play || s.materials || !s.speech?.length) continue
+      montagens++
+      for (const p of falasSecao(s, 'mapa')) expect(p, `${aula.slug}/${s.key}`).not.toMatch(chamado)
+    }
+  expect(montagens).toBeGreaterThan(20)
+  // "tiro" no menu do Tocar efeito é o laser; o disparo do jogo original é "shoot", o tiro grande.
+  const falas = aulasNave.flatMap((a) => a.sections.flatMap((s) => falasSecao(s))).join(' ')
+  expect(falas).toContain('No menu, escolha tiro grande.')
+  expect(falas).not.toMatch(/Tocar efeito tiro(?! grande)/)
+  expect(falas).not.toMatch(/\+ ao lado de senão se/)
+  // A frase de achar o lugar fora da tela fica na primeira montagem e na da área nova.
+  expect(falas.match(/arrastar um espaço vazio entre os blocos/g)).toHaveLength(2)
+})
+
+test('conversa: sem "então" de ligação, sem "aperte" e sem troque e volte na entrega (06/10/2026)', () => {
+  for (const aula of aulasNave)
+    for (const s of aula.sections) {
+      const id = `${aula.slug}/${s.key}`
+      const falas = [
+        s.bridge,
+        ...falasSecao(s),
+        ...(s.questions ?? []).flatMap((q) => [q.prompt, ...q.choices.map((c) => c.label)]),
+      ].join(' ')
+      // "então" só como o encaixe do bloco Se: "dentro do então", "no então desse senão se".
+      expect(falas.match(/(?<!\b(?:do|no|o|desse|dessa)\s)\bent[ãa]o\b/gi), id).toBeNull()
+      // "Aperte Enter para…" é o texto que a própria criança escreve na tela do jogo.
+      expect(falas.match(/\bapert(?:e|o)\b(?! Enter para)/gi), id).toBeNull()
+      expect(falas, id).not.toContain('—')
+    }
+  // Achado M1: a entrega da chuva de pedras não manda trocar 40 por 80 e voltar.
+  const chuva = aulasNave.find((a) => a.slug === 'chuva-de-asteroides')!.sections.at(-1)!
+  expect(chuva.title).toBe('Teste e envie a sua chuva de pedras')
+  expect(falasSecao(chuva).join(' ')).not.toMatch(/\b80\b/)
+  // Achado B4: "parte" agora é a seção; o pedaço do evento Enter que fica não se chama parte.
+  const enter = aulasNave.find((a) => a.slug === 'dia-5')!.sections.find((s) => s.key === 'enter')!
+  expect(enter.speech?.join(' ')).toContain('e esse pedaço fica como está.')
+  expect(enter.speech?.join(' ')).not.toContain('Vamos manter essa parte')
 })
 
 const seconds = (n: number): SceneAction[] =>

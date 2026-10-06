@@ -28,14 +28,14 @@
   "blocks": [
     {
       "key": "video-sorteio-tira-na-hora",
-      "plannedVideo": "Título: Compare os resultados de um sorteio\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy tirando papeizinhos de um saquinho, com os números 500, 530 e 560. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare os resultados de um sorteio\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy tirando papeizinhos de um saquinho, com os números 500, 530 e 560. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-sorteio-tira-na-hora",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sorteie posições até comparar diferenças e repetições; depois compare as duas velocidades."
+        "text": "Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -62,26 +62,26 @@
     },
     {
       "key": "video-lugar-diferente",
-      "plannedVideo": "Título: Sorteie onde cada cacto nasce\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Sorteie onde cada cacto nasce\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-lugar-diferente",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sorteie o x de 500 a 560 dentro do único criador de cactos."
+        "text": "Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-velocidade-propria",
-      "plannedVideo": "Título: Sorteie uma variação na velocidade\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Sorteie uma variação na velocidade\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-velocidade-propria",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Use -5 menos um sorteio de 0 a 1 no vx do mesmo criador."
+        "text": "Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
@@ -93,7 +93,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase."
       }
     },
     {
@@ -1278,7 +1278,7 @@
       "key": "sorteio-tira-na-hora",
       "title": "Compare os resultados de um sorteio",
       "intent": "exploration",
-      "objective": "Sorteie posições até comparar diferenças e repetições; depois compare as duas velocidades.",
+      "objective": "Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-sorteio-tira-na-hora",
         "fala-sorteio-tira-na-hora",
@@ -1296,7 +1296,7 @@
       "key": "lugar-diferente",
       "title": "Sorteie onde cada cacto nasce",
       "intent": "application",
-      "objective": "Sorteie o x de 500 a 560 dentro do único criador de cactos.",
+      "objective": "Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-lugar-diferente", "fala-lugar-diferente"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1374,7 +1374,7 @@
       "key": "velocidade-propria",
       "title": "Sorteie uma variação na velocidade",
       "intent": "application",
-      "objective": "Use -5 menos um sorteio de 0 a 1 no vx do mesmo criador.",
+      "objective": "Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-velocidade-propria", "fala-velocidade-propria"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1451,7 +1451,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

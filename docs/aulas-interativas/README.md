@@ -19,6 +19,8 @@ de procurar personagens escondidos, **Cadê Todo Mundo?**, tem seus três trios 
 encerra a experiência sem pitch de venda; a oferta do Desafio fica em uma landing page externa à
 área infantil e a decisão de compra cabe ao responsável.
 
+**Farol ampliado em 06/10/2026:** quatro aulas, vinte seções e dezenove vídeos. A escolha de velocidade saiu; o Dia 3 reúne personagens, cenários, barcos, chaves, pares de faróis, avisos e posição da chave, com galerias no Mapa da Aventura. Ver [sequência e implantação](modulos-desafio-primeiro-jogo.md).
+
 **Relatório consolidado (documento para ler e comentar):**
 https://claude.ai/code/artifact/2a29a025-3a65-4c66-858b-afefacaa34df
 
@@ -44,7 +46,7 @@ encerramento do antigo Desafio.
 | **Total** | **28** | **281** | **207** | **202** | **169** |
 
 As 11 cenas anteriores foram construídas e os defeitos do catálogo, corrigidos. As cenas de toque e
-contagem do gratuito, a porta do farol, a experiência de memória e o andar do personagem do Farol elevam o catálogo de 56 para **61 cenas**. Os **37 manifestos**
+contagem do gratuito, a porta do farol, a experiência de memória, o andar do personagem e a posição da chave do Farol elevam o catálogo de 56 para **62 cenas**. Os **37 manifestos**
 passam no validador, sem nenhuma aula esperando cena. O novo Desafio ainda precisa das gravações,
 dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 
@@ -54,7 +56,7 @@ dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 |---|---|
 | `DIRETRIZES-PEDAGOGICAS.md` | Referência única das regras, justificativas, variações por curso e conferência. **Primeira leitura para qualquer curso.** |
 | `BRIEFING.md` | Guia para preparar a análise, fazer a triagem dos conceitos e registrar decisões; encaminha às Diretrizes Pedagógicas. |
-| `CATALOGO-CENAS.json` | As **61 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
+| `CATALOGO-CENAS.json` | As **62 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
 | `REFERENCIA-PLATAFORMA.md` | **Onde cada coisa está na plataforma hoje**, lido direto do código, com a fonte citada por linha: o menu da esquerda, o recolhimento dele na aula e na ferramenta, a cor do perfil, as três ações de plataforma, os grupos do menu ⋯ do Estúdio, a lista de projetos e o Pinta. Toda fala que nomeie menu, tela ou botão confere aqui |
 | `REFERENCIA-BLOCOS-JOGO-2D.json` | Os **285 tipos** da paleta do Jogo 2D, extraídos do código: família, seção, todas as linhas do rótulo, cada campo com o padrão de fábrica e a lista de cada menu na ordem da tela |
 | `ESPEC-ROTEIRO.md` | O contrato do roteiro de gravação: tarefa na primeira fala, passo a passo completo, linguagem direta, notas de produção separadas e tutoriais de interface no Como Fazer |
@@ -68,13 +70,20 @@ dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 
 As descrições de curso e os resumos de módulo em `modulos-*.md` são textos para a área Kids. Ao
 configurá-los no admin, fale diretamente com quem faz o curso: use “você” e “seu jogo”, sem se
-referir à pessoa como “a criança” ou “o aluno”.
+referir à pessoa como “a criança” ou “o aluno”, e com o vocabulário da aventura (aventura, fase,
+parte, Mundo, Mapa da Aventura e equipe), porque é a criança quem lê. Os rótulos de botão que as
+falas citam são os do Kids: **Próxima parte**, **Concluir fase**, **Verificar esta parte** e
+**Enviar meu projeto** (na galeria, **Enviar (1)**) ([Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6, e
+[referência da plataforma](REFERENCIA-PLATAFORMA.md), seção 9).
 
-**Caderno em cada curso:** a primeira aula apresenta o PDF na seção 2, depois do vídeo de abertura
-e antes da primeira atividade. A seção usa um vídeo curto e um bloco de materiais; 90% do vídeo
-conclui a seção, sem exigir download. O vídeo diz quando consultar; controles de leitura e download
-ficam no Como Fazer. O PDF é anexado no admin antes de gravar o vídeo. A regra para
-os próximos cursos está no `BRIEFING.md`, em “Regras de seção”.
+**Caderno em cada curso:** o caderno, que a criança conhece como **Mapa da Aventura**, é
+apresentado na seção 2 da primeira aula, depois do vídeo de abertura e antes da primeira
+atividade. A seção usa um vídeo curto e um bloco de materiais; 90% do vídeo
+conclui a seção, sem exigir download. O vídeo apresenta o caderno à pessoa, diz quando consultar
+e oferece as escolhas como convite: ler ali mesmo ou clicar em **Baixar** para guardar. Não dizer
+que ela não precisa baixar ou imprimir. Controles de leitura e o passo a passo do download ficam
+no Como Fazer. O PDF é anexado no admin antes de gravar o vídeo. A regra para os próximos cursos
+está nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seções 5 e 6.
 
 ## Como ler uma análise de aula
 

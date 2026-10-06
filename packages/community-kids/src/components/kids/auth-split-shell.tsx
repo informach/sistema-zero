@@ -35,7 +35,8 @@ export function AuthSplitShell({ children }: { children: ReactNode }) {
             <KidsMascot expression="happy" className="kid-float size-40" />
             <p className="sz-display max-w-md text-[2.5rem]">Crie, aprenda e se divirta</p>
             <p className="kids-marca-suave max-w-sm font-medium text-[1.0625rem] leading-[1.6]">
-              Um lugar para criar coisas incríveis, aprender brincando e se divertir a cada aula.
+              Um lugar para criar coisas incríveis, aprender brincando e se divertir a cada
+              aventura.
             </p>
           </div>
         </section>

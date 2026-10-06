@@ -23,66 +23,68 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 
 ### Seção 1. Escolha quando o jogo pode agir
 
-**Tarefa:** Compare o início e a partida com a criação fora e dentro da condição.
+**Tarefa:** Sua vez! Compare a tela de início e a partida, com Criar cacto fora e dentro de Se o estado do jogo é jogando. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-condicao → fala-condicao → experiencia-condicao.
 
-**Zappy na página (não gravar):** Compare o início e a partida com a criação fora e dentro da condição.
+**Zappy na página (não gravar):** Sua vez! Compare a tela de início e a partida, com Criar cacto fora e dentro de Se o estado do jogo é jogando. Quando terminar, clique em Próxima parte.
 
-**Experiência existente:** `game-state`. Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto. Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador. Depois toque na tela para começar a partida e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência existente:** `game-state`. Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto. Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador. Depois clique em Toque para começar e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Guarde em que momento o jogo está
 
-**Tarefa:** Guarde inicio em Ao iniciar e observe que isso sozinho não protege as ações.
+**Tarefa:** Agora guarde em que momento o seu jogo está! Coloque Mudar o estado do jogo para inicio no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-estado-inicio → fala-estado-inicio.
 
-**Zappy na página (não gravar):** Guarde inicio em Ao iniciar e observe que isso sozinho não protege as ações.
+**Zappy na página (não gravar):** Agora guarde em que momento o seu jogo está! Coloque Mudar o estado do jogo para inicio no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 
 ### Seção 3. Separe as ações da partida
 
-**Tarefa:** Proteja as ações da partida e mantenha limpar e floresta antes do Se.
+**Tarefa:** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-embrulhar → fala-embrulhar.
 
-**Zappy na página (não gravar):** Proteja as ações da partida e mantenha limpar e floresta antes do Se.
+**Zappy na página (não gravar):** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.
 - Controlar o dinossauro fica no então de Se o estado do jogo é jogando, na ordem da montagem.
 - Desenhar o sprite do dino fica no então de Se o estado do jogo é jogando, na ordem da montagem.
 - Mover os sprites do grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.
 - Desenhar o grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.
-- A faxina, que tira do grupo quem saiu da tela, fica por último dentro do então.
+- A regra que tira do grupo quem saiu da tela fica por último dentro do então.
 - Limpar a tela continua fora do Se, direto no A cada quadro do jogo.
 - Desenhar fundo de floresta continua fora do Se, logo acima dele.
+- No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 
 ### Seção 4. Faça o relógio esperar a partida
 
-**Tarefa:** Proteja também a criação no relógio e termine com inicio em Ao iniciar.
+**Tarefa:** Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-relogio → fala-relogio.
 
-**Zappy na página (não gravar):** Proteja também a criação no relógio e termine com inicio em Ao iniciar.
+**Zappy na página (não gravar):** Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.
+- No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 
 ### Seção 5. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 - Aplicar a gravidade fica no então de Se o estado do jogo é jogando, na ordem da montagem.
@@ -90,13 +92,13 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 - Desenhar o sprite do dino fica no então de Se o estado do jogo é jogando, na ordem da montagem.
 - Mover os sprites do grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.
 - Desenhar o grupo fica no então de Se o estado do jogo é jogando, na ordem da montagem.
-- A faxina, que tira do grupo quem saiu da tela, fica por último dentro do então.
+- A regra que tira do grupo quem saiu da tela fica por último dentro do então.
 - Mantenha uma única ação Aplicar a gravidade.
 - Mantenha uma única ação Controlar o dinossauro.
 - Mantenha um único Desenhar o sprite do dino.
 - Mantenha um único Mover os sprites do grupo.
 - Mantenha um único Desenhar o grupo.
-- Mantenha uma única faxina do grupo.
+- Mantenha uma única regra que tira do grupo quem saiu da tela.
 - Limpar a tela continua fora do Se, direto no A cada quadro do jogo.
 - Desenhar fundo de floresta continua fora do Se, logo acima dele.
 - No A cada 1,4 segundos, o No grupo criar obstáculo fica dentro de um Se o estado do jogo é jogando. Este passo não aparece na tela, e é este critério que confere por você.

@@ -163,7 +163,11 @@ export function ProjectRuleEditor({
       {selected?.parameters.map((param) => (
         <label className="block text-sm" key={`${param.kind}:${param.name}`}>
           {param.label}
-          {param.options?.length ? (
+          {param.kind === 'fields' && rule.fieldOptions?.[param.name] ? (
+            <p className="text-muted-foreground">
+              Valores aceitos: {rule.fieldOptions[param.name]?.join(', ')}
+            </p>
+          ) : param.options?.length ? (
             <Select
               value={String(rule[param.kind]?.[param.name] ?? '')}
               onChange={(e) => parameter(param.kind, param.name, e.target.value)}

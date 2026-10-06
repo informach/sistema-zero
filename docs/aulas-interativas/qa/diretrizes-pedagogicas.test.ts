@@ -15,7 +15,7 @@ function load(name: string) {
 describe('diretrizes dos cursos curtos', () => {
   for (const [prefix, lessons, count, sections, videos] of [
     ['cade-todo-mundo', ['aula-1', 'aula-2', 'certificado'], 3, 11, 10],
-    ['desafio', ['dia-1', 'dia-2', 'dia-3', 'certificado'], 4, 19, 18],
+    ['desafio', ['dia-1', 'dia-2', 'dia-3', 'certificado'], 4, 20, 19],
   ] as const) {
     test(`${prefix}: uma revisão final, sem vídeo, antes do certificado preservado`, () => {
       const manifests = lessons.map((lesson) => load(`${prefix}-${lesson}`))

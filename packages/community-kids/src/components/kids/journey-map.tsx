@@ -416,7 +416,7 @@ function JourneyNode({
         <li className={rowClass} style={positionStyle}>
           <Link
             href="/cursos/trilha/god"
-            aria-label={`Abrir os cursos bônus da ${info.label}`}
+            aria-label={`Abrir as aventuras bônus da ${info.label}`}
             aria-describedby={
               completion && completion.total > 0 ? progressDescriptionId : undefined
             }

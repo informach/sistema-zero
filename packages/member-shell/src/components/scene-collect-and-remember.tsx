@@ -42,12 +42,12 @@ export function CollectionMemoryStage({ state }: { state: SceneState }) {
     >
       <image
         data-fundo="farol"
-        href={farolSvgUrl('cenario')}
+        href={farolSvgUrl('praia-tropical')}
         width={FAROL_LAYOUT.palco.w}
         height={FAROL_LAYOUT.palco.h}
       />
       <image
-        href={farolSvgUrl('farol-apagado')}
+        href={farolSvgUrl('farol-listrado-apagado')}
         x={FAROL_LAYOUT.farol.x}
         y={FAROL_LAYOUT.farol.y}
         width={FAROL_LAYOUT.farol.w}
@@ -61,14 +61,20 @@ export function CollectionMemoryStage({ state }: { state: SceneState }) {
           transform: keyPresent ? 'translate(0px, 0px)' : 'translate(0px, -18px)',
         }}
       >
-        <image href={farolSvgUrl('chave')} x={key.x} y={key.y} width={key.w} height={key.h} />
+        <image
+          href={farolSvgUrl('chave-dourada')}
+          x={key.x}
+          y={key.y}
+          width={key.w}
+          height={key.h}
+        />
       </g>
       <g
         className="sz-scene-anda"
         data-personagem={position}
         style={{ transform: `translate(${lugar.x}px, ${lugar.y}px)` }}
       >
-        <image href={farolSvgUrl('personagem')} width={hero.w} height={hero.h} />
+        <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
       </g>
       <AvisoDoFarol texto={aviso} />
     </SceneCanvas>

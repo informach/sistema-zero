@@ -34,6 +34,20 @@ function removalLabel(document: LessonDraftDocument, block: DraftBlock): string 
   return section ? `${kind} · ${section.title}` : kind
 }
 
+/**
+ * Um vídeo que ainda é só PLANO pode sair pelo `retireBlockKeys`, como as falas e as experiências
+ * da mesma seção retirada (Dia 1 do Farol, 06/10/2026). Plano = sem fonte no bloco e sem Vimeo
+ * escolhido no `plannedVideos`. Com qualquer um dos dois, o vídeo já é mídia da autora e fica
+ * protegido: a importação recusa em vez de apagar.
+ */
+function isUnlinkedPlannedVideo(document: LessonDraftDocument, block: DraftBlock): boolean {
+  if (block.content.kind !== 'video') return false
+  const { src } = block.content
+  if (typeof src === 'string' && src.trim() !== '') return false
+  const planned = document.plannedVideos.find((video) => video.blockId === block.id)
+  return planned !== undefined && planned.videoId === null
+}
+
 function importedContent(
   authored: DraftBlock['content'],
   previous: DraftBlock['content'] | undefined,
@@ -224,9 +238,12 @@ export class LearningImportService {
         })
     } else {
       for (const block of draft.document.blocks.filter((b) => retireIds.has(b.id))) {
-        if (!['rich_text', 'dialogue', 'interactive', 'materials'].includes(block.content.kind))
+        if (
+          !['rich_text', 'dialogue', 'interactive', 'materials'].includes(block.content.kind) &&
+          !isUnlinkedPlannedVideo(draft.document, block)
+        )
           throw new ValidationError(
-            'Só instruções, descobertas e materiais importados podem ser aposentados pelo manifesto. Projetos, mídias e quizzes são preservados.',
+            'Só instruções, descobertas, materiais e vídeos ainda não vinculados podem ser aposentados pelo manifesto. Projetos, vídeos vinculados e quizzes são preservados.',
           )
         const key = manifest.retireBlockKeys?.find(
           (key) => importedLearningId(lessonId, 'block', key) === block.id,

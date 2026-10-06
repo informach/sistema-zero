@@ -33,14 +33,14 @@
   "blocks": [
     {
       "key": "video-bordas",
-      "plannedVideo": "Título: Aproxime duas formas de desenhar\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo. Meme na comparação: na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda \"de longe: redonda · de perto: degraus\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Aproxime duas formas de desenhar\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo. Meme na comparação: na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda \"de longe: redonda · de perto: degraus\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-bordas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora aproxime as duas pedras e compare as bordas."
+        "text": "Sua vez! Aproxime as duas pedras e compare as bordas. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -64,26 +64,26 @@
     },
     {
       "key": "video-nova-nave",
-      "plannedVideo": "Título: Prepare a folha da nave\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Prepare a folha da nave\n\nRegravar nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-nova-nave",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie uma arte de personagem em pixel art, tamanho Médio, chamada nave."
+        "text": "Agora prepare o desenho da sua nave! Crie uma arte de personagem em Pixel art, tamanho Médio, chamada nave. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-espelho",
-      "plannedVideo": "Título: Descubra o que o espelho repete\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho. Meme na comparação: na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda \"um pingo, dois lados\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Descubra o que o espelho repete\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho. Meme na comparação: na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda \"um pingo, dois lados\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-espelho",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora pinte com cada espelho e veja onde a cópia aparece."
+        "text": "Sua vez! Pinte com cada espelho e veja onde a cópia aparece. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -107,38 +107,38 @@
     },
     {
       "key": "video-contorno",
-      "plannedVideo": "Título: Feche o contorno da nave\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Feche o contorno da nave\n\nRegravar nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-contorno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Desenhe um corpo com duas asas e deixe quatro linhas livres embaixo."
+        "text": "Agora desenhe o contorno da sua nave! Com o Espelho lado a lado ligado, faça um corpo com duas asas e deixe quatro linhas livres embaixo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-cores",
-      "plannedVideo": "Título: Pinte o corpo e a cabine\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Pinte o corpo e a cabine\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-cores",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Preencha a nave e desenhe uma cabine dentro do corpo."
+        "text": "Agora pinte o corpo e a cabine da sua nave! Preencha a nave com o Balde e desenhe uma cabine dentro do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-luz",
-      "plannedVideo": "Título: Mude o lado da luz\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da bola no pátio, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda \"lado do sol: claro · outro lado: escuro\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Mude o lado da luz\n\nRegravar nas ferramentas atuais. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da bola no quintal, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda \"lado do sol: claro · outro lado: escuro\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-luz",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora ligue A sombra e a luz e mude o lado do sol."
+        "text": "Sua vez! Ligue A sombra e a luz e mude o lado do sol. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -162,26 +162,26 @@
     },
     {
       "key": "video-volume",
-      "plannedVideo": "Título: Escolha um lado para a luz\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Escolha um lado para a luz\n\nRegravar nas ferramentas atuais. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-volume",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Acrescente um tom claro e um escuro sem mudar o formato da nave."
+        "text": "Agora dê luz e sombra à sua nave! Escolha um lado para a luz e pinte um tom claro desse lado e um escuro do outro. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte."
       }
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Entregue o desenho da nave\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie o desenho da nave\n\nRegravar nas ferramentas atuais. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nFala completa em meu-jeito-aula-02.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Envie a arte desta aula pela galeria do Pinta desta seção."
+        "text": "Hora de enviar a sua nave! Confira se a arte se chama nave e tem 32 por 32. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase."
       }
     },
     {
@@ -201,7 +201,7 @@
     {
       "key": "bordas",
       "title": "Aproxime duas formas de desenhar",
-      "objective": "Agora aproxime as duas pedras e compare as bordas.",
+      "objective": "Sua vez! Aproxime as duas pedras e compare as bordas. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-bordas", "fala-bordas", "experimento-bordas"],
       "workspaceKey": null,
@@ -215,7 +215,7 @@
     {
       "key": "nova-nave",
       "title": "Prepare a folha da nave",
-      "objective": "Crie uma arte de personagem em pixel art, tamanho Médio, chamada nave.",
+      "objective": "Agora prepare o desenho da sua nave! Crie uma arte de personagem em Pixel art, tamanho Médio, chamada nave. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-nova-nave", "fala-nova-nave"],
       "workspaceKey": null,
@@ -229,7 +229,7 @@
     {
       "key": "espelho",
       "title": "Descubra o que o espelho repete",
-      "objective": "Agora pinte com cada espelho e veja onde a cópia aparece.",
+      "objective": "Sua vez! Pinte com cada espelho e veja onde a cópia aparece. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-espelho", "fala-espelho", "experimento-espelho"],
       "workspaceKey": null,
@@ -243,7 +243,7 @@
     {
       "key": "contorno",
       "title": "Feche o contorno da nave",
-      "objective": "Desenhe um corpo com duas asas e deixe quatro linhas livres embaixo.",
+      "objective": "Agora desenhe o contorno da sua nave! Com o Espelho lado a lado ligado, faça um corpo com duas asas e deixe quatro linhas livres embaixo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-contorno", "fala-contorno"],
       "workspaceKey": null,
@@ -257,7 +257,7 @@
     {
       "key": "cores",
       "title": "Pinte o corpo e a cabine",
-      "objective": "Preencha a nave e desenhe uma cabine dentro do corpo.",
+      "objective": "Agora pinte o corpo e a cabine da sua nave! Preencha a nave com o Balde e desenhe uma cabine dentro do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-cores", "fala-cores"],
       "workspaceKey": null,
@@ -271,7 +271,7 @@
     {
       "key": "luz",
       "title": "Mude o lado da luz",
-      "objective": "Agora ligue A sombra e a luz e mude o lado do sol.",
+      "objective": "Sua vez! Ligue A sombra e a luz e mude o lado do sol. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-luz", "fala-luz", "experiencia-luz"],
       "workspaceKey": null,
@@ -285,7 +285,7 @@
     {
       "key": "volume",
       "title": "Escolha um lado para a luz",
-      "objective": "Acrescente um tom claro e um escuro sem mudar o formato da nave.",
+      "objective": "Agora dê luz e sombra à sua nave! Escolha um lado para a luz e pinte um tom claro desse lado e um escuro do outro. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
       "intent": "application",
       "blockKeys": ["video-volume", "fala-volume"],
       "workspaceKey": null,
@@ -298,8 +298,8 @@
     },
     {
       "key": "entrega",
-      "title": "Entregue o desenho da nave",
-      "objective": "Confira a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Envie a arte desta aula pela galeria do Pinta desta seção.",
+      "title": "Envie o desenho da nave",
+      "objective": "Hora de enviar a sua nave! Confira se a arte se chama nave e tem 32 por 32. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
       "intent": "delivery",
       "blockKeys": ["video-entrega", "fala-entrega", "entrega-galeria-v6"],
       "workspaceKey": null,

@@ -205,6 +205,8 @@ export function lerFormas(corpo: string): Forma[] {
       default:
         throw new Error(`Elemento não suportado na silhueta: <${tag}>`)
     }
+    // Formas fechadas também têm contorno quando fill="none" (por exemplo, o aro da chave).
+    if (contorno && linhas.length === 0) linhas = aneis.map((anel) => [...anel, anel[0] as Ponto])
     const aneisGirados = pinta ? aneis.map((a) => a.map(girar)) : []
     const trechos: Array<readonly [Ponto, Ponto]> = []
     if (contorno)

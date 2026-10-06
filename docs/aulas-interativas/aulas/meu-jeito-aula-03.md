@@ -24,7 +24,7 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 ### Seção 1. Compare dois desenhos e uma animação
 
-**Tarefa / Zappy na página:** Agora mude a Velocidade da Prévia e veja quando o fogo pulsa.
+**Tarefa / Zappy na página:** Sua vez! Mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-quadros → fala-quadros → experiencia-quadros.
 
@@ -32,51 +32,51 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 ### Seção 2. Desenhe o primeiro fogo
 
-**Tarefa / Zappy na página:** No primeiro quadro, desenhe uma chama pequena abaixo do motor.
+**Tarefa / Zappy na página:** Agora desenhe o primeiro fogo da sua nave! No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-primeiro-fogo → fala-primeiro-fogo.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
-### Seção 3. Use o quadro anterior como guia
+### Seção 3. Desenhe olhando o quadro anterior
 
-**Tarefa / Zappy na página:** Agora use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1.
+**Tarefa / Zappy na página:** Sua vez! Use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-fantasma → fala-fantasma → experiencia-fantasma.
 
-**Experiência existente:** `onion-skin`. Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro. Sem palpite, pistas ou pergunta final.
+**Experiência existente:** `onion-skin`. Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro. Sem palpite, pistas ou pergunta final.
 
 ### Seção 4. Mude só o fogo no segundo quadro
 
-**Tarefa / Zappy na página:** Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar.
+**Tarefa / Zappy na página:** Agora mude só o fogo no segundo quadro! Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-segundo-fogo → fala-segundo-fogo.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 5. Dê nome e ritmo à animação
 
-**Tarefa / Zappy na página:** Nomeie a animação voando e confira os dois quadros a 8 por segundo.
+**Tarefa / Zappy na página:** Agora dê nome e ritmo à animação! Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-voando → fala-voando.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 6. Confira sua nave animada
 
-**Tarefa / Zappy na página:** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.
+**Tarefa / Zappy na página:** Agora vamos relembrar o que você fez na sua nave, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
 **Quiz formativo:** somente Zappy → quiz, sem vídeo ou ferramenta. Todas corretas, explicação após responder e tentativas ilimitadas, sem espera.
 
-### Seção 7. Entregue a nave animada
+### Seção 7. Envie a nave animada
 
-**Tarefa / Zappy na página:** Confira nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Envie a arte desta aula pela galeria do Pinta desta seção.
+**Tarefa / Zappy na página:** Hora de enviar a sua nave animada! Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
 
 ## Continuidade e produção
 

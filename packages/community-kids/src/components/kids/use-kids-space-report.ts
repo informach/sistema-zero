@@ -32,7 +32,7 @@ export function useKidsSpaceReport() {
       await apiSend(`/api/hub/${target.target}/${encodeURIComponent(target.id)}/report`, 'POST', {
         reason: trimmedReason,
       })
-      toast.success('Avisamos um professor. Obrigado! 💙')
+      toast.success('Avisamos a equipe. Obrigado! 💙')
       setTarget(null)
     } catch (error) {
       toast.error((error as ApiError).message ?? 'Não consegui avisar.')

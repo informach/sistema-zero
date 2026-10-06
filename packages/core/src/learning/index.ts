@@ -719,7 +719,7 @@ export function evaluateLearning(
     return {
       passed: false,
       participated: false,
-      feedback: 'Atividade inválida.',
+      feedback: 'Não foi possível conferir esta resposta.',
       verifiedBy: 'server',
     }
 
@@ -938,6 +938,8 @@ export interface LearningManifest {
           | {
               kind: 'certificate'
               baseImageUrl?: string
+              /** Título do PDF sem imagem base (no Kids, "Certificado de Criador"). */
+              title?: string
               introLine?: string
               coursePhrase?: string
               bodyText?: string
@@ -1027,6 +1029,7 @@ function isManifestContent(content: unknown): boolean {
     )
   if (content.kind === 'certificate')
     return (
+      (content.title === undefined || text(content.title, 200)) &&
       (content.introLine === undefined || text(content.introLine, 200)) &&
       (content.coursePhrase === undefined || text(content.coursePhrase, 300)) &&
       (content.bodyText === undefined || text(content.bodyText, 2000))

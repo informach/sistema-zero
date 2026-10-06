@@ -24,97 +24,97 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 ### Seção 1. Compare guardar, mudar e mostrar
 
-**Tarefa:** Mude a memória com o placar desligado e depois acompanhe os dois juntos.
+**Tarefa:** Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-guardar-mudar-mostrar → fala-guardar-mudar-mostrar → experiencia-variavel.
 
-**Zappy na página (não gravar):** Mude a memória com o placar desligado e depois acompanhe os dois juntos.
+**Zappy na página (não gravar):** Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `variable`. Na experiência, coloque o número guardado em 1 e depois em 0. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado. Ligue Mostrar placar. Compare o que aparece na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Prepare os pontos em zero
 
-**Tarefa:** Crie pontos com valor 0 em Ao iniciar.
+**Tarefa:** Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-caixinha-dos-pontos → fala-caixinha-dos-pontos.
 
-**Zappy na página (não gravar):** Crie pontos com valor 0 em Ao iniciar.
+**Zappy na página (não gravar):** Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No Ao iniciar, crie a variável pontos com valor 0.
 
 ### Seção 3. Mostre o número guardado
 
-**Tarefa:** Mostre Pontos: lendo a variável pontos somente dentro de jogando.
+**Tarefa:** Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-numero-na-tela → fala-numero-na-tela.
 
-**Zappy na página (não gravar):** Mostre Pontos: lendo a variável pontos somente dentro de jogando.
+**Zappy na página (não gravar):** Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.
 
 ### Seção 4. Compare quando somar os pontos
 
-**Tarefa:** Compare o ritmo da soma e depois os estados início, jogando e fim.
+**Tarefa:** Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-quando-o-placar-cresce → fala-quando-o-placar-cresce → experiencia-score.
 
-**Zappy na página (não gravar):** Compare o ritmo da soma e depois os estados início, jogando e fim.
+**Zappy na página (não gravar):** Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `score`. Na experiência, coloque Somar ponto em A cada quadro do jogo e deixe Tempo passar um segundo. Observe o placar. Deixe Somar ponto solto, fora do relógio e da condição. Na tela de início, deixe passar mais um segundo e observe. Leve Somar ponto para dentro de o estado do jogo é jogando ?, no relógio de um segundo. Ainda no início, deixe Tempo passar. Clique em Próxima tela até Jogando e observe os pontos crescerem. Depois clique em Próxima tela até Fim e deixe passar mais tempo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 5. Some um ponto por segundo de partida
 
-**Tarefa:** Some 1 em pontos dentro de um relógio próprio protegido por Se jogando.
+**Tarefa:** Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-relogio-dos-pontos → fala-relogio-dos-pontos.
 
-**Zappy na página (não gravar):** Some 1 em pontos dentro de um relógio próprio protegido por Se jogando.
+**Zappy na página (não gravar):** Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.
 - Use um único Somar em variável pontos no projeto inteiro.
 
 ### Seção 6. Mostre os pontos na tela de fim
 
-**Tarefa:** Monte a frase com texto, valor de pontos e texto no subtítulo final.
+**Tarefa:** Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-frase-da-tela-de-fim → fala-frase-da-tela-de-fim.
 
-**Zappy na página (não gravar):** Monte a frase com texto, valor de pontos e texto no subtítulo final.
+**Zappy na página (não gravar):** Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
-- No subtítulo do andar de fim, junte texto, o valor de pontos e texto, nessa ordem.
+- No subtítulo da tela de fim, junte texto, o valor de pontos e texto, nessa ordem.
 
 ### Seção 7. Confira o que você construiu
 
-**Tarefa:** Retome a memória e o placar nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Tarefa:** Hora de lembrar o que você construiu! As perguntas falam da variável pontos e do placar. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
-**Zappy na página (não gravar):** Retome a memória e o placar nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Zappy na página (não gravar):** Hora de lembrar o que você construiu! As perguntas falam da variável pontos e do placar. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 8. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - No Ao iniciar, crie a variável pontos com valor 0.
 - Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.
 - Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.
-- No subtítulo do andar de fim, junte texto, o valor de pontos e texto, nessa ordem.
+- No subtítulo da tela de fim, junte texto, o valor de pontos e texto, nessa ordem.
 - Use um único Somar em variável pontos no projeto inteiro.
 
 ## Blocos disponíveis

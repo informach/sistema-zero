@@ -15,6 +15,20 @@ STUDIO = Path(__file__).resolve().parents[1]
 ART = STUDIO / "src/arte"
 SOURCE = ART / "assets/farol"
 FILES = {
+    "praia-tropical": "praia-tropical.svg", "costa-rochosa": "costa-rochosa.svg",
+    "ilha-nevada": "ilha-nevada.svg", "noite-na-ilha": "noite-na-ilha.svg",
+    "aventureiro": "player-farol.svg", "menina-de-laco": "menina-farol.svg",
+    "marinheira": "marinheira-farol.svg", "menino-de-bone": "menino-farol.svg",
+    "exploradora-de-chapeu": "exploradora-farol.svg", "pirata": "pirata-farol.svg",
+    "mergulhador": "mergulhador-farol.svg", "robo": "robo-farol.svg",
+    "veleiro": "veleiro.svg", "barco-de-pesca": "barco-de-pesca.svg",
+    "lancha": "lancha.svg", "barco-pirata": "barco-pirata.svg",
+    "chave-dourada": "chave-farol.svg", "chave-prateada": "chave-prateada.svg",
+    "chave-de-estrela": "chave-de-estrela.svg",
+    **{f"farol-{modelo.replace(' ', '-')}-{estado}": f"farol-{modelo.replace(' ', '-')}-{estado}.svg"
+       for modelo in ("listrado", "de pedra", "de madeira", "colorido")
+       for estado in ("apagado", "aceso")},
+    # IDs antigos continuam disponíveis para cenas e projetos já salvos.
     "cenario": "cenario-farol-limpo.svg", "personagem": "player-farol.svg",
     "menina": "menina-farol.svg", "marinheira": "marinheira-farol.svg",
     "menino": "menino-farol.svg", "exploradora": "exploradora-farol.svg",
@@ -22,7 +36,14 @@ FILES = {
     "farol-aceso": "farol-aceso.svg", "barco": "barco-farol.svg",
 }
 # A criança troca a imagem do MESMO sprite entre estes: caixa 64 x 64 e só formas deste conversor.
-PERSONAGENS = ("personagem", "menina", "marinheira", "menino", "exploradora")
+PERSONAGENS = ("aventureiro", "menina-de-laco", "marinheira", "menino-de-bone",
+              "exploradora-de-chapeu", "pirata", "mergulhador", "robo",
+              "personagem", "menina", "menino", "exploradora")
+CAIXAS = {**{nome: (64, 64) for nome in PERSONAGENS},
+          **{nome: (480, 360) for nome in ("praia-tropical", "costa-rochosa", "ilha-nevada", "noite-na-ilha")},
+          **{nome: (88, 88) for nome in ("veleiro", "barco-de-pesca", "lancha", "barco-pirata")},
+          **{nome: (32, 32) for nome in ("chave-dourada", "chave-prateada", "chave-de-estrela")},
+          **{nome: (152, 152) for nome in FILES if nome.startswith("farol-") and nome not in ("farol-apagado", "farol-aceso")}}
 HEADER = "// Gerado por scripts/gen-farol-assets.py a partir de arte/assets/farol. Não editar.\n"
 
 
@@ -106,10 +127,11 @@ def main():
     for name, filename in FILES.items():
         svg = (SOURCE / filename).read_text(encoding="utf-8").strip()
         root = ET.fromstring(svg)
-        if name in PERSONAGENS:
+        if name in CAIXAS:
+            w, h = CAIXAS[name]
             caixa = tuple(root.attrib.get(k) for k in ("width", "height", "viewBox"))
-            if caixa != ("64", "64", "0 0 64 64"):
-                raise ValueError(f"{filename}: personagem precisa da caixa 64 x 64, veio {caixa}")
+            if caixa != (str(w), str(h), f"0 0 {w} {h}"):
+                raise ValueError(f"{filename}: precisa da caixa {w} x {h}, veio {caixa}")
             for element in root:
                 shape(element)
         body = svg[svg.index(">") + 1:svg.rindex("</svg>")]

@@ -30,8 +30,8 @@ export function KidsJourneyLockedProduct({
     >
       <p>{intro}</p>
       <p className="text-[0.9375rem]">
-        Ele abre quando você chegar no nível <strong>{level.label}</strong>. Continue nos cursos e
-        publicando os seus projetos. No mapa você pode ver suas próximas conquistas.
+        Ele abre quando você chegar no nível <strong>{level.label}</strong>. Continue as suas
+        aventuras e publique os seus projetos. No mapa você pode ver suas próximas conquistas.
       </p>
     </KidsRecado>
   )

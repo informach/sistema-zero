@@ -193,7 +193,7 @@ describe('ZappyPanel', () => {
       }),
     )
 
-    fireEvent.click(await view.findByText('Aula: Criando movimentos ↗'))
+    fireEvent.click(await view.findByText('Fase: Criando movimentos ↗'))
 
     expect(opened).toEqual([reference])
   })
@@ -643,7 +643,7 @@ describe('ZappyPanel', () => {
   it('aviso de limite não é aula: sem polegares e com cara de recado', async () => {
     const quota = {
       id: '4fa0e474-1f0d-4a52-9a6a-3f2b8c85e0aa',
-      text: 'Por hoje a gente já estudou bastante! Amanhã tem mais ✨',
+      text: 'Por hoje a gente já conversou bastante! Amanhã tem mais ✨',
       scope: 'quota' as const,
       blockReferences: [],
       createdAt: new Date().toISOString(),

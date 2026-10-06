@@ -2,7 +2,7 @@
 
 ## Resumo
 
-- Estado de entrada: o jogo já tem movimento, coleta e decisão; a publicação foi ensinada.
+- Estado de entrada: o jogo já tem movimento, coleta e decisão; a personalização de visuais, avisos e posição da chave e a publicação foram ensinadas.
 - Vitória: reconhecer a autoria e guardar o certificado.
 - Seções na entrada deste review: 2 · Seções finais: 2.
 - Clipes na entrada deste review: 1 · Clipes finais: 1.
@@ -13,6 +13,8 @@
 | --- | --- | --- | --- | --- | --- |
 | Reconhecer a autoria | Não | Nas regras construídas | Nomear movimento, coleta e decisão | Abertura | Celebrar sem atribuir a arte preparada à criança |
 | Guardar a conquista | Interface | Na emissão | Pegar meu certificado e concluir | Após a celebração | Dar um encerramento claro |
+
+As escolhas de personalização são livres: não acrescentar pergunta que cobre um desenho, frase ou lugar escolhido. A criança escolheu entre artes preparadas; não atribuir a ela o desenho dos personagens ou dos cenários.
 
 A revisão final tem quatro perguntas em seção própria, antes da celebração. A seção de celebração não recebe quiz nem conteúdo comercial.
 
@@ -32,7 +34,7 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar m
 - **Blocos, nesta ordem:** `fala-revisao-final` (Zappy), `quiz-revisao-final` (quiz). Sem vídeo, ferramenta ou texto adicional.
 - **Conteúdo:** [perguntas, alternativas e explicações](../proposta-quizzes-cursos-curtos-2026-10-03.md).
 
-**Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora responda quatro perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
+**Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora vamos relembrar essas regras com quatro perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
 ### Seção 2. Comemore sua criação
 
@@ -41,9 +43,11 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar m
 - **Conclui quando:** vídeo e certificado emitido.
 - **Blocos:** `video-certificado-farol`, `fala-certificado`, bloco existente `certificado`.
 
-**Ponte do Zappy na página (não gravar):** Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o movimento, a coleta da chave e a decisão do farol. Agora clique em Pegar meu certificado para guardar essa conquista e, depois, em Concluir fase.
 
-Nomear o que a criança programou; orientar **Pegar meu certificado** e **Concluir aula**. Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
+Nomear o que a criança programou; orientar **Pegar meu certificado** e **Concluir fase**. Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
+
+Vocabulário da aventura (06/10/2026): o PDF sem imagem base tem o título **Certificado de Criador**, e a frase passou de "concluiu o Desafio do Primeiro Jogo" para "completou o Desafio do Primeiro Jogo".
 
 A nova pergunta apresenta uma chave que sumiu com aviso, enquanto a porta, que consulta temChave corretamente, ainda diz que falta a chave. A criança escolhe conferir a atribuição de verdadeiro na coleta; a explicação distingue retirada, aviso e memória. Não antecipar esse gabarito no caderno.
 
@@ -55,7 +59,7 @@ Não há experimento. O vídeo mostra brevemente os três grupos de regras e a a
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-certificado-farol` | Autoria, emissão e saída | Roteiro atual | 20 a 30 s | Gravar |
+| `video-certificado-farol` | Autoria, emissão e saída | Roteiro atual | 25 a 35 s | Gravar |
 
 ## Continuidade
 

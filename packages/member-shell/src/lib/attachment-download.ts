@@ -1,3 +1,5 @@
+import { CODIGO_SEM_ENVELOPE } from './api'
+
 /**
  * Baixar um anexo da aula NA MESMA página.
  *
@@ -23,7 +25,7 @@ export function lessonAttachmentUrl(
 
 export type AttachmentDownloadResult =
   | { ok: true }
-  | { ok: false; reason: 'refused'; message: string }
+  | { ok: false; reason: 'refused'; code: string; message: string }
   | { ok: false; reason: 'opened-tab' }
 
 export async function downloadLessonAttachment(
@@ -33,10 +35,14 @@ export async function downloadLessonAttachment(
   try {
     const res = await fetch(url)
     if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as { error?: { message?: string } } | null
+      const body = (await res.json().catch(() => null)) as {
+        error?: { code?: string; message?: string }
+      } | null
+      // O `code` vai junto: é por ele que o `erroDoServidor` sabe que a frase é do servidor.
       return {
         ok: false,
         reason: 'refused',
+        code: body?.error?.code ?? CODIGO_SEM_ENVELOPE,
         message: body?.error?.message ?? 'Não foi possível baixar o material.',
       }
     }

@@ -402,7 +402,7 @@ export function PerfisClient({
       <div className="flex flex-col items-center gap-3 text-center">
         <KidsMascot expression="happy" className="size-20" />
         <h1 className="sz-display text-3xl text-foreground sm:text-4xl">
-          {managing ? 'Gerenciar perfis' : 'Quem vai aprender hoje?'}
+          {managing ? 'Gerenciar perfis' : 'Quem vai criar hoje?'}
         </h1>
       </div>
 
@@ -428,8 +428,8 @@ export function PerfisClient({
                 mobileFloating
                 descriptionId="parent-profile-tile-guide"
               >
-                Tudo pronto! Quando <strong>{p.name}</strong> for estudar, é só tocar nesta bolinha.
-                😉
+                Tudo pronto! Quando <strong>{p.name}</strong> quiser entrar, é só tocar nesta
+                bolinha. 😉
               </GuideBalloon>
             ) : null}
           </GuideTargetItem>
@@ -585,7 +585,7 @@ export function PerfisClient({
         title="Que bom ter você aqui!"
         description={
           profiles.length === 0
-            ? 'Em três passos a criança já começa a estudar:'
+            ? 'Em três passos a criança já começa a criar:'
             : 'Veja como escolher e acompanhar as crianças:'
         }
         steps={welcomeSteps}

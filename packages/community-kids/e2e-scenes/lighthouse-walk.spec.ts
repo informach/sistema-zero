@@ -1,10 +1,10 @@
 import { expect, type Page, test } from '@playwright/test'
 
 /**
- * O andar do personagem do Farol (`lighthouse-walk`, Dia 1 do Desafio, 05/10/2026), nos três usos do
+ * O andar do personagem do Farol (`lighthouse-walk`, Dia 1 do Desafio), nos dois usos do
  * manifesto. A régua é o navegador de verdade: os controles de cada caso com os nomes que os roteiros
  * citam, o "Rodar" que para SOZINHO (o relógio do player com `sceneClockShouldStop`), e o palco e a
- * bancada inteiros à vista, sem rolagem de lado no celular.
+ * bancada inteiros à vista, sem rolagem de lado no celular. A comparação de velocidade saiu do curso.
  */
 const abrir = async (page: Page, bloco: string) => {
   await page.goto(`/?course=farol&block=${bloco}&width=680`)
@@ -57,7 +57,7 @@ test('o limite: sem ele o Rodar leva o personagem para fora e para sozinho; com 
 /**
  * ⚠️ No celular os rótulos longos QUEBRAM linha (`.sz-scene-quebra`, scene.css): "Segurar a seta para a
  * direita: desligado" tem 273px numa linha só e passava da bancada a 390 e 360; a 320 a página rolava de
- * lado. A régua mede a caixa de CADA controle contra a caixa do console, nos três usos e nas três
+ * lado. A régua mede a caixa de CADA controle contra a caixa do console, nas duas experiências e nas três
  * larguras, e confere que a página não rola de lado.
  */
 for (const largura of [320, 360, 390]) {
@@ -65,13 +65,8 @@ for (const largura of [320, 360, 390]) {
     page,
   }) => {
     await page.setViewportSize({ width: largura, height: 844 })
-    for (const bloco of ['experiencia-quadro', 'experiencia-velocidade', 'experiencia-limite']) {
+    for (const bloco of ['experiencia-quadro', 'experiencia-limite']) {
       await abrir(page, bloco)
-      if (bloco === 'experiencia-velocidade')
-        await expect(page.getByRole('button', { name: /^Velocidade 3$/ })).toHaveAttribute(
-          'aria-current',
-          'true',
-        )
       const medida = await page.evaluate(() => {
         const caixa = document.querySelector('.sz-scene-console')?.getBoundingClientRect()
         const controles = [...document.querySelectorAll('.sz-scene-prancha button')].map((b) => {

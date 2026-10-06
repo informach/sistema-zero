@@ -8,6 +8,43 @@ WORD = re.compile(r"[\wÀ-ÿ]+(?:['’][\wÀ-ÿ]+)?", re.UNICODE)
 CLIP = re.compile(r'^### (?:Clipe|Vídeo) `([^`]+)`', re.MULTILINE)
 SECTION = re.compile(r'^## Seção (\d+)\. (.+)$', re.MULTILINE)
 SINGLE_VIDEO_SECTION = re.compile(r'^## (?:\d+\. )?(.+?)(?: — .+)?$', re.MULTILINE)
+# Vocabulário da aventura (Diretrizes, seção 6, 06/10/2026): a criança não ouve palavras da escola.
+# Por dentro, curso, aula, seção, caderno e professor continuam; na fala, aventura, fase, parte,
+# Mapa da Aventura e equipe. A lista é a MESMA dos manifestos e do Como Fazer: este validador lê o
+# literal de `PALAVRAS_DA_ESCOLA` em qa/palavras-da-escola.ts, para as duas réguas não divergirem.
+def regua_da_escola():
+    fonte = (Path(__file__).resolve().parent / 'qa' / 'palavras-da-escola.ts').read_text(encoding='utf-8')
+    # O biome pode quebrar a linha depois do "=", mas o literal fica inteiro numa linha só.
+    literal = re.search(r'^export const PALAVRAS_DA_ESCOLA =\s*/(.+)/i$', fonte, re.MULTILINE)
+    if not literal:
+        raise SystemExit('ERRO: PALAVRAS_DA_ESCOLA não encontrada em qa/palavras-da-escola.ts')
+    return re.compile(literal.group(1), re.IGNORECASE)
+
+
+ESCOLA = regua_da_escola()
+
+
+RÓTULO_DE_FALA = re.compile(r'^\*\*(?:Narração|Zappy abaixo do vídeo|Zappy na página \(não gravar\)):\*\*(.*)$')
+
+
+def falas_cade(body):
+    """Narração e Zappy de um roteiro do Cadê, que usa aspas curvas e blocos sem cabeçalho de clipe.
+
+    A citação da narração vem depois de uma linha em branco; a fala acaba na primeira linha
+    que não é citação nem branca (a próxima nota, como "**Na tela:**").
+    """
+    partes = []
+    dentro = False
+    for linha in body.splitlines():
+        rotulo = RÓTULO_DE_FALA.match(linha)
+        if rotulo:
+            dentro = True
+            partes.append(rotulo.group(1))
+        elif dentro and (linha.startswith('>') or not linha.strip()):
+            partes.append(linha.lstrip('> '))
+        else:
+            dentro = False
+    return ' '.join(partes)
 
 def audit(manifest_path):
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
@@ -34,6 +71,11 @@ def audit(manifest_path):
                 continue
             if '**Na tela:**' not in body or '> “' not in body:
                 errors.append(f'{script_path.name}/seção {index + 1}: direção de tela ou fala ausente')
+        for index, heading in enumerate(headings):
+            body = script[heading.end():headings[index + 1].start() if index + 1 < len(headings) else len(script)]
+            escola = ESCOLA.search(falas_cade(body))
+            if escola:
+                errors.append(f'{script_path.name}/seção {index + 1}: palavra da escola na fala: {escola.group(0)}')
         return errors, (script_path.name, len(expected), len(expected), [])
     found = CLIP.findall(script)
     errors = []
@@ -94,6 +136,9 @@ def audit(manifest_path):
                 continue
             if re.search(bad, spoken, re.IGNORECASE):
                 errors.append(f'{script_path.name}/{key}: fala proibida: {bad}')
+        escola = ESCOLA.search(spoken)
+        if escola:
+            errors.append(f'{script_path.name}/{key}: palavra da escola na fala: {escola.group(0)}')
     if '—' in script:
         errors.append(f'{script_path.name}: travessão')
     for section in manifest['sections']:

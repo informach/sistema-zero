@@ -16,7 +16,7 @@ A paleta tem ${paletteCount} famílias, nesta ordem: ` +
     GAME_TWO_D_PALETTE.map((family) => family.name).join('; ') +
     `.
 Dentro de cada família, as subseções aproximam as ações relacionadas. A busca também
-reconhece nomes usados nos cursos anteriores. “Blocos deste jogo” conserva as ferramentas
+reconhece os nomes antigos dos blocos. “Blocos deste jogo” conserva as ferramentas
 necessárias para modificar o projeto, mesmo depois de apagar o último bloco de um tipo.
 
 ### Contato, recarga e destruição
@@ -672,7 +672,7 @@ furioso, mas sua raiz normal continua no **Ao iniciar**, depois da folha.
 - **O tipo de inimigo … também é …**. Aqui mora a graça: um inimigo pode ter VÁRIOS
   comportamentos ao mesmo tempo. Patrulha mais atirador anda E atira. Voador mais bombardeiro
   passa por cima soltando tiros. Empilhe quantos quiser, e pode somar no meio do jogo para o
-  inimigo ficar mais difícil na próxima onda ou etapa de dificuldade.
+  inimigo ficar mais difícil na próxima onda.
 
   A regra é simples: os jeitos de se mexer não se somam, então se você juntar dois vale o último
   que somou; já as ações se juntam todas. ⚠️ Isso vale também em cima da inteligência: somar um

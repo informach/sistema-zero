@@ -30,7 +30,7 @@ const MUTED = rgb(0.42, 0.45, 0.5)
  * bordas). Ajuste fino aqui se o conteúdo bater na arte de um curso específico.
  */
 const OVERLAY = {
-  introY: 0.405, // "Certificamos que o aluno"
+  introY: 0.405, // "Certificamos que"
   nameY: 0.475, // nome do aluno (grande)
   phraseY: 0.55, // frase curta do curso
   bodyTopY: 0.6, // 1ª linha do parágrafo
@@ -317,8 +317,9 @@ async function drawOverlayLayout(
     page.drawText(text, { x: cx - w / 2, y: yTop(frac), size, font, color })
   }
 
-  // 1) Linha de abertura.
-  center((config.introLine || 'Certificamos que o aluno').trim(), helv, 13, OVERLAY.introY, MUTED)
+  // 1) Linha de abertura. Sem "o aluno": o certificado é de meninos e meninas (e no Kids ninguém
+  // é aluno, 06/10/2026).
+  center((config.introLine || 'Certificamos que').trim(), helv, 13, OVERLAY.introY, MUTED)
 
   // 2) Nome do aluno (dinâmico — snapshot da emissão: perfil no kids, conta no adulto).
   const name = certificate.studentName
@@ -457,14 +458,28 @@ async function drawBrandedLayout(
   center((config.introLine || 'Certificamos que').trim(), helv, 14, 412, MUTED)
   const name = certificate.studentName
   center(name, serif, fitSize(serif, name, 40, innerW), 358, INK)
-  center('concluiu com êxito o curso', helv, 14, 318, MUTED)
-  const courseTitle = certificate.courseTitle
-  center(courseTitle, helvBold, fitSize(helvBold, courseTitle, 24, innerW), 284, INK)
+  // ⚠️ A frase do curso JÁ diz o que foi concluído ("completou a aventura Cadê Todo Mundo?"). Até
+  // 06/10/2026 ela vinha DEPOIS da linha genérica e do título, e o PDF dizia "concluiu" duas vezes
+  // ("concluiu com êxito o curso / Cadê Todo Mundo? / concluiu Cadê Todo Mundo?"). Com frase, ela
+  // ocupa o lugar dos dois; sem frase, vale a linha genérica com o título.
+  const phrase = config.coursePhrase?.trim()
+  if (phrase) {
+    center(phrase, helvBold, fitSize(helvBold, phrase, 20, innerW), 300, INK)
+  } else {
+    center('concluiu com êxito', helv, 14, 318, MUTED)
+    const courseTitle = certificate.courseTitle
+    center(courseTitle, helvBold, fitSize(helvBold, courseTitle, 24, innerW), 284, INK)
+  }
 
-  const body = config.coursePhrase?.trim() || config.message?.trim()
+  // O parágrafo do que a pessoa fez (`bodyText`) também só existia no layout com imagem base; o
+  // `message` é o legado. Até três linhas, acima da área das assinaturas.
+  const body = config.bodyText?.trim() || config.message?.trim()
   if (body) {
-    const msg = body.slice(0, 160)
-    center(msg, helv, fitSize(helv, msg, 12, innerW), 250, MUTED)
+    wrapText(helv, body.slice(0, 400), 12, innerW)
+      .slice(0, 3)
+      .forEach((line, i) => {
+        center(line, helv, 12, 250 - i * 16, MUTED)
+      })
   }
 
   const leftX = 90

@@ -1,5 +1,6 @@
 import {
   isSceneAction,
+  LIGHTHOUSE_POSITION,
   type MeshLevel,
   SCENE_LIMITS,
   type SceneAction,
@@ -145,6 +146,23 @@ export function openScene(start: SceneStart): SceneState {
 }
 
 /**
+ * Onde a chave da `lighthouse-position` ABRE: o começo do jogo com as ações do caso por cima.
+ *
+ * ⚠️ É o mesmo que `openScene(start).keyPosition`, sem rodar o motor: o "Recomeçar" é uma ação do
+ * próprio motor, e um caso que o contivesse faria `openScene` chamar a si mesmo. Só estas duas ações
+ * mexem na chave, então repassá-las basta.
+ */
+function aberturaDaChave(start: SceneStart): { x: number; y: number } {
+  const lugar: { x: number; y: number } = { ...LIGHTHOUSE_POSITION.start }
+  for (const acao of start.setup?.actions ?? []) {
+    if (!isSceneAction(acao, start.scene)) continue
+    if (acao.type === 'key-position') lugar[acao.axis] = acao.value
+    else if (acao.type === 'restart-key-position') Object.assign(lugar, LIGHTHOUSE_POSITION.start)
+  }
+  return lugar
+}
+
+/**
  * Apaga a MEMÓRIA DO GESTO que as ações do caso deixaram para trás.
  *
  * ⚠️⚠️ Zerar a evidência não bastava. Vários grupos guardam "o que já foi feito" — o fantasma da
@@ -159,6 +177,7 @@ export function openScene(start: SceneStart): SceneState {
 function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): void {
   aberto.collection.collectedThisRound = false
   aberto.lighthouse.checkedKey = null
+  aberto.keyPosition.before = null
   // ⚠️ O andar do Farol: o caso escolhe só a velocidade e o limite (a seta e ONDE o personagem está
   // são sempre os de fábrica, ver `isSceneSetup`); os quadros que passaram, o rastro e a espera do
   // Rodar são história, e ela começa vazia.
@@ -398,6 +417,38 @@ export function stepScene(
   const scene = start.scene
 
   switch (action.type) {
+    case 'key-position': {
+      const { axis, value } = action
+      const before = s.keyPosition[axis]
+      if (before === value) break
+      s.keyPosition.before = { x: s.keyPosition.x, y: s.keyPosition.y }
+      s.keyPosition[axis] = value
+      const horizontal = axis === 'x'
+      const direction = horizontal
+        ? value > before
+          ? 'a direita'
+          : 'a esquerda'
+        : value > before
+          ? 'baixo'
+          : 'cima'
+      const other = horizontal ? 'y' : 'x'
+      s.caption = `A chave foi para ${direction}. ${axis} mudou de ${before} para ${value}; ${other} continuou ${s.keyPosition[other]}.`
+      observe(
+        s,
+        horizontal ? 'mover-horizontal' : 'mover-vertical',
+        horizontal
+          ? 'Só o x mudou: a chave foi para o lado'
+          : 'Só o y mudou: a chave subiu ou desceu',
+      )
+      break
+    }
+    case 'restart-key-position': {
+      // Volta para onde a cena ABRIU (o caso do professor), como o `reset`; sem caso, 211/53.
+      const { x, y } = aberturaDaChave(start)
+      s.keyPosition = { x, y, before: null }
+      s.caption = `A chave voltou ao começo: x ${x}, y ${y}.`
+      break
+    }
     case 'remember-collection':
       s.collection.remember = action.enabled
       s.caption = action.enabled
@@ -589,8 +640,8 @@ export function stepScene(
       break
     case 'export-file':
       s.copies.fileColor = s.copies.lessonColor
-      observe(s, 'exported', 'O arquivo saiu, e o jogo continuou na aula')
-      s.caption = 'O arquivo levou uma cópia. O jogo ainda está na aula.'
+      observe(s, 'exported', 'O arquivo saiu, e o jogo continuou na fase')
+      s.caption = 'O arquivo levou uma cópia. O jogo ainda está na fase.'
       break
     case 'import-file':
       if (s.copies.fileColor === null) return previous

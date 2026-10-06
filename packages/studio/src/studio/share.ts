@@ -86,7 +86,7 @@ export interface StudioShareAdapter {
   presetDescription?: string
   /**
    * URL da capa PADRÃO configurada pelo admin (vitrine da aula). Quando presente,
-   * o ShareDialog oferece "usar a capa do curso" como fallback do print e a usa no
+   * o ShareDialog oferece "usar a capa da aventura" como fallback do print e a usa no
    * preview. O HOST re-resolve a URL no servidor ao publicar (não confia no cliente).
    */
   presetCoverUrl?: string

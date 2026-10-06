@@ -217,8 +217,8 @@ export function JourneyTimeline({
                   </span>
                 </p>
                 <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
-                  {formatLevelNames(beyond)}. Eles aparecem no seu mapa quando os cursos ficarem
-                  prontos!
+                  {formatLevelNames(beyond)}. Eles aparecem no seu mapa quando as aventuras ficarem
+                  prontas!
                 </p>
               </div>
             </li>

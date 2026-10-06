@@ -196,7 +196,7 @@ export function ChannelsPanel({
         })}
       </ul>
       <p className="mt-4 flex items-center gap-2.5 rounded-[0.75rem] bg-(--band-menta) px-4 py-3 font-bold text-[0.8125rem]">
-        <ShieldCheck className="size-5 shrink-0" aria-hidden />O professor acompanha todas as
+        <ShieldCheck className="size-5 shrink-0" aria-hidden />A equipe acompanha todas as
         conversas.
       </p>
     </nav>

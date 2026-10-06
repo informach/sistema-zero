@@ -23,35 +23,35 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 ### Seção 1. Desenhe a tela de início
 
-**Tarefa:** Mostre a abertura no senão se inicio, com título e convite para começar.
+**Tarefa:** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-menu → fala-menu.
 
-**Zappy na página (não gravar):** Mostre a abertura no senão se inicio, com título e convite para começar.
+**Zappy na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.
 
 ### Seção 2. Compare tecla e toque para começar
 
-**Tarefa:** Teste toque e Enter antes e depois de mudar o lugar da peça Começar.
+**Tarefa:** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-convite → fala-convite → experiencia-convite.
 
-**Zappy na página (não gravar):** Teste toque e Enter antes e depois de mudar o lugar da peça Começar.
+**Zappy na página (não gravar):** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `controls`. Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 3. Ligue a entrada ao início da partida
 
-**Tarefa:** Comece a partida somente quando uma tecla ou toque encontrar o estado inicio.
+**Tarefa:** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-entrada-ampla → fala-entrada-ampla.
 
-**Zappy na página (não gravar):** Comece a partida somente quando uma tecla ou toque encontrar o estado inicio.
+**Zappy na página (não gravar):** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Qualquer tecla ou toque começa a partida somente quando o estado do jogo é inicio.
 - Use a entrada de qualquer tecla ou toque, sem um evento separado só para Enter.
@@ -59,13 +59,13 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Comece a partida por tecla e por toque, desde a abertura, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - No Ao iniciar, o jogo continua abrindo com Mudar o estado do jogo para inicio.
 - No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.

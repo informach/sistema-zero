@@ -97,7 +97,7 @@ export function SettingsDrawer({
     >
       <div
         role="tablist"
-        aria-label="Seções das configurações"
+        aria-label="Grupos de configurações"
         className="mb-3 flex gap-2 border-b border-sz-border-soft"
       >
         {(showAITab ? (['ai', 'appearance'] as const) : (['appearance'] as const)).map((s) => {

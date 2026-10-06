@@ -8,28 +8,30 @@ Entrada: Corrida completa com colisão ajustada, ainda sem placar. Saída: Vari�
 
 Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "agora que", "ou seja"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não serve de palavra de ligação. A montagem que aplica uma experiência começa pela retomada no próprio jogo, e a ponte do Zappy convida e termina na ação de saída (Diretrizes, seção 6, revisão de 06/10/2026).
+
 ## Seção 1. Compare guardar, mudar e mostrar
 
 ### Clipe `video-guardar-mudar-mostrar` · Compare guardar, mudar e mostrar
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy abrindo um caderno em que está escrito pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy abrindo um bloquinho em que está escrito pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender a variável: um lugar que guarda um número, que pode mudar e aparecer na tela.
 >
 > Olha aqui: quando eu coloco o número guardado em pontos em 1, a caixa pontos é criada e guarda 1. Depois eu coloco 0, e ela passa a guardar 0.
 >
-> Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. A caixa vai de 0 para 1 e depois para 2, mas a tela não mostra nenhum número. O jogo mudou o valor sem desenhar nada.
+> Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. A caixa vai de 0 para 1 e depois para 2, e os cactos da tela vão sendo atingidos, mas nenhum número aparece. O jogo mudou o valor sem desenhar o placar.
 >
 > Quando eu ligo Mostrar placar, a tela mostra 2, o mesmo número da caixa. Eu clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Mostrar só lê o que está guardado.
 >
-> É como anotar os pontos num caderno: a conta fica guardada mesmo com o caderno fechado, e mostrar o placar é abrir o caderno para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar.
+> É como anotar os pontos num bloquinho: a conta fica guardada mesmo com o bloquinho fechado, e mostrar o placar é abrir o bloquinho para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Mude a memória com o placar desligado e depois acompanhe os dois juntos.
+**Zappy na página (não gravar):** Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Prepare os pontos em zero
 
@@ -37,45 +39,45 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco que guarde os pontos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
 
 **Narração:**
-> "Na experiência da seção anterior, você guardou um número e mudou esse valor. Seu projeto ainda não tem uma variável de pontos. Primeiro, prepare zero no começo de cada partida.
+> "No seu jogo, olhe Ao iniciar. Tá vendo? Não tem nenhum bloco que guarde os pontos, porque o jogo ainda não conta nada.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+> Lembra da experiência da parte anterior? A caixa pontos guardava o número, mesmo com o placar desligado. Agora a gente vai criar essa variável!
 >
-> Deixe à vista o fim de Ao iniciar. Abra Programação e depois Variáveis. Pegue Criar variável com valor e encaixe nesse fim. No nome, troque contador por pontos. Mantenha o valor em 0.
+> A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Repare: o nome chega como contador. Troque contador por pontos e mantenha o valor em 0.
 >
-> Confira pontos e 0 em Ao iniciar. Ainda não há mostrador na tela; guardar um número não desenha o placar. Quando Reiniciar o jogo repetir essa preparação, o valor voltará a zero.
+> Confira se ficou assim: no fim de Ao iniciar, está Criar variável pontos com valor 0. Na área do jogo, ainda não aparece nenhum número, porque guardar um número não desenha o placar. E, como Reiniciar o jogo repete a preparação de Ao iniciar, os pontos voltam para zero a cada partida nova.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Crie pontos com valor 0 em Ao iniciar.
+**Zappy na página (não gravar):** Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 ## Seção 3. Mostre o número guardado
 
 ### Clipe `video-numero-na-tela` · Mostre o número guardado
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
 
 **Narração:**
-> "Na experiência Compare guardar, mudar e mostrar, você ligou o placar para ler a memória. Sua variável pontos já existe, mas ainda não aparece. Agora desenhe esse valor durante a partida.
+> "Aqui no seu jogo, comece uma partida. Tá vendo? Nenhum número aparece, porque nada desenha o placar.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+> Lembra da experiência da primeira parte desta fase? O número só apareceu quando você ligou Mostrar placar. Agora a gente vai mostrar os pontos no seu jogo!
 >
-> Deixe à vista o fim do então de Se jogando, depois da limpeza do grupo cactos. Abra Jogo 2D, depois Vida e placar e Indicadores e texto na tela. Pegue Mostrar placar e encaixe nesse fim.
+> O placar só aparece durante a partida. Por isso, deixe à vista o fim do então de Se jogando, logo depois da regra que tira do grupo os cactos. Depois, abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse fim.
 >
-> No texto, escreva Pontos:. Deixe à vista o número do campo valor. Abra Programação e depois Valores. Pegue valor da variável e solte sobre esse número. Escolha pontos.
+> Repare: o placar já chega com Pontos: escrito. Mantenha. Depois, deixe à vista o número do campo valor. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima desse número, para ele tomar o lugar do número. Escolha pontos, e assim o placar lê o número guardado em pontos.
 >
-> No placar, coloque x 12, y 30 e tamanho 24. Escolha uma cor escura que apareça sobre a floresta. Comece uma partida: o placar deve mostrar zero. Ele ainda não cresce, pois não há uma regra de soma.
+> O x 12, o y 30 e o tamanho 24 também já vêm certos: mantenha. Só troque a cor, que chega branca, por uma cor escura, que apareça sobre a floresta.
 >
-> Confira o leitor de pontos no valor do placar e o placar dentro de jogando. Se aparecer no início ou no fim, confira esse encaixe. Se não aparecer, confira a cor e as posições.
+> Agora comece uma partida. Olha só: o placar aparece, mostrando zero, e ainda não cresce, porque nenhuma regra soma pontos! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim do então de Se jogando, está Mostrar placar, com o valor da variável pontos no campo valor, x 12, y 30 e uma cor escura. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Mostre Pontos: lendo a variável pontos somente dentro de jogando.
+**Zappy na página (não gravar):** Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 ## Seção 4. Compare quando somar os pontos
 
@@ -83,7 +85,7 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Somar ponto em Solto. Levar a peça para A cada quadro do jogo e deixar o tempo passar um segundo. Voltar a peça para Solto e deixar passar mais um segundo. Levar para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?, e passar pelas telas com Próxima tela, deixando o tempo correr em cada uma, com o placar à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino na linha de largada com um cronômetro parado, e depois correndo com o cronômetro contando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Somar ponto em Solto. Levar a peça para A cada quadro do jogo e deixar o tempo passar um segundo. Voltar a peça para Solto e deixar passar mais um segundo. Levar para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?, e passar pelas telas com Próxima tela, deixando o tempo correr em cada uma, com o placar à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino na linha de largada com um cronômetro parado, e depois correndo com o cronômetro contando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender em que momento o placar deve crescer.
@@ -96,36 +98,38 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 >
 > É como o cronômetro de uma corrida: ele só conta depois da largada e para na chegada. No seu jogo, você vai pôr Somar em variável dentro de um relógio de 1 segundo, num Se jogando.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Compare o ritmo da soma e depois os estados início, jogando e fim.
+**Zappy na página (não gravar):** Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Some um ponto por segundo de partida
 
 ### Clipe `video-relogio-dos-pontos` · Some um ponto por segundo de partida
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
 
 **Narração:**
-> "Na experiência da seção anterior, você comparou o ritmo e o estado da soma. No seu jogo os pontos ainda ficam em zero. Agora some um por segundo enquanto a partida acontece.
+> "No seu jogo, comece uma partida e olhe o placar. Tá vendo? Ele fica em zero, porque nenhuma regra soma pontos.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+> Lembra da experiência da parte anterior? No relógio de 1 segundo, dentro de jogando, o placar contou um ponto por segundo. Agora a gente vai somar os seus pontos!
 >
-> Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e do relógio dos cactos. Abra Jogo 2D, depois Tempo e Quadros e intervalos. Pegue A cada 2 segundos, encaixe nesse espaço e mude o intervalo para 1.
+> A soma vai num relógio só dela, separado do relógio dos cactos. Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e do relógio dos cactos. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.
 >
-> Deixe à vista o interior do novo relógio. Abra Programação e depois Lógica e Se. Pegue Se e encaixe ali. Retire a comparação x > 0.
+> Agora deixe à vista o espaço vazio dentro do novo relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.
 >
-> Deixe à vista a pergunta vazia. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe e escolha jogando.
+> Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando.
 >
-> Deixe à vista o então desse Se. Abra Programação e depois Variáveis. Pegue Somar em variável e encaixe dentro de então. Escolha pontos e deixe a soma em 1.
+> Agora deixe à vista o espaço vazio do então desse Se. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte no então. Escolha pontos e deixe a soma em 1.
 >
-> Comece uma partida e observe dois pontos subirem. O intervalo de referência é 1 segundo; você pode escolher de 0.5 a 3 para comparar ritmos. Confira que só existe um Somar em variável pontos e que o relógio dos cactos continua em 1.4.
+> Agora comece uma partida. Olha só: os pontos sobem, um por segundo! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 1 segundo, o Se jogando tem, no então, Somar em variável pontos, com 1, e esse é o único Somar em pontos. O relógio dos cactos continua em 1.4. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Se quiser, você pode escolher um intervalo de 0.5 a 3 e comparar o ritmo.
+>
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Some 1 em pontos dentro de um relógio próprio protegido por Se jogando.
+**Zappy na página (não gravar):** Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 ## Seção 6. Mostre os pontos na tela de fim
 
@@ -133,32 +137,30 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
 
 **Narração:**
-> "Seu placar já lê a variável durante a partida. Use essa mesma leitura na mensagem final para mostrar quantos pontos ficaram guardados quando a corrida terminou.
+> "O seu placar já lê a variável pontos durante a partida. Primeiro, deixe uma batida acontecer e olhe a tela de fim. Tá vendo? Ela mostra a sua frase, mas não diz quantos pontos você fez, porque não lê os pontos. Por isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+> Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro. Depois, abra Programação e depois Valores, pegue o bloco juntar texto e solte em cima desse subtítulo, para ele tomar o lugar do texto antigo.
 >
-> Deixe à vista o subtítulo Boa tentativa! da tela no ramo fim, dentro do Se do quadro. Abra Programação e depois Valores. Pegue juntar texto e solte sobre esse subtítulo, substituindo o texto anterior.
+> Clique três vezes no + do bloco juntar texto. Repare: ele ganha três entradas, que começam com números. Você vai preencher essas entradas com texto, valor e texto, nessa ordem.
 >
-> Clique três vezes no + do bloco juntar texto. Ele cria três entradas, que começam com números. Vamos preencher texto, valor e texto, nessa ordem.
+> Deixe à vista a primeira entrada. Ainda em Programação e Valores, pegue o bloco de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.
 >
-> Deixe à vista a primeira entrada. Ainda em Programação e Valores, pegue o bloco de texto que mostra Olá e solte sobre o primeiro número. Escreva Você fez e deixe um espaço depois de fez.
+> Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em cima do número do meio e escolha pontos.
 >
-> Deixe à vista a entrada do meio. Em Programação e Valores, pegue valor da variável, solte sobre o número do meio e escolha pontos.
+> Por último, deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte em cima do último número. Apague Olá e escreva um espaço no começo, seguido de: pontos. Tente bater essa marca!
 >
-> Deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte sobre o último número. Escreva um espaço no começo, seguido de pontos. Tente bater essa marca!
+> Agora comece, espere o placar crescer e deixe uma batida acontecer. Olha só: a frase mostra os pontos da partida! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no subtítulo da tela de fim, o juntar texto tem Você fez, com um espaço no fim, o valor de pontos no meio e o resto da frase, começando com um espaço. Depois de corrigir, teste de novo.
 >
-> Comece, espere o placar crescer e deixe ocorrer uma batida. Leia a mensagem: Você fez, o número da partida e o restante da frase devem aparecer juntos. Se aparecer um zero escrito ou faltar espaço, confira as três entradas e a leitura de pontos no meio.
->
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Monte a frase com texto, valor de pontos e texto no subtítulo final.
+**Zappy na página (não gravar):** Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 ## Seção 7. Confira o que você construiu
 
-**Zappy na página (não gravar):** Retome a memória e o placar nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Zappy na página (não gravar):** Hora de lembrar o que você construiu! As perguntas falam da variável pontos e do placar. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
@@ -168,13 +170,13 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 **Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Enviar meu projeto, Enviar e Concluir fase).
 
 **Narração:**
-> "Sua corrida já conta os pontos e mostra o resultado. Espere na abertura: o placar não deve aparecer. Comece e observe os pontos crescerem.
+> "Agora a sua corrida conta os pontos e mostra o resultado! Antes de enviar o seu projeto, espere um pouco na abertura, porque o placar não pode aparecer ali. Depois, comece a partida e veja os pontos crescerem.
 >
-> Deixe ocorrer uma batida e confira o número na frase final. Volte à abertura, espere um pouco e comece outra partida: o placar deve começar do zero. Se a contagem continuar fora da partida, confira Se jogando no relógio da soma.
+> Deixe uma batida acontecer e confira o número na frase da tela de fim. Depois, volte à abertura, espere um pouco e comece outra partida: o placar tem que começar do zero. Se a contagem continuar fora da partida, confira o Se jogando no relógio da soma.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase."
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.

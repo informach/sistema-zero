@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
+import { inflateSync } from 'node:zlib'
 import { PDFDocument } from '@cantoo/pdf-lib'
 import sharp from 'sharp'
 
@@ -32,6 +33,25 @@ function pdfHeader(bytes: Uint8Array): string {
   return Buffer.from(bytes.slice(0, 5)).toString('latin1')
 }
 
+/**
+ * O texto desenhado, para conferir O QUE o certificado diz. O pdf-lib comprime cada fluxo de
+ * conteúdo (FlateDecode) e escreve o texto das fontes padrão como hexadecimal WinAnsi
+ * (`<…> Tj`); por isso a busca é pelo hexadecimal da frase.
+ */
+function textoDesenhado(bytes: Uint8Array): string {
+  const bruto = Buffer.from(bytes).toString('latin1')
+  let texto = ''
+  for (const fluxo of bruto.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
+    try {
+      texto += inflateSync(Buffer.from(fluxo[1] ?? '', 'latin1')).toString('latin1')
+    } catch {
+      // Fluxo que não é Flate (imagem, por exemplo): não tem texto.
+    }
+  }
+  return texto.toLowerCase()
+}
+const hex = (frase: string) => Buffer.from(frase, 'latin1').toString('hex')
+
 describe('renderCertificatePdf', () => {
   test('gera um PDF válido com QR (config + verifyUrl)', async () => {
     const bytes = await renderCertificatePdf({
@@ -42,6 +62,39 @@ describe('renderCertificatePdf', () => {
     expect(pdfHeader(bytes)).toBe('%PDF-')
     // QR + texto + moldura → bem acima do PDF vazio.
     expect(bytes.byteLength).toBeGreaterThan(2000)
+  })
+
+  test('sem imagem base: a frase do curso no lugar da linha genérica, e o parágrafo sai (06/10/2026)', async () => {
+    // O PDF dizia "concluiu" duas vezes ("concluiu com êxito o curso / Cadê Todo Mundo? /
+    // concluiu Cadê Todo Mundo?") e não imprimia o parágrafo do que a criança programou.
+    const bytes = await renderCertificatePdf({
+      certificate: CERT,
+      config: {
+        title: 'Certificado de Criador',
+        introLine: 'Certificamos que',
+        coursePhrase: 'completou a aventura Cadê Todo Mundo?',
+        bodyText: 'Programou o toque que revela os personagens e a contagem dos achados.',
+      },
+      verifyUrl: '',
+    })
+    const texto = textoDesenhado(bytes)
+    // Anti-vácuo: a extração acha o nome, então a ausência abaixo quer dizer alguma coisa.
+    expect(texto).toContain(hex('Maria Silva'))
+    expect(texto).toContain(hex('CERTIFICADO DE CRIADOR'))
+    expect(texto).toContain(hex('completou a aventura Cad'))
+    expect(texto).not.toContain(hex('concluiu'))
+    expect(texto).not.toContain(hex('Curso de L'))
+    expect(texto).toContain(hex('Programou o toque'))
+  })
+
+  test('sem imagem base e sem frase: a linha genérica com o título, sem "o aluno"', async () => {
+    const texto = textoDesenhado(
+      await renderCertificatePdf({ certificate: CERT, config: {}, verifyUrl: '' }),
+    )
+    expect(texto).toContain(hex('Certificamos que'))
+    expect(texto).not.toContain(hex('o aluno'))
+    expect(texto).toContain(hex('concluiu com '))
+    expect(texto).toContain(hex('Curso de L'))
   })
 
   test('tolera config vazia e verifyUrl vazio (sem QR)', async () => {
@@ -159,5 +212,79 @@ describe('renderCertificatePdf', () => {
     } finally {
       globalThis.fetch = originalFetch
     }
+  })
+})
+
+/**
+ * O PDF emitido fica guardado no R2 e todo download serve o guardado. Sem a versão do desenho na
+ * chave, o conserto do "concluiu" duplicado (06/10/2026) só valia para emissões novas: quem já
+ * tinha o certificado baixava o PDF velho para sempre.
+ */
+describe('a chave do PDF guardado leva a versão do desenho', () => {
+  test('certificates/<id>.v<versão>.pdf, e a versão já passou da 1 (a chave sem versão)', async () => {
+    const { CERTIFICATE_LAYOUT_VERSION, certificatePdfKey } = await import(
+      '../src/routes/certificate'
+    )
+    expect(CERTIFICATE_LAYOUT_VERSION).toBeGreaterThanOrEqual(2)
+    expect(certificatePdfKey(CERT.id)).toBe(
+      `certificates/${CERT.id}.v${CERTIFICATE_LAYOUT_VERSION}.pdf`,
+    )
+    // A chave da v1 era esta: o PDF dela não pode voltar a ser servido.
+    expect(certificatePdfKey(CERT.id)).not.toBe(`certificates/${CERT.id}.pdf`)
+  })
+
+  test('a rota monta, guarda e serve o PDF NA chave da versão; o da v1 nunca é lido', async () => {
+    const { createCertificateRoutes, certificatePdfKey } = await import('../src/routes/certificate')
+    // Um R2 de mentira injetado na rota (o mock do módulo `server/r2` vazaria para a suíte).
+    const guardado = new Map<string, Uint8Array<ArrayBuffer>>()
+    const lidas: string[] = []
+    const storage = {
+      head: async (key: string) => {
+        lidas.push(key)
+        const bytes = guardado.get(key)
+        return bytes
+          ? { contentType: 'application/pdf', contentLength: bytes.length, etag: null }
+          : null
+      },
+      get: async (key: string) => ({
+        body: new Response(guardado.get(key)).body as ReadableStream<Uint8Array>,
+        contentType: 'application/pdf',
+        contentLength: null,
+      }),
+      put: async ({ key, body }: { key: string; body: Buffer | Uint8Array }) => {
+        guardado.set(key, new Uint8Array(body))
+      },
+    }
+    // O members é chamado nas duas vezes (é idempotente); o PDF só é MONTADO na primeira.
+    let emissoes = 0
+    const members = {
+      issueCertificate: async () => {
+        emissoes++
+        return { status: 200, body: { certificate: CERT, config: {} } }
+      },
+    }
+    const routes = createCertificateRoutes({
+      members: members as unknown as Parameters<typeof createCertificateRoutes>[0]['members'],
+      session: { getSession: async () => null } as unknown as Parameters<
+        typeof createCertificateRoutes
+      >[0]['session'],
+      storage,
+    })
+    const ctx = { params: Promise.resolve({ lessonId: 'aula', blockId: 'bloco' }) }
+    // O PDF velho, na chave sem versão: é o que quem emitiu antes de 06/10/2026 tem guardado.
+    guardado.set(`certificates/${CERT.id}.pdf`, new Uint8Array([1, 2, 3]))
+
+    const primeira = await routes.certificateIssue.POST(new Request('http://x/c'), ctx)
+    expect(primeira.status).toBe(200)
+    const pdf = new Uint8Array(await primeira.arrayBuffer())
+    expect(pdfHeader(pdf)).toBe('%PDF-')
+    expect(guardado.has(certificatePdfKey(CERT.id))).toBe(true)
+
+    // O segundo download serve o guardado, da MESMA chave versionada.
+    const segunda = await routes.certificateIssue.POST(new Request('http://x/c'), ctx)
+    expect(new Uint8Array(await segunda.arrayBuffer())).toEqual(pdf)
+    expect(lidas).toEqual([certificatePdfKey(CERT.id), certificatePdfKey(CERT.id)])
+    expect(lidas).not.toContain(`certificates/${CERT.id}.pdf`)
+    expect(emissoes).toBe(2)
   })
 })

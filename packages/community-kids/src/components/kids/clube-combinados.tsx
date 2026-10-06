@@ -24,7 +24,7 @@ export const COMBINADOS: readonly { emoji: string; icon: LucideIcon; text: strin
     icon: ShieldCheck,
     text: 'Não combine encontros nem passe telefone, senha ou endereço.',
   },
-  { emoji: '🚩', icon: Flag, text: 'Se algo te incomodar, toque em "Avisar professor".' },
+  { emoji: '🚩', icon: Flag, text: 'Se algo te incomodar, toque em "Avisar a equipe".' },
 ]
 
 /** Chave por PERFIL (mesmo padrão do `level-up-watcher`) — cada criança vê 1x. */

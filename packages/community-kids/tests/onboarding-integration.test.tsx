@@ -250,7 +250,7 @@ describe('tour guiado dos pais — transições reais', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Como funciona?' }))
     expect(await screen.findByRole('dialog')).toBeTruthy()
     const mentionsCreation = screen.queryByText(/cria o perfil do seu filho/i) !== null
-    const explainsSelection = screen.queryByText(/escolha quem vai aprender/i) !== null
+    const explainsSelection = screen.queryByText(/escolha quem vai criar/i) !== null
     fireEvent.click(screen.getByRole('button', { name: /Vamos lá/ }))
     expect(mentionsCreation).toBe(false)
     expect(explainsSelection).toBe(true)

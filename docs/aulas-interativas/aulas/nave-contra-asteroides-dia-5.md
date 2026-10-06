@@ -25,13 +25,13 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 ### Seção 1. Defina quando ganhar e perder
 
-**Tarefa:** Crie a meta e acrescente as condições de vitória e derrota dentro de jogando.
+**Tarefa:** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-finais → fala-finais.
 
-**Zappy na página (não gravar):** Crie a meta e acrescente as condições de vitória e derrota dentro de jogando.
+**Zappy na página (não gravar):** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No final da partida, se pontos ≥ alvo, vá para vitoria.
 - Na partida, coloque a pergunta de vitória antes da pergunta de derrota.
@@ -40,13 +40,13 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 ### Seção 2. Mostre a vitória e a derrota
 
-**Tarefa:** Acrescente os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela.
+**Tarefa:** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-mostrar-telas → fala-telas.
 
-**Zappy na página (não gravar):** Acrescente os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela.
+**Zappy na página (não gravar):** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No senão se inicio, encaixe Mostrar tela com a dica de Enter.
 - No senão se vitoria, encaixe Mostrar tela com a dica de Enter.
@@ -54,45 +54,45 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 ### Seção 3. Compare voltar à abertura e reiniciar
 
-**Tarefa:** Depois de perder, compare mudar para inicio com Reiniciar o jogo. Observe os valores ao começar outra partida.
+**Tarefa:** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-reiniciar → fala-reiniciar → experiencia-reiniciar.
 
-**Zappy na página (não gravar):** Depois de perder, compare mudar para inicio com Reiniciar o jogo. Observe os valores ao começar outra partida.
+**Zappy na página (não gravar):** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `restart`. Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Faça Enter preparar outra partida
 
-**Tarefa:** Amplie o evento Enter com os ramos fim e vitoria. Em cada um, use Reiniciar o jogo.
+**Tarefa:** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-enter → fala-enter.
 
-**Zappy na página (não gravar):** Amplie o evento Enter com os ramos fim e vitoria. Em cada um, use Reiniciar o jogo.
+**Zappy na página (não gravar):** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.
 
 ### Seção 5. Confira o que você construiu
 
-**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Tarefa:** Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Zappy na página (não gravar):** Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 6. Teste o jogo completo e compartilhe
 
-**Tarefa:** Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural.
+**Tarefa:** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.
 
 **Blocos na página:** video-ciclo-completo → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural.
+**Zappy na página (não gravar):** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie a constante alvo = 26 em Ao iniciar.
 - Vá para inicio em Ao iniciar.
@@ -115,7 +115,7 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 - A colisão que tira vida fica na partida.
 - Dê 3 vidas à nave em Ao iniciar.
 
-Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.
+Publicação opcional após o envio: Compartilhar → resumo já preenchido, sem mexer → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.
 
 ## Blocos disponíveis
 

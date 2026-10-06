@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import type { SectionPendingItem } from '@sistemazero/core/learning'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { LessonCopyProvider } from '../src/components/lesson-copy-context'
 import { LessonSectionStatus } from '../src/components/lesson-section-status'
+import { KIDS_LESSON_COPY } from '../src/lib/lesson-copy-kids'
 
 /**
  * "O que falta para seguir" (30/09/2026): a faixa do rodapé da aula.
@@ -26,10 +28,11 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
       completed: true,
     })
     expect(markup).toContain('data-state="pronto"')
-    expect(markup).toContain('Tudo pronto nesta parte. Pode seguir!')
+    // Sem provedor vale o vocabulário ADULTO ("seção"); o Kids lê "parte" (abaixo).
+    expect(markup).toContain('Tudo pronto nesta seção. Pode seguir!')
     // Na ÚLTIMA seção não há o que seguir: o botão ao lado é "Concluir aula".
     const ultima = faixa({ items: [], completed: true, ultima: true })
-    expect(ultima).toContain('Tudo pronto nesta parte!')
+    expect(ultima).toContain('Tudo pronto nesta seção!')
     expect(ultima).not.toContain('Pode seguir')
     // Pronta, os itens pendentes não aparecem (o estado vence a lista).
     expect(markup).not.toContain('Veja o vídeo')
@@ -110,7 +113,7 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
       'A verificação desta seção precisa ser configurada pelo professor.',
     )
     const criança = faixa({ items: [autoria], completed: false })
-    expect(criança).toContain('Esta parte ainda está sendo preparada')
+    expect(criança).toContain('Esta seção ainda está sendo preparada')
     expect(criança).not.toContain('configurada pelo professor')
     // É um estado, não um pedido: sem "Para seguir:".
     expect(criança).not.toContain('Para seguir:')
@@ -121,12 +124,26 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
       items: [autoria, item('authoring', 'Configure os critérios de conclusão desta seção.')],
       completed: false,
     })
-    expect(dois.split('Esta parte ainda está sendo preparada').length - 1).toBe(1)
+    expect(dois.split('Esta seção ainda está sendo preparada').length - 1).toBe(1)
     expect(dois).not.toContain('sz-lesson-status-mais')
 
     const ensaio = faixa({ items: [autoria], completed: false, preview: true })
     expect(ensaio).toContain('A verificação desta seção precisa ser configurada pelo professor.')
-    expect(ensaio).not.toContain('Esta parte ainda está sendo preparada')
+    expect(ensaio).not.toContain('Esta seção ainda está sendo preparada')
+  })
+
+  test('no Kids a faixa fala "parte"; no adulto, "seção" (o `LessonCopy`)', () => {
+    const kids = (props: Parameters<typeof LessonSectionStatus>[0]) =>
+      renderToStaticMarkup(
+        <LessonCopyProvider value={KIDS_LESSON_COPY}>
+          <LessonSectionStatus {...props} />
+        </LessonCopyProvider>,
+      )
+    expect(kids({ items: [], completed: true })).toContain('Tudo pronto nesta parte. Pode seguir!')
+    expect(kids({ items: [], completed: true, ultima: true })).toContain('Tudo pronto nesta parte!')
+    expect(
+      kids({ items: [item('authoring', 'Configure os critérios.')], completed: false }),
+    ).toContain('Esta parte ainda está sendo preparada')
   })
 
   test('sem itens da seção, o `fallback` do player vira o item da aula; sem nada, nada', () => {

@@ -4,6 +4,7 @@ import { Button } from '@sistemazero/ui/button'
 import { BookOpen, Download } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { EbookBlock } from '../../lib/types'
+import { useLessonCopy } from '../lesson-copy-context'
 import { useLessonPlayer } from '../lesson-player-context'
 import { PdfBookView } from './pdf-book-view'
 
@@ -14,6 +15,7 @@ import { PdfBookView } from './pdf-book-view'
  */
 export function EbookBlockView({ blockId, content }: { blockId: string; content: EbookBlock }) {
   const player = useLessonPlayer()
+  const { material } = useLessonCopy()
   const [error, setError] = useState('')
   const [downloading, setDownloading] = useState(false)
   const [accessed, setAccessed] = useState(player?.materialAccessed ?? false)
@@ -31,10 +33,8 @@ export function EbookBlockView({ blockId, content }: { blockId: string; content:
     return (
       <div className="space-y-3 rounded-2xl border border-dashed p-6">
         <BookOpen aria-hidden className="size-10 text-primary" />
-        <p className="font-medium">{content.title ?? 'Material do curso'}</p>
-        <p className="text-sm text-muted-foreground">
-          Prévia do material. O livro 3D e o download do PDF ficam disponíveis na aula publicada.
-        </p>
+        <p className="font-medium">{content.title ?? material.tituloDoLivro}</p>
+        <p className="text-sm text-muted-foreground">{material.previaDoLivro}</p>
       </div>
     )
 
@@ -75,7 +75,7 @@ export function EbookBlockView({ blockId, content }: { blockId: string; content:
       downloadUrl.current = URL.createObjectURL(blob)
       const anchor = document.createElement('a')
       anchor.href = downloadUrl.current
-      anchor.download = `${(content.title ?? 'Material da aula').replace(/[<>:"/\\|?*]/g, '-')}.pdf`
+      anchor.download = `${(content.title ?? material.nomeDoArquivo).replace(/[<>:"/\\|?*]/g, '-')}.pdf`
       document.body.append(anchor)
       anchor.click()
       anchor.remove()
@@ -110,7 +110,7 @@ export function EbookBlockView({ blockId, content }: { blockId: string; content:
         <p className="text-sm text-muted-foreground">
           {accessed || player.materialAccessed
             ? 'Material acessado. Você pode continuar!'
-            : 'Abra o livro ou baixe o PDF para concluir esta etapa.'}
+            : material.paraConcluir}
         </p>
       )}
       {error && (

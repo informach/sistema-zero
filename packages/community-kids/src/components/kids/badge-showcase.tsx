@@ -32,7 +32,7 @@ export function BadgeShowcase({ gamification }: { gamification: GamificationMeVi
       <KidsSectionHeader
         id="minhas-conquistas"
         title="Minhas conquistas"
-        subtitle="Continue estudando para desbloquear todas!"
+        subtitle="Continue criando para desbloquear todas!"
         actions={
           <>
             <span className={PILULA}>

@@ -1,5 +1,6 @@
 import { PLATFORM_ACTIONS } from '@sistemazero/core/learning'
 import {
+  LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
   MAP_TILES,
   MESH_LEVELS,
@@ -15,7 +16,7 @@ import {
   SYMMETRY_PIECES,
 } from '@sistemazero/core/learning/scene'
 import { t } from 'elysia'
-import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
+import { fieldOptionsSchema, ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
 const Id = t.String({ format: 'uuid' })
 const Label = t.String({ minLength: 1, maxLength: 2000 })
@@ -64,6 +65,18 @@ const SceneActionSchema = t.Union([
   }),
   t.Object({ type: t.Literal('keep-on-screen'), enabled: t.Boolean() }),
   t.Object({ type: t.Literal('restart-walk') }),
+  // O lugar da chave do Farol (06/10/2026): um eixo por gesto, cada um com o limite da tela.
+  ...(['x', 'y'] as const).map((axis) =>
+    t.Object({
+      type: t.Literal('key-position'),
+      axis: t.Literal(axis),
+      value: t.Integer({
+        minimum: LIGHTHOUSE_POSITION[axis].min,
+        maximum: LIGHTHOUSE_POSITION[axis].max,
+      }),
+    }),
+  ),
+  t.Object({ type: t.Literal('restart-key-position') }),
   t.Object({
     type: t.Literal('find-character'),
     id: t.Union([t.Literal(0), t.Literal(1), t.Literal(2)]),
@@ -637,6 +650,8 @@ const SectionRule = t.Union([
         maxProperties: 20,
       }),
     ),
+    // Declarado: sem ele, salvar a estrutura apagava a lista de valores aceitos (06/10/2026).
+    fieldOptions: t.Optional(fieldOptionsSchema()),
     inputs: t.Optional(
       t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
         maxProperties: 20,

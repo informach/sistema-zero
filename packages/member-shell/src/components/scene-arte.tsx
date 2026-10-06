@@ -214,7 +214,7 @@ export function FundoDoCenario({
     return (
       <g data-fundo="farol" transform={x === 0 && y === 0 ? undefined : `translate(${x} ${y})`}>
         <image
-          href={farolSvgUrl('cenario')}
+          href={farolSvgUrl('praia-tropical')}
           width={w}
           height={h}
           preserveAspectRatio="xMidYMid slice"

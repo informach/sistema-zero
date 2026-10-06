@@ -9,7 +9,7 @@
 **"Como fazer"** é uma biblioteca de tutoriais curtos, por tarefa, separada dos cursos. A criança
 chega por três portas: o atalho no rodapé do menu (acima dos Recados), o ícone de interrogação na
 barra de cima do celular, e links `/como-fazer/<slug>` dentro das aulas (bloco de materiais e
-texto), que abrem em **nova aba** com o botão "Voltar para a aula".
+texto), que abrem na **mesma aba** com o botão "Voltar para a fase".
 
 - **Todo perfil infantil vê**, inclusive o gratuito e o do Desafio. Ler um tutorial **nunca libera**
   Pinta, Estúdio, Molda ou Pensa: quando o tutorial fala de uma ferramenta que o perfil não tem, a
@@ -26,13 +26,16 @@ texto), que abrem em **nova aba** com o botão "Voltar para a aula".
 
 Voz de "você", frases curtas, um passo por cartão. Sem travessão. Sem jargão de IA.
 
-1. **Nome de botão só do jeito que está na tela**, em negrito: **Próxima seção**, **Mais opções**,
+1. **Nome de botão só do jeito que está na tela**, em negrito: **Próxima parte**, **Mais opções**,
    **Usar no Estúdio**. Antes de escrever, confira em
    `docs/aulas-interativas/REFERENCIA-PLATAFORMA.md` (o menu, as ações de plataforma, o menu ⋯ do
    Estúdio, a lista de projetos, o Pinta), em `packages/studio/src/core/i18n/pt-BR.ts`, em
    `packages/pinta/src/core/copy.ts`, em `packages/pensa/src/components/{PensaApp,TaskPlan}.tsx`
-   e no Molda (`core/copy.ts`, `core/sceneFirstStepsCopy.ts`). Confira também o componente que
-   renderiza o botão: um rótulo antigo pode continuar no dicionário sem aparecer na tela.
+   e no Molda (`core/copy.ts`, `core/sceneFirstStepsCopy.ts`). Os rótulos da fase no Kids (rodapé,
+   Estúdio da fase, envio, galeria) estão em `packages/member-shell/src/lib/lesson-copy-kids.ts`
+   (o `packages/community-kids/src/lib/lesson-copy.ts` só o reexporta), os dos recados nas telas de
+   `packages/community-kids/src/app/(app)/recados`, e todos na seção 9 da referência. Confira
+   também o componente que renderiza o botão: um rótulo antigo pode continuar no dicionário sem aparecer na tela.
    O código da versão publicada é a fonte principal; a referência escrita é apoio.
 2. **Nada comercial dirigido à criança.** A revisão editorial do core sinaliza "compre", "assine", "peça para
    seus pais", "Comunidade dos Criadores" e afins (`helpEditorialWarnings`), e a página do Kids
@@ -78,8 +81,48 @@ de cada ambiente. Houve backup, comparação com a versão anterior, transação
 e 44 leituras HTTP 200 por ambiente. Recibos locais: `.cache/activity-*-help-*.json`.
 O mapa está em
 [revisão do curso](../aulas-interativas/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
+
+Na revisão de **06/10/2026** os 42 tutoriais passaram para o **vocabulário da aventura**, o mesmo
+das telas do Kids ([Diretrizes pedagógicas](../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md),
+seção 6): fase, parte, aventura, equipe, Mapa da Aventura e Explorar no lugar de aula, seção, curso,
+professor, Caderno do Aluno e Aprender. Mudaram 13 títulos, resumos, passos, textos alternativos,
+palavras alternativas e os nomes dos botões; slugs, ids dos passos, links e imagens ficaram iguais.
+As palavras antigas que a criança ainda digita por costume (aula, curso, professor, caderno,
+atividade) ficam só nas palavras alternativas, para a busca continuar achando o tutorial. Tutorial
+novo segue o mesmo vocabulário. Os prints ainda mostram os rótulos antigos: a lista do que refazer
+está em [PRINTS-A-REFAZER-2026-10-06.md](PRINTS-A-REFAZER-2026-10-06.md), com 73 prints a refazer
+(71 capturas, 47 certos e 26 prováveis) e 15 a conferir na hora.
+
+No fim do mesmo dia, o full review do vocabulário trouxe as decisões que faltavam:
+
+- **"Clique em"** para botões e controles, como nas falas das fases ("clique no", "clique na").
+  O toque num objeto dentro do jogo segue como as fases falam ("toque nos esconderijos").
+- **Guia do Pensa** é o painel da tarefa no Pinta, no Estúdio e no Molda.
+- A grade de perfis pergunta **Quem vai criar hoje?**.
+- O tutorial do certificado mostra a fase **Seu certificado** do Cadê Todo Mundo?, com a parte
+  **Comemore sua criação**; o de publicar fala do **Mural** com maiúscula, como a tela.
+
+Na noite de 06/10/2026, a pessoa "guia" saiu da tela da criança, porque "Enviar para o guia" soava
+estranho. O botão de envio diz o que a criança envia, e quem recebe e responde é **a equipe**. Os
+tutoriais citam os rótulos novos: **Enviar meu projeto** (Estúdio da fase, com **Enviar de novo**
+confirmado em **Reenviar**), **Enviar meu desenho** (Pinta da fase), **Enviar (1)**, **Recado
+(opcional)** e **Recebido!** (galeria), **Enviar para a equipe** (Preciso de ajuda) e **Recados da
+equipe**. Cinco títulos mudaram (pedir ajuda, enviar um projeto, enviar da galeria, ler os recados
+e trazer o projeto enviado); slugs, ids dos passos, links e imagens ficaram iguais. O validador
+reprova "guia" como pessoa ("o guia", "ao guia", "do guia", "seu guia") e deixa passar o **Guia do
+Pensa**. Os prints já estavam na lista do que refazer (todos são da época do "professor"); a lista
+ganhou o que cada um precisa mostrar agora e três prints novos para a galeria, que não tinha
+imagem.
+
 `bun docs/como-fazer/validar.ts` roda o **mesmo validador do members** sobre o arquivo e confere
-os slugs cruzados (`related` e links no corpo). Rode antes de importar.
+os slugs cruzados (`related` e links no corpo). Também confere o vocabulário da aventura, que é
+regra só da criança e por isso não mora no core (o core é dividido com o Admin e com a comunidade
+adulta): palavras da escola e concordância ("o fase", "na Mundo") no título, no resumo, nos passos
+e no texto alternativo, com a mesma régua dos manifestos (`docs/aulas-interativas/qa/palavras-da-escola.ts`),
+"toque em" num botão em negrito e "guia" como pessoa (`GUIA_PESSOA`, a mesma régua). As `keywords` e o endereço dos links ficam de fora: a busca
+precisa achar "aula" e "professor". No Pensa, "etapa" e "tarefa" passam: são os nomes do método
+ZERO e do cartão do plano, e trocar "etapa" é decisão em aberto. Rode antes de importar; o CI
+também roda.
 
 ## Como implantar (staging e produção)
 

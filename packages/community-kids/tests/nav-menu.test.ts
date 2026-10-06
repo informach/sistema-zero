@@ -13,7 +13,7 @@ describe('o que o menu oferece', () => {
   it('mostra só as ferramentas que a criança pode abrir', () => {
     // A régua é a mesma da página de destino: o menu não leva a porta trancada.
     expect(rotulos('/criar', ['estudio-completo', 'pinta'])).toEqual([
-      'Meus trabalhos',
+      'Minhas criações',
       'Estúdio',
       'Pinta',
     ])
@@ -30,7 +30,7 @@ describe('o que o menu oferece', () => {
     // Um soluço de rede não pode encolher o menu na cara da criança; a página de
     // destino já tem a tela de "tente de novo".
     expect(rotulos('/criar', null)).toEqual([
-      'Meus trabalhos',
+      'Minhas criações',
       'Estúdio',
       'Pinta',
       'Pensa',
@@ -48,7 +48,7 @@ describe('o que o menu oferece', () => {
     ])
   })
 
-  it('Início e Aprender (a Jornada) continuam links simples', () => {
+  it('Início e Explorar (a Jornada) continuam links simples', () => {
     expect(visibleChildren(item('/'), null)).toEqual([])
     expect(visibleChildren(item('/cursos'), null)).toEqual([])
   })
@@ -73,7 +73,7 @@ describe('qual grupo fica aberto', () => {
     expect(openGroupFor('/recados', null)).toBeNull()
   })
 
-  it('no Aprender (a Jornada) e no Início não há grupo a abrir', () => {
+  it('no Explorar (a Jornada) e no Início não há grupo a abrir', () => {
     expect(openGroupFor('/', null)).toBe('/')
     expect(openGroupFor('/cursos', null)).toBe('/cursos')
   })

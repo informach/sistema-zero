@@ -884,7 +884,7 @@ export function SceneActivityView({
         // ⚠️ Curto e sem "aba", "versão" ou "cópia deste navegador" (lote 2): a saída é um botão.
         // ⚠️ "mudou ou" (full review final de dados e deploy, BAIXO-6): depois de um deploy o 409 é
         // quase sempre revisão nova do bloco (reimportação) ou regra nova, e não outra aba.
-        setError('Esta atividade mudou ou está aberta em outro lugar.')
+        setError('Esta experiência mudou ou está aberta em outro lugar.')
       } else if (player && (status === 400 || status === 422)) {
         // ⚠️⚠️ Pedido mal formado ou grande demais: tentar de novo não resolve (MÉDIO-1).
         servidorRecusou()
@@ -1092,7 +1092,10 @@ export function SceneActivityView({
   /* ⚠️ O andar do Farol também: o "Recomeçar" dele mora na bancada e CONSERVA as escolhas (seta,
      velocidade, limite); o geral voltaria ao caso e as desligaria em silêncio. */
   const recomecar =
-    m !== 'found-counter' && m !== 'collect-and-remember' && m !== 'lighthouse-walk' ? (
+    m !== 'found-counter' &&
+    m !== 'collect-and-remember' &&
+    m !== 'lighthouse-walk' &&
+    m !== 'lighthouse-position' ? (
       <SceneButton
         tom="ferramenta"
         className="min-w-11"
@@ -1712,7 +1715,7 @@ function tempoDoPalpite(frase: string): number {
 const PISTA_FEITA = '✓ Feito! Se precisar, peça outra pista.'
 
 /** O recado de quando o servidor recusa o que este player produz (`servidorRecusou`). */
-const ATIVIDADE_MUDOU = 'Esta atividade mudou.'
+const ATIVIDADE_MUDOU = 'Esta experiência mudou.'
 
 /** Os dois conjuntos de metas são o MESMO (a ordem não importa). */
 function mesmoConjunto(a: readonly string[], b: readonly string[]): boolean {

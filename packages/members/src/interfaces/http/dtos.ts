@@ -8,7 +8,7 @@ import {
 } from '@sistemazero/core/help'
 import { t } from 'elysia'
 import { InteractiveBlockSchema } from './learning.dtos'
-import { ProjectBlockRelationshipsSchema } from './project-pattern.schema'
+import { fieldOptionsSchema, ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
 // Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
 // ao Postgres como 22P02 e viraria 500 INTERNAL_ERROR (padrão do catalog).
@@ -1296,6 +1296,7 @@ const StructureRuleSchema = t.Union([
         maxProperties: 20,
       }),
     ),
+    fieldOptions: t.Optional(fieldOptionsSchema()),
     inputs: t.Optional(
       t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
         maxProperties: 20,

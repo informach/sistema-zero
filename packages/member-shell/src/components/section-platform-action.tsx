@@ -8,6 +8,7 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
+import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
 
 export function SectionPlatformAction({
@@ -24,6 +25,7 @@ export function SectionPlatformAction({
   completed?: boolean
 }) {
   const player = useLessonPlayer()
+  const { acaoDePlataforma, erroDoServidor } = useLessonCopy()
   const [result, setResult] = useState<PlatformActionResult | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -49,14 +51,7 @@ export function SectionPlatformAction({
       setResult(saved)
       if (saved.passed) player.refreshAfterLearning?.()
     } catch (cause) {
-      setError(
-        typeof cause === 'object' &&
-          cause !== null &&
-          'message' in cause &&
-          typeof cause.message === 'string'
-          ? cause.message
-          : 'Não consegui verificar agora. Tente novamente.',
-      )
+      setError(erroDoServidor(cause, 'Não consegui verificar agora. Tente novamente.'))
     } finally {
       inFlight.current = false
       setBusy(false)
@@ -83,13 +78,9 @@ export function SectionPlatformAction({
           {busy ? 'Verificando…' : 'Verificar minha ação'}
         </Button>
       </div>
-      {preview && (
-        <p className="text-sm text-muted-foreground">
-          Prévia: a verificação real acontece na conta do aluno.
-        </p>
-      )}
+      {preview && <p className="text-sm text-muted-foreground">{acaoDePlataforma.previa}</p>}
       <div role="status" className="text-sm">
-        {error || result?.feedback || (completed ? 'Etapa concluída!' : '')}
+        {error || result?.feedback || (completed ? acaoDePlataforma.concluida : '')}
       </div>
       {result?.passed && player?.renderActionEvidence?.(result)}
     </div>

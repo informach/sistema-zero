@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   isSceneAction,
+  LIGHTHOUSE_POSITION,
   SCENE_IDS,
   type SceneAction,
   type SceneId,
@@ -50,6 +51,34 @@ function camposDoEditor(a: SceneAction, scene: SceneId): Set<string> {
 }
 
 describe('⚠️ o editor de ações do admin deixa mexer em todo número', () => {
+  test('o Farol oferece os dois eixos da chave separados, cada um com os limites reais da tela', () => {
+    const choices = sceneActionChoices('lighthouse-position')
+    for (const axis of ['x', 'y'] as const) {
+      const action = choices.find(
+        (choice) => choice.value.type === 'key-position' && choice.value.axis === axis,
+      )?.value
+      if (action?.type !== 'key-position') throw new Error(`Sem controle do eixo ${axis}`)
+      expect(campoNumerico(action)).toEqual({
+        label: axis === 'x' ? 'Posição horizontal x' : 'Posição vertical y',
+        field: 'value',
+        ...LIGHTHOUSE_POSITION[axis],
+        value: axis === 'x' ? 160 : 250,
+      })
+      expect(
+        isSceneAction({ ...action, value: LIGHTHOUSE_POSITION[axis].max }, 'lighthouse-position'),
+      ).toBe(true)
+      expect(
+        isSceneAction(
+          { ...action, value: LIGHTHOUSE_POSITION[axis].max + 1 },
+          'lighthouse-position',
+        ),
+      ).toBe(false)
+    }
+    expect(choices).toContainEqual({
+      label: 'Recomeçar a posição da chave',
+      value: { type: 'restart-key-position' },
+    })
+  })
   for (const scene of SCENE_IDS)
     test(`${scene}: cada número tem campo, opção, ou é travado pelo domínio`, () => {
       const porTipo = new Map<string, SceneAction[]>()

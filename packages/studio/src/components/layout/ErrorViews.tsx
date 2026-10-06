@@ -21,7 +21,7 @@ export function RootErrorFallback({
       <div className="max-w-md rounded-lg border border-sz-border bg-sz-panel p-6 shadow-lg">
         <h1 className="text-lg font-semibold">Algo deu errado</h1>
         <p className="mt-2 text-sm text-sz-fg-soft">
-          A IDE encontrou um erro inesperado. Seu trabalho recente é salvo automaticamente. Tente
+          A IDE encontrou um erro inesperado. O que você fez fica salvo automaticamente. Tente
           recarregar; se persistir, volte à lista de projetos.
         </p>
         {/* Detalhe técnico SECUNDÁRIO: a mensagem crua costuma vir em inglês.

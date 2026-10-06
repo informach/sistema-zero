@@ -237,8 +237,8 @@ function ReportDialog({ report }: { report: KidsSpaceReport }) {
     <Dialog
       open={report.reportOpen}
       onClose={report.onCloseReport}
-      title="Avisar um professor"
-      description="Conta o que aconteceu. Um professor vai dar uma olhada. 💙"
+      title="Avisar a equipe"
+      description="Conta o que aconteceu. Alguém da equipe vai dar uma olhada. 💙"
       footer={
         <>
           <Button variant="outline" onClick={report.onCloseReport} disabled={report.reportBusy}>

@@ -402,7 +402,7 @@ export function MoldaTaskGuide({
           <p role="status" className="text-xs text-muted-foreground">
             {dirty
               ? 'Rascunho guardado neste navegador. Guarde o progresso para atualizar o plano.'
-              : 'O progresso do guia está guardado no plano.'}{' '}
+              : 'O progresso do Guia do Pensa está guardado no plano.'}{' '}
             A criação continua com o mesmo nome e identificação na galeria.
           </p>
         </div>

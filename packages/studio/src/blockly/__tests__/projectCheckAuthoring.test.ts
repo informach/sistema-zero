@@ -15,6 +15,32 @@ const workspace = {
 const stage = { type: 'usesBlock', blockType: 'sz_g2d_setup_stage' } as const
 
 describe('objective authoring uses the actual workspace contracts', () => {
+  test('validates every allowed field option against the real block parameter', () => {
+    const model = projectCheckAuthoring({
+      initialProject: { installedExtensions: [{ id: 'game-2d' }] },
+    })
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_set_image',
+        fieldOptions: { IMAGE: ['farol-listrado-aceso', 'farol-de-pedra-aceso'] },
+      }),
+    ).toEqual([])
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_set_image',
+        fieldOptions: { DOES_NOT_EXIST: ['farol'] },
+      }).length,
+    ).toBeGreaterThan(0)
+    expect(
+      model.issues({
+        type: 'usesBlock',
+        blockType: 'sz_g2d_enable_classic_controls',
+        fieldOptions: { MODE: ['directions', 'invalid'] },
+      }).length,
+    ).toBeGreaterThan(0)
+  })
   test('named connections validate sockets, placement and dynamic branches', () => {
     const model = projectCheckAuthoring({
       initialProject: { installedExtensions: [{ id: 'game-2d' }] },

@@ -1,5 +1,9 @@
 import { expect, test } from 'bun:test'
-import { evaluateProjectStructure, type SectionStructureRule } from '../src/learning'
+import {
+  evaluateProjectStructure,
+  isProjectBlockPattern,
+  type SectionStructureRule,
+} from '../src/learning'
 
 const sprite = {
   type: 'sz_g2d_create_sprite',
@@ -18,6 +22,64 @@ const rule: SectionStructureRule = {
   fields: { ID: 'dino' },
   inputs: { X: 120 },
 }
+
+test('accepted field options are constrained to the same enabled nested block', () => {
+  const optionsRule: SectionStructureRule = {
+    type: 'usesBlock',
+    blockType: 'sz_js_if_else',
+    area: 'events',
+    inputBlocks: {
+      THEN: {
+        blockType: 'sz_g2d_set_image',
+        fields: { SPRITE: 'farol' },
+        fieldOptions: { IMAGE: ['farol-listrado-aceso', 'farol-de-pedra-aceso'] },
+      },
+    },
+  }
+  const change = (image: string, sprite = 'farol') => ({
+    type: 'sz_g2d_set_image',
+    fields: { SPRITE: sprite, IMAGE: image },
+  })
+  const condition = (then: unknown, other?: unknown) =>
+    project(
+      { type: 'sz_js_if_else', inputs: { THEN: { block: then }, ELSE: { block: other } } },
+      'events',
+    )
+  for (const image of ['farol-listrado-aceso', 'farol-de-pedra-aceso'])
+    expect(evaluateProjectStructure(optionsRule, condition(change(image)))).toBe(true)
+  expect(evaluateProjectStructure(optionsRule, condition(change('farol-listrado-apagado')))).toBe(
+    false,
+  )
+  expect(
+    evaluateProjectStructure(
+      optionsRule,
+      condition(change('barco'), change('farol-de-pedra-aceso')),
+    ),
+  ).toBe(false)
+  expect(
+    evaluateProjectStructure(optionsRule, condition(change('farol-de-pedra-aceso', 'barco'))),
+  ).toBe(false)
+  expect(
+    evaluateProjectStructure(
+      optionsRule,
+      condition({ ...change('farol-de-pedra-aceso'), disabled: true }),
+    ),
+  ).toBe(false)
+})
+
+test('field option lists reject empty, unbounded or conflicting conditions', () => {
+  const pattern = { blockType: 'sz_g2d_set_image', fieldOptions: { IMAGE: ['aceso'] } }
+  expect(isProjectBlockPattern(pattern)).toBe(true)
+  for (const options of [
+    [],
+    [''],
+    ['aceso', 'aceso'],
+    [false],
+    Array.from({ length: 51 }, (_, i) => String(i)),
+  ])
+    expect(isProjectBlockPattern({ ...pattern, fieldOptions: { IMAGE: options } })).toBe(false)
+  expect(isProjectBlockPattern({ ...pattern, fields: { IMAGE: 'outro' } })).toBe(false)
+})
 
 test('requires the configured area, connected enabled block and literal parameters', () => {
   expect(evaluateProjectStructure(rule, project(sprite))).toBe(true)

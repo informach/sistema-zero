@@ -42,9 +42,9 @@ export type RemixTier = StudioRemixCapability
 // Slugs/ids vêm do servidor (slug/UUID), mas codificamos por consistência/segurança.
 const enc = encodeURIComponent
 
-/** As ferramentas vêm dos cursos concluídos: o recado aponta para eles, nunca para um nível. */
+/** As ferramentas vêm das aventuras concluídas: o recado aponta para elas, nunca para um nível. */
 const REMIX_BLOCKED_MESSAGE =
-  'Esse jogo usa ferramentas que você ainda vai conquistar nos cursos. 🚀'
+  'Esse jogo usa ferramentas que você ainda vai conquistar nas aventuras. 🚀'
 
 function postingError(e: ApiError): string {
   if (e.code === 'POSTING_NOT_ALLOWED') return 'Aqui só a equipe pode escrever. 🙂'
@@ -425,7 +425,7 @@ export function KidsSpaceViewClient({
       )
       toast.success(
         created.pending
-          ? 'Enviado! Um professor vai revisar antes de aparecer. ✅'
+          ? 'Enviado! A equipe vai dar uma olhada antes de aparecer. ✅'
           : 'Conversa criada! 🎉',
       )
       setNewTitle('')
@@ -452,7 +452,7 @@ export function KidsSpaceViewClient({
       )
       setReplyBody('')
       setReplyAttachments([])
-      if (created.pending) toast.success('Enviado! Um professor vai revisar. ✅')
+      if (created.pending) toast.success('Enviado! A equipe vai dar uma olhada. ✅')
       await loadComments(thread.id)
     } catch (err) {
       toast.error(postingError(err as ApiError))

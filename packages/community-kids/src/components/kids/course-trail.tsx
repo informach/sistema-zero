@@ -23,12 +23,12 @@ function nodeAria(node: TrailNode): string {
     node.state === 'done'
       ? 'concluída'
       : node.state === 'current'
-        ? 'aula atual'
+        ? 'fase atual'
         : node.state === 'locked'
           ? // Descritivo, não imperativo: a aula anterior pode estar "em breve" (não
             // concluível), e mandar concluí-la seria pedir o impossível. Sem travessão,
             // que é regra de voz da casa e ainda por cima o leitor de tela soletra.
-            'bloqueada, abre quando a anterior for concluída'
+            'trancada, abre quando a anterior for concluída'
           : 'disponível'
   const minutes = node.lesson.estimatedMinutes ? `, ${node.lesson.estimatedMinutes} min` : ''
   return `${node.lesson.title} (${status})${minutes}`
@@ -60,9 +60,9 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
     return (
       <section className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10 text-center">
         <KidsMascot expression="sleeping" className="size-20" />
-        <h2 className="mt-4 sz-display text-xl">As aulas estão sendo preparadas</h2>
+        <h2 className="mt-4 sz-display text-xl">As fases estão sendo preparadas</h2>
         <p className="mt-2 text-muted-foreground">
-          Este curso ainda não tem aulas prontas para você. Volte daqui a pouco para ver as
+          Esta aventura ainda não tem fases prontas para você. Volte daqui a pouco para ver as
           novidades!
         </p>
       </section>
@@ -81,12 +81,12 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
               {/* Sem `opacity-*` no texto da faixa: a tinta a 80% caía para 4,04:1 no azul e
                   3,45:1 na laranja (medido na paleta do Pen, 11/09/2026). */}
               <p className="[font-family:var(--font-display)] font-bold text-xs uppercase tracking-widest">
-                Unidade {unitIndex + 1}
+                Mundo {unitIndex + 1}
               </p>
               <div className="flex items-end justify-between gap-3">
                 <h2 className="sz-display text-lg md:text-xl">{unit.module.title}</h2>
                 <span className="sz-display whitespace-nowrap text-sm">
-                  {doneCount}/{unit.module.lessons.length} aulas
+                  {doneCount}/{unit.module.lessons.length} fases
                 </span>
               </div>
               {unit.module.summary ? <p className="mt-1 text-sm">{unit.module.summary}</p> : null}

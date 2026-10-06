@@ -270,7 +270,7 @@
     "titulo": "O fantasma do quadro de antes",
     "instrucao": "No quadro 2, mude o fogo com o fantasma desligado. Depois ligue o fantasma e compare os dois fogos.",
     "manipula": "O fantasma do quadro anterior e o tamanho do fogo do quadro 2",
-    "frase_sucesso": "O fantasma é uma guia, não um desenho: ele deixa você comparar os dois fogos sem decorar!",
+    "frase_sucesso": "O fantasma só ajuda a comparar, não é um desenho: com ele você vê os dois fogos juntos, sem decorar!",
     "pergunta_extra": "E no quadro 1? Tente ligar o fantasma lá e veja o que aparece.",
     "metas": [
       {
@@ -1019,15 +1019,15 @@
     "id": "copy-vs-original",
     "grupo": "world",
     "titulo": "A cópia e o original",
-    "instrucao": "Exporte o jogo da aula, importe o arquivo no Estúdio e pinte a nave de um lado só.",
+    "instrucao": "Exporte o jogo da fase, importe o arquivo no Estúdio e pinte a nave de um lado só.",
     "manipula": "Exportar, importar e a cor da nave em cada painel",
     "frase_sucesso": "Exportar tira uma cópia, importar transforma a cópia num projeto seu, e daí em diante cada um segue o seu caminho.",
-    "pergunta_extra": "E se você pintar a nave na aula depois de exportar, antes de importar?",
+    "pergunta_extra": "E se você pintar a nave na fase depois de exportar, antes de importar?",
     "metas": [
       {
         "id": "exported",
-        "rotulo": "O arquivo saiu, e o jogo continuou na aula",
-        "pedido": "Aperte Exportar e olhe o lado da aula.",
+        "rotulo": "O arquivo saiu, e o jogo continuou na fase",
+        "pedido": "Aperte Exportar e olhe o lado da fase.",
         "soNoCaso": false
       },
       {
@@ -1044,9 +1044,9 @@
       }
     ],
     "pistas": [
-      "Aperte Exportar e olhe o lado da aula antes de olhar o arquivo.",
+      "Aperte Exportar e olhe o lado da fase antes de olhar o arquivo.",
       "Com o arquivo no meio, aperte Importar e compare as duas telas.",
-      "Pinte a nave do lado do Estúdio e olhe a nave do lado da aula."
+      "Pinte a nave do lado do Estúdio e olhe a nave do lado da fase."
     ],
     "roteiro_demonstracao": [],
     "acoes_usadas": []
@@ -1335,7 +1335,7 @@
   {
     "id": "found-counter",
     "grupo": "events",
-    "titulo": "Quantos já encontramos?",
+    "titulo": "Quantos você já encontrou?",
     "instrucao": "O que acontece com Achados quando você encontra alguém, procura sem achar e começa outra busca?",
     "manipula": "A busca e o número atual de Achados",
     "frase_sucesso": "Achados guarda o número de personagens encontrados nesta busca.",
@@ -2849,5 +2849,35 @@
     ],
     "roteiro_demonstracao": [],
     "acoes_usadas": ["hold-arrow", "advance", "walk-speed", "keep-on-screen", "restart-walk"]
+  },
+  {
+    "id": "lighthouse-position",
+    "grupo": "stage",
+    "titulo": "Onde fica a chave?",
+    "instrucao": "Troque a Posição horizontal x para 160 e olhe a chave. Depois troque só a Posição vertical y para 250. Compare os dois lugares.",
+    "manipula": "A posição horizontal x e a posição vertical y da chave no mapa do Farol",
+    "frase_sucesso": "O x escolhe o lugar para os lados. O y escolhe o lugar para cima ou para baixo; quanto maior o y, mais embaixo a chave fica.",
+    "pergunta_extra": "Que lugar você escolheria para a chave na sua aventura?",
+    "metas": [
+      {
+        "id": "mover-horizontal",
+        "rotulo": "Só o x mudou: a chave foi para o lado",
+        "pedido": "Troque a Posição horizontal x para 160 e olhe a chave.",
+        "soNoCaso": false
+      },
+      {
+        "id": "mover-vertical",
+        "rotulo": "Só o y mudou: a chave subiu ou desceu",
+        "pedido": "Troque a Posição vertical y para 250 e olhe a chave.",
+        "soNoCaso": false
+      }
+    ],
+    "pistas": [
+      "Olhe a chave e os dois números. Mude só a Posição horizontal x.",
+      "Deixe o x como está e mude a Posição vertical y. Compare com a marca do lugar anterior.",
+      "Digite 160 em Posição horizontal x e confirme. Depois digite 250 em Posição vertical y e confirme."
+    ],
+    "roteiro_demonstracao": [],
+    "acoes_usadas": ["key-position", "restart-key-position"]
   }
 ]

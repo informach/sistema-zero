@@ -332,7 +332,8 @@ export function StudioFullClient({
         if (response.status === 409) {
           openedTaskKeyRef.current = null
           retryTaskHandoff()
-          if (active) setTaskError('A tarefa mudou em outro lugar. Recarreguei o guia para você.')
+          if (active)
+            setTaskError('A tarefa mudou em outro lugar. Recarreguei o Guia do Pensa para você.')
           return
         } else if (active && response.ok && updated?.task) {
           updateTaskProgress(updated.task.progress)
@@ -439,7 +440,9 @@ export function StudioFullClient({
               } | null
               if (response.status === 409) {
                 retryTaskHandoff()
-                throw new Error('A tarefa mudou em outro lugar. Recarreguei o guia para você.')
+                throw new Error(
+                  'A tarefa mudou em outro lugar. Recarreguei o Guia do Pensa para você.',
+                )
               }
               if (!response.ok || !body?.task)
                 throw new Error(body?.error?.message ?? 'Não consegui sincronizar a tarefa.')
@@ -771,8 +774,8 @@ export function StudioFullClient({
           <div className="flex max-w-md flex-col items-center gap-3">
             <h2 className="font-black text-xl">Este projeto não está neste aparelho</h2>
             <p className="text-muted-foreground">
-              O guia e o progresso continuam salvos. Você pode recriar o projeto associado com o
-              mesmo identificador e continuar por aqui.
+              O Guia do Pensa e o progresso continuam salvos. Você pode recriar o projeto associado
+              com o mesmo identificador e continuar por aqui.
             </p>
             <button
               type="button"
@@ -806,7 +809,7 @@ export function StudioFullClient({
       ) : openingProject === 'error' ? (
         <div className="grid h-full place-items-center p-6 text-center">
           <div className="flex max-w-md flex-col gap-3">
-            <h2 className="sz-display text-xl">Não conseguimos abrir este trabalho</h2>
+            <h2 className="sz-display text-xl">Não conseguimos abrir este jogo</h2>
             <p className="text-sm text-muted-foreground">
               Ele pode estar em outro aparelho ou aguardando conexão. Tente novamente ou procure na
               sua galeria.
@@ -827,7 +830,7 @@ export function StudioFullClient({
           </div>
         </div>
       ) : openingProject === 'loading' ? (
-        <EmbeddedAppLoadingBody label="Abrindo seu trabalho…" />
+        <EmbeddedAppLoadingBody label="Abrindo seu jogo…" />
       ) : // Espera do guia da tarefa (deep link do Pensa) e espera do pacote viram
       // UMA só: os dois correm em paralelo, e mostrar dois textos diferentes em
       // sequência fazia `/estudio?tarefa=` ter uma tela a mais.

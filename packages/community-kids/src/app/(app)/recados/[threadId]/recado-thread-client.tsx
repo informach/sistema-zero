@@ -12,8 +12,8 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadView } from '@/lib/types'
 
 const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
-  lesson_section: 'Dúvida na aula',
-  studio_submission: 'Sua entrega',
+  lesson_section: 'Dúvida na fase',
+  studio_submission: 'Seu projeto',
   mural_publication: 'Seu jogo no Mural',
   general: 'Recado',
 }
@@ -135,7 +135,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
           back={voltar}
           eyebrow={thread ? CONTEXT_LABEL[thread.contextType] : 'Recado'}
           eyebrowIcon={Mail}
-          title={thread?.title ?? 'Conversa com o professor'}
+          title={thread?.title ?? 'Conversa com a equipe'}
         />
       </KidsBand>
       <KidsBand tone="ceu">
@@ -175,7 +175,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
                         }`}
                       >
                         <p className="mb-1 font-bold text-xs">
-                          {mine ? 'Você' : m.authorName || 'Professor(a)'}
+                          {mine ? 'Você' : m.authorName || 'Equipe'}
                         </p>
                         {mine ? (
                           <p className="whitespace-pre-wrap break-words">{m.body}</p>
@@ -206,7 +206,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
               Clube na tela-modelo. O anel de foco fica na PÍLULA inteira. */}
           <div className="mt-4 flex items-end gap-2 rounded-[1.5rem] bg-(--band-creme) p-2 pl-4 focus-within:ring-2 focus-within:ring-ring">
             <label htmlFor="teacher-reply" className="sr-only">
-              Resposta para o professor
+              Resposta para a equipe
             </label>
             <textarea
               id="teacher-reply"

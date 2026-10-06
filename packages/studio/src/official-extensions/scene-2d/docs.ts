@@ -12,7 +12,7 @@ CENÁRIOS E PISTA: addSceneBackdrop compõe camadas. createSpriteTrack cria a pe
 trackFollow escolhe quem a câmera acompanha sem alterar vida; trackSpeed define avanço;
 trackInput escolhe controles; trackLimit ajusta limites; trackFinishLine define chegada.
 putTrackSprite/repeatTrackSprite funcionam também durante a partida, com sprites de moldes.
-onTrackSpriteEncounter entrega o personagem encontrado; forEachTrackSprite visita as cópias vivas.
+onTrackSpriteEncounter devolve o personagem encontrado; forEachTrackSprite visita as cópias vivas.
 onTrackMoldEncounter registra encontros de um molde, incluindo novas ondas e suas cópias.
 sceneAnimation usa nomes do Pinta. Combine setHealth/hurt/healthOf, setScreenText/setState,
 drawCounter/drawBar e os eventos existentes. Sem funções próprias, objetos de dados ou dt.

@@ -26,13 +26,13 @@ export interface JourneyRewardInfo {
  */
 export const JOURNEY_REWARD_INFO: Record<StudentLevelSlug, JourneyRewardInfo> = {
   noob: {
-    title: 'O Estúdio nas aulas',
-    description: 'Você já cria dentro das aulas, com as peças que o curso ensina.',
+    title: 'O Estúdio nas fases',
+    description: 'Você já cria dentro das fases, com as peças que a aventura ensina.',
   },
   coder: {
     title: 'Estúdio livre + Pinta',
     description:
-      'Você cria os seus jogos quando quiser, com as ferramentas dos cursos que terminou, e desenha os seus personagens no Pinta.',
+      'Você cria os seus jogos quando quiser, com as ferramentas das aventuras que terminou, e desenha os seus personagens no Pinta.',
   },
   hacker: {
     title: 'Pensa + Zappy',

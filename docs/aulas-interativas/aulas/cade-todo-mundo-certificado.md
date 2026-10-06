@@ -10,19 +10,23 @@ Duas seções na mesma aula: revisão final e certificado. O quiz tem três perg
 - **Blocos, nesta ordem:** `fala-revisao-final` (Zappy), `quiz-revisao-final` (quiz). Sem vídeo, ferramenta ou texto adicional.
 - **Conteúdo:** [perguntas, alternativas e explicações](../proposta-quizzes-cursos-curtos-2026-10-03.md).
 
-**Zappy na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
+**Zappy na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora vamos relembrar essas regras com três perguntas. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
 ### Seção 2. Comemore sua criação
 
 A conclusão desta seção exige assistir ao vídeo e pegar o certificado.
 A revisão de 29/09/2026 segue o encerramento da Aula 1 já gravada: a última fala é a ação
-de saída. A comemoração vem antes de pegar o certificado; a narração termina em **Concluir aula**.
+de saída. A comemoração vem antes de pegar o certificado; a narração termina em **Concluir fase**.
 
 A fala reconhece o que foi programado, pede **Pegar meu certificado** e, após o download,
-**Concluir aula**. Duração alvo de 15 a 25 segundos. Não repetir as duas aulas nem ensinar a
+**Concluir fase**. Duração alvo de 20 a 30 segundos. Não repetir as duas aulas nem ensinar a
 procurar pastas ou baixar de novo. Esses detalhes ficam no tutorial **Como pegar seu certificado**.
 
 Conferir os estados reais antes da gravação: o botão inicial é **Pegar meu certificado**;
 para quem já emitiu, **Baixar certificado (PDF)**. A mensagem não atribui à criança o desenho
 do jardim e dos personagens preparados. Não há oferta, venda ou pedido para convencer um
 responsável. O vídeo atual precisa ser substituído por uma nova gravação desta fala.
+
+Vocabulário da aventura (06/10/2026): o PDF sem imagem base tem o título **Certificado de Criador**
+e a frase "completou a aventura Cadê Todo Mundo?", no lugar de "concluiu Cadê Todo Mundo?". A fala
+e o Zappy terminam em **Concluir fase**.

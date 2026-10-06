@@ -24,14 +24,14 @@ export function KidsLockedCourse({ reason }: { reason?: JourneyLockReason }) {
       chipIcon={tierReward ? Gift : Lock}
       title={
         tierReward
-          ? 'Este curso é um prêmio!'
+          ? 'Esta aventura é um prêmio!'
           : foundationFirst
-            ? 'Tem um curso antes deste'
-            : 'Este curso abre mais pra frente'
+            ? 'Tem uma aventura antes desta'
+            : 'Esta aventura abre mais pra frente'
       }
       actions={
         <Link href="/cursos" className="sz-btn-gradient">
-          <BookOpen className="size-4" aria-hidden /> Ver meus cursos
+          <BookOpen className="size-4" aria-hidden /> Ver minhas aventuras
         </Link>
       }
     >
@@ -39,10 +39,10 @@ export function KidsLockedCourse({ reason }: { reason?: JourneyLockReason }) {
         {/* ⚠️ Sem "curso-base" nem "etapa": são termos de quem monta o curso. A criança
             precisa saber o que fazer, não como a gente organiza o catálogo. */}
         {tierReward
-          ? 'Termine os cursos desta trilha e publique os seus jogos no Mural. Quando você fechar a trilha, este abre sozinho. É o seu prêmio!'
+          ? 'Termine as aventuras desta trilha e publique os seus jogos no Mural. Quando você fechar a trilha, esta abre sozinha. É o seu prêmio!'
           : foundationFirst
-            ? 'Tem um curso que vem antes deste. Termine ele e publique o seu jogo no Mural, e aí este aqui abre. Na lista de cursos, o cartão mostra qual é.'
-            : 'Este curso abre quando você chegar nesta parte do mapa.'}
+            ? 'Tem uma aventura que vem antes desta. Termine ela e publique o seu jogo no Mural, e aí esta aqui abre. Na lista de aventuras, o cartão mostra qual é.'
+            : 'Esta aventura abre quando você chegar nesta parte do mapa.'}
       </p>
     </KidsRecado>
   )

@@ -31,6 +31,7 @@ import {
   serializeFloatGeometry,
   topInsetBelow,
 } from '../lib/lesson-video-float'
+import { useLessonCopy } from './lesson-copy-context'
 
 /**
  * O VÍDEO FLUTUANTE da aula (03/10/2026). Relato que o originou: a criança deu play, o vídeo
@@ -275,6 +276,7 @@ const ARROWS: Record<string, 'left' | 'right' | 'up' | 'down'> = {
 }
 
 function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNode }) {
+  const { video } = useLessonCopy()
   const active = slot.mode !== null
   const floating = slot.mode === 'floating'
   const tucked = slot.mode === 'hidden'
@@ -466,7 +468,7 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
         ref={frame}
         data-corner={floating ? corner : undefined}
         data-busy={floating && busy ? '' : undefined}
-        {...(floating ? { role: 'region', 'aria-label': 'Vídeo da aula', ...hidden } : {})}
+        {...(floating ? { role: 'region', 'aria-label': video.titulo, ...hidden } : {})}
         className={cn(
           'sz-lesson-video-frame',
           // `px-1.5 pb-1.5` é a moldura (`FLOAT_FRAME`, 6px): entra na conta da altura.
@@ -489,7 +491,7 @@ function FloatSlot({ slot, children }: { slot: VideoFloatSlot; children: ReactNo
             <button
               type="button"
               // Começa pelo texto à vista (WCAG 2.5.3) e diz o que a alça faz.
-              aria-label="Vídeo da aula: mover para outro canto"
+              aria-label={video.mover}
               aria-describedby={hintId}
               {...gestureHandlers}
               onKeyDown={moveByKey}

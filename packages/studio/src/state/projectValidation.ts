@@ -741,7 +741,7 @@ function describeBlocklyValidationFailure(
     Array.isArray(blocksSection) ||
     !isPlainRecord(blocksSection)
   ) {
-    return 'seção "blocks" ausente ou não-objeto'
+    return 'campo "blocks" ausente ou não-objeto'
   }
   if (blocksSection.languageVersion !== 0) {
     return `languageVersion inesperado: ${JSON.stringify(blocksSection.languageVersion)}`
@@ -757,7 +757,7 @@ function describeBlocklyValidationFailure(
       STORED_BLOCKSTATE_LIMITS,
     )
   ) {
-    return 'seção "variables" inválida'
+    return 'campo "variables" inválido'
   }
 
   const allowedTypes = getAllowedBlocklyBlockTypes(installedExtensions)

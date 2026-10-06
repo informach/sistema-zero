@@ -1,5 +1,13 @@
 import { describe, expect, test } from 'bun:test'
-import { linhasVisiveis, listarFontes, varrerCopy } from './helpers/copy-scan'
+import { readFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
+import {
+  linhasVisiveis,
+  listarFontes,
+  literaisVisiveis,
+  naoETextoDeTela,
+  varrerCopy,
+} from './helpers/copy-scan'
 
 /**
  * A voz da casa é humana e **sem travessão** (—): ele é marca registrada de texto de IA, e
@@ -23,6 +31,30 @@ describe('copy do aluno: sem travessão', () => {
     expect(listarFontes().length).toBeGreaterThan(100)
 
     expect(varrerCopy(comTravessao)).toEqual([])
+  })
+
+  /**
+   * O que a criança lê nas fases mora no member-shell desde 06/10/2026: o vocabulário dela
+   * (`lib/lesson-copy-kids.ts`), os componentes das telas de aula e as frases das rotas que chegam
+   * à tela. Lá a varredura é pelo PARSER (`literaisVisiveis`), porque o código compartilhado tem
+   * travessão legítimo fora do texto de tela (o "—" de data ausente do `format.ts`, por exemplo, é
+   * símbolo e não fica no alcance). O Estúdio e o core ficam de fora: são do adulto também, e o
+   * texto de lá tem dono próprio.
+   */
+  test('nem o texto do member-shell que aparece nas fases', () => {
+    const pacotes = join(import.meta.dir, '..', '..')
+    const fontes = [
+      ...listarFontes(join(pacotes, 'member-shell', 'src', 'components')),
+      ...listarFontes(join(pacotes, 'member-shell', 'src', 'routes')),
+      join(pacotes, 'member-shell', 'src', 'lib', 'lesson-copy-kids.ts'),
+    ].filter((f) => !/\.test\.tsx?$/.test(f))
+    expect(fontes.length).toBeGreaterThan(60)
+    const achados = fontes.flatMap((fonte) =>
+      literaisVisiveis(readFileSync(fonte, 'utf8'), fonte)
+        .filter((l) => !naoETextoDeTela(l) && comTravessao(l.texto))
+        .map((l) => `${relative(pacotes, fonte).replaceAll('\\', '/')}:${l.linha}`),
+    )
+    expect(achados).toEqual([])
   })
 
   test('o detector realmente pega copy e realmente ignora comentário', () => {

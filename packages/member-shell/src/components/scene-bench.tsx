@@ -165,8 +165,10 @@ export function Medida({
       }`}
     >
       {digitavel ? (
-        <div className={umaLinha ? 'contents' : 'flex items-center justify-between gap-2'}>
-          <label className="shrink-0" htmlFor={id}>
+        <div
+          className={umaLinha ? 'contents' : 'flex flex-wrap items-center justify-between gap-2'}
+        >
+          <label className={umaLinha ? 'shrink-0' : 'min-w-0'} htmlFor={id}>
             {label}
           </label>
           <input
@@ -189,7 +191,7 @@ export function Medida({
         </div>
       ) : (
         <div className={umaLinha ? 'contents' : 'flex justify-between gap-2'}>
-          <label className="shrink-0" htmlFor={id}>
+          <label className={umaLinha ? 'shrink-0' : 'min-w-0'} htmlFor={id}>
             {label}
           </label>
           {/* O negativo com o sinal de menos do conteúdo ("−9"), como a instrução escreve.

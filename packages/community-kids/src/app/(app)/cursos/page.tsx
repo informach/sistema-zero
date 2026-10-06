@@ -43,7 +43,7 @@ export default async function CatalogPage() {
       checkStudioAccessReadonly().catch(() => null),
       getSession(),
       // O progresso das aventuras (aulas feitas) mora em "Meus cursos"; o catálogo é vitrine.
-      // Best-effort: sem ele, o cartão cai no "Liberado" + "Acessar curso".
+      // Best-effort: sem ele, o cartão cai no "Liberado" + "Acessar aventura".
       listMyCourses().catch(() => null),
       // Os blocos conquistados: sem nenhum, o Estúdio livre está trancado e o atalho some.
       getStudioUnlocksReadonly().catch(() => null),
@@ -85,10 +85,10 @@ export default async function CatalogPage() {
         <KidsBand tone="creme">
           <div className="flex flex-col items-center text-center">
             <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">
-              Cursos da Jornada do Criador
+              Aventuras da Jornada do Criador
             </h1>
             <p className="mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-              De Faísca a Lenda. Toque num nível para ver os cursos da trilha dele!
+              De Faísca a Lenda. Toque num nível para ver as aventuras da trilha dele!
             </p>
             {/* O amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele. */}
             <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-(--sz-kids-tinta) text-[0.9375rem]">
@@ -122,7 +122,7 @@ export default async function CatalogPage() {
               <KidsSectionHeader
                 id="aventuras-da-trilha"
                 title={`Aventuras da trilha ${current.label}`}
-                subtitle="Toque numa aventura para abrir o curso."
+                subtitle="Toque numa aventura para abrir."
                 actions={
                   trilha && trilha.total > 0 ? (
                     <span className="inline-flex h-10 items-center gap-2 rounded-full bg-card px-4 font-extrabold text-sm">
@@ -160,9 +160,9 @@ export default async function CatalogPage() {
   return (
     <>
       <KidsBand tone="creme">
-        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">Todos os cursos</h1>
+        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">Todas as aventuras</h1>
         <p className="mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-          Suas aventuras de aprender: as que já são suas e as que você ainda pode ganhar.
+          Suas aventuras: as que já são suas e as que você ainda pode ganhar.
         </p>
       </KidsBand>
       <KidsBand tone="lilas">
@@ -170,7 +170,7 @@ export default async function CatalogPage() {
           <div className="kids-carta flex flex-col items-center gap-4 px-6 py-12 text-center">
             <KidsMascot expression="thinking" className="kid-float size-16" />
             <p className="sz-display text-xl">
-              Os cursos estão a caminho! Volte daqui a pouquinho.
+              As aventuras estão a caminho! Volte daqui a pouquinho.
             </p>
           </div>
         ) : (

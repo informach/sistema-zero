@@ -364,10 +364,10 @@ export function createProjectStore(
     )
     const error = studioProBuildFileLimitError(files, proBuildLimits)
     if (error === 'TOO_MANY_FILES') {
-      return `Esta atividade aceita no máximo ${proBuildLimits.maxFiles} arquivos.`
+      return `Este projeto aceita no máximo ${proBuildLimits.maxFiles} arquivos.`
     }
-    if (error === 'FILE_TOO_LARGE') return 'Um arquivo excede o tamanho permitido nesta atividade.'
-    if (error === 'TOTAL_TOO_LARGE') return 'O projeto excede o tamanho permitido nesta atividade.'
+    if (error === 'FILE_TOO_LARGE') return 'Um arquivo excede o tamanho permitido neste projeto.'
+    if (error === 'TOTAL_TOO_LARGE') return 'O projeto excede o tamanho permitido.'
     if (error === 'REQUEST_TOO_LARGE') {
       return 'O projeto excede o tamanho permitido para enviar ao compilador.'
     }

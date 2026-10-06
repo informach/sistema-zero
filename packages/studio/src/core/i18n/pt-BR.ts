@@ -42,7 +42,7 @@ export const ptBR: Record<string, string> = {
   'topbar.hint.download': 'um .zip com o código, para abrir no computador',
   'topbar.hint.export': 'um .zip pronto para pôr no ar',
   'topbar.hint.convertPro': 'troca os blocos por um projeto de código, sem volta',
-  'topbar.hint.cloudSync': 'troca o que está aqui pela versão que você entregou',
+  'topbar.hint.cloudSync': 'troca o que está aqui pela versão que você enviou',
   'topbar.modes': 'Modo de edição',
   'topbar.undo': 'Desfazer',
   'topbar.redo': 'Refazer',
@@ -191,7 +191,7 @@ export const ptBR: Record<string, string> = {
   'projects.importWarn.proDowngrade':
     'Projeto profissional foi aberto como clássico (a estrutura de pastas não pôde ser lida).',
   'projects.importWarn.locked':
-    'Este projeto usa ferramentas que você ainda vai ganhar nos cursos: {names}. Ele ficou salvo e vai abrir quando você ganhar essas ferramentas.',
+    'Este projeto usa ferramentas que você ainda vai ganhar nas aventuras: {names}. Ele ficou salvo e vai abrir quando você ganhar essas ferramentas.',
 
   'kits.title': 'Que jogo você quer criar?',
   'kits.subtitle': 'Escolha um jogo pronto para abrir, jogar e mexer do seu jeito.',
@@ -356,14 +356,14 @@ export const ptBR: Record<string, string> = {
   'share.cover.heading': 'Capa do projeto',
   'share.cover.generate': 'Gerar capa',
   'share.cover.upload': 'Enviar uma imagem',
-  'share.cover.useAdmin': 'Usar a capa do curso',
+  'share.cover.useAdmin': 'Usar a capa da aventura',
   'share.cover.empty':
     'Ainda não tem capa. Clique em "Gerar capa" para tirar uma foto do seu projeto.',
-  'share.cover.usingAdmin': 'Usando a capa do curso.',
+  'share.cover.usingAdmin': 'Usando a capa da aventura.',
   'share.cover.failUpload':
     'Não consegui tirar a foto automática. Tire um print da sua tela e clique em "Enviar uma imagem".',
   'share.cover.failUsedAdmin':
-    'Não consegui tirar a foto do projeto, então usei a capa do curso. Se quiser, envie a sua imagem.',
+    'Não consegui tirar a foto do projeto, então usei a capa da aventura. Se quiser, envie a sua imagem.',
   'share.cover.badType': 'Envie um arquivo de imagem (PNG ou JPG).',
   'share.cover.tooBig': 'Essa imagem é muito grande. Tente uma menor.',
   'share.needAll': 'Preencha o título, o resumo e a capa para publicar.',

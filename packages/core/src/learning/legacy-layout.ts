@@ -52,7 +52,7 @@ export function legacyLessonSections(
         : isLegacyMaterialLesson(blocks)
           ? 'Explore o material'
           : activity.some((b) => b.kind === 'video')
-            ? 'Assista à aula'
+            ? 'Assista ao vídeo'
             : title,
       activity.map((b) => b.id),
     ),
@@ -67,7 +67,7 @@ export function legacyLessonSections(
           {
             ...defaultLessonSection(
               quizzes[0].id,
-              'Feche a aula',
+              'Faça o quiz',
               quizzes.map((b) => b.id),
             ),
             intent: 'closing' as const,

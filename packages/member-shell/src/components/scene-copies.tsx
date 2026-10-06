@@ -57,8 +57,8 @@ export function CopyVsOriginalStage({ state, cast }: { state: SceneState; cast?:
     <SceneCanvas
       cast={actors}
       mundo={mundo}
-      titulo="A aula, o arquivo e o Estúdio"
-      descricao={`O jogo da aula continua ${copies.lessonColor}. ${copies.fileColor ? `O arquivo jogo-da-nave.szproject.json guarda a versão ${copies.fileColor}.` : 'Ainda não há arquivo.'} ${copies.studioColor ? `O projeto do Estúdio está ${copies.studioColor}.` : 'O Estúdio ainda não tem projetos.'}`}
+      titulo="A fase, o arquivo e o Estúdio"
+      descricao={`O jogo da fase continua ${copies.lessonColor}. ${copies.fileColor ? `O arquivo jogo-da-nave.szproject.json guarda a versão ${copies.fileColor}.` : 'Ainda não há arquivo.'} ${copies.studioColor ? `O projeto do Estúdio está ${copies.studioColor}.` : 'O Estúdio ainda não tem projetos.'}`}
     >
       {(palco) => (
         <>
@@ -87,7 +87,7 @@ export function CopyVsOriginalStage({ state, cast }: { state: SceneState; cast?:
             className="fill-scene-ink"
             fontWeight="700"
           >
-            O jogo da aula
+            O jogo da fase
           </Texto>
           <Texto
             x={303}
@@ -181,7 +181,7 @@ export function CopyVsOriginalControls({
         <p className="text-sm text-muted-foreground">Importar abre depois que o arquivo existir.</p>
       )}
       <Escolha
-        label="Cor da nave na aula"
+        label="Cor da nave na fase"
         valor={copies.lessonColor}
         opcoes={COLORS.map((color) => ({ id: color, label: color }))}
         onChange={(color) => dispatch({ type: 'recolor', side: 'lesson', color })}

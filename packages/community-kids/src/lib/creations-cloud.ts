@@ -259,7 +259,7 @@ export class CloudListTimeoutError extends Error {
 /** Recados do selo, na linguagem da criança. */
 export const CLOUD_MESSAGES = {
   clientOutdated:
-    'Esta criação usa uma versão mais nova. Atualize a página; seu trabalho continua guardado neste aparelho.',
+    'Esta criação usa uma versão mais nova. Atualize a página; sua criação continua guardada neste aparelho.',
   quota: 'Sua conta está sem espaço para guardar mais. Apague o que não usa mais.',
   tooBig: 'Esse jogo ou desenho é grande demais para guardar na conta.',
   forbidden: 'Sua conta não tem essa ferramenta liberada para guardar na nuvem.',

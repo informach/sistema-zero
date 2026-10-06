@@ -202,7 +202,7 @@ function PlayLinkActions({
                 toque); o clique continua vivo e mostra o recado. */}
             <span className="sr-only">
               {' '}
-              (trancado: conclua mais cursos para ter as ferramentas deste jogo)
+              (trancado: conclua mais aventuras para ter as ferramentas deste jogo)
             </span>
           </button>
         ) : (
@@ -370,7 +370,7 @@ const ReactionBar = memo(function ReactionBar({
 })
 
 /**
- * Botão "Avisar professor" — o controle de segurança MAIS importante do fórum kids.
+ * Botão "Avisar a equipe" — o controle de segurança MAIS importante do fórum kids.
  * Alvo de toque ≥44px + ícone (a11y): não pode ser o link minúsculo que era, perdido
  * entre as reações coloridas, para uma criança aflita que precisa denunciar algo.
  */
@@ -381,7 +381,7 @@ function ReportButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-3 text-muted-foreground text-sm transition-colors hover:bg-muted/60 hover:text-foreground"
     >
-      <Flag className="size-4" /> Avisar professor
+      <Flag className="size-4" /> Avisar a equipe
     </button>
   )
 }

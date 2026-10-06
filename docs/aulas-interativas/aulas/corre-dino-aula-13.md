@@ -24,33 +24,33 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 ### Seção 1. Compare os números negativos
 
-**Tarefa:** Compare os sinais e acompanhe a régua de -5 até -9.
+**Tarefa:** Sua vez! Compare os sinais da pergunta e acompanhe o marcador na régua, de -5 até -9. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-regua-negativos → fala-regua-negativos → experiencia-number-line.
 
-**Zappy na página (não gravar):** Compare os sinais e acompanhe a régua de -5 até -9.
+**Zappy na página (não gravar):** Sua vez! Compare os sinais da pergunta e acompanhe o marcador na régua, de -5 até -9. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `number-line`. Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >. Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta. Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Compare a base com cada cacto
 
-**Tarefa:** Compare base, cactos novos e antigos; depois desligue a condição e avance.
+**Tarefa:** Sua vez! Compare a base com os cactos novos e os antigos e, depois, desligue a condição e avance. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-o-que-o-freio-segura → fala-o-que-o-freio-segura → experiencia-aceleracao.
 
-**Zappy na página (não gravar):** Compare base, cactos novos e antigos; depois desligue a condição e avance.
+**Zappy na página (não gravar):** Sua vez! Compare a base com os cactos novos e os antigos e, depois, desligue a condição e avance. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `acceleration`. Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram. Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base. Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 3. Guarde a velocidade base
 
-**Tarefa:** Prepare velocidade em -5 e use sua leitura à esquerda da conta do vx.
+**Tarefa:** Agora guarde a velocidade base numa variável! Crie velocidade com -5 em Ao iniciar e use o valor dela na conta do vx dos cactos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-numero-que-manda → fala-numero-que-manda.
 
-**Zappy na página (não gravar):** Prepare velocidade em -5 e use sua leitura à esquerda da conta do vx.
+**Zappy na página (não gravar):** Agora guarde a velocidade base numa variável! Crie velocidade com -5 em Ao iniciar e use o valor dela na conta do vx dos cactos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No Ao iniciar, crie a variável velocidade com valor -5.
 - No vx dos novos cactos, use o valor da variável velocidade menos um número de 0 a 1.
@@ -58,60 +58,60 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 ### Seção 4. Prepare o relógio da dificuldade
 
-**Tarefa:** Prepare um relógio de 5 segundos com Se jogando, separado dos outros.
+**Tarefa:** Agora prepare o relógio da dificuldade! Crie um relógio de 5 segundos com um Se jogando, separado dos outros dois. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-relogio-da-dificuldade → fala-relogio-da-dificuldade.
 
-**Zappy na página (não gravar):** Prepare um relógio de 5 segundos com Se jogando, separado dos outros.
+**Zappy na página (não gravar):** Agora prepare o relógio da dificuldade! Crie um relógio de 5 segundos com um Se jogando, separado dos outros dois. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Prepare um relógio de 5 segundos com Se jogando.
 
 ### Seção 5. Diminua a base até o limite
 
-**Tarefa:** Some -1 em velocidade somente jogando e enquanto a base for maior que -9.
+**Tarefa:** Agora faça a corrida acelerar até um limite! No relógio de 5 segundos, some -1 em velocidade só enquanto a base for maior que -9. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-acelerador-e-freio → fala-acelerador-e-freio.
 
-**Zappy na página (não gravar):** Some -1 em velocidade somente jogando e enquanto a base for maior que -9.
+**Zappy na página (não gravar):** Agora faça a corrida acelerar até um limite! No relógio de 5 segundos, some -1 em velocidade só enquanto a base for maior que -9. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Num relógio próprio, se o estado do jogo é jogando e a velocidade é maior que o limite, some -1 em velocidade. O relógio é seu, de 2 a 10 segundos, e o limite também, de -14 a -7.
 - Use um único Somar em variável velocidade no projeto inteiro.
 
 ### Seção 6. Complete a descrição dos controles
 
-**Tarefa:** Descreva a tarefa e os três controles que já funcionam.
+**Tarefa:** Agora complete a descrição do seu jogo! Troque a descrição pela frase Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-descricao-completa → fala-descricao-completa.
 
-**Zappy na página (não gravar):** Descreva a tarefa e os três controles que já funcionam.
+**Zappy na página (não gravar):** Agora complete a descrição do seu jogo! Troque a descrição pela frase Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Descreva objetivo e os três controles em Ao iniciar.
 
 ### Seção 7. Confira o que você construiu
 
-**Tarefa:** Retome os sorteios e a dificuldade da corrida nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Tarefa:** Hora de lembrar o que você construiu! As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
-**Zappy na página (não gravar):** Retome os sorteios e a dificuldade da corrida nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Zappy na página (não gravar):** Hora de lembrar o que você construiu! As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 8. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu Corre, Dino! Teste a corrida inteira, clique em Verificar esta parte e depois em Enviar meu projeto, confirmando em Enviar. Se quiser, mostre o seu jogo no Mural e, por último, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu Corre, Dino! Teste a corrida inteira, clique em Verificar esta parte e depois em Enviar meu projeto, confirmando em Enviar. Se quiser, mostre o seu jogo no Mural e, por último, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - No Ao iniciar, crie a variável velocidade com valor -5.
 - No vx dos novos cactos, use o valor da variável velocidade menos um número de 0 a 1.
@@ -121,11 +121,11 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 - Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
 - Use um único bloco de criar cacto no projeto inteiro.
 - No Ao iniciar, mantenha a variável pontos com valor 0.
-- Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Aula 11.
+- Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Fase 11.
 - Mantenha retirado o desenho provisório da área de colisão.
 - Descreva objetivo e os três controles em Ao iniciar.
 
-Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir aula. Não bloquear a conclusão por publicação.
+Publicação opcional após o envio: Compartilhar → resumo já preenchido → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Copiar link de jogar → Fechar → Concluir fase. Não bloquear a conclusão por publicação.
 
 ## Blocos disponíveis
 

@@ -132,7 +132,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
               soaria errado; "a trilha de Construtor(a)" é o que abre de fato. */}
           <p className="mt-4 font-medium text-[1.0625rem] text-muted-foreground">
             {beyondHorizon
-              ? `Os cursos da trilha de ${levelInfo(levelSlug).label} ainda estão sendo criados. Volte daqui a pouquinho!`
+              ? `As aventuras da trilha de ${levelInfo(levelSlug).label} ainda estão sendo criadas. Volte daqui a pouquinho!`
               : `Complete as trilhas anteriores da sua jornada e a trilha de ${levelInfo(levelSlug).label} vai abrir sozinha, com direito a recompensas!`}
           </p>
           <Link href="/cursos" className="sz-btn-gradient mt-6 gap-2 px-6">
@@ -172,13 +172,13 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
             {/* ⚠️ A trilha se chama pelo POSTO do aluno ("Trilha Faísca"), nunca pelo degrau
                 interno ("Iniciante 2D"), que é vocabulário de quem monta o curso. */}
             <h1 className="sz-display text-[clamp(2rem,3.6vw,3rem)]">
-              {tier ? `Trilha ${owner.label}` : 'Cursos da Lenda 👑'}
+              {tier ? `Trilha ${owner.label}` : 'Aventuras da Lenda 👑'}
             </h1>
           </div>
         </div>
         {tier ? null : (
           <p className="mt-4 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-            A formatura! Cursos extras que abriram por você ter chegado ao topo da jornada.
+            Você chegou ao topo da jornada! Estas aventuras extras abriram para você.
           </p>
         )}
         {hint ? (
@@ -195,7 +195,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
           <section className="kids-carta flex flex-col items-center gap-4 px-6 py-14 text-center">
             <KidsMascot expression="thinking" className="kid-float size-16" />
             <p className="sz-display text-xl">
-              Os cursos desta trilha estão a caminho! Volte daqui a pouquinho.
+              As aventuras desta trilha estão a caminho! Volte daqui a pouquinho.
             </p>
             {/* Trilha vazia não pode virar beco: quem tem o Estúdio já pode criar o
               que quiser enquanto os cursos não chegam. */}

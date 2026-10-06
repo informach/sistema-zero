@@ -642,7 +642,7 @@ o que EXISTE em jogo de plataforma.
 
 ### Meu time
 
-**Ganhar a criatura … no nível …** (até 6) é o inicial que a professora dá.
+**Ganhar a criatura … no nível …** (até 6) é o inicial que você ganha no começo.
 **Ganhar … bola(s) de captura de força … %**. A força é a chance base: 60 é a
 comum, 100 é a bola mestra; a mochila guarda até **999 bolas de captura**.
 **Curar todas as minhas criaturas** é o Centro de Cura
@@ -668,7 +668,7 @@ troca sozinho quando a criatura dele cai, e não dá para fugir nem jogar bola).
 O menu sai dos golpes da sua criatura, e os botões aparecem sozinhos: sem bola, sem
 "Bola"; time de um, sem "Trocar"; treinador, sem "Fugir".
 
-> ⭐ **A bola é 3× mais difícil com a vida cheia**. Nunca impossível, mas a lição
+> ⭐ **A bola é 3× mais difícil com a vida cheia**. Nunca impossível, mas o segredo
 > é ENFRAQUECER primeiro. E **quase pegar parece quase pegar**: a bola treme mais.
 
 **peguei a criatura?** + **Quando a batalha terminar** e **ganhei a batalha?** (os

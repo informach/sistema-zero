@@ -10,20 +10,24 @@ Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo
 
 Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
 
+Toda fala é uma conversa contínua com quem está fazendo a fase (Diretrizes, seção 6, revisão de 06/10/2026). Três vozes: "você" para o que é da pessoa e para as ações, "a gente" para pensar junto e convidar, "eu" só quando o narrador demonstra. As frases se ligam umas às outras ("por isso", "mas", "é que", "agora que", "ou seja"; sem "então", que é o nome de uma parte do bloco Se), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"), um chamado por momento importante. A aplicação que vem logo depois de uma experiência começa pela retomada, uma ponte de até umas 50 palavras: primeiro o problema no trabalho da pessoa, quando há o que testar ("Tá vendo?" com o porquê), depois a lembrança ("Lembra da experiência da parte anterior?", com o resultado numa frase) e um anúncio só, colado ao primeiro passo. Depois do teste da montagem, a conferência vem uma vez, como caminho da correção ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …"). A ponte do Zappy começa convidando ("Sua vez!" depois de uma demonstração; "Agora…!" ou "Hora de…!" antes de uma aplicação) e termina na ação real de saída.
+
+Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos títulos, a criança ouve e lê fase, parte e Mapa da Aventura, e os botões pelo nome novo (Próxima parte, Concluir fase, Enviar (1), Recebido!). Quem recebe o envio e responde os recados é a equipe. Aula, seção e caderno ficam só nas notas da equipe.
+
 ## Seção 1. Separe o miolo da borda
 
 ### Clipe `video-preenchimento-contorno` · Separe o miolo da borda
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda "linha: Contorno · dentro: Preenchimento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima seção.
+**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda "linha: Contorno · dentro: Preenchimento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender as duas partes de uma forma: o Preenchimento, que fica dentro, e o Contorno, que é a linha da borda.
 >
-> Olha aqui: a pedra começa com Preenchimento azul e Contorno laranja. Quando eu deixo o Contorno em Sem cor, a linha laranja da borda some, e fica só o azul por dentro.
+> Olha aqui: a pedra começa com Preenchimento azul e Contorno laranja. Quando eu deixo o Contorno em Sem cor, a linha laranja da borda some, e fica só o azul por dentro, porque o Contorno é a linha da borda.
 >
-> Agora eu volto o Contorno com cor e deixo o Preenchimento em Sem cor. A linha laranja volta, e por dentro dela aparece o xadrez do fundo. Sem cor não é branco: é transparente.
+> Agora eu volto o Contorno com cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo. É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.
 >
 > Sabe um livro de colorir? A linha preta já vem desenhada, e você pinta por dentro dela. No Pinta, a linha é o Contorno, e a pintura de dentro é o Preenchimento. Cada parte tem a sua cor, e cada uma pode ficar em Sem cor.
 >
@@ -31,9 +35,9 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 >
 > Daqui a pouco, a sua pedra vai ter uma cor no Preenchimento e o Contorno em Sem cor.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Agora tire a cor de uma parte de cada vez e compare a pedra.
+**Zappy na página (não gravar):** Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Prepare o desenho em vetor
 
@@ -41,50 +45,54 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Abra meu Pinta. Em Meus desenhos, escolha Criar novo. Em Como você quer desenhar?, escolha Vetor. Escolha Personagem e depois Médio, 64 por 64. Escreva asteroide e clique em Começar a desenhar. Se já começou esse trabalho neste curso, retome o mesmo cartão.
+> "Lembra da experiência da parte anterior? A pedra tinha uma cor no Preenchimento, por dentro, e outra no Contorno, na borda. Agora a gente vai preparar o seu asteroide em Vetor, porque é no Vetor que as formas têm essas duas partes.
 >
-> O vetor usa formas e pontos, como a pedra que você ampliou na aula 2. Confira o nome e a área quadrada. Reserve a parte de cima para as chamas que faremos depois; a pedra vai ocupar o centro e a parte de baixo.
+> Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Vetor. Depois escolha Personagem e Médio, 64 por 64. Escreva asteroide e clique em Começar a desenhar. Se você já começou esse desenho nesta aventura, retome o mesmo cartão.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
+> Confira o nome asteroide e a área quadrada. Por último, deixe a parte de cima livre para as chamas que você vai desenhar depois, porque a pedra vai ocupar o centro e a parte de baixo.
+>
+> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
 
-**Zappy na página (não gravar):** Crie um personagem em Vetor, tamanho Médio, chamado asteroide.
+**Zappy na página (não gravar):** Agora prepare o desenho do seu asteroide! Crie um personagem em Vetor, tamanho Médio, chamado asteroide. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 ## Seção 3. Feche a forma da pedra
 
 ### Clipe `video-forma-pedra` · Feche a forma da pedra
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Sem nenhuma forma selecionada, escolha uma cor para Preenchimento. Em Contorno, escolha Sem cor. Pegue Caneta. Clique para marcar pontos ao redor da pedra, deixando espaço livre em cima. Seis pontos podem servir de começo; o formato é seu.
+> "Agora desenhe a forma da sua pedra. Com nenhuma forma selecionada, escolha uma cor para Preenchimento e, em Contorno, escolha Sem cor, como na experiência do começo desta fase.
 >
-> Para fechar, clique no primeiro ponto. O interior deve ganhar a cor escolhida. Se ficou uma linha aberta, termine no primeiro ponto antes de seguir. Confira se toda a pedra está dentro da área do desenho.
+> Depois pegue a Caneta e clique para marcar pontos ao redor da pedra, deixando espaço livre em cima. Seis pontos podem servir de começo, e o formato é seu.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
+> Para fechar, clique no primeiro ponto. Olha só: o interior ganha a cor que você escolheu, porque agora a forma está fechada. Depois confira se toda a pedra está dentro da área do desenho.
+>
+> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
 
-**Zappy na página (não gravar):** Desenhe uma pedra com a Caneta e feche a forma.
+**Zappy na página (não gravar):** Agora feche a forma da sua pedra! Desenhe a pedra com a Caneta e termine no primeiro ponto. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 ## Seção 4. Arredonde os pontos
 
 ### Clipe `video-curvas` · Arredonde os pontos
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Escolha Editar os pontos e clique na pedra. Selecione um ponto do contorno e use Ponto suave. Arraste as alças que aparecem para arredondar esse trecho. Faça o mesmo nos cantos que você quiser suavizar.
+> "Agora arredonde a sua pedra. Escolha Editar os pontos e clique na pedra. Selecione um ponto do contorno e use Ponto suave. Repare: aparecem alças nesse ponto. Arraste essas alças para arredondar o trecho e faça o mesmo nos cantos que você quiser suavizar.
 >
-> Afaste a imagem e confira o contorno. A pedra pode ser irregular; ela só precisa continuar fechada, inteira no quadro e com espaço em cima. Se uma curva criou uma ponta comprida, ajuste as alças ou use Desfazer e tente uma mudança menor. Aguarde o salvamento.
+> Depois afaste a imagem e confira o contorno. A pedra pode ser irregular, mas precisa continuar fechada, inteira no quadro e com espaço em cima. Se uma curva criou uma ponta comprida, ajuste as alças ou use Desfazer e tente uma mudança menor, porque alça puxada demais estica a curva para fora.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
+> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
 
-**Zappy na página (não gravar):** Transforme alguns cantos em curvas para dar forma à pedra.
+**Zappy na página (não gravar):** Agora arredonde os pontos da sua pedra! Transforme alguns cantos em curvas para dar forma a ela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 ## Seção 5. Acrescente crateras
 
@@ -92,28 +100,34 @@ Nas experiências, o vídeo é uma demonstração: a primeira frase diz o concei
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Clique fora da pedra para tirar a seleção antes de escolher uma cor nova. Assim você prepara a próxima forma sem repintar a pedra inteira. Escolha um tom mais escuro e a ferramenta Círculo. Arraste dentro da pedra para criar uma cratera.
+> "Agora faça crateras na sua pedra. Antes de escolher uma cor nova, clique fora da pedra para tirar a seleção, porque, com a pedra selecionada, a cor nova pintaria a pedra inteira. Depois escolha um tom mais escuro e a ferramenta Círculo, e arraste dentro da pedra para criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.
 >
-> Com Selecionar, escolha a cratera. Use Ctrl+C e Ctrl+V para copiar e colar. Mova a cópia para outro lugar dentro da pedra e mude seu tamanho pelas alças. Faça outra cratera se quiser. Deixe todas dentro do corpo e com tamanhos que você consiga distinguir. Aguarde o salvamento.
+> Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar. Mova a cópia para outro lugar dentro da pedra e mude o tamanho dela pelas alças. Se quiser, faça mais uma.
 >
-> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
+> Para conferir, veja se todas as crateras ficaram dentro do corpo e com tamanhos que você consiga distinguir.
+>
+> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
 
-**Zappy na página (não gravar):** Desenhe pequenas formas dentro da pedra.
+**Zappy na página (não gravar):** Agora acrescente crateras à sua pedra! Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
-## Seção 6. Entregue seu asteroide
+## Seção 6. Envie seu asteroide
 
-### Clipe `video-entrega` · Entregue seu asteroide
+### Clipe `video-entrega` · Envie seu asteroide
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Antes de enviar, confira no seu trabalho: asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.
+> "Hora de enviar o seu asteroide! Antes, confira no seu asteroide: o asteroide é Vetor de 64 por 64, tem forma fechada, curvas e crateras dentro do corpo, e sobra espaço em cima para as chamas. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.
 >
-> Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+> Agora volte para a aba da fase e clique em Escolher no Pinta. Na janela Minhas criações do Pinta, selecione o seu asteroide. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.
+>
+> Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!
+>
+> Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase."
 
-**Zappy na página (não gravar):** Confira asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Envie a arte desta aula pela galeria do Pinta desta seção.
+**Zappy na página (não gravar):** Hora de enviar o seu asteroide! Confira se ele é Vetor de 64 por 64, com forma fechada e crateras dentro do corpo. Depois clique em Escolher no Pinta, selecione o asteroide e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.

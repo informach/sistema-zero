@@ -107,11 +107,12 @@ function foraDoConversor(body: string): string[] {
 }
 
 describe('os personagens do Farol se trocam sem mudar o jogo', () => {
-  test('a lista começa pelo original e só tem nomes curtos, sem acento nem espaço', () => {
-    expect(FAROL_PERSONAGENS[0]).toBe('personagem')
-    expect(FAROL_PERSONAGENS.length).toBeGreaterThanOrEqual(5)
+  test('oito personagens têm nomes reconhecíveis e o original é o aventureiro', () => {
+    expect(FAROL_PERSONAGENS[0]).toBe('aventureiro')
+    expect(FAROL_PERSONAGENS).toHaveLength(8)
     expect(new Set(FAROL_PERSONAGENS).size).toBe(FAROL_PERSONAGENS.length)
-    for (const nome of FAROL_PERSONAGENS) expect(nome).toMatch(/^[a-z]{4,12}$/)
+    for (const nome of FAROL_PERSONAGENS) expect(nome).toMatch(/^[a-z]+(?:-[a-z]+)*$/)
+    expect(FAROL_ASSETS.aventureiro).toEqual(FAROL_ASSETS.personagem)
   })
 
   test('todos têm a caixa de 64 × 64 do sprite e a MESMA área de contato', () => {
@@ -127,11 +128,18 @@ describe('os personagens do Farol se trocam sem mudar o jogo', () => {
     }
   })
 
-  test('quem tem a área de contato do corpo está na lista (nada esquecido fora dela)', () => {
+  test('a área de contato é compartilhada pelo catálogo e pelos aliases antigos', () => {
     const comCorpo = (Object.keys(FAROL_HITBOXES) as FarolAssetName[]).filter(
       (nome) => JSON.stringify(FAROL_HITBOXES[nome]) === JSON.stringify(CORPO),
     )
-    expect(comCorpo.sort()).toEqual([...FAROL_PERSONAGENS].sort())
+    const esperados: FarolAssetName[] = [
+      ...FAROL_PERSONAGENS,
+      'personagem',
+      'menina',
+      'menino',
+      'exploradora',
+    ]
+    expect(comCorpo.sort()).toEqual(esperados.sort())
   })
 
   test('o desenho cabe na caixa, apoia os pés na linha do original e ocupa o contato como ele', () => {

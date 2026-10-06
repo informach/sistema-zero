@@ -8,45 +8,55 @@ Entrada: Variável pontos começa em zero, aumenta somente no acerto e aparece n
 
 Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando ("Sua vez!", "Agora…!", "Hora de…!") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Tá vendo?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").
+
 ## Seção 1. Compare quando dar as vidas
 
 ### Clipe `video-vidas-no-comeco` · Compare quando dar as vidas
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
-> "Esta é a mesma experiência da primeira aula, agora para a gente entender onde as vidas da nave devem ser dadas. Aqui, uma pedra bate na nave de tempos em tempos.
+> "Esta é a mesma experiência da primeira fase, agora para a gente entender onde as vidas da nave devem ser dadas. Aqui, uma pedra bate na nave de tempos em tempos.
 >
-> Olha aqui: eu coloco Dar três vidas à nave em Ao iniciar e clico em Começar o jogo. A nave começa com 3 vidas, e cada batida apaga um coração. No fim do teste, a tela mostra Vidas: 0 e Batidas: 3. As vidas foram dadas uma vez, no começo, e as batidas conseguiram tirar.
+> Olha aqui: eu coloco Dar três vidas à nave em Ao iniciar e clico em Começar o jogo. A nave começa com 3 vidas, e cada batida apaga um coração. Tá vendo? No fim do teste, a tela mostra Vidas: 0 e Batidas: 3, porque as vidas foram dadas uma vez, no começo, e as batidas conseguiram tirar.
 >
-> Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. A batida apaga um coração, mas no quadro seguinte as vidas voltam para 3. No fim do teste, aparece Vidas: 2, porque a última batida foi bem no último quadro. A peça devolve as vidas o tempo todo, e a nave nunca perderia. Por isso, no seu jogo, as vidas vão ser dadas em Ao iniciar.
+> Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. Repare: a batida apaga um coração, mas, no quadro seguinte, as vidas voltam para 3. No fim do teste, aparece Vidas: 2, porque a última batida foi bem no último quadro. Ou seja, a peça devolve as vidas o tempo todo, e a nave nunca perderia. Por isso, no seu jogo, as vidas vão ser dadas em Ao iniciar.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações.
+**Zappy na página (não gravar):** Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Dê e mostre as três vidas
 
 ### Clipe `video-vidas` · Dê e mostre as três vidas
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada: no "Tá vendo?", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Na experiência da seção anterior, você comparou dar as vidas uma vez com dar as vidas de novo em cada quadro. No seu jogo ainda não há corações. Agora prepare as três vidas no começo e mostre o que a nave tem.
+> "Olhe a tela do seu jogo. Tá vendo? Não tem nenhum coração, porque a nave ainda não tem vidas.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
+> Lembra da experiência da parte anterior? Dadas em Ao iniciar, as vidas caíam a cada batida e não voltavam. Agora a gente vai dar três vidas à nave do seu jogo!
 >
-> Primeiro, dê três vidas à nave. Deixe à vista o fim de Ao iniciar. Abra Jogo 2D, depois Vida e placar e Vida. Pegue Dar ao sprite de vida e encaixe no fim de Ao iniciar. Escolha nave e coloque 3. As vidas são dadas na preparação. Se esse bloco se repetisse em cada quadro, ele ficaria devolvendo as vidas perdidas.
+> As vidas são dadas uma vez, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar variável pontos.
 >
-> Deixe à vista o fim de A cada quadro do jogo, depois do placar. Abra Jogo 2D, depois Vida e placar e Vida. pegue Desenhar as vidas do sprite. Encaixe no fim de A cada quadro do jogo, depois do placar. Escolha nave e o formato corações. Coloque x 12, y 48 e tamanho 22. Escolha vermelho. Confira os três corações na tela.
+> Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois do placar. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Desenhar as vidas do sprite e solte nesse lugar.
+>
+> Escolha nave. O formato já vem corações, em x 12, y 48 e tamanho 22: mantenha. Depois, escolha vermelho.
+>
+> Olha só: aparecem três corações na tela, logo abaixo do placar!
+>
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Dar ao sprite nave 3 de vida, e, no fim de A cada quadro do jogo, depois do placar, está Desenhar as vidas do sprite nave como corações, em x 12, y 48 e tamanho 22. Depois de corrigir, teste de novo.
+>
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Dê as três vidas em Ao iniciar e desenhe os corações a cada quadro.
+**Zappy na página (não gravar):** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 ## Seção 3. Compare as batidas com proteção
 
@@ -54,53 +64,59 @@ Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa qua
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender a proteção depois de uma batida: um tempinho em que outra batida não tira vida. Aqui, as pedras batem nos quadros 1, 10 e 30.
 >
-> Olha aqui: eu escolho 0 quadros em Proteção em quadros e clico em Avançar até a próxima pedra três vezes. Cada batida apaga um coração, e a nave fica sem vidas. Sem proteção, as três batidas tiram as três vidas.
+> Olha aqui: eu escolho 0 quadros em Proteção em quadros e clico em Avançar até a próxima pedra três vezes. Tá vendo? Cada batida apaga um coração, e a nave fica sem vidas, porque, sem proteção, as três batidas tiram as três vidas.
 >
-> Eu clico em Voltar ao começo, escolho 45 quadros e repito as três batidas. A primeira tira uma vida, e a proteção começa com 45 quadros. Na batida do quadro 10, ainda restam 36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Só a primeira batida tirou vida.
+> Eu clico em Voltar ao começo, escolho 45 quadros e repito as três batidas. A primeira tira uma vida, e a proteção começa com 45 quadros. Repare: na batida do quadro 10, ainda restam 36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Ou seja, só a primeira batida tirou vida.
 >
-> Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida. Na batida do quadro 10, restam 6 quadros, e a vida não cai. Mas, no quadro 30, a proteção já acabou, e essa batida tira outra vida. A proteção é um respiro com prazo. No seu jogo, a batida vai dar 45 quadros de proteção.
+> Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida, e, na batida do quadro 10, restam 6 quadros, por isso a vida não cai. Mas, no quadro 30, a proteção já acabou, e olha só: essa batida tira outra vida. A proteção é um respiro com prazo. No seu jogo, a batida vai dar 45 quadros de proteção.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes.
+**Zappy na página (não gravar):** Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Programe as vidas e a batida
 
 ### Clipe `video-batida-e-coracoes` · Programe as vidas e a batida
 
-**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Desenhar vidas primeiro para tornar o estado visível; inserir colisão antes desse desenho. Confirmar a ordem final original: placar, colisão da nave, corações. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar pela retomada: deixar uma pedra bater na nave e, no "Tá vendo?", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Na experiência da seção anterior, você comparou a perda de vidas com tempos diferentes de proteção. No seu jogo, deixe uma pedra atingir a nave: os corações ainda não mudam. Agora programe essa batida.
+> "Clique no seu jogo e deixe uma pedra bater na nave. Tá vendo? Os corações continuam três, porque a batida ainda não existe no jogo.
 >
-> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar a próxima peça.
+> Lembra da experiência da parte anterior? Cada batida tirava uma vida e dava um tempo de proteção. Agora a gente vai programar essa batida no seu jogo!
 >
-> Agora programe a batida. Deixe à vista o espaço entre o placar e os corações, em A cada quadro do jogo. Abra Jogo 2D, depois Colisões e Encostar e bloquear. Pegue Para cada sprite do grupo que colidir com o sprite. Encaixe entre o placar e o desenho dos corações, dentro de A cada quadro do jogo. Escolha grupo asteroides, sprite nave e escreva inimigo no apelido. Inimigo é o nome da pedra envolvida nessa batida.
+> O jogo confere a batida em todo quadro, antes de desenhar os corações, para eles já mostrarem a vida certa. Por isso, deixe à vista o espaço entre Mostrar placar e Desenhar as vidas do sprite, dentro de A cada quadro do jogo.
 >
-> Deixe à vista o interior da colisão da nave com os asteroides. Abra Jogo 2D, depois Grupos e Participação e limpeza. Pegue Tirar o sprite do grupo e encaixe dentro dessa colisão. Escolha inimigo como sprite e asteroides como grupo.
+> Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.
 >
-> Deixe à vista o encaixe abaixo da retirada do inimigo. Abra Jogo 2D, depois Desenho e efeitos e Partículas. Pegue Soltar explosão no sprite, encaixe abaixo da retirada e escolha inimigo. Escolha uma cor para o efeito.
+> Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo. Inimigo é o apelido da pedra que bateu na nave. Confira se ficou asteroides, nave e inimigo.
 >
-> Deixe à vista o encaixe abaixo da explosão, dentro dessa colisão. Abra Jogo 2D, depois Vida e placar e Vida. Pegue Machucar o sprite em e deixá-lo invencível por quadros. Encaixe abaixo da explosão, dentro da colisão. Escolha nave, dano 1 e proteção 45 quadros.
+> Agora as ações da batida, que vão dentro dessa colisão. Deixe à vista o espaço de dentro dela. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha inimigo como sprite e asteroides como grupo, porque quem sai do jogo é a pedra, e não a nave.
 >
-> Deixe à vista o encaixe abaixo do dano, dentro dessa colisão. Abra Jogo 2D, depois Desenho e efeitos e Efeitos. Pegue Tremer a tela com intensidade e encaixe abaixo do dano. Coloque intensidade 8. Confira as quatro ações da batida: tirar inimigo, explodir inimigo, machucar nave e tremer a tela.
+> Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.
 >
-> Clique no jogo e deixe uma pedra atingir a nave. A pedra deve sair, a tela deve tremer e um coração deve apagar. Aguarde a proteção acabar e deixe outra pedra bater. Se nenhum coração mudar, confira se o dano e o desenho das vidas usam nave. Se a nave sumir, confira se você retirou inimigo, e não nave. Por enquanto, ficar sem vidas ainda não encerra a partida.
+> Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Machucar o sprite em e deixá-lo invencível por quadros e solte nesse encaixe. Escolha nave. O dano já vem em 1, e a proteção, em 45 quadros: mantenha, porque cada batida tira uma vida e depois dá esse respiro.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+> Deixe à vista o encaixe logo abaixo do dano. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela com intensidade e solte nesse encaixe. A intensidade já vem em 8: mantenha.
+>
+> Agora teste: clique na área do jogo e deixe uma pedra atingir a nave. Olha só: a pedra sai, a tela treme e um coração apaga! Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar. Por enquanto, ficar sem vidas ainda não encerra a partida: o fim da partida vem mais adiante.
+>
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: entre o placar e os corações está a colisão de asteroides com nave, com o apelido inimigo. Dentro dela vêm Tirar o sprite inimigo do grupo asteroides, Soltar explosão no sprite inimigo, Machucar o sprite nave em 1 e deixá-lo invencível por 45 quadros e Tremer a tela com intensidade 8, nessa ordem. Depois de corrigir, teste de novo.
+>
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
-**Zappy na página (não gravar):** Dê as vidas em Ao iniciar. Na colisão, retire a pedra e machuque a nave. Desenhe os corações em cada quadro.
+**Zappy na página (não gravar):** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 ## Seção 5. Confira o que você construiu
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Zappy na página (não gravar):** Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
@@ -108,15 +124,15 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 ### Clipe `video-fecho` · Teste os pontos e as vidas
 
-**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Faça um tiro errar e veja se os pontos ficam iguais. Acerte uma pedra e confira a soma de um ponto. Depois deixe uma pedra bater na nave e confira a perda de uma vida.
+> "Agora teste os pontos e as vidas do seu jogo. Faça um tiro errar: os pontos têm que ficar iguais. Depois, acerte uma pedra e confira se soma um ponto. Por último, deixe uma pedra bater na nave e confira se ela perde uma vida.
 >
-> Confira também onde cada regra ficou: pontos e vidas começam em Ao iniciar; somar pontos fica na colisão do tiro; machucar nave fica na colisão da nave. Placar e corações são desenhados a cada quadro, fora dessas colisões.
+> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar variável pontos e Dar ao sprite nave 3 de vida estão em Ao iniciar, Somar 1 em pontos está na colisão do tiro, Machucar o sprite nave está na colisão da nave, e o placar e os corações estão fora das colisões, em A cada quadro do jogo. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase."
 
-**Zappy na página (não gravar):** Confira acerto, erro e batida. Verifique a etapa e envie.
+**Zappy na página (não gravar):** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.

@@ -1894,6 +1894,7 @@ function LessonEditorSession({
                     sectionCriteria={draft?.document.sections.some(
                       (s) => s.completion !== undefined,
                     )}
+                    kids={courseInfo?.audience === 'kids'}
                     value={blockForm.interactive}
                     onChange={(interactive) => setBlockForm((form) => ({ ...form, interactive }))}
                   />
@@ -2890,13 +2891,13 @@ function LessonEditorSession({
                     <Field
                       label="Linha de abertura"
                       htmlFor="cert-intro"
-                      hint='Acima do nome. Vazio usa "Certificamos que o aluno".'
+                      hint='Acima do nome. Vazio usa "Certificamos que".'
                     >
                       <Input
                         id="cert-intro"
                         value={blockForm.certIntroLine}
                         maxLength={200}
-                        placeholder="Certificamos que o aluno"
+                        placeholder="Certificamos que"
                         onChange={(e) =>
                           setBlockForm((f) => ({ ...f, certIntroLine: e.target.value }))
                         }

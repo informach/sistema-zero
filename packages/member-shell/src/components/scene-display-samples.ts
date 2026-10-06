@@ -497,7 +497,7 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
   'copy-vs-original': {
     readouts: [
       {
-        label: 'jogo da aula',
+        label: 'jogo da fase',
         value: 'azul',
         tone: 'a',
       },
@@ -513,7 +513,7 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       },
     ],
     situations: [
-      'O jogo da aula está azul. Ainda não há arquivo. O Estúdio ainda não tem projeto.',
+      'O jogo da fase está azul. Ainda não há arquivo. O Estúdio ainda não tem projeto.',
     ],
   },
   'published-copy': {
@@ -700,6 +700,20 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'No quadro 0, o x é 208. A seta para a direita está solta.',
       'No quadro 1200, o x é 1000: o sprite passou inteiro da borda da tela. A seta para a direita está segurada.',
       'De volta ao começo: quadro 0, x 208.',
+    ],
+  },
+  'lighthouse-position': {
+    readouts: [
+      { label: 'x da chave', value: '448', tone: 'a' },
+      { label: 'y da chave', value: '328', tone: 'b' },
+    ],
+    situations: [
+      'A chave está em x 211, y 53.',
+      'A chave está em x 448, y 328.',
+      'A chave foi para a esquerda. x mudou de 211 para 160; y continuou 53.',
+      'A chave foi para baixo. y mudou de 53 para 250; x continuou 160.',
+      'A chave foi para a direita. x mudou de 160 para 280; y continuou 250.',
+      'A chave voltou ao começo: x 211, y 53.',
     ],
   },
   restart: {

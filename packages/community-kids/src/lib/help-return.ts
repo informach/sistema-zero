@@ -34,5 +34,5 @@ export function resolveHelpReturn(value: string | undefined | null): HelpReturnT
     return null
   }
   const safeHash = hash && /^[A-Za-z0-9=_-]{1,120}$/.test(hash) ? `#${hash}` : ''
-  return { href: `${pathname}${safeHash}`, label: 'Voltar para a aula' }
+  return { href: `${pathname}${safeHash}`, label: 'Voltar para a fase' }
 }

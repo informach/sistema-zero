@@ -26,44 +26,46 @@
       {
         "key": "jogo-pronto",
         "title": "Jogue uma versão com artes próprias",
-        "bridge": "Experimente mover a nave e atirar. Observe os desenhos e o fogo; você vai criar as suas próprias artes.",
+        "bridge": "Sua vez! Jogue um pouco: mova a nave, atire e repare nos desenhos e no fogo, porque logo você vai criar as suas próprias artes. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-jogo-pronto",
         "speech": [
-          "Neste curso, você vai desenhar a sua nave e o seu asteroide e colocar os dois no jogo. Esta é a versão pronta, com artes de exemplo, para você ver como o jogo fica antes de criar as suas.",
-          "Olha aqui: eu clico no jogo e toco na tecla Enter para começar. Quando eu seguro a seta para a direita, a nave anda para a direita. O objetivo é atirar nas pedras para fazer pontos antes de perder as vidas. O fogo da nave e as pedras são desenhos feitos para este exemplo. As regras são as do jogo que você terminou em Nave Contra Asteroides.",
-          "Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Não precisa vencer nem fazer uma pontuação mínima. Quando terminar, clique em Próxima seção."
+          "Oi! Você vai criar a sua versão do jogo da nave: vai desenhar a sua nave e o seu asteroide no Pinta e colocar os dois no jogo que você terminou em Nave Contra Asteroides. Antes de criar as suas artes, vamos ver como o jogo fica com artes novas nesta versão pronta.",
+          "Olha aqui: eu clico no jogo e toco na tecla Enter para começar. Quando eu seguro a seta para a direita, a nave anda para a direita. O objetivo é atirar nas pedras para fazer pontos antes de perder as vidas.",
+          "Olha só: o fogo da nave pulsa, e as pedras também mudam um pouquinho enquanto caem. É que cada desenho deste exemplo tem duas versões, que se revezam bem rápido. E as regras continuam as mesmas do jogo que você terminou em Nave Contra Asteroides: só os desenhos são novos, e é isso que você vai fazer com as suas próprias artes.",
+          "Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Você pode seguir mesmo sem vencer. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar; depois para e aponta o fogo da nave e as pedras com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima seção. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.",
+        "screen": "Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar. No Olha só, parar e apontar o fogo da nave pulsando e uma pedra caindo, com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima parte. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.",
         "play": true
       },
       {
         "key": "caderno",
-        "title": "Consulte os passos do curso",
-        "bridge": "O caderno fica aqui para consultar, baixar ou imprimir se você quiser.",
+        "title": "Seu Mapa da Aventura",
+        "bridge": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
         "kind": "explanation",
         "videoKey": "video-caderno",
         "speech": [
-          "O caderno abaixo acompanha as oito aulas. Abra as páginas de copiar o jogo e veja como conferir a cópia no Estúdio. Mais adiante, há referências da nave, do asteroide e dos encaixes dos blocos.",
-          "Você pode ler na tela ou clicar em Baixar e guardar o PDF. Baixar e imprimir são escolhas suas; não precisa fazer isso para seguir a aula. Para seguir, clique em Próxima seção."
+          "Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos de cada fase, desde a cópia do seu jogo até as suas artes dentro dele, e também as referências da nave, do asteroide e dos encaixes dos blocos. Por isso, quando você esquecer algum passo, é só abrir o mapa.",
+          "Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.",
+          "Agora clique em Próxima parte."
         ],
-        "screen": "Mostrar o PDF real anexado ao bloco, a página da cópia e o botão Baixar. Gravar depois de vincular o arquivo revisado.",
+        "screen": "Mostrar o PDF real do Mapa da Aventura anexado ao bloco, com a capa e a página da cópia. No Olha aqui, apontar o mapa. Ao falar em baixar, apontar o botão Baixar, sem clicar; não demonstrar o download nem a impressão. Gravar depois de vincular o arquivo revisado.",
         "materials": true
       },
       {
         "key": "aparencia-e-regras",
         "title": "Troque a história, observe as regras",
-        "bridge": "Agora troque o tema, desligue a regra de atirar e compare o que muda.",
+        "bridge": "Sua vez! Troque os temas, desligue a regra de atirar e compare o que muda. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-aparencia-e-regras",
         "speech": [
           "Esta é uma experiência para a gente entender a diferença entre o tema de um jogo, que são os desenhos, e as regras, que dizem o que o jogo faz.",
-          "Olha aqui: quando eu clico em Mover, a nave anda para o lado. Quando eu clico em Atirar, sai um tiro. Ao lado do jogo, a lista Regras do jogo tem quatro regras. Uma delas é a tecla atira.",
-          "Agora, em Tema do mesmo jogo, eu escolho Carrinho na estrada. A nave virou um carrinho, o asteroide também mudou de desenho, e a lista continua com as mesmas quatro regras. Escolho Submarino no mar: outros desenhos, as mesmas quatro regras. E volto para Nave no espaço.",
-          "É como brincar de pega-pega fantasiado. Com fantasia de pirata ou de astronauta, a brincadeira continua a mesma: quem é pego vira o pegador. No nosso jogo, Tema do mesmo jogo troca a fantasia, e a lista Regras do jogo é a brincadeira.",
-          "Agora eu mudo uma regra. Clico em Regra: a tecla atira, e ela fica desligada. Na lista, a regra a tecla atira fica apagada. Quando eu clico em Atirar, não sai tiro nenhum, e a frase embaixo do jogo diz que a tecla foi apertada, mas a regra está desligada. Trocar o tema mudou só os desenhos. Desligar uma regra mudou o que o jogo faz. Então eu clico de novo e ligo a regra.",
-          "Nas próximas aulas, você vai trocar os desenhos da nave e das pedras pelos seus, e as regras do seu jogo vão continuar as mesmas.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Olha aqui: quando eu clico em Mover, a nave anda para o lado, e quando eu clico em Atirar, sai um tiro. Quem decide isso são as regras da lista Regras do jogo, que tem quatro regras. Uma delas é a tecla atira.",
+          "Agora, em Tema do mesmo jogo, eu escolho Carrinho na estrada. Olha só: a nave virou um carrinho e o asteroide também mudou de desenho, mas a lista continua com as mesmas quatro regras. Depois eu escolho Submarino no mar, e acontece a mesma coisa: os desenhos mudam e as regras ficam. Por último, eu volto para Nave no espaço.",
+          "É como brincar de pega-pega fantasiado. Com fantasia de pirata ou de astronauta, a brincadeira continua a mesma: quem é pego vira o pegador. Na experiência, Tema do mesmo jogo troca a fantasia, e a lista Regras do jogo é a brincadeira.",
+          "Agora eu mudo uma regra. Eu clico em Regra: a tecla atira, e ela fica desligada. Na lista, essa regra fica apagada. Quando eu clico em Atirar, não sai tiro nenhum. Tá vendo? É que a regra que faz a tecla atirar está desligada, e a frase embaixo do jogo avisa isso. Ou seja, trocar o tema mudou só os desenhos, mas desligar uma regra mudou o que o jogo faz. Depois eu clico de novo e ligo a regra.",
+          "Nas próximas fases, você vai trocar os desenhos da nave e das pedras pelos seus, e as regras do seu jogo vão continuar as mesmas.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir do tema Nave no espaço, com a regra ligada: clicar em Mover e em Atirar e deixar ver a nave andar e o tiro sair. Apontar a lista Regras do jogo. Em Tema do mesmo jogo, escolher Carrinho na estrada, Submarino no mar e Nave no espaço, deixando ver os desenhos mudarem e a lista continuar com as quatro regras. Clicar em Regra: a tecla atira para desligar, mostrar essa regra apagada na lista, clicar em Atirar e deixar ver que não sai tiro, com a frase embaixo do jogo. Esperar um instante e ligar a regra de novo.",
         "activity": {
@@ -88,23 +90,23 @@
       {
         "key": "copias",
         "title": "Veja o que uma cópia guarda",
-        "bridge": "Agora faça a cópia e mude a cor só de um lado.",
+        "bridge": "Sua vez! Faça a cópia e mude a cor só de um lado. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-copias",
         "speech": [
           "Esta é uma experiência para a gente entender o que é uma cópia de um jogo.",
-          "Olha aqui: quando eu clico em Exportar, aparece o arquivo jogo-da-nave, guardando a nave azul. E o jogo da aula continua no lugar, com a mesma nave azul. Exportar não levou o jogo embora: só fez uma cópia.",
-          "Agora eu clico em Importar. O mesmo jogo aparece no lado do Estúdio, também com a nave azul. O arquivo virou um projeto no Estúdio.",
-          "Em Cor da nave no Estúdio, eu escolho rosa. A nave do Estúdio fica rosa, e a nave da aula continua azul. Mudar um lado não muda o outro: depois da cópia, cada um segue o seu caminho.",
-          "É como copiar um desenho do quadro da sala para o seu caderno. Se você pinta o desenho do caderno, o do quadro continua igual. Com o seu jogo vai ser assim: Exportar faz a cópia, e Importar leva essa cópia para o Estúdio, onde você muda o que quiser sem mexer na aula.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Olha aqui: quando eu clico em Exportar, aparece o arquivo jogo-da-nave, guardando a nave azul. E o jogo da fase continua no lugar, com a mesma nave azul, porque exportar não leva o jogo embora: só faz uma cópia dele num arquivo.",
+          "Depois eu clico em Importar, e o mesmo jogo aparece no lado do Estúdio, também com a nave azul. Ou seja, o arquivo virou um projeto no Estúdio.",
+          "Agora, em Cor da nave no Estúdio, eu escolho rosa. Olha só: a nave do Estúdio fica rosa, e a nave do jogo da fase continua azul. É que, depois da cópia, cada um segue o seu caminho, por isso mudar um lado não muda o outro.",
+          "É como copiar o desenho de um gibi numa folha sua. Se você pinta o desenho da folha, o do gibi continua igual. Com o seu jogo vai ser assim: Exportar faz a cópia, e Importar leva essa cópia para o Estúdio, onde você muda o que quiser sem mexer no jogo da fase.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
-        "screen": "A partir da nave azul no jogo da aula, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave da aula no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a da aula azul.",
+        "screen": "A partir da nave azul no jogo da fase, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave do jogo da fase no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a do jogo da fase azul.",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Veja o que uma cópia guarda",
-          "instructions": "Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.",
+          "instructions": "Clique em Exportar e observe o arquivo e o jogo da fase. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.",
           "hints": [],
           "activity": {
             "type": "experimentation",
@@ -117,17 +119,19 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experiencia-copia",
-        "meme": "na frase do caderno, o Zappy copiando a nave do quadro da sala para o caderno e pintando a cópia de rosa, enquanto a nave do quadro continua azul, com a legenda \"a cópia é sua\"."
+        "meme": "na frase do gibi, o Zappy copiando a nave de um gibi numa folha e pintando a cópia de rosa, enquanto a nave do gibi continua azul, com a legenda \"a cópia é sua\"."
       },
       {
         "key": "exportar",
         "title": "Baixe o seu jogo concluído",
-        "bridge": "Baixe o projeto que você terminou em Nave Contra Asteroides.",
+        "bridge": "Agora baixe o jogo que você terminou em Nave Contra Asteroides! No Estúdio da última fase dessa aventura, abra Mais opções e clique em Baixar o projeto. Quando o arquivo .szproject.json aparecer nos seus downloads, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-exportar",
         "speech": [
-          "Clique em Abrir meu Estúdio nesta seção. Na outra aba, use Mostrar menu, abra Jornada e a trilha do curso Nave Contra Asteroides. No cartão desse curso, clique em Acessar curso e entre na última aula, Termine e recomece a partida. Retome o projeto que você concluiu. Confira início, pontos, vidas e reinício. Se ele abriu vazio, confira sua entrega em Mais opções, O meu jogo, Trazer o que eu enviei. Se ainda falta terminar, conclua esse jogo antes de fazer a cópia.",
-          "No Estúdio dessa aula, abra Mais opções, no botão de três pontinhos. Em Levar o jogo, clique em Baixar o projeto. Aguarde o arquivo que termina em .szproject.json na pasta de downloads do seu aparelho. Ele contém o projeto que você está vendo. Confira o nome do arquivo e volte a esta aula."
+          "Lembra da experiência da parte anterior? Exportar fez uma cópia do jogo num arquivo, e o jogo da fase ficou no lugar. Agora a gente vai fazer isso com o seu jogo de verdade, porque é na cópia que você vai criar do seu jeito.",
+          "No Estúdio, esse comando se chama Baixar o projeto. Para começar, clique em Abrir meu Estúdio nesta parte. Na outra aba, se o menu estiver escondido, clique em Mostrar menu. Depois abra Explorar e a trilha da aventura Nave Contra Asteroides, clique no cartão dessa aventura e entre na última fase, Termine e recomece a partida.",
+          "Retome ali o projeto que você concluiu e confira início, pontos, vidas e reinício. Se ele abriu vazio, traga o que você enviou em Mais opções, O meu jogo, Trazer o que eu enviei. E, se ainda falta terminar, conclua esse jogo antes de fazer a cópia, porque a cópia guarda o jogo do jeito que ele está agora.",
+          "Com o jogo pronto, abra Mais opções, no botão de três pontinhos do Estúdio dessa fase. Em Levar o jogo, clique em Baixar o projeto e espere o arquivo que termina em .szproject.json chegar à pasta de downloads do seu aparelho. Olha só: esse arquivo é a cópia do projeto que você está vendo. Confira o nome do arquivo antes de voltar à aba da fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -135,26 +139,28 @@
       {
         "key": "importar",
         "title": "Abra a cópia no seu Estúdio",
-        "bridge": "Importe o arquivo do seu jogo e escolha um nome para reconhecer a cópia.",
+        "bridge": "Agora abra a cópia no seu Estúdio! Importe o arquivo e escolha um nome para reconhecer o seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-importar",
         "speech": [
-          "Clique em Abrir meu Estúdio nesta seção. Na outra aba, em Meus Jogos, clique em Importar. Escolha o arquivo .szproject.json que você acabou de baixar. Abra o projeto importado. Os blocos de Jogo 2D vêm com ele.",
-          "Clique no nome do projeto no alto e escreva um nome que você reconheça, como Minha nave. Confirme a edição. Espere Salvo. Confira a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo importou; não apague os outros trabalhos.",
-          "Volte a Meus Jogos pelo nome do Estúdio na barra de cima e abra novamente esse cartão. Veja se o nome e os blocos continuam lá. Esse é o cartão que você vai retomar nas próximas aulas. Volte à aba da aula para seguir."
+          "Agora a gente vai levar o arquivo que você baixou para o seu Estúdio. Clique em Abrir meu Estúdio nesta parte e, na outra aba, em Meus Jogos, clique em Importar. Escolha o arquivo .szproject.json que você acabou de baixar e abra o projeto importado. Repare: os blocos de Jogo 2D vêm junto, porque o arquivo guarda o projeto inteiro.",
+          "Agora dê um nome a essa cópia. Clique no nome do projeto no alto, escreva um nome que você reconheça, como Minha nave, e confirme a edição. Depois confira a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo você importou. Não apague os seus outros jogos.",
+          "Por último, volte a Meus Jogos pelo nome do Estúdio na barra de cima e abra esse cartão de novo. Tá vendo? O nome e os blocos continuam lá, porque o Estúdio guardou a sua cópia. É esse cartão que você vai retomar nas próximas fases."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
       },
       {
         "key": "entrega",
-        "title": "Entregue a cópia do jogo",
-        "bridge": "Confira o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.",
+        "title": "Envie a cópia do jogo",
+        "bridge": "Hora de enviar a cópia do seu jogo! Confira se o cartão tem o nome que você escolheu. Depois clique em Escolher no Estúdio, selecione esse cartão e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
         "kind": "delivery",
         "videoKey": "video-entrega",
         "speech": [
-          "Antes de enviar, confira no seu trabalho: o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
-          "Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+          "Hora de enviar a cópia do seu jogo! Antes, confira no seu jogo: o cartão tem o nome que você escolheu, e o jogo abre, move a nave e atira. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da fase só mostra o que já está guardado na sua conta.",
+          "Agora volte para a aba da fase e clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.",
+          "Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!",
+          "Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio",
@@ -275,17 +281,17 @@
       {
         "key": "bordas",
         "title": "Aproxime duas formas de desenhar",
-        "bridge": "Agora aproxime as duas pedras e compare as bordas.",
+        "bridge": "Sua vez! Aproxime as duas pedras e compare as bordas. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-bordas",
         "speech": [
           "Esta é uma experiência para a gente entender a diferença entre um desenho em pixel e um desenho em vetor.",
-          "Olha aqui: com Aproximar em 1 vez, a pedra de pixel e a pedra de vetor parecem a mesma pedra. Quando eu aumento Aproximar até 4, as bordas ficam diferentes: a pedra de pixel mostra degraus, e a de vetor continua lisa.",
+          "Olha aqui: com Aproximar em 1 vez, a pedra de pixel e a pedra de vetor parecem a mesma pedra. Mas, quando eu aumento Aproximar até 4, as bordas ficam diferentes: a pedra de pixel mostra degraus, e a de vetor continua lisa.",
           "Sabe um desenho feito com pecinhas de montar? De longe, ele parece redondo. De perto, você vê os degraus das pecinhas. A pedra de pixel é assim: ela é feita de quadradinhos. Quando eu aumento Aproximar, é como chegar perto das pecinhas.",
-          "Eu continuo até 6. Na pedra de pixel, aparece a grade dos quadradinhos. Na pedra de vetor, aparecem pontos e curvas: ela é feita de pontos ligados por linhas, e o computador desenha essa linha de novo em qualquer tamanho. Por isso ela continua lisa.",
-          "Agora eu volto Aproximar para 1. De longe, as duas parecem iguais de novo.",
-          "Hoje você vai desenhar a nave em Pixel art, quadradinho por quadradinho. Na aula 4, a pedra vai ser em Vetor, feita com pontos.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Eu continuo até 6. Olha só: na pedra de pixel aparece a grade dos quadradinhos, e na pedra de vetor aparecem pontos e curvas. É que a pedra de vetor é feita de pontos ligados por linhas, e o computador desenha essa linha de novo em qualquer tamanho. Por isso ela continua lisa.",
+          "Quando eu volto Aproximar para 1, as duas parecem iguais de novo, porque de longe os quadradinhos ficam pequenos demais para a gente ver.",
+          "Daqui a pouco, você vai desenhar a sua nave em Pixel art, quadradinho por quadradinho. E, na fase 4, a sua pedra vai ser em Vetor, feita com pontos.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo.",
         "activity": {
@@ -310,12 +316,14 @@
       {
         "key": "nova-nave",
         "title": "Prepare a folha da nave",
-        "bridge": "Crie uma arte de personagem em pixel art, tamanho Médio, chamada nave.",
+        "bridge": "Agora prepare o desenho da sua nave! Crie uma arte de personagem em Pixel art, tamanho Médio, chamada nave. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-nova-nave",
         "speech": [
-          "Clique em Abrir meu Pinta nesta seção. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Clique em Começar a desenhar.",
-          "Confira o nome nave e a grade quadrada. Se você já tem a nave deste curso, abra esse trabalho para continuar. Não precisa criar outra igual. Reserve as quatro linhas de baixo da grade para o fogo do motor. Volte à aula para experimentar o espelho antes de desenhar o contorno."
+          "Lembra da experiência da parte anterior? De perto, a pedra de pixel mostrava os degraus dos quadradinhos. Agora a gente vai desenhar a sua nave desse jeito, em Pixel art, por isso você vai pintar quadradinho por quadradinho.",
+          "Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.",
+          "Confira o nome nave e a grade quadrada. O nome precisa ser nave, porque é por esse nome que você vai encontrar o desenho quando ele entrar no jogo. Se você já tem a nave desta aventura, abra esse desenho e continue nele, em vez de criar outra igual.",
+          "Por último, deixe as quatro linhas de baixo da grade livres, porque elas vão ser o lugar do fogo do motor. O contorno fica para depois: antes, você vai experimentar o espelho na próxima parte."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -323,18 +331,18 @@
       {
         "key": "espelho",
         "title": "Descubra o que o espelho repete",
-        "bridge": "Agora pinte com cada espelho e veja onde a cópia aparece.",
+        "bridge": "Sua vez! Pinte com cada espelho e veja onde a cópia aparece. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-espelho",
         "speech": [
           "Esta é uma experiência para a gente entender o que o espelho faz com cada traço.",
           "Olha aqui: com os dois espelhos desligados, eu clico em Pintar a asa. Aparece uma asa só, do lado esquerdo da nave, onde eu pintei.",
-          "Agora eu ligo só o Espelho lado a lado. Aparece uma linha marcada como meio. Eu clico em Pintar a asa de novo, e uma cópia da asa surge do outro lado dessa linha. Um traço meu virou dois.",
+          "Agora eu ligo só o Espelho lado a lado, e aparece uma linha marcada como meio. Quando eu clico em Pintar a asa de novo, olha só: uma cópia da asa surge do outro lado dessa linha. Um traço meu virou dois, porque o espelho copia cada traço para o outro lado da linha do meio.",
           "Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.",
-          "Agora eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. A cópia da ponta aparece embaixo, de cabeça para baixo. O espelho que está ligado decide onde a cópia cai.",
-          "Por último, eu deixo só o Espelho lado a lado ligado e clico em Balde de tinta: encher a asa. O Balde enche só a asa esquerda. O espelho continua ligado, mas não copia a tinta do Balde.",
+          "Depois eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Tá vendo? Agora a cópia da ponta aparece embaixo, de cabeça para baixo, porque é o espelho que está ligado que decide onde a cópia cai.",
+          "Por último, eu deixo só o Espelho lado a lado ligado e clico em Balde de tinta: encher a asa. Repare: o Balde enche só a asa esquerda. O espelho continua ligado, mas não copia a tinta do Balde.",
           "Daqui a pouco, quando você desenhar o contorno da nave, o espelho vai fazer o outro lado. E, para pintar com o Balde, você vai clicar dentro de cada asa.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho.",
         "activity": {
@@ -359,12 +367,14 @@
       {
         "key": "contorno",
         "title": "Feche o contorno da nave",
-        "bridge": "Desenhe um corpo com duas asas e deixe quatro linhas livres embaixo.",
+        "bridge": "Agora desenhe o contorno da sua nave! Com o Espelho lado a lado ligado, faça um corpo com duas asas e deixe quatro linhas livres embaixo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-contorno",
         "speech": [
-          "Na sua nave, escolha uma cor escura para o contorno. Ligue Espelho lado a lado. Escolha Linha e arraste pequenos trechos para desenhar metade da ponta, a lateral e uma asa. O espelho desenha o outro lado. Você escolhe a largura e o formato.",
-          "Feche a base acima das quatro linhas reservadas para o fogo. Aproxime para conferir se não ficou nenhuma abertura entre os trechos do contorno. Use o Lápis para fechar um quadradinho que faltar. Desligue o espelho quando terminar. Confira se a nave cabe na grade e se o espaço do motor continua livre."
+          "Lembra da experiência da parte anterior? Com o Espelho lado a lado ligado, cada traço seu virou dois. Agora a gente vai usar esse espelho no contorno da sua nave, por isso você só vai desenhar uma metade.",
+          "Escolha uma cor escura para o contorno e ligue Espelho lado a lado. Depois escolha Linha e arraste pequenos trechos para desenhar metade da ponta, a lateral e uma asa. Olha só: o espelho desenha o outro lado sozinho. A largura e o formato são escolha sua.",
+          "Feche a base acima das quatro linhas reservadas para o fogo. Depois aproxime a imagem e confira se não ficou nenhuma abertura entre os trechos do contorno, porque, por uma abertura, a tinta do Balde escapa para fora da nave. Se faltar um quadradinho, feche com o Lápis.",
+          "Quando terminar, desligue o espelho e confira se a nave cabe na grade e se o espaço do motor continua livre."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -372,12 +382,14 @@
       {
         "key": "cores",
         "title": "Pinte o corpo e a cabine",
-        "bridge": "Preencha a nave e desenhe uma cabine dentro do corpo.",
+        "bridge": "Agora pinte o corpo e a cabine da sua nave! Preencha a nave com o Balde e desenhe uma cabine dentro do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-cores",
         "speech": [
-          "Escolha uma cor para o corpo. Pegue Balde de tinta e clique dentro do contorno. Se a cor escapar para fora, use Desfazer, feche a abertura com Lápis e tente de novo. Nas asas separadas, clique dentro de cada uma para preencher.",
-          "Escolha outra cor e use Lápis ou Linha para desenhar uma cabine dentro do corpo. Mantenha o espaço do motor vazio. Afaste a imagem e confira se você reconhece a nave pequena, como ela vai aparecer no jogo. Aguarde o salvamento antes de voltar à aula."
+          "Agora pinte o corpo da sua nave. Escolha uma cor, pegue Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo até a linha do contorno. Se ela escapar para fora, é porque ficou uma abertura: use Desfazer, feche a abertura com o Lápis e tente de novo.",
+          "Se as asas ficaram separadas do corpo, clique dentro de cada uma também, porque o Balde enche só a parte fechada em que você clicou.",
+          "Depois escolha outra cor e use o Lápis ou a Linha para desenhar uma cabine dentro do corpo, deixando o espaço do motor vazio.",
+          "Para conferir, afaste a imagem e veja se você reconhece a nave pequena, porque no jogo ela aparece pequena."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -385,17 +397,17 @@
       {
         "key": "luz",
         "title": "Mude o lado da luz",
-        "bridge": "Agora ligue A sombra e a luz e mude o lado do sol.",
+        "bridge": "Sua vez! Ligue A sombra e a luz e mude o lado do sol. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-luz",
         "speech": [
           "Esta é uma experiência para a gente entender como a luz e a sombra deixam um desenho redondo.",
-          "Olha aqui: a bola começa com um tom de azul só, e o sol está na esquerda. Quando eu ligo A sombra e a luz, a bola ganha três tons de azul: um mais claro perto do sol e um mais escuro do outro lado. Agora ela parece redonda.",
+          "Olha aqui: a bola começa com um tom de azul só, e o sol está na esquerda. Quando eu ligo A sombra e a luz, a bola ganha três tons de azul, um mais claro perto do sol e um mais escuro do outro lado. Agora ela parece redonda, porque o claro e o escuro mostram de que lado vem a luz.",
           "Quando eu desligo, a bola volta a ter um tom só e fica chapada, como um adesivo.",
-          "Sabe uma bola no pátio, num dia de sol? O lado virado para o sol fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.",
-          "Agora eu ligo de novo e mudo O sol para a direita. O azul mais claro passa para a direita, e o mais escuro vai para a esquerda. A luz e a sombra seguem o lado do sol.",
+          "Sabe uma bola no quintal, num dia de sol? O lado virado para o sol fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.",
+          "Agora eu ligo de novo e mudo O sol para a direita. Repare: o azul mais claro passa para a direita, e o mais escuro vai para a esquerda, porque a luz e a sombra seguem o lado do sol.",
           "Daqui a pouco, na sua nave, você vai escolher de que lado vem a luz: um tom mais claro desse lado e um mais escuro do lado oposto.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda.",
         "activity": {
@@ -415,30 +427,33 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experiencia-luz",
-        "meme": "na frase da bola no pátio, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda \"lado do sol: claro · outro lado: escuro\"."
+        "meme": "na frase da bola no quintal, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda \"lado do sol: claro · outro lado: escuro\"."
       },
       {
         "key": "volume",
         "title": "Escolha um lado para a luz",
-        "bridge": "Acrescente um tom claro e um escuro sem mudar o formato da nave.",
+        "bridge": "Agora dê luz e sombra à sua nave! Escolha um lado para a luz e pinte um tom claro desse lado e um escuro do outro. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-volume",
         "speech": [
-          "Na sua nave, decida de qual lado vem a luz. Escolha um tom mais claro da cor do corpo e pinte uma faixa pequena nesse lado com Lápis. Escolha um tom mais escuro e pinte o lado oposto. Faça o mesmo na cabine se quiser.",
-          "Não precisa trocar a sua paleta pela minha. Compare de perto e de longe: os tons precisam aparecer e o contorno continuar fechado. Confira se a luz está do mesmo lado no corpo e na cabine. Aguarde o salvamento e volte à aula."
+          "Olhe a sua nave. Tá vendo? Ela parece chapada, porque cada parte tem uma cor só. Lembra da experiência da parte anterior? A bola ganhou um lado claro e outro escuro e pareceu redonda. Agora a gente vai fazer isso na sua nave!",
+          "Primeiro, decida de qual lado vem a luz. Escolha um tom mais claro da cor do corpo e pinte com o Lápis uma faixa pequena desse lado. Depois escolha um tom mais escuro e pinte o lado oposto, e, se quiser, faça o mesmo na cabine. As cores são suas: use a sua paleta, mesmo que ela seja bem diferente das cores do exemplo.",
+          "Olha só: com o claro de um lado e o escuro do outro, a sua nave começa a parecer redonda. Se no seu desenho não ficou assim, confira: os tons aparecem de perto e de longe, o contorno continua fechado e a luz vem do mesmo lado no corpo e na cabine."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
       },
       {
         "key": "entrega",
-        "title": "Entregue o desenho da nave",
-        "bridge": "Confira a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Envie a arte desta aula pela galeria do Pinta desta seção.",
+        "title": "Envie o desenho da nave",
+        "bridge": "Hora de enviar a sua nave! Confira se a arte se chama nave e tem 32 por 32. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
         "kind": "delivery",
         "videoKey": "video-entrega",
         "speech": [
-          "Antes de enviar, confira no seu trabalho: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
-          "Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+          "Hora de enviar a sua nave! Antes, confira na sua nave: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis, espaço livre embaixo e a luz vindo de um lado só. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.",
+          "Agora volte para a aba da fase e clique em Escolher no Pinta. Na janela Minhas criações do Pinta, selecione a sua nave. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.",
+          "Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!",
+          "Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta",
@@ -520,18 +535,18 @@
       {
         "key": "quadros",
         "title": "Compare dois desenhos e uma animação",
-        "bridge": "Agora mude a Velocidade da Prévia e veja quando o fogo pulsa.",
+        "bridge": "Sua vez! Mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-quadros",
         "speech": [
           "Esta é uma experiência para a gente entender como dois desenhos parados viram movimento.",
-          "Olha aqui: com a Prévia parada, eu escolho o Quadro 1, a nave com o fogo pequeno. Escolho o Quadro 2: a mesma nave, com o fogo grande. Cada quadro é um desenho parado.",
-          "Agora eu coloco a Velocidade em 2 quadros por segundo e ligo a Prévia. Ela mostra um quadro, depois o outro, devagar. Dá para ver cada troca.",
-          "Mudo a Velocidade para 8. Agora as trocas são tão rápidas que o fogo parece pulsar, e a nave fica no lugar. Quando eu paro a Prévia, fica um quadro só na tela: o movimento era a troca rápida.",
+          "Olha aqui: com a Prévia parada, eu escolho o Quadro 1, que é a nave com o fogo pequeno, e depois o Quadro 2, que é a mesma nave com o fogo grande. Cada quadro é um desenho parado.",
+          "Agora eu coloco a Velocidade em 2 quadros por segundo e ligo a Prévia. Tá vendo? Ela mostra um quadro, depois o outro, tão devagar que dá para ver cada troca.",
+          "Quando eu mudo a Velocidade para 8, olha só: as trocas ficam tão rápidas que o fogo parece pulsar, e a nave fica no lugar. E, quando eu paro a Prévia, fica um quadro só na tela, porque o movimento era só a troca rápida entre os dois.",
           "Sabe aqueles livrinhos com um desenho em cada página? Quando você passa as páginas bem rápido, o desenho parece se mexer. Na Prévia, cada quadro é uma página, e a Velocidade diz quantas páginas passam por segundo.",
-          "Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. A Prévia continua trocando 8 quadros por segundo, mas o fogo parou de pulsar, porque os dois desenhos ficaram iguais. Sem diferença entre os quadros, não há movimento.",
+          "Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. Repare: a Prévia continua trocando 8 quadros por segundo, mas o fogo parou de pulsar, porque os dois desenhos ficaram iguais. Ou seja, sem diferença entre os quadros, não há movimento.",
           "Daqui a pouco, no Pinta, você vai desenhar o fogo do quadro 1 e o do quadro 2 da sua nave e deixar a Velocidade em 8 quadros por segundo.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir da Prévia parada no quadro 1, com a Velocidade em 4: escolher Quadro 1 e Quadro 2 e deixar ver o fogo pequeno e o grande. Colocar a Velocidade em 2, ligar a Prévia e deixar ver duas trocas lentas. Mudar para 8, deixar o fogo pulsar por um segundo e parar a Prévia, mostrando um quadro só. Ligar de novo, ligar Quadro 2 igual ao quadro 1 e deixar ver, por um segundo, a Prévia trocando sem o fogo pulsar.",
         "activity": {
@@ -556,37 +571,38 @@
       {
         "key": "primeiro-fogo",
         "title": "Desenhe o primeiro fogo",
-        "bridge": "No primeiro quadro, desenhe uma chama pequena abaixo do motor.",
+        "bridge": "Agora desenhe o primeiro fogo da sua nave! No quadro 1, faça uma chama pequena logo abaixo do motor. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-primeiro-fogo",
         "speech": [
-          "Abra sua nave no Pinta. No quadro 1, use Lápis e uma cor quente para desenhar o fogo nas linhas reservadas embaixo. Faça uma chama pequena, ainda com espaço para crescer um pouco no quadro seguinte. Você pode colocar um centro mais claro.",
-          "Confira se a chama encosta no motor e continua dentro da grade. O corpo e a cabine ficam como estavam. Aguarde o salvamento e volte à aula."
+          "Lembra da experiência da parte anterior? O fogo pulsou porque a Prévia trocava bem rápido um fogo pequeno e um fogo grande. Agora a gente vai dar esses dois fogos à sua nave, começando pelo pequeno, no quadro 1.",
+          "Abra a sua nave no Pinta. No quadro 1, use o Lápis e uma cor quente para desenhar o fogo nas linhas reservadas embaixo. Faça uma chama pequena, porque no quadro seguinte ela ainda vai crescer um pouco. Se quiser, coloque um centro mais claro.",
+          "Depois confira o seu fogo: a chama precisa encostar no motor, porque um fogo solto embaixo da nave parece que não sai dela. Confira também se ela continua dentro da grade e se o corpo e a cabine ficaram como estavam."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
       },
       {
         "key": "fantasma",
-        "title": "Use o quadro anterior como guia",
-        "bridge": "Agora use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1.",
+        "title": "Desenhe olhando o quadro anterior",
+        "bridge": "Sua vez! Use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-fantasma",
         "speech": [
-          "Esta é uma experiência para a gente entender o Fantasma, a guia que mostra o quadro anterior.",
-          "Olha aqui: eu escolho o Quadro 2, com o Fantasma desligado. O fogo 2 está tão grande que é cortado na borda do quadro. Eu diminuo o tamanho do fogo 2 para 7 quadradinhos. Ficou maior ou menor que o fogo do quadro 1? Não dá para saber, porque o fogo 1 não está na tela.",
-          "Agora eu ligo o Fantasma. O fogo do quadro 1 aparece tracejado, por cima do fogo 2, com as marcas fogo 1 e fogo 2 nas pontas. As duas pontas estão quase juntas: o fogo 2 ficou quase igual ao fogo 1. Na animação, quase não ia dar para ver o fogo pulsar.",
-          "Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: mostra o quadro anterior como guia.",
-          "Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro. O Fantasma não entra na animação: ele só ajuda a comparar.",
-          "Daqui a pouco, no Pinta, você vai ligar Fantasma do quadro anterior para mudar só o fogo no segundo quadro da sua nave.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Esta é uma experiência para a gente entender o Fantasma, que mostra o quadro anterior junto do quadro que você está desenhando, para você comparar os dois.",
+          "Olha aqui: eu escolho o Quadro 2, com o Fantasma desligado, e o fogo 2 está tão grande que é cortado na borda do quadro. Por isso, eu diminuo o tamanho do fogo 2 para 7 quadradinhos. Mas ele ficou maior ou menor que o fogo do quadro 1? Não dá para saber, porque o fogo 1 não está na tela.",
+          "Agora eu ligo o Fantasma, e o contorno do fogo do quadro 1 aparece tracejado, por cima do fogo 2, com as marcas fogo 1 e fogo 2 nas pontas. Repare: as duas pontas estão quase juntas, ou seja, o fogo 2 ficou quase igual ao fogo 1. Por isso, na animação, quase não ia dar para ver o fogo pulsar.",
+          "Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.",
+          "Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Olha só: agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro. E o Fantasma não entra na animação, porque ele só ajuda a comparar.",
+          "Daqui a pouco, no Pinta, você vai ligar Fantasma do quadro anterior para mudar só o fogo no segundo quadro da sua nave. Lá, o quadro anterior aparece clarinho, atrás do seu desenho.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir do quadro 1, com o Fantasma desligado: escolher Quadro 2 e deixar ver o fogo 2 cortado na borda. Ainda sem o Fantasma, levar tamanho do fogo 2 até 7 quadradinhos e soltar. Ligar o Fantasma e deixar ver o fogo 1 tracejado, as marcas fogo 1 e fogo 2 quase juntas e a faixa dizendo quase nada. Levar tamanho do fogo 2 até 10 quadradinhos e soltar; deixar ver o fogo 2 um pouco maior que o tracejado e inteiro no quadro.",
         "activity": {
           "kind": "interactive",
           "required": true,
-          "title": "Use o quadro anterior como guia",
-          "instructions": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.",
+          "title": "Desenhe olhando o quadro anterior",
+          "instructions": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro.",
           "hints": [],
           "activity": {
             "type": "experimentation",
@@ -599,18 +615,19 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experiencia-fantasma",
-        "meme": "na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"o de baixo é a guia\"."
+        "meme": "na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\"."
       },
       {
         "key": "segundo-fogo",
         "title": "Mude só o fogo no segundo quadro",
-        "bridge": "Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar.",
+        "bridge": "Agora mude só o fogo no segundo quadro! Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-segundo-fogo",
         "speech": [
-          "Na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Selecione o quadro 2 e ligue Fantasma do quadro anterior. Agora você pode comparar os dois desenhos.",
-          "Com Selecionar e mover, cerque somente a ponta do fogo. Mova essa ponta um quadradinho para baixo. Solte a seleção e preencha com Lápis o espaço que abriu. Não selecione nem mova o corpo da nave. Se a chama encostar na borda, diminua a mudança para caber inteira.",
-          "Troque entre os quadros 1 e 2. Confira se corpo e cabine ficam no mesmo lugar e se só o fogo cresce. O fantasma é uma guia; desligue para ver o desenho sem ela. Aguarde o salvamento."
+          "Ligue a Prévia. Tá vendo? O fogo não pulsa, porque a animação só tem um quadro. Lembra da experiência da parte anterior? Com o Fantasma ligado, deu para deixar o fogo 2 só um pouco maior que o fogo 1. Agora a gente vai fazer esse segundo fogo!",
+          "Primeiro, na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Depois selecione o quadro 2 e ligue Fantasma do quadro anterior. No Pinta, o quadro 1 fica clarinho, atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.",
+          "Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo. Olha só: no espaço que abriu, a ponta do quadro 1 aparece clarinha, mostrando onde ela estava. Depois solte a seleção e preencha esse espaço com o Lápis. Não selecione nem mova o corpo da nave, porque, se o corpo mudar de lugar, a nave vai pular na animação. E, se a chama encostar na borda, diminua a mudança para ela caber inteira.",
+          "Para conferir, troque entre os quadros 1 e 2: o corpo e a cabine ficam no mesmo lugar, e só o fogo cresce. Depois desligue o fantasma para ver o desenho sem ele."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -618,12 +635,13 @@
       {
         "key": "voando",
         "title": "Dê nome e ritmo à animação",
-        "bridge": "Nomeie a animação voando e confira os dois quadros a 8 por segundo.",
+        "bridge": "Agora dê nome e ritmo à animação! Nomeie a animação voando e deixe dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-voando",
         "speech": [
-          "Na área Spritesheet, abra Renomear animação ao lado do nome atual, parado. Escreva voando e confirme. No controle de Velocidade, deixe 8 quadros por segundo. Ligue a Prévia.",
-          "Confira: o fogo pulsa, a nave não salta de lugar e a chama não é cortada na borda. Se o corpo treme, pare a Prévia e compare os dois quadros antes de corrigir. Confirme que há dois quadros na animação voando. Espere o salvamento."
+          "Agora dê um nome à sua animação. Na área Spritesheet, clique em Renomear animação, ao lado do nome atual, parado. Escreva voando e confirme. Esse nome é importante, porque é por ele que você vai escolher essa animação no Estúdio.",
+          "Depois, no controle de Velocidade, deixe 8 quadros por segundo e ligue a Prévia. Olha só: o fogo pulsa, como na experiência dos quadros.",
+          "Se no seu desenho não ficou assim, confira: a nave fica no lugar, a chama não é cortada na borda e a animação voando tem dois quadros. Para achar o que mudou, pare a Prévia e compare os dois quadros."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -631,12 +649,12 @@
       {
         "key": "revisao",
         "title": "Confira sua nave animada",
-        "bridge": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.",
+        "bridge": "Agora vamos relembrar o que você fez na sua nave, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.",
         "kind": "reflection",
         "questions": [
           {
             "id": "q1",
-            "prompt": "Você mudou a nave na cópia do Estúdio. O que acontece com o jogo guardado na aula?",
+            "prompt": "Você mudou a nave na cópia do Estúdio. O que acontece com o jogo da fase?",
             "choices": [
               {
                 "id": "a",
@@ -652,7 +670,7 @@
               }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "Exportar e importar criam uma cópia independente. Continuar na cópia não altera o trabalho guardado na aula."
+            "explanation": "Exportar e importar criam uma cópia independente. Continuar na cópia não altera o jogo da fase."
           },
           {
             "id": "q2",
@@ -684,11 +702,11 @@
               },
               {
                 "id": "b",
-                "label": "A cor do fundo da página da aula."
+                "label": "A cor do fundo da página da fase."
               },
               {
                 "id": "c",
-                "label": "A posição do corpo nos dois quadros, usando o fantasma como guia."
+                "label": "A posição do corpo nos dois quadros, comparando com o fantasma."
               }
             ],
             "correctChoiceIds": ["c"],
@@ -698,13 +716,15 @@
       },
       {
         "key": "entrega",
-        "title": "Entregue a nave animada",
-        "bridge": "Confira nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Envie a arte desta aula pela galeria do Pinta desta seção.",
+        "title": "Envie a nave animada",
+        "bridge": "Hora de enviar a sua nave animada! Confira se a animação voando tem dois quadros a 8 por segundo. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
         "kind": "delivery",
         "videoKey": "video-entrega",
         "speech": [
-          "Antes de enviar, confira no seu trabalho: nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
-          "Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+          "Hora de enviar a sua nave animada! Antes, confira na sua nave: a nave tem quadros de 32 por 32, a animação voando tem dois quadros a 8 por segundo, e só o fogo muda, sempre inteiro dentro da grade. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.",
+          "Agora volte para a aba da fase e clique em Escolher no Pinta. Na janela Minhas criações do Pinta, selecione a sua nave. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.",
+          "Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!",
+          "Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta",
@@ -780,17 +800,17 @@
       {
         "key": "preenchimento-contorno",
         "title": "Separe o miolo da borda",
-        "bridge": "Agora tire a cor de uma parte de cada vez e compare a pedra.",
+        "bridge": "Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-preenchimento-contorno",
         "speech": [
           "Esta é uma experiência para a gente entender as duas partes de uma forma: o Preenchimento, que fica dentro, e o Contorno, que é a linha da borda.",
-          "Olha aqui: a pedra começa com Preenchimento azul e Contorno laranja. Quando eu deixo o Contorno em Sem cor, a linha laranja da borda some, e fica só o azul por dentro.",
-          "Agora eu volto o Contorno com cor e deixo o Preenchimento em Sem cor. A linha laranja volta, e por dentro dela aparece o xadrez do fundo. Sem cor não é branco: é transparente.",
+          "Olha aqui: a pedra começa com Preenchimento azul e Contorno laranja. Quando eu deixo o Contorno em Sem cor, a linha laranja da borda some, e fica só o azul por dentro, porque o Contorno é a linha da borda.",
+          "Agora eu volto o Contorno com cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo. É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.",
           "Sabe um livro de colorir? A linha preta já vem desenhada, e você pinta por dentro dela. No Pinta, a linha é o Contorno, e a pintura de dentro é o Preenchimento. Cada parte tem a sua cor, e cada uma pode ficar em Sem cor.",
           "Por fim, eu volto o Preenchimento com cor. A pedra fica com as duas partes de novo: azul por dentro e laranja na borda.",
           "Daqui a pouco, a sua pedra vai ter uma cor no Preenchimento e o Contorno em Sem cor.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra.",
         "activity": {
@@ -815,12 +835,13 @@
       {
         "key": "novo-asteroide",
         "title": "Prepare o desenho em vetor",
-        "bridge": "Crie um personagem em Vetor, tamanho Médio, chamado asteroide.",
+        "bridge": "Agora prepare o desenho do seu asteroide! Crie um personagem em Vetor, tamanho Médio, chamado asteroide. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-novo-asteroide",
         "speech": [
-          "Abra meu Pinta. Em Meus desenhos, escolha Criar novo. Em Como você quer desenhar?, escolha Vetor. Escolha Personagem e depois Médio, 64 por 64. Escreva asteroide e clique em Começar a desenhar. Se já começou esse trabalho neste curso, retome o mesmo cartão.",
-          "O vetor usa formas e pontos, como a pedra que você ampliou na aula 2. Confira o nome e a área quadrada. Reserve a parte de cima para as chamas que faremos depois; a pedra vai ocupar o centro e a parte de baixo."
+          "Lembra da experiência da parte anterior? A pedra tinha uma cor no Preenchimento, por dentro, e outra no Contorno, na borda. Agora a gente vai preparar o seu asteroide em Vetor, porque é no Vetor que as formas têm essas duas partes.",
+          "Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Vetor. Depois escolha Personagem e Médio, 64 por 64. Escreva asteroide e clique em Começar a desenhar. Se você já começou esse desenho nesta aventura, retome o mesmo cartão.",
+          "Confira o nome asteroide e a área quadrada. Por último, deixe a parte de cima livre para as chamas que você vai desenhar depois, porque a pedra vai ocupar o centro e a parte de baixo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -828,12 +849,13 @@
       {
         "key": "forma-pedra",
         "title": "Feche a forma da pedra",
-        "bridge": "Desenhe uma pedra com a Caneta e feche a forma.",
+        "bridge": "Agora feche a forma da sua pedra! Desenhe a pedra com a Caneta e termine no primeiro ponto. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-forma-pedra",
         "speech": [
-          "Sem nenhuma forma selecionada, escolha uma cor para Preenchimento. Em Contorno, escolha Sem cor. Pegue Caneta. Clique para marcar pontos ao redor da pedra, deixando espaço livre em cima. Seis pontos podem servir de começo; o formato é seu.",
-          "Para fechar, clique no primeiro ponto. O interior deve ganhar a cor escolhida. Se ficou uma linha aberta, termine no primeiro ponto antes de seguir. Confira se toda a pedra está dentro da área do desenho."
+          "Agora desenhe a forma da sua pedra. Com nenhuma forma selecionada, escolha uma cor para Preenchimento e, em Contorno, escolha Sem cor, como na experiência do começo desta fase.",
+          "Depois pegue a Caneta e clique para marcar pontos ao redor da pedra, deixando espaço livre em cima. Seis pontos podem servir de começo, e o formato é seu.",
+          "Para fechar, clique no primeiro ponto. Olha só: o interior ganha a cor que você escolheu, porque agora a forma está fechada. Depois confira se toda a pedra está dentro da área do desenho."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -841,12 +863,12 @@
       {
         "key": "curvas",
         "title": "Arredonde os pontos",
-        "bridge": "Transforme alguns cantos em curvas para dar forma à pedra.",
+        "bridge": "Agora arredonde os pontos da sua pedra! Transforme alguns cantos em curvas para dar forma a ela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-curvas",
         "speech": [
-          "Escolha Editar os pontos e clique na pedra. Selecione um ponto do contorno e use Ponto suave. Arraste as alças que aparecem para arredondar esse trecho. Faça o mesmo nos cantos que você quiser suavizar.",
-          "Afaste a imagem e confira o contorno. A pedra pode ser irregular; ela só precisa continuar fechada, inteira no quadro e com espaço em cima. Se uma curva criou uma ponta comprida, ajuste as alças ou use Desfazer e tente uma mudança menor. Aguarde o salvamento."
+          "Agora arredonde a sua pedra. Escolha Editar os pontos e clique na pedra. Selecione um ponto do contorno e use Ponto suave. Repare: aparecem alças nesse ponto. Arraste essas alças para arredondar o trecho e faça o mesmo nos cantos que você quiser suavizar.",
+          "Depois afaste a imagem e confira o contorno. A pedra pode ser irregular, mas precisa continuar fechada, inteira no quadro e com espaço em cima. Se uma curva criou uma ponta comprida, ajuste as alças ou use Desfazer e tente uma mudança menor, porque alça puxada demais estica a curva para fora."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -854,25 +876,28 @@
       {
         "key": "crateras",
         "title": "Acrescente crateras",
-        "bridge": "Desenhe pequenas formas dentro da pedra.",
+        "bridge": "Agora acrescente crateras à sua pedra! Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-crateras",
         "speech": [
-          "Clique fora da pedra para tirar a seleção antes de escolher uma cor nova. Assim você prepara a próxima forma sem repintar a pedra inteira. Escolha um tom mais escuro e a ferramenta Círculo. Arraste dentro da pedra para criar uma cratera.",
-          "Com Selecionar, escolha a cratera. Use Ctrl+C e Ctrl+V para copiar e colar. Mova a cópia para outro lugar dentro da pedra e mude seu tamanho pelas alças. Faça outra cratera se quiser. Deixe todas dentro do corpo e com tamanhos que você consiga distinguir. Aguarde o salvamento."
+          "Agora faça crateras na sua pedra. Antes de escolher uma cor nova, clique fora da pedra para tirar a seleção, porque, com a pedra selecionada, a cor nova pintaria a pedra inteira. Depois escolha um tom mais escuro e a ferramenta Círculo, e arraste dentro da pedra para criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.",
+          "Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar. Mova a cópia para outro lugar dentro da pedra e mude o tamanho dela pelas alças. Se quiser, faça mais uma.",
+          "Para conferir, veja se todas as crateras ficaram dentro do corpo e com tamanhos que você consiga distinguir."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
       },
       {
         "key": "entrega",
-        "title": "Entregue seu asteroide",
-        "bridge": "Confira asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Envie a arte desta aula pela galeria do Pinta desta seção.",
+        "title": "Envie seu asteroide",
+        "bridge": "Hora de enviar o seu asteroide! Confira se ele é Vetor de 64 por 64, com forma fechada e crateras dentro do corpo. Depois clique em Escolher no Pinta, selecione o asteroide e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
         "kind": "delivery",
         "videoKey": "video-entrega",
         "speech": [
-          "Antes de enviar, confira no seu trabalho: asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
-          "Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+          "Hora de enviar o seu asteroide! Antes, confira no seu asteroide: o asteroide é Vetor de 64 por 64, tem forma fechada, curvas e crateras dentro do corpo, e sobra espaço em cima para as chamas. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.",
+          "Agora volte para a aba da fase e clique em Escolher no Pinta. Na janela Minhas criações do Pinta, selecione o seu asteroide. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.",
+          "Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!",
+          "Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta",
@@ -955,17 +980,17 @@
       {
         "key": "camadas",
         "title": "Troque o que fica na frente",
-        "bridge": "Agora suba e desça a pedra na lista Camadas e veja qual fica na frente.",
+        "bridge": "Sua vez! Suba e desça a pedra na lista Camadas e veja qual fica na frente. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-camadas",
         "speech": [
           "Esta é uma experiência para a gente entender as camadas, que decidem qual forma aparece na frente.",
-          "Olha aqui: no começo, a chama cobre quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima e a pedra está embaixo.",
-          "Quando eu clico em Uma camada para a frente, na linha da pedra, a pedra sobe na lista e aparece na frente da chama, sem nada cobrindo. Nenhuma forma foi apagada: só a ordem mudou.",
+          "Olha aqui: no começo, a chama cobre quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima, e a pedra está embaixo.",
+          "Quando eu clico em Uma camada para a frente, na linha da pedra, olha só: a pedra sobe na lista e aparece na frente da chama, sem nada cobrindo. Nenhuma forma foi apagada, porque o que mudou foi só a ordem.",
           "Sabe quando você empilha figurinhas na mesa? A de cima tapa um pedaço da de baixo. Na lista Camadas é igual: a forma que está em cima aparece na frente.",
-          "Agora eu clico em Uma camada para trás, na linha da pedra. A pedra desce na lista, e a chama volta a cobrir a pedra. Depois, clico em Uma camada para a frente de novo, e a pedra volta para a frente.",
+          "Agora eu clico em Uma camada para trás, na linha da pedra. Tá vendo? A pedra desce na lista, e a chama volta a cobrir a pedra, porque agora é a chama que está em cima. Depois eu clico em Uma camada para a frente de novo, e a pedra volta para a frente.",
           "Daqui a pouco, no seu asteroide, você vai desenhar a chama e usar Uma camada para trás até a pedra e as crateras ficarem na frente dela.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir da chama na frente da pedra: apontar a lista Camadas, com a chama em cima. Clicar em Uma camada para a frente, na linha da pedra, e mostrar a pedra subir na lista e aparecer na frente. Clicar em Uma camada para trás, na linha da pedra, e mostrar a chama cobrindo de novo. Clicar em Uma camada para a frente outra vez e mostrar a pedra na frente.",
         "activity": {
@@ -1013,12 +1038,14 @@
       {
         "key": "chama",
         "title": "Desenhe fogo atrás da pedra",
-        "bridge": "Acrescente uma chama acima do asteroide e coloque-a atrás do corpo.",
+        "bridge": "Agora desenhe o fogo atrás da sua pedra! Faça uma chama acima do asteroide e coloque a chama atrás do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-chama",
         "speech": [
-          "Abra asteroide no Pinta e selecione o quadro 1. Clique fora das formas. Escolha uma cor quente em Preenchimento e Contorno em Sem cor. Com Caneta, marque pontos formando uma chama no espaço acima da pedra. Termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.",
-          "Com Selecionar, clique na chama. Use Uma camada para trás até a pedra e suas crateras ficarem na frente dela. Confira a lista Camadas: as formas de cima aparecem na frente das de baixo. Se a chama cobrir o corpo, ajuste a ordem antes de continuar. Aguarde o salvamento."
+          "Lembra da experiência da parte anterior? A chama cobria a pedra porque estava em cima na lista Camadas. Agora a gente vai pôr o fogo do seu asteroide atrás da pedra!",
+          "Primeiro, abra o asteroide no Pinta e selecione o quadro 1. Clique fora das formas, escolha uma cor quente em Preenchimento e deixe o Contorno em Sem cor. Depois, com a Caneta, marque pontos formando uma chama no espaço acima da pedra e termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.",
+          "Agora, com Selecionar, clique na chama. Tá vendo? A base da chama cobre um pedaço da pedra, porque a última forma desenhada fica em cima na lista Camadas. Por isso, use Uma camada para trás até a pedra e as crateras ficarem na frente dela.",
+          "Depois disso, a pedra e as crateras aparecem na frente do fogo. Se no seu desenho não ficou assim, confira na lista Camadas: a pedra e as crateras ficam acima da chama."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -1026,12 +1053,12 @@
       {
         "key": "miolo-fogo",
         "title": "Acrescente um centro mais claro",
-        "bridge": "Faça uma chama menor dentro da primeira, atrás da pedra.",
+        "bridge": "Agora acrescente um centro mais claro ao fogo! Faça uma chama menor dentro da primeira, atrás da pedra. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-miolo-fogo",
         "speech": [
-          "Selecione a chama e use Ctrl+C e Ctrl+V. Na cópia, escolha uma cor mais clara. Reduza pelas alças e posicione o miolo dentro da chama maior. Selecione os pontos para ajustar a ponta se precisar.",
-          "Confira a ordem: a pedra e as crateras ficam na frente; o miolo claro aparece sobre a chama maior. Use Uma camada para trás ou Uma camada para a frente na forma selecionada até chegar a essa ordem. As duas chamas precisam caber inteiras no quadro. Aguarde o salvamento."
+          "Agora faça um centro mais claro no fogo. Selecione a chama e use Ctrl+C e Ctrl+V para fazer uma cópia. Na cópia, escolha uma cor mais clara, diminua pelas alças e coloque esse miolo dentro da chama maior. Se precisar, selecione os pontos para ajustar a ponta.",
+          "Depois confira a ordem: a pedra e as crateras ficam na frente, e o miolo claro aparece sobre a chama maior, porque ele está acima dela na lista Camadas. Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com a chama. Por último, confira se as duas chamas cabem inteiras no quadro."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -1039,17 +1066,17 @@
       {
         "key": "mudanca-pequena",
         "title": "Compare mudanças entre quadros",
-        "bridge": "Agora mude só a cratera, depois a pedra inteira, e compare a Prévia.",
+        "bridge": "Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-mudanca-pequena",
         "speech": [
           "Esta é uma experiência para a gente entender quanto um desenho pode mudar de um quadro para o outro.",
-          "Olha aqui: a Prévia já está tocando, trocando os dois quadros 8 vezes por segundo. Com O tanto que a cratera anda e O tanto que a pedra inteira anda em 0, os dois quadros são iguais. Na Prévia, a pedra fica parada.",
-          "Agora eu coloco O tanto que a cratera anda em 4 e deixo a pedra inteira em 0. No quadro 2, só as crateras mudam um pouco de lugar. Na Prévia, as crateras andam, o corpo fica no lugar, e a pedra parece rolar.",
-          "Sabe o globo da sala de aula girando? Ele fica no mesmo lugar, e só os desenhos dos países andam um pouquinho. É essa mudança pequena que faz a gente ver o globo girar. No nosso jogo, essa mudança pequena é O tanto que a cratera anda.",
-          "Agora eu coloco O tanto que a pedra inteira anda em 10. No quadro 2, a pedra toda muda de lugar. Na Prévia, o desenho pula de um lado para o outro, em vez de rolar. Uma mudança grande demais vira pulo.",
+          "Olha aqui: a Prévia já está tocando, trocando os dois quadros 8 vezes por segundo. Com O tanto que a cratera anda e O tanto que a pedra inteira anda em 0, a pedra fica parada na Prévia, porque os dois quadros são iguais.",
+          "Agora eu coloco O tanto que a cratera anda em 4 e deixo a pedra inteira em 0. No quadro 2, só as crateras mudam um pouco de lugar. Olha só: na Prévia, as crateras andam, o corpo fica no lugar, e a pedra parece rolar.",
+          "Sabe quando alguém gira uma bola na ponta do dedo? A bola fica no mesmo lugar, e só os desenhos dela andam um pouquinho. É essa mudança pequena que faz a gente ver a bola girar. Na pedra, essa mudança pequena é O tanto que a cratera anda.",
+          "Depois eu coloco O tanto que a pedra inteira anda em 10, e no quadro 2 a pedra toda muda de lugar. Tá vendo? Na Prévia, o desenho pula de um lado para o outro, em vez de rolar, porque uma mudança grande demais vira pulo.",
           "Daqui a pouco, no segundo quadro do seu asteroide, você vai mover uma cratera um pouco e deixar o corpo da pedra no mesmo lugar.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir da Prévia tocando, com os dois controles em 0: deixar ver a pedra parada na Prévia. Levar O tanto que a cratera anda até 4 e soltar; deixar ver as crateras mudarem no quadro 2 e a pedra parecer rolar na Prévia. Levar O tanto que a pedra inteira anda até 10 e soltar; deixar ver a pedra pular na Prévia.",
         "activity": {
@@ -1075,18 +1102,19 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-tanto-que-muda",
-        "meme": "na frase do globo, o Zappy girando o globo da sala de aula, que fica no lugar enquanto os desenhos dos países andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\"."
+        "meme": "na frase da bola, o Zappy girando uma bola na ponta do dedo: a bola fica no lugar enquanto os desenhos dela andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\"."
       },
       {
         "key": "quadro-pedra",
         "title": "Mude detalhes no segundo quadro",
-        "bridge": "Duplique o quadro e altere um pouco as crateras e as pontas das chamas.",
+        "bridge": "Agora mude só os detalhes no segundo quadro! Duplique o quadro e altere um pouco as crateras e as pontas das chamas. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-quadro-pedra",
         "speech": [
-          "Em Spritesheet, selecione o quadro 1 e clique em Duplicar quadro. No quadro 2, ligue Fantasma do quadro anterior. Com Selecionar, mova uma cratera um pouco para o lado, mantendo-a dentro da pedra. Faça uma mudança pequena em outra cratera se quiser.",
-          "Escolha Editar os pontos numa chama e ajuste sua ponta um pouco. Faça o mesmo no miolo, sem levar o fogo para fora do quadro. Mantenha o corpo da pedra na mesma posição. Confira a ordem das formas neste quadro: pedra e crateras continuam na frente do fogo.",
-          "Troque entre os dois quadros e desligue o fantasma para conferir os desenhos. O corpo fica no lugar; os detalhes mudam. Se toda a pedra pulou, desfaça o deslocamento do corpo e mexa só nas partes escolhidas. Aguarde o salvamento."
+          "Ligue a Prévia. Tá vendo? A pedra fica parada, porque a animação só tem um quadro. Lembra da experiência da parte anterior? Quando só as crateras andavam um pouco, a pedra parecia rolar. Agora a gente vai fazer isso no seu asteroide!",
+          "Primeiro, em Spritesheet, selecione o quadro 1 e clique em Duplicar quadro. Depois, no quadro 2, com Selecionar, mova uma cratera um pouco para o lado, mantendo a cratera dentro da pedra. Se quiser, faça uma mudança pequena em outra cratera.",
+          "Agora escolha Editar os pontos numa chama e ajuste a ponta dela um pouco. Faça o mesmo no miolo, sem levar o fogo para fora do quadro, e mantenha o corpo da pedra na mesma posição.",
+          "Por último, troque entre os dois quadros: o corpo fica no lugar, e só os detalhes mudam. Se no seu desenho não ficou assim, confira: o corpo da pedra está na mesma posição nos dois quadros, e a pedra e as crateras continuam na frente do fogo, porque uma chama na frente num quadro só pisca por cima da pedra na animação."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -1094,12 +1122,12 @@
       {
         "key": "girando",
         "title": "Confira o ritmo da pedra",
-        "bridge": "Nomeie a animação girando e teste dois quadros a 8 por segundo.",
+        "bridge": "Agora dê nome e ritmo à animação da pedra! Nomeie a animação girando e teste dois quadros a 8 por segundo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-girando",
         "speech": [
-          "Em Spritesheet, use Renomear animação para trocar parado por girando. Deixe Velocidade em 8 quadros por segundo e ligue a Prévia.",
-          "Compare: crateras e fogo mudam um pouco, o corpo permanece no lugar e nenhuma ponta é cortada. O nome girando vai ajudar a escolher essa animação no Estúdio; os dois desenhos criam uma impressão de movimento, não uma volta completa da pedra. Confira dois quadros e aguarde o salvamento."
+          "Agora dê um nome à animação da pedra. Em Spritesheet, use Renomear animação para trocar parado por girando. Esse nome vai ajudar você a escolher essa animação no Estúdio. Depois deixe a Velocidade em 8 quadros por segundo e ligue a Prévia.",
+          "Olha só: as crateras e o fogo mudam um pouco, e o corpo fica no lugar. Os dois desenhos criam uma impressão de movimento, e não uma volta completa da pedra, porque só os detalhes mudam de um quadro para o outro. Se no seu desenho não ficou assim, confira: o corpo está no mesmo lugar nos dois quadros, nenhuma ponta é cortada na borda e a animação girando tem dois quadros."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta"
@@ -1107,7 +1135,7 @@
       {
         "key": "revisao",
         "title": "Confira as duas artes",
-        "bridge": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.",
+        "bridge": "Agora vamos relembrar o que você fez nas suas duas artes, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.",
         "kind": "reflection",
         "questions": [
           {
@@ -1174,13 +1202,15 @@
       },
       {
         "key": "entrega",
-        "title": "Entregue suas duas artes",
-        "bridge": "Confira nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Envie a nave e o asteroide pela galeria do Pinta desta seção.",
+        "title": "Envie suas duas artes",
+        "bridge": "Hora de enviar as suas duas artes! Confira se cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Depois clique em Escolher no Pinta, selecione a nave e o asteroide e clique em Enviar (2). Quando aparecer Recebido!, clique em Concluir fase.",
         "kind": "delivery",
         "videoKey": "video-entrega",
         "speech": [
-          "Antes de enviar, confira no seu trabalho: nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
-          "Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a nave e o asteroide. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (2). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+          "Hora de enviar as suas duas artes! Antes, confira nas suas duas artes: a nave tem 32 por 32 e a animação voando, e o asteroide tem 64 por 64 e a animação girando. Cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.",
+          "Agora volte para a aba da fase e clique em Escolher no Pinta. Na janela Minhas criações do Pinta, selecione a nave e o asteroide. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.",
+          "Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (2) e espere aparecer Recebido!",
+          "Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "pinta",
@@ -1255,18 +1285,18 @@
       {
         "key": "nomes",
         "title": "Separe os nomes que os blocos procuram",
-        "bridge": "Agora tire o bloco, troque o nome e veja quando os avisos aparecem.",
+        "bridge": "Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-nomes",
         "speech": [
           "Esta é uma experiência para a gente entender por que cada coisa do jogo precisa de um nome só dela.",
-          "Olha aqui: o bloco de cima cria o sprite nave. Ao lado, três blocos procuram esse nome: Mover nave, Desenhar nave e Ler nave. Eu clico em Tempo, e a nave voa na prévia.",
-          "Quando eu clico em Tirar este bloco, os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. A prévia para na última versão que funcionava. Os blocos procuram nave, e ninguém criou esse nome.",
-          "Eu clico em Pôr de volta, e os avisos somem. Agora, em Nome do bloco de baixo, eu escolho nave. Aparece outro aviso: o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.",
-          "Sabe quando duas pessoas da sua sala têm o mesmo nome? Se a professora chama esse nome, as duas olham. Por isso, cada uma ganha um jeito próprio de ser chamada, como o sobrenome.",
-          "Então eu escolho folha-nave. Os avisos somem, e a nave volta a voar na prévia. A folha ganhou um nome só dela, e a nave continua com o nome nave.",
+          "Olha aqui: o bloco de cima cria o sprite nave, e três blocos procuram esse nome: Mover nave, Desenhar nave e Ler nave. Quando eu clico em Tempo, a nave voa na prévia.",
+          "Agora eu clico em Tirar este bloco. Tá vendo? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.",
+          "Eu clico em Pôr de volta, e os avisos somem. Depois, em Nome do bloco de baixo, eu escolho nave. Repare: aparece outro aviso, dizendo que o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Isso acontece porque, com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.",
+          "Sabe quando dois jogadores do mesmo time têm o mesmo nome? Se o técnico chama esse nome, os dois olham. Por isso, cada um ganha um jeito próprio de ser chamado, como o sobrenome ou um apelido. No seu jogo, a nave e a folha são os dois jogadores: cada um precisa de um nome só dele.",
+          "Por isso, eu escolho folha-nave. Olha só: os avisos somem, e a nave volta a voar na prévia, porque a folha ganhou um nome só dela, e a nave continua com o nome nave.",
           "Daqui a pouco, no seu jogo, a folha da nave vai se chamar folha-nave, e o sprite continua com o nome nave.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo.",
         "activity": {
@@ -1286,18 +1316,19 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-nomes",
-        "meme": "na frase dos nomes, a nave e a folha da nave com o mesmo crachá \"nave\" olhando ao mesmo tempo quando o Zappy chama, com a legenda \"nave? qual das duas?\"."
+        "meme": "na frase do time, o Zappy de técnico, com apito, chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\"."
       },
       {
         "key": "trazer-artes",
         "title": "Traga seus desenhos para o projeto",
-        "bridge": "Adicione nave e asteroide aos materiais da cópia do seu jogo.",
+        "bridge": "Agora traga os seus desenhos para o jogo! Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-trazer-artes",
         "speech": [
-          "Clique em Abrir meu Estúdio. Em Meus Jogos, abra o cartão que você nomeou e entregou na aula 1. Abra Mais opções, depois Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.",
-          "Nos cartões nave e asteroide, clique em Adicionar ao projeto. Confira a marca no projeto nos dois. Feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.",
-          "Olhe a partida: os desenhos do jogo ainda são os antigos. As novas imagens estão disponíveis nos materiais, mas os blocos ainda não mandaram usá-las. Aguarde Salvo antes de voltar à aula."
+          "Lembra da experiência da parte anterior? Os blocos achavam a nave pelo nome, por isso o nome precisava estar certinho. Agora a gente vai trazer os seus desenhos para o jogo, com os nomes que você deu no Pinta: nave e asteroide.",
+          "Clique em Abrir meu Estúdio nesta parte. Em Meus Jogos, abra o cartão que você nomeou e enviou na fase 1. Depois abra Mais opções, Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.",
+          "Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.",
+          "Agora clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos. As suas imagens já estão nos materiais, mas nenhum bloco mandou o jogo usar essas imagens ainda. É isso que a gente vai fazer nas próximas partes."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1305,18 +1336,18 @@
       {
         "key": "recorte",
         "title": "Separe o quadro do tamanho no jogo",
-        "bridge": "Agora mude a Largura do recorte até aparecer uma nave inteira.",
+        "bridge": "Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-recorte",
         "speech": [
           "Esta é uma experiência para a gente entender o recorte, que é o jeito de o jogo pegar um desenho da folha.",
-          "Olha aqui: a folha tem 64 por 32, com a nave do quadro 1 e a do quadro 2 lado a lado. O jogo começa vazio, porque ainda não tem recorte.",
-          "Quando eu coloco Largura do recorte em 64, o jogo mostra a folha inteira, com as duas naves espremidas num quadrado só. Com 16, aparece só metade de uma nave, esticada. Com 32, aparece uma nave inteira: o recorte ficou do tamanho de um quadro da folha.",
+          "Olha aqui: a folha tem 64 por 32, com a nave do quadro 1 e a do quadro 2 lado a lado. O jogo ainda está vazio, porque eu ainda não escolhi a Largura do recorte.",
+          "Quando eu coloco Largura do recorte em 64, o jogo mostra a folha inteira, com as duas naves espremidas num quadrado só. Com 16, aparece só metade de uma nave, esticada. E, com 32, olha só: aparece uma nave inteira, porque o recorte ficou do tamanho de um quadro da folha.",
           "Sabe uma cartela de adesivos? Para colar um adesivo, você destaca só aquele, do tamanho dele. Se pegar a cartela inteira, vêm todos juntos. Se cortar no meio, sai meio adesivo. A Largura do recorte é o tamanho do adesivo que o jogo destaca da folha.",
-          "Com 32, eu escolho o Quadro 1: no jogo, a nave com o fogo pequeno. Escolho o Quadro 2: a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.",
-          "Agora eu mudo tamanho no jogo para 80. A nave do jogo fica maior, e o recorte continua 32 por 32. O tamanho no jogo é outra escolha: ele não muda o recorte da folha.",
-          "No seu jogo vai ser assim: o recorte da folha-nave fica 32 por 32, e o tamanho da nave na tela continua 54 por 54, no criador.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Com 32, eu escolho o Quadro 1, e o jogo mostra a nave com o fogo pequeno. Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.",
+          "Agora eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o tamanho no jogo é outra escolha, por isso ele não muda o recorte da folha.",
+          "No seu jogo vai ser assim: o recorte da folha-nave fica 32 por 32, e o tamanho da nave na tela vai ser 54 por 54, no criador.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32.",
         "activity": {
@@ -1341,13 +1372,15 @@
       {
         "key": "trocar-nave",
         "title": "Use sua imagem no criador da nave",
-        "bridge": "Troque o criador da nave por um sprite com imagem, conservando o nome nave.",
+        "bridge": "Agora use a sua imagem no criador da nave! Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-trocar-nave",
         "speech": [
-          "Em Ao iniciar, localize Criar nave. Leia seus valores antes de trocar. Abra Jogo 2D, Sprites, Criar e trocar aparência. Arraste Criar sprite em x y largura altura com imagem para um espaço livre da área de blocos. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave.",
-          "Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Encaixe o novo criador no lugar dele, abaixo de Preparar o jogo em tela cheia e acima dos grupos. Confira que os blocos de baixo continuam ligados e que há só um criador da nave. Se apagar outra peça, Ctrl+Z desfaz.",
-          "O nome nave mantém os controles e as colisões procurando o mesmo sprite. A imagem pode mostrar os dois desenhos espremidos por enquanto: o criador está usando a folha inteira. Confira os seis campos do bloco; na próxima parte vamos recortar cada quadro. Aguarde Salvo."
+          "Clique na prévia e comece uma partida. Tá vendo? A nave é a de antes, porque Criar nave ainda não usa a sua imagem. Lembra da experiência da parte anterior? Com o recorte em 64, apareciam as duas naves espremidas. Agora a gente vai pôr a sua folha no jogo!",
+          "Para isso, troque o criador da nave. Em Ao iniciar, encontre Criar nave e leia o x e o y dele, porque o bloco novo vai usar os mesmos. Depois deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Sprites, Criar e trocar aparência e arraste Criar sprite em x y largura altura com imagem até esse espaço livre. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.",
+          "Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Depois encaixe o novo criador no lugar dele, abaixo de Preparar o jogo em tela cheia e acima dos grupos. Se apagar outra peça sem querer, use Ctrl+Z para desfazer.",
+          "Agora clique na prévia e comece uma partida de novo. Olha só: a sua nave aparece, com os dois desenhos espremidos, porque o criador está usando a folha inteira, como na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é por esse nome que os controles e as colisões procuram o sprite.",
+          "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados. Depois de corrigir, teste de novo. Na próxima parte, a gente vai recortar cada quadro."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1355,12 +1388,15 @@
       {
         "key": "folha-nave",
         "title": "Prepare o recorte da nave",
-        "bridge": "Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar.",
+        "bridge": "Agora prepare o recorte da sua nave! Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-folha-nave",
         "speech": [
-          "Deixe à vista o fim da pilha Ao iniciar. Se precisar, arraste um espaço vazio da área de blocos para encontrar o último bloco. A folha vai entrar logo depois dele. Abra Jogo 2D, Sprites, Animação. Pegue Carregar folha de quadros da imagem com quadros de x px. No nome da folha, escreva folha-nave. Na imagem, escolha nave. Deixe largura e altura dos quadros em 32.",
-          "Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali. Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador: aquele é o tamanho da nave na tela. A folha está preparada, mas ainda falta mandar animar. Aguarde Salvo."
+          "Clique na prévia e comece uma partida. Tá vendo? Aparecem as duas naves espremidas, porque o criador usa a folha inteira. Lembra da experiência da terceira parte desta fase? Com o recorte de 32, apareceu uma nave inteira. Agora a gente vai recortar a folha da sua nave!",
+          "A folha vai entrar no fim de Ao iniciar, por isso deixe primeiro esse lugar à vista. Se precisar, arraste um espaço vazio da área de blocos até encontrar o último bloco.",
+          "Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.",
+          "No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta fase. Na imagem, escolha nave e deixe largura e altura dos quadros em 32.",
+          "Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador, porque aquele é o tamanho da nave na tela, e não o do recorte. Repare: a folha está preparada, mas a nave ainda não anima, porque ainda falta mandar o jogo animar."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1368,26 +1404,30 @@
       {
         "key": "animar-nave",
         "title": "Ligue a animação voando",
-        "bridge": "Anime nave com folha-nave e confira os dois quadros no jogo.",
+        "bridge": "Agora ligue a animação voando! Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-animar-nave",
         "speech": [
-          "Deixe à vista Carregar folha de quadros folha-nave, no fim de Ao iniciar. A animação vai entrar logo abaixo dele. Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe nesse lugar.",
-          "No sprite, escolha nave. Na folha, escolha folha-nave. Clique em Escolher na animação e selecione voando. Confira os valores preenchidos: do quadro 0 ao 1, a 8 fps. O Pinta mostra os desenhos como 1 e 2; o bloco começa a contagem em 0, por isso usa 0 e 1.",
-          "Clique na prévia e comece a partida com Enter. Mova com as setas e atire com Espaço. Confira uma nave inteira com fogo pulsando, sem dois desenhos espremidos. Se voando não aparecer, confira a animação salva no Pinta e a imagem trazida ao projeto antes de escolher novamente. Aguarde Salvo."
+          "Agora a gente vai mandar o jogo animar a sua nave. A animação vai logo abaixo de Carregar folha de quadros folha-nave, no fim de Ao iniciar, porque a folha precisa estar carregada antes de a nave usar os quadros dela. Por isso, deixe esse bloco à vista.",
+          "Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe logo abaixo de Carregar folha de quadros folha-nave.",
+          "No sprite, escolha nave, e, na folha, escolha folha-nave. Depois clique em Escolher na animação e selecione voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo. O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.",
+          "Agora clique na prévia e comece a partida com Enter. Mova a nave com as setas e atire com Espaço. Olha só: agora a nave aparece inteira, com o fogo pulsando.",
+          "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1, a 8 fps, logo abaixo de Carregar folha de quadros folha-nave. Depois de corrigir, teste de novo. E, se voando não aparecer na lista, confira se a animação ficou guardada no Pinta e se a imagem foi trazida ao projeto antes de escolher de novo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
       },
       {
         "key": "entrega",
-        "title": "Entregue o jogo com sua nave",
-        "bridge": "Confira a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais nesta aula. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.",
+        "title": "Envie o jogo com sua nave",
+        "bridge": "Hora de enviar o seu jogo com a sua nave! Confira se a nave aparece inteira, com a sua imagem e o fogo pulsando. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
         "kind": "delivery",
         "videoKey": "video-entrega",
         "speech": [
-          "Antes de enviar, confira no seu trabalho: a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais nesta aula. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
-          "Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+          "Hora de enviar o seu jogo com a sua nave! Antes, confira no seu jogo: a nave aparece inteira, com a sua imagem e a animação voando; as setas e o tiro funcionam; e as pedras continuam as originais por enquanto. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da fase só mostra o que já está guardado na sua conta.",
+          "Agora volte para a aba da fase e clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.",
+          "Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!",
+          "Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio",
@@ -1503,17 +1543,17 @@
       {
         "key": "dois-relogios",
         "title": "Compare nascer e animar",
-        "bridge": "Agora mude os dois relógios e compare as pedras que nascem.",
+        "bridge": "Sua vez! Mude os dois relógios e compare as pedras que nascem. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-dois-relogios",
         "speech": [
           "Esta é uma experiência para a gente entender dois relógios que trabalham ao mesmo tempo: um faz as pedras nascerem, e o outro troca os desenhos de cada pedra.",
-          "Olha aqui: eu deixo Desenhos por segundo de cada pedra em 8 e coloco A cada quantos quadros nasce uma pedra em 20. Clico em Voltar ao começo e no Tempo. Em dois segundos, o contador chega ao quadro 60, e nasceram três pedras, nos quadros 20, 40 e 60. Cada pedra entra mostrando o quadro 0, e depois o número em cima dela troca entre 0 e 1.",
+          "Olha aqui: eu deixo Desenhos por segundo de cada pedra em 8 e coloco A cada quantos quadros nasce uma pedra em 20. Depois clico em Voltar ao começo e no Tempo. Em dois segundos, o contador chega ao quadro 60, e nasceram três pedras, nos quadros 20, 40 e 60. Repare: cada pedra entra mostrando o quadro 0, e depois o número em cima dela troca entre 0 e 1.",
           "Eu clico em Tempo para parar. Nasceu uma pedra a cada 20 quadros, e cada uma trocou de desenho 8 vezes por segundo.",
-          "Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais devagar, e Desenhos por segundo de cada pedra em 16, que é mais depressa. Clico em Voltar ao começo e ligo o Tempo. Em três segundos, nascem só duas pedras: o relógio de nascer ficou mais lento. Mas o número em cima de cada pedra troca entre 0 e 1 bem mais depressa: o relógio dos desenhos ficou mais rápido.",
-          "Cada relógio mudou só o que é dele. E cada pedra começa o próprio giro no quadro 0, na hora em que nasce.",
+          "Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais devagar, e Desenhos por segundo de cada pedra em 16, que é mais depressa. Clico em Voltar ao começo e ligo o Tempo. Tá vendo? Em três segundos, nascem só duas pedras, porque o relógio de nascer ficou mais lento. Mas o número em cima de cada pedra troca entre 0 e 1 bem mais depressa, porque o relógio dos desenhos ficou mais rápido.",
+          "Ou seja, cada relógio mudou só o que é dele. E cada pedra começa o próprio giro no quadro 0, na hora em que nasce.",
           "No seu jogo, o bloco A cada 40 quadros faz cada pedra nascer, e a animação chamada girando troca os desenhos de cada pedra 8 vezes por segundo. No bloco, isso aparece como 8 fps.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir do quadro 0, com uma pedra a cada 40 quadros e 8 desenhos por segundo: escolher 20 quadros em A cada quantos quadros nasce uma pedra, deixar 8 por segundo, clicar em Voltar ao começo e no Tempo. Deixar o tempo passar até o contador mostrar Quadro 60 e três pedras, mostrando o quadro 0 em cada pedra ao entrar; parar o Tempo. Escolher 40 quadros e 16 por segundo, dizendo que cada relógio vai para um lado, clicar em Voltar ao começo, ligar o Tempo por três segundos e deixar ver duas pedras com o número trocando mais depressa.",
         "activity": {
@@ -1547,12 +1587,14 @@
       {
         "key": "folha-pedra",
         "title": "Prepare a folha do asteroide",
-        "bridge": "Carregue folha-asteroide com quadros de 64 por 64.",
+        "bridge": "Agora prepare a folha do seu asteroide! Carregue folha-asteroide com quadros de 64 por 64 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-folha-pedra",
         "speech": [
-          "Abra meu Estúdio e retome o mesmo cartão da aula anterior. Deixe à vista o fim de Ao iniciar, logo depois da animação da nave. A nova folha vai entrar ali. Em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro.",
-          "Encaixe no fim de Ao iniciar, depois da animação da nave. Confira as duas folhas: folha-nave continua 32 por 32; folha-asteroide usa 64 por 64. Carregar a folha ainda não troca as pedras do jogo. Aguarde Salvo."
+          "Lembra da experiência da parte anterior? Um relógio fazia as pedras nascerem, e o outro trocava os desenhos de cada pedra. O de nascer já existe no seu jogo, por isso agora a gente vai ligar o dos desenhos, começando pela folha do asteroide.",
+          "Clique em Abrir meu Estúdio e retome o mesmo cartão da fase anterior. A nova folha vai entrar no fim de Ao iniciar, logo depois da animação da nave, por isso deixe esse lugar à vista.",
+          "Agora, em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros e encaixe no fim de Ao iniciar, depois da animação da nave. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro, porque o seu asteroide foi desenhado em 64 por 64.",
+          "Confira as duas folhas: folha-nave continua 32 por 32, e folha-asteroide usa 64 por 64. Repare que as pedras do jogo ainda não mudaram, porque carregar a folha só deixa os quadros prontos. Ainda falta trocar o criador das pedras."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1560,14 +1602,15 @@
       {
         "key": "trocar-pedra",
         "title": "Troque a imagem das pedras que nascem",
-        "bridge": "Substitua o criador das pedras, preservando o grupo, o sorteio e a velocidade.",
+        "bridge": "Agora troque a imagem das pedras que nascem! Substitua o criador das pedras, conservando o grupo, o sorteio e a velocidade. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-trocar-pedra",
         "speech": [
-          "Localize A cada 40 quadros e, dentro dele, Se o estado do jogo é jogando. Ali está o criador das pedras. Observe o grupo asteroides, o sorteio do x, o y e as velocidades antes de trocar.",
-          "Em Jogo 2D, Grupos, Criar e percorrer, pegue No grupo criar um sprite chamado em x y largura altura com imagem vx vy. Deixe o novo bloco solto enquanto preenche: grupo asteroides, nome asteroide, imagem asteroide, y -30, largura 40, altura 40, vx 0 e vy 3.",
-          "Mova a peça do sorteio que está no x do criador antigo para o x do novo. Assim você conserva os limites do seu jogo. Clique com o botão direito no criador antigo e escolha Apagar este bloco. Encaixe o novo no mesmo lugar, dentro do Se jogando do relógio. Confira que só um criador ficou ali e os outros blocos continuam ligados.",
-          "Comece a partida e veja se caem suas imagens em lugares diferentes. Ainda pode aparecer a folha inteira espremida: falta ligar a animação de cada pedra. Confira o grupo asteroides e o nome asteroide, que são diferentes. Aguarde Salvo."
+          "Agora a gente vai fazer as pedras nascerem com a sua imagem. Encontre A cada 40 quadros e, dentro dele, Se o estado do jogo é jogando. Olha aqui: este é o criador das pedras. Antes de trocar, observe o grupo asteroides, o sorteio do x, o y e as velocidades, porque o bloco novo vai precisar dos mesmos valores.",
+          "Deixe à vista um espaço livre da área de blocos. Em Jogo 2D, Grupos, Criar e percorrer, pegue No grupo criar um sprite chamado em x y largura altura com imagem vx vy e solte nesse espaço, sem encaixar ainda. Com o bloco solto, preencha: grupo asteroides, nome asteroide, imagem asteroide, y -30, largura 40, altura 40, vx 0 e vy 3.",
+          "Depois mova a peça do sorteio que está no x do criador antigo para o x do novo. Assim você conserva os limites do seu jogo. Agora clique com o botão direito no criador antigo, escolha Apagar este bloco e encaixe o novo no mesmo lugar, dentro do Se jogando do relógio.",
+          "Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x. Elas ainda aparecem com a folha inteira espremida, porque falta ligar a animação de cada pedra.",
+          "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, dentro do Se jogando do A cada 40 quadros, com grupo asteroides, nome asteroide, imagem asteroide e o sorteio no x, e os outros blocos ligados. O grupo junta todas as pedras, e o nome é de cada pedra que nasce. Depois de corrigir, teste de novo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1575,13 +1618,15 @@
       {
         "key": "animar-pedra",
         "title": "Anime cada pedra depois de criar",
-        "bridge": "Coloque a animação girando logo abaixo do criador, dentro do mesmo Se.",
+        "bridge": "Agora anime cada pedra depois de criar! Coloque a animação girando logo abaixo do criador, dentro do mesmo Se. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-animar-pedra",
         "speech": [
-          "Deixe à vista o novo criador da pedra, dentro do Se jogando do A cada 40 quadros. A animação vai ficar logo abaixo desse criador, no mesmo Se. Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe nesse lugar. Assim cada pedra recebe a animação quando nasce.",
-          "Escolha sprite asteroide e folha folha-asteroide. Em Escolher, selecione girando. Confira do quadro 0 ao 1, a 8 fps. O carregamento da folha continua no Ao iniciar; o comando de animar fica aqui, depois de cada nascimento.",
-          "Comece uma partida. Observe pelo menos três pedras entrando com a animação, mova a nave e atire. Acerte uma pedra para conferir os pontos e deixe uma encostar na nave para conferir a perda de vida. Se a arte não aparecer inteira, confira folha-asteroide e recorte 64 por 64. Aguarde Salvo."
+          "Agora cada pedra vai ganhar a animação girando. Ela vai ficar logo abaixo do novo criador da pedra, dentro do Se jogando do A cada 40 quadros, porque cada pedra precisa existir antes de receber a animação. Por isso, deixe esse lugar à vista.",
+          "Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe logo abaixo do criador. Assim, cada pedra recebe a animação na hora em que nasce, como na experiência dos dois relógios.",
+          "Escolha sprite asteroide e folha folha-asteroide. Em Escolher, selecione girando, e os valores chegam preenchidos, como na nave. Repare: o carregamento da folha continua no Ao iniciar, e o comando de animar fica aqui, depois de cada nascimento.",
+          "Agora comece uma partida e observe pelo menos três pedras entrando com a animação. Mova a nave e atire. Acerte uma pedra para conferir os pontos e deixe uma encostar na nave para conferir a perda de vida.",
+          "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite asteroide com a folha folha-asteroide na animação girando, do quadro 0 ao 1, a 8 fps, logo abaixo do criador, dentro do mesmo Se, e folha-asteroide com quadros de 64 por 64. Depois de corrigir, teste de novo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1589,7 +1634,7 @@
       {
         "key": "revisao",
         "title": "Confira as artes dentro do jogo",
-        "bridge": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.",
+        "bridge": "Agora vamos relembrar como as suas artes entraram no jogo, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.",
         "kind": "reflection",
         "questions": [
           {
@@ -1656,13 +1701,15 @@
       },
       {
         "key": "entrega",
-        "title": "Entregue o jogo com as duas artes",
-        "bridge": "Confira nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.",
+        "title": "Envie o jogo com as duas artes",
+        "bridge": "Hora de enviar o seu jogo com as duas artes! Confira se a nave e as pedras usam as suas animações. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
         "kind": "delivery",
         "videoKey": "video-entrega",
         "speech": [
-          "Antes de enviar, confira no seu trabalho: nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
-          "Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+          "Hora de enviar o seu jogo com as duas artes! Antes, confira no seu jogo: a nave e as pedras usam as suas animações, pelo menos três pedras nasceram animadas, e o tiro, os pontos e a perda de vida continuam funcionando. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da fase só mostra o que já está guardado na sua conta.",
+          "Agora volte para a aba da fase e clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.",
+          "Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!",
+          "Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio",
@@ -1774,17 +1821,17 @@
       {
         "key": "copia-publicada",
         "title": "Compare projeto e versão publicada",
-        "bridge": "Agora publique, mude a cor do projeto e publique de novo.",
+        "bridge": "Sua vez! Publique, mude a cor do projeto e publique de novo. Quando terminar, clique em Próxima parte.",
         "kind": "exploration",
         "videoKey": "video-copia-publicada",
         "speech": [
           "Esta é uma experiência para a gente entender o que é publicar um jogo no Mural. Esta bancada é um treino: nada daqui vai para o Mural de verdade.",
-          "Olha aqui: na esquerda está o seu projeto, com a nave azul. Na direita, a versão no Mural, ainda sem nada publicado. Quando eu clico em Publicar, aparece o cartão Publicação 1, com a nave azul. As duas telas mostram a mesma nave.",
-          "Agora, em Cor da nave no seu projeto, eu escolho rosa. A nave do projeto fica rosa, e a Publicação 1 continua azul. Publicar guardou uma cópia daquele momento, e o projeto continua seu para mexer.",
+          "Olha aqui: na esquerda está o seu projeto, com a nave azul, e na direita, a versão no Mural, ainda sem nada publicado. Quando eu clico em Publicar, aparece o cartão Publicação 1, com a nave azul, e as duas telas mostram a mesma nave.",
+          "Agora, em Cor da nave no seu projeto, eu escolho rosa. Tá vendo? A nave do projeto fica rosa, e a Publicação 1 continua azul, porque publicar guardou uma cópia daquele momento, e o projeto continua seu para mexer.",
           "Sabe quando você manda a foto de um desenho para alguém da família? Se depois você pinta mais o desenho, a foto que a pessoa recebeu continua igual. Para ela ver o desenho novo, você manda outra foto.",
-          "Então eu clico em Publicar de novo. Aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Cada publicação é um cartão novo, e o anterior fica no Mural.",
-          "Mais adiante nesta aula, publicar o seu jogo de verdade vai ser uma escolha sua.",
-          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima seção."
+          "Por isso, eu clico em Publicar de novo. Repare: aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Ou seja, cada publicação é um cartão novo, e o anterior fica no Mural.",
+          "Mais adiante, publicar o seu jogo de verdade vai ser uma escolha sua.",
+          "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
         ],
         "screen": "A partir do projeto com a nave azul e do Mural vazio: clicar em Publicar e mostrar o cartão Publicação 1 azul. Em Cor da nave no seu projeto, escolher rosa e mostrar o projeto rosa e a Publicação 1 azul. Clicar em Publicar de novo e mostrar a Publicação 2 rosa ao lado da Publicação 1 azul, com a nota da bancada.",
         "activity": {
@@ -1815,13 +1862,14 @@
       {
         "key": "teste-completo",
         "title": "Jogue do começo ao reinício",
-        "bridge": "Teste a partida completa no mesmo cartão, usando suas duas artes.",
+        "bridge": "Agora jogue o seu jogo do começo ao reinício! Teste a partida completa no mesmo cartão, com as suas duas artes. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-teste-completo",
         "speech": [
-          "Abra meu Estúdio e retome seu jogo. Clique na prévia e toque na tecla Enter para começar. Mova a nave para os lados, atire e acerte uma pedra. Confira a mudança dos pontos e as duas animações.",
-          "Deixe as pedras acertarem a nave até acabar a última vida. Veja se a partida termina e o placar para. Toque na tecla Enter para voltar à abertura e outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.",
-          "Se alguma parte falhar, volte à aula em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. A ajuda da aula está em Preciso de ajuda?. Conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste novamente e espere Salvo."
+          "Lembra da experiência da parte anterior? Cada publicação guardou o jogo do jeito que ele estava naquele momento. Por isso, agora a gente vai testar o seu jogo inteiro, antes de você decidir se quer publicar.",
+          "Clique em Abrir meu Estúdio nesta parte e retome o seu jogo. Clique na prévia e toque na tecla Enter para começar. Mova a nave para os lados, atire e acerte uma pedra. Confira se os pontos mudam e se as duas animações aparecem.",
+          "Depois deixe as pedras acertarem a nave até acabar a última vida. Tá vendo? A partida acaba e aparece a tela de fim, porque as vidas acabaram. Toque na tecla Enter para voltar à abertura e em outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.",
+          "Se alguma regra falhar, volte à fase em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. Se precisar de ajuda, clique em Preciso de ajuda, aqui na fase, e conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste de novo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1829,13 +1877,14 @@
       {
         "key": "compartilhar",
         "title": "Mostre o jogo se quiser",
-        "bridge": "Se quiser, publique seu jogo no Mural e mande o link para a família e os amigos. Você pode seguir sem publicar.",
+        "bridge": "Agora, se quiser, publique o seu jogo no Mural e mande o link para a família e os amigos! Você pode seguir mesmo sem publicar. Quando terminar, volte a esta aba e clique em Próxima parte.",
         "kind": "application",
         "videoKey": "video-compartilhar",
         "speech": [
-          "Publicar é opcional. Se quiser mostrar seu jogo para a família e os amigos, com o jogo salvo, clique em Compartilhar no Estúdio. Confira o título. O resumo pode já vir escrito: leia e deixe do seu jeito, contando como jogar. Clique em Gerar capa e confira se a imagem representa seu jogo. Com título, resumo e capa prontos, clique em Publicar.",
-          "Espere a confirmação Publicado! Seu jogo já está no Mural dos Criadores. Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Abrir o jogo: a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio. Depois, clique em Copiar link. O botão muda para Link copiado! Mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.",
-          "Se preferir guardar o jogo por enquanto, siga para a revisão e entregue pela galeria. Se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão; o cartão antigo conserva a anterior."
+          "Agora vem uma escolha sua: publicar o seu jogo no Mural. Se quiser mostrar o seu jogo para a família e os amigos, deixe o jogo salvo e clique em Compartilhar, no alto do Estúdio. Confira o título. O resumo pode já vir escrito, por isso leia e deixe do seu jeito, contando como jogar. Depois clique em Gerar capa e confira se a imagem mostra o seu jogo. Com título, resumo e capa prontos, clique em Publicar.",
+          "Espere aparecer Publicado!, com a frase Seu projeto já está no Mural dos Criadores. Que conquista! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Abrir o jogo, e a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio.",
+          "Depois clique em Copiar link. Olha só: o botão muda para Link copiado! Mande o link para a sua família e os seus amigos, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.",
+          "Se preferir guardar o jogo por enquanto, você pode seguir para o quiz e depois enviar o jogo pela galeria. E, se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão, porque o cartão antigo continua com a versão anterior, como na experiência."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1843,7 +1892,7 @@
       {
         "key": "revisao",
         "title": "Confira o que você transformou",
-        "bridge": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.",
+        "bridge": "Agora vamos relembrar o que você transformou no seu jogo, com três perguntas! Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez. Quando acertar todas, clique em Próxima parte.",
         "kind": "reflection",
         "questions": [
           {
@@ -1910,13 +1959,15 @@
       },
       {
         "key": "entrega",
-        "title": "Entregue seu jogo do seu jeito",
-        "bridge": "Confira as duas artes aparecem inteiras e animadas; uma partida completa termina e recomeça corretamente. Publicar e escrever recado continuam opcionais. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.",
+        "title": "Envie seu jogo do seu jeito",
+        "bridge": "Hora de enviar o seu jogo do seu jeito! Confira se uma partida completa termina e recomeça direitinho. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.",
         "kind": "delivery",
         "videoKey": "video-entrega",
         "speech": [
-          "Antes de enviar, confira no seu trabalho: as duas artes aparecem inteiras e animadas; uma partida completa termina e recomeça corretamente. Publicar e escrever recado continuam opcionais. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
-          "Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+          "Hora de enviar o seu jogo do seu jeito! Antes, confira no seu jogo: as duas artes aparecem inteiras e animadas, e uma partida completa termina e recomeça direitinho. Publicar e escrever um recado ficam à sua escolha. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da fase só mostra o que já está guardado na sua conta.",
+          "Agora volte para a aba da fase e clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.",
+          "Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!",
+          "Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio",

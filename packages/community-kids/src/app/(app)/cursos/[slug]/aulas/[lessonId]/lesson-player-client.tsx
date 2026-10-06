@@ -26,8 +26,9 @@ import { LessonCelebration } from '@/components/kids/lesson-celebration'
 import { KidsMascotAnimated, prefetchZappyRive } from '@/components/kids/mascot-rive'
 import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
-import { type ApiError, apiSend } from '@/lib/api'
+import { apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
+import { conclusaoRecusada } from '@/lib/lesson-copy'
 import type { PosicaoNaAula } from '@/lib/lesson-progress'
 import type {
   CourseDetailView,
@@ -166,8 +167,7 @@ export function LessonPlayer({
       })
       router.refresh()
     } catch (error) {
-      const apiError = error as ApiError
-      toast.error(apiError.message || 'Não foi possível concluir a aula. Tente novamente.')
+      toast.error(conclusaoRecusada(error))
     } finally {
       setCompleting(false)
     }
@@ -219,7 +219,7 @@ export function LessonPlayer({
   const completionAction = lesson.completed ? (
     <span className="inline-flex items-center gap-2 font-extrabold text-[0.9375rem]">
       <CheckCircle2 className="size-5 text-(--success-foreground)" aria-hidden />
-      Aula concluída
+      Fase concluída
     </span>
   ) : (
     <button
@@ -229,7 +229,7 @@ export function LessonPlayer({
       className="sz-btn-gradient h-12 gap-2 px-7 text-base disabled:cursor-not-allowed disabled:opacity-55"
     >
       {completing ? <Spinner /> : <CheckCircle2 className="size-5" aria-hidden />}
-      Concluir aula
+      Concluir fase
     </button>
   )
   // Em TEXTO, na voz da criança: vira um item da faixa "o que falta para seguir" do rodapé
@@ -237,17 +237,17 @@ export function LessonPlayer({
   const completionMessage = lesson.completed
     ? null
     : blockedByLearning
-      ? 'Termine as atividades desta aula para concluir'
+      ? 'Termine as experiências desta fase para concluir'
       : blockedByPinta
-        ? 'Envie seu desenho ao professor para concluir a aula'
+        ? 'Envie o seu desenho para concluir a fase'
         : blockedByComingSoon
-          ? `Essa aula ainda está sendo preparada${nextLessonLocked ? '. Quando ela ficar pronta, você termina e as próximas abrem' : ''}`
+          ? `Essa fase ainda está sendo preparada${nextLessonLocked ? '. Quando ela ficar pronta, você termina e as próximas abrem' : ''}`
           : blockedByQuiz
-            ? 'Passe no quiz da aula para concluir'
+            ? 'Passe no quiz da fase para concluir'
             : blockedByStudioNotSubmitted
-              ? 'Envie seu projeto do Estúdio para concluir a aula'
+              ? 'Envie o seu projeto para concluir a fase'
               : blockedByStudioNotPassed
-                ? 'Alcance a nota mínima do Estúdio para concluir a aula'
+                ? 'Alcance a meta do projeto para concluir a fase'
                 : null
 
   return (
@@ -261,7 +261,7 @@ export function LessonPlayer({
             {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
                 a dois lugares em telas seguidas. */}
-            <KidsBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
+            <KidsBackButton href={courseHref} label={`Voltar à aventura ${course.title}`} />
             <KidsLessonProgress
               progress={lesson.sectionProgress}
               posicao={secao ?? posicaoInicial}
@@ -290,7 +290,7 @@ export function LessonPlayer({
         <button
           type="button"
           onClick={toggleOutline}
-          aria-label="Fechar lista de aulas"
+          aria-label="Fechar lista de fases"
           aria-hidden={outlineCollapsed}
           inert={outlineCollapsed}
           className={cn(
@@ -310,7 +310,7 @@ export function LessonPlayer({
           <button
             type="button"
             onClick={toggleOutline}
-            aria-label="Fechar lista de aulas"
+            aria-label="Fechar lista de fases"
             className="ml-auto flex size-11 items-center justify-center lg:hidden"
           >
             <X className="size-5" aria-hidden />
@@ -326,13 +326,13 @@ export function LessonPlayer({
                 viewer={ratingViewer}
               />
               <div className="mt-3.5 flex items-center justify-between font-semibold text-muted-foreground text-xs">
-                <span>Progresso do curso</span>
+                <span>Progresso da aventura</span>
                 <span className="font-extrabold">{course.progress.percent}%</span>
               </div>
               <div
                 className="sz-progress mt-1.5"
                 role="progressbar"
-                aria-label="Progresso do curso"
+                aria-label="Progresso da aventura"
                 aria-valuemin={0}
                 aria-valuemax={100}
                 aria-valuenow={course.progress.percent}
@@ -388,7 +388,7 @@ export function LessonPlayer({
                                   em `sr-only` porque `title` não aparece no touch e
                                   um `<div>` sem role não aceita `aria-label`. */}
                               <span className="sr-only">
-                                , bloqueada, abre quando a anterior for concluída
+                                , trancada, abre quando a anterior for concluída
                               </span>
                             </div>
                           </li>

@@ -1,6 +1,7 @@
 import {
   isRecord,
   isSceneAction,
+  LIGHTHOUSE_POSITION,
   type SceneAction,
   type SceneId,
   sceneFrameRate,
@@ -260,10 +261,24 @@ function chunks(json: string): string[] {
 }
 
 /** Cactos viram tuplas: um objeto por cacto multiplicava o tamanho do checkpoint por três. */
-const pack = (s: SceneState) => ({
-  ...s,
-  crowd: { ...s.crowd, cacti: s.crowd.cacti.map((c) => [c.id, c.x, c.velocity]) },
-})
+/**
+ * ⚠️⚠️ O lugar da chave (`keyPosition`, 06/10/2026) só sai do padrão na `lighthouse-position`.
+ * Nas outras cenas ele é sempre o de fábrica, e a leitura o devolve (`hydrateSceneState` completa o
+ * GRUPO ausente). Guardado em todo retrato, ele somava ~53 bytes por retrato: a `coordinates`, com
+ * o estado e quatro retratos do Desfazer, passou de 31.839 para 32.104 bytes e estourou o teto de
+ * `MAX_LEARNING_STATE_BYTES` (32.000). A gravação voltava 400 e a criança via "Esta experiência
+ * mudou." no quarto gesto.
+ */
+const chaveNoPadrao = ({ keyPosition: k }: SceneState) =>
+  k.before === null && k.x === LIGHTHOUSE_POSITION.start.x && k.y === LIGHTHOUSE_POSITION.start.y
+const pack = (s: SceneState) => {
+  const { keyPosition, ...resto } = s
+  return {
+    ...resto,
+    ...(chaveNoPadrao(s) ? {} : { keyPosition }),
+    crowd: { ...s.crowd, cacti: s.crowd.cacti.map((c) => [c.id, c.x, c.velocity]) },
+  }
+}
 const unpack = (key: string, value: unknown) =>
   key === 'cacti' &&
   Array.isArray(value) &&

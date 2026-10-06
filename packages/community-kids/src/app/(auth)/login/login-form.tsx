@@ -161,9 +161,7 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle className={AUTH_TITLE}>Entrar</CardTitle>
         <CardDescription>
-          {mode === 'password'
-            ? 'Acesse sua área de aluno.'
-            : 'Receba um código de acesso por e-mail.'}
+          {mode === 'password' ? 'Acesse a sua conta.' : 'Receba um código de acesso por e-mail.'}
         </CardDescription>
       </CardHeader>
       <CardContent>

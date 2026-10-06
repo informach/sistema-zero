@@ -6,7 +6,9 @@ import {
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
+import { LessonCopyProvider } from '@sistemazero/member-shell/components/lesson-copy-context'
 import { LessonPreviewProvider } from '@sistemazero/member-shell/components/lesson-preview-context'
+import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import { createEmptyProject } from '@sistemazero/studio/project'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -80,4 +82,9 @@ function ProjectPlayFixture() {
   )
 }
 
-createRoot(root).render(<ProjectPlayFixture />)
+// O vocabulário da criança, como o `KidsLessonCopy` em volta da área logada do app.
+createRoot(root).render(
+  <LessonCopyProvider value={KIDS_LESSON_COPY}>
+    <ProjectPlayFixture />
+  </LessonCopyProvider>,
+)

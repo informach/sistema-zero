@@ -160,6 +160,12 @@ export function ChildrenDashboard({
   return (
     <section className="w-full max-w-2xl">
       <h2 className="sz-display mb-3 text-center text-foreground text-xl">Progresso dos filhos</h2>
+      {/* A ponte entre os dois vocabulários (06/10/2026): aqui os pais leem curso, aula e
+          professor; na área da criança as mesmas coisas se chamam aventura, fase e equipe. */}
+      <p className="mb-4 text-center text-muted-foreground text-sm">
+        Na área da criança, cada curso aparece como uma aventura, cada aula como uma fase e o
+        professor como a equipe.
+      </p>
       <div className="grid gap-3 sm:grid-cols-2">
         {children === null
           ? [0, 1].map((i) => <Skeleton key={i} className="h-32 rounded-(--raio-carta)" />)
@@ -303,7 +309,7 @@ function ChildStatsCard({
                 ))}
               </ul>
               <p className="mt-2 text-muted-foreground">
-                Convide a criança a mostrar o jogo e preparar a publicação na área do aluno.
+                Convide a criança a mostrar o jogo e preparar a publicação na área dela.
               </p>
             </div>
           ) : null}

@@ -6,19 +6,36 @@ A criança retoma o projeto da Aula 1 e acrescenta a contagem. A experiência,
 o projeto inicial de retomada, a cadeia de continuidade e os critérios de conclusão permanecem.
 A revisão de 27/09/2026 dá comandos diretos e retira os tutoriais gerais de interface.
 O complemento de 28/09/2026 transforma o fechamento em uma publicação guiada pelo caminho
-mínimo, com ajuda direta no Como fazer e saída em **Concluir aula**.
+mínimo, com ajuda direta no Como fazer e saída em **Concluir fase**.
 A revisão de 29/09/2026 aplica os ajustes da Aula 1 já gravada: apresentar a experiência
 antes dos testes e orientar a verificação da etapa antes do envio.
 A revisão de 05/10/2026 faz a experiência explicar enquanto faz, abre a montagem com a retomada
 no próprio jogo e acrescenta **Deixe o jogo com a sua cara**, a seção de mexa e veja, entre o envio e a
 publicação: a criança troca bichos, esconderijos e a mensagem do final, e as mudanças ficam no jogo.
+A revisão de 06/10/2026 faz todas as falas conversarem com a criança e chamarem a atenção dela
+para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"), sem mudar seções nem critérios.
+Cada fala virou uma conversa contínua, com o porquê de cada resultado. A mensagem de vitória deixou
+de ser apresentada como "já estava preparada": a fala a liga à contagem que a criança montou.
+No mesmo dia, o vocabulário da aventura (Diretrizes, seção 6): na fala, "do jeito que ficou na
+Aula 1" virou "na Fase 1", "nesta aula" virou "agora", "Na aula, ele pode aparecer só como um ícone"
+virou "Aqui, ele pode aparecer…", e os botões citados passaram a ser **Próxima parte**,
+**Verificar esta parte**, **Objetivo cumprido!**, **Enviar meu projeto** e **Concluir fase**
+(nome do botão desde a noite de 06/10/2026, quando quem recebe passou a ser a equipe).
+No full review de 06/10/2026: a experiência diz o porquê sem círculo ("Achados vai para 1, porque eu
+encontrei um personagem e o jogo somou um"), o título dela virou **Quantos você já encontrou?** (sem o
+"nós"), a ponte da experiência termina em **Próxima parte**, a vitória diz que "a mensagem aparece
+quando Achados chega a 3", e a troca de imagens explica que todos os bichos e todos os esconderijos
+foram desenhados do mesmo tamanho, "por isso" (e não "então": a criança está olhando um bloco **Se**
+nessa parte) o desenho novo cabe no lugar do antigo. Na publicação, **Compartilhar** aparece como
+"uma setinha para cima", a ponte pede ajuda a um adulto se precisar e a ajuda escrita fala em "a
+área de ajuda", sem "nossa". Seções, blocos e critérios não mudaram.
 
 ## Sequência
 
 | Seção | Vídeo | O que fazer | Conclusão |
 | --- | --- | --- | --- |
-| Volte ao seu jardim | 15 a 25 s | ver o que falta no contador e avançar | vídeo |
-| Um número que acompanha a busca | 65 a 85 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
+| Volte ao seu jardim | 25 a 35 s | ver o que falta no contador e avançar | vídeo |
+| Um número que acompanha a busca | 75 a 95 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
 | Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar, verificar a etapa e enviar | vídeo, aprovação na verificação e envio |
 | Deixe o jogo com a sua cara | 2 a 3 min | trocar bichos e esconderijos pelo nome da imagem nos blocos Criar sprite, escrever a mensagem do final e encontrar todo mundo de novo | vídeo; as mudanças não viram critério |
 | Publique seu jogo | 60 a 80 s | manter o resumo, gerar capa, publicar, comemorar, copiar o link de jogar para a família e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |
@@ -28,10 +45,11 @@ publicação: a criança troca bichos, esconderijos e a mensagem do final, e as 
 ### Volte ao seu jardim
 
 Começar dizendo que a tarefa é fazer o jogo contar os personagens encontrados. Mostrar um toque
-revelando o personagem enquanto **Achados** continua em zero. Encaminhar para **Próxima seção**.
+revelando o personagem ("Olha aqui…") e chamar a atenção para **Achados**, que continua em zero
+("Mas repare no número Achados…"). Encaminhar para **Próxima parte**.
 A seção tem vídeo e ponte do Zappy, sem ferramenta. A fala não pode pedir que a criança manipule um projeto ali.
 
-**Zappy abaixo do vídeo:** “Os personagens já aparecem, mas a contagem ainda não muda. Clique em Próxima seção para continuar.”
+**Zappy abaixo do vídeo:** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima parte para começar.”
 
 ### Um número que acompanha a busca
 
@@ -48,21 +66,25 @@ pistas, o retorno de cada toque e a ausência de palpite ou quiz.
 
 ### Cada personagem vale um achado
 
-Começar pela retomada: lembrar que, na experiência da seção anterior, cada personagem encontrado
-somava um em Achados, e convidar a programar essa contagem no jogo; pedir um toque num esconderijo do próprio jogo (o
-personagem aparece, mas Achados continua em zero) e dizer que a montagem fará essa ligação. Com a
+Começar pela retomada, curta (umas 50 palavras) e nesta ordem: primeiro o problema, com um toque
+num esconderijo do próprio jogo (o personagem aparece, mas Achados continua em zero, porque o jogo
+ainda não conta); depois a lembrança da experiência da seção anterior (cada personagem encontrado
+somava um em Achados); por fim, o convite uma vez só, colado ao primeiro passo ("Agora a gente vai
+fazer o seu jogo contar do mesmo jeito!"). A retomada não repete a explicação da variável. Com a
 ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Somar ___ em variável ___**,
 que nasce com **1** e **contador**, logo abaixo dela. Manter **1** e trocar **contador** por
 **achados**. A verificação da entrega também confere a regra da Aula 1.
 
-Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória que já estava
-preparada. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
-outro toque. Se não funcionar, conferir encaixe, ordem, número e variável.
+Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória, que aparece quando
+**Achados** chega a 3; a fala diz que quem faz a mensagem aparecer é a contagem que a criança montou. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
+outro toque. A montagem não lista os blocos antes do teste: a lista entra uma vez, depois dele, com o
+gatilho genérico ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …"),
+cobrindo encaixe, ordem, número e variável.
 
-Depois do teste, clicar em **Verificar esta etapa**. Se faltar algo, corrigir os blocos e
-verificar novamente. Quando aparecer **Objetivo da etapa cumprido!**, esperar **Salvo**, usar
-**Enviar para o professor**, confirmar em **Enviar**, esperar o envio terminar e seguir em
-**Próxima seção**. O recado ao professor é opcional. A verificação exige esse clique; o envio
+Depois do teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e
+verificar novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar
+**Enviar meu projeto**, confirmar em **Enviar**, esperar o envio terminar e seguir em
+**Próxima parte**. O recado é opcional. A verificação exige esse clique; o envio
 não a executa automaticamente. Não ensinar o layout da Pré-visualização ou o compartilhamento.
 O caderno continua disponível na Aula 1, sem novo upload ou bloco.
 
@@ -76,7 +98,8 @@ há desenho para clicar: no fim dele, depois de **com imagem**, o Estúdio mostr
 Num bloco que cria um bicho, clicar nesse nome (por exemplo, **coelho**) para abrir a lista com as
 imagens do jogo e escolher outro bicho; se não achar, rolar a lista. Fazer o mesmo num bloco que
 cria um esconderijo (por exemplo, clicar em **arbusto** e escolher **toco**). Dizer que todos os
-bichos têm o mesmo tamanho, e todos os esconderijos também, então ninguém sai do lugar.
+bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também, por isso o
+desenho novo cabe certinho no lugar do antigo.
 
 Por último, trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for
 preciso, e, dentro do bloco **Se**, trocar o texto do bloco **Escrever** (**Você achou todo mundo!**)
@@ -85,10 +108,11 @@ por uma frase curta da criança.
 Antes do teste, a correção do erro provável: ao escolher outra imagem, o Estúdio ajusta largura e
 altura ao tamanho da imagem nova e mantém o canto de cima. Uma imagem do outro tipo muda o tamanho:
 um esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um
-esconderijo fica pequeno e deixa o bicho de trás à vista. A fala diz: "Se algum bicho aparecer antes
-do toque, ou um desenho ficar grande demais, clique de novo no nome da imagem e escolha um desenho do
+esconderijo fica pequeno e deixa o bicho de trás à vista. A fala diz: "Antes de testar, dê uma olhada
+no jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a
+imagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do
 mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo." Testar encontrando todo
-mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em **Próxima seção**.
+mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em **Próxima parte**.
 
 O projeto traz sete bichos (coelho, raposa, coruja, gato, sapo, tartaruga, esquilo) e seis
 esconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com uma caixa única
@@ -96,7 +120,12 @@ esconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com u
 **esconderijo3**, para o nome não contradizer a imagem escolhida. A troca é escolha da criança e
 não vira critério: a seção conclui pelo vídeo.
 
-**Zappy abaixo do vídeo:** “Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção.”
+Na página 5 do Mapa da Aventura, a galeria mostra todos esses bichos e esconderijos, separados
+por tipo, com as imagens do jogo e os nomes exatos da lista. A criança pode consultar as opções
+antes de trocar, seguindo os passos de personalização e o teste na mesma página. A publicação
+fica na página 6; a revisão e o certificado, na 7.
+
+**Zappy abaixo do vídeo:** “Hora de deixar o jogo com a sua cara! Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
 
 ### Publique seu jogo
 
@@ -106,19 +135,19 @@ a janela não mostra o campo Título: o título vem do curso, e a fala não o ci
 **Gerar capa**, esperar a imagem e conferir. Clicar em **Publicar** e comemorar com a criança na
 tela do Zappy (**Seu jogo está no Mural!**): agora a família e os amigos podem jogar. Clicar em
 **Copiar link de jogar** e convidar a mandar o link para a família e os amigos, com ajuda de um
-adulto se precisar. Clicar em **Fechar** e terminar em **Concluir aula**.
+adulto se precisar. Clicar em **Fechar** e terminar em **Concluir fase**.
 
 Gerar capa já inclui a imagem, sem download ou upload manual. Trocar a capa por outra imagem e
 resolver problemas ficam no Como fazer. Decisão de 06/10/2026: a publicação do primeiro jogo é
 momento de comemorar e de mostrar o jogo para a família.
 Uma ajuda escrita junto ao vídeo apresenta a área de ajuda e liga diretamente ao tutorial
-**Como publicar seu jogo no mural**, sem exigir leitura nem acrescentar um comando à narração.
+**Como publicar seu jogo no Mural**, sem exigir leitura nem acrescentar um comando à narração.
 
 Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Publicar é a atividade
 esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer
 “compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala.
 
-**Zappy abaixo do vídeo:** “Publique seu jogo no Mural, copie o link de jogar e mande para a sua família e seus amigos. Depois clique em Fechar e em Concluir aula.”
+**Zappy abaixo do vídeo:** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir fase.”
 
 ## Conferência antes de regravar
 
@@ -140,7 +169,7 @@ e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para 
 pixels mais baixo. Conferir uma troca num projeto salvo antes da revisão.
 
 Conferir Compartilhar liberado após o envio, resumo preenchido, capa gerada, publicação,
-comemoração, **Copiar link de jogar** e **Link copiado!**, Fechar e Concluir aula. Manter a conclusão possível sem publicação ou visita ao Mural.
+comemoração, **Copiar link de jogar** e **Link copiado!**, Fechar e Concluir fase. Manter a conclusão possível sem publicação ou visita ao Mural.
 O tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas
 de capa e link público. As novas falas precisam ser regravadas antes de substituir os vídeos
 atuais e o caminho precisa de ensaio com crianças.

@@ -92,7 +92,7 @@ export function UserMenu({
   const isProfile = Boolean(user.activeProfile)
   const subtitle = profileMenuSubtitle(gamification, isProfile)
   const levelSlug = gamification?.level?.slug
-  const displayName = user.firstName || 'Aluno'
+  const displayName = user.firstName || 'Criador(a)'
   const card = variant === 'card'
 
   const avatar = (size: 'sm' | 'md') =>

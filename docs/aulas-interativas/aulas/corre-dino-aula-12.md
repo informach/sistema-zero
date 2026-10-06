@@ -23,23 +23,23 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 ### Seção 1. Compare os resultados de um sorteio
 
-**Tarefa:** Sorteie posições até comparar diferenças e repetições; depois compare as duas velocidades.
+**Tarefa:** Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-sorteio-tira-na-hora → fala-sorteio-tira-na-hora → experiencia-random.
 
-**Zappy na página (não gravar):** Sorteie posições até comparar diferenças e repetições; depois compare as duas velocidades.
+**Zappy na página (não gravar):** Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `random`. Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem. Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Sorteie onde cada cacto nasce
 
-**Tarefa:** Sorteie o x de 500 a 560 dentro do único criador de cactos.
+**Tarefa:** Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-lugar-diferente → fala-lugar-diferente.
 
-**Zappy na página (não gravar):** Sorteie o x de 500 a 560 dentro do único criador de cactos.
+**Zappy na página (não gravar):** Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No x do cacto, encaixe um número de 500 a 560.
 - Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
@@ -47,13 +47,13 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 ### Seção 3. Sorteie uma variação na velocidade
 
-**Tarefa:** Use -5 menos um sorteio de 0 a 1 no vx do mesmo criador.
+**Tarefa:** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-velocidade-propria → fala-velocidade-propria.
 
-**Zappy na página (não gravar):** Use -5 menos um sorteio de 0 a 1 no vx do mesmo criador.
+**Zappy na página (não gravar):** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No x do cacto, encaixe um número de 500 a 560.
 - Na velocidade do cacto, use -5 menos um número de 0 a 1.
@@ -61,13 +61,13 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - No x do cacto, encaixe um número de 500 a 560.
 - Na velocidade do cacto, use -5 menos um número de 0 a 1.

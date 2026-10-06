@@ -57,14 +57,14 @@
   "blocks": [
     {
       "key": "video-seta-e-velocidade",
-      "plannedVideo": "Título: Observe o movimento quadro a quadro\n\nRegravar no Estúdio atual. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda \"Velocidade 3 · Velocidade 1\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Observe o movimento quadro a quadro\n\nRegravar no Estúdio atual. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda \"Velocidade 3 · Velocidade 1\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-seta-e-velocidade",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare a seta solta e segurada. Depois compare Velocidade 3 e Velocidade 1, avançando um quadro por vez."
+        "text": "Sua vez! Compare a seta solta e a seta segurada e depois as velocidades 3 e 1, avançando um quadro por vez. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -88,38 +88,38 @@
     },
     {
       "key": "video-setas-e-rastro",
-      "plannedVideo": "Título: Faça a nave responder às setas\n\nRegravar no Estúdio atual. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Faça a nave responder às setas\n\nRegravar no Estúdio atual. Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, segurar uma seta e, no \"Tá vendo?\", manter a nave parada à vista. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-setas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Coloque o movimento antes do desenho da nave e teste as duas setas."
+        "text": "Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-limpeza",
-      "plannedVideo": "Título: Tire o rastro da nave\n\nRegravar no Estúdio atual. Retomar o rastro no projeto, montar somente Limpar a tela antes do movimento e repetir o mesmo teste. Ainda não há estrelas.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Tire o rastro da nave\n\nRegravar no Estúdio atual. Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no \"Tá vendo?\", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limpeza",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Encaixe Limpar a tela antes de mover e desenhar. Repita o teste da seta."
+        "text": "Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-limite-da-tela",
-      "plannedVideo": "Título: Observe o que acontece na borda\n\nRegravar no Estúdio atual. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Observe o que acontece na borda\n\nRegravar no Estúdio atual. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limite-da-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Rode sem o limite. Depois recomece, ligue Manter dentro da tela e rode de novo."
+        "text": "Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -143,26 +143,26 @@
     },
     {
       "key": "video-limite-da-nave",
-      "plannedVideo": "Título: Mantenha a nave na tela\n\nRegravar no Estúdio atual. Mostrar a saída da nave antes da correção e repetir os dois testes depois. Conferir o sprite escolhido no bloco de limite.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mantenha a nave na tela\n\nRegravar no Estúdio atual. Começar pela retomada, antes de qualquer bloco: segurar uma seta até a nave passar da borda e, no \"Tá vendo?\", manter a saída à vista. Depois deixar à vista o espaço entre o movimento e o desenho, montar o limite e repetir os dois testes. Conferir o sprite escolhido no bloco de limite.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste as duas bordas e coloque o limite entre mover e desenhar."
+        "text": "Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-ordem-dos-desenhos",
-      "plannedVideo": "Título: Compare a ordem dos desenhos\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedacinho da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase de pintar no papel, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy pintando um céu estrelado por cima do desenho de uma nave, com a legenda \"quem vem por último fica por cima\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare a ordem dos desenhos\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedacinho da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase de pintar no papel, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy pintando um céu estrelado por cima do desenho de uma nave, com a legenda \"quem vem por último fica por cima\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-ordem-dos-desenhos",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Troque a ordem do fundo e da nave, observe a tela e volte à primeira ordem."
+        "text": "Sua vez! Troque a ordem do fundo e da nave, compare a tela e termine com o fundo antes da nave. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -197,14 +197,14 @@
     },
     {
       "key": "video-fundo-estrelado",
-      "plannedVideo": "Título: Coloque as estrelas atrás da nave\n\nRegravar no Estúdio atual. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Coloque as estrelas atrás da nave\n\nRegravar no Estúdio atual. Começar pela retomada, antes de qualquer bloco: no \"Tá vendo?\", mostrar o fundo liso. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-fundo-estrelado",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Adicione as estrelas e confira a ordem dos cinco blocos."
+        "text": "Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
@@ -212,7 +212,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção."
+        "text": "Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte."
       }
     },
     {
@@ -273,7 +273,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira o movimento nas duas bordas, verifique a etapa e envie o projeto."
+        "text": "Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase."
       }
     },
     {
@@ -511,7 +511,7 @@
       "key": "seta-e-velocidade",
       "title": "Observe o movimento quadro a quadro",
       "intent": "exploration",
-      "objective": "Compare a seta solta e segurada. Depois compare Velocidade 3 e Velocidade 1, avançando um quadro por vez.",
+      "objective": "Sua vez! Compare a seta solta e a seta segurada e depois as velocidades 3 e 1, avançando um quadro por vez. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-seta-e-velocidade",
         "fala-seta-e-velocidade",
@@ -529,7 +529,7 @@
       "key": "setas",
       "title": "Faça a nave responder às setas",
       "intent": "application",
-      "objective": "Coloque o movimento antes do desenho da nave e teste as duas setas.",
+      "objective": "Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-setas-e-rastro", "fala-setas"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -562,7 +562,7 @@
       "key": "limpeza",
       "title": "Tire o rastro da nave",
       "intent": "application",
-      "objective": "Encaixe Limpar a tela antes de mover e desenhar. Repita o teste da seta.",
+      "objective": "Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-limpeza", "fala-limpeza"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -589,7 +589,7 @@
       "key": "limite-da-tela",
       "title": "Observe o que acontece na borda",
       "intent": "exploration",
-      "objective": "Rode sem o limite. Depois recomece, ligue Manter dentro da tela e rode de novo.",
+      "objective": "Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-limite-da-tela", "fala-limite-da-tela", "experiencia-limite-da-tela"],
       "workspaceKey": null,
       "externalTool": null,
@@ -603,7 +603,7 @@
       "key": "borda",
       "title": "Mantenha a nave na tela",
       "intent": "application",
-      "objective": "Teste as duas bordas e coloque o limite entre mover e desenhar.",
+      "objective": "Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-limite-da-nave", "fala-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -650,7 +650,7 @@
       "key": "ordem-dos-desenhos",
       "title": "Compare a ordem dos desenhos",
       "intent": "exploration",
-      "objective": "Troque a ordem do fundo e da nave, observe a tela e volte à primeira ordem.",
+      "objective": "Sua vez! Troque a ordem do fundo e da nave, compare a tela e termine com o fundo antes da nave. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-ordem-dos-desenhos", "fala-ordem-dos-desenhos", "experiencia-camadas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -664,7 +664,7 @@
       "key": "fundo-estrelado",
       "title": "Coloque as estrelas atrás da nave",
       "intent": "application",
-      "objective": "Adicione as estrelas e confira a ordem dos cinco blocos.",
+      "objective": "Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-fundo-estrelado", "fala-fundo-estrelado"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -705,7 +705,7 @@
       "key": "quiz-final",
       "title": "Confira o que você construiu",
       "intent": "explanation",
-      "objective": "Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.",
+      "objective": "Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
       "blockKeys": ["fala-quiz-final", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
@@ -719,7 +719,7 @@
       "key": "entrega",
       "title": "Teste e envie sua nave",
       "intent": "delivery",
-      "objective": "Confira o movimento nas duas bordas, verifique a etapa e envie o projeto.",
+      "objective": "Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
       "blockKeys": ["video-teste-e-envio", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

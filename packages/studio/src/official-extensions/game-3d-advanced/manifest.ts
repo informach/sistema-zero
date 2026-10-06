@@ -5,7 +5,7 @@ export const gameKit3DManifest: ExtensionManifest = {
   name: 'Jogo 3D Avançado',
   version: '0.21.1',
   description:
-    'A base de um jogo 3D profissional, portada de um curso de engine. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com zoom, tremor e WASD relativo a ela; partículas; enxames com pool; vizinhança por grade; combate com chefões, fala, cronômetro, sorteio semeado, HUD e música.',
+    'A base de um jogo 3D profissional, no jeito das engines de verdade. Um SANDBOX 3D completo. Entidades com máquina de estados que ANIMA o boneco .glb sozinha; física por TIPO (bola quica, personagem não, gelo escorrega) com pulo, rampas e plataformas; peças, modelos, luz e névoa; câmera que segue/orbita/1ª pessoa com zoom, tremor e WASD relativo a ela; partículas; enxames com pool; vizinhança por grade; combate com chefões, fala, cronômetro, sorteio semeado, HUD e música.',
   category: 'games',
   official: true,
   enabledByDefault: false,
@@ -14,7 +14,7 @@ export const gameKit3DManifest: ExtensionManifest = {
   docs: `## Jogo 3D Avançado
 
 Esta extensão te dá a **base de um jogo 3D profissional de verdade**, com a mesma
-arquitetura que os cursos de engine ensinam. Ela usa \`window.SZGameKit3D\`.
+arquitetura das engines de verdade. Ela usa \`window.SZGameKit3D\`.
 Diferente do "Jogo 3D" (que traz kits prontos de gêneros), aqui o motor cuida
 só do que **nunca muda** num jogo grande, e **as regras são suas**: você monta
 a mecânica nos ganchos, com blocos de matemática, "se" e variáveis.
@@ -38,8 +38,8 @@ O que o motor já faz por você:
   passa a controlar quem nasceu depois.
   As fábricas ("A cada X s, nascer…") soltam inimigos sem parar.
 - **Vizinhança rápida**. "para cada vizinho a até X" usa uma grade espacial
-  por dentro: nunca compara todo mundo com todo mundo (a lição de otimização
-  do curso).
+  por dentro: nunca compara todo mundo com todo mundo (o truque de otimização
+  das engines).
 - **Combate com invencibilidade**. Machucar dá meio segundo de piscada
   invencível; vida no zero roda o "quando for derrotado" e recolhe sozinho.
 - **Barra de vida flutuante**. "Mostrar a barra de vida do molde" pendura uma
@@ -64,7 +64,7 @@ O que o motor já faz por você:
 6. Pronto: o motor **começa automaticamente**, uma única vez, depois que todos
    os moldes, eventos e telas foram registrados.
 
-### A máquina de estados (a lição do curso)
+### A máquina de estados (o coração do motor)
 
 A torre profissional funciona assim, e você monta igual, em blocos:
 
@@ -82,8 +82,8 @@ não faz nada (proteção dos jogos de verdade). Se um gancho de entrar/sair ped
 outra mudança, o motor termina a transição atual e executa a nova em seguida,
 na ordem, sem repetir o gancho antigo nem perder o estado pedido.
 
-A morte do "Machucar" recolhe NA HORA (de propósito). Quer a morte DRAMÁTICA
-do curso. O bicho cai uns segundos antes de sumir? Faça a SUA: guarde a vida
+A morte do "Machucar" recolhe NA HORA (de propósito). Quer uma morte DRAMÁTICA,
+em que o bicho cai uns segundos antes de sumir? Faça a SUA: guarde a vida
 numa gaveta e, quando zerar, mude para um estado "morrendo" (ligue a queda,
 espere 2 s com a transição por tempo e recolha ao entrar no estado seguinte).
 
@@ -236,7 +236,7 @@ Escolha a câmera. **seguir** alguém, **girar em volta** (órbita, arrastável)
   cada nave. Até 8 por efeito): religar no mesmo lugar não duplica, e
   "Desligar o jorro" apaga todos os da receita. Para um jorro que ANDA, prenda
   numa entidade.
-- A curva **"fogo"** faz o truque-assinatura do curso: o grão NASCE luz pura
+- A curva **"fogo"** faz o truque-assinatura dos jogos profissionais: o grão NASCE luz pura
   (brilho que soma) e MORRE fumaça (cobre o fundo), numa passada só.
 - **Efeitos de cinema** já vêm ligados: sombras, brilho (bloom. As coisas
   claras "vazam" luz, como o tiro amarelo) e vinheta (cantos escuros). Num
@@ -248,7 +248,7 @@ Um **.glb** não traz só o desenho: traz as **animações** que fizeram nele (a
 pular, atacar). O motor lê todas.
 
 - ⭐ **No molde …, no estado …, tocar a animação …** é o jeito profissional, e o
-  mesmo do curso: você amarra UMA vez e pronto. Quando o cérebro da entidade
+  mesmo das engines: você amarra UMA vez e pronto. Quando o cérebro da entidade
   muda de estado, a animação troca junto, com uma passagem suave. O personagem
   não "pede para animar": ele só muda de estado, e o corpo acompanha.
 - **Tocar a animação … em …** serve para a hora exata (o pulo, o golpe): escolha

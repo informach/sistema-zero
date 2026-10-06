@@ -562,7 +562,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'Define a velocidade da entidade (unidades por segundo, em cada eixo). O motor integra sozinho a cada quadro. É a física do curso profissional.',
+      'Define a velocidade da entidade (unidades por segundo, em cada eixo). O motor integra sozinho a cada quadro. É a física de um jogo profissional.',
   },
   {
     type: 'sz_g3k_set_drag',
@@ -828,7 +828,7 @@ export const gameKit3DBlocks = [
     nextStatement: 'JSStmt',
     colour: C,
     tooltip:
-      'O giro SUAVE da torre do curso: vira aos poucos na direção do alvo (quanto maior a suavidade, mais rápido). Use a cada quadro e pergunte "já está mirando?" para saber a hora de atirar.',
+      'O giro SUAVE da torre: vira aos poucos na direção do alvo (quanto maior a suavidade, mais rápido). Use a cada quadro e pergunte "já está mirando?" para saber a hora de atirar.',
   },
   {
     type: 'sz_g3k_face_velocity',

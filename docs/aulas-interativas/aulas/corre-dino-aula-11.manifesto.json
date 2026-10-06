@@ -41,14 +41,14 @@
   "blocks": [
     {
       "key": "video-guardar-mudar-mostrar",
-      "plannedVideo": "Título: Compare guardar, mudar e mostrar\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy abrindo um caderno em que está escrito pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare guardar, mudar e mostrar\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy abrindo um bloquinho em que está escrito pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-guardar-mudar-mostrar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mude a memória com o placar desligado e depois acompanhe os dois juntos."
+        "text": "Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -69,38 +69,38 @@
     },
     {
       "key": "video-caixinha-dos-pontos",
-      "plannedVideo": "Título: Prepare os pontos em zero\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare os pontos em zero\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco que guarde os pontos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-caixinha-dos-pontos",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie pontos com valor 0 em Ao iniciar."
+        "text": "Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-numero-na-tela",
-      "plannedVideo": "Título: Mostre o número guardado\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre o número guardado\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-numero-na-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mostre Pontos: lendo a variável pontos somente dentro de jogando."
+        "text": "Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-quando-o-placar-cresce",
-      "plannedVideo": "Título: Compare quando somar os pontos\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Somar ponto em Solto. Levar a peça para A cada quadro do jogo e deixar o tempo passar um segundo. Voltar a peça para Solto e deixar passar mais um segundo. Levar para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?, e passar pelas telas com Próxima tela, deixando o tempo correr em cada uma, com o placar à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino na linha de largada com um cronômetro parado, e depois correndo com o cronômetro contando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare quando somar os pontos\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Somar ponto em Solto. Levar a peça para A cada quadro do jogo e deixar o tempo passar um segundo. Voltar a peça para Solto e deixar passar mais um segundo. Levar para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?, e passar pelas telas com Próxima tela, deixando o tempo correr em cada uma, com o placar à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino na linha de largada com um cronômetro parado, e depois correndo com o cronômetro contando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-quando-o-placar-cresce",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare o ritmo da soma e depois os estados início, jogando e fim."
+        "text": "Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -121,26 +121,26 @@
     },
     {
       "key": "video-relogio-dos-pontos",
-      "plannedVideo": "Título: Some um ponto por segundo de partida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Some um ponto por segundo de partida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio-dos-pontos",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Some 1 em pontos dentro de um relógio próprio protegido por Se jogando."
+        "text": "Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-frase-da-tela-de-fim",
-      "plannedVideo": "Título: Mostre os pontos na tela de fim\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre os pontos na tela de fim\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-frase-da-tela-de-fim",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Monte a frase com texto, valor de pontos e texto no subtítulo final."
+        "text": "Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
@@ -148,7 +148,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Retome a memória e o placar nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar."
+        "text": "Hora de lembrar o que você construiu! As perguntas falam da variável pontos e do placar. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte."
       }
     },
     {
@@ -229,7 +229,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase."
       }
     },
     {
@@ -1187,7 +1187,7 @@
       "key": "guardar-mudar-mostrar",
       "title": "Compare guardar, mudar e mostrar",
       "intent": "exploration",
-      "objective": "Mude a memória com o placar desligado e depois acompanhe os dois juntos.",
+      "objective": "Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-guardar-mudar-mostrar",
         "fala-guardar-mudar-mostrar",
@@ -1205,7 +1205,7 @@
       "key": "caixinha-dos-pontos",
       "title": "Prepare os pontos em zero",
       "intent": "application",
-      "objective": "Crie pontos com valor 0 em Ao iniciar.",
+      "objective": "Agora prepare os pontos do seu jogo! Crie a variável pontos com valor 0 no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-caixinha-dos-pontos", "fala-caixinha-dos-pontos"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1236,7 +1236,7 @@
       "key": "numero-na-tela",
       "title": "Mostre o número guardado",
       "intent": "application",
-      "objective": "Mostre Pontos: lendo a variável pontos somente dentro de jogando.",
+      "objective": "Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-numero-na-tela", "fala-numero-na-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1284,7 +1284,7 @@
       "key": "quando-o-placar-cresce",
       "title": "Compare quando somar os pontos",
       "intent": "exploration",
-      "objective": "Compare o ritmo da soma e depois os estados início, jogando e fim.",
+      "objective": "Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-quando-o-placar-cresce",
         "fala-quando-o-placar-cresce",
@@ -1302,7 +1302,7 @@
       "key": "relogio-dos-pontos",
       "title": "Some um ponto por segundo de partida",
       "intent": "application",
-      "objective": "Some 1 em pontos dentro de um relógio próprio protegido por Se jogando.",
+      "objective": "Agora some um ponto por segundo de partida! Crie um relógio só para os pontos, com um Se jogando e, dentro dele, Somar em variável pontos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-relogio-dos-pontos", "fala-relogio-dos-pontos"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1359,7 +1359,7 @@
       "key": "frase-da-tela-de-fim",
       "title": "Mostre os pontos na tela de fim",
       "intent": "application",
-      "objective": "Monte a frase com texto, valor de pontos e texto no subtítulo final.",
+      "objective": "Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-frase-da-tela-de-fim", "fala-frase-da-tela-de-fim"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1370,7 +1370,7 @@
         "projectChecks": [
           {
             "id": "frase-pontos",
-            "label": "No subtítulo do andar de fim, junte texto, o valor de pontos e texto, nessa ordem.",
+            "label": "No subtítulo da tela de fim, junte texto, o valor de pontos e texto, nessa ordem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
@@ -1421,7 +1421,7 @@
       "key": "revisao",
       "title": "Confira o que você construiu",
       "intent": "explanation",
-      "objective": "Retome a memória e o placar nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.",
+      "objective": "Hora de lembrar o que você construiu! As perguntas falam da variável pontos e do placar. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.",
       "blockKeys": ["fala-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1435,7 +1435,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Confira o placar na partida e na tela de fim, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1522,7 +1522,7 @@
           },
           {
             "id": "frase-pontos",
-            "label": "No subtítulo do andar de fim, junte texto, o valor de pontos e texto, nessa ordem.",
+            "label": "No subtítulo da tela de fim, junte texto, o valor de pontos e texto, nessa ordem.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",

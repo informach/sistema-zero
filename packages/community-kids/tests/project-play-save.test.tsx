@@ -98,13 +98,16 @@ describe('guardar o jogo pronto', () => {
     let chamadas = 0
     montar(async () => {
       chamadas += 1
-      if (chamadas === 1) throw new Error('Sem conexão.')
+      // A rede caiu: o erro não tem `code`, então a frase dele (em inglês) não vai à tela e
+      // a criança lê a frase do componente (`erroDoServidor`, 06/10/2026).
+      if (chamadas === 1) throw new TypeError('Failed to fetch')
       return aprovado
     })
     await act(async () => {})
     const corpo = abaixoDoJogo()
     const alerta = screen.getByRole('alert')
-    expect(alerta.textContent).toContain('Sem conexão.')
+    expect(alerta.textContent).toContain('Não foi possível salvar.')
+    expect(alerta.textContent).not.toContain('Failed to fetch')
     // A mesma caixa de antes, com a altura reservada: nenhuma linha nova embaixo do jogo.
     expect(corpo.children).toHaveLength(1)
     expect(alerta.className).toContain('min-h-5')

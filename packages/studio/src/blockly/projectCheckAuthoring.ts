@@ -351,7 +351,14 @@ export function projectCheckAuthoring(workspace: unknown) {
         'O bloco não pode ser encaixado na área ou no contêiner escolhido com os blocos disponíveis nesta aula.',
       )
     for (const kind of ['fields', 'inputs'] as const)
-      for (const [name, value] of Object.entries(rule[kind] ?? {})) {
+      for (const [name, value] of [
+        ...Object.entries(rule[kind] ?? {}),
+        ...(kind === 'fields'
+          ? Object.entries(rule.fieldOptions ?? {}).flatMap(([name, values]) =>
+              values.map((value) => [name, value] as const),
+            )
+          : []),
+      ]) {
         const parameter = block.parameters.find(
           (param) => param.kind === kind && param.name === name,
         )

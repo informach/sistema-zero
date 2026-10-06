@@ -44,6 +44,7 @@ import type { LessonBlockView, LessonDetailView, MaterialsBlock } from '../lib/t
 import { isPlayableVideo, type LocalWatched, videoGateFor } from '../lib/video-gate'
 import { MaterialsBookPreview } from './ebook/materials-book-preview'
 import { InteractiveLessonBlock } from './learning-activity'
+import { useLessonCopy } from './lesson-copy-context'
 import { LessonGalleryDelivery } from './lesson-gallery-delivery'
 import {
   LessonPlayerProvider,
@@ -370,6 +371,7 @@ function LessonSectionsContent({
   completionMessage?: ReactNode
 }) {
   const player = useLessonPlayer()
+  const copy = useLessonCopy()
   const rehearsal = useLessonPreview()
   const preview = player === null
   /**
@@ -700,12 +702,10 @@ function LessonSectionsContent({
       // NUNCA funciona, então quem fala é o servidor e o botão some. Sem isto a
       // criança lê "tente novamente" para um erro que só passa reabrindo a aula.
       if ((e as { code?: string } | null)?.code === 'VIEWER_CHANGED') {
-        setError((e as { message?: string }).message ?? 'O perfil mudou. Abra a aula de novo.')
+        setError((e as { message?: string }).message ?? copy.secoes.perfilMudou)
         setRetryable(false)
       } else {
-        setError(
-          'Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.',
-        )
+        setError(copy.secoes.erroAoAbrir)
         setRetryable(true)
       }
     } finally {
@@ -809,17 +809,17 @@ function LessonSectionsContent({
       {/* ⚠️ No estreito fica só o ícone. O texto comia ~108px da MESMA linha do
           título, e medido nos 392 pares reais de aula × seção isso custava 5,3
           linhas de cabeçalho num celular de 390px; sem ele (e sem o cartão) são
-          3,2. O nome acessível não muda — quem lê a tela continua ouvindo
-          "Índice da aula". */}
+          3,2. O nome acessível não muda: quem lê a tela continua ouvindo o
+          `copy.secoes.indice` ("Índice da aula" no adulto, "Partes da fase" no Kids). */}
       <summary
-        aria-label="Índice da aula"
+        aria-label={copy.secoes.indice}
         className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
       >
         <List className="size-4" />
-        <span className="sr-only sm:not-sr-only">Índice da aula</span>
+        <span className="sr-only sm:not-sr-only">{copy.secoes.indice}</span>
       </summary>
       <nav
-        aria-label="Seções da aula"
+        aria-label={copy.secoes.lista}
         className="absolute right-0 z-30 mt-2 max-h-96 w-72 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-lg"
       >
         {sections.map((s, i) => (
@@ -852,7 +852,7 @@ function LessonSectionsContent({
               ) : (
                 pending.some((r) => r.sectionId === s.id) && (
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    Atividade pendente
+                    {copy.secoes.pendente}
                   </span>
                 )
               )}
@@ -871,7 +871,7 @@ function LessonSectionsContent({
       }}
     >
       <label htmlFor={`section-help-${lesson.id}`} className="block font-medium">
-        Em qual parte você ficou com dúvida?
+        {copy.secoes.duvida}
       </label>
       <textarea
         id={`section-help-${lesson.id}`}
@@ -882,7 +882,7 @@ function LessonSectionsContent({
         className="w-full rounded-lg border border-border bg-background p-3"
       />
       <Button type="submit" disabled={sending || !help.trim()}>
-        {sending ? 'Enviando…' : 'Enviar ao professor'}
+        {sending ? 'Enviando…' : copy.secoes.enviarAjuda}
       </Button>
     </form>
   ) : null
@@ -953,7 +953,9 @@ function LessonSectionsContent({
   const acaoDoRequisito = (r: { sectionId: string | null; action: string; reason: string }) => {
     if (r.reason !== 'SECTION_GATE_INCOMPLETE') return r.action
     const itens = state?.sections.find((s) => s.id === r.sectionId)?.pendingItems
-    return itens?.length ? itens.map((item) => textoDoItem(item, preview)).join(' · ') : r.action
+    return itens?.length
+      ? itens.map((item) => textoDoItem(item, preview, copy)).join(' · ')
+      : r.action
   }
   const secaoAtual = state?.sections.find((s) => s.id === section.id)
   // Aula CONCLUÍDA: toda seção está fechada e o botão já diz "Aula concluída"; a faixa verde em
@@ -976,7 +978,7 @@ function LessonSectionsContent({
       }
       onClick={() => navigate(index + 1)}
     >
-      Próxima seção
+      {copy.secoes.proxima}
       <ArrowRight className="size-4" />
     </Button>
   )
@@ -1073,7 +1075,7 @@ function LessonSectionsContent({
                     <div className="absolute left-0 z-30 mt-2 max-h-96 w-80 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg">
                       {requirements.length === 0 ? (
                         <p className="p-2 text-sm text-muted-foreground">
-                          Explore o conteúdo e conclua a aula quando terminar.
+                          {copy.secoes.semRequisitos}
                         </p>
                       ) : (
                         requirements.map((r) => (

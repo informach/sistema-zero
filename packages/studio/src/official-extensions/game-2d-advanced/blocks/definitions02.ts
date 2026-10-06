@@ -514,7 +514,7 @@ export const gameKitBlockDefinitions02: BlockDefinition[] = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     colour: C,
-    tooltip: 'Tira o item do inventário (gastou/entregou).',
+    tooltip: 'Tira o item do inventário (gastou ou deu para alguém).',
   },
 
   {

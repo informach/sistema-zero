@@ -29,8 +29,8 @@ export function FocusModeToggle({ target }: { target: 'nav' | 'outline' }) {
         ? 'Mostrar menu'
         : 'Esconder menu'
       : hidden
-        ? 'Mostrar lista de aulas'
-        : 'Esconder lista de aulas'
+        ? 'Mostrar lista de fases'
+        : 'Esconder lista de fases'
   return (
     <EdgePanelHandle
       side={target === 'nav' ? 'left' : 'right'}

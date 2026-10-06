@@ -112,6 +112,27 @@ describe('semeadura do desenho inicial', () => {
     expect(noArmazenamento?.name).toBe('nave-da-crianca')
   })
 
+  it('o nome antigo "desenho-da-aula" vira "meu-desenho" ao carregar, no inicial e no rascunho', async () => {
+    // As aulas criadas antes de 06/10/2026 guardam o nome antigo no `initialAsset`, e quem já
+    // abriu uma delas tem o rascunho com ele. O banco não muda: a troca é na carga.
+    const antigo: PintaAsset = { ...nave(), name: 'desenho-da-aula' }
+    const vazio = createMemoryPersistence()
+    const { unmount } = render(<PintaLesson initialAsset={antigo} persistence={vazio} />)
+    await esperarEditor()
+    expect(screen.getByTitle('meu-desenho')).toBeTruthy()
+    expect((await vazio.loadAssetById(antigo.id))?.name).toBe('meu-desenho')
+    unmount()
+
+    const rascunho = createMemoryPersistence([{ ...antigo }])
+    render(<PintaLesson initialAsset={antigo} persistence={rascunho} />)
+    await esperarEditor()
+    await waitFor(async () => {
+      expect((await rascunho.loadAssetById(antigo.id))?.name).toBe('meu-desenho')
+    })
+    // Só o nome EXATO antigo muda: o nome que a criança escolheu fica.
+    expect(screen.queryByTitle('desenho-da-aula')).toBeNull()
+  })
+
   it('armazenamento vazio recebe o desenho do professor', async () => {
     const asset = nave()
     const vazio = createMemoryPersistence()

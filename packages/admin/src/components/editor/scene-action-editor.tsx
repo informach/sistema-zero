@@ -4,6 +4,7 @@ import {
   decimal,
   isSceneAction,
   isSceneSetupAction,
+  LIGHTHOUSE_POSITION,
   MAP_TILES,
   SCENE_LIMITS,
   SCENE_PORTS,
@@ -68,6 +69,9 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Ligar Manter dentro da tela', value: { type: 'keep-on-screen', enabled: true } },
   { label: 'Desligar Manter dentro da tela', value: { type: 'keep-on-screen', enabled: false } },
   { label: 'Recomeçar o andar', value: { type: 'restart-walk' } },
+  { label: 'Posição horizontal x', value: { type: 'key-position', axis: 'x', value: 160 } },
+  { label: 'Posição vertical y', value: { type: 'key-position', axis: 'y', value: 250 } },
+  { label: 'Recomeçar a posição da chave', value: { type: 'restart-key-position' } },
   { label: 'Usar o número 400 no tiro', value: { type: 'value-source', source: 'fixed' } },
   { label: 'Ler o centro x da nave no tiro', value: { type: 'value-source', source: 'read' } },
   { label: 'Mostrar as marcas da caixa', value: { type: 'box-marks', on: true } },
@@ -312,6 +316,7 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   'hold-arrow': ['held'],
   'walk-speed': ['speed'],
   'keep-on-screen': ['enabled'],
+  'key-position': ['axis'],
   'play-move': ['direction'],
   'place-in-area': ['card', 'area'],
   'score-place': ['clock', 'guarded'],
@@ -450,6 +455,13 @@ interface CampoNumerico {
 
 export function campoNumerico(action: SceneAction): CampoNumerico | null {
   const L = SCENE_LIMITS
+  if (action.type === 'key-position')
+    return {
+      label: action.axis === 'x' ? 'Posição horizontal x' : 'Posição vertical y',
+      field: 'value',
+      ...LIGHTHOUSE_POSITION[action.axis],
+      value: action.value,
+    }
   if (action.type === 'step-value')
     return { label: 'Lugar na régua', field: 'value', min: -12, max: 0, value: action.value }
   if (action.type === 'nudge')

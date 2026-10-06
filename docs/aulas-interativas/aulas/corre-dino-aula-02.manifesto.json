@@ -45,14 +45,14 @@
   "blocks": [
     {
       "key": "video-quadros",
-      "plannedVideo": "Título: Compare o desenho no começo e a cada quadro\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Desenhar o Dino em Só no começo e Limpar a tela antes desligado. Clicar em Avançar 1 quadro e mostrar o x mudando na faixa, com a tela igual. Trocar para A cada quadro, avançar e mostrar os dois Dinos. Ligar Limpar a tela antes, avançar e mostrar um Dino só, no lugar novo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy folheando um bloquinho em que cada folha tem o Dino um pouco mais à frente. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare o desenho no começo e a cada quadro\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Desenhar o Dino em Só no começo e Limpar a tela antes desligado. Clicar em Avançar 1 quadro e mostrar o x mudando na faixa, com o desenho do Dino no mesmo lugar (o contorno tracejado dos bastidores mostra o x novo). Trocar para A cada quadro, avançar e mostrar os dois Dinos. Ligar Limpar a tela antes, avançar e mostrar um Dino só, no lugar novo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy folheando um bloquinho em que cada folha tem o Dino um pouco mais à frente. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-quadros",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare desenho único, desenho a cada quadro e desenho com limpeza."
+        "text": "Sua vez! Compare o desenho só no começo, o desenho a cada quadro e o desenho com a tela limpa antes. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -73,38 +73,38 @@
     },
     {
       "key": "video-motor-e-dino",
-      "plannedVideo": "Título: Mostre o Dino a cada quadro\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre o Dino a cada quadro\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-motor-e-dino",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Desenhe dino dentro de A cada quadro do jogo."
+        "text": "Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-limpeza",
-      "plannedVideo": "Título: Prepare uma imagem nova em cada quadro\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare uma imagem nova em cada quadro\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. No “Repare” da abertura, aproximar a sombra embaixo do Dino e deixar ver que ela escurece a cada quadro (conferir na gravação); depois da limpeza, mostrar a sombra clara de novo. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limpeza",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Limpe a tela antes de desenhar dino."
+        "text": "Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-camadas",
-      "plannedVideo": "Título: Compare a ordem dos desenhos\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy colando a figurinha do Dino por cima da figurinha da floresta. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare a ordem dos desenhos\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy colando a figurinha do Dino por cima da figurinha da floresta. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-camadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Troque a ordem dos dois desenhos e compare o que fica visível."
+        "text": "Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -125,38 +125,38 @@
     },
     {
       "key": "video-ordem-certa",
-      "plannedVideo": "Título: Coloque a floresta atrás do Dino\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Coloque a floresta atrás do Dino\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-ordem-certa",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Desenhe uma floresta em velocidade 5 antes do Dino."
+        "text": "Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-retirar-borda",
-      "plannedVideo": "Título: Retire a borda provisória\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Retire a borda provisória\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. No “Repare” da abertura, apontar no jogo ou no projeto o que ainda falta. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-retirar-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Retire a borda e preserve a criação do Dino."
+        "text": "Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-descricao",
-      "plannedVideo": "Título: Ouça a descrição do jogo\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Se o navegador não tiver voz, mostrar a leitura escrita. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Ouça a descrição do jogo\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Se o navegador não tiver voz, mostrar a leitura escrita. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-descricao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Ouça a tela sem descrição e depois com a tarefa e o controle escritos."
+        "text": "Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -177,26 +177,26 @@
     },
     {
       "key": "video-descrever-jogo",
-      "plannedVideo": "Título: Escreva a descrição do jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escreva a descrição do jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco de descrição. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-descrever-jogo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Escreva a tarefa e o controle na descrição para o leitor de tela."
+        "text": "Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Confira o Dino na frente da floresta, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase."
       }
     },
     {
@@ -411,7 +411,7 @@
       "key": "quadros",
       "title": "Compare o desenho no começo e a cada quadro",
       "intent": "exploration",
-      "objective": "Compare desenho único, desenho a cada quadro e desenho com limpeza.",
+      "objective": "Sua vez! Compare o desenho só no começo, o desenho a cada quadro e o desenho com a tela limpa antes. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-quadros", "fala-quadros", "experiencia-laco"],
       "workspaceKey": null,
       "externalTool": null,
@@ -425,7 +425,7 @@
       "key": "motor-e-dino",
       "title": "Mostre o Dino a cada quadro",
       "intent": "application",
-      "objective": "Desenhe dino dentro de A cada quadro do jogo.",
+      "objective": "Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-motor-e-dino", "fala-motor-e-dino"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -463,7 +463,7 @@
       "key": "limpeza",
       "title": "Prepare uma imagem nova em cada quadro",
       "intent": "application",
-      "objective": "Limpe a tela antes de desenhar dino.",
+      "objective": "Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-limpeza", "fala-limpeza"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -490,7 +490,7 @@
       "key": "camadas",
       "title": "Compare a ordem dos desenhos",
       "intent": "exploration",
-      "objective": "Troque a ordem dos dois desenhos e compare o que fica visível.",
+      "objective": "Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-camadas", "fala-camadas", "experiencia-camadas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -504,7 +504,7 @@
       "key": "ordem-certa",
       "title": "Coloque a floresta atrás do Dino",
       "intent": "application",
-      "objective": "Desenhe uma floresta em velocidade 5 antes do Dino.",
+      "objective": "Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-ordem-certa", "fala-ordem-certa"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -567,7 +567,7 @@
       "key": "retirar-borda",
       "title": "Retire a borda provisória",
       "intent": "application",
-      "objective": "Retire a borda e preserve a criação do Dino.",
+      "objective": "Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-retirar-borda", "fala-retirar-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -604,7 +604,7 @@
       "key": "descricao",
       "title": "Ouça a descrição do jogo",
       "intent": "exploration",
-      "objective": "Ouça a tela sem descrição e depois com a tarefa e o controle escritos.",
+      "objective": "Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-descricao", "fala-descricao", "experiencia-descricao"],
       "workspaceKey": null,
       "externalTool": null,
@@ -618,7 +618,7 @@
       "key": "descrever-jogo",
       "title": "Escreva a descrição do jogo",
       "intent": "application",
-      "objective": "Escreva a tarefa e o controle na descrição para o leitor de tela.",
+      "objective": "Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-descrever-jogo", "fala-descrever-jogo"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -646,7 +646,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Confira o Dino na frente da floresta, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

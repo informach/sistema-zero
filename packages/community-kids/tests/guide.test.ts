@@ -91,7 +91,7 @@ describe('resolveParentGuideStep — o guia segue o ESTADO real', () => {
   it('o modal reaberto descreve seleção/gestão sem prometer criação indisponível', () => {
     const steps = parentWelcomeSteps({ profilesCount: 1, canCreateProfile: false })
     const copy = steps.map((step) => step.text).join(' ')
-    expect(copy).toContain('Escolha quem vai aprender')
+    expect(copy).toContain('Escolha quem vai criar')
     expect(copy).not.toContain('cria o primeiro perfil')
     expect(copy).not.toContain('adicionar outro perfil')
   })
@@ -101,6 +101,10 @@ describe('resolveParentGuideStep — o guia segue o ESTADO real', () => {
       .map((step) => step.text)
       .join(' ')
     expect(copy).toContain('opcional')
+    // O passo final combina com a grade ("Quem vai criar hoje?"): a criança ENTRA pela bolinha.
+    // Antes dizia "Na hora de estudar", e o outro diálogo já dizia "Escolha quem vai criar".
+    expect(copy).toContain('Na hora de entrar')
+    expect(copy).not.toMatch(/estud/i)
   })
 
   it('a copy do guia não usa travessão nem aspas curvas (voz da marca)', () => {
@@ -178,7 +182,7 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
       startAvailable: true,
     })
     expect(steps.map((step) => step.id)).toEqual(['avatar', ...EXPLICACAO])
-    expect(steps.map((step) => step.text).join(' ')).not.toContain('primeira aula')
+    expect(steps.map((step) => step.text).join(' ')).not.toContain('primeira fase')
   })
 
   it('boas-vindas sem curso liberado não manda tocar em um Começar inexistente', () => {
@@ -200,7 +204,7 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
     expect(steps[0]).toEqual({
       id: 'start',
       emoji: '▶️',
-      text: 'Toque em "Começar" e a sua primeira aula abre na hora.',
+      text: 'Toque em "Começar" e a sua primeira fase abre na hora.',
     })
   })
 

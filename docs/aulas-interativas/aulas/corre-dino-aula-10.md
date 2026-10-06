@@ -23,35 +23,35 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 ### Seção 1. Compare a área com o desenho
 
-**Tarefa:** Mude apenas a área com o cacto parado; depois compare o contato com 40%.
+**Tarefa:** Sua vez! Mude só a área com o cacto parado e, depois, compare a batida com a área em 40%. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-caixa-decide → fala-caixa-decide → experiencia-hitbox.
 
-**Zappy na página (não gravar):** Mude apenas a área com o cacto parado; depois compare o contato com 40%.
+**Zappy na página (não gravar):** Sua vez! Mude só a área com o cacto parado e, depois, compare a batida com a área em 40%. Quando terminar, clique em Próxima parte.
 
-**Experiência existente:** `hitbox`. Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU. Observe os desenhos nesse momento. Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência existente:** `hitbox`. Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU! Observe os desenhos nesse momento. Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Mostre a área no seu jogo
 
-**Tarefa:** Mostre o contorno da área de dino depois do desenho.
+**Tarefa:** Agora mostre a área da batida no seu jogo! Coloque Mostrar a caixa de colisão do sprite logo depois do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-ligar-raio-x → fala-ligar-raio-x.
 
-**Zappy na página (não gravar):** Mostre o contorno da área de dino depois do desenho.
+**Zappy na página (não gravar):** Agora mostre a área da batida no seu jogo! Coloque Mostrar a caixa de colisão do sprite logo depois do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Desenhe a área de colisão do dino a cada quadro.
 
 ### Seção 3. Ajuste a área sem mudar o desenho
 
-**Tarefa:** Ajuste somente a área de colisão, mantendo o desenho em tamanho 64.
+**Tarefa:** Agora ajuste a área da batida! Coloque Usar área de colisão no fim de Ao iniciar, com dino e 80%, sem mudar o tamanho 64 do desenho. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-ajustar-area → fala-ajustar-area.
 
-**Zappy na página (não gravar):** Ajuste somente a área de colisão, mantendo o desenho em tamanho 64.
+**Zappy na página (não gravar):** Agora ajuste a área da batida! Coloque Usar área de colisão no fim de Ao iniciar, com dino e 80%, sem mudar o tamanho 64 do desenho. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
 - Desenhe a área de colisão do dino a cada quadro.
@@ -59,13 +59,13 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 ### Seção 4. Retire o contorno de teste
 
-**Tarefa:** Retire apenas o desenho do contorno e conserve o ajuste da área.
+**Tarefa:** Agora retire o contorno de teste! Tire só Mostrar a caixa de colisão do sprite e deixe o ajuste da área em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-retirar-contorno → fala-retirar-contorno.
 
-**Zappy na página (não gravar):** Retire apenas o desenho do contorno e conserve o ajuste da área.
+**Zappy na página (não gravar):** Agora retire o contorno de teste! Tire só Mostrar a caixa de colisão do sprite e deixe o ajuste da área em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
 - Retire o desenho provisório da área de colisão.
@@ -73,13 +73,13 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 ### Seção 5. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Jogue até a batida e confira o recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Jogue até a batida e confira o recomeço, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
 - Retire o desenho provisório da área de colisão.

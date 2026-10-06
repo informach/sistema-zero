@@ -24,46 +24,46 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 ### Seção 1. Compare quando dar as vidas
 
-**Tarefa:** Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações.
+**Tarefa:** Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-vidas-no-comeco → fala-vidas-no-comeco → experiencia-uma-vez.
 
-**Zappy na página (não gravar):** Compare Dar três vidas à nave em Ao iniciar e Enquanto estiver rodando. Espere cada teste parar e observe os corações.
+**Zappy na página (não gravar):** Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `once-vs-always`. Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Dê e mostre as três vidas
 
-**Tarefa:** Dê as três vidas em Ao iniciar e desenhe os corações a cada quadro.
+**Tarefa:** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-vidas → fala-vidas.
 
-**Zappy na página (não gravar):** Dê as três vidas em Ao iniciar e desenhe os corações a cada quadro.
+**Zappy na página (não gravar):** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Dê 3 vidas à nave em Ao iniciar.
 - Desenhe corações da nave em x 12, y 48, tamanho 22.
 
 ### Seção 3. Compare as batidas com proteção
 
-**Tarefa:** Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes.
+**Tarefa:** Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-protecao → fala-respiro → experiencia-protecao.
 
-**Zappy na página (não gravar):** Teste 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes.
+**Zappy na página (não gravar):** Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `invincibility`. Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Programe as vidas e a batida
 
-**Tarefa:** Dê as vidas em Ao iniciar. Na colisão, retire a pedra e machuque a nave. Desenhe os corações em cada quadro.
+**Tarefa:** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-batida-e-coracoes → fala-batida.
 
-**Zappy na página (não gravar):** Dê as vidas em Ao iniciar. Na colisão, retire a pedra e machuque a nave. Desenhe os corações em cada quadro.
+**Zappy na página (não gravar):** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Na colisão nave × asteroides, remova inimigo antes da explosão.
 - A explosão da batida usa inimigo, antes de machucar a nave.
@@ -71,23 +71,23 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 ### Seção 5. Confira o que você construiu
 
-**Tarefa:** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Tarefa:** Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-quiz-final → quiz.
 
-**Zappy na página (não gravar):** Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.
+**Zappy na página (não gravar):** Hora de conferir o que você construiu! Responda sobre os pontos e a proteção da nave, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 6. Teste os pontos e as vidas
 
-**Tarefa:** Confira acerto, erro e batida. Verifique a etapa e envie.
+**Tarefa:** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
 **Blocos na página:** video-fecho → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Confira acerto, erro e batida. Verifique a etapa e envie.
+**Zappy na página (não gravar):** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Crie a variável pontos com 0 em Ao iniciar.
 - Some 1 em pontos dentro da colisão tiros × asteroides.
@@ -100,7 +100,7 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 - Desenhe corações da nave em x 12, y 48, tamanho 22.
 - Na colisão entre tiros e asteroides, escolha explosão em Tocar efeito.
 - Na colisão tiros × asteroides, remova o tiro do grupo tiros.
-- Na mesma colisão, remova o asteroide e então solte a explosão.
+- Na mesma colisão, remova o asteroide e depois solte a explosão.
 - Exploda o asteroide atingido e toque o som de explosão dentro da colisão.
 
 ## Blocos disponíveis

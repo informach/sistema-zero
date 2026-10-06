@@ -21,6 +21,7 @@ import {
 } from 'react'
 import { inertOutside } from '../lib/inert-outside'
 import { useReportActivityExpanded } from '../lib/lesson-activity-expansion'
+import { useLessonCopy } from './lesson-copy-context'
 import { EXPANDED_EXIT_ATTR, LESSON_FLOAT_ROOT_ATTR, LessonVideoToggle } from './lesson-video-float'
 
 export function clickedProjectPlayTarget(
@@ -58,6 +59,7 @@ export function ProjectPlayActivityView({
   header?: ReactNode
   children?: ReactNode
 }) {
+  const { voltarDaAmpliacao } = useLessonCopy()
   const iframe = useRef<HTMLIFrameElement>(null)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -167,7 +169,7 @@ export function ProjectPlayActivityView({
     }
   }
 
-  if (!project) return <p role="alert">Não foi possível abrir o jogo desta atividade.</p>
+  if (!project) return <p role="alert">Não foi possível abrir este jogo.</p>
 
   return (
     // O espaçamento entre blocos pertence ao wrapper, não à seção fixa ampliada.
@@ -211,7 +213,7 @@ export function ProjectPlayActivityView({
                 ) : (
                   <Expand className="size-4" aria-hidden />
                 )}
-                {expanded ? 'Voltar à aula' : 'Ampliar jogo'}
+                {expanded ? voltarDaAmpliacao : 'Ampliar jogo'}
               </Button>
             </div>
           </div>

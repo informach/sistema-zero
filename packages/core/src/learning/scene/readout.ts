@@ -260,7 +260,7 @@ function leituras(
       ]
     case 'copy-vs-original':
       return [
-        { label: 'jogo da aula', value: state.copies.lessonColor, tone: 'a' },
+        { label: 'jogo da fase', value: state.copies.lessonColor, tone: 'a' },
         { label: 'arquivo', value: state.copies.fileColor ?? 'ainda não existe', tone: 'plain' },
         { label: 'projeto no Estúdio', value: state.copies.studioColor ?? 'vazio', tone: 'b' },
       ]
@@ -618,6 +618,11 @@ function leituras(
           value: state.lighthouse.door === 'open' ? 'aberta' : 'fechada',
           tone: 'b',
         },
+      ]
+    case 'lighthouse-position':
+      return [
+        { label: 'x da chave', value: String(state.keyPosition.x), tone: 'a' },
+        { label: 'y da chave', value: String(state.keyPosition.y), tone: 'b' },
       ]
     case 'lighthouse-walk':
       // ⚠️ Os três números que os blocos do Dia 1 mexem: o quadro que passa, o x que muda e a
@@ -1036,7 +1041,7 @@ function situacao(scene: SceneId, state: SceneState): string {
     case 'two-clocks':
       return `Quadro ${state.twoClocks.frames}. Nasceram ${state.twoClocks.born} pedras; cada uma troca desenhos a ${state.twoClocks.animationRate} por segundo. A última nasceu no quadro ${state.twoClocks.lastBornAt}.`
     case 'copy-vs-original':
-      return `O jogo da aula está ${state.copies.lessonColor}. ${state.copies.fileColor ? 'O arquivo foi exportado.' : 'Ainda não há arquivo.'} ${state.copies.studioColor ? `O projeto do Estúdio está ${state.copies.studioColor}.` : 'O Estúdio ainda não tem projeto.'}`
+      return `O jogo da fase está ${state.copies.lessonColor}. ${state.copies.fileColor ? 'O arquivo foi exportado.' : 'Ainda não há arquivo.'} ${state.copies.studioColor ? `O projeto do Estúdio está ${state.copies.studioColor}.` : 'O Estúdio ainda não tem projeto.'}`
     case 'published-copy':
       return `Seu projeto está ${state.copies.projectColor}. O Mural tem ${state.copies.posts.length} ${state.copies.posts.length === 1 ? 'publicação' : 'publicações'}; ${state.copies.posts.length ? `a mais recente está ${state.copies.posts.at(-1)?.color}.` : 'a tela está vazia.'}`
     case 'same-rules-new-skin':
@@ -1222,6 +1227,8 @@ function situacao(scene: SceneId, state: SceneState): string {
       return state.lighthouse.door === 'open'
         ? 'A porta abriu e a luz do farol acendeu.'
         : 'A porta do farol está fechada.'
+    case 'lighthouse-position':
+      return `A chave está em x ${state.keyPosition.x}, y ${state.keyPosition.y}.`
     case 'lighthouse-walk': {
       // ⚠️ Sem "parado" nem "anda": é a previsão do caso do andar. A frase diz o quadro, o x e a seta,
       // e só fala da borda quando a figura já está fora da tela inteira.

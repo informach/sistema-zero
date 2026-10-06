@@ -24,7 +24,7 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 ### Seção 1. Separe o miolo da borda
 
-**Tarefa / Zappy na página:** Agora tire a cor de uma parte de cada vez e compare a pedra.
+**Tarefa / Zappy na página:** Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-preenchimento-contorno → fala-preenchimento-contorno → experiencia-cores.
 
@@ -32,43 +32,43 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 ### Seção 2. Prepare o desenho em vetor
 
-**Tarefa / Zappy na página:** Crie um personagem em Vetor, tamanho Médio, chamado asteroide.
+**Tarefa / Zappy na página:** Agora prepare o desenho do seu asteroide! Crie um personagem em Vetor, tamanho Médio, chamado asteroide. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-novo-asteroide → fala-novo-asteroide.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Feche a forma da pedra
 
-**Tarefa / Zappy na página:** Desenhe uma pedra com a Caneta e feche a forma.
+**Tarefa / Zappy na página:** Agora feche a forma da sua pedra! Desenhe a pedra com a Caneta e termine no primeiro ponto. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-forma-pedra → fala-forma-pedra.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 4. Arredonde os pontos
 
-**Tarefa / Zappy na página:** Transforme alguns cantos em curvas para dar forma à pedra.
+**Tarefa / Zappy na página:** Agora arredonde os pontos da sua pedra! Transforme alguns cantos em curvas para dar forma a ela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-curvas → fala-curvas.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 5. Acrescente crateras
 
-**Tarefa / Zappy na página:** Desenhe pequenas formas dentro da pedra.
+**Tarefa / Zappy na página:** Agora acrescente crateras à sua pedra! Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-crateras → fala-crateras.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
-### Seção 6. Entregue seu asteroide
+### Seção 6. Envie seu asteroide
 
-**Tarefa / Zappy na página:** Confira asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Envie a arte desta aula pela galeria do Pinta desta seção.
+**Tarefa / Zappy na página:** Hora de enviar o seu asteroide! Confira se ele é Vetor de 64 por 64, com forma fechada e crateras dentro do corpo. Depois clique em Escolher no Pinta, selecione o asteroide e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → entrega-galeria-v6.
 
-**Aplicação no Pinta:** o roteiro inclui o caminho, a ação e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
+**Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Conclusão exige vídeo e recebimento da entrega pela galeria.
 
 ## Continuidade e produção
 

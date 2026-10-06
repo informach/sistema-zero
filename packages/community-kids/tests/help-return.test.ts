@@ -3,14 +3,14 @@ import { resolveHelpReturn } from '../src/lib/help-return'
 
 /**
  * O `?voltar=` do tutorial vem da URL, então é ALLOWLIST: só um caminho de AULA vira o botão
- * "Voltar para a aula". Qualquer outra coisa cai em `null` (a página mostra só a volta para a
+ * "Voltar para a fase". Qualquer outra coisa cai em `null` (a página mostra só a volta para a
  * biblioteca), nunca um redirect aberto.
  */
 describe('resolveHelpReturn', () => {
   it('aceita o caminho de aula das duas comunidades, com hash de seção', () => {
     expect(resolveHelpReturn('/cursos/corre-dino/aulas/abc-123')).toEqual({
       href: '/cursos/corre-dino/aulas/abc-123',
-      label: 'Voltar para a aula',
+      label: 'Voltar para a fase',
     })
     expect(resolveHelpReturn('%2Fcursos%2Fcorre-dino%2Faulas%2Fabc')?.href).toBe(
       '/cursos/corre-dino/aulas/abc',

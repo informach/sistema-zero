@@ -1,18 +1,19 @@
 # Especificação do roteiro de gravação
 
-Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças e atualizada em 06/10/2026 (experiência e jogo pronto como demonstração, publicação com comemoração).
+Direção revisada em 27/09/2026 depois do teste de Cadê Todo Mundo? com duas crianças e atualizada em 06/10/2026 (experiência e jogo pronto como demonstração, publicação com comemoração, falas que chamam a atenção de quem faz a aula, o opcional como convite e o vocabulário da aventura nos rótulos e nas falas de exemplo).
+Esta especificação é da equipe: aqui "curso", "aula", "seção" e "caderno" continuam como nomes internos. O que a criança vê ou ouve usa o vocabulário da aventura (Diretrizes, seção 6): os botões e as falas de exemplo abaixo já estão assim.
 As [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md) são a referência única das regras. Esta especificação fornece exemplos e formato de execução para a gravação. Roteiros e moldes antigos não prevalecem sobre as Diretrizes.
 
 ## 1. A abertura situa a tarefa e convida à ação
 
-A criança precisa entender a tarefa sem traduzir a intenção do professor. Conforme orientação
+A criança precisa entender a tarefa sem traduzir a intenção de quem narra. Conforme orientação
 do usuário em 03/10/2026, toda seção tem um contexto inicial curto e pertinente. Primeiro situar
 o jogo, seu estado atual ou a necessidade; depois dizer o que fazer.
 
 - Apresentação (jogo pronto, demonstração com UM exemplo): dizer qual jogo será construído e a situação; mostrar na primeira pessoa um exemplo ("Olha aqui: quando eu toco num esconderijo, aparece quem estava atrás"), sem resolver a partida; só no fim passar a vez ("Agora é a sua vez: jogue até encontrar os três personagens").
-- Experiência (demonstração na primeira pessoa): "Esta é uma experiência para a gente entender ação e reação. Olha aqui: quando eu toco no arbusto, nada acontece. Agora eu ligo a reação e toco de novo… Agora é a sua vez: faça esses mesmos testes na experiência."
-- Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Na experiência da seção anterior, cada personagem encontrado somava um em Achados. Agora vamos programar essa contagem no seu jogo! Primeiro, toque num esconderijo: o personagem aparece, mas Achados continua em zero. Vamos fazer cada personagem encontrado somar um." Sem mandar clicar em Anterior.
-- Material: "Para acompanhar a montagem, este caderno reúne os passos do jogo. Consulte quando precisar."
+- Experiência (demonstração na primeira pessoa, como numa conversa): "Esta é uma experiência para a gente entender como funciona a ação e a reação. Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele… Agora é a sua vez: faça esses mesmos testes na experiência."
+- Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito! Primeiro, toque num esconderijo do seu jogo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o jogo ainda não sabe que precisa contar. Então a gente vai ensinar o jogo a somar um em Achados toda vez que um esconderijo for tocado." Sem mandar clicar em Anterior.
+- Material (o caderno, que a criança conhece como Mapa da Aventura): "Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos para montar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Então, se você esquecer algum passo, é só voltar aqui e abrir o mapa. Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser." (fala atual de `aulas/cade-todo-mundo-aula-1.roteiro.md`). Não dizer "não precisa baixar nem imprimir": a criança entende como uma ordem para não baixar.
 - Encerramento: nomear o resultado e dar a próxima ação.
 
 Não começar por uma lista do que será aprendido, a importância do conceito ou uma promessa da
@@ -30,8 +31,8 @@ Encurtar a fala não permite omitir passos. Na montagem, conduzir a criança at�
 4. Nomear o bloco como aparece na paleta.
 5. Pedir para arrastar até o lugar já visível e soltar quando aparecer o encaixe.
 6. Dizer qual campo mudar, o valor e o que manter.
-7. Pedir o teste concreto e dizer o resultado esperado da construção.
-8. Dar uma correção curta para o erro mais provável.
+7. Pedir o teste concreto logo depois de montar e dizer o resultado esperado da construção. Não listar os blocos antes do teste: quando o resultado aparece, o teste já conferiu.
+8. Só depois do teste, e uma vez só, a conferência como caminho da correção, com gatilho genérico: "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: … Depois de corrigir, teste de novo." Não acrescentar um caso de erro que repete um item da lista; um aviso a mais só entra quando diz o que a lista não cobre. Sem teste visível (uma variável sem mostrador), "Confira se ficou assim:" vem logo depois da montagem, porque é a única conferência.
 9. Dizer como terminar, incluindo confirmação de envio quando necessária.
 
 A ordem dos passos 2 a 5 não é opcional. Com o bloco preso no mouse, a criança não consegue mover o espaço dos blocos para procurar o destino.
@@ -50,6 +51,8 @@ REFERENCIA-BLOCOS-JOGO-2D.json é apoio, não substitui o código. O menu de nom
 projeto; pedir o nome certo, sem inventar uma posição fixa. Se o campo já está correto, dizer para
 mantê-lo. Bloco de valor substitui o valor já encaixado, não ocupa um buraco imaginário.
 
+**Aplicação ao Farol, 06/10/2026:** a personalização ensina o campo exato de cada imagem: sprites em Ao iniciar, cenário em Desenhar o cenário dentro de A cada quadro do jogo e farol aceso em então. As notas de tela e o Mapa da Aventura conservam os nomes canônicos com hífens; a narração pode pronunciá-los naturalmente. Nome de imagem não substitui nome de sprite. Os pares de faróis precisam corresponder, e cada tipo conserva dimensões e contato. Antes de mudar x/y da chave, demonstrar separadamente os eixos na experiência de posição. A escolha de velocidade foi retirada; a montagem mantém 3.
+
 ## 3. O que vai para o Como Fazer
 
 A aula ensina a criar o jogo. A biblioteca ensina a usar a plataforma.
@@ -58,7 +61,7 @@ A aula ensina a criar o jogo. A biblioteca ensina a usar a plataforma.
 | --- | --- |
 | Pausar o vídeo, voltar um trecho, ampliar e sair da tela cheia | Como Fazer |
 | Arrastar divisória, alternar abas, mostrar a Pré-visualização | Como Fazer |
-| Folhear o caderno, trocar a leitura, baixar e imprimir | Como Fazer |
+| Folhear o caderno, trocar a leitura e o passo a passo de baixar e imprimir | Como Fazer (a fala do caderno só convida e aponta **Baixar**) |
 | Caminho mínimo para publicar, quando publicar é a tarefa da seção | Roteiro da aula: Compartilhar, título e resumo, Gerar capa, conferir, Publicar, confirmação, comemoração, copiar o link de jogar e convidar a mandar para a família e os amigos, Fechar |
 | Personalizar a publicação, enviar outra capa e resolver problemas | Como Fazer |
 | Escolher um bloco, encaixar, preencher valores e testar a regra | Roteiro da aula |
@@ -71,9 +74,9 @@ Não exigir que a criança leia todos os tutoriais antes de começar.
 Na primeira referência ao Como fazer, apresentá-lo como área de ajuda e oferecer um link
 direto ao tutorial, junto à atividade. A ajuda escrita não acrescenta outra tarefa à fala.
 
-Na fala, "clique em Próxima seção" basta. Não explicar o que é uma seção, todos os botões
-vizinhos e as diferenças entre celular e computador. O rótulo atual é **Próxima seção**,
-mesmo quando a conversa informal usa "sessão".
+Na fala, "clique em Próxima parte" basta. Não explicar o que é uma parte, todos os botões
+vizinhos e as diferenças entre celular e computador. No Kids, o rótulo é **Próxima parte**
+(a comunidade adulta continua com **Próxima seção**).
 
 ## 4. Experiências: explicar enquanto faz
 
@@ -88,14 +91,17 @@ criança antes da vez dela. O vídeo segue esta ordem:
    do dia a dia quando ajudar.
 4. Muda a regra e explica a diferença.
 5. Termina em "Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique
-   em Próxima seção."
+   em Próxima parte."
 
-Exemplo do toque: "Esta é uma experiência para a gente entender como funciona a ação e a reação.
-Olha aqui: quando eu toco no arbusto,
-nada acontece: o jogo ainda não sabe o que fazer com o toque. Na vida, toda ação tem uma reação.
-Se alguém faz cócegas em você, você ri. No nosso jogo, o toque é a ação. Para o jogo responder, a
-gente precisa ligar uma reação a essa ação. Por isso, eu clico em Ligar a reação ao toque e toco de
-novo…"
+Exemplo do toque, como numa conversa: "Esta é uma experiência para a gente entender como funciona
+a ação e a reação. Olha aqui: quando eu toco no arbusto, nada acontece. Tá vendo? É que o jogo ainda
+não sabe o que fazer quando alguém toca no arbusto. Então a gente precisa dizer isso para ele. Na
+vida é assim também: toda ação tem uma reação. Por exemplo, se alguém faz cócegas em você, você ri.
+A cócega é a ação, e a risada é a reação. No seu jogo, o toque é a ação. E a reação que a gente
+quer é o arbusto ficar invisível, para aparecer quem está escondido atrás dele. Mas, para o jogo ter
+essa reação, a gente precisa ligar a reação ao toque. Por isso, eu clico em Ligar a reação ao toque
+e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava
+atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível."
 
 Os passos para a criança ficam nas instruções da experiência, no imperativo. A ponte do Zappy liga o vídeo à experiência numa frase curta, sem repetir os passos.
 As montagens seguem no imperativo: ali a criança faz junto com o vídeo.
@@ -111,8 +117,12 @@ questionários ou mudar as experiências só para encurtar a fala.
 
 ## 5. Falar com quem está fazendo
 
-- Usar "você", verbos simples e frases que soem naturais em voz alta.
-- Ser acolhedor sem repetir "bora", "capricha", "olha só" e parabéns a cada gesto ("Olha aqui:" é a abertura fixa da demonstração, uma vez por vídeo).
+- Usar "você", verbos simples e frases que soem naturais em voz alta. Toda fala conversa com quem faz a aula, como alguém ao lado dela: "o seu Mapa da Aventura", "o seu jogo", "Sua vez!". Nada de frase impessoal que só descreve.
+- Três vozes (Diretrizes, seção 6): "você" para o que é da pessoa, o que ela faz e o que ela conquista, com as ações no imperativo; "a gente" e "vamos" para pensar junto e convidar; "eu" só quando o narrador demonstra. Evitar o "nós" de sala de aula ("Hoje nós vamos aprender…") e dizer "o seu jogo", não "o nosso jogo".
+- A fala é uma conversa contínua, não uma lista de frases soltas: cada frase se liga à anterior ("então", "por isso", "mas", "é que", "agora que"; num curso com o bloco Se, "por isso" ou "ou seja" no lugar de "então", que é o nome de uma parte do bloco), todo resultado vem com o porquê ("Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele") e a explicação diz o que é cada coisa no próprio jogo ("O toque é a ação, e a reação que a gente quer é o esconderijo ficar invisível"). Evitar sequências curtas e secas como "Nada acontece. O toque ainda não tem uma reação. Vamos ligar uma." (Diretrizes, seção 6).
+- O que já vem pronto não vira frase solta na montagem ("O jardim e os personagens já estão preparados"): a criança vê o que já está no projeto. Só citar o que vem pronto quando ajuda a ação, com o papel que tem ali ("Olha aqui: nessa área já tem o bloco… É ele que percebe quando alguém toca num esconderijo"). O reconhecimento do que veio pronto fica na comemoração (Diretrizes, seção 3).
+- Chamar a atenção nos momentos que importam: "Olha aqui:" ao mostrar um lugar, um bloco ou o primeiro gesto da demonstração; "Olha só:" quando aparece um resultado; "Repare:" num detalhe que a pessoa precisa notar; "Tá vendo?" logo depois do teste da retomada. Um chamado por momento importante, variando as expressões; sem repetir "bora", "capricha" ou parabéns a cada gesto (Diretrizes, seção 6).
+- O que é opcional vira convite, nunca negação: "Se quiser, você pode ler aqui mesmo. E, se preferir, também pode baixar para guardar." Não dizer o que a pessoa não precisa fazer; uma proibição que evita um erro continua direta ("Não coloque um encontro dentro do outro").
 - Evitar perguntas que escondem um pedido. "Teste os dois jeitos" é mais claro que
   "Como será que essa ideia funciona no nosso jardim?".
 - Cada "aqui" precisa de um apontamento visível. Cada "isso" precisa de um referente claro.
@@ -128,20 +138,21 @@ enquadramento realmente o mostra. A ferramenta pode ficar ao lado ou abaixo do v
 um tour das duas disposições. Conferir o roteiro nos dois tamanhos de tela.
 
 A Pré-visualização do Estúdio acompanha as mudanças automaticamente. Pedir a ação do jogo:
-"Toque em um esconderijo", "clique no jogo e aperte a seta". Não inventar um botão de início nem
+"Toque em um esconderijo", "clique no jogo e segure a seta". Para botões, "clique em"; no jogo,
+"toque" ou "segure"; não usar "aperte" (Diretrizes, seção 6). Não inventar um botão de início nem
 mandar recarregar a página como passo genérico. Um reinício necessário ao teste deve usar o
 controle real e ser conferido antes da gravação.
 
-A ação de saída precisa corresponder à seção: **Próxima seção** entre partes da aula,
-**Concluir aula** na última parte. Se há envio, incluir **Enviar para o professor** e a confirmação
-**Enviar**. Se há certificado, nomear **Pegar meu certificado**. Tours, estados alternativos e
+A ação de saída precisa corresponder à seção: **Próxima parte** entre as partes da fase,
+**Concluir fase** na última parte. Se há envio, incluir **Enviar meu projeto** (no Pinta da fase,
+**Enviar meu desenho**) e a confirmação **Enviar**; na galeria, **Enviar (1)** e **Recebido!**. Se há certificado, nomear **Pegar meu certificado**. Tours, estados alternativos e
 solução de problemas desses fluxos ficam na biblioteca de ajuda.
 
 Encerrar a narração na ação de saída da seção atual. Não acrescentar uma instrução para a
-próxima seção ou aula depois de Próxima seção ou Concluir aula. O comando Pegar meu certificado
+próxima seção ou aula depois de Próxima parte ou Concluir fase. O comando Pegar meu certificado
 pertence à seção do certificado. Na publicação pelo Estúdio da aula, esperar **Seu jogo está no
 Mural!**, comemorar, copiar com **Copiar link de jogar**, usar **Fechar** e só então orientar
-**Concluir aula**. Pelo Estúdio completo, esperar **Publicado! 🎉**, usar **Copiar link** e depois
+**Concluir fase**. Pelo Estúdio completo, esperar **Publicado! 🎉**, usar **Copiar link** e depois
 **Fechar**.
 
 ## 7. Formato para gravação
@@ -164,7 +175,7 @@ Separar sempre a nota de produção da fala, com uma linha em branco:
 > “Você vai construir um jogo chamado Cadê Todo Mundo. Esta é a versão pronta, para você ver como
 > o jogo funciona antes de montar o seu. Olha aqui: quando eu toco num esconderijo, ele some e
 > aparece quem estava atrás. Agora é a sua vez: jogue até encontrar os três personagens. Quando
-> terminar, clique em Próxima seção.”
+> terminar, clique em Próxima parte.”
 ```
 
 Cada nota de tela tem sua narração correspondente. Um vídeo pode conter vários pares.
@@ -188,6 +199,9 @@ correto. A liberdade de cor e detalhes continua livre.
 ## 8. Conferência antes de gravar
 
 - Nas primeiras frases, fica claro o que fazer, em qual atividade e como começar?
+- Cada fala conversa com a pessoa e chama a atenção dela para o que aparece na tela nos momentos que importam? O que é opcional aparece como convite, sem "não precisa"?
+- As três vozes estão no lugar: "você" no que é dela e nas ações, "a gente" no raciocínio e no convite, "eu" só na demonstração? Sobrou algum "nós vamos" ou "o nosso jogo"?
+- Lida em voz alta, a fala soa como conversa contínua, com o porquê de cada resultado, ou como frases soltas lidas de um texto? Alguma frase sobre o que já vem pronto ficou solta no meio da montagem?
 - Todos os passos necessários aparecem, incluindo confirmação e saída?
 - Quem ouve consegue executar sem adivinhar uma peça, valor ou encaixe?
 - O vídeo evita tours, agendas, recapitulações longas e teoria sem uso imediato?

@@ -108,7 +108,7 @@ describe('selo no card das "Aventuras da trilha" (com a barra ao vivo)', () => {
       />,
     )
     expect(container.textContent).not.toContain('Pronta!')
-    expect(container.textContent).toContain('9 de 10 aulas')
+    expect(container.textContent).toContain('9 de 10 fases')
 
     // O que falta continua sendo dito, e sem o progresso o "Pronta!" volta (anti-vácuo).
     rerender(
@@ -140,6 +140,6 @@ describe('selo no card da home', () => {
 
     rerender(<CourseCard course={myCourse({ careerSlot: 2, milestones: PRONTO })} />)
     expect(container.textContent).not.toContain('Pronta!')
-    expect(container.textContent).toContain('Revisar curso')
+    expect(container.textContent).toContain('Revisar aventura')
   })
 })

@@ -261,6 +261,10 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'key-state', hasKey: true },
     { type: 'try-lighthouse-door' },
   ],
+  'lighthouse-position': [
+    { type: 'key-position', axis: 'x', value: 160 },
+    { type: 'key-position', axis: 'y', value: 250 },
+  ],
   // ⚠️ Os TRÊS casos do Dia 1 do Desafio (05/10/2026) usam esta mesma cena: o caminho derruba as seis
   // metas, para valer como sucesso no andar, na velocidade e no limite da tela.
   'lighthouse-walk': [

@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-estado-do-jogo",
-      "plannedVideo": "Título: Escolha quando o jogo pode agir\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e o Zappy segurando a bandeira, com a legenda \"só depois da largada\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escolha quando o jogo pode agir\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e o Zappy segurando a bandeira, com a legenda \"só depois da largada\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-estado-do-jogo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare criar asteroides fora e dentro de Se jogando, antes e depois de começar."
+        "text": "Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "O relógio pode agir agora?",
+        "title": "Escolha quando o jogo pode agir",
         "instructions": "Use Tempo para soltar o tempo se estiver parado. Na abertura, deixe Criar asteroide fora de Se o estado do jogo é jogando e observe o tempo e as pedras. Mova para dentro do Se e observe de novo sem começar. Depois toque na tela para começar e compare.",
         "hints": [],
         "activity": {
@@ -66,38 +66,38 @@
     },
     {
       "key": "video-embrulhar",
-      "plannedVideo": "Título: Separe a abertura da partida\n\nRegravar no Estúdio atual. O bloco de estado inicial entra depois de criar os ramos para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. Não colocar o relógio de 40 quadros dentro do quadro principal.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Separe a abertura da partida\n\nRegravar no Estúdio atual. Começar pela retomada: abrir o jogo e, no \"Tá vendo?\", mostrar as pedras caindo desde o começo. A pergunta x > 0 do Se é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos antes de encaixar a pergunta nova; conferir antes da gravação onde fica a lixeira. O bloco de estado inicial entra depois de criar os ramos, para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. No \"Olha aqui\", apontar os dois + da linha de baixo do Se e clicar no que fica antes de senão se. Não colocar o relógio de 40 quadros dentro do quadro principal.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-embrulhar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Leve os blocos da partida para Se jogando e crie o ramo da abertura."
+        "text": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-relogio-e-tiro",
-      "plannedVideo": "Título: Espere a partida para criar pedras e tiros\n\nRegravar no Estúdio atual. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Espere a partida para criar pedras e tiros\n\nRegravar no Estúdio atual. Começar tocando na barra de espaço com a abertura na tela e, no \"Repare\", deixar ouvir o som do tiro. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio-e-tiro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Coloque uma condição jogando no intervalo e outra dentro da barra de espaço."
+        "text": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-enter",
-      "plannedVideo": "Título: Use Enter para começar\n\nRegravar no Estúdio atual. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Use Enter para começar\n\nRegravar no Estúdio atual. Começar tocando em Enter com a abertura na tela e, no \"Tá vendo?\", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-enter",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Programe Enter, teste a abertura e a partida e envie."
+        "text": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase."
       }
     },
     {
@@ -1214,7 +1214,7 @@
       "key": "estado-do-jogo",
       "title": "Escolha quando o jogo pode agir",
       "intent": "exploration",
-      "objective": "Compare criar asteroides fora e dentro de Se jogando, antes e depois de começar.",
+      "objective": "Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-estado-do-jogo", "fala-estado-do-jogo", "experiencia-estado"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1228,7 +1228,7 @@
       "key": "embrulhar",
       "title": "Separe a abertura da partida",
       "intent": "application",
-      "objective": "Leve os blocos da partida para Se jogando e crie o ramo da abertura.",
+      "objective": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-embrulhar", "fala-embrulhar"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1362,7 +1362,7 @@
       "key": "relogio-e-tiro",
       "title": "Espere a partida para criar pedras e tiros",
       "intent": "application",
-      "objective": "Coloque uma condição jogando no intervalo e outra dentro da barra de espaço.",
+      "objective": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-relogio-e-tiro", "fala-relogio-e-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1489,7 +1489,7 @@
       "key": "enter",
       "title": "Use Enter para começar",
       "intent": "delivery",
-      "objective": "Programe Enter, teste a abertura e a partida e envie.",
+      "objective": "Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
       "blockKeys": ["video-enter", "fala-enter", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

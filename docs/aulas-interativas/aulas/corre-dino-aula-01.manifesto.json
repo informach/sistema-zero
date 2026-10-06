@@ -59,7 +59,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Jogue um pouco para conhecer os controles. Depois clique em Próxima seção."
+        "text": "Sua vez! Jogue a versão pronta e pule os cactos com a barra de espaço, a seta para cima ou um toque na parte de cima da tela. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -68,7 +68,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Experimente o jogo pronto",
-        "instructions": "Clique na área do jogo para começar. Toque e solte a barra de espaço, a seta para cima ou a tela para pular. Tente passar pelos cactos. Depois de perder, uma entrada volta à abertura e outra começa. Você não precisa bater recorde para continuar.",
+        "instructions": "Clique na área do jogo para começar. Toque e solte a barra de espaço ou a seta para cima, ou toque na parte de cima da tela, para pular. Tente passar pelos cactos. Depois de perder, uma entrada volta à abertura e outra começa. Você pode continuar mesmo sem bater recorde.",
         "hints": [],
         "activity": {
           "type": "project-play",
@@ -1447,35 +1447,35 @@
     },
     {
       "key": "video-caderno",
-      "plannedVideo": "Título: Seu Caderno do Aluno\n\nRegravar no Estúdio atual. Mostrar o PDF real anexado ao curso. Não ensinar os controles do leitor.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Seu Mapa da Aventura\n\nRegravar no Estúdio atual. Mostrar o PDF real do Mapa da Aventura, anexado ao curso. No Olha aqui, apontar o mapa. Ao falar em baixar, apontar o botão Baixar, sem clicar. Não demonstrar o download nem ensinar os controles do leitor.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-caderno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção."
+        "text": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte."
       }
     },
     {
       "key": "caderno",
       "content": {
         "kind": "materials",
-        "title": "Caderno do Aluno: Corre, Dino!",
+        "title": "Mapa da Aventura: Corre, Dino!",
         "bookPreview": true,
         "items": []
       }
     },
     {
       "key": "video-uma-vez-e-sempre",
-      "plannedVideo": "Título: Compare uma vez e sempre\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Mover o Dino um pouquinho em Ações disponíveis. Colocar a peça em Ao iniciar, clicar em Começar o jogo e manter à vista o passo curto do Dino, o contador da peça em 1 vez e Teste encerrado. Levar a mesma peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar o Dino até sair da cena, com o contador subindo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy calçando um tênis, com a legenda Ao iniciar: uma vez, e o Dino correndo com marcas de passos, com a legenda Enquanto estiver rodando: sempre. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare uma vez e sempre\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Mover o Dino um pouquinho em Ações disponíveis. Colocar a peça em Ao iniciar, clicar em Começar o jogo e manter à vista o passo curto do Dino, o contador da peça em 1 vez e Teste encerrado. Levar a mesma peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar o Dino até sair da cena, com o contador subindo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy calçando um tênis, com a legenda Ao iniciar: uma vez, e o Dino correndo com marcas de passos, com a legenda Enquanto estiver rodando: sempre. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-uma-vez-e-sempre",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare a mesma peça nas duas áreas, começando um teste em cada uma."
+        "text": "Sua vez! Coloque a mesma peça em Ao iniciar e depois em Enquanto estiver rodando, começando um teste em cada uma. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1532,14 +1532,14 @@
     },
     {
       "key": "video-limite-da-tela",
-      "plannedVideo": "Título: Escolha o tamanho da tela\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de 800 por 480, com a borda escondida. Clicar em Ligue a borda e mostrar o contorno. Mudar a largura para 600 e a altura para 300, com o contorno acompanhando os números. Terminar em 480 por 270, com os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy segurando uma folha grande e outra menor, com o Dino desenhado dentro da menor e a legenda 480 por 270. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escolha o tamanho da tela\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de 800 por 480, com a borda escondida. Clicar em Ligue a borda e mostrar o contorno. Mudar a largura para 600 e a altura para 300, com o contorno acompanhando os números. Terminar em 480 por 270, com os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy segurando uma folha grande e outra menor, com o Dino desenhado dentro da menor e a legenda 480 por 270. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limite-da-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mude largura e altura com a borda visível e termine em 480 por 270."
+        "text": "Sua vez! Ligue a borda, mude a largura e a altura e termine com a tela em 480 por 270. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1560,38 +1560,38 @@
     },
     {
       "key": "video-area-e-tela",
-      "plannedVideo": "Título: Prepare a tela do jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare a tela do jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-area-e-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Prepare a tela em Ao iniciar com largura 480 e altura 270."
+        "text": "Agora prepare a tela do seu jogo! Coloque Ao iniciar no projeto e, dentro dela, a tela de 480 por 270. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-borda",
-      "plannedVideo": "Título: Mostre o limite da tela\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre o limite da tela\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Confira o contorno da tela e a espessura 4."
+        "text": "Agora mostre onde a tela do seu jogo acaba! Coloque Mostrar a borda da tela logo abaixo da preparação, com espessura 4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-coordenadas",
-      "plannedVideo": "Título: Escolha onde o Dino fica\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Aumentar só o x até 300, depois só o y até 240, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com um mapa do tesouro, com uma seta x para a direita e uma seta y para baixo. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escolha onde o Dino fica\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Pelo deslizante (os botões − e + andam de 20 em 20), aumentar só o x até 300, depois só o y até 200, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com um mapa do tesouro, com uma seta x para a direita e uma seta y para baixo. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-coordenadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Mude um eixo de cada vez e termine em x 0, y 0."
+        "text": "Sua vez! Mude só o x, depois só o y, e termine com o Dino em x 0 e y 0. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1612,14 +1612,14 @@
     },
     {
       "key": "video-criar-e-mostrar",
-      "plannedVideo": "Título: Compare criar e mostrar\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com os bastidores e a tela do jogo vazios, lado a lado. Clicar em Criar o Dino e mostrar o Dino nos bastidores, com a tela ainda vazia. Clicar em Mostrar o Dino na tela e mostrar o mesmo Dino nos dois lugares. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino no camarim, arrumando o chapéu, e depois entrando no palco sob a luz. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima seção.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare criar e mostrar\n\nRegravar no Estúdio atual. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com os bastidores e a tela do jogo vazios, lado a lado. Clicar em Criar o Dino e mostrar o Dino nos bastidores, com a tela ainda vazia. Clicar em Mostrar o Dino na tela e mostrar o mesmo Dino nos dois lugares. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino no camarim, arrumando o chapéu, e depois entrando no palco sob a luz. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-e-mostrar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie o Dino nos bastidores e depois mostre-o na tela."
+        "text": "Sua vez! Clique em Criar o Dino, depois em Mostrar o Dino na tela, e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1640,14 +1640,14 @@
     },
     {
       "key": "video-criar-dino",
-      "plannedVideo": "Título: Crie o Dino nos bastidores\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Crie o Dino nos bastidores\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-dino",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie dino em x 110, y 150 e tamanho 64, abaixo da borda."
+        "text": "Agora crie o seu Dino! Coloque Criar dinossauro logo abaixo da borda, com x 110, y 150 e tamanho 64. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
       }
     },
     {
@@ -1659,7 +1659,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+        "text": "Hora de conferir e enviar o seu jogo! Confira a tela, a borda e o Dino, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase."
       }
     },
     {
@@ -1731,7 +1731,7 @@
       "key": "apresentacao",
       "title": "Jogue antes de construir",
       "intent": "presentation",
-      "objective": "Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.",
+      "objective": "Sua vez! Jogue a versão pronta e pule os cactos com a barra de espaço, a seta para cima ou um toque na parte de cima da tela. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-abertura", "fala-apresentacao", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1743,9 +1743,9 @@
     },
     {
       "key": "caderno",
-      "title": "Seu Caderno do Aluno",
+      "title": "Seu Mapa da Aventura",
       "intent": "material",
-      "objective": "O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção.",
+      "objective": "Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.",
       "blockKeys": ["video-caderno", "fala-caderno", "caderno"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1759,7 +1759,7 @@
       "key": "uma-vez-e-sempre",
       "title": "Compare uma vez e sempre",
       "intent": "exploration",
-      "objective": "Compare a mesma peça nas duas áreas, começando um teste em cada uma.",
+      "objective": "Sua vez! Coloque a mesma peça em Ao iniciar e depois em Enquanto estiver rodando, começando um teste em cada uma. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-uma-vez-e-sempre",
         "fala-uma-vez-e-sempre",
@@ -1777,7 +1777,7 @@
       "key": "limite-da-tela",
       "title": "Escolha o tamanho da tela",
       "intent": "exploration",
-      "objective": "Mude largura e altura com a borda visível e termine em 480 por 270.",
+      "objective": "Sua vez! Ligue a borda, mude a largura e a altura e termine com a tela em 480 por 270. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-limite-da-tela", "fala-limite-da-tela", "experiencia-tela"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1791,7 +1791,7 @@
       "key": "area-e-tela",
       "title": "Prepare a tela do jogo",
       "intent": "application",
-      "objective": "Prepare a tela em Ao iniciar com largura 480 e altura 270.",
+      "objective": "Agora prepare a tela do seu jogo! Coloque Ao iniciar no projeto e, dentro dela, a tela de 480 por 270. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-area-e-tela", "fala-area-e-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1829,7 +1829,7 @@
       "key": "borda",
       "title": "Mostre o limite da tela",
       "intent": "application",
-      "objective": "Confira o contorno da tela e a espessura 4.",
+      "objective": "Agora mostre onde a tela do seu jogo acaba! Coloque Mostrar a borda da tela logo abaixo da preparação, com espessura 4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-borda", "fala-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1871,7 +1871,7 @@
       "key": "coordenadas",
       "title": "Escolha onde o Dino fica",
       "intent": "exploration",
-      "objective": "Mude um eixo de cada vez e termine em x 0, y 0.",
+      "objective": "Sua vez! Mude só o x, depois só o y, e termine com o Dino em x 0 e y 0. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-coordenadas", "fala-coordenadas", "experiencia-coordenadas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1885,7 +1885,7 @@
       "key": "criar-e-mostrar",
       "title": "Compare criar e mostrar",
       "intent": "exploration",
-      "objective": "Crie o Dino nos bastidores e depois mostre-o na tela.",
+      "objective": "Sua vez! Clique em Criar o Dino, depois em Mostrar o Dino na tela, e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-criar-e-mostrar", "fala-criar-e-mostrar", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1899,7 +1899,7 @@
       "key": "criar-dino",
       "title": "Crie o Dino nos bastidores",
       "intent": "application",
-      "objective": "Crie dino em x 110, y 150 e tamanho 64, abaixo da borda.",
+      "objective": "Agora crie o seu Dino! Coloque Criar dinossauro logo abaixo da borda, com x 110, y 150 e tamanho 64. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
       "blockKeys": ["video-criar-dino", "fala-criar-dino"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1945,7 +1945,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "objective": "Hora de conferir e enviar o seu jogo! Confira a tela, a borda e o Dino, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

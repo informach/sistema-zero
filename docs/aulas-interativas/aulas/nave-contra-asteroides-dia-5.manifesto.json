@@ -76,38 +76,38 @@
   "blocks": [
     {
       "key": "video-finais",
-      "plannedVideo": "Título: Defina quando ganhar e perder\n\nRegravar no Estúdio atual. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Defina quando ganhar e perder\n\nRegravar no Estúdio atual. Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-finais",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Crie a meta e acrescente as condições de vitória e derrota dentro de jogando."
+        "text": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-mostrar-telas",
-      "plannedVideo": "Título: Mostre a vitória e a derrota\n\nRegravar no Estúdio atual. Criar um ramo por vez, sem remontar inicio. Não alegar que Enter reinicia nesta etapa.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre a vitória e a derrota\n\nRegravar no Estúdio atual. Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-telas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Acrescente os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela."
+        "text": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-reiniciar",
-      "plannedVideo": "Título: Compare voltar à abertura e reiniciar\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase do jogo de tabuleiro, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy arrumando as peças de um tabuleiro de volta na saída, com a legenda \"Reiniciar o jogo: tudo no lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima seção, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Compare voltar à abertura e reiniciar\n\nRegravar no Estúdio atual. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase do jogo de tabuleiro, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy arrumando as peças de um tabuleiro de volta na saída, com a legenda \"Reiniciar o jogo: tudo no lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-reiniciar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Depois de perder, compare mudar para inicio com Reiniciar o jogo. Observe os valores ao começar outra partida."
+        "text": "Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -115,7 +115,7 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Jogue outra vez",
+        "title": "Compare voltar à abertura e reiniciar",
         "instructions": "Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar.",
         "hints": [],
         "activity": {
@@ -137,11 +137,11 @@
             "goalCopy": {
               "screen-only": {
                 "label": "Mudando só o momento, as pedras da partida anterior continuaram caindo",
-                "pedido": "Escolha Mudar o estado do jogo para inicio, aperte Enter no fim e comece outra partida."
+                "pedido": "Escolha Mudar o estado do jogo para inicio, clique em Apertar Enter no fim e comece outra partida."
               },
               "back-to-menu": {
                 "label": "Reiniciar levou para a abertura, e foi preciso outro Enter para jogar",
-                "pedido": "Escolha Reiniciar o jogo, aperte Enter no fim e olhe em que momento o jogo ficou."
+                "pedido": "Escolha Reiniciar o jogo, clique em Apertar Enter no fim e olhe em que momento o jogo ficou."
               }
             }
           }
@@ -151,14 +151,14 @@
     },
     {
       "key": "video-enter",
-      "plannedVideo": "Título: Faça Enter preparar outra partida\n\nRegravar no Estúdio atual. Ampliar o evento existente, sem criar um segundo Enter. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Faça Enter preparar outra partida\n\nRegravar no Estúdio atual. Começar pela retomada: perder, tocar em Enter e, no \"Tá vendo?\", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-enter",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Amplie o evento Enter com os ramos fim e vitoria. Em cada um, use Reiniciar o jogo."
+        "text": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte."
       }
     },
     {
@@ -166,7 +166,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção."
+        "text": "Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte."
       }
     },
     {
@@ -177,7 +177,7 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "Você perdeu e apertou Enter uma vez. O que deve aparecer?",
+            "prompt": "Você perdeu e tocou em Enter uma vez. O que deve aparecer?",
             "choices": [
               {
                 "id": "a",
@@ -225,7 +225,7 @@
               },
               {
                 "id": "b",
-                "label": "Apertar Enter enquanto está jogando."
+                "label": "Tocar em Enter durante a partida."
               },
               {
                 "id": "c",
@@ -247,7 +247,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural."
+        "text": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase."
       }
     },
     {
@@ -1604,7 +1604,7 @@
       "key": "finais",
       "title": "Defina quando ganhar e perder",
       "intent": "application",
-      "objective": "Crie a meta e acrescente as condições de vitória e derrota dentro de jogando.",
+      "objective": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-finais", "fala-finais"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1769,7 +1769,7 @@
       "key": "telas",
       "title": "Mostre a vitória e a derrota",
       "intent": "application",
-      "objective": "Acrescente os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela.",
+      "objective": "Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-mostrar-telas", "fala-telas"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1875,7 +1875,7 @@
       "key": "reiniciar",
       "title": "Compare voltar à abertura e reiniciar",
       "intent": "exploration",
-      "objective": "Depois de perder, compare mudar para inicio com Reiniciar o jogo. Observe os valores ao começar outra partida.",
+      "objective": "Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-reiniciar", "fala-reiniciar", "experiencia-reiniciar"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1889,7 +1889,7 @@
       "key": "enter",
       "title": "Faça Enter preparar outra partida",
       "intent": "application",
-      "objective": "Amplie o evento Enter com os ramos fim e vitoria. Em cada um, use Reiniciar o jogo.",
+      "objective": "Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-enter", "fala-enter"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1954,7 +1954,7 @@
       "key": "quiz-final",
       "title": "Confira o que você construiu",
       "intent": "explanation",
-      "objective": "Responda pensando nos testes do seu jogo. Depois de enviar, leia as explicações. Se precisar, corrija e tente de novo. Quando acertar todas, clique em Próxima seção.",
+      "objective": "Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
       "blockKeys": ["fala-quiz-final", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1968,7 +1968,7 @@
       "key": "entrega",
       "title": "Teste o jogo completo e compartilhe",
       "intent": "delivery",
-      "objective": "Teste derrota, vitória e reinício. Verifique, envie e escolha se quer publicar no Mural.",
+      "objective": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.",
       "blockKeys": ["video-ciclo-completo", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

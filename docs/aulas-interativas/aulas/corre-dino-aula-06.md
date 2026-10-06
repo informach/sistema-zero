@@ -23,23 +23,23 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 ### Seção 1. Compare a tela com o grupo
 
-**Tarefa:** Compare o grupo antes e depois de ligar a limpeza.
+**Tarefa:** Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-visivel-guardado → fala-visivel-guardado → experiencia-visivel-guardado.
 
-**Zappy na página (não gravar):** Compare o grupo antes e depois de ligar a limpeza.
+**Zappy na página (não gravar):** Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.
 
 **Experiência existente:** `cleanup`. Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Retire do grupo quem já saiu
 
-**Tarefa:** Limpe o grupo cactos a cada quadro e conserve o intervalo 1.4.
+**Tarefa:** Agora tire do grupo os cactos que já saíram! Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-faxina → fala-faxina.
 
-**Zappy na página (não gravar):** Limpe o grupo cactos a cada quadro e conserve o intervalo 1.4.
+**Zappy na página (não gravar):** Agora tire do grupo os cactos que já saíram! Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Remova do grupo cactos quem saiu da tela, a cada quadro.
 - Mantenha a criação de cactos no relógio de 1.4 s.
@@ -47,23 +47,23 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 ### Seção 3. Confira o que você construiu
 
-**Tarefa:** Retome o som e os cactos nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Tarefa:** Hora de lembrar o que você construiu! As perguntas falam do som do pulo e dos cactos. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Blocos na página:** fala-revisao → quiz.
 
-**Zappy na página (não gravar):** Retome o som e os cactos nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
+**Zappy na página (não gravar):** Hora de lembrar o que você construiu! As perguntas falam do som do pulo e dos cactos. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta seção.
 
 ### Seção 4. Teste e envie seu jogo
 
-**Tarefa:** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Espere novos cactos passarem, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.
+**Zappy na página (não gravar):** Hora de testar e enviar o seu jogo! Espere novos cactos passarem, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir fase.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta etapa, com envio confirmado ao professor.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Remova do grupo cactos quem saiu da tela, a cada quadro.
 - Mantenha a criação de cactos no relógio de 1.4 s.

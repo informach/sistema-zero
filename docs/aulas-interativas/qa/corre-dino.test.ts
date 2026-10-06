@@ -26,6 +26,7 @@ import {
   SUA_VEZ,
   telaSecao,
 } from './gerar-corre-dino'
+import { concordanciasErradas, PALAVRAS_DA_ESCOLA } from './palavras-da-escola'
 
 const stages = etapasDino()
 const manifests = ORDEM_DINO.map((slug) => {
@@ -144,6 +145,42 @@ test('a abertura é jogável e o caderno aparece uma vez, com consulta opcional'
   expect(
     manifests.flatMap((m) => m.blocks).filter((b) => b.content?.kind === 'materials'),
   ).toHaveLength(1)
+  expect(first.blocks.find((b) => b.key === 'caderno')?.content).toMatchObject({
+    title: 'Mapa da Aventura: Corre, Dino!',
+  })
+})
+
+// Vocabulário da aventura (Diretrizes, seção 6): a régua única do repo (`palavras-da-escola.ts`),
+// a mesma do validador de roteiros e de vocabulario-crianca.test.ts. Os passos do Mapa da Aventura
+// (`caderno`) viram PDF, fora desses guardas; por isso são conferidos aqui, junto com títulos,
+// Zappy, falas e critérios. Neste curso também sai "tarefa" (revisão de 06/10/2026): a régua
+// comum a deixa passar por causa do cartão do Pensa ("Concluir tarefa").
+test('a criança lê aventura: falas, Zappy e Mapa da Aventura sem palavras da escola', () => {
+  for (const aula of aulasDino) {
+    expect(aula.title).not.toMatch(PALAVRAS_DA_ESCOLA)
+    for (const section of aula.sections)
+      for (const texto of [
+        section.title,
+        section.bridge,
+        ...falasSecao(section),
+        ...(section.caderno ?? []),
+        ...(section.checks ?? []).map((check) => check.label),
+      ]) {
+        const id = `${aula.slug}/${section.key}`
+        expect(texto, id).not.toMatch(PALAVRAS_DA_ESCOLA)
+        expect(texto, id).not.toMatch(/\btarefas?\b/i)
+        expect(concordanciasErradas(texto), id).toEqual([])
+      }
+  }
+  // Diretrizes, seção 5: o mapa é apresentado à criança e as escolhas são convite.
+  const mapa = aulasDino[0]!.sections[1]!
+  expect(mapa.title).toBe('Seu Mapa da Aventura')
+  const fala = falasSecao(mapa).join(' ')
+  expect(fala).toStartWith('Olha aqui: este é o seu Mapa da Aventura!')
+  expect(fala).toContain(
+    'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.',
+  )
+  expect(`${fala} ${mapa.bridge}`).not.toMatch(/não precisa/i)
 })
 
 // Diretrizes, seção 2 (06/10/2026): o vídeo da experiência e o do jogo pronto são demonstrações.
@@ -179,7 +216,7 @@ test('experiências: o conceito primeiro, a demonstração na primeira pessoa e 
       expect(tela).not.toContain('antecipar')
       if (section.meme) expect(tela).toContain('Meme ilustrado')
       // O caderno é da criança: continua com os passos no imperativo, sem a demonstração.
-      expect(section.caderno?.join(' '), section.key).toMatch(/Próxima seção\.$/)
+      expect(section.caderno?.join(' '), section.key).toMatch(/Próxima parte\.$/)
       expect(section.caderno?.join(' ')).not.toMatch(/\beu\b|Olha aqui/)
     }
   expect(total).toBe(24)
@@ -189,11 +226,15 @@ test('jogo pronto: um exemplo só, na primeira pessoa, e a vez passa no fim', ()
   const abertura = aulasDino[0]!.sections[0]!
   expect(abertura.play).toBe(true)
   const falas = falasSecao(abertura)
-  expect(falas[0]).toStartWith('Esta é a versão pronta')
+  // Diretrizes, seção 6: a autoria é da criança e o convite é junto.
+  expect(falas[0]).toStartWith('Oi! Você vai construir um jogo chamado Corre, Dino!')
+  expect(falas[0]).toEndWith(
+    'Antes de montar o seu, vamos ver como ele funciona nesta versão pronta.',
+  )
   expect(falas[1]).toStartWith('Olha aqui: ')
   expect(falas.slice(0, -1).join(' ')).not.toMatch(ordemParaQuemAssiste)
   expect(falas.at(-1)).toStartWith('Agora é a sua vez: jogue')
-  expect(falas.at(-1)).toEndWith('Quando terminar, clique em Próxima seção.')
+  expect(falas.at(-1)).toEndWith('Quando terminar, clique em Próxima parte.')
   expect(abertura.caderno?.join(' ')).toContain('Clique na área do jogo para começar.')
 })
 
@@ -214,7 +255,135 @@ test('montagens seguem no imperativo e a publicação comemora com o link', () =
     'Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar',
   )
   expect(fala).toEndWith(
-    'Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.',
+    'Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.',
+  )
+})
+
+// Diretrizes, seção 6 (06/10/2026): a ponte do Zappy convida e termina na ação de saída, a montagem
+// que aplica uma experiência começa pela retomada no próprio jogo, e "então" é só o encaixe do Se.
+test('falas conversam: ponte com convite e saída, retomada no jogo e sem "então" de ligação', () => {
+  for (const aula of aulasDino)
+    for (const section of aula.sections) {
+      const id = `${aula.slug}/${section.key}`
+      const ponte = section.bridge
+      expect(ponte, id).toMatch(/(?:Próxima parte|Concluir fase)\.$/)
+      for (const fala of [ponte, ...falasSecao(section), ...(section.caderno ?? [])]) {
+        expect(fala, id).not.toMatch(/(?:^|[.!?,;:]\s*)então\b/i)
+        expect(fala, id).not.toMatch(/\b(?:nós|nosso|nossa|montamos)\b/i)
+        expect(fala, id).not.toContain('—')
+      }
+      // O mapa segue o modelo aprovado do Cadê: apresenta o mapa e termina na saída.
+      if (section.materials) continue
+      const convite =
+        ehExperiencia(section) || section.play
+          ? /^Sua vez! /
+          : section.questions || section.final
+            ? /^Hora de [^!]+! /
+            : /^Agora [^!]+! /
+      expect(ponte, id).toMatch(convite)
+      if (section.checks?.length && !section.final)
+        expect(ponte, id).toContain('Verificar esta parte e, em seguida, em Próxima parte.')
+      if (section.final) expect(ponte, id).toContain('Enviar meu projeto')
+      // O botão real do quiz (kids-quiz.tsx): Responder! e, se faltar acerto, Tentar de novo!
+      if (section.questions) expect(ponte, id).toContain('clicar em Responder!')
+      // Conferência uma vez só (Diretrizes, seção 6): depois do teste, como caminho da correção, ou
+      // logo depois da montagem quando não há teste visível.
+      if (section.checks?.length && !section.final) {
+        const listas =
+          falasSecao(section)
+            .join(' ')
+            .match(/confira se ficou assim/gi) ?? []
+        expect(listas.length, id).toBeLessThanOrEqual(1)
+      }
+    }
+})
+
+// A retomada é uma ponte, não um segundo vídeo da experiência (Diretrizes, 06/10/2026, à noite):
+// primeiro o problema no jogo da criança, com "Tá vendo?" e o porquê; depois a lembrança, como
+// solução; e o anúncio uma vez só, colado ao primeiro passo. Sem teste quando o efeito ainda não
+// aparece no jogo. Teto de 50 palavras, para a versão longa não voltar.
+const RETOMADA_SEM_TESTE = new Set([
+  'aula-01/criar-dino',
+  'aula-03/aplicar-gravidade',
+  'aula-05/grupo-e-relogio',
+  'aula-06/faxina',
+  'aula-07/relogio',
+])
+test('retomadas curtas: o problema, a lembrança e um anúncio só', () => {
+  const palavras = (texto: string) => texto.split(/\s+/).filter(Boolean).length
+  let total = 0
+  for (const aula of aulasDino)
+    for (const section of aula.sections) {
+      const id = `${aula.slug}/${section.key}`
+      const falas = section.speech ?? []
+      const lembra = falas.findIndex((f) => f.startsWith('Lembra da experiência'))
+      if (!section.checks?.length || lembra < 0 || lembra > 1) continue
+      total++
+      const retomada = falas.slice(0, lembra + 1)
+      const texto = retomada.join(' ')
+      if (RETOMADA_SEM_TESTE.has(id)) {
+        expect(lembra, id).toBe(0)
+        expect(texto, id).not.toContain('Tá vendo?')
+      } else {
+        expect(lembra, id).toBe(1)
+        expect(falas[0], id).toContain('Tá vendo?')
+        expect(falas[0], id).toMatch(/\b(?:porque|por isso)\b/)
+      }
+      // O anúncio fecha a lembrança, uma vez só, e diz o que vai ser montado.
+      expect(falas[lembra], id).toMatch(/Agora [^.!?]*\b(?:vai|vamos)\b[^.!?]*!$/)
+      expect(texto.match(/\bAgora\b/g)?.length, id).toBe(1)
+      expect(texto, id).not.toMatch(/Por isso, vamos|Então, vamos|É como|Na vida/)
+      expect(palavras(texto), id).toBeLessThanOrEqual(50)
+    }
+  expect(total).toBe(30)
+  // O lembrete de arrastar um espaço vazio fica só na primeira montagem e na fase 7, quando o
+  // projeto cresce; cada passo já diz "Deixe à vista…".
+  const lembrete = aulasDino.flatMap((aula) =>
+    aula.sections
+      .filter((s) => s.speech?.some((f) => f.startsWith('Antes de pegar cada peça')))
+      .map((s) => `${aula.slug}/${s.key}`),
+  )
+  expect(lembrete).toEqual(['aula-01/area-e-tela', 'aula-07/embrulhar'])
+})
+
+// Rótulos como aparecem na tela (Diretrizes, seção 2), conferidos no Studio em 06/10/2026: o + que
+// cria "senão se" é o de senão se (ifElseMutator.ts), o sorteio é "um número de 1 a 6"
+// (blockCatalogFundamentals.ts), a conta aparece como 0 + 0 (o nome "Conta matemática" é do
+// catálogo do admin), a colisão diz "chamar o sprite de" e a limpeza do grupo diz "(chamado …)".
+test('falas citam os rótulos que a criança vê', () => {
+  for (const aula of aulasDino)
+    for (const section of aula.sections) {
+      const id = `${aula.slug}/${section.key}`
+      const texto = [section.bridge, ...falasSecao(section), ...(section.caderno ?? [])].join(' ')
+      expect(texto, id).not.toMatch(/\+ ao lado de senão(?! se)/)
+      expect(texto, id).not.toMatch(/um número entre|mínimo \d|máximo \d/)
+      expect(texto, id).not.toContain('Conta matemática')
+      expect(texto, id).not.toMatch(/apelido|campo de item/)
+      // O toque só faz o Dino pular na parte de cima da tela (arcadeKitsDino.ts, controlDino).
+      expect(texto, id).not.toMatch(/um toque na tela/)
+    }
+})
+
+// A troca temporária para jogando (fase 7) volta para inicio num passo próprio, logo antes de
+// verificar, com o efeito visível no lugar de um "confira". A verificação das partes 3 e 4 também
+// confere o estado inicio.
+test('fase 7: o estado volta para inicio no último passo antes de verificar', () => {
+  const fase7 = aulasDino[6]!
+  for (const key of ['embrulhar', 'relogio', 'entrega']) {
+    const section = fase7.sections.find((s) => s.key === key)!
+    const falas = section.speech!
+    expect(falas.at(-1), key).toStartWith(
+      'Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque',
+    )
+    expect(falas.at(-1), key).not.toContain('Confira se o estado voltou')
+    expect(falas.slice(0, -1).join(' '), key).not.toMatch(/de volta para inicio|devolva/i)
+    expect(
+      section.checks?.map((c) => c.id),
+      key,
+    ).toContain('cena-inicial')
+  }
+  expect(fase7.sections.find((s) => s.key === 'embrulhar')!.bridge).toContain(
+    'deixe o estado em inicio',
   )
 })
 
