@@ -1,5 +1,6 @@
 import { PLATFORM_ACTIONS } from '@sistemazero/core/learning'
 import {
+  LIGHTHOUSE_WALK_SPEEDS,
   MAP_TILES,
   MESH_LEVELS,
   MIRROR_MODES,
@@ -55,6 +56,14 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('collect-key') }),
   t.Object({ type: t.Literal('leave-key') }),
   t.Object({ type: t.Literal('restart-collection') }),
+  // O andar do Farol (05/10/2026): a velocidade é uma das duas do domínio.
+  t.Object({ type: t.Literal('hold-arrow'), held: t.Boolean() }),
+  t.Object({
+    type: t.Literal('walk-speed'),
+    speed: t.Union(LIGHTHOUSE_WALK_SPEEDS.map((v) => t.Literal(v))),
+  }),
+  t.Object({ type: t.Literal('keep-on-screen'), enabled: t.Boolean() }),
+  t.Object({ type: t.Literal('restart-walk') }),
   t.Object({
     type: t.Literal('find-character'),
     id: t.Union([t.Literal(0), t.Literal(1), t.Literal(2)]),

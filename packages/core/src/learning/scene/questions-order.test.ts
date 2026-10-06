@@ -177,13 +177,14 @@ describe('as perguntas dos manifestos atuais', () => {
       revealOn?: string
     }
     checkpoint?: { choices: { id: string }[]; correctChoiceId: string }
+    questions?: { choices: { id: string }[]; correctChoiceIds: string[] }[]
   }
   const blocos: { onde: string; bloco: Bloco }[] = []
   const andar = (valor: unknown, onde: string) => {
     if (Array.isArray(valor)) for (const v of valor) andar(v, onde)
     else if (valor && typeof valor === 'object') {
       const b = valor as Bloco
-      if (b.kind === 'interactive' && b.activity?.type === 'experimentation')
+      if ((b.kind === 'interactive' && b.activity?.type === 'experimentation') || b.kind === 'quiz')
         blocos.push({ onde, bloco: b })
       for (const v of Object.values(valor)) andar(v, onde)
     }
@@ -192,14 +193,29 @@ describe('as perguntas dos manifestos atuais', () => {
     andar(JSON.parse(readFileSync(resolve(docs, nome), 'utf8')), nome)
 
   test('a varredura LEU os blocos de cena (laço vazio aprova tudo)', () => {
-    expect(blocos.length).toBeGreaterThan(25)
-    expect(blocos.filter((b) => b.bloco.prediction).length).toBeGreaterThanOrEqual(6)
+    expect(
+      blocos.filter((b) => b.bloco.activity?.type === 'experimentation').length,
+    ).toBeGreaterThan(25)
+    expect(blocos.filter((b) => b.bloco.kind === 'quiz').length).toBeGreaterThanOrEqual(10)
   })
 
   test('⚠️ e a certa não fica sempre no mesmo lugar', () => {
-    const escritas = blocos.flatMap(({ bloco }) =>
-      [bloco.prediction, bloco.checkpoint].filter((q) => q !== undefined),
-    )
+    // As diretrizes concentram perguntas em quizzes. Não exigir palpites ou perguntas
+    // finais nas experiências só para alimentar este teste de distribuição.
+    const quizzes = blocos
+      .flatMap(({ bloco }) =>
+        (bloco.questions ?? []).map((q) => ({
+          choices: q.choices,
+          correctChoiceId: q.correctChoiceIds.length === 1 ? q.correctChoiceIds[0] : undefined,
+        })),
+      )
+      .filter((q) => q.correctChoiceId !== undefined)
+    const escritas = [
+      ...blocos.flatMap(({ bloco }) =>
+        [bloco.prediction, bloco.checkpoint].filter((q) => q !== undefined),
+      ),
+      ...quizzes,
+    ]
     const proporcao = certaPrimeiro(escritas) / escritas.length
     expect(escritas.length).toBeGreaterThanOrEqual(10)
     expect(proporcao).toBeLessThanOrEqual(0.6)
@@ -207,6 +223,7 @@ describe('as perguntas dos manifestos atuais', () => {
     for (const parte of ['prediction', 'checkpoint'] as const) {
       const daParte = blocos.flatMap(({ bloco }) => (bloco[parte] ? [bloco[parte]] : []))
       const primeiro = certaPrimeiro(daParte)
+      if (daParte.length < 2) continue // Perguntas de cena são opcionais.
       // Nem todas em primeiro, nem todas em segundo, dentro de cada tipo.
       expect(primeiro, parte).toBeGreaterThan(0)
       expect(primeiro, parte).toBeLessThan(daParte.length)

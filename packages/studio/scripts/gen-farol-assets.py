@@ -16,9 +16,13 @@ ART = STUDIO / "src/arte"
 SOURCE = ART / "assets/farol"
 FILES = {
     "cenario": "cenario-farol-limpo.svg", "personagem": "player-farol.svg",
+    "menina": "menina-farol.svg", "marinheira": "marinheira-farol.svg",
+    "menino": "menino-farol.svg", "exploradora": "exploradora-farol.svg",
     "chave": "chave-farol.svg", "farol-apagado": "farol-apagado.svg",
     "farol-aceso": "farol-aceso.svg", "barco": "barco-farol.svg",
 }
+# A criança troca a imagem do MESMO sprite entre estes: caixa 64 x 64 e só formas deste conversor.
+PERSONAGENS = ("personagem", "menina", "marinheira", "menino", "exploradora")
 HEADER = "// Gerado por scripts/gen-farol-assets.py a partir de arte/assets/farol. Não editar.\n"
 
 
@@ -102,6 +106,12 @@ def main():
     for name, filename in FILES.items():
         svg = (SOURCE / filename).read_text(encoding="utf-8").strip()
         root = ET.fromstring(svg)
+        if name in PERSONAGENS:
+            caixa = tuple(root.attrib.get(k) for k in ("width", "height", "viewBox"))
+            if caixa != ("64", "64", "0 0 64 64"):
+                raise ValueError(f"{filename}: personagem precisa da caixa 64 x 64, veio {caixa}")
+            for element in root:
+                shape(element)
         body = svg[svg.index(">") + 1:svg.rindex("</svg>")]
         entries.append(f"{js(name)}: {{width: {root.attrib['width']}, height: {root.attrib['height']}, body: {js(body)}}}")
     write(ART / "farol-assets.generated.ts", HEADER + "export const FAROL_ASSETS = {\n" + ",\n".join(entries) + "\n} as const\n")

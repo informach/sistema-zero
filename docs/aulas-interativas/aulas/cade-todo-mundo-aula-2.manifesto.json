@@ -19,7 +19,7 @@
     },
     {
       "key": "video-a2-variavel",
-      "plannedVideo": "Título: Um número que acompanha a busca\n\nApresentar a experiência com o jardim do jogo e apontar para ela ao dizer aqui. Pedir que a criança procure os personagens e acompanhe Achados. Explicar variável em uma frase: onde o jogo guarda um valor que pode mudar. Orientar os quatro testes: um esconderijo, outro esconderijo, um espaço vazio e Recomeçar a busca. Apontar sem realizar os testes nem antecipar os resultados. Terminar em Próxima seção. Sem analogia das marquinhas ou tour. Regravar a fala. Alvo: 40 a 55 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Um número que acompanha a busca\n\nExplicar fazendo: Achados é uma variável, um lugar onde o jogo guarda um número que pode mudar. A comparação chega ao jogo: no placar de um jogo de futebol, a cada gol o placar soma um; no nosso jogo, cada personagem encontrado é como um gol, e o jogo soma um em Achados. Meme na comparação: na frase do placar, mostrar por 2 a 3 segundos o meme ilustrado nosso, um placar de futebol virando de 0 para 1 com o coelho comemorando e a legenda \"+1\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Mostrar dois achados, o espaço vazio que não soma e Recomeçar a busca voltando a zero, nomeando cada resultado. Terminar com Agora é a sua vez e Próxima seção. Sem palpite nem pergunta final. Regravar a fala. Alvo: 50 a 70 segundos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a2-variavel",
@@ -36,7 +36,7 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "Quantos já encontramos?",
-        "instructions": "O que acontece com Achados quando você encontra alguém, procura sem achar e começa outra busca?",
+        "instructions": "Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -47,7 +47,7 @@
     },
     {
       "key": "video-a2-contagem",
-      "plannedVideo": "Título: Cada descoberta conta\n\nComeçar pedindo que cada personagem encontrado some um em Achados. Ensinar Programação > Variáveis, Somar 1 em variável, o encaixe dentro do evento abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Clicar em Verificar esta etapa; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo da etapa cumprido!, esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Cada descoberta conta\n\nComeçar pela retomada animada da experiência, antes de qualquer bloco: \"Na experiência da seção anterior, cada personagem encontrado somava um em Achados. Agora vamos programar essa contagem no seu jogo!\" Depois tocar num esconderijo do próprio jogo; o personagem aparece, mas Achados continua em zero, porque o jogo ainda não conta. Então pedir que cada personagem encontrado some um em Achados. Primeiro o destino: trazer à vista o evento Quando clicar/tocar num sprite do grupo esconderijos (arrastando um espaço vazio entre os blocos se for preciso) e deixar à vista o bloco de visibilidade que já está dentro dele antes de abrir a paleta. Só então ensinar Programação > Variáveis, Somar 1 em variável, o encaixe logo abaixo da visibilidade e a escolha de achados. Testar 1, 2, 3, a vitória já preparada e a contagem sem repetição; dar correção curta. Clicar em Verificar esta etapa; se faltar algo, corrigir os blocos e verificar novamente. Quando aparecer Objetivo da etapa cumprido!, esperar Salvo, usar Enviar para o professor, confirmar em Enviar e seguir em Próxima seção. A verificação depende desse clique; o envio não a executa automaticamente. Não ensinar o layout da prévia nem compartilhamento. Regravar a fala. Alvo: 3 a 4 minutos, incluindo gestos.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a2-contagem",
@@ -107,7 +107,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Cadê Todo Mundo?</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const coelho = SZGame2D.createSprite({ x: 110, y: 181, w: 54, h: 87, image: \"coelho\" });\n  const arbusto = SZGame2D.createSprite({ x: 60, y: 166, w: 154, h: 116, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, arbusto);\n  const raposa = SZGame2D.createSprite({ x: 277, y: 190, w: 66, h: 84, image: \"raposa\" });\n  const pedras = SZGame2D.createSprite({ x: 229.5, y: 185, w: 161, h: 112, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, pedras);\n  const coruja = SZGame2D.createSprite({ x: 447, y: 187, w: 72, h: 81, image: \"coruja\" });\n  const flores = SZGame2D.createSprite({ x: 416.5, y: 138, w: 133, h: 144, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, flores);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n    SZGame2D.setOpacity(escolhido, 0);\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, coelho);\n    SZGame2D.drawSprite(ctx, raposa);\n    SZGame2D.drawSprite(ctx, coruja);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 360, \"#c7effb\");\n  let achados = 0;\n  const esconderijos = SZGame2D.createGroup();\n  const bicho1 = SZGame2D.createSprite({ x: 101, y: 181, w: 72, h: 87, image: \"coelho\" });\n  const esconderijo1 = SZGame2D.createSprite({ x: 56.5, y: 137, w: 161, h: 144, image: \"arbusto\" });\n  SZGame2D.addToGroup(esconderijos, esconderijo1);\n  const bicho2 = SZGame2D.createSprite({ x: 274, y: 181, w: 72, h: 87, image: \"raposa\" });\n  const esconderijo2 = SZGame2D.createSprite({ x: 229.5, y: 137, w: 161, h: 144, image: \"pedras\" });\n  SZGame2D.addToGroup(esconderijos, esconderijo2);\n  const bicho3 = SZGame2D.createSprite({ x: 447, y: 181, w: 72, h: 87, image: \"coruja\" });\n  const esconderijo3 = SZGame2D.createSprite({ x: 402.5, y: 137, w: 161, h: 144, image: \"flores\" });\n  SZGame2D.addToGroup(esconderijos, esconderijo3);\n  // Quando acontecer\n  SZGame2D.onGroupClick(esconderijos, function (escolhido) {\n    SZGame2D.setOpacity(escolhido, 0);\n  }, \"cliqueSprite\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawSprite(ctx, bicho1);\n    SZGame2D.drawSprite(ctx, bicho2);\n    SZGame2D.drawSprite(ctx, bicho3);\n    SZGame2D.drawGroup(ctx, esconderijos);\n    SZGame2D.drawScore(ctx, \"Achados:\", achados, 18, 34, \"#173844\", 24);\n    if (achados >= 3) {\n      SZGame2D.drawLabel(ctx, \"Você achou todo mundo!\", 174, 72, \"#173844\", 27, \"left\");\n    }\n  }, \"quadroDoJogo\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -125,8 +125,8 @@
               "name": "coelho",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NCIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMjMgMTkgMTggMjkiPjxwYXRoIGQ9Ik0gMzIuMSAzNS42OSBDIDM1LjMxIDM1LjY5IDM3LjUzIDM5Ljk1IDM3LjUzIDQyLjY2IEMgMzcuNTMgNDUuMzcgMzUuMzEgNDUuNTEgMzIuMSA0NS41MSBDIDI4Ljg5IDQ1LjUxIDI2LjUzIDQ1LjMxIDI2LjUzIDQyLjYgQyAyNi41MyAzOS44OSAyOC44OSAzNS42OSAzMi4xIDM1LjY5IFoiIGZpbGw9IiNkZGU1ZjAiLz4KICAgIDxlbGxpcHNlIGN4PSIyNy41IiBjeT0iMjYuNzYiIHJ4PSIyLjIiIHJ5PSI1LjgiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDMzNi42IDI3LjUgMjYuNzYpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzUuOTMiIGN5PSIyNi42MyIgcng9IjIuMiIgcnk9IjUuOCIgZmlsbD0iI2U4ZWRmNiIgdHJhbnNmb3JtPSJyb3RhdGUoMjMuNCAzNS45MyAyNi42MykiLz4KICAgIDxlbGxpcHNlIGN4PSIzNi42MyIgY3k9IjI1LjUzIiByeD0iMS41MiIgcnk9IjQuMzEiIGZpbGw9IiNlNDliN2MiIHRyYW5zZm9ybT0icm90YXRlKDIxLjEgMzYuNjMgMjUuNTMpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjcuMDciIGN5PSIyNi4xNiIgcng9IjEuNTIiIHJ5PSI0LjMxIiBmaWxsPSIjZTQ5YjdjIiB0cmFuc2Zvcm09InJvdGF0ZSgzMzguOSAyNy4wNyAyNi4xNikiLz4KICAgIDxwYXRoIGQ9Ik0gMzIuMDkgMjYuNjMgQyAzNS45NyAyNi41OCAzOS4xNiAzMy41NyAzOS4xNiAzNi40OCBDIDM5LjE2IDM5LjUzIDM1LjY3IDM5LjY2IDMxLjk3IDM5LjYgQyAyOC40MiAzOS41MyAyNC42NSAzOS40NiAyNC42NSAzNi4zNSBDIDI0LjU5IDMyLjg0IDI4LjA5IDI2LjY5IDMyLjA5IDI2LjYzIFoiIGZpbGw9IiNlOGVkZjYiLz4KICAgIDxlbGxpcHNlIGN4PSIyOC42NiIgY3k9IjMyLjE5IiByeD0iMC44MSIgcnk9IjEuMjUiIGZpbGw9IiMwZjFhMzMiIHRyYW5zZm9ybT0icm90YXRlKDM1OS44IDI4LjY2IDMyLjE5KSIvPgogICAgPGVsbGlwc2UgY3g9IjM1LjM0IiBjeT0iMzIuMTMiIHJ4PSIwLjgxIiByeT0iMS4yNSIgZmlsbD0iIzBmMWEzMyIgdHJhbnNmb3JtPSJyb3RhdGUoMzU5LjcgMzUuMjggMzEuNDQpIi8+CiAgICA8cGF0aCBkPSJNIDMwLjkyIDM2Ljc2IEwgMzIuMTcgMzcuMzkgTCAzMy4zMSAzNi44MSIgZmlsbD0iI2U4ZWRmNiIgc3Ryb2tlPSIjNDY1MzZlIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgICA8bGluZSB4MT0iMzIuMSIgeTE9IjM3LjI1IiB4Mj0iMzIuMSIgeTI9IjM4LjI1IiBmaWxsPSIjZThlZGY2IiBzdHJva2U9IiM0NjUzNmUiIHN0cm9rZS13aWR0aD0iMC41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0gMzAuNDggMzguMTQgQyAzMC40OCAzOC4xNCAzMS42NyAzOC42IDMyLjIzIDM4LjYyIEMgMzIuNzggMzguNjMgMzMuODEgMzguMTcgMzMuODEgMzguMTciIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzQ2NTM2ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogICAgPHBhdGggZD0iTSAzMC4wOCA0NC4xNSBDIDMwLjg3IDQ0LjE1IDMxLjUzIDQ0LjY0IDMxLjUzIDQ1LjIzIEMgMzEuNTMgNDUuODIgMzAuODcgNDUuNzYgMzAuMDggNDUuNzYgQyAyOS4yNyA0NS43NiAyOC42IDQ1LjgyIDI4LjYgNDUuMjMgQyAyOC42IDQ0LjY0IDI5LjI3IDQ0LjE1IDMwLjA4IDQ0LjE1IFoiIGZpbGw9IiNjNWNjZDgiLz4KICAgIDxwYXRoIGQ9Ik0gMzQuMTIgNDQuMTUgQyAzNC45MiA0NC4xNSAzNS41NyA0NC42NCAzNS41NyA0NS4yMyBDIDM1LjU3IDQ1LjgyIDM0LjkyIDQ1Ljc2IDM0LjEyIDQ1Ljc2IEMgMzMuMzEgNDUuNzYgMzIuNjUgNDUuODIgMzIuNjUgNDUuMjMgQyAzMi42NSA0NC42NCAzMy4zMSA0NC4xNSAzNC4xMiA0NC4xNSBaIiBmaWxsPSIjYzVjY2Q4Ii8+CiAgICA8cmVjdCB4PSIzMi45NyIgeT0iNDAuNDciIHdpZHRoPSIyIiBoZWlnaHQ9IjIuNzIiIHJ4PSIxIiBmaWxsPSIjZThlZGY2IiB0cmFuc2Zvcm09InJvdGF0ZSgxNSAzMy45NyA0MS44MykiLz4KICAgIDxyZWN0IHg9IjI5LjM1IiB5PSI0MC4zNCIgd2lkdGg9IjIiIGhlaWdodD0iMi43MiIgcng9IjEiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDM0NSAzMC4zNSA0MS43MSkiLz48L3N2Zz4=",
-              "width": 54,
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMTkuOCAxOSAyNCAyOSI+PHBhdGggZD0iTSAzMi4xIDM1LjY5IEMgMzUuMzEgMzUuNjkgMzcuNTMgMzkuOTUgMzcuNTMgNDIuNjYgQyAzNy41MyA0NS4zNyAzNS4zMSA0NS41MSAzMi4xIDQ1LjUxIEMgMjguODkgNDUuNTEgMjYuNTMgNDUuMzEgMjYuNTMgNDIuNiBDIDI2LjUzIDM5Ljg5IDI4Ljg5IDM1LjY5IDMyLjEgMzUuNjkgWiIgZmlsbD0iI2RkZTVmMCIvPgogICAgPGVsbGlwc2UgY3g9IjI3LjUiIGN5PSIyNi43NiIgcng9IjIuMiIgcnk9IjUuOCIgZmlsbD0iI2U4ZWRmNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzM2LjYgMjcuNSAyNi43NikiLz4KICAgIDxlbGxpcHNlIGN4PSIzNS45MyIgY3k9IjI2LjYzIiByeD0iMi4yIiByeT0iNS44IiBmaWxsPSIjZThlZGY2IiB0cmFuc2Zvcm09InJvdGF0ZSgyMy40IDM1LjkzIDI2LjYzKSIvPgogICAgPGVsbGlwc2UgY3g9IjM2LjYzIiBjeT0iMjUuNTMiIHJ4PSIxLjUyIiByeT0iNC4zMSIgZmlsbD0iI2U0OWI3YyIgdHJhbnNmb3JtPSJyb3RhdGUoMjEuMSAzNi42MyAyNS41MykiLz4KICAgIDxlbGxpcHNlIGN4PSIyNy4wNyIgY3k9IjI2LjE2IiByeD0iMS41MiIgcnk9IjQuMzEiIGZpbGw9IiNlNDliN2MiIHRyYW5zZm9ybT0icm90YXRlKDMzOC45IDI3LjA3IDI2LjE2KSIvPgogICAgPHBhdGggZD0iTSAzMi4wOSAyNi42MyBDIDM1Ljk3IDI2LjU4IDM5LjE2IDMzLjU3IDM5LjE2IDM2LjQ4IEMgMzkuMTYgMzkuNTMgMzUuNjcgMzkuNjYgMzEuOTcgMzkuNiBDIDI4LjQyIDM5LjUzIDI0LjY1IDM5LjQ2IDI0LjY1IDM2LjM1IEMgMjQuNTkgMzIuODQgMjguMDkgMjYuNjkgMzIuMDkgMjYuNjMgWiIgZmlsbD0iI2U4ZWRmNiIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjY2IiBjeT0iMzIuMTkiIHJ4PSIwLjgxIiByeT0iMS4yNSIgZmlsbD0iIzBmMWEzMyIgdHJhbnNmb3JtPSJyb3RhdGUoMzU5LjggMjguNjYgMzIuMTkpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzUuMzQiIGN5PSIzMi4xMyIgcng9IjAuODEiIHJ5PSIxLjI1IiBmaWxsPSIjMGYxYTMzIiB0cmFuc2Zvcm09InJvdGF0ZSgzNTkuNyAzNS4yOCAzMS40NCkiLz4KICAgIDxwYXRoIGQ9Ik0gMzAuOTIgMzYuNzYgTCAzMi4xNyAzNy4zOSBMIDMzLjMxIDM2LjgxIiBmaWxsPSIjZThlZGY2IiBzdHJva2U9IiM0NjUzNmUiIHN0cm9rZS13aWR0aD0iMC41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICAgIDxsaW5lIHgxPSIzMi4xIiB5MT0iMzcuMjUiIHgyPSIzMi4xIiB5Mj0iMzguMjUiIGZpbGw9IiNlOGVkZjYiIHN0cm9rZT0iIzQ2NTM2ZSIgc3Ryb2tlLXdpZHRoPSIwLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogICAgPHBhdGggZD0iTSAzMC40OCAzOC4xNCBDIDMwLjQ4IDM4LjE0IDMxLjY3IDM4LjYgMzIuMjMgMzguNjIgQyAzMi43OCAzOC42MyAzMy44MSAzOC4xNyAzMy44MSAzOC4xNyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDY1MzZlIiBzdHJva2Utd2lkdGg9IjAuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgICA8cGF0aCBkPSJNIDMwLjA4IDQ0LjE1IEMgMzAuODcgNDQuMTUgMzEuNTMgNDQuNjQgMzEuNTMgNDUuMjMgQyAzMS41MyA0NS44MiAzMC44NyA0NS43NiAzMC4wOCA0NS43NiBDIDI5LjI3IDQ1Ljc2IDI4LjYgNDUuODIgMjguNiA0NS4yMyBDIDI4LjYgNDQuNjQgMjkuMjcgNDQuMTUgMzAuMDggNDQuMTUgWiIgZmlsbD0iI2M1Y2NkOCIvPgogICAgPHBhdGggZD0iTSAzNC4xMiA0NC4xNSBDIDM0LjkyIDQ0LjE1IDM1LjU3IDQ0LjY0IDM1LjU3IDQ1LjIzIEMgMzUuNTcgNDUuODIgMzQuOTIgNDUuNzYgMzQuMTIgNDUuNzYgQyAzMy4zMSA0NS43NiAzMi42NSA0NS44MiAzMi42NSA0NS4yMyBDIDMyLjY1IDQ0LjY0IDMzLjMxIDQ0LjE1IDM0LjEyIDQ0LjE1IFoiIGZpbGw9IiNjNWNjZDgiLz4KICAgIDxyZWN0IHg9IjMyLjk3IiB5PSI0MC40NyIgd2lkdGg9IjIiIGhlaWdodD0iMi43MiIgcng9IjEiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDE1IDMzLjk3IDQxLjgzKSIvPgogICAgPHJlY3QgeD0iMjkuMzUiIHk9IjQwLjM0IiB3aWR0aD0iMiIgaGVpZ2h0PSIyLjcyIiByeD0iMSIgZmlsbD0iI2U4ZWRmNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzQ1IDMwLjM1IDQxLjcxKSIvPjwvc3ZnPg==",
+              "width": 72,
               "height": 87
             },
             {
@@ -134,44 +134,107 @@
               "name": "raposa",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NiIgaGVpZ2h0PSI4NCIgdmlld0JveD0iMjEgMTggMjIgMjgiPjxwYXRoIGQ9Ik0gMzAuNzUgNDAuMjcgQyAzMS4wOSAzOS40NyAyOS4xNyAzOS41OCAyOC4wNSAzNS45NiBDIDI3LjY3IDM0LjY2IDIzLjY4IDM0Ljk0IDIzLjY4IDM0Ljk0IEMgMjMuNjggMzQuOTQgMjUuOTMgMzYuNTkgMjYuODIgMzkuNDMgQyAyNy41IDQxLjU1IDMwLjQxIDQxLjA4IDMwLjc1IDQwLjI3IFoiIGZpbGw9IiNkNzdmNTkiIHRyYW5zZm9ybT0icm90YXRlKDMzNS41IDI3LjM5IDM4LjEpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzEuNzUiIGN5PSIzNy4yNyIgcng9IjQuNjYiIHJ5PSI0LjYyIiBmaWxsPSIjZDc3ZjU5Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMzEuNzMiIGN5PSIzNy4yNSIgcng9IjIuNyIgcnk9IjQuNjUiIGZpbGw9IiNkZGU1ZjAiLz4KICAgIDxlbGxpcHNlIGN4PSIzNyIgY3k9IjI0LjI0IiByeD0iMi4yIiByeT0iMy40NCIgZmlsbD0iI2Q3N2Y1OSIgdHJhbnNmb3JtPSJyb3RhdGUoMzAuNyAzNyAyNC4yNCkiLz4KICAgIDxlbGxpcHNlIGN4PSIzNy4yMiIgY3k9IjI0LjM3IiByeD0iMS41MiIgcnk9IjIuNzIiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDMxLjQgMzcuMjIgMjQuMzcpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjYuNzIiIGN5PSIyNC4xNyIgcng9IjIuMjUiIHJ5PSIzLjUyIiBmaWxsPSIjZDc3ZjU5IiB0cmFuc2Zvcm09InJvdGF0ZSgzMjcuOCAyNi43MiAyNC4xNykiLz4KICAgIDxlbGxpcHNlIGN4PSIyNi4zOSIgY3k9IjI0LjMxIiByeD0iMS41NSIgcnk9IjIuNzgiIGZpbGw9IiNlOGVkZjYiIHRyYW5zZm9ybT0icm90YXRlKDMyOC41IDI2LjM5IDI0LjMxKSIvPgogICAgPHBhdGggZD0iTSAyOC45NSAyMy44NiBMIDM0LjkgMjMuNzIgQyAzNy4xMiAyMy43MiAzOC45MyAyNS41MSAzOC45MyAyNy43MiBMIDM4Ljg2IDMyLjYxIEMgMzguODYgMzQuODIgMzYuMDkgMzcuNzcgMzMuODcgMzcuNzcgTCAyOS4xMSAzNy43NSBDIDI2Ljg4IDM3Ljc1IDI1LjA3IDM1Ljk2IDI1LjA3IDMzLjc1IEwgMjQuOTMgMjcuODYgQyAyNC45MyAyNS42NSAyNi43MyAyMy44NiAyOC45NSAyMy44NiBaIiBmaWxsPSIjZDc3ZjU5IiB0cmFuc2Zvcm09InJvdGF0ZSg0NS4xIDMxLjkzIDMwLjc1KSIvPgogICAgPHBhdGggZD0iTSAzMS44OSAzOC40IEwgMzIuMDQgMzYuNTggTCAzMi44NCAzNC43OSBMIDM0LjIyIDMzLjIyIEwgMzYuMDcgMzIgTCAzOC4yNSAzMS4yNCBMIDQwLjI2IDMxIEwgNDAuMjYgMzEuNDYgTCAzOS44OCAzMi42NSBMIDM5LjExIDMzLjcxIEwgMzUuNDkgMzcuMTUgTCAzNC41MSAzNy44MyBMIDMzLjI0IDM4LjI0IFoiIGZpbGw9IiNlOGVkZjYiLz4KICAgIDxwYXRoIGQ9Ik0gMzIuMDcgMzguNDkgTCAzMS45MiAzNi43MSBMIDMxLjE0IDM0LjkyIEwgMjkuNzggMzMuMzcgTCAyNy45NiAzMi4xOCBMIDI1LjgyIDMxLjQzIEwgMjMuODUgMzEuMiBMIDIzLjg1IDMxLjY1IEwgMjQuMjMgMzIuODIgTCAyNC45OCAzMy44NiBMIDI4LjUyIDM3LjI2IEwgMjkuNSAzNy45MyBMIDMwLjc0IDM4LjMzIFoiIGZpbGw9IiNlOGVkZjYiLz4KICAgIDxlbGxpcHNlIGN4PSIzMS44OCIgY3k9IjM2LjgiIHJ4PSIxLjIxIiByeT0iMC42NiIgZmlsbD0iIzBmMWEzMyIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjgiIGN5PSIzMC42NCIgcng9IjEuMjEiIHJ5PSIwLjY2IiBmaWxsPSIjMGYxYTMzIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzQuNDYiIGN5PSIzMC43IiByeD0iMS4yMSIgcnk9IjAuNjYiIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxwYXRoIGQ9Ik0gMjkuODIgNDAuODkgQyAzMC42MSA0MC44OSAzMS4yNyA0MS4zOCAzMS4yNyA0MS45NyBDIDMxLjI3IDQyLjU2IDMwLjYxIDQyLjUgMjkuODIgNDIuNSBDIDI5LjAxIDQyLjUgMjguMzUgNDIuNTYgMjguMzUgNDEuOTcgQyAyOC4zNSA0MS4zOCAyOS4wMSA0MC44OSAyOS44MiA0MC44OSBaIiBmaWxsPSIjMTIxYTMwIi8+CiAgICA8cGF0aCBkPSJNIDMzLjg2IDQwLjg5IEMgMzQuNjYgNDAuODkgMzUuMzEgNDEuMzggMzUuMzEgNDEuOTcgQyAzNS4zMSA0Mi41NiAzNC42NiA0Mi41IDMzLjg2IDQyLjUgQyAzMy4wNSA0Mi41IDMyLjM5IDQyLjU2IDMyLjM5IDQxLjk3IEMgMzIuMzkgNDEuMzggMzMuMDUgNDAuODkgMzMuODYgNDAuODkgWiIgZmlsbD0iIzEyMWEzMCIvPgogICAgPHBhdGggZD0iTSAyMi42OCAzNS42NyBMIDIzLjY5IDM1LjU5IEwgMjQuNjYgMzUuNTkgTCAyNS42NyAzNS42OCBMIDI2LjU0IDM1Ljk1IEwgMjcuMTEgMzYuNDMgTCAyNy4xOSAzNi41OSBMIDI2LjE0IDM3LjUgTCAyNC44NCAzNy45NSBMIDI0LjQ2IDM3LjQgTCAyMy42IDM2LjQ1IEwgMjIuOTQgMzUuODggWiIgZmlsbD0iI2U4ZWRmNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzM1LjUgMjQuOTQgMzYuNzcpIi8+PC9zdmc+",
-              "width": 66,
-              "height": 84
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMTkuMzUgMTUuNyAyNCAyOSI+PHBhdGggZD0iTSAzMC43NSA0MC4yNyBDIDMxLjA5IDM5LjQ3IDI5LjE3IDM5LjU4IDI4LjA1IDM1Ljk2IEMgMjcuNjcgMzQuNjYgMjMuNjggMzQuOTQgMjMuNjggMzQuOTQgQyAyMy42OCAzNC45NCAyNS45MyAzNi41OSAyNi44MiAzOS40MyBDIDI3LjUgNDEuNTUgMzAuNDEgNDEuMDggMzAuNzUgNDAuMjcgWiIgZmlsbD0iI2Q3N2Y1OSIgdHJhbnNmb3JtPSJyb3RhdGUoMzM1LjUgMjcuMzkgMzguMSkiLz4KICAgIDxlbGxpcHNlIGN4PSIzMS43NSIgY3k9IjM3LjI3IiByeD0iNC42NiIgcnk9IjQuNjIiIGZpbGw9IiNkNzdmNTkiLz4KICAgIDxlbGxpcHNlIGN4PSIzMS43MyIgY3k9IjM3LjI1IiByeD0iMi43IiByeT0iNC42NSIgZmlsbD0iI2RkZTVmMCIvPgogICAgPGVsbGlwc2UgY3g9IjM3IiBjeT0iMjQuMjQiIHJ4PSIyLjIiIHJ5PSIzLjQ0IiBmaWxsPSIjZDc3ZjU5IiB0cmFuc2Zvcm09InJvdGF0ZSgzMC43IDM3IDI0LjI0KSIvPgogICAgPGVsbGlwc2UgY3g9IjM3LjIyIiBjeT0iMjQuMzciIHJ4PSIxLjUyIiByeT0iMi43MiIgZmlsbD0iI2U4ZWRmNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzEuNCAzNy4yMiAyNC4zNykiLz4KICAgIDxlbGxpcHNlIGN4PSIyNi43MiIgY3k9IjI0LjE3IiByeD0iMi4yNSIgcnk9IjMuNTIiIGZpbGw9IiNkNzdmNTkiIHRyYW5zZm9ybT0icm90YXRlKDMyNy44IDI2LjcyIDI0LjE3KSIvPgogICAgPGVsbGlwc2UgY3g9IjI2LjM5IiBjeT0iMjQuMzEiIHJ4PSIxLjU1IiByeT0iMi43OCIgZmlsbD0iI2U4ZWRmNiIgdHJhbnNmb3JtPSJyb3RhdGUoMzI4LjUgMjYuMzkgMjQuMzEpIi8+CiAgICA8cGF0aCBkPSJNIDI4Ljk1IDIzLjg2IEwgMzQuOSAyMy43MiBDIDM3LjEyIDIzLjcyIDM4LjkzIDI1LjUxIDM4LjkzIDI3LjcyIEwgMzguODYgMzIuNjEgQyAzOC44NiAzNC44MiAzNi4wOSAzNy43NyAzMy44NyAzNy43NyBMIDI5LjExIDM3Ljc1IEMgMjYuODggMzcuNzUgMjUuMDcgMzUuOTYgMjUuMDcgMzMuNzUgTCAyNC45MyAyNy44NiBDIDI0LjkzIDI1LjY1IDI2LjczIDIzLjg2IDI4Ljk1IDIzLjg2IFoiIGZpbGw9IiNkNzdmNTkiIHRyYW5zZm9ybT0icm90YXRlKDQ1LjEgMzEuOTMgMzAuNzUpIi8+CiAgICA8cGF0aCBkPSJNIDMxLjg5IDM4LjQgTCAzMi4wNCAzNi41OCBMIDMyLjg0IDM0Ljc5IEwgMzQuMjIgMzMuMjIgTCAzNi4wNyAzMiBMIDM4LjI1IDMxLjI0IEwgNDAuMjYgMzEgTCA0MC4yNiAzMS40NiBMIDM5Ljg4IDMyLjY1IEwgMzkuMTEgMzMuNzEgTCAzNS40OSAzNy4xNSBMIDM0LjUxIDM3LjgzIEwgMzMuMjQgMzguMjQgWiIgZmlsbD0iI2U4ZWRmNiIvPgogICAgPHBhdGggZD0iTSAzMi4wNyAzOC40OSBMIDMxLjkyIDM2LjcxIEwgMzEuMTQgMzQuOTIgTCAyOS43OCAzMy4zNyBMIDI3Ljk2IDMyLjE4IEwgMjUuODIgMzEuNDMgTCAyMy44NSAzMS4yIEwgMjMuODUgMzEuNjUgTCAyNC4yMyAzMi44MiBMIDI0Ljk4IDMzLjg2IEwgMjguNTIgMzcuMjYgTCAyOS41IDM3LjkzIEwgMzAuNzQgMzguMzMgWiIgZmlsbD0iI2U4ZWRmNiIvPgogICAgPGVsbGlwc2UgY3g9IjMxLjg4IiBjeT0iMzYuOCIgcng9IjEuMjEiIHJ5PSIwLjY2IiBmaWxsPSIjMGYxYTMzIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjguOCIgY3k9IjMwLjY0IiByeD0iMS4yMSIgcnk9IjAuNjYiIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxlbGxpcHNlIGN4PSIzNC40NiIgY3k9IjMwLjciIHJ4PSIxLjIxIiByeT0iMC42NiIgZmlsbD0iIzBmMWEzMyIvPgogICAgPHBhdGggZD0iTSAyOS44MiA0MC44OSBDIDMwLjYxIDQwLjg5IDMxLjI3IDQxLjM4IDMxLjI3IDQxLjk3IEMgMzEuMjcgNDIuNTYgMzAuNjEgNDIuNSAyOS44MiA0Mi41IEMgMjkuMDEgNDIuNSAyOC4zNSA0Mi41NiAyOC4zNSA0MS45NyBDIDI4LjM1IDQxLjM4IDI5LjAxIDQwLjg5IDI5LjgyIDQwLjg5IFoiIGZpbGw9IiMxMjFhMzAiLz4KICAgIDxwYXRoIGQ9Ik0gMzMuODYgNDAuODkgQyAzNC42NiA0MC44OSAzNS4zMSA0MS4zOCAzNS4zMSA0MS45NyBDIDM1LjMxIDQyLjU2IDM0LjY2IDQyLjUgMzMuODYgNDIuNSBDIDMzLjA1IDQyLjUgMzIuMzkgNDIuNTYgMzIuMzkgNDEuOTcgQyAzMi4zOSA0MS4zOCAzMy4wNSA0MC44OSAzMy44NiA0MC44OSBaIiBmaWxsPSIjMTIxYTMwIi8+CiAgICA8cGF0aCBkPSJNIDIyLjY4IDM1LjY3IEwgMjMuNjkgMzUuNTkgTCAyNC42NiAzNS41OSBMIDI1LjY3IDM1LjY4IEwgMjYuNTQgMzUuOTUgTCAyNy4xMSAzNi40MyBMIDI3LjE5IDM2LjU5IEwgMjYuMTQgMzcuNSBMIDI0Ljg0IDM3Ljk1IEwgMjQuNDYgMzcuNCBMIDIzLjYgMzYuNDUgTCAyMi45NCAzNS44OCBaIiBmaWxsPSIjZThlZGY2IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzUuNSAyNC45NCAzNi43NykiLz48L3N2Zz4=",
+              "width": 72,
+              "height": 87
             },
             {
               "id": "cade-todo-mundo-coruja",
               "name": "coruja",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4MSIgdmlld0JveD0iMTkgMjAgMjQgMjciPjxlbGxpcHNlIGN4PSIzMC41NyIgY3k9IjM3LjIxIiByeD0iNi42MyIgcnk9IjQuODEiIGZpbGw9IiNhYzkyODYiLz4KICAgIDxyZWN0IHg9IjIxLjgiIHk9IjIyLjM1IiB3aWR0aD0iMTguMDciIGhlaWdodD0iMTYuMDgiIHJ4PSI4LjA0IiBmaWxsPSIjNzE1MzQ2Ii8+CiAgICA8cGF0aCBkPSJNIDI0LjA1IDIxLjM1IEMgMjQuOTcgMjEuMzUgMjYuNjUgMjIuOSAyNi42NSAyNC43OCBDIDI2LjY1IDI2LjY3IDI1Ljg5IDI4LjIgMjQuOTYgMjguMiBDIDI0LjAzIDI4LjIgMjMuMjcgMjYuNjcgMjMuMjcgMjQuNzggQyAyMy4yNyAyMi45IDIzLjExIDIxLjM1IDI0LjA1IDIxLjM1IFoiIGZpbGw9IiM3MTUzNDYiIHRyYW5zZm9ybT0icm90YXRlKDMwMy45IDI0Ljg4IDI0Ljc4KSIvPgogICAgPHBhdGggZD0iTSAzNy44NCAyMS4yOCBDIDM4LjQ3IDIxLjI4IDM4LjMgMjIuOTkgMzguMyAyNC44OCBDIDM4LjMgMjYuNzUgMzcuNDYgMjguMjkgMzYuNDEgMjguMjkgQyAzNS4zOSAyOC4yOSAzNC41NSAyNi43NSAzNC41NSAyNC44OCBDIDM0LjU1IDIyLjk5IDM3LjIyIDIxLjI4IDM3Ljg0IDIxLjI4IFoiIGZpbGw9IiM3MTUzNDYiIHRyYW5zZm9ybT0icm90YXRlKDQyLjggMzYuNTEgMjQuNzkpIi8+CiAgICA8cGF0aCBkPSJNIDMwLjY4IDI3LjcxIEMgMzEuNTMgMjcuNiAzNy42MiAyNC4wNCAzOC40NyAzMC41NCBDIDM4Ljk2IDM0LjMzIDM1LjE0IDM3LjQ2IDMwLjkzIDM3LjQ2IEMgMjYuNzMgMzcuNDYgMjIuNyAzNC4zIDIzLjMyIDMwLjU0IEMgMjQuMzggMjQuMTEgMzAuMDUgMjcuNzkgMzAuNjggMjcuNzEgWiIgZmlsbD0iI2ZmZmZmZiIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjE3IiBjeT0iMzAuOTQiIHJ4PSIxLjEzIiByeT0iMS4xNyIgZmlsbD0iIzBmMWEzMyIvPgogICAgPGVsbGlwc2UgY3g9IjMzLjQ4IiBjeT0iMzAuOTQiIHJ4PSIxLjEzIiByeT0iMS4xNyIgZmlsbD0iIzBmMWEzMyIvPgogICAgPGVsbGlwc2UgY3g9IjMwLjc5IiBjeT0iMzIuMzMiIHJ4PSIwLjcyIiByeT0iMS4xMyIgZmlsbD0iI2YzYjEyMyIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjgyIiBjeT0iNDIuNDkiIHJ4PSIwLjUiIHJ5PSIxLjE2IiBmaWxsPSIjYzVjY2Q4Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMjkuMTQiIGN5PSI0Mi4yNCIgcng9IjAuNSIgcnk9IjEuMTYiIGZpbGw9IiNjNWNjZDgiIHRyYW5zZm9ybT0icm90YXRlKDMzNC42IDI5LjE0IDQxLjE1KSIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjU3IiBjeT0iNDIuMyIgcng9IjAuNSIgcnk9IjEuMTYiIGZpbGw9IiNjNWNjZDgiIHRyYW5zZm9ybT0icm90YXRlKDI1LjQgMjguNTcgNDEuMjEpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzIuNDciIGN5PSI0Mi41NSIgcng9IjAuNSIgcnk9IjEuMTYiIGZpbGw9IiNjNWNjZDgiLz4KICAgIDxlbGxpcHNlIGN4PSIzMi43OCIgY3k9IjQyLjMiIHJ4PSIwLjUiIHJ5PSIxLjE2IiBmaWxsPSIjYzVjY2Q4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzQuNiAzMi43OCA0MS4yMSkiLz4KICAgIDxlbGxpcHNlIGN4PSIzMi4yMiIgY3k9IjQyLjM2IiByeD0iMC41IiByeT0iMS4xNiIgZmlsbD0iI2M1Y2NkOCIgdHJhbnNmb3JtPSJyb3RhdGUoMjUuNCAzMi4yMiA0MS4yNykiLz4KICAgIDxlbGxpcHNlIGN4PSIyNC43NCIgY3k9IjM4Ljc2IiByeD0iMS4wNiIgcnk9IjMiIGZpbGw9IiM3MTUzNDYiIHRyYW5zZm9ybT0icm90YXRlKDMzOC40IDI1LjUyIDM3LjI3KSIvPgogICAgPGVsbGlwc2UgY3g9IjM2LjMiIGN5PSIzOC41NyIgcng9IjEuMDYiIHJ5PSIzIiBmaWxsPSIjNzE1MzQ2IiB0cmFuc2Zvcm09InJvdGF0ZSgyMS42IDM1LjUyIDM3LjA4KSIvPjwvc3ZnPg==",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMTguNyAxNi45IDI0IDI5Ij48ZWxsaXBzZSBjeD0iMzAuNTciIGN5PSIzNy4yMSIgcng9IjYuNjMiIHJ5PSI0LjgxIiBmaWxsPSIjYWM5Mjg2Ii8+CiAgICA8cmVjdCB4PSIyMS44IiB5PSIyMi4zNSIgd2lkdGg9IjE4LjA3IiBoZWlnaHQ9IjE2LjA4IiByeD0iOC4wNCIgZmlsbD0iIzcxNTM0NiIvPgogICAgPHBhdGggZD0iTSAyNC4wNSAyMS4zNSBDIDI0Ljk3IDIxLjM1IDI2LjY1IDIyLjkgMjYuNjUgMjQuNzggQyAyNi42NSAyNi42NyAyNS44OSAyOC4yIDI0Ljk2IDI4LjIgQyAyNC4wMyAyOC4yIDIzLjI3IDI2LjY3IDIzLjI3IDI0Ljc4IEMgMjMuMjcgMjIuOSAyMy4xMSAyMS4zNSAyNC4wNSAyMS4zNSBaIiBmaWxsPSIjNzE1MzQ2IiB0cmFuc2Zvcm09InJvdGF0ZSgzMDMuOSAyNC44OCAyNC43OCkiLz4KICAgIDxwYXRoIGQ9Ik0gMzcuODQgMjEuMjggQyAzOC40NyAyMS4yOCAzOC4zIDIyLjk5IDM4LjMgMjQuODggQyAzOC4zIDI2Ljc1IDM3LjQ2IDI4LjI5IDM2LjQxIDI4LjI5IEMgMzUuMzkgMjguMjkgMzQuNTUgMjYuNzUgMzQuNTUgMjQuODggQyAzNC41NSAyMi45OSAzNy4yMiAyMS4yOCAzNy44NCAyMS4yOCBaIiBmaWxsPSIjNzE1MzQ2IiB0cmFuc2Zvcm09InJvdGF0ZSg0Mi44IDM2LjUxIDI0Ljc5KSIvPgogICAgPHBhdGggZD0iTSAzMC42OCAyNy43MSBDIDMxLjUzIDI3LjYgMzcuNjIgMjQuMDQgMzguNDcgMzAuNTQgQyAzOC45NiAzNC4zMyAzNS4xNCAzNy40NiAzMC45MyAzNy40NiBDIDI2LjczIDM3LjQ2IDIyLjcgMzQuMyAyMy4zMiAzMC41NCBDIDI0LjM4IDI0LjExIDMwLjA1IDI3Ljc5IDMwLjY4IDI3LjcxIFoiIGZpbGw9IiNmZmZmZmYiLz4KICAgIDxlbGxpcHNlIGN4PSIyOC4xNyIgY3k9IjMwLjk0IiByeD0iMS4xMyIgcnk9IjEuMTciIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxlbGxpcHNlIGN4PSIzMy40OCIgY3k9IjMwLjk0IiByeD0iMS4xMyIgcnk9IjEuMTciIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxlbGxpcHNlIGN4PSIzMC43OSIgY3k9IjMyLjMzIiByeD0iMC43MiIgcnk9IjEuMTMiIGZpbGw9IiNmM2IxMjMiLz4KICAgIDxlbGxpcHNlIGN4PSIyOC44MiIgY3k9IjQyLjQ5IiByeD0iMC41IiByeT0iMS4xNiIgZmlsbD0iI2M1Y2NkOCIvPgogICAgPGVsbGlwc2UgY3g9IjI5LjE0IiBjeT0iNDIuMjQiIHJ4PSIwLjUiIHJ5PSIxLjE2IiBmaWxsPSIjYzVjY2Q4IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzQuNiAyOS4xNCA0MS4xNSkiLz4KICAgIDxlbGxpcHNlIGN4PSIyOC41NyIgY3k9IjQyLjMiIHJ4PSIwLjUiIHJ5PSIxLjE2IiBmaWxsPSIjYzVjY2Q4IiB0cmFuc2Zvcm09InJvdGF0ZSgyNS40IDI4LjU3IDQxLjIxKSIvPgogICAgPGVsbGlwc2UgY3g9IjMyLjQ3IiBjeT0iNDIuNTUiIHJ4PSIwLjUiIHJ5PSIxLjE2IiBmaWxsPSIjYzVjY2Q4Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMzIuNzgiIGN5PSI0Mi4zIiByeD0iMC41IiByeT0iMS4xNiIgZmlsbD0iI2M1Y2NkOCIgdHJhbnNmb3JtPSJyb3RhdGUoMzM0LjYgMzIuNzggNDEuMjEpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzIuMjIiIGN5PSI0Mi4zNiIgcng9IjAuNSIgcnk9IjEuMTYiIGZpbGw9IiNjNWNjZDgiIHRyYW5zZm9ybT0icm90YXRlKDI1LjQgMzIuMjIgNDEuMjcpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjQuNzQiIGN5PSIzOC43NiIgcng9IjEuMDYiIHJ5PSIzIiBmaWxsPSIjNzE1MzQ2IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzguNCAyNS41MiAzNy4yNykiLz4KICAgIDxlbGxpcHNlIGN4PSIzNi4zIiBjeT0iMzguNTciIHJ4PSIxLjA2IiByeT0iMyIgZmlsbD0iIzcxNTM0NiIgdHJhbnNmb3JtPSJyb3RhdGUoMjEuNiAzNS41MiAzNy4wOCkiLz48L3N2Zz4=",
               "width": 72,
-              "height": 81
+              "height": 87
+            },
+            {
+              "id": "cade-todo-mundo-gato",
+              "name": "gato",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMjEuMyAxOC44IDI0IDI5Ij48cGF0aCBkPSJNIDM1LjYgNDUgQyA0MCA0NS4yIDQyLjMgNDEuNyA0MS43IDM3LjYgQyA0MS40IDM1LjYgNDAuMSAzNCAzOSAzNC40IEMgMzggMzQuOCAzOC42IDM2LjEgMzguOSAzNy40IEMgMzkuNCAzOS45IDM4LjQgNDIuMSAzNS40IDQyLjUgWiIgZmlsbD0iIzdkOGFhMyIvPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMzkuNyIgcng9IjUuNSIgcnk9IjUuNiIgZmlsbD0iIzhhOTZhZCIvPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iNDAuNCIgcng9IjIuOSIgcnk9IjQuMSIgZmlsbD0iI2U4ZWRmNiIvPgogICAgPGVsbGlwc2UgY3g9IjMwLjEiIGN5PSI0NC42IiByeD0iMS42IiByeT0iMSIgZmlsbD0iI2U4ZWRmNiIvPgogICAgPGVsbGlwc2UgY3g9IjMzLjkiIGN5PSI0NC42IiByeD0iMS42IiByeT0iMSIgZmlsbD0iI2U4ZWRmNiIvPgogICAgPHBhdGggZD0iTSAyNS4zIDI4IEwgMjUuOSAyMi45IEMgMjYgMjIuMiAyNi42IDIyIDI3LjEgMjIuNCBMIDMxIDI1LjQgWiIgZmlsbD0iIzhhOTZhZCIvPgogICAgPHBhdGggZD0iTSAzOC43IDI4IEwgMzguMSAyMi45IEMgMzggMjIuMiAzNy40IDIyIDM2LjkgMjIuNCBMIDMzIDI1LjQgWiIgZmlsbD0iIzhhOTZhZCIvPgogICAgPHBhdGggZD0iTSAyNi43IDI2LjQgTCAyNy4wNSAyMy45IEwgMjkuNCAyNS43IFoiIGZpbGw9IiNlNDliN2MiLz4KICAgIDxwYXRoIGQ9Ik0gMzcuMyAyNi40IEwgMzYuOTUgMjMuOSBMIDM0LjYgMjUuNyBaIiBmaWxsPSIjZTQ5YjdjIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyOS45IiByeD0iNy4yIiByeT0iNS43IiBmaWxsPSIjOGE5NmFkIi8+CiAgICA8cmVjdCB4PSIzMS40NSIgeT0iMjQuNiIgd2lkdGg9IjEuMSIgaGVpZ2h0PSIyLjUiIHJ4PSIwLjU1IiBmaWxsPSIjNjY3MjhhIi8+CiAgICA8cmVjdCB4PSIyOS4zNSIgeT0iMjUuMSIgd2lkdGg9IjEiIGhlaWdodD0iMS45IiByeD0iMC41IiBmaWxsPSIjNjY3MjhhIiB0cmFuc2Zvcm09InJvdGF0ZSgzNDAgMjkuODUgMjYuMDUpIi8+CiAgICA8cmVjdCB4PSIzMy42NSIgeT0iMjUuMSIgd2lkdGg9IjEiIGhlaWdodD0iMS45IiByeD0iMC41IiBmaWxsPSIjNjY3MjhhIiB0cmFuc2Zvcm09InJvdGF0ZSgyMCAzNC4xNSAyNi4wNSkiLz4KICAgIDxlbGxpcHNlIGN4PSIzMC43NSIgY3k9IjMyLjYiIHJ4PSIxLjgiIHJ5PSIxLjM1IiBmaWxsPSIjZThlZGY2Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMzMuMjUiIGN5PSIzMi42IiByeD0iMS44IiByeT0iMS4zNSIgZmlsbD0iI2U4ZWRmNiIvPgogICAgPHBhdGggZD0iTSAzMS4xNSAzMS4xNSBMIDMyLjg1IDMxLjE1IEMgMzMuMDggMzEuMTUgMzMuMTggMzEuMzggMzMuMDQgMzEuNTUgTCAzMi4yOCAzMi4zNiBDIDMyLjEzIDMyLjUyIDMxLjg3IDMyLjUyIDMxLjcyIDMyLjM2IEwgMzAuOTYgMzEuNTUgQyAzMC44MiAzMS4zOCAzMC45MiAzMS4xNSAzMS4xNSAzMS4xNSBaIiBmaWxsPSIjZTQ5YjdjIi8+CiAgICA8cGF0aCBkPSJNIDMxLjEgMzMuMjUgQyAzMS41IDMzLjc1IDMyIDMzLjYgMzIgMzMuMSBDIDMyIDMzLjYgMzIuNSAzMy43NSAzMi45IDMzLjI1IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjUzNmUiIHN0cm9rZS13aWR0aD0iMC40IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICAgIDxlbGxpcHNlIGN4PSIyOS4xIiBjeT0iMjkuNCIgcng9IjAuODUiIHJ5PSIxLjIiIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxlbGxpcHNlIGN4PSIzNC45IiBjeT0iMjkuNCIgcng9IjAuODUiIHJ5PSIxLjIiIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxsaW5lIHgxPSIyOC4yIiB5MT0iMzIuNSIgeDI9IjI2IiB5Mj0iMzIuMSIgc3Ryb2tlPSIjYzVjY2Q4IiBzdHJva2Utd2lkdGg9IjAuMzIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPGxpbmUgeDE9IjI4LjIiIHkxPSIzMy4yIiB4Mj0iMjYuMSIgeTI9IjMzLjUiIHN0cm9rZT0iI2M1Y2NkOCIgc3Ryb2tlLXdpZHRoPSIwLjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxsaW5lIHgxPSIzNS44IiB5MT0iMzIuNSIgeDI9IjM4IiB5Mj0iMzIuMSIgc3Ryb2tlPSIjYzVjY2Q4IiBzdHJva2Utd2lkdGg9IjAuMzIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPGxpbmUgeDE9IjM1LjgiIHkxPSIzMy4yIiB4Mj0iMzcuOSIgeTI9IjMzLjUiIHN0cm9rZT0iI2M1Y2NkOCIgc3Ryb2tlLXdpZHRoPSIwLjMyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=",
+              "width": 72,
+              "height": 87
+            },
+            {
+              "id": "cade-todo-mundo-sapo",
+              "name": "sapo",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMjAgMTguOSAyNCAyOSI+PGVsbGlwc2UgY3g9IjI1LjQiIGN5PSI0Mi43IiByeD0iMi40IiByeT0iMi45IiBmaWxsPSIjNWU5ZTQ4Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMzguNiIgY3k9IjQyLjciIHJ4PSIyLjQiIHJ5PSIyLjkiIGZpbGw9IiM1ZTllNDgiLz4KICAgIDxlbGxpcHNlIGN4PSIzMiIgY3k9IjM5LjUiIHJ4PSI3IiByeT0iNS45IiBmaWxsPSIjN2NjMzVhIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSI0MC45IiByeD0iNC4yIiByeT0iMy45IiBmaWxsPSIjZDllZmIwIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIzMy43IiByeD0iNy4zIiByeT0iNC41IiBmaWxsPSIjN2NjMzVhIi8+CiAgICA8Y2lyY2xlIGN4PSIyOC4zIiBjeT0iMjkuOCIgcj0iMi44NSIgZmlsbD0iIzdjYzM1YSIvPgogICAgPGNpcmNsZSBjeD0iMzUuNyIgY3k9IjI5LjgiIHI9IjIuODUiIGZpbGw9IiM3Y2MzNWEiLz4KICAgIDxjaXJjbGUgY3g9IjI4LjMiIGN5PSIyOS42IiByPSIxLjk1IiBmaWxsPSIjZmZmZmZmIi8+CiAgICA8Y2lyY2xlIGN4PSIzNS43IiBjeT0iMjkuNiIgcj0iMS45NSIgZmlsbD0iI2ZmZmZmZiIvPgogICAgPGVsbGlwc2UgY3g9IjI4LjYiIGN5PSIyOS44IiByeD0iMC45NSIgcnk9IjEuMTUiIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxlbGxpcHNlIGN4PSIzNS40IiBjeT0iMjkuOCIgcng9IjAuOTUiIHJ5PSIxLjE1IiBmaWxsPSIjMGYxYTMzIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjYuOSIgY3k9IjM3LjQiIHJ4PSIwLjg1IiByeT0iMC42NSIgZmlsbD0iIzVlOWU0OCIvPgogICAgPGVsbGlwc2UgY3g9IjM3LjMiIGN5PSIzNy44IiByeD0iMC43NSIgcnk9IjAuNiIgZmlsbD0iIzVlOWU0OCIvPgogICAgPGVsbGlwc2UgY3g9IjM1LjciIGN5PSIzMi4yIiByeD0iMC42IiByeT0iMC40NSIgZmlsbD0iIzVlOWU0OCIvPgogICAgPHBhdGggZD0iTSAyOC45IDM0LjkgQyAzMC42IDM2LjMgMzMuNCAzNi4zIDM1LjEgMzQuOSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmY1ZDJjIiBzdHJva2Utd2lkdGg9IjAuNDUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPGVsbGlwc2UgY3g9IjI5LjMiIGN5PSI0NC44IiByeD0iMS45IiByeT0iMC44NSIgZmlsbD0iIzVlOWU0OCIvPgogICAgPGVsbGlwc2UgY3g9IjM0LjciIGN5PSI0NC44IiByeD0iMS45IiByeT0iMC44NSIgZmlsbD0iIzVlOWU0OCIvPjwvc3ZnPg==",
+              "width": 72,
+              "height": 87
+            },
+            {
+              "id": "cade-todo-mundo-tartaruga",
+              "name": "tartaruga",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMjAuMjUgMTguMyAyNCAyOSI+PHBhdGggZD0iTSAyNSA0MC42IEwgMjMgNDIgQyAyMi43IDQyLjI1IDIyLjg1IDQyLjY1IDIzLjI1IDQyLjYyIEwgMjUuNiA0Mi40IFoiIGZpbGw9IiM4NmI4NWEiLz4KICAgIDxyZWN0IHg9IjI1LjYiIHk9IjQwIiB3aWR0aD0iMi45IiBoZWlnaHQ9IjUuMSIgcng9IjEuNCIgZmlsbD0iIzg2Yjg1YSIvPgogICAgPHJlY3QgeD0iMzMiIHk9IjQwIiB3aWR0aD0iMi45IiBoZWlnaHQ9IjUuMSIgcng9IjEuNCIgZmlsbD0iIzg2Yjg1YSIvPgogICAgPHBhdGggZD0iTSAzNC40IDQwLjQgQyAzNi40IDM5LjYgMzcuMiAzNi40IDM3LjQgMzIuNiBMIDQwIDMyLjggQyA0MC4yIDM3IDM5IDQxLjIgMzUuNCA0Mi40IFoiIGZpbGw9IiM4NmI4NWEiLz4KICAgIDxlbGxpcHNlIGN4PSIzOC45IiBjeT0iMzEuMSIgcng9IjIuNzUiIHJ5PSIyLjQ1IiBmaWxsPSIjODZiODVhIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzkuNyIgY3k9IjMwLjUiIHJ4PSIwLjcyIiByeT0iMC45NSIgZmlsbD0iIzBmMWEzMyIvPgogICAgPHBhdGggZD0iTSAzOS43NSAzMi4yNSBDIDQwLjI1IDMyLjcgNDAuODUgMzIuNiA0MS4yIDMyLjE1IiBmaWxsPSJub25lIiBzdHJva2U9IiM0NjUzNmUiIHN0cm9rZS13aWR0aD0iMC40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDxwYXRoIGQ9Ik0gMjMuOSA0MS42IEMgMjMuOSAzNiAyNi43IDMyIDMwLjY1IDMyIEMgMzQuNiAzMiAzNy40IDM2IDM3LjQgNDEuNiBaIiBmaWxsPSIjN2I1YjNhIi8+CiAgICA8cGF0aCBkPSJNIDI4LjQgMzMuNyBDIDI5LjUgMzMuMSAzMS44IDMzLjEgMzIuOSAzMy43IEwgMzMuNSAzNi4zIEwgMzAuNjUgMzcuOCBMIDI3LjggMzYuMyBaIiBmaWxsPSIjYTI3YTRiIi8+CiAgICA8cGF0aCBkPSJNIDI1LjMgMzggQyAyNS42IDM2LjQgMjYuMiAzNS4yIDI3IDM0LjQgTCAyNy41IDM3LjIgTCAyNi42IDQwLjIgTCAyNSA0MC4yIFoiIGZpbGw9IiNhMjdhNGIiLz4KICAgIDxwYXRoIGQ9Ik0gMzYgMzggQyAzNS43IDM2LjQgMzUuMSAzNS4yIDM0LjMgMzQuNCBMIDMzLjggMzcuMiBMIDM0LjcgNDAuMiBMIDM2LjMgNDAuMiBaIiBmaWxsPSIjYTI3YTRiIi8+CiAgICA8cGF0aCBkPSJNIDI4LjEgMzguNyBMIDMwLjY1IDM3LjUgTCAzMy4yIDM4LjcgTCAzMy40IDQwLjQgTCAyNy45IDQwLjQgWiIgZmlsbD0iI2EyN2E0YiIvPgogICAgPHJlY3QgeD0iMjMiIHk9IjQwLjUiIHdpZHRoPSIxNS4zIiBoZWlnaHQ9IjIuMSIgcng9IjEuMDUiIGZpbGw9IiM1ZTQ1MzAiLz48L3N2Zz4=",
+              "width": 72,
+              "height": 87
+            },
+            {
+              "id": "cade-todo-mundo-esquilo",
+              "name": "esquilo",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI3MiIgaGVpZ2h0PSI4NyIgdmlld0JveD0iMjAuOTUgMTguOSAyNCAyOSI+PHBhdGggZD0iTSAzMy40IDQ0LjkgQyAzOC42IDQ1IDQxLjYgNDEuNiA0MS41IDM3IEMgNDEuNCAzMy44IDM5LjYgMzEuOCA0MC4yIDI5LjIgQyA0MC44IDI2LjYgMzkuNCAyMy45IDM2LjggMjMuNyBDIDM0LjMgMjMuNSAzMi44IDI1LjQgMzMuMSAyNy40IEMgMzMuMzUgMjkuMSAzNS4zIDI5LjMgMzUuOCAyOCBDIDM2LjUgMzAuNiAzNS45IDMzLjIgMzUuNSAzNS42IEMgMzUuMSAzOC40IDM0LjYgNDAuOCAzMi40IDQyIFoiIGZpbGw9IiNjNDc5NGEiLz4KICAgIDxwYXRoIGQ9Ik0gMzYuOCAyNS40IEMgMzguNCAyNS42IDM5IDI3LjIgMzguNiAyOS4yIEMgMzguMSAzMS40IDM5LjYgMzMuNiAzOS43IDM2LjYgQyAzOS44IDM5LjYgMzguNCA0MiAzNS44IDQzIEMgMzcuMiA0MC42IDM3LjQgMzggMzcuMyAzNS40IEMgMzcuMiAzMi42IDM3LjggMzAgMzcuNCAyNy42IEMgMzcuMiAyNi42IDM2LjkgMjYgMzYuOCAyNS40IFoiIGZpbGw9IiNkZGEwNmMiLz4KICAgIDxlbGxpcHNlIGN4PSIzMCIgY3k9IjM5LjciIHJ4PSI0LjkiIHJ5PSI1LjYiIGZpbGw9IiNiNTY1M2YiLz4KICAgIDxlbGxpcHNlIGN4PSIyOS44IiBjeT0iNDAuNiIgcng9IjIuOSIgcnk9IjQuMSIgZmlsbD0iI2Y2ZGZiNiIvPgogICAgPGVsbGlwc2UgY3g9IjI2LjUiIGN5PSIyNS45IiByeD0iMS40NSIgcnk9IjIuMyIgZmlsbD0iI2I1NjUzZiIgdHJhbnNmb3JtPSJyb3RhdGUoMzQwIDI2LjUgMjUuOSkiLz4KICAgIDxlbGxpcHNlIGN4PSIzMy4xIiBjeT0iMjUuOSIgcng9IjEuNDUiIHJ5PSIyLjMiIGZpbGw9IiNiNTY1M2YiIHRyYW5zZm9ybT0icm90YXRlKDIwIDMzLjEgMjUuOSkiLz4KICAgIDxlbGxpcHNlIGN4PSIyNi42IiBjeT0iMjYuMyIgcng9IjAuNzUiIHJ5PSIxLjM1IiBmaWxsPSIjZTQ5YjdjIiB0cmFuc2Zvcm09InJvdGF0ZSgzNDAgMjYuNiAyNi4zKSIvPgogICAgPGVsbGlwc2UgY3g9IjMzIiBjeT0iMjYuMyIgcng9IjAuNzUiIHJ5PSIxLjM1IiBmaWxsPSIjZTQ5YjdjIiB0cmFuc2Zvcm09InJvdGF0ZSgyMCAzMyAyNi4zKSIvPgogICAgPGVsbGlwc2UgY3g9IjI5LjgiIGN5PSIzMC40IiByeD0iNS40IiByeT0iNC44IiBmaWxsPSIjYjU2NTNmIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjkuOCIgY3k9IjMyLjUiIHJ4PSIyLjciIHJ5PSIxLjg1IiBmaWxsPSIjZjZkZmI2Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMjkuOCIgY3k9IjMxLjU1IiByeD0iMC43MiIgcnk9IjAuNTIiIGZpbGw9IiMxMjFhMzAiLz4KICAgIDxwYXRoIGQ9Ik0gMjkgMzMgQyAyOS40IDMzLjQ1IDI5LjggMzMuMyAyOS44IDMyLjk1IEMgMjkuOCAzMy4zIDMwLjIgMzMuNDUgMzAuNiAzMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNDY1MzZlIiBzdHJva2Utd2lkdGg9IjAuMzgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogICAgPGVsbGlwc2UgY3g9IjI3LjUiIGN5PSIyOS43IiByeD0iMC44NSIgcnk9IjEuMTUiIGZpbGw9IiMwZjFhMzMiLz4KICAgIDxlbGxpcHNlIGN4PSIzMi4xIiBjeT0iMjkuNyIgcng9IjAuODUiIHJ5PSIxLjE1IiBmaWxsPSIjMGYxYTMzIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjkuOCIgY3k9IjM3LjMiIHJ4PSIxLjI1IiByeT0iMS41IiBmaWxsPSIjYzk5NjVmIi8+CiAgICA8cGF0aCBkPSJNIDI4LjQ1IDM2LjUgQyAyOC40NSAzNS42IDI5LjEgMzUuMSAyOS44IDM1LjEgQyAzMC41IDM1LjEgMzEuMTUgMzUuNiAzMS4xNSAzNi41IFoiIGZpbGw9IiM3YjViM2EiLz4KICAgIDxlbGxpcHNlIGN4PSIyOC41IiBjeT0iMzcuNiIgcng9IjAuOTUiIHJ5PSIwLjc1IiBmaWxsPSIjYjU2NTNmIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzEuMSIgY3k9IjM3LjYiIHJ4PSIwLjk1IiByeT0iMC43NSIgZmlsbD0iI2I1NjUzZiIvPgogICAgPGVsbGlwc2UgY3g9IjI4IiBjeT0iNDQuOCIgcng9IjEuNiIgcnk9IjAuODUiIGZpbGw9IiM5YTU0MzQiLz4KICAgIDxlbGxpcHNlIGN4PSIzMiIgY3k9IjQ0LjgiIHJ4PSIxLjYiIHJ5PSIwLjg1IiBmaWxsPSIjOWE1NDM0Ii8+PC9zdmc+",
+              "width": 72,
+              "height": 87
             },
             {
               "id": "cade-todo-mundo-arbusto",
               "name": "arbusto",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTQiIGhlaWdodD0iMTE2IiB2aWV3Qm94PSIxMCAxOSA0NCAzMyI+PHBhdGggZD0iTSAxNC41NiA0OC43MyBMIDQ2LjgxIDQ4Ljg0IEwgNDkuNCA0Ni42NyBDIDUxLjYyIDQ0LjE3IDUxIDQyLjMgNTAuMzIgNDEuMSBDIDQ5LjY0IDM5Ljk0IDQ2Ljg3IDQwLjI5IDQ1LjQ2IDQwLjAzIEMgNDUuODEgMzkuMyA0Ni45OSAzNi40NyA0NC4zNyAzNS4wNSBDIDQyLjI2IDMzLjg5IDQxLjI0IDM1LjU4IDM5LjQzIDM2LjcyIEMgNDEuNDMgMzQuMTcgNDEuNjQgMzEuNjMgNDEuMjMgMzAuNTkgQyA0MC43NCAyOS42OCA0MC4wNiAyOS42IDM3LjE5IDMwLjE4IEMgMzkuOCAyNy45MSAzOS42NSAyNS41MiAzOSAyNC42OCBDIDM4LjM2IDIzLjg0IDM1LjY4IDIzLjQyIDMzLjMyIDI1LjEzIEMgMzMuMzEgMjMuNzQgMzIuNjggMjEuMjYgMzAuMjYgMjEuMzEgQyAyOC4xMiAyMS4zNiAyNy43NCAyNC4xMSAyNy43MiAyNS40MSBDIDI2Ljc0IDIzLjc5IDI0LjA2IDIzLjI0IDIzLjI5IDIzLjk0IEMgMjIuNTIgMjQuNjQgMjEuNDkgMjYuMjkgMjMuMSAyOS42IEMgMjEuNjIgMjkuNiAyMC4xNCAyOS41OSAxOS40IDMwLjYgQyAxNy45MyAzMi42MiAxOS45OSAzNi4xOCAyMS4xMiAzNy4xIEMgMTkuOTkgMzYuMyAxNi44NyAzMy43MiAxNC42MyAzNS44NSBDIDEyLjMyIDM4LjA1IDE0LjU2IDQyLjA4IDE2LjggNDMuMzIgQyAxNC44MSA0My4yMyAxMi43NCA0Mi43MSAxMi45NSA0Ni4xOSBDIDEzLjU5IDQ3LjIgMTMuOTIgNDcuNyAxNC41NiA0OC43MyBaIiBmaWxsPSIjMjU3MTc5Ii8+CiAgICA8cGF0aCBkPSJNIDQ0Ljc0IDQ4LjgyIEwgMTguNTkgNDguODQgTCAxNi40MyA0Ny4xNiBDIDE0LjYyIDQ1LjE1IDE1LjEzIDQzLjY1IDE1LjY4IDQyLjcgQyAxNi4yMyA0MS43NCAxOC40OSA0Mi4wNCAxOS42MyA0MS44MiBDIDE5LjM1IDQxLjIyIDE4LjAxIDM5LjM2IDIwLjAyIDM4LjAyIEMgMjEuMTIgMzcuMjkgMjMuMDYgMzguMjcgMjQuNTMgMzkuMTkgQyAyMi45MSAzNy4xMSAyMi43NCAzNS41NSAyMy4wNyAzNC42OSBDIDIzLjQ2IDMzLjk2IDI0LjAyIDMzLjQ3IDI2LjM1IDMzLjkyIEMgMjMuNTcgMzEuNzEgMjQuNjYgMzAuMTkgMjUuMTkgMjkuNTEgQyAyNS43MiAyOC44MyAyNy41OCAyOC41IDI5LjUgMjkuODcgQyAyOS41IDI4Ljc1IDI5LjM1IDI2LjY1IDMxLjY5IDI2LjggQyAzMy44MyAyNi45NCAzNC4wMyAyOS4wNiAzNC4wNSAzMC4wOSBDIDM1LjIgMjkuMjUgMzUuOTUgMjguNCAzOC4xNiAyOS4yNiBDIDM5LjUxIDMxLjQ2IDM4LjI0IDMyLjU2IDM3LjM1IDMzLjgyIEMgMzguNTUgMzMuODIgNDAuMjggMzMuMzcgNDEuMDYgMzQuODUgQyA0Mi4yNiAzNi41NyA0MC4zMyAzOC43MiAzOS40MSAzOS40NyBDIDQwLjMzIDM4LjgyIDQyLjc3IDM2LjQ3IDQ0LjU5IDM4LjQ3IEMgNDYuMzIgNDAuMzYgNDQuNzQgNDMuNDggNDIuOTIgNDQuNDggQyA0NC41NCA0NC40MSA0Ny4xMiA0NC41NCA0NS42MyA0Ny40NSBDIDQ1LjEgNDguMjkgNDUuMjYgNDcuOTggNDQuNzQgNDguODIgWiIgZmlsbD0iIzM4Yjc2NCIvPjwvc3ZnPg==",
-              "width": 154,
-              "height": 116
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSIxMi4zMTYgMTUuNjMyIDM5LjI2OCAzNS4xMjIiPjxwYXRoIGQ9Ik0gMTQuNTYgNDguNzMgTCA0Ni44MSA0OC44NCBMIDQ5LjQgNDYuNjcgQyA1MS42MiA0NC4xNyA1MSA0Mi4zIDUwLjMyIDQxLjEgQyA0OS42NCAzOS45NCA0Ni44NyA0MC4yOSA0NS40NiA0MC4wMyBDIDQ1LjgxIDM5LjMgNDYuOTkgMzYuNDcgNDQuMzcgMzUuMDUgQyA0Mi4yNiAzMy44OSA0MS4yNCAzNS41OCAzOS40MyAzNi43MiBDIDQxLjQzIDM0LjE3IDQxLjY0IDMxLjYzIDQxLjIzIDMwLjU5IEMgNDAuNzQgMjkuNjggNDAuMDYgMjkuNiAzNy4xOSAzMC4xOCBDIDM5LjggMjcuOTEgMzkuNjUgMjUuNTIgMzkgMjQuNjggQyAzOC4zNiAyMy44NCAzNS42OCAyMy40MiAzMy4zMiAyNS4xMyBDIDMzLjMxIDIzLjc0IDMyLjY4IDIxLjI2IDMwLjI2IDIxLjMxIEMgMjguMTIgMjEuMzYgMjcuNzQgMjQuMTEgMjcuNzIgMjUuNDEgQyAyNi43NCAyMy43OSAyNC4wNiAyMy4yNCAyMy4yOSAyMy45NCBDIDIyLjUyIDI0LjY0IDIxLjQ5IDI2LjI5IDIzLjEgMjkuNiBDIDIxLjYyIDI5LjYgMjAuMTQgMjkuNTkgMTkuNCAzMC42IEMgMTcuOTMgMzIuNjIgMTkuOTkgMzYuMTggMjEuMTIgMzcuMSBDIDE5Ljk5IDM2LjMgMTYuODcgMzMuNzIgMTQuNjMgMzUuODUgQyAxMi4zMiAzOC4wNSAxNC41NiA0Mi4wOCAxNi44IDQzLjMyIEMgMTQuODEgNDMuMjMgMTIuNzQgNDIuNzEgMTIuOTUgNDYuMTkgQyAxMy41OSA0Ny4yIDEzLjkyIDQ3LjcgMTQuNTYgNDguNzMgWiIgZmlsbD0iIzI1NzE3OSIvPgogICAgPHBhdGggZD0iTSA0NC43NCA0OC44MiBMIDE4LjU5IDQ4Ljg0IEwgMTYuNDMgNDcuMTYgQyAxNC42MiA0NS4xNSAxNS4xMyA0My42NSAxNS42OCA0Mi43IEMgMTYuMjMgNDEuNzQgMTguNDkgNDIuMDQgMTkuNjMgNDEuODIgQyAxOS4zNSA0MS4yMiAxOC4wMSAzOS4zNiAyMC4wMiAzOC4wMiBDIDIxLjEyIDM3LjI5IDIzLjA2IDM4LjI3IDI0LjUzIDM5LjE5IEMgMjIuOTEgMzcuMTEgMjIuNzQgMzUuNTUgMjMuMDcgMzQuNjkgQyAyMy40NiAzMy45NiAyNC4wMiAzMy40NyAyNi4zNSAzMy45MiBDIDIzLjU3IDMxLjcxIDI0LjY2IDMwLjE5IDI1LjE5IDI5LjUxIEMgMjUuNzIgMjguODMgMjcuNTggMjguNSAyOS41IDI5Ljg3IEMgMjkuNSAyOC43NSAyOS4zNSAyNi42NSAzMS42OSAyNi44IEMgMzMuODMgMjYuOTQgMzQuMDMgMjkuMDYgMzQuMDUgMzAuMDkgQyAzNS4yIDI5LjI1IDM1Ljk1IDI4LjQgMzguMTYgMjkuMjYgQyAzOS41MSAzMS40NiAzOC4yNCAzMi41NiAzNy4zNSAzMy44MiBDIDM4LjU1IDMzLjgyIDQwLjI4IDMzLjM3IDQxLjA2IDM0Ljg1IEMgNDIuMjYgMzYuNTcgNDAuMzMgMzguNzIgMzkuNDEgMzkuNDcgQyA0MC4zMyAzOC44MiA0Mi43NyAzNi40NyA0NC41OSAzOC40NyBDIDQ2LjMyIDQwLjM2IDQ0Ljc0IDQzLjQ4IDQyLjkyIDQ0LjQ4IEMgNDQuNTQgNDQuNDEgNDcuMTIgNDQuNTQgNDUuNjMgNDcuNDUgQyA0NS4xIDQ4LjI5IDQ1LjI2IDQ3Ljk4IDQ0Ljc0IDQ4LjgyIFoiIGZpbGw9IiMzOGI3NjQiLz48L3N2Zz4=",
+              "width": 161,
+              "height": 144
             },
             {
               "id": "cade-todo-mundo-pedras",
               "name": "pedras",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTEyIiB2aWV3Qm94PSI5IDE4IDQ2IDMyIj48cGF0aCBkPSJNIDIzLjI3IDIxLjQyIEMgMTkuMTcgMjMuMjggMTcuNDYgMzQuMDMgMTcuNDYgMzkuMSBDIDE3LjQ2IDQxLjk0IDE5LjUxIDQzLjA4IDIzLjUyIDQ0LjIyIEMgMjguMTQgNDUuNTMgNDIuMzIgNDQuNjYgNDIuMzIgNDQuNjYgQyA0Mi4zMiA0NC42NiA0OS44MyA0MS4yOSA0OC44MyAzMS4xNiBDIDQ4LjUzIDI4LjExIDQyLjI3IDIzLjc4IDQyLjI3IDIzLjc4IEMgNDIuMjcgMjMuNzggMjguMjYgMTkuMTYgMjMuMjcgMjEuNDIgWiIgZmlsbD0iIzMzM2M1NyIvPgogICAgPHBhdGggZD0iTSA0Mi4wMiAzNi41MiBMIDQyLjAxIDQ0LjcyIEMgNDUuMDMgNDQuODEgNDUuNjggNDQuMTYgNDguMTUgNDIuNjYgQyA1MC43OCA0MS4wNiA0OS42MiAzMi43NyA0OS42NiAyNy42NCBaIiBmaWxsPSIjNTY2Yzg2Ii8+CiAgICA8cGF0aCBkPSJNIDIzLjE2IDIwLjk5IEMgMTkuNTYgMjIuMjMgMTkuNzQgMjkuNTMgMTkuNzQgMzIuOTIgQyAxOS43NCAzNC44MiAyMS41MyAzNS42IDI1LjA0IDM2LjM1IEMgMjkuMDcgMzcuMjMgNDEuNDkgMzYuNjYgNDEuNDkgMzYuNjYgQyA0MS40OSAzNi42NiA1MC40NyAzNC40MiA0OS41OCAyNy42NCBDIDQ5LjMzIDI1LjU5IDQxLjQ0IDIyLjY1IDQxLjQ0IDIyLjY1IEMgNDEuNDQgMjIuNjUgMjcuNTMgMTkuNDcgMjMuMTYgMjAuOTkgWiIgZmlsbD0iIzk0YjBjMiIvPgogICAgPHBhdGggZD0iTSAxMy4yMSA0Ni4xMSBMIDE5LjY5IDQ3LjA3IEwgMjcuNTEgNDQuOTEgQyAyNy41MSA0NC45MSAyNS45NCAzMC4xNSAyMy43MSAyNy4xIEMgMjEuNDggMjQuMDYgMTYuMDggMjUuODUgMTQuNCAyNi41MyBDIDEyLjUxIDI3LjMyIDExLjcxIDI5LjE3IDExLjUyIDMyLjEzIEMgMTEuMzMgMzUuMDcgMTMuMjEgNDYuMTEgMTMuMjEgNDYuMTEgWiIgZmlsbD0iIzU2NmM4NiIvPgogICAgPHBvbHlnb24gcG9pbnRzPSIxNy42NCwzNS4yMSAxOS41MSw0Ny4wNSAxMi43Niw0Ni4wNyAxMS4xMywzMS41OCIgZmlsbD0iIzMzM2M1NyIvPgogICAgPHBhdGggZD0iTSAxMyAyNi44NSBDIDEyLjIgMjcuOTggMTAuNTUgMzAuNTcgMTEuMzMgMzIuMDMgQyAxMi4xIDMzLjQ4IDE1LjUxIDM2LjE3IDE3LjcgMzUuNiBDIDE5Ljg5IDM1LjAzIDIzLjY1IDMwLjMxIDI0LjQ1IDI4LjYgQyAyNS4yNSAyNi44OSAyMy45IDI1LjkgMjIuNTIgMjUuMzUgQyAyMS4xNCAyNC43OCAxNy43NSAyNS4wMyAxNi4xNiAyNS4yOCBDIDE0LjU3IDI1LjUzIDEzLjgxIDI1LjczIDEzIDI2Ljg1IFoiIGZpbGw9IiM5NGIwYzIiLz48L3N2Zz4=",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSI3LjUgOC4xMjkgNDYgNDEuMTQzIj48cGF0aCBkPSJNIDIzLjI3IDIxLjQyIEMgMTkuMTcgMjMuMjggMTcuNDYgMzQuMDMgMTcuNDYgMzkuMSBDIDE3LjQ2IDQxLjk0IDE5LjUxIDQzLjA4IDIzLjUyIDQ0LjIyIEMgMjguMTQgNDUuNTMgNDIuMzIgNDQuNjYgNDIuMzIgNDQuNjYgQyA0Mi4zMiA0NC42NiA0OS44MyA0MS4yOSA0OC44MyAzMS4xNiBDIDQ4LjUzIDI4LjExIDQyLjI3IDIzLjc4IDQyLjI3IDIzLjc4IEMgNDIuMjcgMjMuNzggMjguMjYgMTkuMTYgMjMuMjcgMjEuNDIgWiIgZmlsbD0iIzMzM2M1NyIvPgogICAgPHBhdGggZD0iTSA0Mi4wMiAzNi41MiBMIDQyLjAxIDQ0LjcyIEMgNDUuMDMgNDQuODEgNDUuNjggNDQuMTYgNDguMTUgNDIuNjYgQyA1MC43OCA0MS4wNiA0OS42MiAzMi43NyA0OS42NiAyNy42NCBaIiBmaWxsPSIjNTY2Yzg2Ii8+CiAgICA8cGF0aCBkPSJNIDIzLjE2IDIwLjk5IEMgMTkuNTYgMjIuMjMgMTkuNzQgMjkuNTMgMTkuNzQgMzIuOTIgQyAxOS43NCAzNC44MiAyMS41MyAzNS42IDI1LjA0IDM2LjM1IEMgMjkuMDcgMzcuMjMgNDEuNDkgMzYuNjYgNDEuNDkgMzYuNjYgQyA0MS40OSAzNi42NiA1MC40NyAzNC40MiA0OS41OCAyNy42NCBDIDQ5LjMzIDI1LjU5IDQxLjQ0IDIyLjY1IDQxLjQ0IDIyLjY1IEMgNDEuNDQgMjIuNjUgMjcuNTMgMTkuNDcgMjMuMTYgMjAuOTkgWiIgZmlsbD0iIzk0YjBjMiIvPgogICAgPHBhdGggZD0iTSAxMy4yMSA0Ni4xMSBMIDE5LjY5IDQ3LjA3IEwgMjcuNTEgNDQuOTEgQyAyNy41MSA0NC45MSAyNS45NCAzMC4xNSAyMy43MSAyNy4xIEMgMjEuNDggMjQuMDYgMTYuMDggMjUuODUgMTQuNCAyNi41MyBDIDEyLjUxIDI3LjMyIDExLjcxIDI5LjE3IDExLjUyIDMyLjEzIEMgMTEuMzMgMzUuMDcgMTMuMjEgNDYuMTEgMTMuMjEgNDYuMTEgWiIgZmlsbD0iIzU2NmM4NiIvPgogICAgPHBvbHlnb24gcG9pbnRzPSIxNy42NCwzNS4yMSAxOS41MSw0Ny4wNSAxMi43Niw0Ni4wNyAxMS4xMywzMS41OCIgZmlsbD0iIzMzM2M1NyIvPgogICAgPHBhdGggZD0iTSAxMyAyNi44NSBDIDEyLjIgMjcuOTggMTAuNTUgMzAuNTcgMTEuMzMgMzIuMDMgQyAxMi4xIDMzLjQ4IDE1LjUxIDM2LjE3IDE3LjcgMzUuNiBDIDE5Ljg5IDM1LjAzIDIzLjY1IDMwLjMxIDI0LjQ1IDI4LjYgQyAyNS4yNSAyNi44OSAyMy45IDI1LjkgMjIuNTIgMjUuMzUgQyAyMS4xNCAyNC43OCAxNy43NSAyNS4wMyAxNi4xNiAyNS4yOCBDIDE0LjU3IDI1LjUzIDEzLjgxIDI1LjczIDEzIDI2Ljg1IFoiIGZpbGw9IiM5NGIwYzIiLz48L3N2Zz4=",
               "width": 161,
-              "height": 112
+              "height": 144
             },
             {
               "id": "cade-todo-mundo-flores",
               "name": "flores",
               "kind": "image",
               "source": "library",
-              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMzMiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSIxMiAxMSAzOCA0MSI+PHBhdGggZD0iTSAyMC42IDMxLjQxIEMgMjIuMjQgMzEuNDEgMjUuMiAzNS45OSAyNS4yIDQxLjI3IEMgMjUuMiA0Ni41NiAyMi4zMSA1MC42MSAyMC42IDUwLjU2IEMgMTguMzcgNTAuNDcgMTUuNzcgNDYuMzMgMTUuNzcgNDEuMDQgQyAxNS43NyAzNS43NSAxOC43NCAzMS40MSAyMC42IDMxLjQxIFoiIGZpbGw9IiMyNTcxNzkiIHRyYW5zZm9ybT0icm90YXRlKDMzMS41IDIwLjQ5IDQxLjAxKSIvPgogICAgPHJlY3QgeD0iMjIuMTkiIHk9IjMyLjEzIiB3aWR0aD0iMi4zNCIgaGVpZ2h0PSI2LjMzIiBmaWxsPSIjMjU3MTc5Ii8+CiAgICA8cGF0aCBkPSJNIDI4LjE5IDMwLjI4IEMgMjkuOTYgMzAuMjggMzMuMTQgMzUuMDcgMzMuMTQgNDAuNiBDIDMzLjE0IDQ2LjE0IDMwLjAzIDUwLjM4IDI4LjE5IDUwLjMxIEMgMjUuOCA1MC4yNCAyMyA0NS45MSAyMyA0MC4zNiBDIDIzIDM0LjgzIDI2LjE4IDMwLjI4IDI4LjE5IDMwLjI4IFoiIGZpbGw9IiMzOGI3NjQiIHRyYW5zZm9ybT0icm90YXRlKDIzIDI4LjA3IDQwLjMzKSIvPgogICAgPHBhdGggZD0iTSAyMi40NSAxMy43IEwgMTcuOTIgMjMuNTIgQyAxNy45MiAyOC44MSAyMC45NyAzMy41MiAyMi41MyAzMi44MSBDIDI4LjQ2IDMwLjExIDI5LjUxIDI3LjQ4IDI3Ljg5IDIzLjAzIFoiIGZpbGw9IiNiMTNlNTMiIHRyYW5zZm9ybT0icm90YXRlKDI1LjcgMjIuNjggMzIuODgpIi8+CiAgICA8cGF0aCBkPSJNIDIzLjkzIDEzLjU4IEMgMjUuNTcgMTMuNTggMjguMzIgMTkuNyAyOC41NCAyMy40NCBDIDI4Ljg1IDI4LjcyIDI1LjY0IDMyLjc4IDIzLjkzIDMyLjcyIEMgMjEuNyAzMi42NCAxOS40MyAyOC41IDE5LjEgMjMuMjEgQyAxOC45MSAyMC4xNSAyMi4wNyAxMy41OCAyMy45MyAxMy41OCBaIiBmaWxsPSIjZWY3ZDU3IiB0cmFuc2Zvcm09InJvdGF0ZSgwLjIgMjMuODggMjMuMTgpIi8+CiAgICA8cGF0aCBkPSJNIDI0LjE1IDEzLjYgTCAyOC42OCAyMy40MiBDIDI4LjY4IDI4LjcyIDI1LjYzIDMzLjQyIDI0LjA2IDMyLjcyIEMgMTguMTQgMzAuMDIgMTcuMDkgMjcuMzkgMTguNzEgMjIuOTUgWiIgZmlsbD0iI2VmN2Q1NyIgdHJhbnNmb3JtPSJyb3RhdGUoMzM0LjMgMjMuOTIgMzIuNzkpIi8+CiAgICA8cGF0aCBkPSJNIDM0LjEgMzEuMTcgQyAzNS43NCAzMS4xNyAzOC43MSAzNS43NSAzOC43MSA0MS4wMyBDIDM4LjcxIDQ2LjMyIDM1LjgxIDUwLjM4IDM0LjEgNTAuMzIgQyAzMS44NyA1MC4yMiAyOS4yNyA0Ni4xIDI5LjI3IDQwLjggQyAyOS4yNyAzNS41MiAzMi4yNCAzMS4xNyAzNC4xIDMxLjE3IFoiIGZpbGw9IiMyNTcxNzkiIHRyYW5zZm9ybT0icm90YXRlKDMzMS41IDMzLjk5IDQwLjc4KSIvPgogICAgPHJlY3QgeD0iMzUuNjkiIHk9IjMxLjg4IiB3aWR0aD0iMi4zNCIgaGVpZ2h0PSI2LjMzIiBmaWxsPSIjMjU3MTc5Ii8+CiAgICA8cGF0aCBkPSJNIDQxLjY5IDMwLjAzIEMgNDMuNDYgMzAuMDMgNDYuNjQgMzQuODMgNDYuNjQgNDAuMzYgQyA0Ni42NCA0NS45IDQzLjUzIDUwLjE0IDQxLjY5IDUwLjA3IEMgMzkuMyA1MCAzNi41IDQ1LjY3IDM2LjUgNDAuMTMgQyAzNi41IDM0LjU4IDM5LjY5IDMwLjAzIDQxLjY5IDMwLjAzIFoiIGZpbGw9IiMzOGI3NjQiIHRyYW5zZm9ybT0icm90YXRlKDIzIDQxLjU3IDQwLjA5KSIvPgogICAgPHBhdGggZD0iTSAzNS45NSAxMy40NSBMIDMxLjQyIDIzLjI4IEMgMzEuNDIgMjguNTcgMzQuNDcgMzMuMjggMzYuMDMgMzIuNTcgQyA0MS45NiAyOS44NiA0My4wMSAyNy4yNCA0MS4zOSAyMi44IFoiIGZpbGw9IiNlZjdkNTciIHRyYW5zZm9ybT0icm90YXRlKDI1LjcgMzYuMTggMzIuNjMpIi8+CiAgICA8cGF0aCBkPSJNIDM3LjQzIDEzLjM0IEMgMzkuMDcgMTMuMzQgNDEuODIgMTkuNDYgNDIuMDMgMjMuMiBDIDQyLjM1IDI4LjQ3IDM5LjE0IDMyLjU1IDM3LjQzIDMyLjQ5IEMgMzUuMiAzMi4zOSAzMi45MyAyOC4yNSAzMi42IDIyLjk3IEMgMzIuNDEgMTkuOTEgMzUuNTcgMTMuMzQgMzcuNDMgMTMuMzQgWiIgZmlsbD0iI2ZhZTFiNSIgdHJhbnNmb3JtPSJyb3RhdGUoMC4yIDM3LjM4IDIyLjk1KSIvPgogICAgPHBhdGggZD0iTSAzNy42NSAxMy4zNyBMIDQyLjE3IDIzLjE5IEMgNDIuMTcgMjguNDcgMzkuMTMgMzMuMTkgMzcuNTcgMzIuNDcgQyAzMS42NCAyOS43OCAzMC41OSAyNy4xNSAzMi4yMSAyMi43MSBaIiBmaWxsPSIjZmFlMWI1IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzQuMyAzNy40MiAzMi41NCkiLz48L3N2Zz4=",
-              "width": 133,
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSI4IDEwLjcyOSA0NiA0MS4xNDMiPjxwYXRoIGQ9Ik0gMjQuNiA0Ni44IEMgMjIuOCA0MiAyMiAzNS40IDIzLjggMzEuOCBDIDI1LjYgMjkuMiAzMCAyOC44IDMyIDMwLjQgQyAzMy42IDI5LjIgMzUuOCAyOS42IDM3LjIgMzAuOCBDIDM5LjIgMzEgNDAuNiAzMi42IDQwLjggMzUgQyA0MSAzOC4yIDQwLjYgNDEuNiAzOS40IDQ0LjIgQyAzOC4yIDQ3IDM1LjYgNDguNCAzMi42IDQ4LjQgQyAyOS40IDQ4LjQgMjUuNiA0OC4yIDI0LjYgNDYuOCBaIiBmaWxsPSIjMWI1NTViIi8+CiAgICA8cGF0aCBkPSJNIDIwLjYgMzEuNDEgQyAyMi4yNCAzMS40MSAyNS4yIDM1Ljk5IDI1LjIgNDEuMjcgQyAyNS4yIDQ2LjU2IDIyLjMxIDUwLjYxIDIwLjYgNTAuNTYgQyAxOC4zNyA1MC40NyAxNS43NyA0Ni4zMyAxNS43NyA0MS4wNCBDIDE1Ljc3IDM1Ljc1IDE4Ljc0IDMxLjQxIDIwLjYgMzEuNDEgWiIgZmlsbD0iIzI1NzE3OSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMxLjUgMjAuNDkgNDEuMDEpIi8+CiAgICA8cmVjdCB4PSIyMi4xOSIgeT0iMzIuMTMiIHdpZHRoPSIyLjM0IiBoZWlnaHQ9IjYuMzMiIGZpbGw9IiMyNTcxNzkiLz4KICAgIDxwYXRoIGQ9Ik0gMjguMTkgMzAuMjggQyAyOS45NiAzMC4yOCAzMy4xNCAzNS4wNyAzMy4xNCA0MC42IEMgMzMuMTQgNDYuMTQgMzAuMDMgNTAuMzggMjguMTkgNTAuMzEgQyAyNS44IDUwLjI0IDIzIDQ1LjkxIDIzIDQwLjM2IEMgMjMgMzQuODMgMjYuMTggMzAuMjggMjguMTkgMzAuMjggWiIgZmlsbD0iIzM4Yjc2NCIgdHJhbnNmb3JtPSJyb3RhdGUoMjMgMjguMDcgNDAuMzMpIi8+CiAgICA8cGF0aCBkPSJNIDIyLjQ1IDEzLjcgTCAxNy45MiAyMy41MiBDIDE3LjkyIDI4LjgxIDIwLjk3IDMzLjUyIDIyLjUzIDMyLjgxIEMgMjguNDYgMzAuMTEgMjkuNTEgMjcuNDggMjcuODkgMjMuMDMgWiIgZmlsbD0iI2IxM2U1MyIgdHJhbnNmb3JtPSJyb3RhdGUoMjUuNyAyMi42OCAzMi44OCkiLz4KICAgIDxwYXRoIGQ9Ik0gMjMuOTMgMTMuNTggQyAyNS41NyAxMy41OCAyOC4zMiAxOS43IDI4LjU0IDIzLjQ0IEMgMjguODUgMjguNzIgMjUuNjQgMzIuNzggMjMuOTMgMzIuNzIgQyAyMS43IDMyLjY0IDE5LjQzIDI4LjUgMTkuMSAyMy4yMSBDIDE4LjkxIDIwLjE1IDIyLjA3IDEzLjU4IDIzLjkzIDEzLjU4IFoiIGZpbGw9IiNlZjdkNTciIHRyYW5zZm9ybT0icm90YXRlKDAuMiAyMy44OCAyMy4xOCkiLz4KICAgIDxwYXRoIGQ9Ik0gMjQuMTUgMTMuNiBMIDI4LjY4IDIzLjQyIEMgMjguNjggMjguNzIgMjUuNjMgMzMuNDIgMjQuMDYgMzIuNzIgQyAxOC4xNCAzMC4wMiAxNy4wOSAyNy4zOSAxOC43MSAyMi45NSBaIiBmaWxsPSIjZWY3ZDU3IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzQuMyAyMy45MiAzMi43OSkiLz4KICAgIDxwYXRoIGQ9Ik0gMzQuMSAzMS4xNyBDIDM1Ljc0IDMxLjE3IDM4LjcxIDM1Ljc1IDM4LjcxIDQxLjAzIEMgMzguNzEgNDYuMzIgMzUuODEgNTAuMzggMzQuMSA1MC4zMiBDIDMxLjg3IDUwLjIyIDI5LjI3IDQ2LjEgMjkuMjcgNDAuOCBDIDI5LjI3IDM1LjUyIDMyLjI0IDMxLjE3IDM0LjEgMzEuMTcgWiIgZmlsbD0iIzI1NzE3OSIgdHJhbnNmb3JtPSJyb3RhdGUoMzMxLjUgMzMuOTkgNDAuNzgpIi8+CiAgICA8cmVjdCB4PSIzNS42OSIgeT0iMzEuODgiIHdpZHRoPSIyLjM0IiBoZWlnaHQ9IjYuMzMiIGZpbGw9IiMyNTcxNzkiLz4KICAgIDxwYXRoIGQ9Ik0gNDEuNjkgMzAuMDMgQyA0My40NiAzMC4wMyA0Ni42NCAzNC44MyA0Ni42NCA0MC4zNiBDIDQ2LjY0IDQ1LjkgNDMuNTMgNTAuMTQgNDEuNjkgNTAuMDcgQyAzOS4zIDUwIDM2LjUgNDUuNjcgMzYuNSA0MC4xMyBDIDM2LjUgMzQuNTggMzkuNjkgMzAuMDMgNDEuNjkgMzAuMDMgWiIgZmlsbD0iIzM4Yjc2NCIgdHJhbnNmb3JtPSJyb3RhdGUoMjMgNDEuNTcgNDAuMDkpIi8+CiAgICA8cGF0aCBkPSJNIDM1Ljk1IDEzLjQ1IEwgMzEuNDIgMjMuMjggQyAzMS40MiAyOC41NyAzNC40NyAzMy4yOCAzNi4wMyAzMi41NyBDIDQxLjk2IDI5Ljg2IDQzLjAxIDI3LjI0IDQxLjM5IDIyLjggWiIgZmlsbD0iI2VmN2Q1NyIgdHJhbnNmb3JtPSJyb3RhdGUoMjUuNyAzNi4xOCAzMi42MykiLz4KICAgIDxwYXRoIGQ9Ik0gMzcuNDMgMTMuMzQgQyAzOS4wNyAxMy4zNCA0MS44MiAxOS40NiA0Mi4wMyAyMy4yIEMgNDIuMzUgMjguNDcgMzkuMTQgMzIuNTUgMzcuNDMgMzIuNDkgQyAzNS4yIDMyLjM5IDMyLjkzIDI4LjI1IDMyLjYgMjIuOTcgQyAzMi40MSAxOS45MSAzNS41NyAxMy4zNCAzNy40MyAxMy4zNCBaIiBmaWxsPSIjZmFlMWI1IiB0cmFuc2Zvcm09InJvdGF0ZSgwLjIgMzcuMzggMjIuOTUpIi8+CiAgICA8cGF0aCBkPSJNIDM3LjY1IDEzLjM3IEwgNDIuMTcgMjMuMTkgQyA0Mi4xNyAyOC40NyAzOS4xMyAzMy4xOSAzNy41NyAzMi40NyBDIDMxLjY0IDI5Ljc4IDMwLjU5IDI3LjE1IDMyLjIxIDIyLjcxIFoiIGZpbGw9IiNmYWUxYjUiIHRyYW5zZm9ybT0icm90YXRlKDMzNC4zIDM3LjQyIDMyLjU0KSIvPjwvc3ZnPg==",
+              "width": 161,
+              "height": 144
+            },
+            {
+              "id": "cade-todo-mundo-toco",
+              "name": "toco",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSI5LjQ1IDEwLjUyOSA0NiA0MS4xNDMiPjxwYXRoIGQ9Ik0gMjEuNCA0MC42IEMgMjEgNDUgMTkuMiA0OCAxNi40IDQ5LjUgTCAyNyA0OS41IFoiIGZpbGw9IiM3YTRlMzQiLz4KICAgIDxwYXRoIGQ9Ik0gNDIuNiA0MC42IEMgNDMgNDUgNDQuOCA0OCA0Ny42IDQ5LjUgTCAzNyA0OS41IFoiIGZpbGw9IiM3YTRlMzQiLz4KICAgIDxwYXRoIGQ9Ik0gMjAuNiAyMyBMIDQzLjQgMjMgTCA0My42IDQ2LjQgQyA0My42IDQ4LjIgNDAgNDkuNSAzMiA0OS41IEMgMjQgNDkuNSAyMC40IDQ4LjIgMjAuNCA0Ni40IFoiIGZpbGw9IiM4YTVhM2MiLz4KICAgIDxwYXRoIGQ9Ik0gMjIuMSAyNC40IEwgMjUuNSAyNC40IEwgMjUuNyA0OC4zIEMgMjQgNDggMjIuMyA0Ny40IDIyLjIgNDYuNiBaIiBmaWxsPSIjYTI2ZTQ4Ii8+CiAgICA8cGF0aCBkPSJNIDQzLjIgMzMuOCBMIDQ3LjMgMzEuMyBDIDQ4LjEgMzAuOCA0OC45IDMxLjcgNDguMyAzMi40IEwgNDMuMyAzNy42IFoiIGZpbGw9IiM4YTVhM2MiLz4KICAgIDxyZWN0IHg9IjI5IiB5PSIyNy42IiB3aWR0aD0iMS4xIiBoZWlnaHQ9IjE2IiByeD0iMC41NSIgZmlsbD0iIzZlNDYzMCIvPgogICAgPHJlY3QgeD0iMzUuNCIgeT0iMzAiIHdpZHRoPSIxLjEiIGhlaWdodD0iMTMuNCIgcng9IjAuNTUiIGZpbGw9IiM2ZTQ2MzAiLz4KICAgIDxyZWN0IHg9IjQwLjEiIHk9IjI2LjQiIHdpZHRoPSIxLjEiIGhlaWdodD0iOS4yIiByeD0iMC41NSIgZmlsbD0iIzZlNDYzMCIvPgogICAgPHJlY3QgeD0iMjQiIHk9IjQxLjQiIHdpZHRoPSIxIiBoZWlnaHQ9IjUuNCIgcng9IjAuNSIgZmlsbD0iIzhhNWEzYyIvPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMjMiIHJ4PSIxMS40IiByeT0iMy4xIiBmaWxsPSIjZDlhODZjIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyMyIgcng9IjguMyIgcnk9IjIuMiIgZmlsbD0iI2U4YzA4OCIvPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iMjMiIHJ4PSI1LjMiIHJ5PSIxLjQiIGZpbGw9IiNkOWE4NmMiLz4KICAgIDxlbGxpcHNlIGN4PSIzMiIgY3k9IjIzIiByeD0iMi4zIiByeT0iMC42MiIgZmlsbD0iI2U4YzA4OCIvPgogICAgPHJlY3QgeD0iMzguNTUiIHk9IjE3LjQiIHdpZHRoPSIwLjciIGhlaWdodD0iNC42IiByeD0iMC4zNSIgZmlsbD0iIzI1NzE3OSIvPgogICAgPHBhdGggZD0iTSAzNS40IDE4LjQgQyAzNi4yNSAxNy4yIDM3Ljk1IDE3LjIgMzguOCAxOC40IEMgMzcuOTUgMTkuNiAzNi4yNSAxOS42IDM1LjQgMTguNCBaIiBmaWxsPSIjMzhiNzY0IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzAgMzcuMSAxOC40KSIvPgogICAgPHBhdGggZD0iTSAzOSAxNy42IEMgMzkuODUgMTYuNCA0MS41NSAxNi40IDQyLjQgMTcuNiBDIDQxLjU1IDE4LjggMzkuODUgMTguOCAzOSAxNy42IFoiIGZpbGw9IiMzOGI3NjQiIHRyYW5zZm9ybT0icm90YXRlKDIxMCA0MC43IDE3LjYpIi8+CiAgICA8cGF0aCBkPSJNIDE2LjQgNDkuNSBDIDE2LjYgNDcuNCAxOC42IDQ2LjQgMjAuMiA0Ny4yIEMgMjEuMiA0NS44IDIzLjYgNDYgMjQuMiA0Ny42IEMgMjUuNiA0Ny4yIDI3IDQ4LjIgMjcuMiA0OS41IFoiIGZpbGw9IiMzOGI3NjQiLz4KICAgIDxwYXRoIGQ9Ik0gNDEuNiA0OS41IEMgNDEuOCA0OCA0My4yIDQ3LjIgNDQuNiA0Ny44IEMgNDUuNiA0Ni44IDQ3LjYgNDcuNCA0Ny44IDQ5LjUgWiIgZmlsbD0iIzM4Yjc2NCIvPjwvc3ZnPg==",
+              "width": 161,
+              "height": 144
+            },
+            {
+              "id": "cade-todo-mundo-cogumelo",
+              "name": "cogumelo",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSI5IDEwLjUyOSA0NiA0MS4xNDMiPjxwYXRoIGQ9Ik0gMTUuNCA0NC40IEwgMTguNCA0NC40IEwgMTguOCA0OS41IEwgMTUgNDkuNSBaIiBmaWxsPSIjZmFlMWI1Ii8+CiAgICA8cGF0aCBkPSJNIDEzLjIgNDUgQyAxMy4yIDQyLjYgMTQuOSA0MS4yIDE2LjkgNDEuMiBDIDE4LjkgNDEuMiAyMC42IDQyLjYgMjAuNiA0NSBaIiBmaWxsPSIjYjEzZTUzIi8+CiAgICA8ZWxsaXBzZSBjeD0iMTYiIGN5PSI0Mi43IiByeD0iMC43NSIgcnk9IjAuNTUiIGZpbGw9IiNmNGY0ZjQiLz4KICAgIDxwYXRoIGQ9Ik0gMjIuMiAyOS42IEwgNDEuOCAyOS42IEMgNDIuMiAzNiA0Mi44IDQyLjggNDQuNCA0Ny40IEMgNDQuOCA0OC43IDQ0IDQ5LjUgNDIuNiA0OS41IEwgMjEuNCA0OS41IEMgMjAgNDkuNSAxOS4yIDQ4LjcgMTkuNiA0Ny40IEMgMjEuMiA0Mi44IDIxLjggMzYgMjIuMiAyOS42IFoiIGZpbGw9IiNmYWUxYjUiLz4KICAgIDxwYXRoIGQ9Ik0gMzcuOCAyOS42IEwgNDEuOCAyOS42IEMgNDIuMiAzNiA0Mi44IDQyLjggNDQuNCA0Ny40IEMgNDQuOCA0OC43IDQ0IDQ5LjUgNDIuNiA0OS41IEwgNDAuNiA0OS41IEMgNDAuMiA0Mi44IDM5IDM2IDM3LjggMjkuNiBaIiBmaWxsPSIjZThjOTlhIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzIiIGN5PSIyOS40IiByeD0iMTUuMiIgcnk9IjIuOSIgZmlsbD0iI2U4Yzk5YSIvPgogICAgPHBhdGggZD0iTSAxMS44IDI5LjIgQyAxMS44IDIwIDIwLjggMTMuMiAzMiAxMy4yIEMgNDMuMiAxMy4yIDUyLjIgMjAgNTIuMiAyOS4yIEMgNTIuMiAzMS4zIDQ5LjcgMzEuNyA0Ni4yIDMwLjMgQyA0Mi42IDI4LjggMzcuNSAyOC4yIDMyIDI4LjIgQyAyNi41IDI4LjIgMjEuNCAyOC44IDE3LjggMzAuMyBDIDE0LjMgMzEuNyAxMS44IDMxLjMgMTEuOCAyOS4yIFoiIGZpbGw9IiNiMTNlNTMiLz4KICAgIDxwYXRoIGQ9Ik0gMTYuMiAyMi40IEMgMTguNiAxNy42IDIzLjggMTQuOCAyOSAxNC40IEMgMjQuNiAxNi4yIDIwLjggMTkuNCAxOC44IDIzLjYgQyAxOCAyNS4yIDE1LjQgMjQgMTYuMiAyMi40IFoiIGZpbGw9IiNjOTU0NjgiLz4KICAgIDxlbGxpcHNlIGN4PSIyMy42IiBjeT0iMjAuNiIgcng9IjIuNSIgcnk9IjEuOSIgZmlsbD0iI2Y0ZjRmNCIvPgogICAgPGVsbGlwc2UgY3g9IjMzLjIiIGN5PSIxNy4yIiByeD0iMi4xIiByeT0iMS41IiBmaWxsPSIjZjRmNGY0Ii8+CiAgICA8ZWxsaXBzZSBjeD0iNDEuNiIgY3k9IjIxLjQiIHJ4PSIyLjciIHJ5PSIyIiBmaWxsPSIjZjRmNGY0Ii8+CiAgICA8ZWxsaXBzZSBjeD0iMzEuNiIgY3k9IjI0LjIiIHJ4PSIxLjkiIHJ5PSIxLjQiIGZpbGw9IiNmNGY0ZjQiLz4KICAgIDxlbGxpcHNlIGN4PSIxNy4yIiBjeT0iMjciIHJ4PSIxLjMiIHJ5PSIxIiBmaWxsPSIjZjRmNGY0Ii8+CiAgICA8ZWxsaXBzZSBjeD0iNDcuNiIgY3k9IjI2LjYiIHJ4PSIxLjQiIHJ5PSIxLjA1IiBmaWxsPSIjZjRmNGY0Ii8+CiAgICA8cGF0aCBkPSJNIDI0IDQ5LjUgTCAyNC45IDQ2LjQgTCAyNS44IDQ5LjUgWiIgZmlsbD0iIzM4Yjc2NCIvPgogICAgPHBhdGggZD0iTSAyNS40IDQ5LjUgTCAyNi44IDQ1LjYgTCAyNy42IDQ5LjUgWiIgZmlsbD0iIzM4Yjc2NCIvPgogICAgPHBhdGggZD0iTSAzOC42IDQ5LjUgTCAzOS42IDQ2LjIgTCA0MC40IDQ5LjUgWiIgZmlsbD0iIzM4Yjc2NCIvPjwvc3ZnPg==",
+              "width": 161,
+              "height": 144
+            },
+            {
+              "id": "cade-todo-mundo-folhas",
+              "name": "folhas",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjEiIGhlaWdodD0iMTQ0IiB2aWV3Qm94PSI5IDExLjUyOSA0NiA0MS4xNDMiPjxwYXRoIGQ9Ik0gMTMuNCA0OS41IEMgMTMuNCAzMy40IDIxLjYgMjIuNCAzMiAyMi40IEMgNDIuNCAyMi40IDUwLjYgMzMuNCA1MC42IDQ5LjUgWiIgZmlsbD0iIzhmNGYzNSIvPgogICAgPHBhdGggZD0iTSAxMy44NCA0Ni4yNCBDIDE2LjE5IDQzLjE4IDIwLjg5IDQzLjE4IDIzLjI0IDQ2LjI0IEMgMjAuODkgNDkuMzEgMTYuMTkgNDkuMzEgMTMuODQgNDYuMjQgWiIgZmlsbD0iI2ZmY2Q3NSIgdHJhbnNmb3JtPSJyb3RhdGUoMTcyIDE4LjU0IDQ2LjI0KSIvPgogICAgPHJlY3QgeD0iMTUuMjUiIHk9IjQ2LjA2IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iI2UzYTk0ZiIgdHJhbnNmb3JtPSJyb3RhdGUoMTcyIDE4LjU0IDQ2LjI0KSIvPgogICAgPHBhdGggZD0iTSAyMC43MiA0Ni41NiBDIDIzLjA3IDQzLjQ5IDI3Ljc3IDQzLjQ5IDMwLjEyIDQ2LjU2IEMgMjcuNzcgNDkuNjMgMjMuMDcgNDkuNjMgMjAuNzIgNDYuNTYgWiIgZmlsbD0iI2IxM2U1MyIgdHJhbnNmb3JtPSJyb3RhdGUoMjAyIDI1LjQyIDQ2LjU2KSIvPgogICAgPHJlY3QgeD0iMjIuMTMiIHk9IjQ2LjM4IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iIzhjMmM0MSIgdHJhbnNmb3JtPSJyb3RhdGUoMjAyIDI1LjQyIDQ2LjU2KSIvPgogICAgPHBhdGggZD0iTSAyNy43MyA0Ni43NSBDIDMwLjA4IDQzLjY4IDM0Ljc4IDQzLjY4IDM3LjEzIDQ2Ljc1IEMgMzQuNzggNDkuODIgMzAuMDggNDkuODIgMjcuNzMgNDYuNzUgWiIgZmlsbD0iI2Q0ODc0ZiIgdHJhbnNmb3JtPSJyb3RhdGUoMTY5IDMyLjQzIDQ2Ljc1KSIvPgogICAgPHJlY3QgeD0iMjkuMTQiIHk9IjQ2LjU3IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iI2E5NjMzYSIgdHJhbnNmb3JtPSJyb3RhdGUoMTY5IDMyLjQzIDQ2Ljc1KSIvPgogICAgPHBhdGggZD0iTSAzNC4zMyA0Ni45NyBDIDM2LjY4IDQzLjkgNDEuMzggNDMuOSA0My43MyA0Ni45NyBDIDQxLjM4IDUwLjA0IDM2LjY4IDUwLjA0IDM0LjMzIDQ2Ljk3IFoiIGZpbGw9IiNlZjdkNTciIHRyYW5zZm9ybT0icm90YXRlKDE0NiAzOS4wMyA0Ni45NykiLz4KICAgIDxyZWN0IHg9IjM1Ljc0IiB5PSI0Ni43OSIgd2lkdGg9IjYuNTgiIGhlaWdodD0iMC4zNiIgcng9IjAuMTgiIGZpbGw9IiNjOTVmM2UiIHRyYW5zZm9ybT0icm90YXRlKDE0NiAzOS4wMyA0Ni45NykiLz4KICAgIDxwYXRoIGQ9Ik0gNDEuMzcgNDYuNTcgQyA0My43MiA0My41IDQ4LjQyIDQzLjUgNTAuNzcgNDYuNTcgQyA0OC40MiA0OS42NCA0My43MiA0OS42NCA0MS4zNyA0Ni41NyBaIiBmaWxsPSIjYjEzZTUzIiB0cmFuc2Zvcm09InJvdGF0ZSg1IDQ2LjA3IDQ2LjU3KSIvPgogICAgPHJlY3QgeD0iNDIuNzgiIHk9IjQ2LjM5IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iIzhjMmM0MSIgdHJhbnNmb3JtPSJyb3RhdGUoNSA0Ni4wNyA0Ni41NykiLz4KICAgIDxwYXRoIGQ9Ik0gMTQuMTYgNDIuMTYgQyAxNi41MSAzOS4wOSAyMS4yMSAzOS4wOSAyMy41NiA0Mi4xNiBDIDIxLjIxIDQ1LjIyIDE2LjUxIDQ1LjIyIDE0LjE2IDQyLjE2IFoiIGZpbGw9IiNkNDg3NGYiIHRyYW5zZm9ybT0icm90YXRlKDIgMTguODYgNDIuMTYpIi8+CiAgICA8cmVjdCB4PSIxNS41NyIgeT0iNDEuOTgiIHdpZHRoPSI2LjU4IiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjYTk2MzNhIiB0cmFuc2Zvcm09InJvdGF0ZSgyIDE4Ljg2IDQyLjE2KSIvPgogICAgPHBhdGggZD0iTSAyMC42NCA0Mi4zMSBDIDIyLjk5IDM5LjI0IDI3LjY5IDM5LjI0IDMwLjA0IDQyLjMxIEMgMjcuNjkgNDUuMzggMjIuOTkgNDUuMzggMjAuNjQgNDIuMzEgWiIgZmlsbD0iI2VmN2Q1NyIgdHJhbnNmb3JtPSJyb3RhdGUoMzM3IDI1LjM0IDQyLjMxKSIvPgogICAgPHJlY3QgeD0iMjIuMDUiIHk9IjQyLjEzIiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iI2M5NWYzZSIgdHJhbnNmb3JtPSJyb3RhdGUoMzM3IDI1LjM0IDQyLjMxKSIvPgogICAgPHBhdGggZD0iTSAyNy43OSA0Mi4xIEMgMzAuMTQgMzkuMDMgMzQuODQgMzkuMDMgMzcuMTkgNDIuMSBDIDM0Ljg0IDQ1LjE3IDMwLjE0IDQ1LjE3IDI3Ljc5IDQyLjEgWiIgZmlsbD0iI2ZmY2Q3NSIgdHJhbnNmb3JtPSJyb3RhdGUoMzQzIDMyLjQ5IDQyLjEpIi8+CiAgICA8cmVjdCB4PSIyOS4yIiB5PSI0MS45MiIgd2lkdGg9IjYuNTgiIGhlaWdodD0iMC4zNiIgcng9IjAuMTgiIGZpbGw9IiNlM2E5NGYiIHRyYW5zZm9ybT0icm90YXRlKDM0MyAzMi40OSA0Mi4xKSIvPgogICAgPHBhdGggZD0iTSAzMy45IDQxLjcgQyAzNi4yNSAzOC42MyA0MC45NSAzOC42MyA0My4zIDQxLjcgQyA0MC45NSA0NC43NyAzNi4yNSA0NC43NyAzMy45IDQxLjcgWiIgZmlsbD0iI2IxM2U1MyIgdHJhbnNmb3JtPSJyb3RhdGUoMzQ0IDM4LjYgNDEuNykiLz4KICAgIDxyZWN0IHg9IjM1LjMxIiB5PSI0MS41MiIgd2lkdGg9IjYuNTgiIGhlaWdodD0iMC4zNiIgcng9IjAuMTgiIGZpbGw9IiM4YzJjNDEiIHRyYW5zZm9ybT0icm90YXRlKDM0NCAzOC42IDQxLjcpIi8+CiAgICA8cGF0aCBkPSJNIDQwLjIzIDQxLjU1IEMgNDIuNTggMzguNDggNDcuMjggMzguNDggNDkuNjMgNDEuNTUgQyA0Ny4yOCA0NC42MiA0Mi41OCA0NC42MiA0MC4yMyA0MS41NSBaIiBmaWxsPSIjZWY3ZDU3IiB0cmFuc2Zvcm09InJvdGF0ZSgzMzAgNDQuOTMgNDEuNTUpIi8+CiAgICA8cmVjdCB4PSI0MS42NCIgeT0iNDEuMzciIHdpZHRoPSI2LjU4IiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjYzk1ZjNlIiB0cmFuc2Zvcm09InJvdGF0ZSgzMzAgNDQuOTMgNDEuNTUpIi8+CiAgICA8cGF0aCBkPSJNIDE1LjYgMzcuMjIgQyAxNy45NSAzNC4xNSAyMi42NSAzNC4xNSAyNSAzNy4yMiBDIDIyLjY1IDQwLjI5IDE3Ljk1IDQwLjI5IDE1LjYgMzcuMjIgWiIgZmlsbD0iI2IxM2U1MyIgdHJhbnNmb3JtPSJyb3RhdGUoMTkzIDIwLjMgMzcuMjIpIi8+CiAgICA8cmVjdCB4PSIxNy4wMSIgeT0iMzcuMDQiIHdpZHRoPSI2LjU4IiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjOGMyYzQxIiB0cmFuc2Zvcm09InJvdGF0ZSgxOTMgMjAuMyAzNy4yMikiLz4KICAgIDxwYXRoIGQ9Ik0gMjIuNTUgMzYuNTcgQyAyNC45IDMzLjUgMjkuNiAzMy41IDMxLjk1IDM2LjU3IEMgMjkuNiAzOS42MyAyNC45IDM5LjYzIDIyLjU1IDM2LjU3IFoiIGZpbGw9IiNkNDg3NGYiIHRyYW5zZm9ybT0icm90YXRlKDM0NSAyNy4yNSAzNi41NykiLz4KICAgIDxyZWN0IHg9IjIzLjk2IiB5PSIzNi4zOSIgd2lkdGg9IjYuNTgiIGhlaWdodD0iMC4zNiIgcng9IjAuMTgiIGZpbGw9IiNhOTYzM2EiIHRyYW5zZm9ybT0icm90YXRlKDM0NSAyNy4yNSAzNi41NykiLz4KICAgIDxwYXRoIGQ9Ik0gMzEuMjMgMzcuMjEgQyAzMy41OCAzNC4xNCAzOC4yOCAzNC4xNCA0MC42MyAzNy4yMSBDIDM4LjI4IDQwLjI4IDMzLjU4IDQwLjI4IDMxLjIzIDM3LjIxIFoiIGZpbGw9IiNlZjdkNTciIHRyYW5zZm9ybT0icm90YXRlKDE1MyAzNS45MyAzNy4yMSkiLz4KICAgIDxyZWN0IHg9IjMyLjY0IiB5PSIzNy4wMyIgd2lkdGg9IjYuNTgiIGhlaWdodD0iMC4zNiIgcng9IjAuMTgiIGZpbGw9IiNjOTVmM2UiIHRyYW5zZm9ybT0icm90YXRlKDE1MyAzNS45MyAzNy4yMSkiLz4KICAgIDxwYXRoIGQ9Ik0gMzkuNzQgMzcuMjEgQyA0Mi4wOSAzNC4xNCA0Ni43OSAzNC4xNCA0OS4xNCAzNy4yMSBDIDQ2Ljc5IDQwLjI3IDQyLjA5IDQwLjI3IDM5Ljc0IDM3LjIxIFoiIGZpbGw9IiNmZmNkNzUiIHRyYW5zZm9ybT0icm90YXRlKDM0OCA0NC40NCAzNy4yMSkiLz4KICAgIDxyZWN0IHg9IjQxLjE1IiB5PSIzNy4wMyIgd2lkdGg9IjYuNTgiIGhlaWdodD0iMC4zNiIgcng9IjAuMTgiIGZpbGw9IiNlM2E5NGYiIHRyYW5zZm9ybT0icm90YXRlKDM0OCA0NC40NCAzNy4yMSkiLz4KICAgIDxwYXRoIGQ9Ik0gMTYuMDQgMzIuMzUgQyAxOC4zOSAyOS4yOCAyMy4wOSAyOS4yOCAyNS40NCAzMi4zNSBDIDIzLjA5IDM1LjQxIDE4LjM5IDM1LjQxIDE2LjA0IDMyLjM1IFoiIGZpbGw9IiNkNDg3NGYiIHRyYW5zZm9ybT0icm90YXRlKDEyIDIwLjc0IDMyLjM1KSIvPgogICAgPHJlY3QgeD0iMTcuNDUiIHk9IjMyLjE3IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iI2E5NjMzYSIgdHJhbnNmb3JtPSJyb3RhdGUoMTIgMjAuNzQgMzIuMzUpIi8+CiAgICA8cGF0aCBkPSJNIDIzLjQ1IDMzLjA4IEMgMjUuOCAzMC4wMSAzMC41IDMwLjAxIDMyLjg1IDMzLjA4IEMgMzAuNSAzNi4xNSAyNS44IDM2LjE1IDIzLjQ1IDMzLjA4IFoiIGZpbGw9IiNlZjdkNTciIHRyYW5zZm9ybT0icm90YXRlKDE4OCAyOC4xNSAzMy4wOCkiLz4KICAgIDxyZWN0IHg9IjI0Ljg2IiB5PSIzMi45IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iI2M5NWYzZSIgdHJhbnNmb3JtPSJyb3RhdGUoMTg4IDI4LjE1IDMzLjA4KSIvPgogICAgPHBhdGggZD0iTSAzMS41NyAzMi44MiBDIDMzLjkyIDI5Ljc1IDM4LjYyIDI5Ljc1IDQwLjk3IDMyLjgyIEMgMzguNjIgMzUuODkgMzMuOTIgMzUuODkgMzEuNTcgMzIuODIgWiIgZmlsbD0iI2ZmY2Q3NSIgdHJhbnNmb3JtPSJyb3RhdGUoMTk2IDM2LjI3IDMyLjgyKSIvPgogICAgPHJlY3QgeD0iMzIuOTgiIHk9IjMyLjY0IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iI2UzYTk0ZiIgdHJhbnNmb3JtPSJyb3RhdGUoMTk2IDM2LjI3IDMyLjgyKSIvPgogICAgPHBhdGggZD0iTSAzNy41NyAzMi4zMiBDIDM5LjkyIDI5LjI1IDQ0LjYyIDI5LjI1IDQ2Ljk3IDMyLjMyIEMgNDQuNjIgMzUuMzggMzkuOTIgMzUuMzggMzcuNTcgMzIuMzIgWiIgZmlsbD0iI2Q0ODc0ZiIgdHJhbnNmb3JtPSJyb3RhdGUoMjE1IDQyLjI3IDMyLjMyKSIvPgogICAgPHJlY3QgeD0iMzguOTgiIHk9IjMyLjE0IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iI2E5NjMzYSIgdHJhbnNmb3JtPSJyb3RhdGUoMjE1IDQyLjI3IDMyLjMyKSIvPgogICAgPHBhdGggZD0iTSAxOS4wMSAyOC40NSBDIDIxLjM2IDI1LjM4IDI2LjA2IDI1LjM4IDI4LjQxIDI4LjQ1IEMgMjYuMDYgMzEuNTEgMjEuMzYgMzEuNTEgMTkuMDEgMjguNDUgWiIgZmlsbD0iI2ZmY2Q3NSIgdHJhbnNmb3JtPSJyb3RhdGUoMTkgMjMuNzEgMjguNDUpIi8+CiAgICA8cmVjdCB4PSIyMC40MiIgeT0iMjguMjciIHdpZHRoPSI2LjU4IiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjZTNhOTRmIiB0cmFuc2Zvcm09InJvdGF0ZSgxOSAyMy43MSAyOC40NSkiLz4KICAgIDxwYXRoIGQ9Ik0gMjYuOSAyNy41MiBDIDI5LjI1IDI0LjQ1IDMzLjk1IDI0LjQ1IDM2LjMgMjcuNTIgQyAzMy45NSAzMC41OSAyOS4yNSAzMC41OSAyNi45IDI3LjUyIFoiIGZpbGw9IiNkNDg3NGYiIHRyYW5zZm9ybT0icm90YXRlKDIwNiAzMS42IDI3LjUyKSIvPgogICAgPHJlY3QgeD0iMjguMzEiIHk9IjI3LjM0IiB3aWR0aD0iNi41OCIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iI2E5NjMzYSIgdHJhbnNmb3JtPSJyb3RhdGUoMjA2IDMxLjYgMjcuNTIpIi8+CiAgICA8cGF0aCBkPSJNIDM1LjcxIDI4LjE4IEMgMzguMDYgMjUuMTIgNDIuNzYgMjUuMTIgNDUuMTEgMjguMTggQyA0Mi43NiAzMS4yNSAzOC4wNiAzMS4yNSAzNS43MSAyOC4xOCBaIiBmaWxsPSIjZWY3ZDU3IiB0cmFuc2Zvcm09InJvdGF0ZSgxNzEgNDAuNDEgMjguMTgpIi8+CiAgICA8cmVjdCB4PSIzNy4xMiIgeT0iMjgiIHdpZHRoPSI2LjU4IiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjYzk1ZjNlIiB0cmFuc2Zvcm09InJvdGF0ZSgxNzEgNDAuNDEgMjguMTgpIi8+CiAgICA8cGF0aCBkPSJNIDIxLjk3IDI1LjExIEMgMjQuMzIgMjIuMDQgMjkuMDIgMjIuMDQgMzEuMzcgMjUuMTEgQyAyOS4wMiAyOC4xOCAyNC4zMiAyOC4xOCAyMS45NyAyNS4xMSBaIiBmaWxsPSIjYjEzZTUzIiB0cmFuc2Zvcm09InJvdGF0ZSgzNTcgMjYuNjcgMjUuMTEpIi8+CiAgICA8cmVjdCB4PSIyMy4zOCIgeT0iMjQuOTMiIHdpZHRoPSI2LjU4IiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjOGMyYzQxIiB0cmFuc2Zvcm09InJvdGF0ZSgzNTcgMjYuNjcgMjUuMTEpIi8+CiAgICA8cGF0aCBkPSJNIDMyLjE2IDI0LjI4IEMgMzQuNTEgMjEuMjEgMzkuMjEgMjEuMjEgNDEuNTYgMjQuMjggQyAzOS4yMSAyNy4zNSAzNC41MSAyNy4zNSAzMi4xNiAyNC4yOCBaIiBmaWxsPSIjZWY3ZDU3IiB0cmFuc2Zvcm09InJvdGF0ZSgxOTMgMzYuODYgMjQuMjgpIi8+CiAgICA8cmVjdCB4PSIzMy41NyIgeT0iMjQuMSIgd2lkdGg9IjYuNTgiIGhlaWdodD0iMC4zNiIgcng9IjAuMTgiIGZpbGw9IiNjOTVmM2UiIHRyYW5zZm9ybT0icm90YXRlKDE5MyAzNi44NiAyNC4yOCkiLz4KICAgIDxwYXRoIGQ9Ik0gNDQuNjggNDMuODcgQyA0Ni45MyA0MC45NCA1MS40MyA0MC45NCA1My42OCA0My44NyBDIDUxLjQzIDQ2LjgxIDQ2LjkzIDQ2LjgxIDQ0LjY4IDQzLjg3IFoiIGZpbGw9IiNmZmNkNzUiIHRyYW5zZm9ybT0icm90YXRlKDkxIDQ5LjE4IDQzLjg3KSIvPgogICAgPHJlY3QgeD0iNDYuMDMiIHk9IjQzLjY5IiB3aWR0aD0iNi4zIiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjZTNhOTRmIiB0cmFuc2Zvcm09InJvdGF0ZSg5MSA0OS4xOCA0My44NykiLz4KICAgIDxwYXRoIGQ9Ik0gNDEuMjkgMzMuNDcgQyA0My41NCAzMC41NCA0OC4wNCAzMC41NCA1MC4yOSAzMy40NyBDIDQ4LjA0IDM2LjQxIDQzLjU0IDM2LjQxIDQxLjI5IDMzLjQ3IFoiIGZpbGw9IiNiMTNlNTMiIHRyYW5zZm9ybT0icm90YXRlKDczIDQ1Ljc5IDMzLjQ3KSIvPgogICAgPHJlY3QgeD0iNDIuNjQiIHk9IjMzLjI5IiB3aWR0aD0iNi4zIiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjOGMyYzQxIiB0cmFuc2Zvcm09InJvdGF0ZSg3MyA0NS43OSAzMy40NykiLz4KICAgIDxwYXRoIGQ9Ik0gMzUuMTYgMjYuMjcgQyAzNy40MSAyMy4zNCA0MS45MSAyMy4zNCA0NC4xNiAyNi4yNyBDIDQxLjkxIDI5LjIxIDM3LjQxIDI5LjIxIDM1LjE2IDI2LjI3IFoiIGZpbGw9IiNkNDg3NGYiIHRyYW5zZm9ybT0icm90YXRlKDM0IDM5LjY2IDI2LjI3KSIvPgogICAgPHJlY3QgeD0iMzYuNTEiIHk9IjI2LjA5IiB3aWR0aD0iNi4zIiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjYTk2MzNhIiB0cmFuc2Zvcm09InJvdGF0ZSgzNCAzOS42NiAyNi4yNykiLz4KICAgIDxwYXRoIGQ9Ik0gMjcuNSAyMy43IEMgMjkuNzUgMjAuNzcgMzQuMjUgMjAuNzcgMzYuNSAyMy43IEMgMzQuMjUgMjYuNjMgMjkuNzUgMjYuNjMgMjcuNSAyMy43IFoiIGZpbGw9IiNlZjdkNTciIHRyYW5zZm9ybT0icm90YXRlKDM1OSAzMiAyMy43KSIvPgogICAgPHJlY3QgeD0iMjguODUiIHk9IjIzLjUyIiB3aWR0aD0iNi4zIiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjYzk1ZjNlIiB0cmFuc2Zvcm09InJvdGF0ZSgzNTkgMzIgMjMuNykiLz4KICAgIDxwYXRoIGQ9Ik0gMTkuODQgMjYuMjcgQyAyMi4wOSAyMy4zNCAyNi41OSAyMy4zNCAyOC44NCAyNi4yNyBDIDI2LjU5IDI5LjIxIDIyLjA5IDI5LjIxIDE5Ljg0IDI2LjI3IFoiIGZpbGw9IiNiMTNlNTMiIHRyYW5zZm9ybT0icm90YXRlKDMxNCAyNC4zNCAyNi4yNykiLz4KICAgIDxyZWN0IHg9IjIxLjE5IiB5PSIyNi4wOSIgd2lkdGg9IjYuMyIgaGVpZ2h0PSIwLjM2IiByeD0iMC4xOCIgZmlsbD0iIzhjMmM0MSIgdHJhbnNmb3JtPSJyb3RhdGUoMzE0IDI0LjM0IDI2LjI3KSIvPgogICAgPHBhdGggZD0iTSAxMy43MSAzMy40NyBDIDE1Ljk2IDMwLjU0IDIwLjQ2IDMwLjU0IDIyLjcxIDMzLjQ3IEMgMjAuNDYgMzYuNDEgMTUuOTYgMzYuNDEgMTMuNzEgMzMuNDcgWiIgZmlsbD0iI2Q0ODc0ZiIgdHJhbnNmb3JtPSJyb3RhdGUoMjk3IDE4LjIxIDMzLjQ3KSIvPgogICAgPHJlY3QgeD0iMTUuMDYiIHk9IjMzLjI5IiB3aWR0aD0iNi4zIiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjYTk2MzNhIiB0cmFuc2Zvcm09InJvdGF0ZSgyOTcgMTguMjEgMzMuNDcpIi8+CiAgICA8cGF0aCBkPSJNIDEwLjMyIDQzLjg3IEMgMTIuNTcgNDAuOTQgMTcuMDcgNDAuOTQgMTkuMzIgNDMuODcgQyAxNy4wNyA0Ni44MSAxMi41NyA0Ni44MSAxMC4zMiA0My44NyBaIiBmaWxsPSIjZmZjZDc1IiB0cmFuc2Zvcm09InJvdGF0ZSgyNzcgMTQuODIgNDMuODcpIi8+CiAgICA8cmVjdCB4PSIxMS42NyIgeT0iNDMuNjkiIHdpZHRoPSI2LjMiIGhlaWdodD0iMC4zNiIgcng9IjAuMTgiIGZpbGw9IiNlM2E5NGYiIHRyYW5zZm9ybT0icm90YXRlKDI3NyAxNC44MiA0My44NykiLz4KICAgIDxwYXRoIGQ9Ik0gOS44IDQ4LjYgQyAxMS43IDQ2LjMzIDE1LjUgNDYuMzMgMTcuNCA0OC42IEMgMTUuNSA1MC44NyAxMS43IDUwLjg3IDkuOCA0OC42IFoiIGZpbGw9IiNmZmNkNzUiIHRyYW5zZm9ybT0icm90YXRlKDE3MiAxMy42IDQ4LjYpIi8+CiAgICA8cmVjdCB4PSIxMC45NCIgeT0iNDguNDIiIHdpZHRoPSI1LjMyIiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjZTNhOTRmIiB0cmFuc2Zvcm09InJvdGF0ZSgxNzIgMTMuNiA0OC42KSIvPgogICAgPHBhdGggZD0iTSA0Ni42IDQ4LjcgQyA0OC41IDQ2LjQzIDUyLjMgNDYuNDMgNTQuMiA0OC43IEMgNTIuMyA1MC45NyA0OC41IDUwLjk3IDQ2LjYgNDguNyBaIiBmaWxsPSIjZWY3ZDU3IiB0cmFuc2Zvcm09InJvdGF0ZSgxMCA1MC40IDQ4LjcpIi8+CiAgICA8cmVjdCB4PSI0Ny43NCIgeT0iNDguNTIiIHdpZHRoPSI1LjMyIiBoZWlnaHQ9IjAuMzYiIHJ4PSIwLjE4IiBmaWxsPSIjYzk1ZjNlIiB0cmFuc2Zvcm09InJvdGF0ZSgxMCA1MC40IDQ4LjcpIi8+PC9zdmc+",
+              "width": 161,
               "height": 144
             }
           ],
@@ -201,71 +264,71 @@
                 },
                 {
                   "type": "g2d:createImageSprite",
-                  "varName": "coelho",
-                  "x": 110,
+                  "varName": "bicho1",
+                  "x": 101,
                   "y": 181,
-                  "w": 54,
+                  "w": 72,
                   "h": 87,
                   "image": "coelho"
                 },
                 {
                   "type": "g2d:createImageSprite",
-                  "varName": "arbusto",
-                  "x": 60,
-                  "y": 166,
-                  "w": 154,
-                  "h": 116,
+                  "varName": "esconderijo1",
+                  "x": 56.5,
+                  "y": 137,
+                  "w": 161,
+                  "h": 144,
                   "image": "arbusto"
                 },
                 {
                   "type": "g2d:addToGroup",
-                  "spriteVar": "arbusto",
+                  "spriteVar": "esconderijo1",
                   "groupVar": "esconderijos"
                 },
                 {
                   "type": "g2d:createImageSprite",
-                  "varName": "raposa",
-                  "x": 277,
-                  "y": 190,
-                  "w": 66,
-                  "h": 84,
+                  "varName": "bicho2",
+                  "x": 274,
+                  "y": 181,
+                  "w": 72,
+                  "h": 87,
                   "image": "raposa"
                 },
                 {
                   "type": "g2d:createImageSprite",
-                  "varName": "pedras",
+                  "varName": "esconderijo2",
                   "x": 229.5,
-                  "y": 185,
+                  "y": 137,
                   "w": 161,
-                  "h": 112,
+                  "h": 144,
                   "image": "pedras"
                 },
                 {
                   "type": "g2d:addToGroup",
-                  "spriteVar": "pedras",
+                  "spriteVar": "esconderijo2",
                   "groupVar": "esconderijos"
                 },
                 {
                   "type": "g2d:createImageSprite",
-                  "varName": "coruja",
+                  "varName": "bicho3",
                   "x": 447,
-                  "y": 187,
+                  "y": 181,
                   "w": 72,
-                  "h": 81,
+                  "h": 87,
                   "image": "coruja"
                 },
                 {
                   "type": "g2d:createImageSprite",
-                  "varName": "flores",
-                  "x": 416.5,
-                  "y": 138,
-                  "w": 133,
+                  "varName": "esconderijo3",
+                  "x": 402.5,
+                  "y": 137,
+                  "w": 161,
                   "h": 144,
                   "image": "flores"
                 },
                 {
                   "type": "g2d:addToGroup",
-                  "spriteVar": "flores",
+                  "spriteVar": "esconderijo3",
                   "groupVar": "esconderijos"
                 }
               ],
@@ -297,17 +360,17 @@
                     },
                     {
                       "type": "g2d:drawSprite",
-                      "spriteVar": "coelho",
+                      "spriteVar": "bicho1",
                       "ctxVar": "ctx"
                     },
                     {
                       "type": "g2d:drawSprite",
-                      "spriteVar": "raposa",
+                      "spriteVar": "bicho2",
                       "ctxVar": "ctx"
                     },
                     {
                       "type": "g2d:drawSprite",
-                      "spriteVar": "coruja",
+                      "spriteVar": "bicho3",
                       "ctxVar": "ctx"
                     },
                     {
@@ -426,7 +489,7 @@
                                   "block": {
                                     "type": "sz_g2d_create_image_sprite",
                                     "fields": {
-                                      "NAME": "coelho",
+                                      "NAME": "bicho1",
                                       "IMAGE": "coelho"
                                     },
                                     "inputs": {
@@ -434,7 +497,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 110
+                                            "NUM": 101
                                           }
                                         }
                                       },
@@ -450,7 +513,7 @@
                                         "shadow": {
                                           "type": "sz_val_number",
                                           "fields": {
-                                            "NUM": 54
+                                            "NUM": 72
                                           }
                                         }
                                       },
@@ -467,7 +530,7 @@
                                       "block": {
                                         "type": "sz_g2d_create_image_sprite",
                                         "fields": {
-                                          "NAME": "arbusto",
+                                          "NAME": "esconderijo1",
                                           "IMAGE": "arbusto"
                                         },
                                         "inputs": {
@@ -475,7 +538,7 @@
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
-                                                "NUM": 60
+                                                "NUM": 56.5
                                               }
                                             }
                                           },
@@ -483,7 +546,7 @@
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
-                                                "NUM": 166
+                                                "NUM": 137
                                               }
                                             }
                                           },
@@ -491,7 +554,7 @@
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
-                                                "NUM": 154
+                                                "NUM": 161
                                               }
                                             }
                                           },
@@ -499,7 +562,7 @@
                                             "shadow": {
                                               "type": "sz_val_number",
                                               "fields": {
-                                                "NUM": 116
+                                                "NUM": 144
                                               }
                                             }
                                           }
@@ -508,14 +571,14 @@
                                           "block": {
                                             "type": "sz_g2d_add_to_group",
                                             "fields": {
-                                              "SPRITE": "arbusto",
+                                              "SPRITE": "esconderijo1",
                                               "GROUP": "esconderijos"
                                             },
                                             "next": {
                                               "block": {
                                                 "type": "sz_g2d_create_image_sprite",
                                                 "fields": {
-                                                  "NAME": "raposa",
+                                                  "NAME": "bicho2",
                                                   "IMAGE": "raposa"
                                                 },
                                                 "inputs": {
@@ -523,7 +586,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 277
+                                                        "NUM": 274
                                                       }
                                                     }
                                                   },
@@ -531,7 +594,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 190
+                                                        "NUM": 181
                                                       }
                                                     }
                                                   },
@@ -539,7 +602,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 66
+                                                        "NUM": 72
                                                       }
                                                     }
                                                   },
@@ -547,7 +610,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 84
+                                                        "NUM": 87
                                                       }
                                                     }
                                                   }
@@ -556,7 +619,7 @@
                                                   "block": {
                                                     "type": "sz_g2d_create_image_sprite",
                                                     "fields": {
-                                                      "NAME": "pedras",
+                                                      "NAME": "esconderijo2",
                                                       "IMAGE": "pedras"
                                                     },
                                                     "inputs": {
@@ -572,7 +635,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 185
+                                                            "NUM": 137
                                                           }
                                                         }
                                                       },
@@ -588,7 +651,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 112
+                                                            "NUM": 144
                                                           }
                                                         }
                                                       }
@@ -597,14 +660,14 @@
                                                       "block": {
                                                         "type": "sz_g2d_add_to_group",
                                                         "fields": {
-                                                          "SPRITE": "pedras",
+                                                          "SPRITE": "esconderijo2",
                                                           "GROUP": "esconderijos"
                                                         },
                                                         "next": {
                                                           "block": {
                                                             "type": "sz_g2d_create_image_sprite",
                                                             "fields": {
-                                                              "NAME": "coruja",
+                                                              "NAME": "bicho3",
                                                               "IMAGE": "coruja"
                                                             },
                                                             "inputs": {
@@ -620,7 +683,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 187
+                                                                    "NUM": 181
                                                                   }
                                                                 }
                                                               },
@@ -636,7 +699,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 81
+                                                                    "NUM": 87
                                                                   }
                                                                 }
                                                               }
@@ -645,7 +708,7 @@
                                                               "block": {
                                                                 "type": "sz_g2d_create_image_sprite",
                                                                 "fields": {
-                                                                  "NAME": "flores",
+                                                                  "NAME": "esconderijo3",
                                                                   "IMAGE": "flores"
                                                                 },
                                                                 "inputs": {
@@ -653,7 +716,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 416.5
+                                                                        "NUM": 402.5
                                                                       }
                                                                     }
                                                                   },
@@ -661,7 +724,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 138
+                                                                        "NUM": 137
                                                                       }
                                                                     }
                                                                   },
@@ -669,7 +732,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 133
+                                                                        "NUM": 161
                                                                       }
                                                                     }
                                                                   },
@@ -686,7 +749,7 @@
                                                                   "block": {
                                                                     "type": "sz_g2d_add_to_group",
                                                                     "fields": {
-                                                                      "SPRITE": "flores",
+                                                                      "SPRITE": "esconderijo3",
                                                                       "GROUP": "esconderijos"
                                                                     }
                                                                   }
@@ -773,19 +836,19 @@
                                     "block": {
                                       "type": "sz_g2d_draw_sprite",
                                       "fields": {
-                                        "SPRITE": "coelho"
+                                        "SPRITE": "bicho1"
                                       },
                                       "next": {
                                         "block": {
                                           "type": "sz_g2d_draw_sprite",
                                           "fields": {
-                                            "SPRITE": "raposa"
+                                            "SPRITE": "bicho2"
                                           },
                                           "next": {
                                             "block": {
                                               "type": "sz_g2d_draw_sprite",
                                               "fields": {
-                                                "SPRITE": "coruja"
+                                                "SPRITE": "bicho3"
                                               },
                                               "next": {
                                                 "block": {
@@ -948,8 +1011,20 @@
       }
     },
     {
+      "key": "video-a2-personalizar",
+      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nMexa e veja numa seção própria, com mudanças que ficam no jogo. Com o destino à vista, mostrar a área Ao iniciar e os blocos Criar sprite. No bloco não há desenho para clicar: no fim de um bloco que cria um bicho, depois de com imagem, clicar no nome da imagem (coelho) para abrir a lista com as imagens do jogo e escolher outro bicho (gato); dizer que, se não achar, é só rolar a lista. Fazer o mesmo num bloco que cria um esconderijo: clicar em arbusto e escolher toco. Dizer que todos os bichos têm o mesmo tamanho, e todos os esconderijos também, então ninguém sai do lugar. Depois, em Enquanto estiver rodando, trocar o texto do bloco Escrever dentro do Se por uma frase curta. Antes do teste, dar a correção do erro provável: se algum bicho aparecer antes do toque, ou um desenho ficar grande demais, clicar de novo no nome da imagem e escolher um desenho do mesmo tipo (bicho no bloco do bicho, esconderijo no bloco do esconderijo). Testar encontrando todo mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em Próxima seção. As escolhas não viram critério. Regravar a fala. Alvo: 2 a 3 minutos, incluindo gestos e teste.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-a2-personalizar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima seção."
+      }
+    },
+    {
       "key": "video-a2-fecho",
-      "plannedVideo": "Título: Publique seu jogo\n\nPedir que a criança publique o jogo para outras pessoas jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar, manter título e resumo preenchidos, clicar em Gerar capa e conferir a imagem. Clicar em Publicar e esperar Seu jogo está no Mural! Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Personalização, upload e cópia do link ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 45 a 60 segundos, incluindo publicação e confirmação.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Publique seu jogo\n\nPedir que a criança publique o jogo para outras pessoas jogarem. No mesmo Estúdio da prática, após o envio ao professor, abrir Compartilhar e dizer que o resumo do projeto já vem preenchido e pode ficar como está; na aula a janela não mostra o campo Título, então a fala não o cita. Clicar em Gerar capa e conferir a imagem. Clicar em Publicar e esperar Seu jogo está no Mural! Clicar em Fechar e terminar em Concluir aula. Não antecipar certificado ou próxima aula, nem apresentar compartilhar como opcional. A publicação não vira bloqueio técnico de conclusão. A ajuda escrita apresenta o Como fazer e abre o tutorial direto, sem exigir leitura. Outra capa, upload e cópia do link ficam na biblioteca. Sem venda. Regravar a fala. Alvo: 45 a 60 segundos, incluindo publicação e confirmação.\n\nRoteiro falado completo: cade-todo-mundo-aula-2.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-a2-publicar",
@@ -972,7 +1047,7 @@
       "key": "retomada",
       "title": "Volte ao seu jardim",
       "intent": "presentation",
-      "objective": "Retomar o projeto salvo e perceber que revelar não está contando os achados ainda.",
+      "objective": "Ver que o jogo já revela os personagens, mas ainda não conta os achados.",
       "blockKeys": ["video-a2-retomada", "ponte-a2-retomada"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1010,6 +1085,22 @@
         "blockIds": ["video-a2-contagem", "projeto"],
         "projectChecks": [
           {
+            "id": "revelar-ao-toque",
+            "label": "Revele o personagem tocado deixando o esconderijo escolhido invisível.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_opacity",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_group_click",
+              "fields": {
+                "SPRITE": "escolhido"
+              },
+              "inputs": {
+                "PERCENT": 0
+              }
+            }
+          },
+          {
             "id": "somar-achado",
             "label": "Conte um achado depois de revelar o personagem.",
             "rule": {
@@ -1027,10 +1118,24 @@
       }
     },
     {
+      "key": "personalizar",
+      "title": "Deixe o jogo com a sua cara",
+      "intent": "closing",
+      "objective": "Trocar bichos, esconderijos e a mensagem do final do próprio jogo e testar.",
+      "blockKeys": ["video-a2-personalizar", "ponte-a2-personalizar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-a2-personalizar"]
+      }
+    },
+    {
       "key": "conclusao",
       "title": "Publique seu jogo",
       "intent": "closing",
-      "objective": "Publicar o jogo com título e resumo prontos e capa gerada; fechar a confirmação e concluir a aula.",
+      "objective": "Publicar o jogo com o resumo pronto e a capa gerada; fechar a confirmação e concluir a aula.",
       "blockKeys": ["video-a2-fecho", "ponte-a2-publicar", "ajuda-a2-publicar"],
       "workspaceKey": "projeto",
       "externalTool": null,

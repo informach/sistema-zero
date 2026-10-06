@@ -80,6 +80,13 @@ sob o ULID e o `load(<este id>)` nunca acha o rascunho (a criança PERDIA tudo n
 `sz-lesson-studio:` colado, corrigido). `blockId`+`viewerId` são UUIDs (charset seguro). Travado por
 `tests/studio-project-id.test.ts`. ⚠️ Mudar o formato da chave ORFANA os rascunhos antigos (sem usuário
 real em prod, ok).
+**Imagens novas do curso chegam ao projeto salvo (05/10/2026):** o projeto que vem de (1), (2) ou (3)
+passa por `completeLibraryAssets` (`lib/studio-lesson-seed.ts`), que ACRESCENTA as imagens de
+biblioteca (`source: 'library'`) que o `initialProject` tem e o salvo não tem, pelo nome. Nunca troca
+nem apaga uma imagem que já existe, e sem falta devolve o MESMO objeto. Foi o que deixou os
+personagens novos do Farol e os bichos novos do Cadê chegarem a quem começou o curso antes.
+⚠️ No Cadê, quem salvou antes guarda os sprites com as caixas antigas: a imagem nova entra esticada
+para a caixa do sprite antigo. Teste: `tests/studio-lesson-seed.test.ts`.
 
 ⭐ **Aviso "você está enviando o projeto INICIAL" (08/2026 — anti-sobrescrita):** o caso do
 incidente é o editor semeado do TEMPLATE (passo 4 da ordem acima, num soluço de rede do passo 2)
@@ -2664,6 +2671,65 @@ experiência nova. O que ficou de pé:
 - **Rótulo de ladrilho em camelCase sai como no bloco** (`data-codigo` no `dt`, `scene-frame.tsx`):
   a versalete transformava `temChave` em "TEMCHAVE".
 - Testes: `tests/scene-collect-and-remember.test.tsx`, `tests/scene-lighthouse-key.test.tsx`.
+
+### A terceira: o andar do personagem (`lighthouse-walk`, 05/10/2026)
+
+O Dia 1 do Desafio: três conceitos (o andar a cada quadro, a velocidade, o limite da tela), três
+experiências, UMA cena configurada por `setup.goals` (`scene-lighthouse-walk.tsx`). A Nave usa a
+mesma cena com `cenario: 'nave'`.
+- **A bancada é por CASO** (`goals` do `LessonSceneControls`): a `Escolha` "Velocidade" (com
+  "Velocidade 1"/"Velocidade 3") só com metas de velocidade; "Manter dentro da tela" e o terceiro
+  bloco da `RegraDoJogo` (com "(desligado)") só com metas de limite. Os rótulos são citados pelos
+  roteiros letra por letra.
+- **A regra usa os rótulos de VERDADE do Estúdio** (`REFERENCIA-BLOCOS-JOGO-2D.json`), por cenário:
+  o Farol é "Mover sprite personagem em 4 direções com setas, velocidade N" (`sz_g2d_top_down`); a
+  Nave, "Mover o sprite nave com as setas <- -> (velocidade N)" (`sz_g2d_arrows_x`); os dois limitam
+  com "Manter o sprite … dentro da tela". O `cenario` chega pelo `LessonSceneControls`.
+- **O tempo mora na BANCADA**: "Avançar 1 quadro" (`sceneStepSeconds`), "Rodar"/"Parar" (o relógio
+  do PLAYER via `onRunning`/`tocando`, nunca um segundo laço) e "Recomeçar" (`restart-walk`, que
+  CONSERVA seta, velocidade e limite). Por isso `botoesDoMundo` devolve `[]` para ela e o
+  "Recomeçar" geral do pé do mundo não existe nela (ele voltaria ao caso e desligaria as escolhas).
+  ⚠️ O caso (`setup.actions`) não pode mover o personagem (o core recusa `advance` e `hold-arrow`):
+  o Recomeçar volta ao começo de fábrica.
+- **O azul cheio segue a META que falta**: o Avançar enquanto falta uma meta de passo (as do andar
+  e da velocidade), o Rodar no limite (ou com as de passo feitas), o Parar rodando, e o Recomeçar
+  quando o personagem saiu sem o limite.
+- **O Rodar para sozinho pela régua do core** (`sceneClockShouldStop`): personagem inteiro fora
+  da tela sem o limite (`lighthouseWalkOut`) ou 2 s com o x parado (por passagem de múltiplo:
+  apertar Rodar de novo roda mais 2 s). Fora sem o limite, o Rodar FECHA com uma nota à vista
+  ("O personagem saiu da tela. Clique em Recomeçar ou ligue Manter dentro da tela.", ou só
+  "Clique em Recomeçar." no caso sem a chave), ligada a ele por `aria-describedby`. O Avançar segue
+  aberto (mais um quadro fora é só mais um x).
+- **`.sz-scene-quebra`** (scene.css) na raiz da bancada: os botões dela QUEBRAM linha. "Segurar a
+  seta para a direita: desligado" tem 273px numa linha só e estourava a prancha a 360 e 320 (o
+  e2e mede a caixa de cada controle contra a do console a 320, 360 e 390 e reprova sem a classe).
+  Opt-in, para não mexer nas outras bancadas.
+- **O palco**: o mapa do Farol (ou o espaço da Nave) + a faixa "fora da tela" à direita da borda
+  (`fill-scene-b-wash`) + as marcas dos ÚLTIMOS 10 quadros sob os pés e o passo do último quadro
+  escrito entre as duas últimas ("+3", "+1", "+0", sempre do lado de dentro da borda): no celular
+  1 e 3 de distância viram menos de 2px, e o número é o que se lê. A parte que passa da borda é
+  desenhada DUAS vezes por `clipPath`: inteira na tela e a 60% na faixa, com o contorno do CORPO
+  tracejado em `stroke-scene-b-ink` (o contorno é que dá os 3:1 sobre a faixa; a conta está em
+  `scene-contrast.test.ts`). Só a primeira cópia leva os `data-*`. Sem `.sz-scene-anda`: o salto de
+  um quadro é a lição. No celular, `viewEstreito` recorta a faixa do caminho (a figura cresce
+  ~40%) e os rótulos descem com ele.
+- ⚠️ **"Parte passando da borda" é medida pelo CORPO**, não pela caixa de 64: o personagem tem
+  margem transparente (corpo de 16 a 46, `FAROL_HITBOXES`), e com x 433 a caixa já cruzava a borda
+  sem nenhum pixel do desenho ter saído. A nave cabe na caixa, centrada e ancorada no chão dela.
+- ⚠️ **A `<desc>` diz o DESENHO** (dentro, parte ou fora em relação à borda, e as marcas), nunca o
+  quadro, o x ou a seta: esses moram na frase da situação (`role="status"`) e nos ladrilhos, e o
+  leitor de tela ouvia a mesma frase duas vezes. A situação do core fala em "o sprite" e "o x", e
+  serve aos dois cenários.
+- ⚠️⚠️ **A figura é o sprite do PROJETO, nunca do elenco**: o `<image>` do personagem no Farol e o
+  `ArteSvg nome="nave"` na Nave, SEM `data-figure` (o `scene-figures.test.tsx` cobra
+  `SCENE_ROLES['lighthouse-walk']` vazio, e um `ActorFigure` no ramo da nave o reprovava).
+- ⚠️ Fora do alcance da bancada: a régua do motor (tela de 480, começo em 208, velocidades 1 e 3,
+  caixa de 64) é a mesma nos dois cenários; tirá-la do cenário pediria levá-lo ao estado e aos
+  validadores do core. Os rótulos das metas dizem "o personagem"; a Nave pode trocá-los por
+  `setup.goalCopy` no manifesto.
+- Testes: `tests/scene-lighthouse-walk.test.tsx`, `tests/scene-nave-walk.test.tsx`; motor em
+  `core/src/learning/scene/lighthouse-walk.test.ts`; e2e em
+  `community-kids/e2e-scenes/lighthouse-walk.spec.ts`.
 
 ## "Como fazer": a biblioteca de ajuda do Kids (26/09/2026)
 

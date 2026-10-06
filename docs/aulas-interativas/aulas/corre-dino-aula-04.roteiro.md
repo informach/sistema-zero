@@ -1,151 +1,91 @@
-# Roteiro de gravação · Corre Dino · Aula 04 · O som que escuta o Dino
+# Roteiro de gravação · Corre, Dino! · Aula 4
 
-## Especificações
+**Toque um som em cada pulo**
 
-- **Formato:** gravação de tela com narração, no Estúdio embutido.
-- **Duração:** 230 a 280 segundos de clipes; 559 palavras de narração, cerca de 4.1 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** o Dino corre na floresta e pula quando o jogador manda. O projeto tem duas áreas. Em `Ao iniciar`: `Preparar o jogo em tela cheia, tela 480 × 270, fundo azul-claro` e `Criar dinossauro dino em x 110 y 150 tamanho 64`. Em `Enquanto estiver rodando`, um `A cada quadro do jogo` com cinco blocos: `Limpar a tela`, `Desenhar fundo de floresta (velocidade 5)`, `Aplicar a gravidade do mundo ao sprite dino`, `Controlar o dinossauro dino, força do pulo 14` e `Desenhar o sprite dino`. O jogo é mudo.
-- **Conceitos nomeados:** evento, som associado ao pulo real, comando de tecla e acontecimento do sprite.
-- **Dor desta aula:** O evento da tecla toca som sem pulo e deixa mudos os pulos por seta e toque; os quatro casos reproduzem no jogo.
-- **Vitória do dia:** o pulo ganha som nos três jeitos de pular, inclusive no toque na tela, que é como a família vai jogar no celular. E o som para de sair quando não houve pulo nenhum.
-- **Valores:** Tecla espaço no evento provisório; Tocar efeito com pulo ou outro efeito escolhido; um único Tocar efeito ao final.
-- **Campos livres:** Efeito sonoro de pulo entre as opções oferecidas.
-- **Nota de produção:** Deixar dois segundos de silêncio na abertura e marcar visualmente cada som para quem estiver sem áudio. Testar os quatro gestos na mesma ordem antes e depois.
-- **O que NÃO entra, e por quê:** Não manter o evento provisório da tecla no projeto final; o som passa a escutar o Dino.
+Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.
 
-## Seção 1. O que a gente vai fazer hoje
+Entrada: Dino com gravidade e três controles de pulo. Saída: Um efeito de pulo ligado ao evento do Dino, sem evento provisório de tecla.
 
-### Clipe `video-abertura` · O pulo ganha som
-**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
-**Na tela:** Jogo da Aula 3: clicar na área e pular em silêncio; manter dois segundos só com o movimento.
+## Seção 1. Compare esperar e repetir
+
+### Clipe `video-area-que-espera` · Compare esperar e repetir
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "O Dino já corre e pula. Hoje vamos colocar som nesse pulo para ele responder também aos
-> seus ouvidos."
+> "Seu Dino já pula. Para tocar um som no momento certo, observe uma ação que espera um acontecimento.
+>
+> Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar na tecla. Observe o contador.
+>
+> Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Mostrar o mesmo pulo com áudio e uma marca visual a cada som; repetir com toque na parte de cima.
+**Zappy na página (não gravar):** Comece o teste sem tocar na tecla e depois acione a tecla uma vez.
 
-**Narração:**
-> "Hoje o pulo ganha som. Ele vai tocar quando você usar espaço, seta para cima ou o dedo na
-> tela. A marquinha que aparece aqui mostra cada som, mesmo para quem está assistindo sem
-> áudio."
+## Seção 2. Compare a tecla com o pulo
 
-## Seção 3. Monte a área e pendure o primeiro som
+### Clipe `video-dedo-e-pulo` · Compare a tecla com o pulo
 
-### Clipe `video-evento-e-som` · A área nova, a tecla e o som
-**Duração alvo:** 60 a 70 segundos · **Palavras:** 164
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Abrir Áreas do projeto; soltar Quando acontecer ao lado de Ao iniciar e Enquanto estiver rodando.
-
-**Narração:**
-> "Na categoria **Áreas do projeto**, pega **Quando acontecer** e solta ao lado das outras duas
-> áreas, com um espaço. Ela escuta acontecimentos do jogo; não fica dentro de nenhuma outra
-> área."
-
-**Na tela:** Abrir Jogo 2D > Controles > Teclado, ações e toque; encaixar Quando apertar a tecla no primeiro lugar de Quando acontecer.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Na categoria **Jogo 2D**, abre **Controles**, depois **Teclado, ações e toque**. Pega
-> **Quando apertar a tecla** e encaixa no **Quando acontecer**, que ainda está vazio, no
-> primeiro lugar."
+> "Um comando de tecla e um salto nem sempre acontecem juntos. Compare esses dois momentos antes de escolher o evento do som.
+>
+> Deixe Tocar efeito em Quando apertar Espaço. Toque na barra de espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, pule tocando no Dino.
+>
+> Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: duas teclas no mesmo salto e um pulo tocando no Dino. Compare os contadores.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Abrir menu da tecla, escolher barra de espaço, quinta opção da lista.
+**Zappy na página (não gravar):** Teste tecla repetida e toque nos dois lugares do som.
 
-**Narração:**
-> "Esse bloco tem uma lista de teclas. Abre e escolhe **barra de espaço**, a **quinta opção**.
-> Confere o nome que ficou no bloco antes de seguir. Agora ele sabe qual aperto vai escutar."
+## Seção 3. Ligue o som ao pulo do Dino
 
-**Na tela:** Abrir Jogo 2D > Som > Efeitos prontos; encaixar Tocar efeito no primeiro lugar dentro do evento.
+### Clipe `video-som-no-pulo` · Ligue o som ao pulo do Dino
 
-**Narração:**
-> "Em **Jogo 2D**, abre **Som**, depois **Efeitos prontos**. Pega **Tocar efeito** e encaixa
-> dentro do **Quando apertar a tecla**, no primeiro lugar. Ele vem com **moeda**; abre a lista e
-> escolhe **pulo**, a **décima terceira opção**. Se preferir, um efeito como quicar também vale
-> para este Dino."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Clicar no jogo e apertar espaço; mostrar som e marca visual sincronizados.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Clica na área do jogo e aperta espaço. O Dino pula e o som toca. Você acabou de dar a
-> primeira voz ao seu jogo!"
+> "Na experiência da seção anterior, você comparou ouvir a tecla com ouvir o pulo. Teste um salto no seu jogo: o Dino já pula, mas ainda sem som. Agora ligue um efeito ao salto.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe um espaço vazio da montagem à vista, separado de Ao iniciar e Enquanto estiver rodando. Abra Áreas do projeto. Pegue Quando acontecer e solte nesse espaço.
+>
+> Deixe à vista o interior de Quando acontecer. Abra Jogo 2D, depois Controles e Teclado, ações e toque. Pegue Quando o sprite pular e encaixe nessa área. Escolha dino.
+>
+> Deixe à vista o interior do evento de pulo. Abra Jogo 2D, depois Som e Efeitos prontos. Pegue Tocar efeito e encaixe dentro do evento. No efeito, escolha pulo.
+>
+> Clique no jogo e pule com espaço. Depois de pousar, teste seta para cima e toque. Deve haver um som por salto. Toque espaço duas vezes no ar e compare: a segunda tecla não cria outro salto nem outro som.
+>
+> Confira: só existe um Tocar efeito e ele está dentro do evento do Dino. Se o som se repetir parado, confira se ficou em Quando acontecer, não dentro do quadro. Se estiver mudo, clique primeiro no jogo e confira o efeito escolhido.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-## Seção 4. Quatro jeitos de pular, um som só
+**Zappy na página (não gravar):** Coloque um único Tocar efeito pulo dentro de Quando o sprite pular.
 
-### Clipe `video-quatro-testes` · Três jeitos de pular, um som só
-**Duração alvo:** 50 a 60 segundos · **Palavras:** 97
+## Seção 4. Teste e envie seu jogo
 
-**Na tela:** Jogo sem paleta visível; clicar na área, apertar espaço; mostrar pulo, som e marca.
+### Clipe `video-entrega` · Teste e envie seu jogo
 
-**Narração:**
-> "Vamos testar o que esse bloco realmente escuta. Primeiro, espaço: o Dino pula e sai um som.
-> Até aqui parece certo."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Recarregar, apertar seta para cima; depois recarregar e tocar na metade de cima, sem som em ambos.
-
-**Narração:**
-> "Agora seta para cima: ele pula, mas fica mudo. E com um toque na parte de cima da tela, como
-> no celular? Pula e fica mudo também. Temos três jeitos de pular e som em um só."
-
-**Na tela:** Recarregar, pular; com Dino no ar, apertar espaço cinco vezes; mostrar cinco marcas sem novo salto.
-
-**Narração:**
-> "Falta o quarto teste. Com o Dino no alto, aperto espaço cinco vezes. Olha as marcas: cinco
-> sons, mas nenhum pulo novo. O som obedece à tecla, mesmo quando o Dino não pula. O conserto
-> precisa escutar o Dino."
-
-## Seção 6. Um som que escuta o Dino
-
-### Clipe `video-som-no-pulo` · Agora quem avisa é o Dino
-**Duração alvo:** 45 a 55 segundos · **Palavras:** 136
-
-**Na tela:** Abrir Jogo 2D > Controles > Teclado, ações e toque; encaixar Quando o sprite pular dentro de Quando acontecer, logo abaixo de Quando apertar a tecla.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Na categoria **Jogo 2D**, abre **Controles**, depois **Teclado, ações e toque**. Pega
-> **Quando o sprite pular** e encaixa no **Quando acontecer**, logo abaixo do evento da tecla.
-> No campo que veio como **jogador**, escolhe **dino**."
+> "Seu Dino pula com som. Teste um salto por espaço, outro por seta para cima e outro por toque, esperando pousar entre eles.
+>
+> Confira se duas teclas no mesmo salto não produzem dois sons. A gravidade e o desenho continuam como antes.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
 
-**Na tela:** Arrastar Tocar efeito do evento da tecla para o primeiro lugar do Quando o sprite dino pular.
-
-**Narração:**
-> "Agora pega o mesmo **Tocar efeito** que está dentro do evento da tecla e **arrasta** para
-> dentro do **Quando o sprite dino pular**, no primeiro lugar. Não copia: com cópia, os dois
-> eventos tocariam som."
-
-**Na tela:** Mostrar evento de tecla vazio; abrir menu contextual e clicar Apagar este bloco.
-
-**Narração:**
-> "O evento da tecla ficou vazio. Clica nele com o botão direito e escolhe **Apagar este
-> bloco**. Assim sobra um único som no projeto, pendurado no pulo que aconteceu de verdade."
-
-**Na tela:** Refazer espaço, seta, toque e apertos no ar, com marcas visuais.
-
-**Narração:**
-> "Testa de novo: espaço, seta e toque fazem o Dino pular, cada um com um som. Aperta espaço com
-> ele no ar: silêncio. Agora o som acompanha o pulo, e não o dedo no teclado."
-
-## Seção 7. Teste, envie e fecha
-
-### Clipe `video-teste-e-envio` · Ouvir os três pulos e enviar
-**Duração alvo:** 50 a 60 segundos · **Palavras:** 105
-
-**Na tela:** Jogo e marca visual enquadrados; testar espaço, seta e toque, um por vez.
-
-**Narração:**
-> "Confere os três pulos comigo. Espaço: um som. Seta para cima: um som. Toque na parte de cima:
-> um som. A marquinha confirma cada um, mesmo se o seu vídeo estiver sem áudio."
-
-**Na tela:** Pular e apertar espaço repetidas vezes durante o voo; não mostrar marca.
-
-**Narração:**
-> "Agora aperta espaço enquanto o Dino ainda está no ar. Nenhum pulo novo, nenhum som. O bloco
-> que toca ficou dentro do evento **Quando o sprite pular**, e só dispara quando ele pula
-> mesmo."
-
-**Na tela:** Conferir objetivos; esperar Salvo e clicar Enviar para o professor.
-
-**Narração:**
-> "Confere os objetivos, espera aparecer **Salvo** e clica em **Enviar para o professor**. Hoje
-> você trocou a pergunta do jogo: antes era qual tecla foi apertada; agora é se o Dino pulou. Na
-> próxima aula chegam os cactos."
+**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.

@@ -32,7 +32,7 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar m
 - **Blocos, nesta ordem:** `fala-revisao-final` (Zappy), `quiz-revisao-final` (quiz). Sem vídeo, ferramenta ou texto adicional.
 - **Conteúdo:** [perguntas, alternativas e explicações](../proposta-quizzes-cursos-curtos-2026-10-03.md).
 
-**Zappy na página (não gravar):** Seu personagem anda, recolhe a chave e faz o farol responder. Responda quatro perguntas sobre o que você programou. As explicações ajudam a conferir seu raciocínio e corrigir o que precisar.
+**Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora responda quatro perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
 ### Seção 2. Comemore sua criação
 

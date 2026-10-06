@@ -2,7 +2,7 @@
   "version": 5,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-01",
-  "title": "A telinha do jogo e o Dino que ainda não aparece",
+  "title": "Prepare a tela e crie o Dino",
   "retireBlockKeys": [
     "abertura",
     "explicacao",
@@ -22,7 +22,6 @@
     "zappy-construir-3",
     "zappy-construir-4",
     "zappy-convite-construir-1",
-    "video-entrega",
     "zappy-entrega",
     "zappy-revisao",
     "video-abertura-v7",
@@ -39,59 +38,1508 @@
     "orientacao-descricao-v7",
     "orientacao-dino-v7",
     "orientacao-descoberta-v7",
-    "orientacao-entrega-v7"
+    "orientacao-entrega-v7",
+    "materiais-caderno",
+    "fala-area",
+    "fala-tela",
+    "fala-cade-a-telinha",
+    "fala-descobrir-limite",
+    "fala-cade-o-dino",
+    "fala-nao-errou",
+    "video-fecho",
+    "quiz-final"
   ],
   "blocks": [
     {
       "key": "video-abertura",
-      "plannedVideo": "Título: O jogo que você vai fazer\n\nRegravar a tela no Estúdio atual. Mostrar o Corre, Dino! pronto rodando: a tela de início com o nome do jogo, o Dino saindo na corrida, os cactos chegando, o pulo, o placar subindo e a batida. Fechar dizendo o que fica pronto hoje, que é a telinha do jogo com a cor dela e o Dino criado.\n\nManter a enumeração dos passos que está na gravação antiga. Ela diz três, e a aula voltou a ter três.\n\nTom de boas-vindas de primeira vez, nunca de reencontro. Não existe Aula 0 e este é o primeiro contato com o curso. Não supor nenhuma experiência anterior de programação.\n\nOrigem: video-abertura-v7, fala quase toda aproveitável. Duração alvo: 45 a 60 segundos."
+      "plannedVideo": "Título: Jogue antes de construir\n\nRegravar no Estúdio atual. Mostrar somente o jogo pronto em funcionamento. Apontar os controles citados; participação basta para concluir.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-apresentacao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Jogue um pouco para conhecer os controles. Depois clique em Próxima seção."
+      }
+    },
+    {
+      "key": "jogo-pronto",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Experimente o jogo pronto",
+        "instructions": "Clique na área do jogo para começar. Toque e solte a barra de espaço, a seta para cima ou a tela para pular. Tente passar pelos cactos. Depois de perder, uma entrada volta à abertura e outra começa. Você não precisa bater recorde para continuar.",
+        "hints": [],
+        "activity": {
+          "type": "project-play",
+          "completion": "participation",
+          "project": {
+            "formatVersion": 2,
+            "projectTools": [],
+            "id": "manifest-dino-etapa-13",
+            "name": "Corre, Dino!",
+            "createdAt": 0,
+            "updatedAt": 0,
+            "mode": "blocks",
+            "files": {
+              "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+              "style.css": "",
+              "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  const cactos = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  SZGame2D.setHitboxScale(dino, 80);\n  let pontos = 0;\n  let velocidade = -5;\n  // Quando acontecer\n  SZGame2D.onJump(() => dino, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"dino-ref-84\");\n  SZGame2D.onAnyInput(() => {\n      if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.restart();\n    }\n    }, \"dino-ref-86\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.applyGravity(dino);\n      SZGame2D.controlDino(dino, ctx, 14);\n      SZGame2D.drawSprite(ctx, dino);\n      SZGame2D.updateGroup(cactos);\n      SZGame2D.drawGroup(ctx, cactos);\n      SZGame2D.overlapSpriteGroup(() => dino, cactos, (cacto) => {\n        SZGame2D.explodeSprite(cacto, \"#ffab00\");\n        SZGame2D.shake(ctx, 8);\n        SZGame2D.playFx(\"gameover\");\n        SZGame2D.setScene(\"fim\");\n      });\n      SZGame2D.pruneOffscreen(ctx, cactos, 40, (cacto) => {\n\n      });\n      SZGame2D.drawScore(ctx, \"Pontos:\", pontos, 12, 30, \"#102030\", 24);\n    } else if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.showScreen(ctx, \"Corre, Dino!\", \"Pule os cactos!\", \"Aperte qualquer tecla ou toque na tela para começar\", \"#102030\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.showScreen(ctx, \"Fim de jogo\", `Você fez ${pontos} pontos. Tente bater essa marca!`, \"Aperte qualquer tecla ou toque para jogar de novo\", \"#102030\");\n    }\n  }, \"dino-ref-18\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        SZGame2D.spawnObstacle(cactos, ctx, { type: \"cactus\", x: SZGame2D.randomBetween(500, 560), size: 44, vx: velocidade - SZGame2D.randomBetween(0, 1) });\n      }\n    }\n  });\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada_2\", 1)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        pontos = pontos + 1;\n      }\n    }\n  });\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada_3\", 5)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        if (velocidade > -9) {\n          velocidade = velocidade - 1;\n        }\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            },
+            "extraFiles": [],
+            "assets": [],
+            "ir": {
+              "version": 2,
+              "html": [],
+              "css": [],
+              "behavior": {
+                "start": [
+                  {
+                    "type": "g2d:setupStage",
+                    "width": {
+                      "type": "num",
+                      "value": 480,
+                      "__id": "dino-ref-2"
+                    },
+                    "height": {
+                      "type": "num",
+                      "value": 270,
+                      "__id": "dino-ref-3"
+                    },
+                    "bg": "#81d4fa",
+                    "__id": "dino-ref-1"
+                  },
+                  {
+                    "type": "g2d:setStageDescription",
+                    "description": "Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela",
+                    "__id": "dino-ref-4"
+                  },
+                  {
+                    "type": "g2d:createDino",
+                    "varName": "dino",
+                    "x": {
+                      "type": "num",
+                      "value": 110,
+                      "__id": "dino-ref-6"
+                    },
+                    "y": {
+                      "type": "num",
+                      "value": 150,
+                      "__id": "dino-ref-7"
+                    },
+                    "size": {
+                      "type": "num",
+                      "value": 64,
+                      "__id": "dino-ref-8"
+                    },
+                    "color": "#8b5cf6",
+                    "__id": "dino-ref-5"
+                  },
+                  {
+                    "type": "g2d:createGroup",
+                    "varName": "cactos",
+                    "__id": "dino-ref-9"
+                  },
+                  {
+                    "type": "g2d:setScene",
+                    "name": "inicio",
+                    "__id": "dino-ref-10"
+                  },
+                  {
+                    "type": "g2d:setHitboxScale",
+                    "spriteVar": "dino",
+                    "percent": {
+                      "type": "num",
+                      "value": 80,
+                      "__id": "dino-ref-12"
+                    },
+                    "__id": "dino-ref-11"
+                  },
+                  {
+                    "type": "var",
+                    "name": "pontos",
+                    "value": {
+                      "type": "num",
+                      "value": 0,
+                      "__id": "dino-ref-14"
+                    },
+                    "__id": "dino-ref-13"
+                  },
+                  {
+                    "type": "var",
+                    "name": "velocidade",
+                    "value": {
+                      "type": "num",
+                      "value": -5,
+                      "__id": "dino-ref-16"
+                    },
+                    "__id": "dino-ref-15"
+                  }
+                ],
+                "events": [
+                  {
+                    "type": "g2d:onJump",
+                    "spriteVar": "dino",
+                    "body": [
+                      {
+                        "type": "g2d:playFx",
+                        "fx": "jump",
+                        "__id": "dino-ref-85"
+                      }
+                    ],
+                    "__id": "dino-ref-84"
+                  },
+                  {
+                    "type": "g2d:onAnyInput",
+                    "body": [
+                      {
+                        "type": "if",
+                        "cond": {
+                          "type": "g2d:sceneIs",
+                          "name": "inicio",
+                          "__id": "dino-ref-88"
+                        },
+                        "then": [
+                          {
+                            "type": "g2d:setScene",
+                            "name": "jogando",
+                            "__id": "dino-ref-89"
+                          }
+                        ],
+                        "elseif": [
+                          {
+                            "cond": {
+                              "type": "g2d:sceneIs",
+                              "name": "fim",
+                              "__id": "dino-ref-90"
+                            },
+                            "then": [
+                              {
+                                "type": "g2d:restart",
+                                "__id": "dino-ref-91"
+                              }
+                            ]
+                          }
+                        ],
+                        "__id": "dino-ref-87"
+                      }
+                    ],
+                    "__id": "dino-ref-86"
+                  }
+                ],
+                "loops": [
+                  {
+                    "type": "g2d:updateEachFrame",
+                    "body": [
+                      {
+                        "type": "g2d:clear",
+                        "__id": "dino-ref-19"
+                      },
+                      {
+                        "type": "g2d:forest",
+                        "ctxVar": "ctx",
+                        "speed": {
+                          "type": "num",
+                          "value": 5,
+                          "__id": "dino-ref-21"
+                        },
+                        "__id": "dino-ref-20"
+                      },
+                      {
+                        "type": "if",
+                        "cond": {
+                          "type": "g2d:sceneIs",
+                          "name": "jogando",
+                          "__id": "dino-ref-23"
+                        },
+                        "then": [
+                          {
+                            "type": "g2d:applyGravity",
+                            "spriteVar": "dino",
+                            "__id": "dino-ref-24"
+                          },
+                          {
+                            "type": "g2d:controlDino",
+                            "spriteVar": "dino",
+                            "ctxVar": "ctx",
+                            "jump": {
+                              "type": "num",
+                              "value": 14,
+                              "__id": "dino-ref-26"
+                            },
+                            "__id": "dino-ref-25"
+                          },
+                          {
+                            "type": "g2d:drawSprite",
+                            "spriteVar": "dino",
+                            "ctxVar": "ctx",
+                            "__id": "dino-ref-27"
+                          },
+                          {
+                            "type": "g2d:updateGroup",
+                            "groupVar": "cactos",
+                            "__id": "dino-ref-28"
+                          },
+                          {
+                            "type": "g2d:drawGroup",
+                            "groupVar": "cactos",
+                            "ctxVar": "ctx",
+                            "__id": "dino-ref-29"
+                          },
+                          {
+                            "type": "g2d:onSpriteGroupOverlap",
+                            "spriteVar": "dino",
+                            "groupVar": "cactos",
+                            "itemName": "cacto",
+                            "body": [
+                              {
+                                "type": "g2d:explode",
+                                "spriteVar": "cacto",
+                                "color": "#ffab00",
+                                "__id": "dino-ref-31"
+                              },
+                              {
+                                "type": "g2d:shake",
+                                "ctxVar": "ctx",
+                                "intensity": {
+                                  "type": "num",
+                                  "value": 8,
+                                  "__id": "dino-ref-33"
+                                },
+                                "__id": "dino-ref-32"
+                              },
+                              {
+                                "type": "g2d:playFx",
+                                "fx": "gameover",
+                                "__id": "dino-ref-34"
+                              },
+                              {
+                                "type": "g2d:setScene",
+                                "name": "fim",
+                                "__id": "dino-ref-35"
+                              }
+                            ],
+                            "__id": "dino-ref-30"
+                          },
+                          {
+                            "type": "g2d:pruneOffscreen",
+                            "groupVar": "cactos",
+                            "ctxVar": "ctx",
+                            "itemName": "cacto",
+                            "body": [],
+                            "__id": "dino-ref-36"
+                          },
+                          {
+                            "type": "g2d:drawScore",
+                            "ctxVar": "ctx",
+                            "label": "Pontos:",
+                            "value": {
+                              "type": "var",
+                              "name": "pontos",
+                              "__id": "dino-ref-38"
+                            },
+                            "x": {
+                              "type": "num",
+                              "value": 12,
+                              "__id": "dino-ref-39"
+                            },
+                            "y": {
+                              "type": "num",
+                              "value": 30,
+                              "__id": "dino-ref-40"
+                            },
+                            "color": "#102030",
+                            "size": {
+                              "type": "num",
+                              "value": 24,
+                              "__id": "dino-ref-41"
+                            },
+                            "__id": "dino-ref-37"
+                          }
+                        ],
+                        "elseif": [
+                          {
+                            "cond": {
+                              "type": "g2d:sceneIs",
+                              "name": "inicio",
+                              "__id": "dino-ref-42"
+                            },
+                            "then": [
+                              {
+                                "type": "g2d:showScreen",
+                                "ctxVar": "ctx",
+                                "title": {
+                                  "type": "str",
+                                  "value": "Corre, Dino!",
+                                  "__id": "dino-ref-44"
+                                },
+                                "subtitle": {
+                                  "type": "str",
+                                  "value": "Pule os cactos!",
+                                  "__id": "dino-ref-45"
+                                },
+                                "hint": {
+                                  "type": "str",
+                                  "value": "Aperte qualquer tecla ou toque na tela para começar",
+                                  "__id": "dino-ref-46"
+                                },
+                                "bg": "#102030",
+                                "__id": "dino-ref-43"
+                              }
+                            ]
+                          },
+                          {
+                            "cond": {
+                              "type": "g2d:sceneIs",
+                              "name": "fim",
+                              "__id": "dino-ref-47"
+                            },
+                            "then": [
+                              {
+                                "type": "g2d:showScreen",
+                                "ctxVar": "ctx",
+                                "title": {
+                                  "type": "str",
+                                  "value": "Fim de jogo",
+                                  "__id": "dino-ref-49"
+                                },
+                                "subtitle": {
+                                  "type": "concat",
+                                  "parts": [
+                                    {
+                                      "type": "str",
+                                      "value": "Você fez ",
+                                      "__id": "dino-ref-51"
+                                    },
+                                    {
+                                      "type": "var",
+                                      "name": "pontos",
+                                      "__id": "dino-ref-52"
+                                    },
+                                    {
+                                      "type": "str",
+                                      "value": " pontos. Tente bater essa marca!",
+                                      "__id": "dino-ref-53"
+                                    }
+                                  ],
+                                  "__id": "dino-ref-50"
+                                },
+                                "hint": {
+                                  "type": "str",
+                                  "value": "Aperte qualquer tecla ou toque para jogar de novo",
+                                  "__id": "dino-ref-54"
+                                },
+                                "bg": "#102030",
+                                "__id": "dino-ref-48"
+                              }
+                            ]
+                          }
+                        ],
+                        "__id": "dino-ref-22"
+                      }
+                    ],
+                    "__id": "dino-ref-18"
+                  },
+                  {
+                    "type": "g2d:everySeconds",
+                    "seconds": {
+                      "type": "num",
+                      "value": 1.4,
+                      "__id": "dino-ref-56"
+                    },
+                    "body": [
+                      {
+                        "type": "if",
+                        "cond": {
+                          "type": "g2d:sceneIs",
+                          "name": "jogando",
+                          "__id": "dino-ref-58"
+                        },
+                        "then": [
+                          {
+                            "type": "g2d:spawnObstacle",
+                            "groupVar": "cactos",
+                            "ctxVar": "ctx",
+                            "shape": "cactus",
+                            "x": {
+                              "type": "g2d:randomBetween",
+                              "min": {
+                                "type": "num",
+                                "value": 500,
+                                "__id": "dino-ref-61"
+                              },
+                              "max": {
+                                "type": "num",
+                                "value": 560,
+                                "__id": "dino-ref-62"
+                              },
+                              "__id": "dino-ref-60"
+                            },
+                            "size": {
+                              "type": "num",
+                              "value": 44,
+                              "__id": "dino-ref-68"
+                            },
+                            "vx": {
+                              "type": "binop",
+                              "op": "-",
+                              "left": {
+                                "type": "var",
+                                "name": "velocidade",
+                                "__id": "dino-ref-64"
+                              },
+                              "right": {
+                                "type": "g2d:randomBetween",
+                                "min": {
+                                  "type": "num",
+                                  "value": 0,
+                                  "__id": "dino-ref-66"
+                                },
+                                "max": {
+                                  "type": "num",
+                                  "value": 1,
+                                  "__id": "dino-ref-67"
+                                },
+                                "__id": "dino-ref-65"
+                              },
+                              "__id": "dino-ref-63"
+                            },
+                            "__id": "dino-ref-59"
+                          }
+                        ],
+                        "__id": "dino-ref-57"
+                      }
+                    ],
+                    "__id": "dino-ref-55"
+                  },
+                  {
+                    "type": "g2d:everySeconds",
+                    "seconds": {
+                      "type": "num",
+                      "value": 1,
+                      "__id": "dino-ref-70"
+                    },
+                    "body": [
+                      {
+                        "type": "if",
+                        "cond": {
+                          "type": "g2d:sceneIs",
+                          "name": "jogando",
+                          "__id": "dino-ref-72"
+                        },
+                        "then": [
+                          {
+                            "type": "assign",
+                            "name": "pontos",
+                            "value": {
+                              "type": "binop",
+                              "op": "+",
+                              "left": {
+                                "type": "var",
+                                "name": "pontos"
+                              },
+                              "right": {
+                                "type": "num",
+                                "value": 1
+                              }
+                            },
+                            "__id": "dino-ref-73"
+                          }
+                        ],
+                        "__id": "dino-ref-71"
+                      }
+                    ],
+                    "__id": "dino-ref-69"
+                  },
+                  {
+                    "type": "g2d:everySeconds",
+                    "seconds": {
+                      "type": "num",
+                      "value": 5,
+                      "__id": "dino-ref-75"
+                    },
+                    "body": [
+                      {
+                        "type": "if",
+                        "cond": {
+                          "type": "g2d:sceneIs",
+                          "name": "jogando",
+                          "__id": "dino-ref-77"
+                        },
+                        "then": [
+                          {
+                            "type": "if",
+                            "cond": {
+                              "type": "binop",
+                              "op": ">",
+                              "left": {
+                                "type": "var",
+                                "name": "velocidade",
+                                "__id": "dino-ref-80"
+                              },
+                              "right": {
+                                "type": "num",
+                                "value": -9,
+                                "__id": "dino-ref-81"
+                              },
+                              "__id": "dino-ref-79"
+                            },
+                            "then": [
+                              {
+                                "type": "assign",
+                                "name": "velocidade",
+                                "value": {
+                                  "type": "binop",
+                                  "op": "-",
+                                  "left": {
+                                    "type": "var",
+                                    "name": "velocidade"
+                                  },
+                                  "right": {
+                                    "type": "num",
+                                    "value": 1
+                                  }
+                                },
+                                "__id": "dino-ref-82"
+                              }
+                            ],
+                            "__id": "dino-ref-78"
+                          }
+                        ],
+                        "__id": "dino-ref-76"
+                      }
+                    ],
+                    "__id": "dino-ref-74"
+                  }
+                ]
+              },
+              "extensions": [
+                {
+                  "extensionId": "game-2d"
+                }
+              ]
+            },
+            "blocksState": {
+              "blocks": {
+                "languageVersion": 0,
+                "blocks": [
+                  {
+                    "type": "sz_frame_start",
+                    "fields": {},
+                    "inputs": {
+                      "CHILDREN": {
+                        "block": {
+                          "type": "sz_g2d_setup_stage",
+                          "fields": {
+                            "BG": "#81d4fa"
+                          },
+                          "inputs": {
+                            "W": {
+                              "shadow": {
+                                "type": "sz_val_number",
+                                "fields": {
+                                  "NUM": 480
+                                }
+                              }
+                            },
+                            "H": {
+                              "shadow": {
+                                "type": "sz_val_number",
+                                "fields": {
+                                  "NUM": 270
+                                }
+                              }
+                            }
+                          },
+                          "next": {
+                            "block": {
+                              "type": "sz_g2d_set_stage_description",
+                              "fields": {
+                                "DESCRIPTION": "Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela"
+                              },
+                              "inputs": {},
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_create_dino",
+                                  "fields": {
+                                    "NAME": "dino",
+                                    "COLOR": "#8b5cf6"
+                                  },
+                                  "inputs": {
+                                    "X": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 110
+                                        }
+                                      }
+                                    },
+                                    "Y": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 150
+                                        }
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 64
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_create_group",
+                                      "fields": {
+                                        "NAME": "cactos"
+                                      },
+                                      "inputs": {},
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_set_scene",
+                                          "fields": {
+                                            "SCENE": "inicio"
+                                          },
+                                          "inputs": {},
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_set_hitbox_scale",
+                                              "fields": {
+                                                "SPRITE": "dino"
+                                              },
+                                              "inputs": {
+                                                "PERCENT": {
+                                                  "shadow": {
+                                                    "type": "sz_val_number",
+                                                    "fields": {
+                                                      "NUM": 80
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_js_var_create",
+                                                  "fields": {
+                                                    "NAME": "pontos"
+                                                  },
+                                                  "inputs": {
+                                                    "VALUE": {
+                                                      "shadow": {
+                                                        "type": "sz_val_number",
+                                                        "fields": {
+                                                          "NUM": 0
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_js_var_create",
+                                                      "fields": {
+                                                        "NAME": "velocidade"
+                                                      },
+                                                      "inputs": {
+                                                        "VALUE": {
+                                                          "shadow": {
+                                                            "type": "sz_val_number",
+                                                            "fields": {
+                                                              "NUM": -5
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "sz_frame_loops",
+                    "fields": {},
+                    "inputs": {
+                      "CHILDREN": {
+                        "block": {
+                          "type": "sz_g2d_update_each_frame",
+                          "fields": {},
+                          "inputs": {
+                            "BODY": {
+                              "block": {
+                                "type": "sz_g2d_clear",
+                                "fields": {},
+                                "inputs": {},
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g2d_forest",
+                                    "fields": {},
+                                    "inputs": {
+                                      "SPEED": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 5
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_js_if_else",
+                                        "fields": {},
+                                        "inputs": {
+                                          "COND": {
+                                            "block": {
+                                              "type": "sz_g2d_scene_is",
+                                              "fields": {
+                                                "SCENE": "jogando"
+                                              },
+                                              "inputs": {}
+                                            }
+                                          },
+                                          "THEN": {
+                                            "block": {
+                                              "type": "sz_g2d_apply_gravity",
+                                              "fields": {
+                                                "SPRITE": "dino"
+                                              },
+                                              "inputs": {},
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_control_dino",
+                                                  "fields": {
+                                                    "SPRITE": "dino"
+                                                  },
+                                                  "inputs": {
+                                                    "JUMP": {
+                                                      "shadow": {
+                                                        "type": "sz_val_number",
+                                                        "fields": {
+                                                          "NUM": 14
+                                                        }
+                                                      }
+                                                    }
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g2d_draw_sprite",
+                                                      "fields": {
+                                                        "SPRITE": "dino"
+                                                      },
+                                                      "inputs": {},
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_update_group",
+                                                          "fields": {
+                                                            "GROUP": "cactos"
+                                                          },
+                                                          "inputs": {},
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_draw_group",
+                                                              "fields": {
+                                                                "GROUP": "cactos"
+                                                              },
+                                                              "inputs": {},
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_on_sprite_group_overlap",
+                                                                  "fields": {
+                                                                    "GROUP": "cactos",
+                                                                    "SPRITE": "dino",
+                                                                    "ANAME": "cacto"
+                                                                  },
+                                                                  "inputs": {
+                                                                    "BODY": {
+                                                                      "block": {
+                                                                        "type": "sz_g2d_explode",
+                                                                        "fields": {
+                                                                          "SPRITE": "cacto",
+                                                                          "COLOR": "#ffab00"
+                                                                        },
+                                                                        "inputs": {},
+                                                                        "next": {
+                                                                          "block": {
+                                                                            "type": "sz_g2d_shake",
+                                                                            "fields": {},
+                                                                            "inputs": {
+                                                                              "INTENSITY": {
+                                                                                "shadow": {
+                                                                                  "type": "sz_val_number",
+                                                                                  "fields": {
+                                                                                    "NUM": 8
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            },
+                                                                            "next": {
+                                                                              "block": {
+                                                                                "type": "sz_g2d_play_fx",
+                                                                                "fields": {
+                                                                                  "FX": "gameover"
+                                                                                },
+                                                                                "inputs": {},
+                                                                                "next": {
+                                                                                  "block": {
+                                                                                    "type": "sz_g2d_set_scene",
+                                                                                    "fields": {
+                                                                                      "SCENE": "fim"
+                                                                                    },
+                                                                                    "inputs": {}
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  },
+                                                                  "next": {
+                                                                    "block": {
+                                                                      "type": "sz_g2d_prune_offscreen",
+                                                                      "fields": {
+                                                                        "GROUP": "cactos",
+                                                                        "ITEM": "cacto"
+                                                                      },
+                                                                      "inputs": {},
+                                                                      "next": {
+                                                                        "block": {
+                                                                          "type": "sz_g2d_draw_score",
+                                                                          "fields": {
+                                                                            "LABEL": "Pontos:",
+                                                                            "COLOR": "#102030"
+                                                                          },
+                                                                          "inputs": {
+                                                                            "VALUE": {
+                                                                              "block": {
+                                                                                "type": "sz_val_variable",
+                                                                                "fields": {
+                                                                                  "NAME": "pontos"
+                                                                                },
+                                                                                "inputs": {}
+                                                                              }
+                                                                            },
+                                                                            "X": {
+                                                                              "shadow": {
+                                                                                "type": "sz_val_number",
+                                                                                "fields": {
+                                                                                  "NUM": 12
+                                                                                }
+                                                                              }
+                                                                            },
+                                                                            "Y": {
+                                                                              "shadow": {
+                                                                                "type": "sz_val_number",
+                                                                                "fields": {
+                                                                                  "NUM": 30
+                                                                                }
+                                                                              }
+                                                                            },
+                                                                            "SIZE": {
+                                                                              "shadow": {
+                                                                                "type": "sz_val_number",
+                                                                                "fields": {
+                                                                                  "NUM": 24
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "ELSEIF_COND0": {
+                                            "block": {
+                                              "type": "sz_g2d_scene_is",
+                                              "fields": {
+                                                "SCENE": "inicio"
+                                              },
+                                              "inputs": {}
+                                            }
+                                          },
+                                          "ELSEIF_THEN0": {
+                                            "block": {
+                                              "type": "sz_g2d_show_screen",
+                                              "fields": {
+                                                "BG": "#102030"
+                                              },
+                                              "inputs": {
+                                                "TITLE": {
+                                                  "shadow": {
+                                                    "type": "sz_val_text",
+                                                    "fields": {
+                                                      "TEXT": "Corre, Dino!"
+                                                    }
+                                                  }
+                                                },
+                                                "SUBTITLE": {
+                                                  "shadow": {
+                                                    "type": "sz_val_text",
+                                                    "fields": {
+                                                      "TEXT": "Pule os cactos!"
+                                                    }
+                                                  }
+                                                },
+                                                "HINT": {
+                                                  "shadow": {
+                                                    "type": "sz_val_text",
+                                                    "fields": {
+                                                      "TEXT": "Aperte qualquer tecla ou toque na tela para começar"
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "ELSEIF_COND1": {
+                                            "block": {
+                                              "type": "sz_g2d_scene_is",
+                                              "fields": {
+                                                "SCENE": "fim"
+                                              },
+                                              "inputs": {}
+                                            }
+                                          },
+                                          "ELSEIF_THEN1": {
+                                            "block": {
+                                              "type": "sz_g2d_show_screen",
+                                              "fields": {
+                                                "BG": "#102030"
+                                              },
+                                              "inputs": {
+                                                "TITLE": {
+                                                  "shadow": {
+                                                    "type": "sz_val_text",
+                                                    "fields": {
+                                                      "TEXT": "Fim de jogo"
+                                                    }
+                                                  }
+                                                },
+                                                "SUBTITLE": {
+                                                  "block": {
+                                                    "type": "sz_val_join",
+                                                    "fields": {},
+                                                    "inputs": {
+                                                      "ITEM0": {
+                                                        "shadow": {
+                                                          "type": "sz_val_text",
+                                                          "fields": {
+                                                            "TEXT": "Você fez "
+                                                          }
+                                                        }
+                                                      },
+                                                      "ITEM1": {
+                                                        "block": {
+                                                          "type": "sz_val_variable",
+                                                          "fields": {
+                                                            "NAME": "pontos"
+                                                          },
+                                                          "inputs": {}
+                                                        }
+                                                      },
+                                                      "ITEM2": {
+                                                        "shadow": {
+                                                          "type": "sz_val_text",
+                                                          "fields": {
+                                                            "TEXT": " pontos. Tente bater essa marca!"
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "extraState": {
+                                                      "items": 3
+                                                    }
+                                                  }
+                                                },
+                                                "HINT": {
+                                                  "shadow": {
+                                                    "type": "sz_val_text",
+                                                    "fields": {
+                                                      "TEXT": "Aperte qualquer tecla ou toque para jogar de novo"
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        },
+                                        "extraState": {
+                                          "elseIf": 2,
+                                          "hasElse": false
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "next": {
+                            "block": {
+                              "type": "sz_g2d_every_seconds",
+                              "fields": {},
+                              "inputs": {
+                                "SECS": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 1.4
+                                    }
+                                  }
+                                },
+                                "BODY": {
+                                  "block": {
+                                    "type": "sz_js_if_else",
+                                    "fields": {},
+                                    "inputs": {
+                                      "COND": {
+                                        "block": {
+                                          "type": "sz_g2d_scene_is",
+                                          "fields": {
+                                            "SCENE": "jogando"
+                                          },
+                                          "inputs": {}
+                                        }
+                                      },
+                                      "THEN": {
+                                        "block": {
+                                          "type": "sz_g2d_spawn_obstacle",
+                                          "fields": {
+                                            "GROUP": "cactos",
+                                            "SHAPE": "cactus"
+                                          },
+                                          "inputs": {
+                                            "X": {
+                                              "block": {
+                                                "type": "sz_g2d_random_between",
+                                                "fields": {},
+                                                "inputs": {
+                                                  "MIN": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 500
+                                                      }
+                                                    }
+                                                  },
+                                                  "MAX": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 560
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "VX": {
+                                              "block": {
+                                                "type": "sz_math_arithmetic",
+                                                "fields": {
+                                                  "OP": "-"
+                                                },
+                                                "inputs": {
+                                                  "A": {
+                                                    "block": {
+                                                      "type": "sz_val_variable",
+                                                      "fields": {
+                                                        "NAME": "velocidade"
+                                                      },
+                                                      "inputs": {}
+                                                    }
+                                                  },
+                                                  "B": {
+                                                    "block": {
+                                                      "type": "sz_g2d_random_between",
+                                                      "fields": {},
+                                                      "inputs": {
+                                                        "MIN": {
+                                                          "shadow": {
+                                                            "type": "sz_val_number",
+                                                            "fields": {
+                                                              "NUM": 0
+                                                            }
+                                                          }
+                                                        },
+                                                        "MAX": {
+                                                          "shadow": {
+                                                            "type": "sz_val_number",
+                                                            "fields": {
+                                                              "NUM": 1
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "SIZE": {
+                                              "shadow": {
+                                                "type": "sz_val_number",
+                                                "fields": {
+                                                  "NUM": 44
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_every_seconds",
+                                  "fields": {},
+                                  "inputs": {
+                                    "SECS": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 1
+                                        }
+                                      }
+                                    },
+                                    "BODY": {
+                                      "block": {
+                                        "type": "sz_js_if_else",
+                                        "fields": {},
+                                        "inputs": {
+                                          "COND": {
+                                            "block": {
+                                              "type": "sz_g2d_scene_is",
+                                              "fields": {
+                                                "SCENE": "jogando"
+                                              },
+                                              "inputs": {}
+                                            }
+                                          },
+                                          "THEN": {
+                                            "block": {
+                                              "type": "sz_js_var_increment",
+                                              "fields": {
+                                                "NAME": "pontos",
+                                                "DELTA": 1
+                                              },
+                                              "inputs": {}
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_every_seconds",
+                                      "fields": {},
+                                      "inputs": {
+                                        "SECS": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 5
+                                            }
+                                          }
+                                        },
+                                        "BODY": {
+                                          "block": {
+                                            "type": "sz_js_if_else",
+                                            "fields": {},
+                                            "inputs": {
+                                              "COND": {
+                                                "block": {
+                                                  "type": "sz_g2d_scene_is",
+                                                  "fields": {
+                                                    "SCENE": "jogando"
+                                                  },
+                                                  "inputs": {}
+                                                }
+                                              },
+                                              "THEN": {
+                                                "block": {
+                                                  "type": "sz_js_if_else",
+                                                  "fields": {},
+                                                  "inputs": {
+                                                    "COND": {
+                                                      "block": {
+                                                        "type": "sz_val_compare",
+                                                        "fields": {
+                                                          "OP": ">"
+                                                        },
+                                                        "inputs": {
+                                                          "LEFT": {
+                                                            "block": {
+                                                              "type": "sz_val_variable",
+                                                              "fields": {
+                                                                "NAME": "velocidade"
+                                                              },
+                                                              "inputs": {}
+                                                            }
+                                                          },
+                                                          "RIGHT": {
+                                                            "shadow": {
+                                                              "type": "sz_val_number",
+                                                              "fields": {
+                                                                "NUM": -9
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    },
+                                                    "THEN": {
+                                                      "block": {
+                                                        "type": "sz_js_var_increment",
+                                                        "fields": {
+                                                          "NAME": "velocidade",
+                                                          "DELTA": -1
+                                                        },
+                                                        "inputs": {}
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "type": "sz_frame_events",
+                    "fields": {},
+                    "inputs": {
+                      "CHILDREN": {
+                        "block": {
+                          "type": "sz_g2d_on_jump",
+                          "fields": {
+                            "SPRITE": "dino"
+                          },
+                          "inputs": {
+                            "BODY": {
+                              "block": {
+                                "type": "sz_g2d_play_fx",
+                                "fields": {
+                                  "FX": "jump"
+                                },
+                                "inputs": {}
+                              }
+                            }
+                          },
+                          "next": {
+                            "block": {
+                              "type": "sz_g2d_on_any_input",
+                              "fields": {},
+                              "inputs": {
+                                "BODY": {
+                                  "block": {
+                                    "type": "sz_js_if_else",
+                                    "fields": {},
+                                    "inputs": {
+                                      "COND": {
+                                        "block": {
+                                          "type": "sz_g2d_scene_is",
+                                          "fields": {
+                                            "SCENE": "inicio"
+                                          },
+                                          "inputs": {}
+                                        }
+                                      },
+                                      "THEN": {
+                                        "block": {
+                                          "type": "sz_g2d_set_scene",
+                                          "fields": {
+                                            "SCENE": "jogando"
+                                          },
+                                          "inputs": {}
+                                        }
+                                      },
+                                      "ELSEIF_COND0": {
+                                        "block": {
+                                          "type": "sz_g2d_scene_is",
+                                          "fields": {
+                                            "SCENE": "fim"
+                                          },
+                                          "inputs": {}
+                                        }
+                                      },
+                                      "ELSEIF_THEN0": {
+                                        "block": {
+                                          "type": "sz_g2d_restart",
+                                          "fields": {},
+                                          "inputs": {}
+                                        }
+                                      }
+                                    },
+                                    "extraState": {
+                                      "elseIf": 1,
+                                      "hasElse": false
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "installedExtensions": [
+              {
+                "id": "game-2d",
+                "version": "1.2.0",
+                "installedAt": 0
+              }
+            ]
+          },
+          "stage": {
+            "width": 480,
+            "height": 270
+          },
+          "targets": []
+        }
+      }
     },
     {
       "key": "video-caderno",
-      "plannedVideo": "Título: Seu caderno do Corre, Dino!\n\nGravar depois que o PDF estiver vinculado no bloco de materiais. Mostrar o bloco logo abaixo do vídeo, tocar em Baixar, mostrar Baixado e abrir uma página real do caderno referente a esta aula. O PDF pode ser lido na tela ou guardado para consultar nas próximas aulas.\n\nFala: \"Este é o seu caderno do Corre, Dino! Ele reúne os passos do jogo para você consultar quando quiser. Se alguma parte ficar diferente da que aparece no vídeo, abra a página daquela aula e compare. O botão Baixar está logo abaixo. Você pode ler o PDF na tela ou guardá-lo para depois. Agora vamos montar a telinha do jogo.\"\n\nNão exigir o download para avançar: esta seção termina depois de 90% deste vídeo. O arquivo continua disponível aqui na primeira aula. Duração alvo: 20 a 30 segundos."
+      "plannedVideo": "Título: Seu Caderno do Aluno\n\nRegravar no Estúdio atual. Mostrar o PDF real anexado ao curso. Não ensinar os controles do leitor.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
-      "key": "materiais-caderno",
+      "key": "fala-caderno",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção."
+      }
+    },
+    {
+      "key": "caderno",
       "content": {
         "kind": "materials",
-        "title": "Caderno do Corre, Dino!",
+        "title": "Caderno do Aluno: Corre, Dino!",
+        "bookPreview": true,
         "items": []
       }
     },
     {
-      "key": "fala-area",
+      "key": "video-uma-vez-e-sempre",
+      "plannedVideo": "Título: Compare uma vez e sempre\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-uma-vez-e-sempre",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Na coluna da esquerda, onde ficam os bloquinhos, abre a categoria Áreas do projeto e pega o Ao iniciar. Arrasta até a área de montar, no meio, e solta. Ele fica lá, vazio, esperando as peças de hoje."
+        "text": "Compare a mesma peça nas duas áreas, começando um teste em cada uma."
       }
     },
     {
-      "key": "fala-tela",
+      "key": "experiencia-uma-vez-e-sempre",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Compare uma vez e sempre",
+        "instructions": "Nesta experiência, coloque Mover o Dino um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a posição e o contador da ação. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a posição e o contador.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "once-vs-always",
+          "cenario": "corre-dino",
+          "setup": {
+            "preset": {
+              "id": "duas-caixas-nave",
+              "areas": ["start", "loop"],
+              "cards": [
+                {
+                  "id": "move",
+                  "kind": "move",
+                  "label": "Mover o Dino um pouquinho"
+                }
+              ]
+            },
+            "goals": ["once", "always"],
+            "goalCopy": {
+              "once": {
+                "label": "Observou a ação em Ao iniciar",
+                "pedido": "Ponha Mover o Dino um pouquinho em Ao iniciar e comece o teste."
+              },
+              "always": {
+                "label": "Observou a mesma ação em Enquanto estiver rodando",
+                "pedido": "Leve Mover o Dino um pouquinho para Enquanto estiver rodando e comece outro teste."
+              }
+            }
+          },
+          "cast": {
+            "hero": {
+              "name": "Dino",
+              "gender": "m",
+              "figure": "dino"
+            },
+            "obstacle": {
+              "name": "cacto",
+              "gender": "m",
+              "figure": "cacto"
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-limite-da-tela",
+      "plannedVideo": "Título: Escolha o tamanho da tela\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-limite-da-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora, em Jogo 2D, Jogo e telas, Preparar a área do jogo, pega o bloco Preparar o jogo em tela cheia, tela __ por __, fundo __ e encaixa dentro do Ao iniciar, que está vazio. Ele fica sendo o primeiro bloco lá dentro. A largura vem 800 e a altura vem 480. Troca por 480 e 270. A cor do fundo é sua."
-      }
-    },
-    {
-      "key": "video-area-e-tela",
-      "plannedVideo": "Título: A área que arruma o jogo, e a tela do Dino\n\nFusão de dois clipes de hoje. Regravar a tela no Estúdio atual.\n\nManter o gesto completo de pegar o Ao iniciar e soltar na área de montar, com a área ainda vazia à vista. Manter a analogia do tabuleiro, que já está gravada e é boa: é tipo montar um jogo de tabuleiro, você abre o tabuleiro, separa as peças, dá as cartas, uma vez só, no começo.\n\nEmendar no encaixe do Preparar o jogo em tela cheia e na troca de 800 por 480 e de 480 por 270. Manter o critério da cor dito na hora do campo: o meu vai num azul bem claro, e o seu pode ser a cor que você quiser.\n\nTerminar na confusão, sem resolver: a cor pintou a área do jogo inteira, e não dá para saber onde fica a telinha de 480 por 270. O clipe acaba nessa pergunta.\n\nOrigem: video-iniciar-v7 mais a primeira metade de video-tela-v7. Duração alvo: 70 a 85 segundos."
-    },
-    {
-      "key": "fala-cade-a-telinha",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Você escreveu 480 e 270 ali. Só que olha a área do jogo: a cor pintou tudo, do mesmo jeito. Cadê a telinha de 480 por 270?"
-      }
-    },
-    {
-      "key": "fala-descobrir-limite",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "A resposta não é um número, é um desenho. Nesta bancada, liga a borda e vê o que aparece. Depois mexe na largura e na altura, com a borda à vista, e repara nela acompanhando os números."
+        "text": "Mude largura e altura com a borda visível e termine em 480 por 270."
       }
     },
     {
@@ -99,73 +1547,79 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "A tela e o limite dela",
-        "instructions": "Liga a borda e vê o que aparece. Depois, com a borda à vista, muda a largura ou a altura e repara nela acompanhando. Por último, deixa a tela em 480 por 270.",
+        "title": "Escolha o tamanho da tela",
+        "instructions": "Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo. Depois coloque largura 480 e altura 270. Compare com o tamanho anterior.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "stage-size",
           "cenario": "corre-dino"
-        }
+        },
+        "semPerguntaFinal": true
       }
+    },
+    {
+      "key": "video-area-e-tela",
+      "plannedVideo": "Título: Prepare a tela do jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-area-e-tela",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Prepare a tela em Ao iniciar com largura 480 e altura 270."
+      }
+    },
+    {
+      "key": "video-borda",
+      "plannedVideo": "Título: Mostre o limite da tela\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Foi a borda que mostrou o limite. Agora põe uma no seu jogo. Em Jogo 2D, Jogo e telas, Preparar a área do jogo, pega o Mostrar a borda da tela, cor __ espessura __ e encaixa dentro do Ao iniciar, logo abaixo do Preparar o jogo em tela cheia. A espessura já vem 4, deixa assim. Para a cor, escolhe uma bem diferente da que você pôs no céu, senão ela some no fundo. O meu vai num cinza bem escuro."
+        "text": "Confira o contorno da tela e a espessura 4."
       }
     },
     {
-      "key": "video-borda",
-      "plannedVideo": "Título: A borda que mostra o limite\n\nSegunda metade do clipe da tela de hoje. Regravar a tela no Estúdio atual, a fala está boa.\n\nMostrar o encaixe do Mostrar a borda da tela logo abaixo do Preparar o jogo em tela cheia, e o retângulo aparecendo na área do jogo. Apontar o retângulo e dizer que é ele que tem 480 por 270, e que o resto do painel continua sendo a cor do fundo.\n\nDizer, em uma frase, que a borda entra hoje e sai na próxima aula, quando a floresta passar a marcar o limite sozinha. É um instrumento, e instrumento tem hora de sair.\n\nOrigem: segunda metade de video-tela-v7. Duração alvo: 55 a 65 segundos."
+      "key": "video-coordenadas",
+      "plannedVideo": "Título: Escolha onde o Dino fica\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
-      "key": "video-coordenadas",
-      "plannedVideo": "Título: O x, o y, e o y que cresce para baixo\n\nPonte curta. Aproveitar a narração já gravada sobre x e y: o x diz se ele fica mais para a esquerda ou mais para a direita, o y diz se fica mais para cima ou mais para baixo, e tem uma coisa do y que pega todo mundo de surpresa, que é o y crescer para baixo.\n\nCortar o marcador animado sobre a cartela de 480 por 270. Quem move o Dino agora é a criança, na bancada da mesma seção.\n\nCortar a frase de que não há arraste nem parâmetros para a criança, que virou falsa.\n\nOrigem: video-coordenadas-demo-v7, fala parcial. Duração alvo: 20 a 30 segundos."
+      "key": "fala-coordenadas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Mude um eixo de cada vez e termine em x 0, y 0."
+      }
     },
     {
       "key": "experiencia-coordenadas",
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "O endereço na tela",
-        "instructions": "Muda o x e vê para que lado o Dino vai. Depois muda só o y e compara. Por último, leva o Dino para x 0 e y 0.",
+        "title": "Escolha onde o Dino fica",
+        "instructions": "Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções. Por último, coloque x em 0 e y em 0. Observe onde fica essa posição.",
         "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "coordinates",
           "cenario": "corre-dino"
-        }
+        },
+        "semPerguntaFinal": true
       }
     },
     {
-      "key": "fala-criar-dino",
+      "key": "video-criar-e-mostrar",
+      "plannedVideo": "Título: Compare criar e mostrar\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-criar-e-mostrar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Kits prontos, Dino, pega o Criar dinossauro __ em x __ y __ tamanho __ cor __ e encaixa dentro do Ao iniciar, logo abaixo do Mostrar a borda da tela. O nome já nasce escrito dino: deixa assim, porque é por esse nome que os blocos das próximas aulas vão achar ele. O x vem 120, troca por 110. O y já está em 150, deixa. O tamanho já vem 64, deixa também. A cor é sua."
-      }
-    },
-    {
-      "key": "video-criar-dino",
-      "plannedVideo": "Título: O seu dinossauro nasce\n\nMostrar a criação, com a palavra sprite nomeada na hora em que o objeto passa a existir, a escolha da cor e o campo do nome.\n\nO nome fica em dino. Dizer que é esse o nome que os blocos das próximas aulas vão procurar na listinha, então ele não muda.\n\nRetirar o trecho de coordenadas, que agora é a seção anterior, retomando em O y já está em 150.\n\nNão dizer que 150 é a altura da grama, porque não é. Quem leva o Dino à grama é a gravidade, na Aula 3.\n\nManter a surpresa de o Dino não aparecer, sem dizer que houve erro e sem explicar nada ainda. A explicação é a bancada da seção seguinte.\n\nOrigem: video-dino-v7, fala aproveitável com dois cortes. Duração alvo: 50 a 60 segundos."
-    },
-    {
-      "key": "fala-cade-o-dino",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Olha a área do jogo. O Dino não apareceu."
-      }
-    },
-    {
-      "key": "fala-nao-errou",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Você não errou nada. Criar o Dino e mostrar o Dino são duas coisas diferentes, e hoje você fez só a primeira. Olha isto aqui."
+        "text": "Crie o Dino nos bastidores e depois mostre-o na tela."
       }
     },
     {
@@ -173,18 +1627,39 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Criar e mostrar são duas coisas diferentes",
-        "instructions": "Primeiro, cria o Dino nos bastidores. Depois, faz o Dino aparecer na tela do jogo.",
-        "hints": [
-          "Olhe a ficha dos bastidores e a tela do jogo.",
-          "Primeiro, crie o Dino nos bastidores.",
-          "Depois, mostre o Dino na tela do jogo."
-        ],
+        "title": "Compare criar e mostrar",
+        "instructions": "Clique em Criar o Dino. Compare os bastidores com a tela do jogo. Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente.",
+        "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "world",
           "cenario": "corre-dino"
-        }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-criar-dino",
+      "plannedVideo": "Título: Crie o Dino nos bastidores\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-criar-dino",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Crie dino em x 110, y 150 e tamanho 64, abaixo da borda."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-01.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
       }
     },
     {
@@ -203,18 +1678,23 @@
           "sz_g2d_stage_border",
           "sz_val_number"
         ],
+        "showcase": {
+          "enabled": false,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-corre-dino-1",
+          "id": "manifest-dino-etapa-0",
           "name": "Corre, Dino!",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": ""
+            "script.js": "(function __szProjectRun() {\n  // Ao iniciar\n  // Quando acontecer\n  // Enquanto estiver rodando\n})();\n"
           },
           "extraFiles": [],
           "assets": [],
@@ -244,90 +1724,29 @@
           ]
         }
       }
-    },
-    {
-      "key": "video-fecho",
-      "plannedVideo": "Título: Os três passos de hoje\n\nEste clipe passou a abrir com o teste e o envio, e a recapitulação ficou para o fim dele. Absorve o balão de conferência que vivia na entrega, porque balão depois da ferramenta não existe para quem está com o Estúdio aberto do lado.\n\nO que passa na tela, nesta ordem:\n\n1. A confirmação de um número: depois de escrever, sair do campo para o valor valer.\n2. A área do jogo enquadrada: a telinha com a borda em volta, e o resto do painel na cor escolhida. Dizer que o Dino continua invisível, e que hoje é para ser assim mesmo.\n3. A lista de objetivos conferida, um por um, com a pilha do Ao iniciar à vista.\n4. O gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nSó então a recapitulação dos três passos, que voltam a bater com o que a aula fez: a área que arruma o jogo, a tela com a borda e o dinossauro criado.\n\nFechar no gancho da Aula 2: na próxima aula o seu dino aparece na tela, correndo, com a floresta se mexendo atrás dele. E é lá que eu vou te contar uma coisa que está dentro de quase todo jogo.\n\nTrocar TODOS os jogos do mundo por quase todo jogo, conforme a regra de escopo honesto do curso.\n\nAcrescentar a cartela curta indicando o quiz que vem logo abaixo.\n\nOrigem: video-fecho-v7, fala aproveitável, mais o teste e o envio regravados. Duração alvo: 50 a 65 segundos."
-    },
-    {
-      "key": "quiz-final",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "O Dino foi criado, mas a tela está vazia. O que falta?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Mostrar o Dino na tela."
-              },
-              {
-                "id": "b",
-                "label": "Criar outro Dino igual."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Criar guarda o personagem nos bastidores; mostrar na tela faz ele aparecer."
-          },
-          {
-            "id": "q2",
-            "prompt": "Onde ficam os blocos que preparam a partida?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Em qualquer lugar da área de montar, soltos."
-              },
-              {
-                "id": "b",
-                "label": "Em Ao iniciar."
-              }
-            ],
-            "correctChoiceIds": ["b"],
-            "explanation": "Ao iniciar prepara a tela e os personagens para uma nova partida. Bloco solto na área de montar não roda."
-          },
-          {
-            "id": "q3-coordenadas",
-            "prompt": "O x continua igual e o y aumenta. Para onde vai o personagem?",
-            "choices": [
-              {
-                "id": "baixo",
-                "label": "Mais para baixo."
-              },
-              {
-                "id": "direita",
-                "label": "Mais para a direita."
-              }
-            ],
-            "correctChoiceIds": ["baixo"],
-            "explanation": "Na tela do jogo, o y aumenta de cima para baixo. O x indica a posição na horizontal."
-          }
-        ]
-      }
     }
   ],
   "sections": [
     {
       "key": "apresentacao",
-      "title": "Conheça o jogo que você vai fazer",
+      "title": "Jogue antes de construir",
       "intent": "presentation",
-      "objective": "Ver o Corre, Dino! pronto rodando e saber o que fica pronto hoje: a telinha do jogo com a sua cor e o Dino criado, ainda sem aparecer.",
-      "blockKeys": ["video-abertura"],
+      "objective": "Jogue um pouco para conhecer os controles. Depois clique em Próxima seção.",
+      "blockKeys": ["video-abertura", "fala-apresentacao", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura"]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
       "key": "caderno",
-      "title": "Seu caderno do Corre, Dino!",
+      "title": "Seu Caderno do Aluno",
       "intent": "material",
-      "objective": "Encontrar o caderno do curso e saber quando consultá-lo durante a criação do jogo.",
-      "blockKeys": ["video-caderno", "materiais-caderno"],
+      "objective": "O caderno fica disponível para consulta. Para seguir a montagem, clique em Próxima seção.",
+      "blockKeys": ["video-caderno", "fala-caderno", "caderno"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -337,17 +1756,49 @@
       }
     },
     {
+      "key": "uma-vez-e-sempre",
+      "title": "Compare uma vez e sempre",
+      "intent": "exploration",
+      "objective": "Compare a mesma peça nas duas áreas, começando um teste em cada uma.",
+      "blockKeys": [
+        "video-uma-vez-e-sempre",
+        "fala-uma-vez-e-sempre",
+        "experiencia-uma-vez-e-sempre"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-uma-vez-e-sempre", "experiencia-uma-vez-e-sempre"]
+      }
+    },
+    {
+      "key": "limite-da-tela",
+      "title": "Escolha o tamanho da tela",
+      "intent": "exploration",
+      "objective": "Mude largura e altura com a borda visível e termine em 480 por 270.",
+      "blockKeys": ["video-limite-da-tela", "fala-limite-da-tela", "experiencia-tela"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-limite-da-tela", "experiencia-tela"]
+      }
+    },
+    {
       "key": "area-e-tela",
-      "title": "Abra o lugar onde o jogo se arruma",
+      "title": "Prepare a tela do jogo",
       "intent": "application",
-      "objective": "Colocar a área Ao iniciar no projeto e preparar dentro dela a tela de 480 por 270, terminando na confusão de a cor ter pintado a área do jogo inteira.",
-      "blockKeys": ["fala-area", "fala-tela", "video-area-e-tela", "fala-cade-a-telinha"],
+      "objective": "Prepare a tela em Ao iniciar com largura 480 e altura 270.",
+      "blockKeys": ["video-area-e-tela", "fala-area-e-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-area-e-tela"],
         "projectChecks": [
           {
             "id": "area-iniciar",
@@ -375,31 +1826,17 @@
       }
     },
     {
-      "key": "limite-da-tela",
-      "title": "Descubra onde a telinha começa e termina",
-      "intent": "exploration",
-      "objective": "Ligar a borda, ver o retângulo aparecer e perceber que ele acompanha os dois números. O tamanho da tela é uma escolha sua.",
-      "blockKeys": ["fala-descobrir-limite", "experiencia-tela"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["experiencia-tela"]
-      }
-    },
-    {
       "key": "borda",
-      "title": "Mostre o limite no seu jogo",
+      "title": "Mostre o limite da tela",
       "intent": "application",
-      "objective": "Encaixar a borda logo abaixo do bloco que prepara a tela e enxergar, no seu projeto, onde a telinha de 480 por 270 começa e termina.",
-      "blockKeys": ["fala-borda", "video-borda"],
+      "objective": "Confira o contorno da tela e a espessura 4.",
+      "blockKeys": ["video-borda", "fala-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-borda"],
         "projectChecks": [
           {
             "id": "tela-antes-da-borda",
@@ -432,30 +1869,44 @@
     },
     {
       "key": "coordenadas",
-      "title": "Onde o Dino vai ficar na tela",
+      "title": "Escolha onde o Dino fica",
       "intent": "exploration",
-      "objective": "Sentir o x levando para a direita, o y levando para baixo e o 0, 0 ficando no canto de cima, antes de escrever 110 e 150 em dois campos.",
-      "blockKeys": ["video-coordenadas", "experiencia-coordenadas"],
+      "objective": "Mude um eixo de cada vez e termine em x 0, y 0.",
+      "blockKeys": ["video-coordenadas", "fala-coordenadas", "experiencia-coordenadas"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-coordenadas"]
+        "blockIds": ["video-coordenadas", "experiencia-coordenadas"]
+      }
+    },
+    {
+      "key": "criar-e-mostrar",
+      "title": "Compare criar e mostrar",
+      "intent": "exploration",
+      "objective": "Crie o Dino nos bastidores e depois mostre-o na tela.",
+      "blockKeys": ["video-criar-e-mostrar", "fala-criar-e-mostrar", "descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-criar-e-mostrar", "descoberta"]
       }
     },
     {
       "key": "criar-dino",
-      "title": "Crie o seu dinossauro",
+      "title": "Crie o Dino nos bastidores",
       "intent": "application",
-      "objective": "Criar o primeiro personagem do jogo, com o nome dino, em x 110, y 150 e tamanho 64, e reparar que a tela continua vazia.",
-      "blockKeys": ["fala-criar-dino", "video-criar-dino", "fala-cade-o-dino"],
+      "objective": "Crie dino em x 110, y 150 e tamanho 64, abaixo da borda.",
+      "blockKeys": ["video-criar-dino", "fala-criar-dino"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-criar-dino"],
         "projectChecks": [
           {
             "id": "borda-antes-do-dino",
@@ -491,31 +1942,17 @@
       }
     },
     {
-      "key": "criar-e-mostrar",
-      "title": "Criar e mostrar são duas coisas diferentes",
-      "intent": "exploration",
-      "objective": "Ver o Dino existindo nos bastidores, aparecer na tela e voltar aos bastidores sem ser apagado. É a resposta da pergunta que você acabou de fazer.",
-      "blockKeys": ["fala-nao-errou", "descoberta"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["descoberta"]
-      }
-    },
-    {
       "key": "entrega",
-      "title": "Teste, envie e fecha",
+      "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Conferir a pilha de três blocos no Ao iniciar, enviar o projeto com o Dino ainda invisível e guardar as ideias de hoje no quiz.",
-      "blockKeys": ["video-fecho", "quiz-final", "projeto"],
+      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho", "projeto", "quiz-final"],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "area-iniciar",

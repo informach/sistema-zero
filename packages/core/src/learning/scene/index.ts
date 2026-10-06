@@ -3,6 +3,7 @@ import {
   isSceneAction,
   SCENE_IDS,
   SCENE_LIMITS,
+  type SceneAction,
   type SceneId,
   type SceneSetup,
   SETUP_LIMITS,
@@ -133,6 +134,25 @@ export function isExperimentationActivity(value: unknown): value is Experimentat
 }
 
 /**
+ * Esta ação pode entrar num CASO (`setup.actions`) desta cena? É a régua do `isSceneSetup` e a
+ * mesma que o editor do Admin usa para oferecer as escolhas: um caso com uma ação que a cena
+ * recusa nem chega a ser salvo.
+ */
+export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is SceneAction {
+  if (!isSceneAction(acao, scene)) return false
+  // ⚠️ `reset` volta para o próprio caso: dentro dele seria um laço. `hint` é gesto de quem
+  // está travado, não estado de partida.
+  if (acao.type === 'reset' || acao.type === 'hint') return false
+  // ⚠️ No andar do Farol o caso escolhe a velocidade e o limite, nunca ONDE o personagem está: o
+  // "Recomeçar" da bancada volta ao começo de fábrica, e um caso que abrisse fora da tela
+  // poria a criança num lugar ao qual ela não consegue voltar. Sem tempo e sem seta, o x não
+  // sai do começo.
+  if (scene === 'lighthouse-walk' && (acao.type === 'advance' || acao.type === 'hold-arrow'))
+    return false
+  return true
+}
+
+/**
  * O caso é legal nesta cena?
  *
  * As ações passam pela régua única (`isSceneAction`) e as metas precisam existir no modelo —
@@ -145,12 +165,7 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
   if (actions !== undefined) {
     if (!Array.isArray(actions) || actions.length === 0 || actions.length > SETUP_LIMITS.actions)
       return false
-    for (const acao of actions) {
-      if (!isSceneAction(acao, scene)) return false
-      // ⚠️ `reset` volta para o próprio caso: dentro dele seria um laço. `hint` é gesto de quem
-      // está travado, não estado de partida.
-      if (isRecord(acao) && (acao.type === 'reset' || acao.type === 'hint')) return false
-    }
+    for (const acao of actions) if (!isSceneSetupAction(acao, scene)) return false
   }
   if (
     preset !== undefined &&

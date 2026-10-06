@@ -1,192 +1,120 @@
-# Roteiro de gravação · O Jogo do Meu Jeito · Aula 01 · Uma cópia do seu jogo no Estúdio Completo
+# Roteiro de gravação · O Jogo do Meu Jeito · Aula 1
 
-## Especificações
+**Guarde uma cópia para criar do seu jeito**
 
-- **Formato:** gravação de tela com narração, no Estúdio Completo.
-- **Duração:** 290 a 370 segundos de clipes; cerca de 855 palavras de narração, 6.2 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** o Nave contra Asteroides terminado no Dia 5 do Desafio e publicado no Mural, morando dentro da aula. É o primeiro uso guiado do Estúdio Completo e do Pinta neste curso. A lista de projetos pode estar vazia ou já ter outros cartões.
-- **Conceitos nomeados:** projeto, extensão Jogo 2D, cópia, exportar e importar.
-- **Dor desta aula:** O projeto de teste novo abre sem a categoria Jogo 2D; isso acontece na ferramenta real e se resolve com a extensão.
-- **Vitória do dia:** o jogo dela rodando fora da aula, num projeto com o nome que ela escolheu, e um segundo projeto vazio guardado ao lado.
-- **Valores:** Um projeto de teste separado e uma cópia nomeada do jogo do Dia 5; nenhum bloco do jogo é refeito.
-- **Campos livres:** Nome do projeto de teste e nome da cópia do jogo.
-- **Nota de produção:** Começar cada ida pelo botão Abrir meu Estúdio da seção, que abre outra aba. Mostrar o menu recolhido e o botão Mostrar menu nas idas à Jornada.
-- **O que NÃO entra, e por quê:** Não criar terceiro projeto, não apagar o projeto de teste e não tratar a lista vazia como estado obrigatório de toda conta.
+Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos.
 
-## Seção 1. O que a gente vai fazer hoje
+Entrada: Jogo concluído em Nave Contra Asteroides. Saída: Cópia do próprio jogo aberta, nomeada e salva na conta do Estúdio.
 
-### Clipe `video-abertura` · O seu jogo rodando fora da aula
-**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
+Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
-**Na tela:** Mostrar o jogo da nave rodando no Estúdio Completo, com cartão nomeado, sem passeio por menus.
+## Seção 1. Jogue uma versão com artes próprias
+
+### Clipe `video-jogo-pronto` · Jogue uma versão com artes próprias
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.
 
 **Narração:**
-> "O seu jogo da nave já está pronto dentro da aula do Desafio. Hoje vamos levar uma cópia dele
-> para o Estúdio Completo. Primeiro você conhece um projeto novo, depois prepara os blocos de
-> jogo e, por fim, traz a nave para a sua lista."
+> "Clique na área do jogo abaixo para usar o teclado. Toque na tecla Enter para começar. Use as setas para mover a nave e Espaço para atirar. Repare no fogo da nave e nas pedras: são desenhos feitos para este exemplo. Você vai escolher as cores e as formas dos seus.
+>
+> As regras continuam as de Nave Contra Asteroides. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida. Jogue um pouco e siga quando quiser; não precisa vencer nem fazer uma pontuação mínima. Depois, clique em Próxima seção."
 
-**Na tela:** Mostrar a nave respondendo às setas, tiros e placar.
+**Zappy na página (não gravar):** Experimente mover a nave e atirar. Observe os desenhos e o fogo; você vai criar as suas próprias artes.
 
-**Narração:**
-> "No fim da aula, você terá uma cópia do seu jogo pronta para continuar criando no
-> Estúdio Completo. Vem comigo."
+## Seção 2. Consulte os passos do curso
 
-## Seção 2. Seu caderno para criar do seu jeito
+### Clipe `video-caderno` · Consulte os passos do curso
 
-### Clipe `video-caderno` · Seu caderno para criar do seu jeito
-**Duração alvo:** 20 a 30 segundos · **Palavras:** cerca de 55
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar o bloco de materiais logo abaixo deste vídeo, tocar em **Baixar** e mostrar **Baixado**. Abrir uma página real do PDF e apontar um passo que ela ajuda a conferir neste curso. Conferir a página escolhida antes de gravar.
+**Na tela:** Mostrar o PDF real anexado ao bloco, a página da cópia e o botão Baixar. Gravar depois de vincular o arquivo revisado.
 
 **Narração:**
-> "Este é o seu caderno para criar do seu jeito. Ele ajuda você a acompanhar a cópia do jogo e,
-> nas próximas aulas, suas criações no Pinta. O botão **Baixar** está logo abaixo. Você pode ler o
-> PDF na tela ou guardá-lo para consultar depois. Agora vamos começar pelo Estúdio Completo."
+> "O caderno abaixo acompanha as oito aulas. Abra as páginas de copiar o jogo e veja como conferir a cópia no Estúdio. Mais adiante, há referências da nave, do asteroide e dos encaixes dos blocos.
+>
+> Você pode ler na tela ou clicar em Baixar e guardar o PDF. Baixar e imprimir são escolhas suas; não precisa fazer isso para seguir a aula. Para seguir, clique em Próxima seção."
 
-**Abaixo do clipe:** bloco `materiais-caderno`, com o PDF enviado pelo admin. O download não é exigido para avançar; assistir a 90% do clipe conclui esta seção. O caderno continua acessível aqui na Aula 1.
+**Zappy na página (não gravar):** O caderno fica aqui para consultar, baixar ou imprimir se você quiser.
 
-## Seção 3. Um projeto do zero, e um bloco que não está lá
+## Seção 3. Troque a história, observe as regras
 
-### Clipe `video-lista-e-projeto` · Onde o Jogo 2D não está
-**Duração alvo:** 55 a 70 segundos · **Palavras:** 186
+### Clipe `video-aparencia-e-regras` · Troque a história, observe as regras
 
-**Na tela:** Na seção, apontar Abrir meu Estúdio; mostrar outra aba em Meus Jogos, os botões Importar e + Novo projeto.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Narração:**
-> "Esta seção tem o botão **Abrir meu Estúdio**. Ele abre a ferramenta em outra aba, e a aula
-> fica aqui para você voltar. Esta tela se chama **Meus Jogos**. Os cartões que você já tiver
-> aparecem nela; ninguém precisa começar com a lista vazia."
-
-**Na tela:** Clicar + Novo projeto; mostrar modal, campo Nome do projeto, Cancelar e Criar e abrir; preencher nome de teste.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
 
 **Narração:**
-> "Clica em **+ Novo projeto**. Na janela, escreve um nome que você reconheça como teste; o meu
-> é **Meu jogo novo**. O outro botão cancela. Para seguir, clica em **Criar e abrir**."
+> "Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.
+>
+> Compare a lista de regras e o que acontece ao mover e atirar em cada tema. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
 
-**Na tela:** Cartela de pausa após Criar e abrir, com o botão Abrir meu Estúdio desta seção.
+**Zappy na página (não gravar):** Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.
 
-**Narração:**
-> "Pause aqui e abre o Estúdio pelo botão desta seção. Cria o seu projeto de teste e volta ao
-> vídeo com ele aberto. Vamos procurar juntos a categoria que ainda falta."
+## Seção 4. Veja o que uma cópia guarda
 
-**Na tela:** Mostrar projeto recém-aberto e coluna da esquerda inteira, com Áreas do projeto e Programação.
+### Clipe `video-copias` · Veja o que uma cópia guarda
 
-**Narração:**
-> "Olha a coluna dos bloquinhos. Há **Áreas do projeto** e **Programação**. Procura de cima a
-> baixo a categoria que você usou no Desafio. **Jogo 2D não está lá.** Vamos deixar essa falta à
-> vista; o conserto vem na próxima seção."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar o resultado de referência à vista para comparação com o projeto ou desenho da pessoa, sem marca de aprovação automática.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
 
 **Narração:**
-> "Agora compare o seu resultado com este. No seu projeto de teste, você vê o cartão em Meus
-> Jogos e percebe que Jogo 2D ainda não aparece entre os blocos? Deixe essa falta visível; vamos
-> resolvê-la na próxima seção."
+> "Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.
+>
+> Observe o que ficou guardado no arquivo e o que muda em cada lado da bancada. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
 
-## Seção 4. Os bloquinhos vêm de um pacote que você instala
+**Zappy na página (não gravar):** Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.
 
-### Clipe `video-extensao` · Instalar os bloquinhos do Jogo 2D
-**Duração alvo:** 50 a 60 segundos · **Palavras:** 163
+## Seção 5. Baixe o seu jogo concluído
 
-**Na tela:** No projeto de teste, abrir Mais opções, a parte O meu jogo e Extensões; mostrar janela Extensões oficiais.
+### Clipe `video-exportar` · Baixe o seu jogo concluído
 
-**Narração:**
-> "Você não apagou os blocos. Um projeto novo começa sem o pacote do jogo. Na barra de cima,
-> clica em **Mais opções**, os três pontinhos. Na parte **O meu jogo**, clica em **Extensões**.
-> Abriu a janela **Extensões oficiais**."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar o único cartão Jogo 2D, clicar Instalar; apontar selo Instalada e botão Remover.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Hoje aparece o cartão **Jogo 2D**. Clica em **Instalar**. Surgiu **Instalada**, e o botão
-> virou **Remover**. Esse pacote acrescenta os blocos de sprites, movimento, som e o resto do
-> jogo. Outros cartões podem aparecer conforme você avançar na Jornada."
+> "Clique em Abrir meu Estúdio nesta seção. Na outra aba, use Mostrar menu, abra Jornada e a trilha do curso Nave Contra Asteroides. No cartão desse curso, clique em Acessar curso e entre na última aula, Termine e recomece a partida. Retome o projeto que você concluiu. Confira início, pontos, vidas e reinício. Se ele abriu vazio, confira sua entrega em Mais opções, O meu jogo, Trazer o que eu enviei. Se ainda falta terminar, conclua esse jogo antes de fazer a cópia.
+>
+> No Estúdio dessa aula, abra Mais opções, no botão de três pontinhos. Em Levar o jogo, clique em Baixar o projeto. Aguarde o arquivo que termina em .szproject.json na pasta de downloads do seu aparelho. Ele contém o projeto que você está vendo. Confira o nome do arquivo e volte a esta aula.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
 
-**Na tela:** Clicar Fechar; mostrar categoria Jogo 2D; clicar marca Sistema Zero Studio para voltar a Meus Jogos.
+**Zappy na página (não gravar):** Baixe o projeto que você terminou em Nave Contra Asteroides.
 
-**Narração:**
-> "Clica em **Fechar** e olha a coluna esquerda: **Jogo 2D** apareceu. Para voltar à lista,
-> clica em **Sistema Zero Studio**, na ponta esquerda da barra de cima. O cartão do projeto de
-> teste fica guardado ali para outra ocasião."
+## Seção 6. Abra a cópia no seu Estúdio
 
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Estúdio**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
+### Clipe `video-importar` · Abra a cópia no seu Estúdio
 
-**Narração:**
-> "Pause aqui e clique em **Abrir meu Estúdio**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. No projeto de teste, a categoria Jogo 2D apareceu na
-> coluna dos blocos? Compare com a falta que você acabou de ver."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela (sem narração):** o bloco **Se travar, o passo a passo está no Como fazer** fica abaixo do clipe nas seções 3 e 4. Não apontar nem abrir: ele é a rede para quem voltar dias depois, não parte da aula.
-
-## Seção 6. Traga o jogo do Dia 5 para o seu Estúdio
-
-### Clipe `video-importar` · Do Dia 5 até o seu Estúdio
-**Duração alvo:** 90 a 110 segundos · **Palavras:** 261
-
-**Na tela:** Na aula, apontar Abrir meu Estúdio; mostrar outra aba, botão Mostrar menu na beirada esquerda; abrir Jornada > Faísca > Desafio do Primeiro Jogo > Acessar curso > Dia 5.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Agora vamos buscar o jogo completo. Clica em **Abrir meu Estúdio** nesta seção. Na aba que
-> abriu, clica em **Mostrar menu**, junto à beirada esquerda. Vai em **Jornada**, no nível
-> **Faísca**, abre o **Desafio do Primeiro Jogo** em **Acessar curso** e entra no **Dia 5**."
+> "Clique em Abrir meu Estúdio nesta seção. Na outra aba, em Meus Jogos, clique em Importar. Escolha o arquivo .szproject.json que você acabou de baixar. Abra o projeto importado. Os blocos de Jogo 2D vêm com ele.
+>
+> Clique no nome do projeto no alto e escreva um nome que você reconheça, como Minha nave. Confirme a edição. Espere Salvo. Confira a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo importou; não apague os outros trabalhos.
+>
+> Volte a Meus Jogos pelo nome do Estúdio na barra de cima e abra novamente esse cartão. Veja se o nome e os blocos continuam lá. Esse é o cartão que você vai retomar nas próximas aulas. Volte à aba da aula para seguir.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Estúdio se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Salvo. Volte a esta aba e clique em Próxima seção."
 
-**Na tela:** No Estúdio da aula, abrir Mais opções > Levar o jogo > Baixar o projeto; mostrar arquivo .szproject.json em Downloads.
+**Zappy na página (não gravar):** Importe o arquivo do seu jogo e escolha um nome para reconhecer a cópia.
 
-**Narração:**
-> "No Estúdio do Dia 5, abre **Mais opções**. Na parte **Levar o jogo**, clica em **Baixar o
-> projeto**. A linha de apoio diz que esse arquivo abre o mesmo projeto no Estúdio Completo.
-> Confere o arquivo na pasta **Downloads**, com final **.szproject.json**."
+## Seção 7. Entregue a cópia do jogo
 
-**Na tela:** Abrir Mostrar menu novamente; Criar > Estúdio; clicar Importar; escolher arquivo em Downloads e abrir.
+### Clipe `video-entrega` · Entregue a cópia do jogo
 
-**Narração:**
-> "Clica em **Mostrar menu** outra vez, vai em **Criar**, depois **Estúdio**. Em **Meus Jogos**,
-> clica em **Importar**. Escolhe o arquivo que acabou de baixar em **Downloads**. O Estúdio abre
-> a cópia do jogo."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Testar com clique na área, setas e tiro; mostrar Jogo 2D já presente; renomear Projeto da aula pela barra superior.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Clica na área do jogo, move a nave com as setas e atira. Repara que **Jogo 2D** já está na
-> paleta desta cópia. Na barra de cima, clica no nome **Projeto da aula** e troca pelo nome que
-> você quer dar ao seu jogo."
+> "Antes de enviar, confira no seu trabalho: o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.
+>
+> Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
 
-**Na tela:** Mostrar a ajuda condicional Trazer o que eu enviei no menu O meu jogo, sem acionar em projeto correto.
-
-**Narração:**
-> "Se o Dia 5 abriu vazio, confira primeiro o trabalho que você enviou lá. Em **Mais opções**,
-> na parte **O meu jogo**, existe **Trazer o que eu enviei** para recuperar aquela entrega. Use
-> só se precisar."
-
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Estúdio**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
-
-**Narração:**
-> "Pause aqui e clique em **Abrir meu Estúdio**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. No cartão com o nome que você escolheu, a nave responde
-> às setas e o jogo ainda tem tiros, pedras e placar? Confira que esse cartão é o jogo completo,
-> diferente do projeto de teste."
-
-## Seção 7. Teste, envie e fecha
-
-### Clipe `video-fecho` · Dois cartões na sua lista
-**Duração alvo:** 50 a 65 segundos · **Palavras:** 119
-
-**Na tela:** Mostrar jogo completo rodando; esperar Salvo e Guardado na sua conta na barra do Estúdio.
-
-**Narração:**
-> "Antes de entregar, clica na área do jogo e confere nave, tiros, pedras, pontos, vidas, telas
-> e reinício. Espera aparecer **Salvo** e depois **Guardado na sua conta**. O segundo aviso
-> confirma que o projeto subiu para a sua conta."
-
-**Na tela:** Mostrar Meus Jogos com projeto de teste e cópia nomeada; na galeria da aula, escolher só a cópia do jogo e enviar.
-
-**Narração:**
-> "Na sua lista, há o projeto de teste e o cartão do jogo que veio do Dia 5. Na entrega da aula,
-> escolhe **o jogo completo**, com o nome que você deu, e envia. O projeto de teste fica
-> guardado. O envio registra uma cópia deste momento, e você pode continuar criando."
-
-**Na tela:** Mostrar cartão do jogo fora da aula, nave em movimento.
-
-**Narração:**
-> "Pronto: o jogo da nave roda fora da aula, num projeto seu. Na próxima aula você abre o Pinta
-> para desenhar a nave que vai entrar nesse jogo."
+**Zappy na página (não gravar):** Confira o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.

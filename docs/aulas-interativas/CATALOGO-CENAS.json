@@ -2749,7 +2749,7 @@
     "pistas": [
       "Veja qual valor temChave guarda antes de testar a porta.",
       "Depois da tentativa, acompanhe a resposta que ficou marcada.",
-      "Teste sem a chave. Depois escolha Levar a chave e aperte Testar a porta."
+      "Teste sem a chave. Depois escolha Levar a chave e clique em Testar a porta."
     ],
     "roteiro_demonstracao": [],
     "acoes_usadas": ["try-lighthouse-door", "key-state"]
@@ -2758,7 +2758,7 @@
     "id": "collect-and-remember",
     "grupo": "events",
     "titulo": "O jogo guardou a chave?",
-    "instrucao": "Deixe Guardar a coleta desligado e aperte Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Aperte Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.",
+    "instrucao": "Deixe Guardar a coleta desligado e clique em Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Clique em Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.",
     "manipula": "A regra que guarda a coleta, o encontro com a chave, o afastamento e o reinício",
     "frase_sucesso": "Você comparou tirar a chave do chão com guardar que ela foi encontrada. Também conferiu o que permanece na partida e o que recomeça.",
     "pergunta_extra": "Experimente outra vez os dois modos de guardar a coleta.",
@@ -2778,7 +2778,7 @@
       {
         "id": "remembered-after-leaving",
         "rotulo": "A informação continuou guardada longe da chave",
-        "pedido": "Depois de guardar a coleta, aperte Afastar e confira temChave.",
+        "pedido": "Depois de guardar a coleta, clique em Afastar e confira temChave.",
         "soNoCaso": false
       },
       {
@@ -2795,5 +2795,59 @@
     ],
     "roteiro_demonstracao": [],
     "acoes_usadas": ["collect-key", "restart-collection", "remember-collection", "leave-key"]
+  },
+  {
+    "id": "lighthouse-walk",
+    "grupo": "motion",
+    "titulo": "Como o personagem anda",
+    "instrucao": "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta e avance outros quadros, um de cada vez ou com Rodar.",
+    "manipula": "A seta para a direita, a velocidade, o limite da tela e os quadros do jogo",
+    "frase_sucesso": "A cada quadro o jogo confere a seta. Com a seta segurada, o personagem anda um pouco; com a seta solta, o personagem fica parado.",
+    "pergunta_extra": "Quantos quadros o sprite leva para chegar à borda com velocidade 3? E com 1?",
+    "metas": [
+      {
+        "id": "still-without-arrow",
+        "rotulo": "Sem a seta, o sprite ficou parado",
+        "pedido": "Com Segurar a seta para a direita desligado, clique em Avançar 1 quadro e olhe o x.",
+        "soNoCaso": false
+      },
+      {
+        "id": "moves-each-frame",
+        "rotulo": "Com a seta, o sprite andou a cada quadro",
+        "pedido": "Ligue Segurar a seta para a direita e clique em Avançar 1 quadro duas vezes. Olhe o x.",
+        "soNoCaso": false
+      },
+      {
+        "id": "step-speed-3",
+        "rotulo": "Com velocidade 3, ele andou 3 a cada quadro",
+        "pedido": "Escolha Velocidade 3, ligue Segurar a seta para a direita e clique em Avançar 1 quadro. Olhe o x.",
+        "soNoCaso": true
+      },
+      {
+        "id": "step-speed-1",
+        "rotulo": "Com velocidade 1, ele andou 1 a cada quadro",
+        "pedido": "Escolha Velocidade 1, ligue Segurar a seta para a direita e clique em Avançar 1 quadro. Olhe o x.",
+        "soNoCaso": true
+      },
+      {
+        "id": "left-the-screen",
+        "rotulo": "Sem o limite, o sprite saiu da tela",
+        "pedido": "Com Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Olhe a borda da tela.",
+        "soNoCaso": true
+      },
+      {
+        "id": "stayed-inside",
+        "rotulo": "Com o limite, o sprite ficou inteiro na tela",
+        "pedido": "Ligue Manter dentro da tela e Segurar a seta para a direita, clique em Recomeçar e depois em Rodar. Olhe a borda da tela.",
+        "soNoCaso": true
+      }
+    ],
+    "pistas": [
+      "Olhe o número do quadro e o x do sprite enquanto os quadros passam.",
+      "Compare: avance quadros com a seta solta e depois com a seta segurada.",
+      "Clique em Avançar 1 quadro com Segurar a seta para a direita desligado. Depois ligue a seta e clique em Avançar 1 quadro mais duas vezes."
+    ],
+    "roteiro_demonstracao": [],
+    "acoes_usadas": ["hold-arrow", "advance", "walk-speed", "keep-on-screen", "restart-walk"]
   }
 ]

@@ -1,145 +1,110 @@
-# Roteiro de gravação · Corre Dino · Aula 10 · A caixa que decide a batida
+# Roteiro de gravação · Corre, Dino! · Aula 10
 
-## Especificações
+**Ajuste a área da batida**
 
-- **Formato:** gravação de tela com narração, no Estúdio embutido.
-- **Duração:** 260 a 315 segundos de clipes; 590 palavras de narração, cerca de 4.3 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** o jogo está completo desde a aula 9. Tem tela de início, partida, batida com explosão, tremida, som de derrota, tela de fim e reinício. No `Ao iniciar`, o último bloco é o `Mudar o estado do jogo para inicio`. Dentro do `Se o estado do jogo é jogando ?`, o último bloco é o `Tirar do grupo cactos quem sair da tela`. O dino foi criado com tamanho 64.
-- **Conceitos nomeados:** caixa de colisão, área de colisão, instrumento de visualização e ajuste de dificuldade.
-- **Dor desta aula:** Uma batida sem contato visível precisa ser capturada numa partida real; o raio-X revela o retângulo usado pelo jogo.
-- **Vitória do dia:** duas, e as duas se veem. A primeira é o contorno rosa aparecendo em volta do dino, que é o invisível virando visível. A segunda é passar raspando num cacto e escapar.
-- **Valores:** Dino tamanho 64; área de colisão de 70 a 85 por cento, exemplo 80. Extremos de demonstração 40 e 100.
-- **Campos livres:** Percentual final da área entre 70 e 85.
-- **Nota de produção:** Não fabricar a batida na edição. Manter o contorno ligado ao testar os extremos e retirá-lo só depois da conferência final.
-- **O que NÃO entra, e por quê:** Não prometer colisão pixel a pixel: o ajuste altera a caixa retangular, não o desenho do Dino.
+Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.
 
-## Seção 1. A batida que você não deu
+Entrada: Corrida completa, com área de colisão padrão. Saída: Área do Dino em 80% como referência, desenho tamanho 64; contorno de teste retirado.
 
-### Clipe `video-batida-injusta` · A batida que você não deu
-**Duração alvo:** 25 a 35 segundos; recalibrar após gravar.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
-**Na tela:** Jogar a versão da Aula 9 até uma batida sem toque visual; congelar o quadro real e aproximar o vão.
+## Seção 1. Compare a área com o desenho
+
+### Clipe `video-caixa-decide` · Compare a área com o desenho
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Às vezes a partida termina mesmo quando parece haver um espaço entre o Dino e o cacto.
-> Hoje vamos descobrir por que o jogo entende isso como batida."
+> "Seu jogo já reconhece a batida. Agora compare o tamanho do desenho com a área usada para decidir esse contato.
+>
+> Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU. Observe os desenhos nesse momento.
+>
+> Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Mostrar desenho do Dino e cacto no quadro congelado, sem inserir efeito de colisão.
+**Zappy na página (não gravar):** Mude apenas a área com o cacto parado; depois compare o contato com 40%.
 
-**Narração:**
-> "O jogo usa uma forma escondida para decidir o contato. Nesta aula vamos mostrar essa
-> forma e ajustar o tamanho dela para a batida parecer justa."
+## Seção 2. Mostre a área no seu jogo
 
-## Seção 2. Ligue o raio-X
+### Clipe `video-ligar-raio-x` · Mostre a área no seu jogo
 
-### Clipe `video-raio-x` · O contorno que aparece em volta do dino
-**Duração alvo:** 60 a 70 segundos · **Palavras:** 148
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Abrir Jogo 2D > Colisões > Área de contato; apontar Mostrar a caixa de colisão do sprite, distinto do bloco comprido acima.
-
-**Narração:**
-> "Vamos ligar o raio-X do jogo. Em **Jogo 2D**, abre **Colisões**, depois **Área de contato**.
-> Pega **Mostrar a caixa de colisão do sprite**. É o bloco que mostra, não o bloco comprido que
-> muda o tamanho."
-
-**Na tela:** Encaixar no Se de jogando, logo abaixo da faxina, no fim do ramo; selecionar dino no campo.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Encaixa dentro do **Se o estado do jogo é jogando**, logo abaixo da **faxina dos cactos**,
-> que era o último bloco desse ramo. No campo do sprite, abre a listinha e escolhe **dino**."
+> "Na experiência da seção anterior, você comparou o desenho com a área de contato. No seu jogo essa área está invisível. Mostre um contorno para conferir o ajuste.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o encaixe depois de Desenhar o sprite dino, dentro do então de Se jogando no quadro. Abra Jogo 2D, depois Colisões e Área de contato. Pegue Mostrar a caixa de colisão do sprite e encaixe depois do desenho do Dino. Escolha dino.
+>
+> Comece a partida e compare o contorno com o desenho. O contorno só mostra a área; não muda a batida. Se não aparecer, confira se foi desenhado depois do Dino e dentro de jogando.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Clicar no jogo, iniciar partida e mostrar contorno rosa; congelar Dino para apontar vazios.
+**Zappy na página (não gravar):** Mostre o contorno da área de dino depois do desenho.
 
-**Narração:**
-> "Começa a partida. Apareceu um retângulo cor de rosa em volta do Dino. Repara no espaço vazio
-> em cima da cabeça, na frente do focinho e entre os pés. O jogo mede o contato por esse
-> retângulo, a **caixa de colisão**."
+## Seção 3. Ajuste a área sem mudar o desenho
 
-**Na tela:** Apontar retângulo sem alterar desenho.
+### Clipe `video-ajustar-area` · Ajuste a área sem mudar o desenho
 
-**Narração:**
-> "O contorno não é uma parte pintada do dinossauro. É um instrumento para enxergar a **área de
-> colisão** que o jogo usa. Agora dá para entender como uma batida pode ser contada antes dos
-> desenhos se tocarem."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-## Seção 4. Deixe a caixa do tamanho do seu dino
-
-### Clipe `video-ajustar-area` · A caixa encolhe, o dino continua igual
-**Duração alvo:** 55 a 65 segundos · **Palavras:** 134
-
-**Na tela:** Manter o raio-X ligado; abrir Jogo 2D > Colisões > Área de contato e pegar Usar área de colisão de % do tamanho para o sprite.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Na mesma categoria **Jogo 2D**, abre **Colisões**, depois **Área de contato**. Pega **Usar
-> área de colisão de 80 % do tamanho para o sprite**. Esse é o bloco que muda a caixa."
+> "Na experiência Compare a área com o desenho, diminuir a porcentagem mudou a batida sem encolher o Dino. Agora faça esse ajuste no seu jogo, com o contorno visível.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o fim de Ao iniciar. Abra Jogo 2D, depois Colisões e Área de contato. Pegue Usar área de colisão de % do tamanho para o sprite e encaixe no fim de Ao iniciar. Escolha dino e deixe a porcentagem em 80.
+>
+> Comece e observe o contorno. O Dino continua com tamanho 64; a área é que ficou menor. Deixe um cacto chegar e compare a batida com o teste anterior.
+>
+> Você pode testar 70 e 85 nesse campo e comparar. Escolha um valor entre 70 e 85; no exemplo, fica 80. Não mude o tamanho do desenho para tentar ajustar a área. Confira o nome dino nos dois blocos de colisão.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Encaixar no Ao iniciar, logo abaixo de Mudar o estado do jogo para inicio, depois de Criar dinossauro.
+**Zappy na página (não gravar):** Ajuste somente a área de colisão, mantendo o desenho em tamanho 64.
 
-**Narração:**
-> "Encaixa no **Ao iniciar**, logo abaixo de **Mudar o estado do jogo para inicio**. Ele fica
-> depois de **Criar dinossauro**, porque só dá para ajustar um Dino que já existe. Isso é
-> preparação, então acontece uma vez no começo."
+## Seção 4. Retire o contorno de teste
 
-**Na tela:** Zoom nos campos: porcentagem 80 e sprite dino; mostrar contorno encolhendo e desenho intacto.
+### Clipe `video-retirar-contorno` · Retire o contorno de teste
 
-**Narração:**
-> "O percentual já vem em **80**; deixa por enquanto. No sprite, escolhe **dino**. Olha o
-> raio-X: a caixa encolheu, mas o desenho do Dino ficou exatamente do mesmo tamanho. A área de
-> contato mudou; a arte não mudou."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Jogar uma passagem rente ao cacto com o contorno visível.
-
-**Narração:**
-> "Passa bem perto de um cacto. Agora dá para escapar raspando. A caixa menor faz a batida
-> combinar melhor com o que o jogador vê."
-
-## Seção 5. O dial de dificuldade
-
-### Clipe `video-dial` · O botão que decide o quanto o jogo perdoa
-**Duração alvo:** 60 a 70 segundos · **Palavras:** 106
-
-**Na tela:** Com raio-X ligado, trocar percentual por 40 e jogar uma passagem; mostrar caixa minúscula.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Esse número é um ajuste de dificuldade. Vamos aos extremos para sentir o efeito. Põe **40**,
-> confirma e olha a caixa: ficou pequena demais. O cacto parece atravessar partes do Dino sem
-> encerrar a partida."
+> "Você já conferiu a área da batida. Retire o contorno de teste e mantenha a regra que define a porcentagem.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o bloco Mostrar a caixa de colisão do sprite, dentro de jogando. Separe a sequência que estiver abaixo dele para preservá-la. Retire só esse bloco e reconecte a sequência abaixo do desenho do Dino.
+>
+> Confira em Ao iniciar o bloco Usar área de colisão, com dino e a porcentagem escolhida. Comece outra partida. O contorno desaparece, e a batida continua usando a área menor. Se a regra sumir junto, devolva o bloco de ajuste a Ao iniciar.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Trocar por 100, jogar; mostrar caixa grande e batida precoce.
+**Zappy na página (não gravar):** Retire apenas o desenho do contorno e conserve o ajuste da área.
 
-**Narração:**
-> "Agora põe **100**. A caixa volta a ocupar o tamanho inteiro, com aqueles cantos vazios.
-> Voltaram as batidas que parecem acontecer cedo demais."
+## Seção 5. Teste e envie seu jogo
 
-**Na tela:** Voltar a 80 e indicar faixa 70 a 85; testar mais uma passagem.
+### Clipe `video-entrega` · Teste e envie seu jogo
 
-**Narração:**
-> "No meu jogo, **80** fica bom. O seu pode ficar em qualquer número entre **70 e 85**. Escolhe
-> o que faz a batida parecer justa na sua arte. Não existe um percentual certo para todo jogo; o
-> número depende do desenho e da experiência que você quer criar."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-## Seção 6. Teste, guarde o raio-X e entregue
-
-### Clipe `video-teste-e-envio` · Raspar, bater e tirar o raio-X
-**Duração alvo:** 60 a 75 segundos · **Palavras:** 127
-
-**Na tela:** Com contorno visível, jogar uma passagem rente ao cacto e depois uma batida real.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Antes de guardar o raio-X, confere os dois lados: uma passagem rente sem perder e uma batida
-> de verdade que termina a partida. A caixa menor deixou espaço para escapar, mas não desligou a
-> colisão."
+> "Seu jogo usa uma área ajustada para a batida. Comece, pule e deixe ocorrer uma colisão para conferir o ciclo de fim e reinício.
+>
+> Confira tamanho 64 no Dino e a porcentagem escolhida entre 70 e 85 no bloco de área. O desenho do contorno deve estar retirado.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
 
-**Na tela:** Mostrar Mostrar a caixa de colisão como último bloco do Se; arrastar sozinho para a lixeira, deixando ajuste no Ao iniciar.
-
-**Narração:**
-> "Agora arrasta **Mostrar a caixa de colisão do sprite** para a lixeira. Ele é o último bloco
-> desse ramo, então só ele sai. O ajuste de **80 por cento** continua no **Ao iniciar**. Repara
-> que o contorno sumiu, mas o jeito da batida continua."
-
-**Na tela:** Jogar curto sem contorno; conferir objetivos, esperar Salvo e enviar.
-
-**Narração:**
-> "Confere o percentual que você escolheu e a retirada do instrumento. Depois espera **Salvo** e
-> clica em **Enviar para o professor**. Na Aula 6 você usou um medidor; hoje usou um raio-X.
-> Quando algo do jogo parecer estranho, um instrumento pode mostrar o que estava escondido."
+**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.

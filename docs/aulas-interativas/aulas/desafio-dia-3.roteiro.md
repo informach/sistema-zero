@@ -1,106 +1,239 @@
 # Roteiro de gravação · A Chave do Farol · Dia 3
 
-Quatro seções: experiência com a porta, resposta sem chave, resposta com chave e publicação. Manter o projeto enviado no Dia 2 e o mesmo Estúdio entre as três últimas seções. A verificação intermediária não pede envio; a seção decisao recebe a entrega única do dia. Estimativas: 40 a 55 segundos para a experiência, 3 a 4 minutos para o aviso sem chave, 4 a 5 minutos para completar e testar a vitória. Ajustar no ensaio, sem acelerar encaixes, percursos ou a espera do barco. Não atribuir à criança a arte ou a animação preparada. Só a narração é falada.
+Cinco seções: experiência com a porta, resposta sem chave, resposta com chave, a seção de mexa e veja (Deixe o jogo com a sua cara) e publicação. Manter o projeto enviado no Dia 2 e o mesmo Estúdio nas quatro últimas seções. A verificação intermediária não pede envio; a seção decisao recebe a entrega única do dia. Ajustar as durações no ensaio, sem acelerar encaixes, percursos ou a espera do barco. Não atribuir à pessoa a arte ou a animação preparada. Só a narração é falada.
 
 ## Seção 1. O que a porta precisa?
 
 ### Vídeo `video-d3-condicao` · Quando a porta pode abrir?
 
-**Na tela:** mostrar a cena inicial da porta com o novo mostrador e as duas respostas sem destaque. Apontar Testar a porta e Levar a chave. Não clicar nem revelar a resposta. Duração estimada: 40–55 segundos.
+**Duração alvo:** 45 a 60 segundos.
+
+**Na tela:** mostrar a cena da porta com o mostrador `temChave`. Clicar em **Testar a porta** sem a chave e deixar ver a resposta senão marcada. Clicar em **Levar a chave** e em **Testar a porta**, deixando ver a resposta então marcada. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase da porta de casa, a porta do farol trancada quando o personagem chega sem a chave e aberta quando ele chega com a chave. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
-> "Seu jogo já guarda a coleta da chave. Agora a porta precisa usar essa informação. Uma condição é uma pergunta que o jogo confere. Nesta experiência, acompanhe temChave e a pergunta da porta. Primeiro aperte Testar a porta sem levar a chave. Veja qual resposta fica marcada. Depois aperte Levar a chave e Testar a porta outra vez. Compare o valor guardado e a resposta nas duas tentativas. Quando terminar os dois testes, aperte Próxima seção."
+> "Seu jogo já guarda a coleta da chave. Aqui está uma experiência para entender como a porta usa essa informação.
+>
+> Antes de abrir, a porta confere se temChave é verdadeiro. Uma pergunta assim se chama condição. É como a porta de casa: ela só abre se você tiver a chave.
+>
+> Clique em Testar a porta, sem levar a chave. temChave está falso, e a porta escolhe a resposta senão: avisa que falta a chave.
+>
+> Agora clique em Levar a chave e em Testar a porta de novo. temChave está verdadeiro, e a porta escolhe a resposta então: acender o farol.
+>
+> Agora é a sua vez: faça os dois testes na experiência e clique em Próxima seção."
 
-**Ponte do Zappy na página (não gravar):** A coleta já guarda uma informação. Veja como a porta usa essa informação para escolher uma resposta.
+**Ponte do Zappy na página (não gravar):** Agora teste a mesma porta sem a chave e com a chave.
+
+**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
 ## Seção 2. Avise quando faltar a chave
 
 ### Vídeo `video-d3-sem-chave` · Avise quando faltar a chave
 
-**Na tela:** retomar o projeto da criança. Apontar o encontro com a chave já montado e o espaço abaixo, na área Quando acontecer. Abrir Jogo 2D → Colisões → Encostar e bloquear. Pegar Quando o sprite começar a encostar no sprite e configurar personagem/farol em um evento separado.
+**Duração alvo:** 3 a 4 minutos, incluindo encaixes, teste e verificação.
+
+**Na tela:** retomar o projeto da pessoa. Começar pela retomada, antes de qualquer bloco: levar o personagem até o farol e mostrar que nada acontece. Em cada encaixe, primeiro deixar o destino à vista; só então abrir a categoria e pegar o bloco. Mostrar o encontro com a chave já montado e o espaço abaixo dele, na área **Quando acontecer**; se for preciso, arrastar um espaço vazio entre os blocos. Abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite começar a encostar no sprite**, soltar abaixo do encontro com a chave e configurar `personagem` e `farol`.
 
 **Narração:**
-> "Você comparou as duas respostas da porta. Vamos começar pelo aviso de que falta a chave. O encontro com a chave já está pronto. Abra Jogo 2D, Colisões, Encostar e bloquear. Pegue Quando o sprite começar a encostar no sprite. Encaixe na área Quando acontecer, abaixo do evento da chave, sem colocar um evento dentro do outro. Escolha personagem no primeiro nome e farol no segundo. O encontro diz quando o jogo vai conferir a chave."
+> "Na experiência da seção anterior, a porta conferia temChave antes de abrir. Agora vamos ensinar o farol a fazer o mesmo!
+>
+> Primeiro, leve o personagem até o farol: nada acontece, porque o farol ainda não confere nada.
+>
+> Vamos começar pelo aviso para quando o personagem chega sem a chave. O encontro com a chave já está pronto no seu projeto.
+>
+> Encontre esse encontro na área Quando acontecer e deixe à vista o espaço logo abaixo dele. Se não estiver aparecendo, arraste um espaço vazio entre os blocos até ver.
+>
+> Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear. Pegue o bloco Quando o sprite começar a encostar no sprite.
+>
+> Arraste e solte abaixo do encontro com a chave, ainda na área Quando acontecer. Não coloque um encontro dentro do outro.
+>
+> No primeiro nome, escolha personagem. No segundo, escolha farol."
 
-**Na tela:** abrir Programação → Lógica & Se, encaixar Se no corpo do evento. Abrir Programação → Valores, pegar valor da variável, substituir a condição inicial e selecionar temChave.
-
-**Narração:**
-> "Abra Programação, Lógica e Se. Pegue Se e encaixe dentro do encontro com o farol. Agora abra Programação, Valores. Pegue valor da variável, encaixe na pergunta do Se e escolha temChave. A pergunta decide qual resposta será executada. Dá para ler assim: quando o personagem encostar no farol, confira se temChave é verdadeiro."
-
-**Na tela:** clicar + senão. Abrir Programação → Variáveis, pegar Alterar variável para, encaixar em senão e escolher aviso. Em Programação → Valores, pegar texto e substituir o número inicial. Escrever A porta não abriu. Falta a chave.
-
-**Narração:**
-> "No bloco Se, aperte mais senão. Escolha senão, sem o se no final. Essa parte recebe a resposta quando temChave é falso. Abra Programação, Variáveis. Pegue Alterar variável para, encaixe dentro de senão e escolha aviso. Abra Programação, Valores, pegue texto e coloque no valor do aviso, substituindo o número que veio ali. Escreva: A porta não abriu. Falta a chave. A parte então fica vazia por enquanto. Ainda não colocamos nela a regra para acender a luz."
-
-**Na tela:** usar Atualizar. Ir ao farol sem passar pela chave. Mostrar a mensagem efetivamente produzida. Apontar evento, condição e aviso em senão ao conferir. Não programar o ramo então neste vídeo.
-
-**Narração:**
-> "Aperte Atualizar para começar a partida. Vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave. Se a mensagem não apareceu, confira personagem e farol no encontro, temChave na pergunta e o aviso dentro de senão. Depois de corrigir, atualize e teste outra vez."
-
-**Na tela:** clicar Verificar esta etapa e apresentar o resultado real da verificação intermediária. Esperar Salvo e apontar Próxima seção. O botão de envio não integra esta tarefa.
+**Na tela:** com o espaço vazio do novo evento à vista, abrir **Programação → Lógica & Se** e soltar **Se** dentro dele. A pergunta `x > 0` do **Se** é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos e deixar à vista o lugar vazio ao lado de **Se**. Só então abrir **Programação → Valores**, pegar **valor da variável**, soltar nesse lugar e escolher `temChave`. Conferir antes da gravação onde fica a lixeira.
 
 **Narração:**
-> "Depois do teste, aperte Verificar esta etapa. Se aparecer uma pendência, corrija o bloco indicado e verifique novamente. Quando aparecer Objetivo da etapa cumprido!, espere Salvo. Aperte Próxima seção."
+> "O próximo bloco vai dentro do encontro com o farol, no espaço vazio. Deixe esse espaço à vista.
+>
+> Agora abra Programação e depois Lógica e Se. Pegue o bloco Se. Arraste e solte dentro do encontro com o farol.
+>
+> O Se vem com uma pergunta pronta: x maior que 0. Arraste essa pergunta para a lixeira do espaço dos blocos. O lugar ao lado de Se fica vazio. Deixe esse lugar à vista.
+>
+> Abra Programação e depois Valores. Pegue o bloco valor da variável.
+>
+> Arraste e solte no lugar vazio ao lado de Se. Escolha temChave.
+>
+> Agora, quando o personagem encostar no farol, o jogo confere se temChave é verdadeiro."
 
-**Ponte do Zappy na página (não gravar):** Monte a resposta sem chave. Vá ao farol sem recolher a chave e confira o aviso. Verifique esta etapa antes de seguir.
+**Na tela:** apontar a linha logo abaixo do bloco **Se**, com **+ senão se** e **+ senão**, e clicar no **+** de **senão**. Com a parte **senão** à vista, abrir **Programação → Variáveis**, pegar **Alterar variável para**, soltar em **senão** e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o número, apagar `Olá` e escrever `A porta não abriu. Falta a chave.`.
+
+**Narração:**
+> "Na parte de baixo do bloco Se, depois de então, aparecem duas opções com um sinal de mais: senão se e senão.
+>
+> Clique no sinal de mais ao lado de senão. Não clique no mais de senão se.
+>
+> A parte senão recebe a resposta para quando temChave é falso. O próximo bloco vai dentro dela. Deixe a parte senão à vista.
+>
+> Abra Programação e depois Variáveis. Pegue o bloco Alterar variável para.
+>
+> Arraste e solte dentro de senão. Escolha aviso.
+>
+> Agora troque o número desse bloco por um texto. Abra Programação e depois Valores. Pegue o bloco texto e solte em cima do número. Apague Olá e escreva: A porta não abriu. Falta a chave.
+>
+> A parte então fica vazia por enquanto.
+>
+> Confira: dentro do encontro com o farol está o Se com temChave. Dentro de senão está o aviso de que falta a chave."
+
+**Na tela:** clicar em **Atualizar**, na barra logo acima do jogo; em barra estreita, o botão aparece só como ⟳. Levar o personagem ao farol sem passar pela chave e mostrar a mensagem que aparece de verdade. Não programar a parte **então** neste vídeo.
+
+**Narração:**
+> "Agora teste no seu jogo. Clique em Atualizar, logo acima do jogo, para começar uma partida.
+>
+> Vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave.
+>
+> Se o aviso não apareceu, confira personagem e farol no encontro, temChave no Se e o aviso dentro de senão. Corrija e teste de novo."
+
+**Na tela:** clicar em **Verificar esta etapa** e mostrar o resultado real da verificação intermediária. Esperar **Salvo** e apontar **Próxima seção**. O envio não faz parte desta seção.
+
+**Narração:**
+> "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+>
+> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Depois clique em Próxima seção."
+
+**Ponte do Zappy na página (não gravar):** Monte o aviso de que falta a chave. Vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir.
+
+**Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O envio único do dia acontece na seção seguinte.
 
 ## Seção 3. Acenda o farol com a chave
 
 ### Vídeo `video-d3-decisao` · Acenda o farol com a chave
 
-**Na tela:** manter o mesmo Estúdio e o mesmo Se. Apontar o aviso em senão e o ramo então vazio. Não recarregar a retomada preparada nem duplicar o evento do farol.
+**Duração alvo:** 4 a 5 minutos, incluindo encaixes, os três testes e o envio. Não acelerar os percursos nem a espera do barco.
+
+**Na tela:** manter o mesmo Estúdio e o mesmo **Se**. Começar pela retomada, antes de qualquer bloco: clicar em **Atualizar**, pegar a chave, ir ao farol e mostrar que a luz não acende. Depois deixar à vista o aviso em **senão** e a parte **então**, ainda vazia; só então abrir **Programação → Variáveis**, pegar **Alterar variável para**, soltar em **então** e escolher `ganhou`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**. Não recarregar a retomada preparada nem duplicar o evento do farol.
 
 **Narração:**
-> "Seu farol já avisa quando falta a chave. Agora vamos completar a resposta para quando ela foi encontrada. No encontro entre personagem e farol, encontre o mesmo Se que você acabou de montar. A parte então ainda está vazia. É nela que vamos colocar as ações para quando temChave for verdadeiro."
+> "Na experiência da primeira seção desta aula, quando temChave era verdadeiro, a porta escolhia então e acendia o farol. Agora vamos programar essa resposta no seu jogo!
+>
+> Primeiro, clique em Atualizar, pegue a chave e vá ao farol. A luz não acende, porque a parte então ainda não tem nenhuma ação.
+>
+> Continue no mesmo Se do encontro com o farol e deixe à vista a parte então.
+>
+> Abra Programação e depois Variáveis. Pegue o bloco Alterar variável para.
+>
+> Arraste e solte dentro de então. Escolha ganhou.
+>
+> Agora troque o número desse bloco. Abra Programação e depois Lógica e Se. Pegue o bloco verdadeiro e solte em cima do número. Deixe em verdadeiro.
+>
+> A variável ganhou já veio preparada. Quando ela fica verdadeira, o barco começa a chegar."
 
-**Na tela:** em Programação → Variáveis, pegar Alterar variável para, encaixar em então e escolher ganhou. Em Programação → Lógica & Se, pegar Verdadeiro ou falso, substituir o valor e manter verdadeiro.
-
-**Narração:**
-> "Abra Programação, Variáveis. Pegue Alterar variável para e encaixe dentro de então. Escolha ganhou. Abra Programação, Lógica e Se. Pegue Verdadeiro ou falso, encaixe no valor e mantenha verdadeiro, como veio no bloco. A variável ganhou já veio preparada para ligar o movimento do barco. Você está programando quando essa chegada pode acontecer."
-
-**Na tela:** abrir Jogo 2D → Sprites → Criar e trocar aparência. Pegar Trocar imagem do sprite para, encaixar abaixo de ganhou em então, escolher farol e farol-aceso.
-
-**Narração:**
-> "Agora abra Jogo 2D, Sprites, Criar e trocar aparência. Pegue Trocar imagem do sprite para e encaixe logo abaixo do bloco de ganhou, ainda dentro de então. Escolha o sprite farol e a imagem farol-aceso. Essa ação muda a imagem para mostrar a luz acesa."
-
-**Na tela:** abrir Programação → Variáveis, pegar outro Alterar variável para, encaixar abaixo da troca de imagem em então e escolher aviso. Em Programação → Valores, pegar texto, substituir o número e escrever o aviso de chegada.
-
-**Narração:**
-> "Falta a mensagem de chegada. Abra Programação, Variáveis. Pegue outro Alterar variável para e encaixe abaixo da troca de imagem, dentro de então. Escolha aviso. Abra Programação, Valores, pegue texto e encaixe no valor, substituindo o número. Escreva: Você acendeu o farol! Olhe o barco chegando. Confira: em então, ficam ganhou verdadeiro, a imagem acesa e o aviso de chegada. Em senão, continua o aviso de que falta a chave."
-
-**Na tela:** iniciar uma partida por Atualizar. Visitar o farol sem chave; afastar-se, buscar a chave e voltar ao farol na mesma partida. Esperar a luz e o barco. Reiniciar depois da vitória e ir ao farol sem chave. Mostrar esses estados reais, sem edição que simule o funcionamento.
+**Na tela:** com o bloco de `ganhou` à vista dentro de **então**, abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Trocar imagem do sprite para**, soltar logo abaixo dele e escolher `farol` e `farol-aceso`. Depois, com a troca de imagem à vista, abrir **Programação → Variáveis**, pegar outro **Alterar variável para**, soltar abaixo dela e escolher `aviso`. Em **Programação → Valores**, pegar **texto**, soltar sobre o número, apagar `Olá` e escrever o aviso de chegada.
 
 **Narração:**
-> "Vamos testar a aventura inteira. Aperte Atualizar e vá ao farol sem passar pela chave. A luz deve ficar apagada e o aviso deve dizer que falta a chave. Agora se afaste do farol, busque a chave e volte, sem recomeçar a partida. A luz deve acender, o aviso deve mudar e o barco deve chegar. O jogo guardou a coleta enquanto você andava até o farol. Depois aperte Atualizar. A chave deve voltar ao chão. Vá direto ao farol, sem recolhê-la: ele deve voltar a avisar que falta a chave."
+> "O próximo bloco vai logo abaixo de ganhou, ainda dentro de então. Deixe esse lugar à vista.
+>
+> Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência. Pegue o bloco Trocar imagem do sprite para.
+>
+> Arraste e solte logo abaixo do bloco de ganhou.
+>
+> Escolha o sprite farol e a imagem farol-aceso.
+>
+> O próximo bloco vai logo abaixo da troca de imagem, ainda dentro de então. Deixe esse lugar à vista.
+>
+> Abra Programação e depois Variáveis. Pegue outro bloco Alterar variável para.
+>
+> Arraste e solte logo abaixo da troca de imagem, ainda dentro de então. Escolha aviso.
+>
+> Agora troque o número desse bloco por um texto. Abra Programação e depois Valores. Pegue o bloco texto e solte em cima do número. Apague Olá e escreva: Você acendeu o farol! Olhe o barco chegando.
+>
+> Confira: dentro de então estão ganhou verdadeiro, a imagem farol-aceso e o aviso de chegada. Dentro de senão continua o aviso de que falta a chave."
 
-**Na tela:** apontar a declaração de temChave em Ao iniciar, sua mudança na coleta e sua consulta no farol, um trecho de cada vez. As correções a seguir correspondem aos pontos que os testes distinguem.
+**Na tela:** clicar em **Atualizar**. Visitar o farol sem a chave; afastar-se, buscar a chave e voltar ao farol na mesma partida. Esperar a luz e o barco. Clicar em **Atualizar** depois da vitória e ir ao farol sem a chave. Mostrar esses estados reais, sem edição que simule o funcionamento.
 
 **Narração:**
-> "Se a luz acendeu sem chave, confira se temChave começa em falso, se o Se consulta temChave e se a troca da imagem está dentro de então. Se não acendeu depois da coleta, confira se o encontro com a chave muda temChave para verdadeiro e se escolheu farol-aceso na troca da imagem. Se a luz acendeu, mas o barco não veio, confira ganhou verdadeiro dentro de então. Se o aviso saiu diferente, confira seu texto e a resposta em que ele está encaixado. Depois de corrigir, repita os testes."
+> "Agora teste a aventura inteira. Clique em Atualizar. Vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave.
+>
+> Sem recomeçar a partida, busque a chave e volte ao farol. A luz deve acender, o aviso deve mudar e o barco deve chegar. Espere o barco.
+>
+> Clique em Atualizar de novo. A chave volta ao chão. Vá direto ao farol, sem pegar a chave. O farol deve avisar outra vez que falta a chave."
 
-**Na tela:** executar a verificação cumulativa, mostrar eventuais pendências reais, esperar Salvo e enviar com confirmação. Manter o mesmo projeto para publicar.
+**Na tela:** apontar, um trecho de cada vez, a declaração de `temChave` em **Ao iniciar**, sua mudança na coleta e sua consulta no farol. As correções correspondem aos casos que os três testes distinguem.
 
 **Narração:**
-> "Depois dos testes, aperte Verificar esta etapa. Se aparecer alguma pendência, corrija e verifique novamente. Quando aparecer Objetivo da etapa cumprido!, espere Salvo. Aperte Enviar para o professor e confirme em Enviar. Quando terminar o envio, aperte Próxima seção."
+> "Se a luz acendeu sem a chave, confira se temChave começa em falso e se a troca de imagem está dentro de então.
+>
+> Se a luz não acendeu com a chave, confira se o encontro com a chave muda temChave para verdadeiro e se a imagem é farol-aceso.
+>
+> Se a luz acendeu, mas o barco não veio, confira ganhou verdadeiro dentro de então.
+>
+> Corrija e repita os testes."
 
-**Ponte do Zappy na página (não gravar):** Complete a resposta com chave. Teste chegar sem ela, buscar e voltar, e começar outra partida. Depois verifique e envie seu jogo.
+**Na tela:** clicar em **Verificar esta etapa**, mostrar eventuais pendências reais e corrigir. Depois de **Objetivo da etapa cumprido!**, esperar **Salvo**, clicar em **Enviar para o professor**, confirmar em **Enviar** e aguardar. Apontar **Próxima seção**. Manter o mesmo projeto para publicar.
 
-## Seção 4. Publique seu jogo
+**Narração:**
+> "Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
+>
+> Quando aparecer Objetivo da etapa cumprido!, espere aparecer Salvo. Clique em Enviar para o professor e confirme em Enviar.
+>
+> Quando o envio terminar, clique em Próxima seção."
+
+**Ponte do Zappy na página (não gravar):** Complete a parte então para acender o farol. Teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor.
+
+**Conferência de produção:** a verificação é cumulativa e confere as regras dos dias anteriores. A seção exige o vídeo, a aprovação e o envio confirmado. A verificação não exige copiar literalmente as frases dos avisos.
+
+## Seção 4. Deixe o jogo com a sua cara
+
+### Vídeo `video-d3-personalizar` · Deixe o jogo com a sua cara
+
+**Duração alvo:** 90 a 120 segundos.
+
+**Na tela:** no mesmo Estúdio, com o projeto já enviado. Trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e o bloco **Criar sprite personagem**. No fim dele, depois de **com imagem**, clicar no nome **personagem**, mostrar a lista de imagens que se abre (sem título; role se for preciso) e escolher a menina. Depois trazer à vista a área **Quando acontecer**, clicar no texto do aviso da chave e trocar por uma frase curta; fazer o mesmo com o aviso de **então**. Clicar em **Atualizar**, ir ao farol sem a chave, pegar a chave, voltar ao farol e mostrar as mensagens novas. Apontar **Próxima seção**.
+
+**Narração:**
+> "Agora mexa e veja: deixe o jogo com a sua cara. Você pode escolher quem vive a aventura e escrever os avisos do seu jeito. O que você mudar fica no seu jogo.
+>
+> Primeiro, o personagem. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ver. Nela está o bloco Criar sprite personagem.
+>
+> Vá até o fim desse bloco. Depois de com imagem, está o nome da imagem: personagem. Clique nesse nome. Abre uma lista com as imagens do jogo. Escolha outro personagem, como a menina. Se não achar, role a lista.
+>
+> Todos os personagens têm o mesmo tamanho. Por isso, ele continua andando, pegando a chave e chegando ao farol do mesmo jeito.
+>
+> Agora os avisos. Encontre a área Quando acontecer. No encontro com a chave está o aviso de quando a chave é encontrada. No encontro com o farol, dentro de então e de senão, estão os outros dois. Clique no texto de um aviso e escreva do seu jeito, com uma frase curta.
+>
+> Se um desenho ficar estranho, clique de novo no nome da imagem e escolha um personagem. Se uma frase passar da tela, deixe mais curta.
+>
+> Agora teste: clique em Atualizar, vá ao farol sem a chave, pegue a chave e volte ao farol. Leia as suas mensagens.
+>
+> Quando terminar, clique em Próxima seção."
+
+**Ponte do Zappy na página (não gravar):** Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção.
+
+**Conferência de produção:** é a seção de mexa e veja do curso: vem depois do envio e antes de publicar, para o jogo publicado ter a cara da criança. As mudanças ficam no jogo; nada aqui vira critério, e a seção conclui pelo vídeo. O bloco é Criar sprite personagem em x ___ y ___ largura ___ altura ___ com imagem ___; a imagem aparece pelo nome, no fim do bloco. Todos os personagens têm a caixa 64 × 64 e a mesma área de contato, então a troca não muda o tamanho, o limite da tela nem os encontros. Uma imagem de outro tamanho (o barco, o farol) muda a caixa; a fala ensina a voltar a um personagem. Projetos salvos antes de 05/10/2026 recebem os personagens novos ao abrir a aula. A verificação não cobra o texto dos avisos.
+
+## Seção 5. Publique seu jogo
 
 ### Vídeo `video-d3-fecho` · Publique seu jogo
 
-**Na tela:** manter o mesmo Estúdio da seção anterior, já enviado ao professor. Abrir **Compartilhar**. Mostrar **Título** e **Resumo do projeto** preenchidos; não editar. Clicar **Gerar capa**, aguardar e conferir. Não demonstrar upload nem cópia de link. Duração estimada da seção: 45 a 60 segundos, incluindo espera da publicação.
+**Duração alvo:** 45 a 60 segundos, incluindo a publicação e a confirmação.
+
+**Na tela:** manter o mesmo Estúdio da seção anterior, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone, e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** preenchido, sem editar; na aula, o título vem do curso e não aparece na janela. Clicar em **Gerar capa**, esperar a imagem e conferir. Não demonstrar upload, personalização nem cópia do link.
 
 **Narração:**
-> "Seu jogo já foi enviado para o professor. Para outras pessoas também poderem jogar sua aventura, vamos publicá-la no Mural. No Estúdio, aperte Compartilhar. O título e o resumo já estão preenchidos. Deixe como estão. Aperte Gerar capa e espere a imagem aparecer. Essa imagem vai apresentar seu jogo."
+> "Agora publique seu jogo para outras pessoas jogarem.
+>
+> No alto do Estúdio, clique em Compartilhar. Na aula, ele pode aparecer só como um ícone. O resumo do projeto já vem preenchido. Deixe como está.
+>
+> Clique em Gerar capa e espere a imagem aparecer. Essa é a imagem que vai apresentar seu jogo."
 
-**Na tela:** conferir a capa, clicar **Publicar**, esperar **Seu jogo está no Mural!** e clicar **Fechar**. Apontar **Concluir aula**. Não sair para outra ferramenta ou outra aula.
+**Na tela:** conferir a capa, clicar em **Publicar** e esperar **Seu jogo está no Mural!**. Clicar em **Fechar** na confirmação e apontar **Concluir aula**. Não sair para outra ferramenta ou outra aula.
 
 **Narração:**
-> "Confira a capa, aperte Publicar e espere a confirmação. Quando aparecer Seu jogo está no Mural!, aperte Fechar. Agora aperte Concluir aula."
-
-Ajuda escrita: [Como publicar seu jogo no Mural e copiar o link](/como-fazer/plataforma-publicar-no-mural). O tutorial abre na mesma aba e oferece retorno à aula.
-
-**Conferência de produção:** o envio anterior libera Compartilhar. A configuração de publicação fica somente no projeto do Dia 3. Publicar é a tarefa ensinada; o critério técnico desta seção continua sendo o vídeo. Não transformar expiração do acesso ao Mural ou indisponibilidade momentânea em bloqueio de conclusão da aula. Personalização, outras capas, cópia do link e solução de problemas ficam no Como Fazer.
+> "Confira a capa, clique em Publicar e espere a confirmação.
+>
+> Quando aparecer Seu jogo está no Mural, clique em Fechar.
+>
+> Agora clique em Concluir aula."
 
 **Ponte do Zappy na página (não gravar):** Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.
+
+Ajuda escrita junto ao vídeo, fora da narração: [Como publicar seu jogo no Mural e copiar o link](/como-fazer/plataforma-publicar-no-mural). O tutorial abre na mesma aba e oferece retorno à aula.
+
+**Conferência de produção:** o envio anterior libera **Compartilhar**. A configuração de publicação fica somente no projeto do Dia 3. Publicar é a tarefa ensinada; o critério técnico desta seção continua sendo o vídeo. Não transformar expiração do acesso ao Mural ou indisponibilidade momentânea em bloqueio de conclusão da aula. Personalização, outras capas, cópia do link e solução de problemas ficam no Como Fazer.

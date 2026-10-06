@@ -59,7 +59,7 @@ async function revision(response: Response) {
 describe('manifest import through the authoring HTTP boundary', () => {
   test('a importação mantém a marca de prévia em livro no bloco de materiais', async () => {
     const f = await setup(1)
-    const caderno = f.document.blocks.find((block) => block.key === 'materiais-caderno')
+    const caderno = f.document.blocks.find((block) => block.key === 'caderno')
     if (!caderno || !('content' in caderno) || caderno.content.kind !== 'materials')
       throw new Error('Caderno ausente na fixture')
     caderno.content.bookPreview = true
@@ -80,12 +80,16 @@ describe('manifest import through the authoring HTTP boundary', () => {
     const materials = before.document.blocks.find((block) => block.content.kind === 'materials')
     expect(materials).toBeDefined()
 
-    f.document.blocks = f.document.blocks.filter((block) => block.key !== 'materiais-caderno')
+    f.document.blocks = f.document.blocks.filter((block) => block.key !== 'caderno')
     f.document.sections = f.document.sections.map((section) => ({
       ...section,
-      blockKeys: section.blockKeys.filter((key) => key !== 'materiais-caderno'),
+      blockKeys: section.blockKeys.filter((key) => key !== 'caderno'),
+      completion: section.completion && {
+        ...section.completion,
+        blockIds: section.completion.blockIds.filter((key) => key !== 'caderno'),
+      },
     }))
-    f.document.retireBlockKeys = ['materiais-caderno']
+    f.document.retireBlockKeys = [...(f.document.retireBlockKeys ?? []), 'caderno']
     const preview = await f.preview()
     expect(preview.status).toBe(200)
     expect((await f.apply(await revision(preview))).status).toBe(200)

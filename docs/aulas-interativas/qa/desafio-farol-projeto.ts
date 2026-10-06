@@ -2,6 +2,7 @@ import {
   FAROL_ASSETS,
   FAROL_HITBOXES,
   FAROL_LAYOUT,
+  FAROL_PERSONAGENS,
   type FarolAssetName,
   farolSvg,
 } from '../../../packages/studio/src/arte/farol-assets'
@@ -44,7 +45,8 @@ function image(name: FarolAssetName): ProjectAsset {
 
 export const ASSETS_FAROL: ProjectAsset[] = [
   image('cenario'),
-  image('personagem'),
+  // O original primeiro e, logo depois, as imagens que a criança pode dar ao sprite `personagem`.
+  ...FAROL_PERSONAGENS.map((name) => image(name)),
   image('chave'),
   image('farol-apagado'),
   image('farol-aceso'),

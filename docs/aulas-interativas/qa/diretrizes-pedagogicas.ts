@@ -1,23 +1,61 @@
 import type { LearningManifest } from '../../../packages/core/src/learning'
 
+/** Vídeos planejados têm chave, mas ainda não têm conteúdo de bloco. */
+export function conteudoBloco(block: LearningManifest['blocks'][number] | undefined) {
+  return block && 'content' in block ? block.content : undefined
+}
+
 /** Cobertura aprovada desta revisão; cursos antigos não são declarados revisados por engano. */
-export const CURSOS_DIRETRIZES_ATUAIS = new Set(['cade-todo-mundo', 'desafio-primeiro-jogo'])
+export const CURSOS_DIRETRIZES_ATUAIS = new Set([
+  'cade-todo-mundo',
+  'desafio-primeiro-jogo',
+  'nave-contra-asteroides',
+  'corre-dino',
+  'o-jogo-do-meu-jeito',
+])
+
+/** A prática externa é conferida pelo aluno; o recebimento é comprovado na galeria. */
+export function temEntregaExterna(m: LearningManifest, sectionIndex: number): boolean {
+  const tool = m.sections[sectionIndex]?.externalTool
+  if (!tool) return false
+  const kind = tool === 'estudio' ? 'studio' : tool
+  return m.sections.slice(sectionIndex).some(
+    (section) =>
+      section.intent === 'delivery' &&
+      section.externalTool === tool &&
+      section.blockKeys.some((key) => {
+        const content = conteudoBloco(m.blocks.find((block) => block.key === key))
+        return (
+          content?.kind === kind &&
+          'gallery' in content &&
+          Boolean(content.gallery) &&
+          'purpose' in content &&
+          content.purpose === 'submission' &&
+          Boolean(section.completion?.blockIds.includes(key))
+        )
+      }),
+  )
+}
 
 /** Regras verificáveis; clareza das falas e compreensão ainda exigem revisão e ensaio. */
 export function problemasPedagogicos(m: LearningManifest, jogoInicial = false): string[] {
   const errors: string[] = []
   const byKey = new Map(m.blocks.map((block) => [block.key, block]))
-  for (const section of m.sections) {
+  for (const [sectionIndex, section] of m.sections.entries()) {
     const blocks = section.blockKeys.map((key) => byKey.get(key))
     const videos = blocks.filter((block) => block && 'plannedVideo' in block)
-    const dialogues = blocks.filter((block) => block?.content?.kind === 'dialogue')
-    const quizzes = blocks.filter((block) => block?.content?.kind === 'quiz')
+    const dialogues = blocks.filter((block) => conteudoBloco(block)?.kind === 'dialogue')
+    const quizzes = blocks.filter((block) => conteudoBloco(block)?.kind === 'quiz')
     const report = (message: string) => errors.push(`${section.key}: ${message}`)
+    if (section.externalTool && !temEntregaExterna(m, sectionIndex))
+      report(
+        'atividade externa precisa de entrega obrigatória posterior na galeria da mesma ferramenta',
+      )
     if (videos.length > 1) report('no máximo um vídeo por seção')
     if (dialogues.length > 1) report('no máximo uma fala externa do Zappy')
     for (const video of videos) {
       const index = blocks.indexOf(video)
-      if (blocks[index + 1]?.content?.kind !== 'dialogue')
+      if (conteudoBloco(blocks[index + 1])?.kind !== 'dialogue')
         report('o vídeo precisa da ponte do Zappy imediatamente depois')
     }
     for (const dialogue of dialogues)
@@ -26,17 +64,18 @@ export function problemasPedagogicos(m: LearningManifest, jogoInicial = false): 
     if (quizzes.length) {
       if (
         blocks.length !== 2 ||
-        blocks[0]?.content?.kind !== 'dialogue' ||
-        blocks[1]?.content?.kind !== 'quiz' ||
+        conteudoBloco(blocks[0])?.kind !== 'dialogue' ||
+        conteudoBloco(blocks[1])?.kind !== 'quiz' ||
         section.workspaceKey ||
         section.externalTool
       )
         report('quiz: somente Zappy antes do quiz, sem vídeo nem ferramenta')
       for (const quiz of quizzes) {
-        if (quiz?.content?.kind !== 'quiz') continue
+        const content = conteudoBloco(quiz)
+        if (!quiz || content?.kind !== 'quiz') continue
         if (!section.completion?.blockIds.includes(quiz.key))
           report('quiz formativo precisa participar da conclusão')
-        if (quiz.content.questions.some((q) => !q.explanation?.trim()))
+        if (content.questions.some((q) => !q.explanation?.trim()))
           report('cada pergunta precisa de explicação para a correção')
       }
     }
@@ -59,13 +98,14 @@ export function problemasPedagogicos(m: LearningManifest, jogoInicial = false): 
       }
     }
     for (const block of m.blocks) {
-      if (block.content?.kind === 'studio') {
-        visit(block.content.initialProject)
-        for (const type of block.content.allowBlocks ?? [])
+      const content = conteudoBloco(block)
+      if (content?.kind === 'studio') {
+        visit(content.initialProject)
+        for (const type of content.allowBlocks ?? [])
           if (/^sz_(html|css)_/.test(type)) errors.push(`paleta inicial não pode liberar ${type}`)
       }
-      if (block.content?.kind === 'interactive' && block.content.activity.type === 'project-play')
-        visit(block.content.activity.project)
+      if (content?.kind === 'interactive' && content.activity.type === 'project-play')
+        visit(content.activity.project)
     }
   }
   return [...new Set(errors)]

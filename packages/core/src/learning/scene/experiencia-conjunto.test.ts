@@ -280,8 +280,8 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
     const manifestos = readdirSync(raiz)
       .filter((nome) => nome.endsWith('.manifesto.json'))
       .map((nome) => resolve(raiz, nome))
-    expect(manifestos).toHaveLength(34)
-    let vistas = 0
+    expect(manifestos).toHaveLength(37)
+    let cenasLidas = 0
     const premissasAntecipadas: string[] = []
     const visitar = (o: unknown) => {
       if (Array.isArray(o)) return o.forEach(visitar)
@@ -289,8 +289,8 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
       const b = o as Record<string, unknown>
       const a = b.activity as SceneActivity | undefined
       const p = b.prediction as { prompt: string } | undefined
+      if (b.kind === 'interactive' && a?.scene) cenasLidas += 1
       if (b.kind === 'interactive' && a?.scene && p) {
-        vistas += 1
         const fora = premissaSemTela(p.prompt, abertura(a))
         if (fora.length > 0 && !/^Imagine\b/.test(p.prompt))
           premissasAntecipadas.push(`${a.scene}: ${p.prompt}`)
@@ -298,7 +298,8 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
       Object.values(b).forEach(visitar)
     }
     for (const arquivo of manifestos) visitar(JSON.parse(readFileSync(arquivo, 'utf8')))
-    expect(vistas).toBeGreaterThan(7)
+    // A varredura cobre cenas reais, mesmo quando os cursos não usam palpites.
+    expect(cenasLidas).toBeGreaterThan(25)
     expect(premissasAntecipadas).toEqual([])
   })
 })

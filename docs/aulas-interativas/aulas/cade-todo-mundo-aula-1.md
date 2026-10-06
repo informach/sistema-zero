@@ -16,7 +16,7 @@ acrescenta a reação ao toque. O roteiro mostra exatamente essa autoria.
 | --- | --- | --- | --- |
 | Bem-vindo ao jardim | 25 a 35 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
 | Seu Caderno do Aluno | 20 a 30 s | conhecer o material de consulta e seguir; leitura opcional | vídeo |
-| O que um toque faz? | 30 a 40 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
+| O que um toque faz? | 45 a 60 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
 | Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
 
 A duração da prática inclui os gestos, sem acelerar a montagem. Não aumentar os vídeos de
@@ -43,20 +43,27 @@ Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
 
 ### O que um toque faz?
 
-Apresentar a experiência com o jardim do jogo e apontar para ela ao dizer **aqui**. Em seguida,
-dar os comandos dos dois testes: tocar no arbusto; usar **Ligar a reação ao toque**; tocar
-novamente e comparar. Explicar toque e reação em uma frase ligada ao jogo. Não esconder
-os passos obrigatórios nas pistas nem realizar a experiência pela criança na gravação.
+O vídeo explica enquanto faz (Diretrizes, seção 2). Dizer que a experiência mostra ação e
+reação e apontar para ela. Tocar no arbusto: nada acontece, porque o jogo ainda não sabe o que
+fazer com o toque. Comparar com o que a criança já vive: toda ação tem uma reação, como a cócega
+e a risada. No jogo, o toque é a ação, e a gente precisa ligar uma reação a ela. Clicar em
+**Ligar a reação ao toque**, tocar de novo e mostrar o arbusto invisível com o coelho atrás.
+Terminar em "Agora é a sua vez": a criança repete os dois testes, e a experiência cobra as metas.
 
-Manter a experiência existente, sem palpite ou pergunta final. A fala não inclui campainha,
-tour de controles ou retorno à seção do caderno.
+Na frase das cócegas, um meme ilustrado nosso por 2 a 3 segundos. Não esconder os passos
+obrigatórios nas pistas. Manter a experiência existente, sem palpite ou pergunta final. A fala
+não inclui campainha, tour de controles ou retorno à seção do caderno.
 
 ### Faça alguém aparecer
 
-Começar com a tarefa de fazer o personagem aparecer ao tocar num esconderijo. Mostrar o evento
-preparado em **Quando acontecer** e explicar **escolhido** como o esconderijo tocado. Ensinar o
-caminho **Jogo 2D > Sprites > Aparência**, o bloco de visibilidade, o encaixe dentro do evento,
-o sprite **escolhido** e o valor **0**.
+Começar pela retomada, em duas ou três frases: lembrar que, na experiência da seção anterior, o
+arbusto só desapareceu depois de ligar a reação ao toque, e convidar a programar isso no jogo; pedir um toque
+num esconderijo do próprio jogo (nada acontece) e dizer que a montagem fará essa ligação. Só então
+mostrar o evento preparado em **Quando acontecer**, trazendo a área à vista se ela começar fora da
+tela, e explicar **escolhido** como o esconderijo tocado. Com o espaço ao lado de **fazer** à vista,
+ensinar o caminho **Jogo 2D > Sprites > Aparência** e o bloco de visibilidade, que nasce com
+**jogador** e **50**: trocar o nome para **escolhido**, que fica no fim da lista, e o valor para
+**0**.
 
 A prévia atualiza automaticamente. Pedir o toque em dois esconderijos e conferir a revelação.
 Se não funcionar, conferir encaixe, sprite e valor. **Achados** ainda fica em zero nesta aula.

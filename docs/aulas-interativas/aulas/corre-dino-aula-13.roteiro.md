@@ -1,224 +1,176 @@
-# Roteiro de gravação · Corre Dino · Aula 13 · O jogo aperta, e sabe onde parar
+# Roteiro de gravação · Corre, Dino! · Aula 13
 
-## Especificações
+**Aumente a dificuldade com um limite**
 
-- **Formato:** gravação de tela com narração, no Estúdio embutido e Estúdio Completo para a Ponte.
-- **Duração:** 425 a 520 segundos de clipes; 992 palavras de narração, cerca de 7.2 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** o jogo da Aula 12, completo e imprevisível. Cactos nascendo a cada 1,4 s num x sorteado entre 500 e 560, com vx de `-5 - (um número de 0 a 1)`, faxina, três estados do jogo, colisão com área de 80%, placar, tela de início e tela de fim com a marca.
-- **Conceitos nomeados:** variável velocidade, acelerador, limite, balanceamento e Ponte entre blocos e código.
-- **Dor desta aula:** Depois de cerca de vinte segundos, a partida mantém a mesma dificuldade; o acelerador responde a quem sobrevive mais.
-- **Vitória do dia:** o jogo fica mais difícil quanto mais ela sobrevive, e para de apertar num limite que ela escolheu. Ao fim da seção 7, ela vê o código de verdade que os blocos dela viraram.
-- **Valores:** Base velocidade começa em -5; relógio de aceleração de 2 a 10 segundos, exemplo 5; limite de -14 a -7, exemplo -9; cada passo soma -1.
-- **Campos livres:** Intervalo do acelerador e limite final dentro das faixas; valores de outras aulas permanecem.
-- **Nota de produção:** Mostrar a partida longa antes e depois. No seletor de modo da barra superior, abrir Ponte e aproximar o arquivo script.js sem editar código.
-- **O que NÃO entra, e por quê:** Não prometer certificado, XP ou publicação obrigatória. Publicar é escolha posterior ao envio.
+Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.
 
-## Seção 1. O seu jogo não aperta
+Entrada: Corrida completa com placar e sorteios, usando base fixa -5. Saída: Base velocidade começa em -5, diminui a cada 5 segundos até -9, com variação de 0 a 1; descrição dos três controles e publicação opcional.
 
-### Clipe `video-jogo-nao-aperta` · Vinte segundos depois, está tudo igual
-**Duração alvo:** 40 a 55 segundos; recalibrar após gravar.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
-**Na tela:** Deixar uma partida acontecer por pelo menos vinte segundos, com placar crescendo e cactos mantendo o mesmo ritmo.
+## Seção 1. Compare os números negativos
+
+### Clipe `video-regua-negativos` · Compare os números negativos
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Hoje vamos fazer a corrida mudar de ritmo ao longo da partida. Os cactos vão começar
-> mais espaçados e, aos poucos, pedir mais atenção de quem joga."
+> "Seu jogo usa velocidades negativas para andar para a esquerda. Antes de aumentar a dificuldade, compare esses números numa régua.
+>
+> Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >.
+>
+> Observe a resposta com o marcador em -5. Depois leve o marcador até -9 e compare a resposta.
+>
+> Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Mostrar o mesmo percurso com tempo marcado; sem paleta nem peça nova ainda.
+**Zappy na página (não gravar):** Compare os sinais e acompanhe a régua de -5 até -9.
 
-**Narração:**
-> "A gente vai montar essa mudança e também decidir até onde ela pode ir, para o jogo
-> continuar divertido."
+## Seção 2. Compare a base com cada cacto
 
-## Seção 2. Um número que manda em todos os cactos
+### Clipe `video-o-que-o-freio-segura` · Compare a base com cada cacto
 
-### Clipe `video-memoria-e-leitura` · A velocidade muda de endereço
-**Duração alvo:** 70 a 85 segundos · **Palavras:** 171
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** No criador de cactos, conferir que a esquerda da Conta matemática está em -5; mostrar Ao iniciar com pontos e Mudar o estado.
-
-**Narração:**
-> "Antes de começar, olha o campo vx do criador de cactos. À esquerda da conta deve estar
-> **menos 5**. Se estiver diferente, devolve esse número. A nova memória vai começar exatamente
-> no valor que o jogo já usa."
-
-**Na tela:** Abrir Programação > Variáveis; encaixar Criar variável com valor no Ao iniciar, entre Criar variável pontos com valor 0 e Mudar o estado do jogo para inicio.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Em **Programação**, abre **Variáveis**. Pega **Criar variável com valor** e encaixa no **Ao
-> iniciar**, **entre Criar variável pontos com valor 0 e Mudar o estado do jogo para inicio**."
+> "A régua mostrou como a base pode mudar. Agora compare essa base com a velocidade que cada cacto recebe ao nascer.
+>
+> Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram.
+>
+> Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base.
+>
+> Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Trocar nome contador por velocidade e valor 0 por -5; confirmar.
+**Zappy na página (não gravar):** Compare base, cactos novos e antigos; depois desligue a condição e avance.
 
-**Narração:**
-> "No nome vem **contador**; troca por **velocidade**. No valor vem **0**; troca por **menos
-> 5**. Essa caixinha vai guardar a velocidade base dos novos cactos."
+## Seção 3. Guarde a velocidade base
 
-**Na tela:** Abrir Programação > Valores; arrastar valor da variável por cima do -5 da esquerda da Conta matemática; escolher velocidade.
+### Clipe `video-numero-que-manda` · Guarde a velocidade base
 
-**Narração:**
-> "Em **Programação**, abre **Valores** e pega **valor da variável**. Arrasta por cima do
-> **menos 5** no lado esquerdo da **Conta matemática** do vx. Escolhe **velocidade**. O sorteio
-> de zero a um do outro lado fica como estava."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar partida aparentemente idêntica e dois lugares do número.
-
-**Narração:**
-> "Olha o jogo: parece igual, e está certo. A variável guarda menos 5, o mesmo número que estava
-> escrito ali. Mudou de onde o bloco lê a velocidade, sem mudar a regra dos cactos. Agora
-> podemos alterar a caixinha durante a partida."
-
-## Seção 4. O acelerador, e o freio dele
-
-### Clipe `video-acelerador` · O acelerador, e o freio dele
-**Duração alvo:** 125 a 145 segundos · **Palavras:** 309
-
-**Na tela:** Abrir Jogo 2D > Tempo > Quadros e intervalos; soltar A cada 2 segundos em Enquanto estiver rodando, ao lado dos relógios existentes.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Em **Jogo 2D**, abre **Tempo**, depois **Quadros e intervalos**. Pega outro **A cada 2
-> segundos** e solta no **Enquanto estiver rodando**, ao lado dos relógios dos cactos e dos
-> pontos, com espaço. Não coloca dentro do quadro nem de outro relógio."
+> "Na experiência da seção anterior, você comparou a base com a velocidade dos cactos. No seu criador, o lado esquerdo da conta ainda contém -5 escrito. Agora guarde essa base numa variável que poderá mudar.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o fim de Ao iniciar, depois de Criar variável pontos. Abra Programação e depois Variáveis. Pegue Criar variável com valor e encaixe no fim. Troque contador por velocidade e o valor por -5.
+>
+> Deixe à vista o -5 à esquerda da Conta matemática no vx do criador de cactos. Abra Programação e depois Valores. Pegue valor da variável e solte sobre esse -5. Escolha velocidade. Preserve o sinal de menos e o sorteio de 0 a 1 à direita.
+>
+> Comece uma partida. O comportamento continua igual, pois a variável guarda o mesmo -5 de antes. Confira onde esse número é preparado e onde é lido. Ainda não há regra para mudar a base durante a corrida.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Zoom no intervalo e escrever 5, confirmando.
+**Zappy na página (não gravar):** Prepare velocidade em -5 e use sua leitura à esquerda da conta do vx.
 
-**Narração:**
-> "No novo relógio, o meu intervalo vai ser **5 segundos**. Esse será o tempo entre uma
-> aceleração e outra. Você poderá escolher outro valor na faixa da aula, depois de ver o
-> efeito."
+## Seção 4. Prepare o relógio da dificuldade
 
-**Na tela:** Abrir Programação > Lógica e Se; encaixar Condição se, senão se e senão no fazer do relógio, primeiro lugar; remover comparação padrão.
+### Clipe `video-relogio-da-dificuldade` · Prepare o relógio da dificuldade
 
-**Narração:**
-> "Em **Programação**, abre **Lógica e Se**. Pega **Condição se, senão se e senão** e encaixa no
-> **fazer** do relógio, que está vazio, no primeiro lugar. Tira a comparação de fábrica desse
-> Se."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Abrir Jogo 2D > Jogo e telas > Telas e partida; encaixar o estado do jogo é __ ? com jogando na pergunta.
-
-**Narração:**
-> "Em **Jogo 2D**, abre **Jogo e telas**, depois **Telas e partida**. Pega **o estado do jogo é
-> __ ?**, encaixa na pergunta vazia e escolhe **jogando**. O acelerador só trabalha durante a
-> partida."
-
-**Na tela:** Abrir Programação > Lógica e Se; encaixar segundo Condição se, senão se e senão no então do primeiro, primeiro lugar; manter comparação de fábrica.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Pega outro **Condição se, senão se e senão** em **Programação**, **Lógica e Se**, e encaixa
-> no **então** do primeiro Se, que está vazio. Desta vez a comparação que vem dentro serve;
-> deixa ela."
+> "Na experiência Compare a base com cada cacto, o tempo disparava uma mudança na base. Seu jogo ainda não tem esse relógio. Prepare outro intervalo, separado dos cactos e dos pontos.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e dos dois relógios existentes. Abra Jogo 2D, depois Tempo e Quadros e intervalos. Pegue A cada 2 segundos, encaixe nesse espaço e mude o valor para 5.
+>
+> Deixe à vista o interior desse relógio. Abra Programação e depois Lógica e Se. Pegue Se e encaixe ali. Retire a pergunta x > 0.
+>
+> Deixe à vista o lugar da pergunta. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue o estado do jogo é ?, encaixe e escolha jogando.
+>
+> Confira três relógios separados: cactos em 1.4 segundo, pontos no intervalo escolhido e dificuldade em 5 segundos. O então do novo relógio ainda está vazio; não muda a base nesta etapa.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** No lado esquerdo da comparação, encaixar valor da variável velocidade por cima do padrão; escolher sinal maior na lista; direita -9.
+**Zappy na página (não gravar):** Prepare um relógio de 5 segundos com Se jogando, separado dos outros.
 
-**Narração:**
-> "Em **Programação**, abre **Valores** e põe **valor da variável** por cima do número da
-> esquerda; escolhe **velocidade**. No menu do sinal, escolhe **maior que**, o quinto item da
-> lista, com o biquinho para a direita. No lado direito escreve **menos 9**. Se ficar no igual,
-> a base não muda e não aparece erro."
+## Seção 5. Diminua a base até o limite
 
-**Na tela:** Abrir Programação > Variáveis; encaixar Somar em variável no então interno, primeiro lugar; escolher velocidade e escrever -1.
+### Clipe `video-acelerador-e-freio` · Diminua a base até o limite
 
-**Narração:**
-> "Em **Programação**, abre **Variáveis**. Pega **Somar em variável** e encaixa no **então** do
-> Se de dentro, que está vazio, no primeiro lugar. Escolhe **velocidade** e escreve **menos 1**.
-> A cada cinco segundos, enquanto joga e enquanto a base for maior que menos 9, ela diminui um
-> passo."
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Jogar partida longa, mantendo variável e cactos em quadro; apontar limite.
-
-**Narração:**
-> "Olha uma partida longa. Os novos cactos chegam mais depressa. Quando a base chega a **menos
-> 9**, a pergunta deixa de dar sim e o número para. Esse é o freio. Sem ele, o jogo aceleraria
-> até ficar impossível."
-
-## Seção 6. Escolha a dificuldade, teste tudo e entregue
-
-### Clipe `video-balanceamento` · Escolha o quanto o seu jogo aperta
-**Duração alvo:** 55 a 70 segundos · **Palavras:** 162
-
-**Na tela:** Mostrar limite -9; trocar por -7 e jogar um trecho; depois -14 e comparar.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Vamos escolher o quanto o jogo aperta. No limite, põe **menos 7** e observa: ele para de
-> acelerar mais cedo. Agora testa **menos 14**: há mais passos de aceleração e o fim fica bem
-> difícil."
+> "Na experiência Compare a base com cada cacto, a condição impedia a base de passar do limite. Seu relógio de dificuldade já espera a partida, mas ainda não faz nada. Agora programe a mudança com essa condição.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o então vazio de Se jogando no relógio de 5 segundos. Abra Programação e depois Lógica e Se. Pegue outro Se e encaixe dentro desse então. Mantenha a comparação que veio nele.
+>
+> Deixe à vista o lado esquerdo da comparação do Se de dentro. Abra Programação e depois Valores. Pegue valor da variável, solte sobre o valor da esquerda e escolha velocidade.
+>
+> No sinal, escolha maior que, o símbolo >. No lado direito, escreva -9. A pergunta fica velocidade maior que -9. Na régua, -5 fica à direita de -9 e é maior; ao chegar a -9, a resposta deixa de ser sim.
+>
+> Deixe à vista o então do Se de dentro. Abra Programação e depois Variáveis. Pegue Somar em variável e encaixe ali. Escolha velocidade e coloque -1 no valor da soma.
+>
+> Confira: no relógio de 5 segundos, Se jogando contém Se velocidade > -9, e só dentro dele fica Somar -1 em velocidade. Há um único bloco de soma para essa variável.
+>
+> Teste uma partida longa. A base dos cactos novos muda aos poucos; os que já nasceram conservam sua velocidade. Se perder cedo, a comparação completa continua disponível na experiência. Se a base não mudar, confira o sinal > e a posição do Somar dentro dos dois então.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Voltar limite provisoriamente a -9; trocar relógio de 5 para 2 e depois 10, com trechos curtos de partida.
+**Zappy na página (não gravar):** Some -1 em velocidade somente jogando e enquanto a base for maior que -9.
 
-**Narração:**
-> "Volto para **menos 9**. No relógio, testa **2 segundos**: a dificuldade cresce depressa.
-> Depois **10 segundos**: demora muito mais. Os dois campos controlam coisas diferentes, o ponto
-> de parada e a rapidez da mudança."
+## Seção 6. Complete a descrição dos controles
 
-**Na tela:** Escolher valores finais dentro de -14 a -7 e 2 a 10; mostrar no bloco.
+### Clipe `video-descricao-completa` · Complete a descrição dos controles
 
-**Narração:**
-> "No meu ficam **menos 9** e **5 segundos**. Os seus podem ser outros dentro de **menos 14 a
-> menos 7** e **2 a 10 segundos**. Ajustar esse ritmo tem nome: **balanceamento**. Escolhe os
-> números que tornam o seu jogo desafiador sem tirar a chance de aprender."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Jogar começo, pulo, batida, reinício e trecho longo; conferir objetivos e enviar.
-
-**Narração:**
-> "Testa começo por tecla e toque, pulo, placar, batida e reinício. Depois tenta sobreviver o
-> bastante para sentir a mudança. Se perder cedo, não precisa bater recorde: a régua da
-> experiência já mostrou o efeito. Confere os objetivos, espera **Salvo** e clica em **Enviar
-> para o professor**."
-
-## Seção 7. O que tem embaixo dos seus blocos
-
-### Clipe `video-ponte` · O que tem embaixo dos seus blocos
-**Duração alvo:** 60 a 75 segundos · **Palavras:** 128
-
-**Na tela:** No Estúdio Completo com projeto aberto, mostrar o seletor de modo no meio da barra superior; clicar Ponte.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Tem uma última coisa para olhar no seu projeto. Na barra de cima do Estúdio, no seletor de
-> modos, clica em **Ponte**. Ela põe os blocos de um lado e o código do outro. Não precisa
-> escrever nada: hoje vamos só ler algumas partes."
+> "Seu jogo aceita três controles de pulo. A descrição escrita na aula 2 citava apenas espaço. Complete essa frase para quem usa o leitor de tela.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista Descrever o jogo para leitor de tela, em Ao iniciar. No texto, escreva Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela.
+>
+> Confira a frase inteira e teste os três controles no jogo. A descrição explica os controles existentes; não cria um controle novo. O objetivo e as três entradas precisam estar no texto.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Mostrar as abas do código e selecionar script.js; buscar o nome dino, depois cactos e velocidade com a busca do editor.
+**Zappy na página (não gravar):** Descreva a tarefa e os três controles que já funcionam.
 
-**Narração:**
-> "Abre a aba **script.js** e procura **dino**. É o nome do sprite que você criou. Procura
-> **cactos**: o grupo e os nascimentos aparecem no código. Por fim, procura **velocidade** e
-> acha o número que o acelerador muda. Os nomes que você escreveu nos blocos estão aqui."
+## Seção 7. Confira o que você construiu
 
-**Na tela:** Enquadrar lado a lado um bloco reconhecível e trecho correspondente, sem editar.
+**Zappy na página (não gravar):** Retome os sorteios e a dificuldade da corrida nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
 
-**Narração:**
-> "Estes blocos coloridos viram código de programação de verdade. Você não estava fingindo
-> programar. Montou regras que o computador consegue executar, uma peça de cada vez. A Ponte
-> deixa essa ligação à vista, no seu próprio jogo."
+Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
-## Seção 8. Você fez um jogo inteiro
+## Seção 8. Teste e envie seu jogo
 
-### Clipe `video-fecho-curso` · Você fez um jogo inteiro
-**Duração alvo:** 75 a 90 segundos · **Palavras:** 156
+### Clipe `video-entrega` · Teste e envie seu jogo
 
-**Na tela:** Mostrar jogo completo: floresta, pulo com som, cactos, placar, colisão e fim.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Narração:**
-> "Olha o jogo que você fez: cenário em movimento, Dino que pula com som, cactos que nascem fora
-> da tela em lugares sorteados, faxina para quem já saiu, colisão mais justa, placar, início e
-> fim."
-
-**Na tela:** Mostrar uma partida ficando mais rápida e voltando ao menu após derrota.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "E ele muda enquanto você joga: se você aguenta mais tempo, os novos cactos vêm mais rápidos,
-> até o limite que escolheu. Você construiu isso em treze aulas, uma peça por vez."
+> "Seu Corre, Dino! já tem começo, pulo com som, obstáculos, pontos, derrota, reinício e dificuldade que aumenta. Teste esse ciclo inteiro, por tecla e por toque, no projeto que você construiu.
+>
+> O exemplo usa intervalo 5 e limite -9. Se quiser ajustar, teste um intervalo entre 2 e 10 segundos e um limite entre -14 e -7. Escolha um valor por vez e compare. O limite segura a base; o sorteio ainda pode produzir um cacto uma unidade mais rápido.
+>
+> Confira o reinício depois de uma derrota: pontos voltam a zero, a base volta a -5 e a abertura aparece. Comece outra partida e confira os três controles.
+>
+> Os desenhos do Dino, da floresta e dos efeitos vêm nos blocos. Você montou as regras que fazem essas partes funcionar juntas. Depois de enviar, pode compartilhar o seu jogo no Mural se quiser.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Se quiser mostrar o jogo no Mural, clique em Compartilhar depois do envio. Confira o título e escreva um resumo do seu jogo. Clique em Gerar capa e confira a imagem. Depois clique em Publicar. Espere a mensagem Seu jogo está no Mural! e clique em Fechar. Publicar é opcional; você também pode deixar para outra hora. Depois, clique em Concluir aula."
 
-**Na tela:** Mostrar alguém abrindo a partida para jogar; depois a entrega já feita no curso.
-
-**Narração:**
-> "Chama alguém para jogar e observa o primeiro encontro da pessoa com um cacto. O projeto que
-> você enviou já conta como sua entrega. Se quiser publicar depois, o **Compartilhar** leva o
-> jogo ao Mural dos Criadores, com um link para outras pessoas abrirem."
-
-**Na tela:** Mostrar Jornada do Criador e Mural como caminhos opcionais; terminar no jogo.
-
-**Narração:**
-> "Na **Jornada do Criador** você vê os cursos e troféus que conquistou. No Mural, se decidir
-> compartilhar, seu jogo fica junto dos jogos de outros criadores. Quando der vontade de criar
-> outro, há mais cursos esperando na Comunidade. Por agora, aproveita o seu jogo inteiro!"
+**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.

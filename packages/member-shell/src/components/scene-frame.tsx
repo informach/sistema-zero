@@ -266,6 +266,10 @@ export function botoesDoMundo({
   onceFinished?: boolean
   onceStarted?: boolean
 }): ReactElement[] {
+  // ⚠️ A `lighthouse-walk` tem o tempo NA BANCADA ("Avançar 1 quadro", "Rodar"/"Parar" e "Recomeçar",
+  // `scene-lighthouse-walk.tsx`), com os nomes que os roteiros do Dia 1 citam. O ▶ "Tempo" e o "Mais
+  // devagar" daqui seriam um segundo jeito de mexer no mesmo relógio, com outro nome.
+  if (scene === 'lighthouse-walk') return []
   if (scene === 'once-vs-always')
     return [
       <SceneButton

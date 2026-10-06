@@ -1,5 +1,7 @@
 import {
   JARDIM_ASSETS,
+  JARDIM_BICHOS,
+  JARDIM_ESCONDERIJOS,
   JARDIM_PARES,
   type JardimAssetName,
   jardimSpriteRect,
@@ -30,31 +32,35 @@ function image(name: JardimAssetName): ProjectAsset {
   }
 }
 
+// Todos os bichos e esconderijos vão no projeto, para a criança poder trocar a imagem de cada
+// sprite (Aula 2). Bichos têm uma caixa só, e esconderijos outra: a troca não muda tamanho nem lugar.
 export const ASSETS_CADE_TODO_MUNDO: ProjectAsset[] = [
   image('jardim'),
-  image('coelho'),
-  image('raposa'),
-  image('coruja'),
-  image('arbusto'),
-  image('pedras'),
-  image('flores'),
+  ...JARDIM_BICHOS.map((name) => image(name)),
+  ...JARDIM_ESCONDERIJOS.map((name) => image(name)),
 ]
 
-const criarSprites: JSStatement[] = JARDIM_PARES.flatMap(({ personagem, esconderijo, centroX }) => [
-  {
-    type: 'g2d:createImageSprite',
-    varName: personagem,
-    ...jardimSpriteRect(personagem, centroX),
-    image: personagem,
-  },
-  {
-    type: 'g2d:createImageSprite',
-    varName: esconderijo,
-    ...jardimSpriteRect(esconderijo, centroX),
-    image: esconderijo,
-  },
-  { type: 'g2d:addToGroup', spriteVar: esconderijo, groupVar: 'esconderijos' },
-])
+/** Nomes neutros: trocar a imagem do bicho1 de coelho para gato não deixa o nome mentindo. */
+const BICHO = (i: number) => `bicho${i + 1}`
+const ESCONDERIJO = (i: number) => `esconderijo${i + 1}`
+
+const criarSprites: JSStatement[] = JARDIM_PARES.flatMap(
+  ({ personagem, esconderijo, centroX }, i) => [
+    {
+      type: 'g2d:createImageSprite',
+      varName: BICHO(i),
+      ...jardimSpriteRect(personagem, centroX),
+      image: personagem,
+    },
+    {
+      type: 'g2d:createImageSprite',
+      varName: ESCONDERIJO(i),
+      ...jardimSpriteRect(esconderijo, centroX),
+      image: esconderijo,
+    },
+    { type: 'g2d:addToGroup', spriteVar: ESCONDERIJO(i), groupVar: 'esconderijos' },
+  ],
+)
 
 export const IR_CADE_TODO_MUNDO: SZIRV2 = {
   version: 2,
@@ -83,9 +89,9 @@ export const IR_CADE_TODO_MUNDO: SZIRV2 = {
         body: [
           { type: 'g2d:clear' },
           { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'jardim' },
-          ...JARDIM_PARES.map(({ personagem }) => ({
+          ...JARDIM_PARES.map((_, i) => ({
             type: 'g2d:drawSprite' as const,
-            spriteVar: personagem,
+            spriteVar: BICHO(i),
             ctxVar: 'ctx',
           })),
           { type: 'g2d:drawGroup', groupVar: 'esconderijos', ctxVar: 'ctx' },

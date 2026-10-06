@@ -256,7 +256,7 @@ precisa saber o que fazer agora, com instruções completas. Contexto longo, jus
 pedagógica, agenda, recapitulação e gancho para a próxima aula não são etapas obrigatórias.
 Explicar palavras novas brevemente, no momento em que ajudam a tarefa; analogias são opcionais.
 
-O passo a passo de programação conserva categoria, bloco, encaixe, campo, valor e teste. O
+O passo a passo de programação conserva destino à vista, categoria, bloco, encaixe, campo, valor e teste, nessa ordem: primeiro o lugar do encaixe, depois a peça. O
 Como Fazer concentra os tutoriais de interface: player, abas, ampliação, materiais e alternativas
 de publicação. Quando publicar é a tarefa da seção, a aula ensina o caminho mínimo: manter
 título e resumo prontos, gerar e conferir a capa, publicar, fechar a confirmação e concluir.

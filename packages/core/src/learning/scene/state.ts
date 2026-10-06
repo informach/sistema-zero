@@ -1,5 +1,7 @@
 import {
   isRecord,
+  LIGHTHOUSE_WALK_SPEEDS,
+  type LighthouseWalkSpeed,
   MESH_LEVELS,
   type MeshLevel,
   SCENE_LIMITS,
@@ -94,6 +96,82 @@ export interface SceneCollectionMemory {
   /** Não creditar afastamento/reinício de uma coleta preparada pelo autor no setup. */
   collectedThisRound: boolean
 }
+/**
+ * O andar do personagem do Farol, quadro a quadro (`lighthouse-walk`, 05/10/2026).
+ *
+ * ⭐ É o Dia 1 do Desafio por dentro: "A cada quadro do jogo" → "Mover sprite personagem em 4 direções
+ * com setas, velocidade N" → "Manter o sprite personagem dentro da tela". A cada quadro, com a seta
+ * segurada, `x += speed`; DEPOIS, com o limite ligado, o x é preso para o personagem caber inteiro na
+ * tela (a ordem do jogo: primeiro move, depois confere a borda).
+ *
+ * ⚠️ "Rodando" NÃO mora aqui: o tempo é o relógio do PLAYER, o mesmo ▶ de toda cena (`advance` no ritmo
+ * de `SCENE_FRAME_RATE`), e quem para o "Rodar" é `sceneClockShouldStop`. O motor é puro.
+ */
+export interface SceneLighthouseWalk {
+  /** Quantos quadros passaram desde o começo (ou desde o Recomeçar). */
+  frame: number
+  /** O x do canto esquerdo do personagem, na tela de 480 do Farol. */
+  x: number
+  /** A seta para a direita está segurada? Nasce solta. */
+  arrow: boolean
+  speed: LighthouseWalkSpeed
+  /** O bloco "Manter dentro da tela" está na regra? Nasce fora. */
+  keepInside: boolean
+  /** O x de cada um dos últimos quadros, do mais antigo ao de agora (`LIGHTHOUSE_WALK.trail`). */
+  trail: number[]
+  /** Quadros seguidos sem o x mudar. É a régua que para o "Rodar" quando nada mais acontece. */
+  idle: number
+  /**
+   * Quadros SEGUIDOS em que o x subiu (`moves-each-frame` pede `LIGHTHOUSE_WALK.runSeen`). Zera num
+   * quadro em que ele não sobe e no Recomeçar (o x volta para trás: a sequência acabou).
+   */
+  run: number
+}
+
+/**
+ * A régua da `lighthouse-walk`, em unidades da tela do Farol.
+ *
+ * ⚠️ `screen` e `hero` espelham `FAROL_LAYOUT` (`@sistemazero/studio/arte`: palco de 480 e personagem
+ * de 64), que o core não importa. O member-shell confere os dois números contra o layout.
+ */
+export const LIGHTHOUSE_WALK = {
+  screen: 480,
+  hero: 64,
+  /**
+   * Onde ele começa: o meio do personagem no meio da tela. Com velocidade 3 ele encosta na borda em
+   * 70 quadros (2,3 s no Rodar) e sai inteiro em 91 (3 s).
+   */
+  start: 208,
+  /**
+   * Quanto do personagem precisa passar da borda para "saiu da tela" valer: a METADE da caixa. ⚠️ O
+   * desenho tem margem transparente (o corpo vai de 16 a 46 dos 64), e com 2 da caixa para fora nada
+   * do desenho tinha saído.
+   */
+  outSeen: 32,
+  /** As últimas posições guardadas (um segundo do Rodar), para o espaçamento contar a velocidade. */
+  trail: 30,
+  /** Quadros seguidos sem o x mudar até o Rodar parar sozinho (2 s a 30 por segundo). */
+  idleStop: 60,
+  /**
+   * Quantos quadros SEGUIDOS com o x subindo `moves-each-frame` pede: com um só, a criança via um
+   * passo e lia "anda a cada quadro".
+   */
+  runSeen: 2,
+  /** O teto do x e do quadro no retrato (o Rodar para muito antes). */
+  max: 1_000_000,
+} as const
+
+/** O maior x em que o personagem ainda cabe INTEIRO na tela: é onde o limite o prende. */
+export const lighthouseWalkMaxX = (): number => LIGHTHOUSE_WALK.screen - LIGHTHOUSE_WALK.hero
+
+/** O x a partir do qual METADE da caixa passou da borda: é a travessia que `left-the-screen` pede. */
+export const lighthouseWalkOutSeenX = (): number =>
+  LIGHTHOUSE_WALK.screen - LIGHTHOUSE_WALK.hero + LIGHTHOUSE_WALK.outSeen
+
+/** Ele saiu INTEIRO da tela (a caixa toda passou da borda)? */
+export const lighthouseWalkGone = (walk: SceneLighthouseWalk): boolean =>
+  walk.x >= LIGHTHOUSE_WALK.screen
+
 /** O salto. `atForce`/`atGravity` congelam as condições do voo em curso, para que mexer nos
  *  controles no meio do ar não reescreva a trajetória que já começou. */
 export interface SceneFlight {
@@ -1290,6 +1368,7 @@ export interface SceneState {
   evidence: SceneEvidence
   lighthouse: SceneLighthouseKey
   collection: SceneCollectionMemory
+  walk: SceneLighthouseWalk
   once: SceneOnce
   fixedRead: SceneFixedRead
   collisionPair: SceneCollisionPair
@@ -1577,6 +1656,16 @@ const COLLECTION_PADRAO: SceneCollectionMemory = {
   position: 'near',
   collectedThisRound: false,
 }
+const WALK_PADRAO: SceneLighthouseWalk = {
+  frame: 0,
+  x: LIGHTHOUSE_WALK.start,
+  arrow: false,
+  speed: 3,
+  keepInside: false,
+  trail: [LIGHTHOUSE_WALK.start],
+  idle: 0,
+  run: 0,
+}
 const CLOCK_PADRAO: SceneClock = { carry: 0 }
 
 /**
@@ -1601,6 +1690,7 @@ export function hydrateSceneState(value: unknown): unknown {
   const grupos = [
     ['lighthouse', LIGHTHOUSE_PADRAO],
     ['collection', COLLECTION_PADRAO],
+    ['walk', WALK_PADRAO],
     ['once', initialOnce(undefined)],
     ['fixedRead', FIXED_READ_PADRAO],
     ['collisionPair', COLLISION_PAIR_PADRAO],
@@ -1692,6 +1782,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     evidence: { actions: 0, discoveries: [], observations: [], hints: 0 },
     lighthouse: { ...LIGHTHOUSE_PADRAO },
     collection: { ...COLLECTION_PADRAO },
+    walk: { ...WALK_PADRAO, trail: [...WALK_PADRAO.trail] },
     once: initialOnce(scene === 'once-vs-always' ? oncePreset(setup?.preset) : undefined),
     fixedRead: { ...FIXED_READ_PADRAO, shots: [], marks: [] },
     collisionPair: { ...COLLISION_PAIR_PADRAO, shots: [0, 1, 2], rocks: [0, 1, 2] },
@@ -1862,6 +1953,7 @@ export function cloneScene(state: SceneState): SceneState {
     },
     lighthouse: { ...state.lighthouse },
     collection: { ...state.collection },
+    walk: { ...state.walk, trail: [...state.walk.trail] },
     once: cloneOnce(state.once),
     fixedRead: {
       ...state.fixedRead,
@@ -2043,6 +2135,33 @@ export function observe(state: SceneState, id: string, label: string, discovered
 }
 
 const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v)
+
+/**
+ * O andar do Farol, campo a campo: inteiros dentro do teto, e o rastro com o x de agora no fim.
+ * ⚠️ Os contadores não passam do quadro: `idle` e `run` contam quadros que passaram, e o rastro
+ * guarda no máximo um x por quadro mais o de partida. Retrato fora disso não é alcançável.
+ */
+function isSceneLighthouseWalk(value: unknown): value is SceneLighthouseWalk {
+  if (!isRecord(value)) return false
+  const { frame, x, arrow, speed, keepInside, trail, idle, run } = value
+  const inteiro = (v: unknown, max: number) =>
+    Number.isInteger(v) && (v as number) >= 0 && (v as number) <= max
+  return (
+    inteiro(frame, LIGHTHOUSE_WALK.max) &&
+    inteiro(x, LIGHTHOUSE_WALK.max) &&
+    inteiro(idle, frame as number) &&
+    inteiro(run, frame as number) &&
+    typeof arrow === 'boolean' &&
+    typeof keepInside === 'boolean' &&
+    LIGHTHOUSE_WALK_SPEEDS.some((v) => v === speed) &&
+    Array.isArray(trail) &&
+    trail.length >= 1 &&
+    trail.length <= LIGHTHOUSE_WALK.trail &&
+    trail.length <= (frame as number) + 1 &&
+    trail.every((t) => inteiro(t, LIGHTHOUSE_WALK.max)) &&
+    trail[trail.length - 1] === x
+  )
+}
 const between = (v: unknown, min: number, max: number): v is number =>
   num(v) && v >= min && v <= max
 const bool = (v: unknown): v is boolean => typeof v === 'boolean'
@@ -2082,6 +2201,7 @@ export function isSceneState(value: unknown): value is SceneState {
       (value.collection.hasKey || value.collection.collectedThisRound))
   )
     return false
+  if (!isSceneLighthouseWalk(value.walk)) return false
   if (!isSceneOnce(value.once)) return false
   if (!isSceneFixedRead(value.fixedRead)) return false
   if (!isSceneCollisionPair(value.collisionPair)) return false

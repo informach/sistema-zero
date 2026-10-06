@@ -12,9 +12,9 @@
 > Veja [a revisão e o mapa dos tutoriais](REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
 
 Redesenho didático dos cursos de jogos para o formato de seções da plataforma. O jogo de nave dos
-antigos Dias 1 a 5 do Desafio agora é o curso separado **Nave Contra Asteroides**. A introdução e o
-certificado pertencem ao novo **Desafio do Primeiro Jogo — A Chave do Farol**, com três dias de
-construção. Seus cinco trios editoriais já estão nesta pasta; as gravações ainda são planejadas. O curso gratuito
+antigos Dias 1 a 5 do Desafio agora é o curso separado **Nave Contra Asteroides**. O certificado
+pertence ao novo **Desafio do Primeiro Jogo — A Chave do Farol**, com três dias de
+construção; a apresentação do jogo e o caderno abrem o Dia 1. Seus quatro trios editoriais já estão nesta pasta; as gravações ainda são planejadas. O curso gratuito
 de procurar personagens escondidos, **Cadê Todo Mundo?**, tem seus três trios de autoria nesta pasta. Nele, o certificado
 encerra a experiência sem pitch de venda; a oferta do Desafio fica em uma landing page externa à
 área infantil e a decisão de compra cabe ao responsável.
@@ -22,11 +22,17 @@ encerra a experiência sem pitch de venda; a oferta do Desafio fica em uma landi
 **Relatório consolidado (documento para ler e comentar):**
 https://claude.ai/code/artifact/2a29a025-3a65-4c66-858b-afefacaa34df
 
+**Nave Contra Asteroides revisado em 05/10/2026:** nove aulas, 52 seções e 48 vídeos planejados. O [mapa do curso](modulos-nave-contra-asteroides.md) reúne a sequência, os roteiros, o caderno e as orientações de implantação. O jogo original e os cinco identificadores existentes foram preservados. A [conferência da retomada](qa/revisao-nave-2026-10-05.md) registra os ajustes e a validação local.
+
+**Corre, Dino! revisado em 05/10/2026:** 13 aulas, 81 seções, 76 vídeos planejados, 24 experiências e cinco quizzes. O [mapa atualizado](modulos-corre-dino.md) reúne a sequência, o caderno e a aplicação das diretrizes. Os 13 identificadores e programas originais foram preservados. A [revisão local](qa/revisao-corre-dino-2026-10-05.md) registra as verificações e as etapas de produção pendentes.
+
+**O Jogo do Meu Jeito revisado em 05/10/2026:** oito aulas, 54 seções, 50 vídeos planejados, 14 experiências e quatro quizzes. O [mapa atualizado](modulos-o-jogo-do-meu-jeito.md) reúne o percurso no Pinta e no Estúdio, o caderno e as entregas pela galeria. Os oito identificadores e o programa original foram preservados. A [revisão local](qa/revisao-meu-jeito-2026-10-05.md) discrimina verificações e produção pendente.
+
 ## O resultado
 
 Levantamento histórico feito antes da separação dos cursos. A tabela abaixo registra as 28 aulas
-anteriores e não representa o catálogo atual, que tem **34 manifestos**: cinco de Nave Contra
-Asteroides, cinco do novo Desafio, três do gratuito, treze de Corre, Dino! e oito de O Jogo do Meu
+anteriores e não representa o catálogo atual, que tem **37 manifestos**: nove de Nave Contra
+Asteroides, quatro do novo Desafio, três do gratuito, treze de Corre, Dino! e oito de O Jogo do Meu
 Jeito. As colunas de conteúdo anterior cobrem apenas as 27 aulas levantadas antes da inclusão do
 encerramento do antigo Desafio.
 
@@ -38,7 +44,7 @@ encerramento do antigo Desafio.
 | **Total** | **28** | **281** | **207** | **202** | **169** |
 
 As 11 cenas anteriores foram construídas e os defeitos do catálogo, corrigidos. As cenas de toque e
-contagem do gratuito, a porta do farol e a experiência de memória elevam o catálogo de 56 para **60 cenas**. Os **34 manifestos**
+contagem do gratuito, a porta do farol, a experiência de memória e o andar do personagem do Farol elevam o catálogo de 56 para **61 cenas**. Os **37 manifestos**
 passam no validador, sem nenhuma aula esperando cena. O novo Desafio ainda precisa das gravações,
 dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 
@@ -48,7 +54,7 @@ dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 |---|---|
 | `DIRETRIZES-PEDAGOGICAS.md` | Referência única das regras, justificativas, variações por curso e conferência. **Primeira leitura para qualquer curso.** |
 | `BRIEFING.md` | Guia para preparar a análise, fazer a triagem dos conceitos e registrar decisões; encaminha às Diretrizes Pedagógicas. |
-| `CATALOGO-CENAS.json` | As **60 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
+| `CATALOGO-CENAS.json` | As **61 cenas** que existem hoje, extraídas do código da plataforma, com título, o que manipulam, metas, pistas e roteiro de demonstração |
 | `REFERENCIA-PLATAFORMA.md` | **Onde cada coisa está na plataforma hoje**, lido direto do código, com a fonte citada por linha: o menu da esquerda, o recolhimento dele na aula e na ferramenta, a cor do perfil, as três ações de plataforma, os grupos do menu ⋯ do Estúdio, a lista de projetos e o Pinta. Toda fala que nomeie menu, tela ou botão confere aqui |
 | `REFERENCIA-BLOCOS-JOGO-2D.json` | Os **285 tipos** da paleta do Jogo 2D, extraídos do código: família, seção, todas as linhas do rótulo, cada campo com o padrão de fábrica e a lista de cada menu na ordem da tela |
 | `ESPEC-ROTEIRO.md` | O contrato do roteiro de gravação: tarefa na primeira fala, passo a passo completo, linguagem direta, notas de produção separadas e tutoriais de interface no Como Fazer |
@@ -57,7 +63,7 @@ dos anexos no admin e de ensaio no navegador antes de qualquer publicação.
 | `ESPEC-MANIFESTO.md` | O contrato do `manifesto.json`: schema real do importador, a regra das duas colunas do player, a convenção do título de vídeo e a fila de dependência entre cena e aula |
 | `blocos-*.json` | Identificadores dos blocos de programação usados em cada curso, no formato `{ "blocks": [...] }` |
 | `modulos-*.md` | Título e descrições de cada curso, com o resumo dos módulos e as aulas na ordem |
-| `aulas/` | O **trio de cada aula**: a proposta (`{slug}.md`), o manifesto importável (`{slug}.manifesto.json`) e o roteiro de gravação (`{slug}.roteiro.md`). Há 34 trios no catálogo atual |
+| `aulas/` | O **trio de cada aula**: a proposta (`{slug}.md`), o manifesto importável (`{slug}.manifesto.json`) e o roteiro de gravação (`{slug}.roteiro.md`). Há 37 trios no catálogo atual |
 | `cenas/` | **O material para corrigir as cenas antes de mexer nas aulas.** As 11 cenas novas com especificação completa, e os ajustes das 28 cenas existentes, tudo organizado por cena e não por aula. Comece pelo `RELATORIO-CENAS.md` |
 
 As descrições de curso e os resumos de módulo em `modulos-*.md` são textos para a área Kids. Ao
@@ -82,7 +88,7 @@ Cada arquivo em `aulas/` segue a mesma estrutura:
 6. **Vídeos.** Tabela com chave, o que mostra, origem, duração alvo e se reaproveita gravação.
 7. **Continuidade.** O que a aula assume da anterior, o que entrega para a seguinte e os valores canônicos.
 
-A aula de referência para programação é `aulas/nave-contra-asteroides-dia-1.md`. A aula final de certificado tem
+As referências de linguagem são Cadê Todo Mundo? e A Chave do Farol. Nave Contra Asteroides aplica essa direção em nove aulas; consulte [o mapa atual](modulos-nave-contra-asteroides.md). A aula final de certificado tem
 um fluxo próprio de conclusão, descrito em `aulas/desafio-certificado.md`.
 
 ## Os manifestos

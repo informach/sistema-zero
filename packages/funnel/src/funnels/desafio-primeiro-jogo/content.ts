@@ -11,7 +11,7 @@ export const DESAFIO_LANDING: FunnelLanding = {
 export const DESAFIO_OBRIGADO: FunnelObrigado = {
   intro: 'O próximo passo é conhecer A Chave do Farol com seu filho.',
   entrega: [
-    'A Chave do Farol: introdução, três etapas de programação e certificado.',
+    'A Chave do Farol: três etapas de programação e certificado.',
     '30 dias de curso, Estúdio das atividades e Mural completo, desde a aprovação.',
     'Caderno do Aluno, ajuda por mensagens e orientação de publicação.',
     'Depois do prazo, Mural visitante para ver e jogar.',
@@ -26,7 +26,7 @@ export const DESAFIO_OBRIGADO: FunnelObrigado = {
     {
       titulo: 'Conheçam a aventura no computador',
       texto:
-        'Com internet, mouse e teclado, abram a introdução de A Chave do Farol. Seu filho começa jogando para conhecer o projeto que vai construir.',
+        'Com internet, mouse e teclado, abram o Dia 1 de A Chave do Farol. Seu filho começa jogando para conhecer o projeto que vai construir.',
     },
     {
       titulo: 'Combinem o primeiro momento de construção',

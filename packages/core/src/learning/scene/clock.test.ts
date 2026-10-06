@@ -135,6 +135,19 @@ const PLANOS: Record<CenaComRelogio, Plano> = {
     { type: 'velocity', vx: 0, vy: 0 },
     1.1,
   ],
+  // O andar do Farol (05/10/2026): parado, andando a 3, a 1 e preso pelo limite na borda.
+  'lighthouse-walk': [
+    0.37,
+    { type: 'hold-arrow', held: true },
+    1.3,
+    { type: 'walk-speed', speed: 1 },
+    0.45,
+    { type: 'keep-on-screen', enabled: true },
+    { type: 'walk-speed', speed: 3 },
+    2.35,
+    { type: 'restart-walk' },
+    0.7,
+  ],
   'hold-vs-press': [
     { type: 'press' },
     { type: 'press' },
@@ -408,6 +421,7 @@ const CONTADOR: Record<
     conta: (s) => Math.round(s.crowd.elapsed * 20),
   },
   velocity: { preparo: [], conta: (s) => s.drive.ticks },
+  'lighthouse-walk': { preparo: [], conta: (s) => s.walk.frame },
   'hold-vs-press': { preparo: [], conta: (s) => s.input.ticks },
   // ⚠️ Mudou de propósito (lote 5 do Raio-X, G5): os cactos da ficha andam, e o laço mede a cada quadro.
   'group-loop': { preparo: [], conta: (s) => s.hunt.ticks },
@@ -466,7 +480,15 @@ describe('⭐⭐ o passo avança QUADROS INTEIROS da cena', () => {
 
   test('o nome e o tempo do passo respeitam o vocabulário de cada cena', () => {
     const quadro = SCENE_IDS.filter((s) => sceneStepLabel(s) === 'Avançar 1 quadro')
-    expect(quadro.sort()).toEqual(['contact', 'draw-loop', 'hold-vs-press', 'spawn', 'velocity'])
+    // ⚠️ Mudou de propósito (05/10/2026): a `lighthouse-walk` é sobre o quadro do jogo do Farol.
+    expect(quadro.sort()).toEqual([
+      'contact',
+      'draw-loop',
+      'hold-vs-press',
+      'lighthouse-walk',
+      'spawn',
+      'velocity',
+    ])
     expect(sceneStepLabel('once-vs-always')).toBeNull()
     expect(sceneStepSeconds('once-vs-always')).toBe(1 / SCENE_FRAME_RATE['once-vs-always'])
     // As que chamam de quadro o DESENHO, ou os quadros de outro computador, não podem dizer isso.

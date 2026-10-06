@@ -1096,7 +1096,7 @@ const CENAS: Record<SceneId, Cena> = {
         },
       },
       'remembered-after-leaving': {
-        texto: 'Depois de guardar a coleta, aperte Afastar e confira temChave.',
+        texto: 'Depois de guardar a coleta, clique em Afastar e confira temChave.',
         faz: (m) => {
           m.faz({ type: 'remember-collection', enabled: true })
           m.faz({ type: 'collect-key' })
@@ -1133,6 +1133,72 @@ const CENAS: Record<SceneId, Cena> = {
     },
     mostra: (s) =>
       s.lighthouse.door === 'closed' && s.evidence.discoveries.includes('locked-without-key'),
+  },
+  // O andar do Farol (05/10/2026). "Avançar 1 quadro" anda UM quadro (1/30 s); "Rodar" é o ▶ até a
+  // tela mostrar o que o pedido manda olhar.
+  'lighthouse-walk': {
+    pedidos: {
+      'still-without-arrow': {
+        texto:
+          'Com Segurar a seta para a direita desligado, clique em Avançar 1 quadro e olhe o x.',
+        faz: (m) => {
+          m.faz({ type: 'hold-arrow', held: false })
+          m.faz({ type: 'advance', seconds: 1 / 30 })
+        },
+      },
+      'moves-each-frame': {
+        texto:
+          'Ligue Segurar a seta para a direita e clique em Avançar 1 quadro duas vezes. Olhe o x.',
+        faz: (m) => {
+          m.faz({ type: 'hold-arrow', held: true })
+          m.faz({ type: 'advance', seconds: 1 / 30 })
+          m.faz({ type: 'advance', seconds: 1 / 30 })
+        },
+      },
+      'step-speed-3': {
+        texto:
+          'Escolha Velocidade 3, ligue Segurar a seta para a direita e clique em Avançar 1 quadro. Olhe o x.',
+        faz: (m) => {
+          m.faz({ type: 'walk-speed', speed: 3 })
+          m.faz({ type: 'hold-arrow', held: true })
+          m.faz({ type: 'advance', seconds: 1 / 30 })
+        },
+      },
+      'step-speed-1': {
+        texto:
+          'Escolha Velocidade 1, ligue Segurar a seta para a direita e clique em Avançar 1 quadro. Olhe o x.',
+        faz: (m) => {
+          m.faz({ type: 'walk-speed', speed: 1 })
+          m.faz({ type: 'hold-arrow', held: true })
+          m.faz({ type: 'advance', seconds: 1 / 30 })
+        },
+      },
+      'left-the-screen': {
+        texto:
+          'Com Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Olhe a borda da tela.',
+        faz: (m) => {
+          m.faz({ type: 'keep-on-screen', enabled: false })
+          m.faz({ type: 'hold-arrow', held: true })
+          // O Rodar para sozinho quando o personagem sai inteiro (`lighthouseWalkOut`).
+          m.ate((s) => s.walk.x >= 480)
+        },
+      },
+      'stayed-inside': {
+        texto:
+          'Ligue Manter dentro da tela e Segurar a seta para a direita, clique em Recomeçar e depois em Rodar. Olhe a borda da tela.',
+        faz: (m) => {
+          m.faz({ type: 'keep-on-screen', enabled: true })
+          m.faz({ type: 'hold-arrow', held: true })
+          m.faz({ type: 'restart-walk' })
+          // Até a borda (70 quadros) e mais um pedaço, o que o Rodar mostra em 3 s.
+          m.tempo(3)
+        },
+      },
+    },
+    mostra: (s) => {
+      const [antes, agora] = s.walk.trail.slice(-2)
+      return !s.walk.arrow && s.walk.frame > 0 && antes === agora
+    },
   },
   // ⚠️ Mudou de propósito (lote 5 do Raio-X): o toque na tela é o gesto em todas as telas, e o
   // "Reiniciar" só vale depois de a criança ver a partida começar com os cactos da anterior.
@@ -2251,7 +2317,7 @@ describe('as previsões das aulas atuais, no motor', () => {
   test('o piloto compara a mesma ficha em Ao iniciar e Enquanto estiver rodando', () => {
     const piloto = blocos.find(
       ({ onde, bloco }) =>
-        onde === 'nave-contra-asteroides-dia-1.manifesto.json' &&
+        onde === 'nave-contra-asteroides-primeira-nave.manifesto.json' &&
         bloco.activity.scene === 'once-vs-always',
     )
     const setup = piloto?.bloco.activity.setup
@@ -2261,9 +2327,29 @@ describe('as previsões das aulas atuais, no motor', () => {
     expect(setup?.goalCopy?.always?.pedido).toContain('Enquanto estiver rodando')
   })
 
+  /**
+   * ⚠️⚠️ As previsões ESCRITAS nos manifestos, por manifesto e cena (`onde · cena · revealOn`), e quais
+   * delas são de caso autoral (preset ou meta fora da tabela, conferidas só pela meta).
+   *
+   * É a guarda do laço abaixo: contar o que o próprio laço percorreu (`conferidas + autorais ===
+   * previstas`) aprovava qualquer coisa, inclusive uma varredura que deixasse de achar as previsões.
+   * Com a lista, uma previsão nova (ou uma que some) reprova até alguém conferi-la aqui. Desde as
+   * diretrizes de 21/09/2026 o palpite é OPCIONAL e nenhum manifesto atual escreve um.
+   */
+  const PREVISOES_DOS_MANIFESTOS: readonly string[] = []
+  const PREVISOES_DE_CASO_AUTORAL: readonly string[] = []
+
   test('⚠️⚠️ experimentação: o palpite volta antes da conclusão, seguindo os pedidos na ordem do caso', () => {
-    let conferidas = 0
-    for (const { onde, bloco } of blocos) {
+    const conferidas: string[] = []
+    const casosAutorais: string[] = []
+    const previstas = blocos.filter(({ bloco }) => blockPrediction(bloco)?.revealOn)
+    expect(
+      previstas.map(
+        ({ onde, bloco }) =>
+          `${onde} · ${bloco.activity.scene} · ${blockPrediction(bloco)?.revealOn}`,
+      ),
+    ).toEqual([...PREVISOES_DOS_MANIFESTOS])
+    for (const { onde, bloco } of previstas) {
       const { activity } = bloco
       if (activity.type !== 'experimentation') continue
       const previsao = blockPrediction(bloco)
@@ -2277,6 +2363,7 @@ describe('as previsões das aulas atuais, no motor', () => {
         // Presets autorais têm metas próprias que a tabela da cena padrão não encena.
         // A conclusão deles é exercitada em learning.test.ts e nos testes do preset.
         expect(alvos, `${onde} · ${activity.scene}: meta do palpite`).toContain(previsao.revealOn)
+        casosAutorais.push(`${onde} · ${activity.scene} · ${previsao.revealOn}`)
         continue
       }
       const m = caminhoDoConferir(sceneStart(activity), alvos, cena)
@@ -2293,9 +2380,14 @@ describe('as previsões das aulas atuais, no motor', () => {
         expect(concluiu, `${onde} · ${activity.scene}: o palpite volta antes da conclusão`).toBe(
           false,
         )
-      conferidas++
+      conferidas.push(`${onde} · ${activity.scene} · ${previsao.revealOn}`)
     }
-    expect(conferidas).toBeGreaterThanOrEqual(10)
+    // Palpites são opcionais nas diretrizes atuais: a lista diz quais existem, e cada uma passou
+    // pelo motor (as do caso autoral, pela meta).
+    expect(casosAutorais).toEqual([...PREVISOES_DE_CASO_AUTORAL])
+    expect(conferidas).toEqual(
+      PREVISOES_DOS_MANIFESTOS.filter((p) => !PREVISOES_DE_CASO_AUTORAL.includes(p)),
+    )
   })
 })
 

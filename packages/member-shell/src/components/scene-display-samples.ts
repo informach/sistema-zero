@@ -690,6 +690,18 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
     ],
     situations: ['A porta do farol está fechada.', 'A porta abriu e a luz do farol acendeu.'],
   },
+  'lighthouse-walk': {
+    readouts: [
+      { label: 'quadro', value: '1200', tone: 'plain' },
+      { label: 'x', value: '1000', tone: 'a' },
+      { label: 'velocidade', value: '3', tone: 'b' },
+    ],
+    situations: [
+      'No quadro 0, o x é 208. A seta para a direita está solta.',
+      'No quadro 1200, o x é 1000: o sprite passou inteiro da borda da tela. A seta para a direita está segurada.',
+      'De volta ao começo: quadro 0, x 208.',
+    ],
+  },
   restart: {
     readouts: [
       {

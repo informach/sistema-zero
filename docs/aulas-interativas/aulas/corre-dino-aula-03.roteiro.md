@@ -1,140 +1,114 @@
-# Roteiro de gravação · Corre Dino · Aula 03 · O Dino pisa no chão e pula
+# Roteiro de gravação · Corre, Dino! · Aula 3
 
-## Especificações
+**Faça o Dino cair e pular**
 
-- **Formato:** gravação de tela com narração, no Estúdio embutido.
-- **Duração:** 235 a 295 segundos de clipes; 522 palavras de narração, cerca de 3.8 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** `Ao iniciar` com `Preparar o jogo em tela cheia, tela 480 × 270, fundo` e `Criar dinossauro dino em x 110 y 150 tamanho 64 cor`. `Enquanto estiver rodando` com `A cada quadro do jogo` contendo `Limpar a tela`, `Desenhar fundo de floresta (velocidade 5)` e `Desenhar o sprite dino`. Na tela, o Dino corre no lugar na frente da floresta que passa, e não obedece a nada.
-- **Conceitos nomeados:** comando de pulo, gravidade, força do pulo, ordem de atualização e desenho.
-- **Dor desta aula:** No começo, espaço e seta não fazem nada. Com o controle sem gravidade, o Dino flutua e fica congelado; ambos são sintomas reais do Estúdio.
-- **Vitória do dia:** o Dino pisa na grama pela primeira vez e pula quando ela manda, pelo teclado, pelo clique do mouse e pelo dedo na tela. E a altura do salto passa a ser escolha dela.
-- **Valores:** Nome dino, força inicial 15; demonstração em 2, 30 e 14; escolha final sugerida de 12 a 18.
-- **Campos livres:** Força final de pulo entre 12 e 18.
-- **Nota de produção:** Mostrar os pés e a pose travada antes da gravidade. Testar espaço, seta e toque depois do pouso.
-- **O que NÃO entra, e por quê:** Não prometer o salto sem retorno do modelo ilustrativo nem trazer o agachamento de outro jogo.
+Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.
 
-## Seção 1. O que a gente vai fazer hoje
+Entrada: Dino parado diante da floresta. Saída: Gravidade e controles de pulo, com impulso de referência 14.
 
-### Clipe `video-abertura` · Ele corre, mas não te obedece
-**Duração alvo:** 20 a 30 segundos; recalibrar após gravar.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
-**Na tela:** Jogo da Aula 2 rodando; clicar na área do jogo e apertar espaço, depois seta para cima.
+## Seção 1. Compare o salto com e sem gravidade
+
+### Clipe `video-gravidade-modelo` · Compare o salto com e sem gravidade
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "O Dino já corre no seu jogo. Hoje vamos dar a ele um comando de pulo para você controlar
-> a corrida com o teclado."
+> "Seu Dino ainda está parado. Antes de fazê-lo pular no jogo, observe o que traz um personagem de volta ao chão.
+>
+> Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer.
+>
+> Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Mostrar rapidamente o resultado da aula, com um salto que sobe e volta à grama.
+**Zappy na página (não gravar):** Pule sem gravidade e ligue a gravidade enquanto o Dino está no ar.
 
-**Narração:**
-> "No fim, você vai mandar o Dino pular, ver ele sair do chão e voltar sozinho. Vamos montar
-> uma peça de cada vez."
+## Seção 2. Faça o Dino cair até o chão
 
-## Seção 2. Dê o comando de pulo
+### Clipe `video-aplicar-gravidade` · Faça o Dino cair até o chão
 
-### Clipe `video-comando-de-pulo` · O comando entra e nada acontece
-**Duração alvo:** 60 a 70 segundos · **Palavras:** 105
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Enquadrar o motor com floresta seguida de Desenhar o sprite; abrir Jogo 2D > Kits prontos > Dino.
-
-**Narração:**
-> "Primeiro o comando. Na categoria **Jogo 2D**, abre **Kits prontos**, depois **Dino**. Pega
-> **Controlar o dinossauro**."
-
-**Na tela:** Arrastar o bloco para A cada quadro do jogo, entre Desenhar fundo de floresta e Desenhar o sprite dino.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Encaixa dentro do **A cada quadro do jogo**, entre **Desenhar fundo de floresta** e
-> **Desenhar o sprite dino**. Assim o controle acontece antes de o personagem ser desenhado."
+> "Na experiência da seção anterior, você comparou o movimento no ar com e sem gravidade. Seu Dino está parado na posição em que foi criado. Agora faça a gravidade agir nele.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o espaço entre a floresta e o desenho do Dino, dentro de A cada quadro do jogo. Abra Jogo 2D, depois Movimento e Velocidade e gravidade. Pegue Aplicar a gravidade do mundo ao sprite e encaixe nesse lugar. Escolha dino.
+>
+> Observe o Dino descer até o chão. Se continuar suspenso, confira o nome e se a gravidade está dentro do quadro, antes do desenho. O controle de pulo ainda não está montado.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Zoom nos campos do bloco: dino e força 15; manter ambos.
+**Zappy na página (não gravar):** Aplique a gravidade depois da floresta e antes do desenho.
 
-**Narração:**
-> "O nome já vem **dino**; deixa. A força do pulo vem em **15**; deixa também, por enquanto.
-> Clica na área do jogo e tenta espaço e seta para cima."
+## Seção 3. Compare duas alturas de pulo
 
-**Na tela:** Mostrar pés fora da grama, pose congelada e nenhum salto nos dois testes.
+### Clipe `video-impulso-modelo` · Compare duas alturas de pulo
 
-**Narração:**
-> "O Dino está flutuando um pouco, com as pernas paradas, e ainda não obedece. O comando entrou
-> e não resolveu. Olha os pés: ninguém consegue pular sem um chão para onde voltar."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-## Seção 4. A gravidade entra no seu jogo
-
-### Clipe `video-gravidade` · O Dino pisa na grama
-**Duração alvo:** 60 a 75 segundos · **Palavras:** 141
-
-**Na tela:** Abrir Jogo 2D > Movimento > Velocidade e gravidade; destacar Aplicar a gravidade do mundo ao sprite.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "A peça que falta é a gravidade. Em **Jogo 2D**, abre **Movimento**, depois **Velocidade e
-> gravidade**. Pega **Aplicar a gravidade do mundo ao sprite**."
+> "Seu Dino já chega ao chão. Agora compare a força que inicia um salto, mantendo a mesma gravidade.
+>
+> Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura.
+>
+> Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Encaixar dentro de A cada quadro do jogo, entre Desenhar fundo de floresta e Controlar o dinossauro.
+**Zappy na página (não gravar):** Faça um salto com 9 e outro com 14, esperando a queda entre eles.
 
-**Narração:**
-> "Encaixa **entre Desenhar fundo de floresta e Controlar o dinossauro**, dentro do **A cada
-> quadro do jogo**. A gravidade vem antes do controle do pulo."
+## Seção 4. Dê os controles de pulo ao Dino
 
-**Na tela:** Abrir seletor de sprite, trocar jogador por dino. Mostrar o Dino descendo e pousando.
+### Clipe `video-comando-de-pulo` · Dê os controles de pulo ao Dino
 
-**Narração:**
-> "O campo vem como **jogador**. Abre a listinha e escolhe **dino**. Esse bloco não tem número
-> para preencher. Olha o seu jogo: o Dino desceu um pouquinho e pousou na grama. Lembra que o y
-> cresce para baixo?"
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Clicar na área do jogo; testar espaço, seta para cima e clique na metade de cima, observando cada salto completo.
-
-**Narração:**
-> "Agora clica na área do jogo e aperta espaço. Ele sobe e volta. Testa a seta para cima:
-> funciona também. E um clique na parte de cima da área faz o mesmo pulo; no celular, esse gesto
-> vira o toque do dedo. A gravidade é do mundo, mas age no sprite que você escolheu."
-
-## Seção 6. Ponha a sua força de pulo no jogo
-
-### Clipe `video-forca-do-pulo` · Exagera para os dois lados
-**Duração alvo:** 50 a 60 segundos · **Palavras:** 106
-
-**Na tela:** Mostrar o campo força do Controlar o dinossauro; pôr 2, clicar fora, saltar e observar.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Vamos descobrir o que o número da força faz no seu próprio jogo. No **Controlar o
-> dinossauro**, troca a força por **2**, clica fora e pula. O Dino mal sai da grama."
+> "Na experiência da seção anterior, você mudou o impulso e comparou os saltos. Clique no seu jogo e toque na barra de espaço: ainda não há um controle ligado ao Dino. Agora monte essa resposta.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite. Abra Jogo 2D, depois Kits prontos e Dino. Pegue Controlar o dinossauro e encaixe nesse espaço. Escolha dino e coloque força do pulo 14.
+>
+> Clique na área do jogo, toque e solte a barra de espaço e espere o Dino pousar. Faça outro salto com a seta para cima. Depois teste tocando na tela. O bloco já oferece os três controles.
+>
+> Toque duas vezes na barra de espaço durante o mesmo salto. O segundo comando não deve iniciar um salto no ar. Confira a ordem: floresta, gravidade, controle e desenho. Se o Dino não pular, confira o nome e a gravidade antes do controle.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-**Na tela:** Pôr 30, clicar fora, saltar; enquadrar o Dino saindo da tela e voltando.
+**Zappy na página (não gravar):** Teste espaço, seta para cima e toque, com gravidade antes do controle.
 
-**Narração:**
-> "Agora põe **30**, confirma e pula outra vez. Ele sobe tanto que quase some. Repara na volta:
-> é a gravidade que traz ele para o chão."
+## Seção 5. Confira o que você construiu
 
-**Na tela:** Pôr 14, testar; apontar faixa 12 a 18 sem pedir exploração livre.
+**Zappy na página (não gravar):** Retome a tela e os movimentos do Dino nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.
 
-**Narração:**
-> "Eu volto para **14**. Aqui o salto já cabe na tela e dá tempo de passar por um cacto. Você
-> pode ficar com um número entre **12 e 18** que combine com o seu jogo. Exagerar para cada lado
-> primeiro ajudou a entender o que esse campo controla."
+Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
-## Seção 7. Teste, envie e fecha
+## Seção 6. Teste e envie seu jogo
 
-### Clipe `video-fecho` · A ordem dentro do quadro
-**Duração alvo:** 45 a 60 segundos · **Palavras:** 110
+### Clipe `video-entrega` · Teste e envie seu jogo
 
-**Na tela:** Clicar na área do jogo, saltar com espaço e depois com toque na parte de cima; enquadrar saída e pouso.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Narração:**
-> "Confere dois saltos: um com espaço, outro com um toque na parte de cima da área. Nos dois, o
-> Dino sobe, para um instante no alto e volta sozinho para a grama."
-
-**Na tela:** Mostrar a pilha: floresta, gravidade, controle, desenho; conferir objetivos.
-
-**Narração:**
-> "Olha a ordem do quadro: a gravidade age, depois o controle recebe o pulo, e só depois o Dino
-> é desenhado. A floresta continua atrás. Confere os objetivos e o número de força que você
-> escolheu."
-
-**Na tela:** Esperar Salvo; clicar Enviar para o professor; terminar no quiz.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Quando tudo estiver certo, espera **Salvo** e clica em **Enviar para o professor**. Hoje você
-> deu o comando, trouxe o Dino de volta para o chão e escolheu a altura do salto. Na próxima
-> aula ele ganha som. O quiz vem agora."
+> "Seu Dino já pula e volta ao chão. Teste espaço, seta para cima e toque. Espere pousar entre os saltos.
+>
+> Confira gravidade antes do controle e os dois antes do desenho. Deixe a força de referência em 14; as cores que você escolheu podem continuar.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
+
+**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.

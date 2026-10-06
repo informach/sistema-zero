@@ -2,7 +2,7 @@
   "version": 5,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-13",
-  "title": "O jogo aperta, e sabe onde parar",
+  "title": "Aumente a dificuldade com um limite",
   "retireBlockKeys": [
     "video-abertura-editorial",
     "video-guardar-velocidade",
@@ -17,9 +17,225 @@
     "video-descricao-final",
     "fala-descricao-final",
     "fala-entrega-editorial",
-    "video-fecho-editorial"
+    "video-fecho-editorial",
+    "video-jogo-nao-aperta",
+    "fala-conferir-vx",
+    "fala-criar-velocidade",
+    "fala-ler-a-base",
+    "video-memoria-e-leitura",
+    "fala-relogio-acelerador",
+    "fala-se-do-estado",
+    "fala-se-da-comparacao",
+    "fala-campos-da-comparacao",
+    "fala-somar-menos-um",
+    "video-acelerador",
+    "fala-antes-da-aceleracao",
+    "video-balanceamento",
+    "fala-teste-final",
+    "video-ponte",
+    "video-fecho-curso",
+    "quiz-final"
   ],
   "blocks": [
+    {
+      "key": "video-regua-negativos",
+      "plannedVideo": "Título: Compare os números negativos\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-regua-negativos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Compare os sinais e acompanhe a régua de -5 até -9."
+      }
+    },
+    {
+      "key": "experiencia-number-line",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare os números negativos",
+        "instructions": "Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >. Observe a resposta com o marcador em -5. Depois leve o marcador até -9 e compare a resposta. Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta.",
+        "hints": [],
+        "required": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "number-line",
+          "cenario": "corre-dino"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-o-que-o-freio-segura",
+      "plannedVideo": "Título: Compare a base com cada cacto\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-o-que-o-freio-segura",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Compare base, cactos novos e antigos; depois desligue a condição e avance."
+      }
+    },
+    {
+      "key": "experiencia-aceleracao",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare a base com cada cacto",
+        "instructions": "Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram. Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base. Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número.",
+        "hints": [],
+        "required": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "acceleration",
+          "cenario": "corre-dino",
+          "cast": {
+            "obstacle": {
+              "name": "cacto",
+              "gender": "m"
+            }
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-numero-que-manda",
+      "plannedVideo": "Título: Guarde a velocidade base\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-numero-que-manda",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Prepare velocidade em -5 e use sua leitura à esquerda da conta do vx."
+      }
+    },
+    {
+      "key": "video-relogio-da-dificuldade",
+      "plannedVideo": "Título: Prepare o relógio da dificuldade\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-relogio-da-dificuldade",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Prepare um relógio de 5 segundos com Se jogando, separado dos outros."
+      }
+    },
+    {
+      "key": "video-acelerador-e-freio",
+      "plannedVideo": "Título: Diminua a base até o limite\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-acelerador-e-freio",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Some -1 em velocidade somente jogando e enquanto a base for maior que -9."
+      }
+    },
+    {
+      "key": "video-descricao-completa",
+      "plannedVideo": "Título: Complete a descrição dos controles\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-descricao-completa",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Descreva a tarefa e os três controles que já funcionam."
+      }
+    },
+    {
+      "key": "fala-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Retome os sorteios e a dificuldade da corrida nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar."
+      }
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Dois cactos receberam o mesmo x dentro da faixa sorteada. Isso prova que o sorteio falhou?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Sim, cada lugar só pode sair uma vez."
+              },
+              {
+                "id": "b",
+                "label": "Não. Um sorteio pode repetir um valor da faixa."
+              },
+              {
+                "id": "c",
+                "label": "Sim, a faixa sempre produz uma sequência em ordem."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Sortear escolhe um valor da faixa a cada nascimento. O mesmo valor pode ser escolhido novamente."
+          },
+          {
+            "id": "q2",
+            "prompt": "A base parou em -9, mas o criador ainda subtrai um sorteio de 0 a 1. Que velocidade pode sair?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Somente -9."
+              },
+              {
+                "id": "b",
+                "label": "Somente -8."
+              },
+              {
+                "id": "c",
+                "label": "-9 ou -10."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "O limite vale para a base. Depois dela, a conta ainda subtrai 0 ou 1."
+          },
+          {
+            "id": "q3",
+            "prompt": "A base mudou de -5 para -6. O que acontece com um cacto que já tinha nascido?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Ele conserva a velocidade recebida ao nascer."
+              },
+              {
+                "id": "b",
+                "label": "Sua velocidade muda automaticamente com a variável."
+              },
+              {
+                "id": "c",
+                "label": "Ele é retirado do grupo."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O criador lê a base no nascimento. Essa leitura entrega um valor ao novo cacto; não mantém todos ligados à variável."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+      }
+    },
     {
       "key": "projeto",
       "content": {
@@ -72,22 +288,487 @@
           "sz_val_text",
           "sz_val_variable"
         ],
+        "showcase": {
+          "enabled": true,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-corre-dino-13",
+          "id": "manifest-dino-etapa-12",
           "name": "Corre, Dino!",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": ""
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos apertando espaço\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  const cactos = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  SZGame2D.setHitboxScale(dino, 80);\n  let pontos = 0;\n  // Quando acontecer\n  SZGame2D.onJump(() => dino, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"dino-ref-73\");\n  SZGame2D.onAnyInput(() => {\n      if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.restart();\n    }\n    }, \"dino-ref-75\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.applyGravity(dino);\n      SZGame2D.controlDino(dino, ctx, 14);\n      SZGame2D.drawSprite(ctx, dino);\n      SZGame2D.updateGroup(cactos);\n      SZGame2D.drawGroup(ctx, cactos);\n      SZGame2D.overlapSpriteGroup(() => dino, cactos, (cacto) => {\n        SZGame2D.explodeSprite(cacto, \"#ffab00\");\n        SZGame2D.shake(ctx, 8);\n        SZGame2D.playFx(\"gameover\");\n        SZGame2D.setScene(\"fim\");\n      });\n      SZGame2D.pruneOffscreen(ctx, cactos, 40, (cacto) => {\n\n      });\n      SZGame2D.drawScore(ctx, \"Pontos:\", pontos, 12, 30, \"#102030\", 24);\n    } else if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.showScreen(ctx, \"Corre, Dino!\", \"Pule os cactos!\", \"Aperte qualquer tecla ou toque na tela para começar\", \"#102030\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.showScreen(ctx, \"Fim de jogo\", `Você fez ${pontos} pontos. Tente bater essa marca!`, \"Aperte qualquer tecla ou toque para jogar de novo\", \"#102030\");\n    }\n  }, \"dino-ref-16\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        SZGame2D.spawnObstacle(cactos, ctx, { type: \"cactus\", x: SZGame2D.randomBetween(500, 560), size: 44, vx: -5 - SZGame2D.randomBetween(0, 1) });\n      }\n    }\n  });\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada_2\", 1)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        pontos = pontos + 1;\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [],
-          "ir": null,
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "dino-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 270,
+                    "__id": "dino-ref-3"
+                  },
+                  "bg": "#81d4fa",
+                  "__id": "dino-ref-1"
+                },
+                {
+                  "type": "g2d:setStageDescription",
+                  "description": "Corra com o dino e pule os cactos apertando espaço",
+                  "__id": "dino-ref-4"
+                },
+                {
+                  "type": "g2d:createDino",
+                  "varName": "dino",
+                  "x": {
+                    "type": "num",
+                    "value": 110,
+                    "__id": "dino-ref-6"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 150,
+                    "__id": "dino-ref-7"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 64,
+                    "__id": "dino-ref-8"
+                  },
+                  "color": "#8b5cf6",
+                  "__id": "dino-ref-5"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "cactos",
+                  "__id": "dino-ref-9"
+                },
+                {
+                  "type": "g2d:setScene",
+                  "name": "inicio",
+                  "__id": "dino-ref-10"
+                },
+                {
+                  "type": "g2d:setHitboxScale",
+                  "spriteVar": "dino",
+                  "percent": {
+                    "type": "num",
+                    "value": 80,
+                    "__id": "dino-ref-12"
+                  },
+                  "__id": "dino-ref-11"
+                },
+                {
+                  "type": "var",
+                  "name": "pontos",
+                  "value": {
+                    "type": "num",
+                    "value": 0,
+                    "__id": "dino-ref-14"
+                  },
+                  "__id": "dino-ref-13"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onJump",
+                  "spriteVar": "dino",
+                  "body": [
+                    {
+                      "type": "g2d:playFx",
+                      "fx": "jump",
+                      "__id": "dino-ref-74"
+                    }
+                  ],
+                  "__id": "dino-ref-73"
+                },
+                {
+                  "type": "g2d:onAnyInput",
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "inicio",
+                        "__id": "dino-ref-77"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:setScene",
+                          "name": "jogando",
+                          "__id": "dino-ref-78"
+                        }
+                      ],
+                      "elseif": [
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "fim",
+                            "__id": "dino-ref-79"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:restart",
+                              "__id": "dino-ref-80"
+                            }
+                          ]
+                        }
+                      ],
+                      "__id": "dino-ref-76"
+                    }
+                  ],
+                  "__id": "dino-ref-75"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "dino-ref-17"
+                    },
+                    {
+                      "type": "g2d:forest",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "dino-ref-19"
+                      },
+                      "__id": "dino-ref-18"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-21"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:applyGravity",
+                          "spriteVar": "dino",
+                          "__id": "dino-ref-22"
+                        },
+                        {
+                          "type": "g2d:controlDino",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "jump": {
+                            "type": "num",
+                            "value": 14,
+                            "__id": "dino-ref-24"
+                          },
+                          "__id": "dino-ref-23"
+                        },
+                        {
+                          "type": "g2d:drawSprite",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-25"
+                        },
+                        {
+                          "type": "g2d:updateGroup",
+                          "groupVar": "cactos",
+                          "__id": "dino-ref-26"
+                        },
+                        {
+                          "type": "g2d:drawGroup",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-27"
+                        },
+                        {
+                          "type": "g2d:onSpriteGroupOverlap",
+                          "spriteVar": "dino",
+                          "groupVar": "cactos",
+                          "itemName": "cacto",
+                          "body": [
+                            {
+                              "type": "g2d:explode",
+                              "spriteVar": "cacto",
+                              "color": "#ffab00",
+                              "__id": "dino-ref-29"
+                            },
+                            {
+                              "type": "g2d:shake",
+                              "ctxVar": "ctx",
+                              "intensity": {
+                                "type": "num",
+                                "value": 8,
+                                "__id": "dino-ref-31"
+                              },
+                              "__id": "dino-ref-30"
+                            },
+                            {
+                              "type": "g2d:playFx",
+                              "fx": "gameover",
+                              "__id": "dino-ref-32"
+                            },
+                            {
+                              "type": "g2d:setScene",
+                              "name": "fim",
+                              "__id": "dino-ref-33"
+                            }
+                          ],
+                          "__id": "dino-ref-28"
+                        },
+                        {
+                          "type": "g2d:pruneOffscreen",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "itemName": "cacto",
+                          "body": [],
+                          "__id": "dino-ref-34"
+                        },
+                        {
+                          "type": "g2d:drawScore",
+                          "ctxVar": "ctx",
+                          "label": "Pontos:",
+                          "value": {
+                            "type": "var",
+                            "name": "pontos",
+                            "__id": "dino-ref-36"
+                          },
+                          "x": {
+                            "type": "num",
+                            "value": 12,
+                            "__id": "dino-ref-37"
+                          },
+                          "y": {
+                            "type": "num",
+                            "value": 30,
+                            "__id": "dino-ref-38"
+                          },
+                          "color": "#102030",
+                          "size": {
+                            "type": "num",
+                            "value": 24,
+                            "__id": "dino-ref-39"
+                          },
+                          "__id": "dino-ref-35"
+                        }
+                      ],
+                      "elseif": [
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "inicio",
+                            "__id": "dino-ref-40"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:showScreen",
+                              "ctxVar": "ctx",
+                              "title": {
+                                "type": "str",
+                                "value": "Corre, Dino!",
+                                "__id": "dino-ref-42"
+                              },
+                              "subtitle": {
+                                "type": "str",
+                                "value": "Pule os cactos!",
+                                "__id": "dino-ref-43"
+                              },
+                              "hint": {
+                                "type": "str",
+                                "value": "Aperte qualquer tecla ou toque na tela para começar",
+                                "__id": "dino-ref-44"
+                              },
+                              "bg": "#102030",
+                              "__id": "dino-ref-41"
+                            }
+                          ]
+                        },
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "fim",
+                            "__id": "dino-ref-45"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:showScreen",
+                              "ctxVar": "ctx",
+                              "title": {
+                                "type": "str",
+                                "value": "Fim de jogo",
+                                "__id": "dino-ref-47"
+                              },
+                              "subtitle": {
+                                "type": "concat",
+                                "parts": [
+                                  {
+                                    "type": "str",
+                                    "value": "Você fez ",
+                                    "__id": "dino-ref-49"
+                                  },
+                                  {
+                                    "type": "var",
+                                    "name": "pontos",
+                                    "__id": "dino-ref-50"
+                                  },
+                                  {
+                                    "type": "str",
+                                    "value": " pontos. Tente bater essa marca!",
+                                    "__id": "dino-ref-51"
+                                  }
+                                ],
+                                "__id": "dino-ref-48"
+                              },
+                              "hint": {
+                                "type": "str",
+                                "value": "Aperte qualquer tecla ou toque para jogar de novo",
+                                "__id": "dino-ref-52"
+                              },
+                              "bg": "#102030",
+                              "__id": "dino-ref-46"
+                            }
+                          ]
+                        }
+                      ],
+                      "__id": "dino-ref-20"
+                    }
+                  ],
+                  "__id": "dino-ref-16"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 1.4,
+                    "__id": "dino-ref-54"
+                  },
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-56"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:spawnObstacle",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "shape": "cactus",
+                          "x": {
+                            "type": "g2d:randomBetween",
+                            "min": {
+                              "type": "num",
+                              "value": 500,
+                              "__id": "dino-ref-59"
+                            },
+                            "max": {
+                              "type": "num",
+                              "value": 560,
+                              "__id": "dino-ref-60"
+                            },
+                            "__id": "dino-ref-58"
+                          },
+                          "size": {
+                            "type": "num",
+                            "value": 44,
+                            "__id": "dino-ref-66"
+                          },
+                          "vx": {
+                            "type": "binop",
+                            "op": "-",
+                            "left": {
+                              "type": "num",
+                              "value": -5,
+                              "__id": "dino-ref-62"
+                            },
+                            "right": {
+                              "type": "g2d:randomBetween",
+                              "min": {
+                                "type": "num",
+                                "value": 0,
+                                "__id": "dino-ref-64"
+                              },
+                              "max": {
+                                "type": "num",
+                                "value": 1,
+                                "__id": "dino-ref-65"
+                              },
+                              "__id": "dino-ref-63"
+                            },
+                            "__id": "dino-ref-61"
+                          },
+                          "__id": "dino-ref-57"
+                        }
+                      ],
+                      "__id": "dino-ref-55"
+                    }
+                  ],
+                  "__id": "dino-ref-53"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 1,
+                    "__id": "dino-ref-68"
+                  },
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-70"
+                      },
+                      "then": [
+                        {
+                          "type": "assign",
+                          "name": "pontos",
+                          "value": {
+                            "type": "binop",
+                            "op": "+",
+                            "left": {
+                              "type": "var",
+                              "name": "pontos"
+                            },
+                            "right": {
+                              "type": "num",
+                              "value": 1
+                            }
+                          },
+                          "__id": "dino-ref-71"
+                        }
+                      ],
+                      "__id": "dino-ref-69"
+                    }
+                  ],
+                  "__id": "dino-ref-67"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
@@ -810,293 +1491,53 @@
           ]
         }
       }
-    },
-    {
-      "key": "video-jogo-nao-aperta",
-      "plannedVideo": "Título: Vinte segundos depois, está tudo igual\n\nO jogo rodando, com alguém sobrevivendo bastante. No começo é gostoso: os cactos vêm, o dino pula, o placar sobe. Vinte segundos depois a gravação continua e a tela está exatamente igual. Mesma velocidade, mesmo esforço, mesma folga entre um pulo e outro.\n\nA fala nomeia o problema sem inventar nada: quem está indo bem merecia um desafio maior, e não mais do mesmo.\n\nEm seguida a comparação, marcada como comparação: “é tipo os jogos que você joga, que vão ficando mais difíceis conforme você avança.”\n\nFecha com a promessa do dia em uma frase: hoje o jogo aprende a apertar sozinho, e aprende também onde parar.\n\nJunta o que hoje são duas seções. A apresentação e a dor eram a mesma gravação: uma prometia, a outra mostrava. A dor fecha sozinha, e a ferramenta só aparece na seção seguinte.\n\nVem de video-abertura-editorial. A fala se aproveita, a tela é regravada na edição jogo-2d-1.0-documento-2.\n\nDuração alvo: 40 a 55 segundos."
-    },
-    {
-      "key": "fala-conferir-vx",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Antes de mais nada, abre o seu bloco No grupo criar obstáculo em x tamanho com vx e olha o campo vx. Do lado esquerdo da conta tem que estar -5. Se estiver outro número, põe -5 agora. Tudo o que vem hoje depende desse número estar certo."
-      }
-    },
-    {
-      "key": "fala-criar-velocidade",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Em Programação, Variáveis, pega o Criar variável com valor e encaixa dentro do Ao iniciar, entre o Criar variável pontos com valor 0 e o Mudar o estado do jogo para inicio. No nome escreve velocidade. No valor escreve -5, que é o mesmo número que os seus cactos já usam."
-      }
-    },
-    {
-      "key": "fala-ler-a-base",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora em Programação, Valores, pega o valor da variável e arrasta ele por cima do -5, que é o pedaço da esquerda da conta, lá no campo vx. Nele escolhe a velocidade. O sorteio de 0 a 1 do lado direito fica onde está."
-      }
-    },
-    {
-      "key": "video-memoria-e-leitura",
-      "plannedVideo": "Título: A velocidade muda de endereço\n\nOs dois gestos seguidos, num movimento só. Primeiro o Criar variável com valor entrando no Ao iniciar, entre o Criar variável pontos com valor 0 e o Mudar o estado do jogo para inicio, com velocidade no nome e -5 no valor. Depois o valor da variável arrastado por cima do -5 do lado esquerdo da Conta matemática, com velocidade escolhida.\n\nDepois a partida rodando. A fala guarda a honestidade do trecho gravado, que é o melhor dele: está igualzinho, e está certo, porque a caixinha guarda -5, que é exatamente o número que estava ali antes.\n\nO que mudou não está na tela: mudou de onde vem a velocidade. Antes ela estava escrita dentro do bloco. Agora ela mora numa caixinha, e o bloco vai lá olhar toda vez que cria um cacto.\n\nÉ aqui que o padrão ganha nome: mudar o jogo sem mudar a lógica. A regra continua a mesma, e o que muda é o número que ela lê.\n\nFunde video-guardar-velocidade e video-usar-memoria. Sai inteiro o video-base-e-nascimento, que explicava a diferença entre a base e a velocidade que o cacto recebe ao nascer: essa diferença passou para a cena da seção 5, onde ela é provada em vez de afirmada.\n\nCorreção de âncora obrigatória. A fala gravada diz que o Ir para a tela inicio continua sendo o último bloco do Ao iniciar. Isso não é mais verdade desde a aula 10: o último é o Usar área de colisão de 80 por cento do tamanho para o sprite dino. A gravação nova nomeia os dois vizinhos do encaixe, o Criar variável pontos com valor 0 e o Mudar o estado do jogo para inicio, e não afirma nada sobre qual é o último.\n\nTrocar os rótulos vencidos: Mudar o estado do jogo para, em Jogo 2D, Jogo e telas, Telas e partida.\n\nDuração alvo: 70 a 85 segundos."
-    },
-    {
-      "key": "fala-regua-negativos",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Número negativo confunde todo mundo no começo, e tem um jeito de desconfundir. É tipo uma régua deitada, parecida com um termômetro. Faz -5 graus lá fora, está frio. Faz -9 graus, está mais frio ainda. Então o -5 é mais quente que o -9, e é isso que quer dizer ser maior. Com a velocidade é igual: -5 é mais devagar, -9 é mais rápido."
-      }
-    },
-    {
-      "key": "experiencia-number-line",
-      "content": {
-        "kind": "interactive",
-        "title": "A régua dos números negativos",
-        "instructions": "Aperte Somar -1 e olhe para onde o marcador anda. Depois troque o sinal e veja a resposta da pergunta mudar sem o número ter mudado.",
-        "hints": [
-          "A régua é parecida com um termômetro deitado. O -9 fica mais para a esquerda que o -5.",
-          "Olhe a frase embaixo da régua. A resposta muda sozinha conforme o marcador anda.",
-          "Deixe o marcador no -5 e troque o sinal para o biquinho que aponta para a direita. Depois leve o marcador até o -9 e olhe a resposta."
-        ],
-        "required": true,
-        "prediction": {
-          "context": {
-            "label": "A régua, com o marcador no -5",
-            "explanation": "A régua vai de -12 a 0, com uma bandeirinha fixa no -9 e o marcador no -5. Embaixo dela, a pergunta montada com as peças, e a resposta em palavra e em ícone."
-          },
-          "prompt": "Na régua, qual dos dois é o maior: -5 ou -9?",
-          "choices": [
-            {
-              "id": "menos-cinco",
-              "label": "-5, porque está mais à direita"
-            },
-            {
-              "id": "menos-nove",
-              "label": "-9, porque 9 é maior que 5",
-              "shows": "Na régua, o -9 mora à esquerda do -5. Quem está mais à direita é o maior."
-            }
-          ],
-          "correctChoiceId": "menos-cinco",
-          "revealOn": "greater"
-        },
-        "activity": {
-          "type": "experimentation",
-          "scene": "number-line",
-          "cenario": "corre-dino"
-        }
-      }
-    },
-    {
-      "key": "fala-relogio-acelerador",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Em Jogo 2D, Tempo, Quadros e intervalos, pega mais um A cada segundos e solta dentro do Enquanto estiver rodando, ao lado dos outros dois relógios, o de 1,4 dos cactos e o de 1 dos pontos. Ao lado, e não dentro deles, e não dentro do A cada quadro do jogo. Agora são três relógios vizinhos. Nesse novo, põe 5."
-      }
-    },
-    {
-      "key": "fala-se-do-estado",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Dentro do fazer desse relógio vai um Se, igual você fez na Aula 11. Em Programação, Lógica e Se, pega o Condição se, senão se e senão. Ele vem com uma comparação de fábrica dentro, e essa não serve: arrasta ela pra fora e joga na lixeira. No lugar dela encaixa o o estado do jogo é, em Jogo 2D, Jogo e telas, Telas e partida, e escolhe jogando."
-      }
-    },
-    {
-      "key": "fala-se-da-comparacao",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Agora vem outro Se, dentro do então desse primeiro. E esse é diferente: desta vez a comparação de fábrica fica. É a única vez no curso inteiro em que ela serve, porque a nossa pergunta é justamente uma comparação."
-      }
-    },
-    {
-      "key": "fala-campos-da-comparacao",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Ela tem três pedaços. No da esquerda, arrasta o valor da variável por cima do número e escolhe a velocidade. No do meio, abre a listinha dos sinais e escolhe o maior, que é o quinto da lista, o biquinho apontando para a direita. Confere na tela se ficou o biquinho e não o igual. No pedaço da direita, escreve -9."
-      }
-    },
-    {
-      "key": "fala-somar-menos-um",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Lê comigo: se o valor da variável velocidade for maior que -9. E dentro do então desse Se de dentro, em Programação, Variáveis, põe o Somar em variável. No número escreve -1, e na variável escolhe a velocidade."
-      }
-    },
-    {
-      "key": "video-acelerador",
-      "plannedVideo": "Título: O acelerador, e o freio dele\n\nOs quatro movimentos, com o cursor mostrando cada âncora: o terceiro relógio ao lado dos outros dois, o Se do estado com a comparação de fábrica indo para a lixeira, o Se da comparação com a de fábrica ficando, e o Somar -1 dentro do então de dentro.\n\nDois momentos que a gravação precisa ter. O primeiro é o instante em que a listinha dos sinais abre e o biquinho que aponta para a direita é escolhido, com zoom, para ninguém confundir com o igual. O segundo é a partida longa, que mostra o jogo apertando de verdade depois de trinta segundos.\n\nO aviso do sinal fica, agora curto, porque a régua já mostrou acontecendo: “se você deixar no igual, o jogo não mostra erro nenhum, e a base nunca muda. Foi o que você viu na régua.”\n\nE o motivo do freio, que é a ideia da aula: sem o -9 o jogo aceleraria para sempre, e depois de dois minutos ninguém conseguiria nada. Todo acelerador precisa de um freio.\n\nO número do limite e o número do relógio são escolha de quem constrói, e a seção da entrega é onde isso é oferecido. Aqui a fala usa -9 e 5 segundos como o exemplo da gravação, sem dizer que são o certo.\n\nVem de video-relogio-aceleracao. A fala se aproveita, encurtando a explicação dos números negativos, que passou para a cena da seção 3. Sai inteiro o video-comparar-negativos.\n\nCorreção de endereços obrigatória: Jogo 2D, Tempo, Quadros e intervalos para o A cada segundos, e Jogo 2D, Jogo e telas, Telas e partida para o o estado do jogo é __ ?.\n\nDuração alvo: 125 a 145 segundos."
-    },
-    {
-      "key": "fala-antes-da-aceleracao",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "O seu jogo já acelera, mas tem coisa acontecendo lá dentro que a partida não mostra. Aqui você aperta o botão que passa 5 segundos quantas vezes quiser, e olha o número de cada cacto que nasce."
-      }
-    },
-    {
-      "key": "experiencia-aceleracao",
-      "content": {
-        "kind": "interactive",
-        "title": "Acelere com um limite",
-        "instructions": "Aperte Passar 5 segundos e acompanhe a base descendo. Olhe onde ela para, olhe o número de cada cacto que nasce, e depois desligue a condição.",
-        "hints": [
-          "Aperte Passar 5 segundos várias vezes e olhe até onde a base desce.",
-          "Com a base no -9 e a condição ligada, aperte Passar 5 segundos até nascer um cacto -10.",
-          "Olhe os cactos que já estavam na pista antes de a base mudar.",
-          "Agora desligue a condição e aperte Passar 5 segundos de novo."
-        ],
-        "required": true,
-        "prediction": {
-          "context": {
-            "label": "A base parada no limite",
-            "explanation": "A base desceu até -9 e a condição a segurou ali. Cada cacto que nasce recebe a base menos um sorteio de 0 a 1."
-          },
-          "prompt": "Com a base parada em -9, pode nascer um cacto mais rápido que -9?",
-          "choices": [
-            {
-              "id": "pode",
-              "label": "Pode, porque o sorteio é descontado depois da base"
-            },
-            {
-              "id": "nao-pode",
-              "label": "Não, o limite segura todo mundo em -9",
-              "shows": "Olhe o número escrito em cada cacto que nasce, e não a base: o sorteio entra depois dela."
-            }
-          ],
-          "correctChoiceId": "pode"
-        },
-        "activity": {
-          "type": "experimentation",
-          "scene": "acceleration",
-          "cenario": "corre-dino",
-          "cast": {
-            "obstacle": {
-              "name": "cacto",
-              "gender": "m"
-            }
-          }
-        }
-      }
-    },
-    {
-      "key": "video-balanceamento",
-      "plannedVideo": "Título: Escolha o quanto o seu jogo aperta\n\nA demonstração por extremos, conduzida pela narração, nos dois campos, com uma partida curta em cada troca.\n\nPrimeiro o limite. Troca o -9 por -7 e joga: o jogo acelera pouquinho e fica tranquilo até o fim. Depois -14, e ele fica quase impossível lá na frente.\n\nDepois o ritmo. O relógio em 2, e o jogo endurece logo. O relógio em 10, e demora tanto que a partida fica sem graça.\n\nA fala nomeia o que está acontecendo: escolher o quanto o jogo fica difícil e com que rapidez tem nome nos estúdios de verdade, chama balanceamento, e é um trabalho inteiro que gente faz por semanas antes de lançar um jogo.\n\nDevolve a escolha sem rotular: “os meus ficaram em -9 e 5 segundos, e os seus podem ser outros. A conferência aceita o limite de -14 a -7 e o relógio de 2 a 10, então escolhe o que o seu jogo pedir.”\n\nEstes são os dois últimos campos do curso que ficam sendo de quem constrói, e é a última vez que o jogo do professor vira o jogo dela. A fala pode dizer isso.\n\nVem de video-descricao-final, trecho do meio.\n\nCorte obrigatório: saem as três partidas comparadas com as da Aula 9, conforme a orientação já registrada.\n\nDuração alvo: 55 a 70 segundos."
-    },
-    {
-      "key": "fala-teste-final",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Clica na área do jogo e joga. Confere o começo pela tecla e pelo toque, o pulo, a batida, o placar subindo e o voltar a jogar. Depois sobrevive o máximo que der e repara se o jogo vai apertando. Se a partida acabar cedo, tudo bem: você já viu a base inteira na experiência de hoje. Não precisa bater recorde para terminar."
-      }
-    },
-    {
-      "key": "video-ponte",
-      "plannedVideo": "Título: O que tem embaixo dos seus blocos\n\nNa barra superior do Estúdio Completo, clicar em Ponte no seletor de modos. Com blocos e código lado a lado, abrir a aba script.js. Caminho conferido no código do seletor de modos e do BridgeMode em 20/09/2026; na gravação, conferir apenas o enquadramento.\n\nCom o painel aberto, a narração lê o código junto e aponta três coisas reconhecíveis: o sprite dino com seu nome canônico; o grupo cactos e o sorteio; e a variável velocidade com o limite que quem constrói escolheu.\n\nA fala não apressa e não exagera: “esses blocos coloridos não são um brinquedo. Cada um deles vira código de programação de verdade, e é esse aqui. Tudo o que você montou está escrito nesse painel, do jeito que um programador escreveria. Você não estava brincando de programar. Você estava programando. Só que com peças que já cabem na sua mão hoje. Quem escreve as letrinhas faz exatamente a mesma coisa.”\n\nA Ponte não vira cena, e é de propósito: a coisa real é mais forte, porque é o projeto dela, com o nome do sprite dela, e ela pode abrir de novo depois.\n\nVem de video-fecho-editorial, trecho da Ponte, que hoje divide um clipe só com a despedida. São coisas de naturezas diferentes: esta é uma descoberta, e num clipe só ela virava item de lista. A fala se aproveita, a tela é nova.\n\nDuração alvo: 60 a 75 segundos."
-    },
-    {
-      "key": "video-fecho-curso",
-      "plannedVideo": "Título: Você fez um jogo inteiro\n\nQuatro movimentos, nesta ordem.\n\n1. O que ela tem nas mãos, item por item, com o jogo rodando ao lado. Um cenário que se mexe. Um dino que pula e faz barulho só quando está no chão. Cactos que nascem sorteados, do lado de fora da tela. Uma faxina limpando quem já foi embora. Uma colisão justa. Um placar, uma tela de início e uma tela de fim. E um jogo que fica mais difícil quanto melhor ela joga. A lista é longa de propósito: cada peça é reconhecível e lembra a aula em que entrou.\n\n2. O que ela fez, sem hype e sem falar de dom: sentou, uma peça de cada vez, treze aulas seguidas, até o fim. Isso é o que dá para dizer com honestidade, e é bastante.\n\n3. O convite, que é a melhor parte e não é tarefa: chamar alguém para jogar e olhar a cara da pessoa quando ela bate no primeiro cacto.\n\n4. O que a Comunidade faz com isso. O projeto entregue já conta. Publicar é uma escolha, para depois, e não é o que fecha o curso: se quiser, o Compartilhar libera depois do envio, ela escreve um resumo, gera a capa e publica, e o jogo ganha um link e aparece no Mural junto com os jogos dos outros criadores. O curso fica marcado na Jornada do Criador, com os troféus, e é ali que dá para ver tudo o que já foi construído.\n\nE a despedida, sem promessa de futuro que não se pode cumprir: quando bater a vontade de fazer o próximo, tem mais curso esperando na Comunidade.\n\nProibições registradas, que valem como direção de gravação. Não existe certificado neste curso, e o fecho não pode prometer um. Nenhum número de XP é citado. Publicar e compartilhar não são requisito de conclusão e não podem ser ditos como se fossem. Os degraus internos da trilha do Dino Corredor não entram: degrau é planejamento interno e não é conversa com quem está terminando o curso.\n\nVem de video-fecho-editorial, o resto. A fala se aproveita em parte: saem o passo a passo de publicar como tarefa e a promessa de XP.\n\nDuração alvo: 75 a 90 segundos."
-    },
-    {
-      "key": "quiz-final",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "No exemplo do vídeo, a base parou em -9 e o sorteio descontou 1. O cacto que nasceu recebeu quanto?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "-10."
-              },
-              {
-                "id": "b",
-                "label": "-9, obrigatoriamente."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O limite segura a base, e o sorteio é descontado depois dela."
-          },
-          {
-            "id": "q2",
-            "prompt": "Qual pergunta deixa a base acelerar até o limite que você escolheu?",
-            "choices": [
-              {
-                "id": "b",
-                "label": "O valor da variável velocidade igual ao limite."
-              },
-              {
-                "id": "a",
-                "label": "O valor da variável velocidade maior que o limite."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Começando em -5, a igualdade seria falsa já na primeira vez, e a base ficaria parada para sempre."
-          },
-          {
-            "id": "q3",
-            "prompt": "Mudar a base troca a velocidade dos cactos que já estão na pista?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Não. Os novos consultam a base ao nascer."
-              },
-              {
-                "id": "b",
-                "label": "Sim. Todos passam a usar o valor novo na hora."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Cada cacto guarda a velocidade que recebeu quando foi criado."
-          }
-        ]
-      }
     }
   ],
   "sections": [
     {
-      "key": "jogo-nao-aperta",
-      "title": "O seu jogo não aperta",
-      "intent": "presentation",
-      "objective": "Sentir a última dor do curso: quem sobrevive bastante encontra vinte segundos idênticos, e quem vai bem merecia um desafio maior.",
-      "blockKeys": ["video-jogo-nao-aperta"],
+      "key": "regua-negativos",
+      "title": "Compare os números negativos",
+      "intent": "exploration",
+      "objective": "Compare os sinais e acompanhe a régua de -5 até -9.",
+      "blockKeys": ["video-regua-negativos", "fala-regua-negativos", "experiencia-number-line"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-jogo-nao-aperta"]
+        "blockIds": ["video-regua-negativos", "experiencia-number-line"]
+      }
+    },
+    {
+      "key": "o-que-o-freio-segura",
+      "title": "Compare a base com cada cacto",
+      "intent": "exploration",
+      "objective": "Compare base, cactos novos e antigos; depois desligue a condição e avance.",
+      "blockKeys": [
+        "video-o-que-o-freio-segura",
+        "fala-o-que-o-freio-segura",
+        "experiencia-aceleracao"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-o-que-o-freio-segura", "experiencia-aceleracao"]
       }
     },
     {
       "key": "numero-que-manda",
-      "title": "Um número que manda em todos os cactos",
+      "title": "Guarde a velocidade base",
       "intent": "application",
-      "objective": "Criar a variável velocidade com -5 e fazer o nascimento do cacto ler ela, mudando de onde vem a velocidade sem mudar nada na tela.",
-      "blockKeys": [
-        "fala-conferir-vx",
-        "fala-criar-velocidade",
-        "fala-ler-a-base",
-        "video-memoria-e-leitura"
-      ],
+      "objective": "Prepare velocidade em -5 e use sua leitura à esquerda da conta do vx.",
+      "blockKeys": ["video-numero-que-manda", "fala-numero-que-manda"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-numero-que-manda"],
         "projectChecks": [
           {
             "id": "velocidade-inicial",
@@ -1171,38 +1612,58 @@
       }
     },
     {
-      "key": "regua-negativos",
-      "title": "A régua dos números negativos",
-      "intent": "exploration",
-      "objective": "Sentir que -5 é maior que -9, e ver o sinal errado responder não para sempre, sem aviso nenhum na tela.",
-      "blockKeys": ["fala-regua-negativos", "experiencia-number-line"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["experiencia-number-line"]
-      }
-    },
-    {
-      "key": "acelerador-e-freio",
-      "title": "O acelerador, e o freio dele",
+      "key": "relogio-da-dificuldade",
+      "title": "Prepare o relógio da dificuldade",
       "intent": "application",
-      "objective": "Montar a última construção do curso: um relógio próprio, o Se do estado, o Se da comparação lendo a base, e o Somar -1.",
-      "blockKeys": [
-        "fala-relogio-acelerador",
-        "fala-se-do-estado",
-        "fala-se-da-comparacao",
-        "fala-campos-da-comparacao",
-        "fala-somar-menos-um",
-        "video-acelerador"
-      ],
+      "objective": "Prepare um relógio de 5 segundos com Se jogando, separado dos outros.",
+      "blockKeys": ["video-relogio-da-dificuldade", "fala-relogio-da-dificuldade"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-relogio-da-dificuldade"],
+        "projectChecks": [
+          {
+            "id": "relogio-dificuldade",
+            "label": "Prepare um relógio de 5 segundos com Se jogando.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 5
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_if_else",
+                  "inputBlocks": {
+                    "COND": {
+                      "blockType": "sz_g2d_scene_is",
+                      "fields": {
+                        "SCENE": "jogando"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "acelerador-e-freio",
+      "title": "Diminua a base até o limite",
+      "intent": "application",
+      "objective": "Some -1 em velocidade somente jogando e enquanto a base for maior que -9.",
+      "blockKeys": ["video-acelerador-e-freio", "fala-acelerador-e-freio"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-acelerador-e-freio"],
         "projectChecks": [
           {
             "id": "acelerar-com-limite",
@@ -1268,31 +1729,59 @@
       }
     },
     {
-      "key": "o-que-o-freio-segura",
-      "title": "O que o freio segura, e o que ele não segura",
-      "intent": "exploration",
-      "objective": "Ver a base descendo, parando no limite, um cacto nascendo mais rápido que o limite mesmo assim, e os cactos antigos guardando a velocidade deles.",
-      "blockKeys": ["fala-antes-da-aceleracao", "experiencia-aceleracao"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["experiencia-aceleracao"]
-      }
-    },
-    {
-      "key": "dificuldade-e-entrega",
-      "title": "Escolha a dificuldade, teste tudo e entregue",
-      "intent": "delivery",
-      "objective": "Escolher os dois últimos números que ficam sendo seus, rodar o jogo inteiro de ponta a ponta e enviar o projeto terminado.",
-      "blockKeys": ["video-balanceamento", "fala-teste-final", "projeto"],
+      "key": "descricao-completa",
+      "title": "Complete a descrição dos controles",
+      "intent": "application",
+      "objective": "Descreva a tarefa e os três controles que já funcionam.",
+      "blockKeys": ["video-descricao-completa", "fala-descricao-completa"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-balanceamento", "projeto"],
+        "blockIds": ["video-descricao-completa"],
+        "projectChecks": [
+          {
+            "id": "descricao-completa",
+            "label": "Descreva objetivo e os três controles em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_stage_description",
+              "area": "start",
+              "fields": {
+                "DESCRIPTION": "Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Confira o que você construiu",
+      "intent": "explanation",
+      "objective": "Retome os sorteios e a dificuldade da corrida nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.",
+      "blockKeys": ["fala-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste e envie seu jogo",
+      "intent": "delivery",
+      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "velocidade-inicial",
@@ -1515,36 +2004,20 @@
               "blockType": "sz_g2d_draw_hitbox",
               "count": 0
             }
+          },
+          {
+            "id": "descricao-completa",
+            "label": "Descreva objetivo e os três controles em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_stage_description",
+              "area": "start",
+              "fields": {
+                "DESCRIPTION": "Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela"
+              }
+            }
           }
         ]
-      }
-    },
-    {
-      "key": "embaixo-dos-blocos",
-      "title": "O que tem embaixo dos seus blocos",
-      "intent": "closing",
-      "objective": "Abrir a Ponte no projeto e reconhecer, no código de verdade, o dino, o cacto, o sorteio e a velocidade que foram montados em blocos.",
-      "blockKeys": ["video-ponte"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-ponte"]
-      }
-    },
-    {
-      "key": "voce-fez-um-jogo",
-      "title": "Você fez um jogo inteiro",
-      "intent": "closing",
-      "objective": "Fechar treze aulas com a lista do que foi construído, o convite para alguém jogar, o que a Comunidade faz com o projeto, e a despedida.",
-      "blockKeys": ["video-fecho-curso", "quiz-final"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-fecho-curso", "quiz-final"]
       }
     }
   ]

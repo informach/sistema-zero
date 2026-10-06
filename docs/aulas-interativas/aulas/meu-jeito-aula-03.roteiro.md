@@ -1,185 +1,113 @@
-# Roteiro de gravação · O Jogo do Meu Jeito · Aula 03 · O motor da sua nave acende
+# Roteiro de gravação · O Jogo do Meu Jeito · Aula 3
 
-## Especificações
+**Faça o motor da nave pulsar**
 
-- **Formato:** gravação de tela com narração, no Pinta.
-- **Duração:** 315 a 400 segundos de clipes; 790 palavras de narração, cerca de 5.8 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** a nave dela na galeria do Pinta, pixel art, Personagem, 32 × 32, com cor e volume, uma animação chamada `parado` com um quadro só, e cerca de quatro fileiras de quadradinhos vazias embaixo.
-- **Conceitos nomeados:** quadro de animação, duplicação, mudança local, prévia, fantasma do quadro anterior.
-- **Dor desta aula:** Dois quadros iguais não produzem o pulso; o segundo precisa mudar só a ponta do fogo.
-- **Vitória do dia:** o motor da nave dela aceso, pulsando sozinho na prévia.
-- **Valores:** Nave 32 por 32; animação voando com dois quadros, 8 quadros por segundo.
-- **Campos livres:** Cor, forma e comprimento do fogo, respeitando a borda do quadro.
-- **Nota de produção:** Mostrar que a Prévia já roda sozinha. Antes de gravar o Estúdio nas aulas posteriores, confirmar que voando está em 8 quadros por segundo.
-- **O que NÃO entra, e por quê:** Não criar mais quadros nem alterar a velocidade da animação nesta aula.
+Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos.
 
-## Seção 1. O que a gente vai fazer hoje
+Entrada: Nave em pixel art com espaço reservado para o fogo. Saída: Nave com animação voando de dois quadros a 8 quadros por segundo.
 
-### Clipe `video-abertura` · O motor pulsando na prévia
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 62
+Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
-**Na tela:** Mostrar a nave do Júlio na Prévia com o fogo pulsando; manter corpo fixo no enquadramento.
+## Seção 1. Compare dois desenhos e uma animação
+
+### Clipe `video-quadros` · Compare dois desenhos e uma animação
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
 
 **Narração:**
-> "Olha o motor desta nave. O corpo fica no lugar, e só a ponta do fogo cresce e diminui. Hoje
-> você vai fazer isso na sua: desenhar um fogo, duplicar o quadro e mudar só um pedacinho da
-> cópia."
+> "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.
+>
+> Compare os dois desenhos parados, o ritmo lento, o rápido e os quadros iguais. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
 
-**Na tela:** Mostrar dois quadros pequenos na faixa, sem ensinar ainda os botões.
+**Zappy na página (não gravar):** Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.
 
-**Narração:**
-> "O seu fogo pode ter outra cor e outro formato. O que faz o movimento aparecer é a diferença
-> entre os dois quadros."
+## Seção 2. Desenhe o primeiro fogo
 
-## Seção 2. Dois desenhos viram movimento
+### Clipe `video-primeiro-fogo` · Desenhe o primeiro fogo
 
-### Clipe `video-livrinho` · A faixa de quadros, e o livrinho
-**Duração alvo:** 35 a 45 segundos · **Palavras:** 88
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a faixa Spritesheet, linha parado e um quadro; folhear rapidamente duas páginas desenhadas como comparação.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Lá embaixo no Pinta fica a **Spritesheet**, a faixa da animação. Agora a sua nave tem uma
-> linha chamada **parado** e um quadro só. É como um livrinho: cada página guarda um desenho
-> parado, e trocar páginas rápido cria movimento."
+> "Abra sua nave no Pinta. No quadro 1, use Lápis e uma cor quente para desenhar o fogo nas linhas reservadas embaixo. Faça uma chama pequena, ainda com espaço para crescer um pouco no quadro seguinte. Você pode colocar um centro mais claro.
+>
+> Confira se a chama encosta no motor e continua dentro da grade. O corpo e a cabine ficam como estavam. Aguarde o salvamento e volte à aula.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
 
-**Na tela:** Mostrar quadros iguais lado a lado; Prévia sem pulso.
+**Zappy na página (não gravar):** No primeiro quadro, desenhe uma chama pequena abaixo do motor.
 
-**Narração:**
-> "Se as duas páginas forem iguais, nada parece se mexer. Por isso vamos copiar o primeiro
-> quadro e mudar só a ponta do fogo no segundo. Este **quadro da animação** é um desenho; não é
-> o mesmo quadro do jogo que serve para contar o tempo dos blocos."
+## Seção 3. Use o quadro anterior como guia
 
-## Seção 3. Desenhe o fogo no primeiro quadro
+### Clipe `video-fantasma` · Use o quadro anterior como guia
 
-### Clipe `video-fogo-base` · O primeiro fogo, no quadro 1
-**Duração alvo:** 55 a 70 segundos · **Palavras:** 156
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Na aula, apontar Abrir meu Pinta; abrir cartão nave; escolher cor e Lápis.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
 
 **Narração:**
-> "Clica em **Abrir meu Pinta**, abre o cartão **nave** na galeria e pega o **Lápis**. Escolhe a
-> cor do seu fogo. Eu vou usar uma cor forte para o contorno e uma mais clara para o meio, mas
-> essa escolha é sua."
+> "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.
+>
+> Observe o fogo do quadro 2 com e sem a guia do anterior. Confira também o limite do quadro. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
 
-**Na tela:** No quadro 1, desenhar fogo saindo do motor sem passar da borda; manter espaço abaixo.
+**Zappy na página (não gravar):** Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.
 
-**Narração:**
-> "Desenha o fogo saindo de baixo da nave, encostado no motor. Deixa um pouco de espaço entre a
-> ponta e a borda inferior do quadro: no segundo quadro ele vai crescer. Se a ponta já encostou
-> na borda, encurta agora."
+## Seção 4. Mude só o fogo no segundo quadro
 
-**Na tela:** Acrescentar miolo mais claro, se desejado; mostrar nave intacta e espaço restante.
+### Clipe `video-segundo-fogo` · Mude só o fogo no segundo quadro
 
-**Narração:**
-> "Se quiser, risca um miolo com outra cor. Confere que o corpo da nave ficou como estava e que
-> o fogo tem espaço para crescer dentro do mesmo quadro."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Pinta**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Pause aqui e clique em **Abrir meu Pinta**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. No quadro 1, o fogo encosta no motor e ainda sobra
-> espaço dentro da borda de baixo para ele crescer?"
+> "Na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Selecione o quadro 2 e ligue Fantasma do quadro anterior. Agora você pode comparar os dois desenhos.
+>
+> Com Selecionar e mover, cerque somente a ponta do fogo. Mova essa ponta um quadradinho para baixo. Solte a seleção e preencha com Lápis o espaço que abriu. Não selecione nem mova o corpo da nave. Se a chama encostar na borda, diminua a mudança para caber inteira.
+>
+> Troque entre os quadros 1 e 2. Confira se corpo e cabine ficam no mesmo lugar e se só o fogo cresce. O fantasma é uma guia; desligue para ver o desenho sem ela. Aguarde o salvamento.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
 
-## Seção 4. Duplique e alongue só a ponta
+**Zappy na página (não gravar):** Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar.
 
-### Clipe `video-segundo-quadro` · Duplicar, puxar a ponta e fechar o vão
-**Duração alvo:** 80 a 95 segundos · **Palavras:** 171
+## Seção 5. Dê nome e ritmo à animação
 
-**Na tela:** Na fileira da Spritesheet, localizar Duplicar quadro pela dica ao parar o mouse e clicar; mostrar segundo quadradinho aceso.
+### Clipe `video-voando` · Dê nome e ritmo à animação
 
-**Narração:**
-> "Na linha da animação, para o mouse nos botõezinhos até aparecer **Duplicar quadro**. Clica.
-> Nasceu o segundo quadro, igual ao primeiro. Antes de desenhar, confere que o quadradinho aceso
-> é o da direita; é nele que vamos mexer."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Selecionar e mover; arrastar retângulo só ao redor da ponta de baixo do fogo; descer um pouco, mostrando vão.
-
-**Narração:**
-> "Pega **Selecionar e mover**. Faz um retângulo em volta da ponta do fogo, sem pegar o corpo da
-> nave. Arrasta a ponta um pouco para baixo. Ficou um vão no meio, porque mover tira os
-> quadradinhos do lugar antigo."
-
-**Na tela:** Pegar Lápis e completar o vão nas cores correspondentes; mostrar Prévia pulsando.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Volta ao **Lápis** e preenche o vão com as mesmas cores que usou. Se há duas cores, completa
-> cada uma na sua parte. Olha a **Prévia** à direita: ela já troca os quadros sozinha. O corpo
-> fica parado e a ponta cresce e diminui."
+> "Na área Spritesheet, abra Renomear animação ao lado do nome atual, parado. Escreva voando e confirme. No controle de Velocidade, deixe 8 quadros por segundo. Ligue a Prévia.
+>
+> Confira: o fogo pulsa, a nave não salta de lugar e a chama não é cortada na borda. Se o corpo treme, pare a Prévia e compare os dois quadros antes de corrigir. Confirme que há dois quadros na animação voando. Espere o salvamento.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
 
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Pinta**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
+**Zappy na página (não gravar):** Nomeie a animação voando e confira os dois quadros a 8 por segundo.
 
-**Narração:**
-> "Pause aqui e clique em **Abrir meu Pinta**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. Na Prévia, o corpo da nave fica no lugar enquanto a
-> ponta do fogo cresce e diminui, sem passar da borda? Compare os dois quadros."
+## Seção 6. Confira sua nave animada
 
-## Seção 5. Quanto o seu fogo cresceu?
+**Zappy na página (não gravar):** Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.
 
-### Clipe `video-fantasma` · Onde fica o botão do fantasma
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 69
+Sem vídeo nem ferramenta. O quiz vem imediatamente depois do Zappy. Correção com explicação, tentativas ilimitadas e sem espera.
 
-**Na tela:** Com segundo quadro ativo, localizar Fantasma do quadro anterior na mesma fileira; clicar.
+## Seção 7. Entregue a nave animada
 
-**Narração:**
-> "Para comparar dois quadros sem ir e voltar entre eles, na mesma fileira de botões procura
-> **Fantasma do quadro anterior**. Clica e vê o desenho de antes aparecer tracejado por cima."
+### Clipe `video-entrega` · Entregue a nave animada
 
-**Na tela:** Mostrar ponta atual e contorno fantasma, sem pintar sobre o guia.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "O fantasma marca onde a ponta estava no primeiro quadro. É uma ajuda da tela, não faz parte
-> do desenho. Você não pinta nem apaga sobre ele. Na bancada desta seção, você compara o quanto
-> o fogo mudou."
+> "Antes de enviar, confira no seu trabalho: nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.
+>
+> Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
 
-## Seção 6. O nome que viaja com a sua animação
-
-### Clipe `video-nome-voando` · De parado para voando
-**Duração alvo:** 45 a 55 segundos · **Palavras:** 126
-
-**Na tela:** Mostrar linha parado; localizar Renomear animação após separador, clicar e escrever voando minúsculo; confirmar.
-
-**Narração:**
-> "A linha ainda se chama **parado**, mas a nave está voando. Na fileira de botões da
-> Spritesheet, depois do risquinho separador, clica em **Renomear animação**. Apaga parado,
-> escreve **voando**, tudo minúsculo, e confirma em **Renomear**."
-
-**Na tela:** Mostrar nome voando na faixa e na Prévia; conferir dois quadros a 8 fps, corpo fixo e fogo em ambos.
-
-**Narração:**
-> "O nome apareceu na linha e na Prévia. Confere **dois quadros** e **8 quadros por segundo**,
-> que é a velocidade inicial. O fogo precisa estar nos dois, saindo do mesmo lugar; só a ponta
-> muda. Esse nome voando vai aparecer no Estúdio quando a arte entrar no jogo."
-
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Pinta**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
-
-**Narração:**
-> "Pause aqui e clique em **Abrir meu Pinta**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. A animação está chamada voando, com dois quadros, e na
-> Prévia o fogo pulsa sem a nave saltar?"
-
-## Seção 7. Confira, envie e fecha
-
-### Clipe `video-fecho` · A nave que acende sozinha
-**Duração alvo:** 50 a 65 segundos · **Palavras:** 118
-
-**Na tela:** Mostrar Prévia rodando, depois dois quadros lado a lado; esperar Salvo e Guardado na sua conta.
-
-**Narração:**
-> "Na Prévia, o corpo da nave fica firme e o fogo pulsa. Compara os dois quadros: o segundo é
-> uma cópia com a ponta diferente. Cor, forma e comprimento são escolhas suas. Espera **Salvo**
-> e **Guardado na sua conta**."
-
-**Na tela:** Voltar à galeria pela seta esquerda; escolher o mesmo cartão nave na entrega; não prometer miniatura animada.
-
-**Narração:**
-> "Volta à galeria e envia o mesmo cartão **nave** de antes, agora com a animação **voando**. A
-> miniatura do cartão pode ficar parada; para ver o movimento, abre a **Prévia** do desenho. Se
-> o cartão demorar a aparecer na entrega, confere o salvamento e atualiza a lista."
-
-**Na tela:** Mostrar nave animada na Prévia; gancho da pedra.
-
-**Narração:**
-> "Hoje você deu movimento ao motor mudando só uma parte de uma cópia. Na próxima aula, vai
-> desenhar uma pedra com formas e pontos, de um jeito diferente dos quadradinhos da nave."
+**Zappy na página (não gravar):** Confira nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Envie a arte desta aula pela galeria do Pinta desta seção.

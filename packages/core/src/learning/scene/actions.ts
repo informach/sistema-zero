@@ -49,6 +49,9 @@ export const SCENE_IDS = [
   'found-counter',
   'collect-and-remember',
   'lighthouse-key',
+  // O Dia 1 do Desafio (05/10/2026): o andar do personagem quadro a quadro, a velocidade e o limite
+  // da tela, antes de cada um virar bloco no Estúdio. Três usos, um por caso (`setup.goals`).
+  'lighthouse-walk',
   'restart',
   'hitbox',
   'score',
@@ -141,6 +144,14 @@ export type SceneAction =
   | { type: 'collect-key' }
   | { type: 'leave-key' }
   | { type: 'restart-collection' }
+  /** `lighthouse-walk`: a seta para a direita segurada (ou solta), como o teclado do jogo. */
+  | { type: 'hold-arrow'; held: boolean }
+  /** `lighthouse-walk`: a velocidade do bloco de mover, 1 ou 3 (`LIGHTHOUSE_WALK_SPEEDS`). */
+  | { type: 'walk-speed'; speed: LighthouseWalkSpeed }
+  /** `lighthouse-walk`: o bloco "Manter o sprite dentro da tela" entra ou sai da regra. */
+  | { type: 'keep-on-screen'; enabled: boolean }
+  /** `lighthouse-walk`: o personagem volta ao começo e o quadro zera; as escolhas ficam. */
+  | { type: 'restart-walk' }
   | { type: 'find-character'; id: 0 | 1 | 2 }
   | { type: 'look-around' | 'restart-search' }
   | { type: 'value-source'; source: 'fixed' | 'read' }
@@ -287,6 +298,14 @@ export type SceneAction =
   | { type: 'light'; side: 'left' | 'right' }
   | { type: 'shade'; on: boolean }
 
+/**
+ * As duas velocidades da `lighthouse-walk`: a do projeto do Desafio (3, a do bloco "Mover sprite
+ * personagem em 4 direções com setas, velocidade 3") e a de comparação (1). O DTO do servidor e o
+ * editor do admin leem daqui.
+ */
+export const LIGHTHOUSE_WALK_SPEEDS = [1, 3] as const
+export type LighthouseWalkSpeed = (typeof LIGHTHOUSE_WALK_SPEEDS)[number]
+
 /** Os três degraus do "Ver os pontos" da cena `mesh`, do que mostra menos ao que mostra mais. */
 export const MESH_LEVELS = ['nada', 'metade', 'tudo'] as const
 export type MeshLevel = (typeof MESH_LEVELS)[number]
@@ -337,6 +356,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'found-counter': [],
   'collect-and-remember': [],
   'lighthouse-key': [],
+  'lighthouse-walk': [],
   restart: ['restart'],
   hitbox: [],
   score: ['condition'],
@@ -560,6 +580,9 @@ export const SCENE_FRAME_RATE = {
   'entity-state': 1,
   'delta-time': 10,
   'circle-collision': 10,
+  // ⚠️ 30 por segundo, o ritmo que a criança vê no Rodar (05/10/2026): com velocidade 3 o personagem
+  // anda 90 por segundo e chega à borda do Farol em pouco mais de 2 s; o "Avançar 1 quadro" anda UM.
+  'lighthouse-walk': 30,
 } as const satisfies Partial<Record<SceneId, number>>
 
 /** Quantos quadros por segundo esta cena conta, ou `null` para a cena sem relógio. */
@@ -581,6 +604,7 @@ const QUADRO_E_O_ASSUNTO: readonly SceneId[] = [
   'velocity',
   'hold-vs-press',
   'contact',
+  'lighthouse-walk',
 ]
 
 /**
@@ -672,6 +696,14 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
     case 'leave-key':
     case 'restart-collection':
       return scene === 'collect-and-remember'
+    case 'hold-arrow':
+      return scene === 'lighthouse-walk' && typeof value.held === 'boolean'
+    case 'walk-speed':
+      return scene === 'lighthouse-walk' && LIGHTHOUSE_WALK_SPEEDS.some((v) => v === value.speed)
+    case 'keep-on-screen':
+      return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
+    case 'restart-walk':
+      return scene === 'lighthouse-walk'
     case 'find-character':
       return scene === 'found-counter' && (value.id === 0 || value.id === 1 || value.id === 2)
     case 'look-around':

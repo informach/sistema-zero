@@ -1,0 +1,1907 @@
+[
+  {
+    "slug": "aula-01",
+    "title": "Guarde uma cópia para criar do seu jeito",
+    "entry": "Jogo concluído em Nave Contra Asteroides.",
+    "outcome": "Cópia do próprio jogo aberta, nomeada e salva na conta do Estúdio.",
+    "reason": "A antiga abertura exigia um projeto vazio e a falta artificial de extensão antes de copiar o jogo. A nova sequência mostra o resultado, separa aparência de regras e experimenta cópia antes da transferência real. A extensão já acompanha o projeto importado.",
+    "concepts": [
+      [
+        "Aparência e regras",
+        "Experiência same-rules-new-skin antes da cópia.",
+        "Define o que será transformado sem prometer um jogo de regras novas."
+      ],
+      [
+        "Exportar, importar e cópia",
+        "Experiência copy-vs-original antes dos comandos reais.",
+        "A criança vê a independência dos arquivos."
+      ],
+      [
+        "Projeto e salvamento",
+        "Aplicação direta com o próprio jogo.",
+        "Retomada de Nave; não precisa criar um projeto vazio para aprender um caminho."
+      ]
+    ],
+    "sections": [
+      {
+        "key": "jogo-pronto",
+        "title": "Jogue uma versão com artes próprias",
+        "bridge": "Experimente mover a nave e atirar. Observe os desenhos e o fogo; você vai criar as suas próprias artes.",
+        "kind": "exploration",
+        "videoKey": "video-jogo-pronto",
+        "speech": [
+          "Clique na área do jogo abaixo para usar o teclado. Toque na tecla Enter para começar. Use as setas para mover a nave e Espaço para atirar. Repare no fogo da nave e nas pedras: são desenhos feitos para este exemplo. Você vai escolher as cores e as formas dos seus.",
+          "As regras continuam as de Nave Contra Asteroides. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida. Jogue um pouco e siga quando quiser; não precisa vencer nem fazer uma pontuação mínima. Depois, clique em Próxima seção."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "play": true
+      },
+      {
+        "key": "caderno",
+        "title": "Consulte os passos do curso",
+        "bridge": "O caderno fica aqui para consultar, baixar ou imprimir se você quiser.",
+        "kind": "explanation",
+        "videoKey": "video-caderno",
+        "speech": [
+          "O caderno abaixo acompanha as oito aulas. Abra as páginas de copiar o jogo e veja como conferir a cópia no Estúdio. Mais adiante, há referências da nave, do asteroide e dos encaixes dos blocos.",
+          "Você pode ler na tela ou clicar em Baixar e guardar o PDF. Baixar e imprimir são escolhas suas; não precisa fazer isso para seguir a aula. Para seguir, clique em Próxima seção."
+        ],
+        "screen": "Mostrar o PDF real anexado ao bloco, a página da cópia e o botão Baixar. Gravar depois de vincular o arquivo revisado.",
+        "materials": true
+      },
+      {
+        "key": "aparencia-e-regras",
+        "title": "Troque a história, observe as regras",
+        "bridge": "Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.",
+        "kind": "exploration",
+        "videoKey": "video-aparencia-e-regras",
+        "speech": [
+          "Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.",
+          "Compare a lista de regras e o que acontece ao mover e atirar em cada tema. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Troque a história, observe as regras",
+          "instructions": "Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "same-rules-new-skin",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["skin-only", "three-skins", "rule-off"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-tema-e-regra"
+      },
+      {
+        "key": "copias",
+        "title": "Veja o que uma cópia guarda",
+        "bridge": "Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.",
+        "kind": "exploration",
+        "videoKey": "video-copias",
+        "speech": [
+          "Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.",
+          "Observe o que ficou guardado no arquivo e o que muda em cada lado da bancada. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Veja o que uma cópia guarda",
+          "instructions": "Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "copy-vs-original",
+            "cenario": "nave",
+            "setup": {
+              "goals": ["exported", "imported", "independent"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experiencia-copia"
+      },
+      {
+        "key": "exportar",
+        "title": "Baixe o seu jogo concluído",
+        "bridge": "Baixe o projeto que você terminou em Nave Contra Asteroides.",
+        "kind": "application",
+        "videoKey": "video-exportar",
+        "speech": [
+          "Clique em Abrir meu Estúdio nesta seção. Na outra aba, use Mostrar menu, abra Jornada e a trilha do curso Nave Contra Asteroides. No cartão desse curso, clique em Acessar curso e entre na última aula, Termine e recomece a partida. Retome o projeto que você concluiu. Confira início, pontos, vidas e reinício. Se ele abriu vazio, confira sua entrega em Mais opções, O meu jogo, Trazer o que eu enviei. Se ainda falta terminar, conclua esse jogo antes de fazer a cópia.",
+          "No Estúdio dessa aula, abra Mais opções, no botão de três pontinhos. Em Levar o jogo, clique em Baixar o projeto. Aguarde o arquivo que termina em .szproject.json na pasta de downloads do seu aparelho. Ele contém o projeto que você está vendo. Confira o nome do arquivo e volte a esta aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "importar",
+        "title": "Abra a cópia no seu Estúdio",
+        "bridge": "Importe o arquivo do seu jogo e escolha um nome para reconhecer a cópia.",
+        "kind": "application",
+        "videoKey": "video-importar",
+        "speech": [
+          "Clique em Abrir meu Estúdio nesta seção. Na outra aba, em Meus Jogos, clique em Importar. Escolha o arquivo .szproject.json que você acabou de baixar. Abra o projeto importado. Os blocos de Jogo 2D vêm com ele.",
+          "Clique no nome do projeto no alto e escreva um nome que você reconheça, como Minha nave. Confirme a edição. Espere Salvo. Confira a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo importou; não apague os outros trabalhos.",
+          "Volte a Meus Jogos pelo nome do Estúdio na barra de cima e abra novamente esse cartão. Veja se o nome e os blocos continuam lá. Esse é o cartão que você vai retomar nas próximas aulas. Volte à aba da aula para seguir."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "entrega",
+        "title": "Entregue a cópia do jogo",
+        "bridge": "Confira o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.",
+        "kind": "delivery",
+        "videoKey": "video-entrega",
+        "speech": [
+          "Antes de enviar, confira no seu trabalho: o cartão tem o nome que você escolheu; o jogo abre, move a nave e atira. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
+          "Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio",
+        "final": true
+      }
+    ],
+    "gallery": {
+      "kind": "studio",
+      "purpose": "submission",
+      "initialProject": {
+        "formatVersion": 2,
+        "projectTools": [],
+        "id": "manifest-meu-jeito-1",
+        "name": "Minha criação",
+        "createdAt": 0,
+        "updatedAt": 0,
+        "mode": "blocks",
+        "files": {
+          "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Minha criação</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+          "style.css": "",
+          "script.js": ""
+        },
+        "extraFiles": [],
+        "assets": [],
+        "ir": {
+          "version": 2,
+          "html": [],
+          "css": [],
+          "behavior": {
+            "start": [],
+            "events": [],
+            "loops": []
+          },
+          "extensions": []
+        },
+        "blocksState": {
+          "blocks": {
+            "languageVersion": 0,
+            "blocks": []
+          }
+        },
+        "installedExtensions": [
+          {
+            "id": "game-2d",
+            "version": "1.2.0",
+            "installedAt": 0
+          }
+        ]
+      },
+      "gallery": {
+        "minItems": 1,
+        "maxItems": 1
+      }
+    },
+    "legacyKeys": [
+      "video-abertura",
+      "video-caderno",
+      "materiais-caderno",
+      "fala-projeto-teste",
+      "video-lista-e-projeto",
+      "fala-de-proposito",
+      "ajuda-projeto-novo",
+      "fala-extensao",
+      "fala-jogo-2d-de-volta",
+      "ajuda-extensao",
+      "video-extensao",
+      "fala-copia",
+      "experiencia-copia",
+      "fala-achar-dia-5",
+      "fala-exportar-importar",
+      "fala-testar-renomear",
+      "video-importar",
+      "fala-fecho",
+      "fala-qual-cartao",
+      "entrega-galeria-v6",
+      "video-fecho",
+      "quiz-v6"
+    ],
+    "previousRetireKeys": [
+      "video-abertura-v6",
+      "video-lista",
+      "video-projeto-teste",
+      "conferir-projeto-teste",
+      "video-ponte",
+      "conferir-importar",
+      "video-guardar",
+      "orientacao-guardar",
+      "conferir-guardar",
+      "video-fecho-v6",
+      "orientacao-entrega-v6"
+    ]
+  },
+  {
+    "slug": "aula-02",
+    "title": "Desenhe sua nave em pixel art",
+    "entry": "Cópia do jogo salva no Estúdio.",
+    "outcome": "Arte nave em pixel art, 32 × 32, com corpo, cabine, luz e sombra; espaço para o motor.",
+    "reason": "Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; luz e sombra precedem o acabamento. O desenho continua autoral: medidas e nomes permitem a integração, sem impor cores ou uma silhueta única.",
+    "concepts": [
+      [
+        "Pixel e vetor",
+        "Experiência pixel-vector na abertura.",
+        "A ampliação revela o tipo de borda antes da escolha de técnica."
+      ],
+      ["Simetria", "Experiência symmetry antes do contorno.", "Mostra o eixo e o limite do balde."],
+      [
+        "Luz e sombra",
+        "Experiência shading antes do acabamento.",
+        "Liga o lado iluminado aos tons escolhidos."
+      ],
+      [
+        "Criar arte, Linha e Balde",
+        "Demonstração seguida de desenho no Pinta.",
+        "São gestos da interface; sua consequência é visível na própria arte."
+      ]
+    ],
+    "sections": [
+      {
+        "key": "bordas",
+        "title": "Aproxime duas formas de desenhar",
+        "bridge": "Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.",
+        "kind": "exploration",
+        "videoKey": "video-bordas",
+        "speech": [
+          "Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.",
+          "Olhe as bordas e os detalhes ao aproximar e afastar. Compare as duas técnicas na mesma ampliação. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Aproxime duas formas de desenhar",
+          "instructions": "Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "pixel-vector",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["stairs", "smooth", "alike"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-bordas"
+      },
+      {
+        "key": "nova-nave",
+        "title": "Prepare a folha da nave",
+        "bridge": "Crie uma arte de personagem em pixel art, tamanho Médio, chamada nave.",
+        "kind": "application",
+        "videoKey": "video-nova-nave",
+        "speech": [
+          "Clique em Abrir meu Pinta nesta seção. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Clique em Começar a desenhar.",
+          "Confira o nome nave e a grade quadrada. Se você já tem a nave deste curso, abra esse trabalho para continuar. Não precisa criar outra igual. Reserve as quatro linhas de baixo da grade para o fogo do motor. Volte à aula para experimentar o espelho antes de desenhar o contorno."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "espelho",
+        "title": "Descubra o que o espelho repete",
+        "bridge": "Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.",
+        "kind": "exploration",
+        "videoKey": "video-espelho",
+        "speech": [
+          "Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.",
+          "Observe onde cada espelho coloca a cópia do traço e o que acontece ao usar o balde. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Descubra o que o espelho repete",
+          "instructions": "Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "symmetry",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["one-side", "two-sides", "axis-decides", "fill-ignores-mirror"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-espelho"
+      },
+      {
+        "key": "contorno",
+        "title": "Feche o contorno da nave",
+        "bridge": "Desenhe um corpo com duas asas e deixe quatro linhas livres embaixo.",
+        "kind": "application",
+        "videoKey": "video-contorno",
+        "speech": [
+          "Na sua nave, escolha uma cor escura para o contorno. Ligue Espelho lado a lado. Escolha Linha e arraste pequenos trechos para desenhar metade da ponta, a lateral e uma asa. O espelho desenha o outro lado. Você escolhe a largura e o formato.",
+          "Feche a base acima das quatro linhas reservadas para o fogo. Aproxime para conferir se não ficou nenhuma abertura entre os trechos do contorno. Use o Lápis para fechar um quadradinho que faltar. Desligue o espelho quando terminar. Confira se a nave cabe na grade e se o espaço do motor continua livre."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "cores",
+        "title": "Pinte o corpo e a cabine",
+        "bridge": "Preencha a nave e desenhe uma cabine dentro do corpo.",
+        "kind": "application",
+        "videoKey": "video-cores",
+        "speech": [
+          "Escolha uma cor para o corpo. Pegue Balde de tinta e clique dentro do contorno. Se a cor escapar para fora, use Desfazer, feche a abertura com Lápis e tente de novo. Nas asas separadas, clique dentro de cada uma para preencher.",
+          "Escolha outra cor e use Lápis ou Linha para desenhar uma cabine dentro do corpo. Mantenha o espaço do motor vazio. Afaste a imagem e confira se você reconhece a nave pequena, como ela vai aparecer no jogo. Aguarde o salvamento antes de voltar à aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "luz",
+        "title": "Mude o lado da luz",
+        "bridge": "Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.",
+        "kind": "exploration",
+        "videoKey": "video-luz",
+        "speech": [
+          "Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.",
+          "Compare a mesma forma com os tons ligados e desligados; acompanhe o lado do sol. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Mude o lado da luz",
+          "instructions": "Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "shading",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["volume", "flat", "side"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experiencia-luz"
+      },
+      {
+        "key": "volume",
+        "title": "Escolha um lado para a luz",
+        "bridge": "Acrescente um tom claro e um escuro sem mudar o formato da nave.",
+        "kind": "application",
+        "videoKey": "video-volume",
+        "speech": [
+          "Na sua nave, decida de qual lado vem a luz. Escolha um tom mais claro da cor do corpo e pinte uma faixa pequena nesse lado com Lápis. Escolha um tom mais escuro e pinte o lado oposto. Faça o mesmo na cabine se quiser.",
+          "Não precisa trocar a sua paleta pela minha. Compare de perto e de longe: os tons precisam aparecer e o contorno continuar fechado. Confira se a luz está do mesmo lado no corpo e na cabine. Aguarde o salvamento e volte à aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "entrega",
+        "title": "Entregue o desenho da nave",
+        "bridge": "Confira a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Envie a arte desta aula pela galeria do Pinta desta seção.",
+        "kind": "delivery",
+        "videoKey": "video-entrega",
+        "speech": [
+          "Antes de enviar, confira no seu trabalho: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
+          "Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta",
+        "final": true
+      }
+    ],
+    "gallery": {
+      "kind": "pinta",
+      "purpose": "submission",
+      "initialAsset": null,
+      "gallery": {
+        "minItems": 1,
+        "maxItems": 1
+      }
+    },
+    "legacyKeys": [
+      "video-abertura",
+      "fala-novo-desenho",
+      "fala-tamanho-e-nome",
+      "video-novo-desenho",
+      "fala-espelho",
+      "fala-espelhos-vizinhos",
+      "experimento-espelho",
+      "fala-contorno",
+      "fala-espaco-do-motor",
+      "video-contorno",
+      "fala-cor-base",
+      "fala-cabine-e-detalhes",
+      "video-cor-base",
+      "video-luz",
+      "experiencia-luz",
+      "fala-volume",
+      "fala-pouca-coisa",
+      "video-volume",
+      "fala-salvamento",
+      "fala-guardado-e-galeria",
+      "fala-so-a-nave",
+      "entrega-galeria-v6",
+      "video-fecho",
+      "quiz-v6"
+    ],
+    "previousRetireKeys": [
+      "video-abertura-v6",
+      "conferir-novo-desenho",
+      "conferir-contorno",
+      "conferir-cor-base",
+      "video-luz-demo",
+      "demonstracao-luz",
+      "conferir-volume",
+      "video-salvamento",
+      "video-fecho-v6",
+      "orientacao-entrega-v6"
+    ]
+  },
+  {
+    "slug": "aula-03",
+    "title": "Faça o motor da nave pulsar",
+    "entry": "Nave em pixel art com espaço reservado para o fogo.",
+    "outcome": "Nave com animação voando de dois quadros a 8 quadros por segundo.",
+    "reason": "A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O segundo quadro muda só o motor. A revisão formativa fica separada da galeria.",
+    "concepts": [
+      [
+        "Quadros e velocidade",
+        "Experiência frames antes de desenhar o fogo.",
+        "Distingue alternância de desenhos de deslocamento do corpo."
+      ],
+      [
+        "Fantasma do quadro anterior",
+        "Experiência onion-skin antes da duplicação e edição.",
+        "Compara o segundo fogo ao primeiro."
+      ],
+      [
+        "Renomear animação",
+        "Aplicação direta em Spritesheet.",
+        "O nome será usado no Estúdio; não é um teste de memorização do menu."
+      ]
+    ],
+    "sections": [
+      {
+        "key": "quadros",
+        "title": "Compare dois desenhos e uma animação",
+        "bridge": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.",
+        "kind": "exploration",
+        "videoKey": "video-quadros",
+        "speech": [
+          "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.",
+          "Compare os dois desenhos parados, o ritmo lento, o rápido e os quadros iguais. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Compare dois desenhos e uma animação",
+          "instructions": "Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, marque Quadro 2 igual ao quadro 1 e observe por um segundo.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "frames",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["two-drawings", "movement", "paused-one", "slow-shows-two", "same-frames"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experiencia-quadros"
+      },
+      {
+        "key": "primeiro-fogo",
+        "title": "Desenhe o primeiro fogo",
+        "bridge": "No primeiro quadro, desenhe uma chama pequena abaixo do motor.",
+        "kind": "application",
+        "videoKey": "video-primeiro-fogo",
+        "speech": [
+          "Abra sua nave no Pinta. No quadro 1, use Lápis e uma cor quente para desenhar o fogo nas linhas reservadas embaixo. Faça uma chama pequena, ainda com espaço para crescer um pouco no quadro seguinte. Você pode colocar um centro mais claro.",
+          "Confira se a chama encosta no motor e continua dentro da grade. O corpo e a cabine ficam como estavam. Aguarde o salvamento e volte à aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "fantasma",
+        "title": "Use o quadro anterior como guia",
+        "bridge": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.",
+        "kind": "exploration",
+        "videoKey": "video-fantasma",
+        "speech": [
+          "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.",
+          "Observe o fogo do quadro 2 com e sem a guia do anterior. Confira também o limite do quadro. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Use o quadro anterior como guia",
+          "instructions": "Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que a guia, inteiro dentro do quadro.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "onion-skin",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["blind-move", "ghost-on", "even-step"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experiencia-fantasma"
+      },
+      {
+        "key": "segundo-fogo",
+        "title": "Mude só o fogo no segundo quadro",
+        "bridge": "Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar.",
+        "kind": "application",
+        "videoKey": "video-segundo-fogo",
+        "speech": [
+          "Na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Selecione o quadro 2 e ligue Fantasma do quadro anterior. Agora você pode comparar os dois desenhos.",
+          "Com Selecionar e mover, cerque somente a ponta do fogo. Mova essa ponta um quadradinho para baixo. Solte a seleção e preencha com Lápis o espaço que abriu. Não selecione nem mova o corpo da nave. Se a chama encostar na borda, diminua a mudança para caber inteira.",
+          "Troque entre os quadros 1 e 2. Confira se corpo e cabine ficam no mesmo lugar e se só o fogo cresce. O fantasma é uma guia; desligue para ver o desenho sem ela. Aguarde o salvamento."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "voando",
+        "title": "Dê nome e ritmo à animação",
+        "bridge": "Nomeie a animação voando e confira os dois quadros a 8 por segundo.",
+        "kind": "application",
+        "videoKey": "video-voando",
+        "speech": [
+          "Na área Spritesheet, abra Renomear animação ao lado do nome atual, parado. Escreva voando e confirme. No controle de Velocidade, deixe 8 quadros por segundo. Ligue a Prévia.",
+          "Confira: o fogo pulsa, a nave não salta de lugar e a chama não é cortada na borda. Se o corpo treme, pare a Prévia e compare os dois quadros antes de corrigir. Confirme que há dois quadros na animação voando. Espere o salvamento."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "revisao",
+        "title": "Confira sua nave animada",
+        "bridge": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.",
+        "kind": "reflection",
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você mudou a nave na cópia do Estúdio. O que acontece com o jogo guardado na aula?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Ele continua como estava quando você fez a cópia."
+              },
+              {
+                "id": "b",
+                "label": "Ele recebe automaticamente a mesma mudança."
+              },
+              {
+                "id": "c",
+                "label": "Ele desaparece quando a cópia é salva."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Exportar e importar criam uma cópia independente. Continuar na cópia não altera o trabalho guardado na aula."
+          },
+          {
+            "id": "q2",
+            "prompt": "A prévia toca, mas os dois quadros têm exatamente o mesmo desenho. O que você vê?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O fogo crescendo sozinho."
+              },
+              {
+                "id": "b",
+                "label": "Um desenho que parece parado."
+              },
+              {
+                "id": "c",
+                "label": "A nave andando para a direita."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "A animação alterna os quadros. Para enxergar uma mudança, alguma parte do desenho precisa ser diferente entre eles."
+          },
+          {
+            "id": "q3",
+            "prompt": "O corpo da nave está pulando de lugar na animação. O que comparar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O nome do cartão em Meus Jogos."
+              },
+              {
+                "id": "b",
+                "label": "A cor do fundo da página da aula."
+              },
+              {
+                "id": "c",
+                "label": "A posição do corpo nos dois quadros, usando o fantasma como guia."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "O fantasma permite comparar posições. Neste projeto o corpo permanece no lugar; a mudança pequena fica no fogo."
+          }
+        ]
+      },
+      {
+        "key": "entrega",
+        "title": "Entregue a nave animada",
+        "bridge": "Confira nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Envie a arte desta aula pela galeria do Pinta desta seção.",
+        "kind": "delivery",
+        "videoKey": "video-entrega",
+        "speech": [
+          "Antes de enviar, confira no seu trabalho: nave tem quadros de 32 por 32; voando tem dois quadros a 8 por segundo; só o fogo muda e cabe inteiro na grade. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
+          "Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta",
+        "final": true
+      }
+    ],
+    "gallery": {
+      "kind": "pinta",
+      "purpose": "submission",
+      "initialAsset": null,
+      "gallery": {
+        "minItems": 1,
+        "maxItems": 1
+      }
+    },
+    "legacyKeys": [
+      "video-abertura",
+      "video-livrinho",
+      "experiencia-quadros",
+      "fala-fogo-base",
+      "fala-espaco-para-crescer",
+      "video-fogo-base",
+      "fala-duplicar-quadro",
+      "fala-mover-a-ponta",
+      "video-segundo-quadro",
+      "video-fantasma",
+      "experiencia-fantasma",
+      "fala-nome-voando",
+      "fala-conferencia-final",
+      "video-nome-voando",
+      "fala-previa-e-galeria",
+      "fala-mesma-nave",
+      "entrega-galeria-v6",
+      "video-fecho",
+      "quiz-v6"
+    ],
+    "previousRetireKeys": [
+      "video-abertura-v6",
+      "demonstracao-quadros",
+      "experimento-diferenca",
+      "conferir-fogo-base",
+      "conferir-segundo-quadro",
+      "demonstracao-fantasma",
+      "conferir-nome-voando",
+      "video-fecho-v6",
+      "orientacao-entrega-v6"
+    ]
+  },
+  {
+    "slug": "aula-04",
+    "title": "Desenhe um asteroide com formas",
+    "entry": "Nave animada salva no Pinta.",
+    "outcome": "Arte asteroide em vetor, 64 × 64, com corpo arredondado e crateras.",
+    "reason": "A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno são comparados antes da pintura. Construir a forma, suavizar pontos e acrescentar crateras tornam-se aplicações separadas.",
+    "concepts": [
+      [
+        "Preenchimento e contorno",
+        "Experiência fill-stroke antes de desenhar.",
+        "Separa cor interna de linha da borda."
+      ],
+      [
+        "Vetor",
+        "Retomada da experiência da aula 2.",
+        "Não repetir a mesma bancada só para cumprir uma estrutura."
+      ],
+      [
+        "Caneta, pontos suaves e formas",
+        "Três aplicações no Pinta.",
+        "Cada ação tem uma consequência visível no desenho e um teste próprio."
+      ]
+    ],
+    "sections": [
+      {
+        "key": "preenchimento-contorno",
+        "title": "Separe o miolo da borda",
+        "bridge": "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.",
+        "kind": "exploration",
+        "videoKey": "video-preenchimento-contorno",
+        "speech": [
+          "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.",
+          "Observe o interior e a borda da mesma forma em cada combinação de cores. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Separe o miolo da borda",
+          "instructions": "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "fill-stroke",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["only-fill", "only-stroke", "both"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experiencia-cores"
+      },
+      {
+        "key": "novo-asteroide",
+        "title": "Prepare o desenho em vetor",
+        "bridge": "Crie um personagem em Vetor, tamanho Médio, chamado asteroide.",
+        "kind": "application",
+        "videoKey": "video-novo-asteroide",
+        "speech": [
+          "Abra meu Pinta. Em Meus desenhos, escolha Criar novo. Em Como você quer desenhar?, escolha Vetor. Escolha Personagem e depois Médio, 64 por 64. Escreva asteroide e clique em Começar a desenhar. Se já começou esse trabalho neste curso, retome o mesmo cartão.",
+          "O vetor usa formas e pontos, como a pedra que você ampliou na aula 2. Confira o nome e a área quadrada. Reserve a parte de cima para as chamas que faremos depois; a pedra vai ocupar o centro e a parte de baixo."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "forma-pedra",
+        "title": "Feche a forma da pedra",
+        "bridge": "Desenhe uma pedra com a Caneta e feche a forma.",
+        "kind": "application",
+        "videoKey": "video-forma-pedra",
+        "speech": [
+          "Sem nenhuma forma selecionada, escolha uma cor para Preenchimento. Em Contorno, escolha Sem cor. Pegue Caneta. Clique para marcar pontos ao redor da pedra, deixando espaço livre em cima. Seis pontos podem servir de começo; o formato é seu.",
+          "Para fechar, clique no primeiro ponto. O interior deve ganhar a cor escolhida. Se ficou uma linha aberta, termine no primeiro ponto antes de seguir. Confira se toda a pedra está dentro da área do desenho."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "curvas",
+        "title": "Arredonde os pontos",
+        "bridge": "Transforme alguns cantos em curvas para dar forma à pedra.",
+        "kind": "application",
+        "videoKey": "video-curvas",
+        "speech": [
+          "Escolha Editar os pontos e clique na pedra. Selecione um ponto do contorno e use Ponto suave. Arraste as alças que aparecem para arredondar esse trecho. Faça o mesmo nos cantos que você quiser suavizar.",
+          "Afaste a imagem e confira o contorno. A pedra pode ser irregular; ela só precisa continuar fechada, inteira no quadro e com espaço em cima. Se uma curva criou uma ponta comprida, ajuste as alças ou use Desfazer e tente uma mudança menor. Aguarde o salvamento."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "crateras",
+        "title": "Acrescente crateras",
+        "bridge": "Desenhe pequenas formas dentro da pedra.",
+        "kind": "application",
+        "videoKey": "video-crateras",
+        "speech": [
+          "Clique fora da pedra para tirar a seleção antes de escolher uma cor nova. Assim você prepara a próxima forma sem repintar a pedra inteira. Escolha um tom mais escuro e a ferramenta Círculo. Arraste dentro da pedra para criar uma cratera.",
+          "Com Selecionar, escolha a cratera. Use Ctrl+C e Ctrl+V para copiar e colar. Mova a cópia para outro lugar dentro da pedra e mude seu tamanho pelas alças. Faça outra cratera se quiser. Deixe todas dentro do corpo e com tamanhos que você consiga distinguir. Aguarde o salvamento."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "entrega",
+        "title": "Entregue seu asteroide",
+        "bridge": "Confira asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Envie a arte desta aula pela galeria do Pinta desta seção.",
+        "kind": "delivery",
+        "videoKey": "video-entrega",
+        "speech": [
+          "Antes de enviar, confira no seu trabalho: asteroide é Vetor de 64 por 64; tem forma fechada, curvas e crateras dentro do corpo; sobra espaço acima para as chamas. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
+          "Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta",
+        "final": true
+      }
+    ],
+    "gallery": {
+      "kind": "pinta",
+      "purpose": "submission",
+      "initialAsset": null,
+      "gallery": {
+        "minItems": 1,
+        "maxItems": 1
+      }
+    },
+    "legacyKeys": [
+      "video-abertura",
+      "fala-novo-vetor",
+      "fala-tamanho-vetor",
+      "fala-nome-asteroide",
+      "video-novo-vetor",
+      "video-cores-vetor",
+      "experiencia-cores",
+      "fala-cor-da-pedra",
+      "fala-caneta",
+      "fala-espaco-de-cima",
+      "video-traco",
+      "fala-curvas",
+      "fala-cantos-de-proposito",
+      "video-curvas",
+      "fala-soltar-selecao",
+      "fala-primeira-cratera",
+      "fala-copiar-cratera",
+      "video-crateras",
+      "fala-bordas",
+      "fala-por-que-64",
+      "experimento-bordas",
+      "fala-fecho",
+      "fala-qual-desenho",
+      "entrega-galeria-v6",
+      "video-fecho",
+      "quiz-v6"
+    ],
+    "previousRetireKeys": [
+      "video-abertura-v6",
+      "conferir-novo-vetor",
+      "demonstracao-cores",
+      "conferir-traco",
+      "orientacao-curvas",
+      "conferir-curvas",
+      "conferir-crateras",
+      "video-fecho-v6",
+      "orientacao-entrega-v6"
+    ]
+  },
+  {
+    "slug": "aula-05",
+    "title": "Anime as chamas e as crateras",
+    "entry": "Asteroide em vetor com corpo e crateras.",
+    "outcome": "Nave e asteroide animados, guardados na galeria do Pinta.",
+    "reason": "A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mudança é experimentado antes do segundo quadro. O nome girando identifica a animação; não promete uma rotação completa que os dois desenhos não fazem.",
+    "concepts": [
+      [
+        "Ordem de sobreposição",
+        "Experiência layers antes das chamas.",
+        "Mostra por que uma forma pode encobrir outra."
+      ],
+      [
+        "Mudança local entre quadros",
+        "Experiência motion-amount antes do quadro 2.",
+        "Distingue detalhe animado de corpo inteiro pulando."
+      ],
+      [
+        "Duplicar e animar",
+        "Retomada da aula 3 aplicada ao vetor.",
+        "A regra dos quadros continua; agora as edições usam formas e pontos."
+      ]
+    ],
+    "sections": [
+      {
+        "key": "camadas",
+        "title": "Troque o que fica na frente",
+        "bridge": "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.",
+        "kind": "exploration",
+        "videoKey": "video-camadas",
+        "speech": [
+          "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.",
+          "Compare a ordem da lista com a parte da pedra que aparece em cada troca. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Troque o que fica na frente",
+          "instructions": "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "layers",
+            "pilha": "camadas",
+            "cast": {
+              "hero": {
+                "name": "pedra",
+                "gender": "f"
+              },
+              "scenery": {
+                "name": "chama",
+                "gender": "f"
+              }
+            },
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["front", "covered", "back-in-front"],
+              "goalCopy": {
+                "back-in-front": {
+                  "label": "A de cima na lista Camadas é a que aparece na frente"
+                }
+              }
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-camadas"
+      },
+      {
+        "key": "chama",
+        "title": "Desenhe fogo atrás da pedra",
+        "bridge": "Acrescente uma chama acima do asteroide e coloque-a atrás do corpo.",
+        "kind": "application",
+        "videoKey": "video-chama",
+        "speech": [
+          "Abra asteroide no Pinta e selecione o quadro 1. Clique fora das formas. Escolha uma cor quente em Preenchimento e Contorno em Sem cor. Com Caneta, marque pontos formando uma chama no espaço acima da pedra. Termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.",
+          "Com Selecionar, clique na chama. Use Uma camada para trás até a pedra e suas crateras ficarem na frente dela. Confira a lista Camadas: as formas de cima aparecem na frente das de baixo. Se a chama cobrir o corpo, ajuste a ordem antes de continuar. Aguarde o salvamento."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "miolo-fogo",
+        "title": "Acrescente um centro mais claro",
+        "bridge": "Faça uma chama menor dentro da primeira, atrás da pedra.",
+        "kind": "application",
+        "videoKey": "video-miolo-fogo",
+        "speech": [
+          "Selecione a chama e use Ctrl+C e Ctrl+V. Na cópia, escolha uma cor mais clara. Reduza pelas alças e posicione o miolo dentro da chama maior. Selecione os pontos para ajustar a ponta se precisar.",
+          "Confira a ordem: a pedra e as crateras ficam na frente; o miolo claro aparece sobre a chama maior. Use Uma camada para trás ou Uma camada para a frente na forma selecionada até chegar a essa ordem. As duas chamas precisam caber inteiras no quadro. Aguarde o salvamento."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "mudanca-pequena",
+        "title": "Compare mudanças entre quadros",
+        "bridge": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.",
+        "kind": "exploration",
+        "videoKey": "video-mudanca-pequena",
+        "speech": [
+          "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.",
+          "Compare a prévia com os detalhes mudando e com o corpo inteiro mudando de lugar. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Compare mudanças entre quadros",
+          "instructions": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0. Clique em Tocar a Prévia e observe uma troca. Deixe a pedra em 0 e coloque a cratera em 4; observe outra troca. Depois coloque a pedra inteira em 10 e compare a Prévia.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "motion-amount",
+            "cast": {
+              "hero": {
+                "name": "pedra",
+                "gender": "f"
+              }
+            },
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["no-change", "local-move", "too-much"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-tanto-que-muda"
+      },
+      {
+        "key": "quadro-pedra",
+        "title": "Mude detalhes no segundo quadro",
+        "bridge": "Duplique o quadro e altere um pouco as crateras e as pontas das chamas.",
+        "kind": "application",
+        "videoKey": "video-quadro-pedra",
+        "speech": [
+          "Em Spritesheet, selecione o quadro 1 e clique em Duplicar quadro. No quadro 2, ligue Fantasma do quadro anterior. Com Selecionar, mova uma cratera um pouco para o lado, mantendo-a dentro da pedra. Faça uma mudança pequena em outra cratera se quiser.",
+          "Escolha Editar os pontos numa chama e ajuste sua ponta um pouco. Faça o mesmo no miolo, sem levar o fogo para fora do quadro. Mantenha o corpo da pedra na mesma posição. Confira a ordem das formas neste quadro: pedra e crateras continuam na frente do fogo.",
+          "Troque entre os dois quadros e desligue o fantasma para conferir os desenhos. O corpo fica no lugar; os detalhes mudam. Se toda a pedra pulou, desfaça o deslocamento do corpo e mexa só nas partes escolhidas. Aguarde o salvamento."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "girando",
+        "title": "Confira o ritmo da pedra",
+        "bridge": "Nomeie a animação girando e teste dois quadros a 8 por segundo.",
+        "kind": "application",
+        "videoKey": "video-girando",
+        "speech": [
+          "Em Spritesheet, use Renomear animação para trocar parado por girando. Deixe Velocidade em 8 quadros por segundo e ligue a Prévia.",
+          "Compare: crateras e fogo mudam um pouco, o corpo permanece no lugar e nenhuma ponta é cortada. O nome girando vai ajudar a escolher essa animação no Estúdio; os dois desenhos criam uma impressão de movimento, não uma volta completa da pedra. Confira dois quadros e aguarde o salvamento."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta"
+      },
+      {
+        "key": "revisao",
+        "title": "Confira as duas artes",
+        "bridge": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.",
+        "kind": "reflection",
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A chama cobriu a pedra no segundo quadro. O que ajustar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "A ordem das formas nesse quadro."
+              },
+              {
+                "id": "b",
+                "label": "A velocidade da animação inteira."
+              },
+              {
+                "id": "c",
+                "label": "O tamanho do cartão na galeria."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A forma que está na frente cobre a que está atrás. Coloque a pedra e as crateras na frente do fogo também no segundo quadro."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você quer a pedra firme no lugar, mas com movimento nos detalhes. O que mudar no quadro 2?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "A posição do corpo inteiro para bem longe."
+              },
+              {
+                "id": "b",
+                "label": "Um pouco as crateras e as pontas do fogo."
+              },
+              {
+                "id": "c",
+                "label": "Só o nome da animação, sem mudar desenhos."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Uma mudança local entre os dois quadros pode sugerir movimento. Mover todo o corpo faz o desenho saltar de lugar."
+          },
+          {
+            "id": "q3",
+            "prompt": "Qual diferença você usou para criar a nave e a pedra?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "A nave não pode ter animação porque é pixel art."
+              },
+              {
+                "id": "b",
+                "label": "No vetor só é possível pintar quadradinhos."
+              },
+              {
+                "id": "c",
+                "label": "Na nave pintou quadradinhos; na pedra editou formas e pontos."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "Pixel art organiza quadradinhos. Vetor usa formas, pontos e curvas. As duas técnicas podem formar animações com vários quadros."
+          }
+        ]
+      },
+      {
+        "key": "entrega",
+        "title": "Entregue suas duas artes",
+        "bridge": "Confira nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Envie a nave e o asteroide pela galeria do Pinta desta seção.",
+        "kind": "delivery",
+        "videoKey": "video-entrega",
+        "speech": [
+          "Antes de enviar, confira no seu trabalho: nave tem 32 por 32 e voando; asteroide tem 64 por 64 e girando; cada animação tem dois quadros a 8 por segundo, sem cortes nas bordas. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
+          "Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a nave e o asteroide. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (2). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "pinta",
+        "final": true
+      }
+    ],
+    "gallery": {
+      "kind": "pinta",
+      "purpose": "submission",
+      "initialAsset": null,
+      "gallery": {
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    "legacyKeys": [
+      "video-abertura",
+      "video-chama-externa",
+      "fala-chama-cobriu",
+      "experimento-camadas",
+      "video-uma-camada-para-tras",
+      "video-chama-interna",
+      "fala-duas-chamas",
+      "fala-duplicar-quadro",
+      "experimento-tanto-que-muda",
+      "video-quadro-2",
+      "fala-conferir-quadros",
+      "fala-renomear",
+      "video-nome-girando",
+      "fala-conferir-galeria",
+      "fala-enviar-as-duas-artes",
+      "entrega-galeria-v6",
+      "video-fecho-v6",
+      "quiz-v6"
+    ],
+    "previousRetireKeys": [
+      "video-abertura-v6",
+      "experimento-ordem",
+      "conferir-chama-externa",
+      "conferir-chama-interna",
+      "video-mudanca-demo",
+      "video-animar-pedra",
+      "conferir-animar-pedra",
+      "orientacao-nome-girando",
+      "conferir-nome-girando"
+    ]
+  },
+  {
+    "slug": "aula-06",
+    "title": "Coloque sua nave animada no jogo",
+    "entry": "Cópia do jogo da aula 1 e duas artes animadas salvas no Pinta.",
+    "outcome": "Jogo com nave autoral animada e asteroides originais, mantendo as regras.",
+    "reason": "Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganham resultados próprios. A troca do criador é feita numa mesma aplicação; não se transforma a exclusão do bloco em uma aula de erro fabricado. A folha entra no fim do Ao iniciar, como no programa de referência.",
+    "concepts": [
+      [
+        "Nomes de sprite e folha",
+        "Experiência unique-names antes dos novos blocos.",
+        "Evita apagar o nome procurado ou usar o mesmo nome para preparações diferentes."
+      ],
+      [
+        "Folha, quadro e tamanho no jogo",
+        "Experiência sheet-vs-sprite antes da troca de criador.",
+        "Separa o recorte 32 × 32 do tamanho 54 × 54."
+      ],
+      [
+        "Trazer arte, criar e animar",
+        "Aplicações separadas na mesma cópia.",
+        "Cada bloco ganha um propósito observável; regras anteriores continuam."
+      ]
+    ],
+    "sections": [
+      {
+        "key": "nomes",
+        "title": "Separe os nomes que os blocos procuram",
+        "bridge": "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
+        "kind": "exploration",
+        "videoKey": "video-nomes",
+        "speech": [
+          "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
+          "Observe os avisos e os nomes procurados pelos blocos em cada mudança. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Separe os nomes que os blocos procuram",
+          "instructions": "Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "unique-names",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["missing", "clash", "own-name"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-nomes"
+      },
+      {
+        "key": "trazer-artes",
+        "title": "Traga seus desenhos para o projeto",
+        "bridge": "Adicione nave e asteroide aos materiais da cópia do seu jogo.",
+        "kind": "application",
+        "videoKey": "video-trazer-artes",
+        "speech": [
+          "Clique em Abrir meu Estúdio. Em Meus Jogos, abra o cartão que você nomeou e entregou na aula 1. Abra Mais opções, depois Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.",
+          "Nos cartões nave e asteroide, clique em Adicionar ao projeto. Confira a marca no projeto nos dois. Feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.",
+          "Olhe a partida: os desenhos do jogo ainda são os antigos. As novas imagens estão disponíveis nos materiais, mas os blocos ainda não mandaram usá-las. Aguarde Salvo antes de voltar à aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "recorte",
+        "title": "Separe o quadro do tamanho no jogo",
+        "bridge": "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.",
+        "kind": "exploration",
+        "videoKey": "video-recorte",
+        "speech": [
+          "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.",
+          "Compare a folha, o retângulo do recorte e a nave que aparece no jogo. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Separe o quadro do tamanho no jogo",
+          "instructions": "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "sheet-vs-sprite",
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["squeezed", "crop-half", "crop-whole", "size-apart"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-recorte"
+      },
+      {
+        "key": "trocar-nave",
+        "title": "Use sua imagem no criador da nave",
+        "bridge": "Troque o criador da nave por um sprite com imagem, conservando o nome nave.",
+        "kind": "application",
+        "videoKey": "video-trocar-nave",
+        "speech": [
+          "Em Ao iniciar, localize Criar nave. Leia seus valores antes de trocar. Abra Jogo 2D, Sprites, Criar e trocar aparência. Arraste Criar sprite em x y largura altura com imagem para um espaço livre da área de blocos. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave.",
+          "Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Encaixe o novo criador no lugar dele, abaixo de Preparar o jogo em tela cheia e acima dos grupos. Confira que os blocos de baixo continuam ligados e que há só um criador da nave. Se apagar outra peça, Ctrl+Z desfaz.",
+          "O nome nave mantém os controles e as colisões procurando o mesmo sprite. A imagem pode mostrar os dois desenhos espremidos por enquanto: o criador está usando a folha inteira. Confira os seis campos do bloco; na próxima parte vamos recortar cada quadro. Aguarde Salvo."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "folha-nave",
+        "title": "Prepare o recorte da nave",
+        "bridge": "Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar.",
+        "kind": "application",
+        "videoKey": "video-folha-nave",
+        "speech": [
+          "Deixe à vista o fim da pilha Ao iniciar. Se precisar, arraste um espaço vazio da área de blocos para encontrar o último bloco. A folha vai entrar logo depois dele. Abra Jogo 2D, Sprites, Animação. Pegue Carregar folha de quadros da imagem com quadros de x px. No nome da folha, escreva folha-nave. Na imagem, escolha nave. Deixe largura e altura dos quadros em 32.",
+          "Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali. Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador: aquele é o tamanho da nave na tela. A folha está preparada, mas ainda falta mandar animar. Aguarde Salvo."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "animar-nave",
+        "title": "Ligue a animação voando",
+        "bridge": "Anime nave com folha-nave e confira os dois quadros no jogo.",
+        "kind": "application",
+        "videoKey": "video-animar-nave",
+        "speech": [
+          "Deixe à vista Carregar folha de quadros folha-nave, no fim de Ao iniciar. A animação vai entrar logo abaixo dele. Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe nesse lugar.",
+          "No sprite, escolha nave. Na folha, escolha folha-nave. Clique em Escolher na animação e selecione voando. Confira os valores preenchidos: do quadro 0 ao 1, a 8 fps. O Pinta mostra os desenhos como 1 e 2; o bloco começa a contagem em 0, por isso usa 0 e 1.",
+          "Clique na prévia e comece a partida com Enter. Mova com as setas e atire com Espaço. Confira uma nave inteira com fogo pulsando, sem dois desenhos espremidos. Se voando não aparecer, confira a animação salva no Pinta e a imagem trazida ao projeto antes de escolher novamente. Aguarde Salvo."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "entrega",
+        "title": "Entregue o jogo com sua nave",
+        "bridge": "Confira a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais nesta aula. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.",
+        "kind": "delivery",
+        "videoKey": "video-entrega",
+        "speech": [
+          "Antes de enviar, confira no seu trabalho: a nave inteira usa sua imagem e voando; setas e tiro funcionam; as pedras continuam as originais nesta aula. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
+          "Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio",
+        "final": true
+      }
+    ],
+    "gallery": {
+      "kind": "studio",
+      "purpose": "submission",
+      "initialProject": {
+        "formatVersion": 2,
+        "projectTools": [],
+        "id": "manifest-meu-jeito-6",
+        "name": "Minha criação",
+        "createdAt": 0,
+        "updatedAt": 0,
+        "mode": "blocks",
+        "files": {
+          "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Minha criação</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+          "style.css": "",
+          "script.js": ""
+        },
+        "extraFiles": [],
+        "assets": [],
+        "ir": {
+          "version": 2,
+          "html": [],
+          "css": [],
+          "behavior": {
+            "start": [],
+            "events": [],
+            "loops": []
+          },
+          "extensions": []
+        },
+        "blocksState": {
+          "blocks": {
+            "languageVersion": 0,
+            "blocks": []
+          }
+        },
+        "installedExtensions": [
+          {
+            "id": "game-2d",
+            "version": "1.2.0",
+            "installedAt": 0
+          }
+        ]
+      },
+      "gallery": {
+        "minItems": 1,
+        "maxItems": 1
+      }
+    },
+    "legacyKeys": [
+      "video-abertura",
+      "video-trazer-artes",
+      "fala-so-guardado",
+      "video-apagar-nave-do-kit",
+      "fala-nome-do-dia",
+      "experimento-nomes",
+      "video-montar-a-nave",
+      "fala-duas-naves-espremidas",
+      "fala-folha-de-quadros",
+      "experimento-recorte",
+      "fala-folha-pronta",
+      "video-folha-e-animacao",
+      "fala-teste-nave",
+      "fala-enviar-o-projeto",
+      "entrega-galeria-v6",
+      "video-fecho-v6",
+      "quiz-v6"
+    ],
+    "previousRetireKeys": [
+      "video-abertura-v6",
+      "conferir-trazer-artes",
+      "video-trocar-nave",
+      "orientacao-trocar-nave",
+      "conferir-trocar-nave",
+      "video-folha-demo",
+      "demonstracao-folha",
+      "video-carregar-folha",
+      "conferir-carregar-folha",
+      "video-animacao-nave",
+      "orientacao-animacao-nave",
+      "conferir-animacao-nave"
+    ]
+  },
+  {
+    "slug": "aula-07",
+    "title": "Faça suas pedras nascerem animadas",
+    "entry": "Jogo com nave autoral animada; asteroide já adicionado aos materiais.",
+    "outcome": "Nave e asteroides autorais animados no mesmo jogo, com tiro, pontos e vidas.",
+    "reason": "O relógio de nascimento e a velocidade da animação são comparados antes dos encaixes. A troca do criador conserva o sorteio, o grupo e a velocidade. Animar fica logo depois de criar cada pedra, dentro da condição jogando.",
+    "concepts": [
+      [
+        "Dois ritmos",
+        "Experiência two-clocks na abertura.",
+        "Nascer mais vezes não é animar mais rápido."
+      ],
+      [
+        "Folha 64 × 64",
+        "Retomada da aula 6 com a dimensão do asteroide.",
+        "O tamanho escolhido no Pinta determina o recorte."
+      ],
+      [
+        "Criar e animar cada novo sprite",
+        "Aplicação dentro do relógio já existente.",
+        "Cada pedra recebe o comando depois que existe."
+      ]
+    ],
+    "sections": [
+      {
+        "key": "dois-relogios",
+        "title": "Compare nascer e animar",
+        "bridge": "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no botão Tempo com o triângulo para deixar passar dois segundos. Clique em Tempo para parar. Coloque nascimento em 40 e animação em 16. Volte ao começo e ligue Tempo de novo. Observe por três segundos, até nascerem pelo menos três pedras. Veja o número em cada uma ao entrar.",
+        "kind": "exploration",
+        "videoKey": "video-dois-relogios",
+        "speech": [
+          "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no botão Tempo com o triângulo para deixar passar dois segundos. Clique em Tempo para parar. Coloque nascimento em 40 e animação em 16. Volte ao começo e ligue Tempo de novo. Observe por três segundos, até nascerem pelo menos três pedras. Veja o número em cada uma ao entrar.",
+          "Compare quantas pedras entram e como os desenhos de cada pedra se alternam. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Compare nascer e animar",
+          "instructions": "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no botão Tempo com o triângulo para deixar passar dois segundos. Clique em Tempo para parar. Coloque nascimento em 40 e animação em 16. Volte ao começo e ligue Tempo de novo. Observe por três segundos, até nascerem pelo menos três pedras. Veja o número em cada uma ao entrar.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "two-clocks",
+            "cast": {
+              "hero": {
+                "name": "nave",
+                "gender": "f"
+              },
+              "obstacle": {
+                "name": "asteroide",
+                "gender": "m"
+              }
+            },
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["more-rocks", "faster-spin", "each-one"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-dois-relogios"
+      },
+      {
+        "key": "folha-pedra",
+        "title": "Prepare a folha do asteroide",
+        "bridge": "Carregue folha-asteroide com quadros de 64 por 64.",
+        "kind": "application",
+        "videoKey": "video-folha-pedra",
+        "speech": [
+          "Abra meu Estúdio e retome o mesmo cartão da aula anterior. Deixe à vista o fim de Ao iniciar, logo depois da animação da nave. A nova folha vai entrar ali. Em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro.",
+          "Encaixe no fim de Ao iniciar, depois da animação da nave. Confira as duas folhas: folha-nave continua 32 por 32; folha-asteroide usa 64 por 64. Carregar a folha ainda não troca as pedras do jogo. Aguarde Salvo."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "trocar-pedra",
+        "title": "Troque a imagem das pedras que nascem",
+        "bridge": "Substitua o criador das pedras, preservando o grupo, o sorteio e a velocidade.",
+        "kind": "application",
+        "videoKey": "video-trocar-pedra",
+        "speech": [
+          "Localize A cada 40 quadros e, dentro dele, Se o estado do jogo é jogando. Ali está o criador das pedras. Observe o grupo asteroides, o sorteio do x, o y e as velocidades antes de trocar.",
+          "Em Jogo 2D, Grupos, Criar e percorrer, pegue No grupo criar um sprite chamado em x y largura altura com imagem vx vy. Deixe o novo bloco solto enquanto preenche: grupo asteroides, nome asteroide, imagem asteroide, y -30, largura 40, altura 40, vx 0 e vy 3.",
+          "Mova a peça do sorteio que está no x do criador antigo para o x do novo. Assim você conserva os limites do seu jogo. Clique com o botão direito no criador antigo e escolha Apagar este bloco. Encaixe o novo no mesmo lugar, dentro do Se jogando do relógio. Confira que só um criador ficou ali e os outros blocos continuam ligados.",
+          "Comece a partida e veja se caem suas imagens em lugares diferentes. Ainda pode aparecer a folha inteira espremida: falta ligar a animação de cada pedra. Confira o grupo asteroides e o nome asteroide, que são diferentes. Aguarde Salvo."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "animar-pedra",
+        "title": "Anime cada pedra depois de criar",
+        "bridge": "Coloque a animação girando logo abaixo do criador, dentro do mesmo Se.",
+        "kind": "application",
+        "videoKey": "video-animar-pedra",
+        "speech": [
+          "Deixe à vista o novo criador da pedra, dentro do Se jogando do A cada 40 quadros. A animação vai ficar logo abaixo desse criador, no mesmo Se. Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe nesse lugar. Assim cada pedra recebe a animação quando nasce.",
+          "Escolha sprite asteroide e folha folha-asteroide. Em Escolher, selecione girando. Confira do quadro 0 ao 1, a 8 fps. O carregamento da folha continua no Ao iniciar; o comando de animar fica aqui, depois de cada nascimento.",
+          "Comece uma partida. Observe pelo menos três pedras entrando com a animação, mova a nave e atire. Acerte uma pedra para conferir os pontos e deixe uma encostar na nave para conferir a perda de vida. Se a arte não aparecer inteira, confira folha-asteroide e recorte 64 por 64. Aguarde Salvo."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "revisao",
+        "title": "Confira as artes dentro do jogo",
+        "bridge": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.",
+        "kind": "reflection",
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A folha da nave tem dois quadros de 32 por 32. A nave aparece com 54 por 54 no jogo. Qual tamanho usar no recorte?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "32 por 32, o tamanho de cada desenho da folha."
+              },
+              {
+                "id": "b",
+                "label": "54 por 54, sempre igual ao tamanho na tela."
+              },
+              {
+                "id": "c",
+                "label": "64 por 32, com os dois desenhos juntos."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O recorte seleciona um desenho da folha. O tamanho no jogo é outra medida e pode aumentar ou diminuir esse desenho."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você quer mais pedras nascendo, sem acelerar a animação de cada uma. O que mudar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Os quadros por segundo da animação."
+              },
+              {
+                "id": "b",
+                "label": "O intervalo do relógio que cria pedras."
+              },
+              {
+                "id": "c",
+                "label": "O tamanho da cabine da nave no Pinta."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "O relógio controla os nascimentos. Os quadros por segundo controlam a alternância dos desenhos de cada pedra."
+          },
+          {
+            "id": "q3",
+            "prompt": "Onde o comando Animar sprite asteroide precisa ficar para alcançar cada pedra nova?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Só no Ao iniciar, antes de existir qualquer pedra."
+              },
+              {
+                "id": "b",
+                "label": "No Pinta, entre os dois quadros do desenho."
+              },
+              {
+                "id": "c",
+                "label": "Logo depois do criador, dentro do Se jogando do relógio."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "A folha é preparada no começo. Cada pedra precisa existir antes de receber a animação, por isso os comandos criar e animar ficam juntos no relógio."
+          }
+        ]
+      },
+      {
+        "key": "entrega",
+        "title": "Entregue o jogo com as duas artes",
+        "bridge": "Confira nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.",
+        "kind": "delivery",
+        "videoKey": "video-entrega",
+        "speech": [
+          "Antes de enviar, confira no seu trabalho: nave e pedras usam suas animações; pelo menos três pedras nasceram animadas; tiros, pontos e perda de vida continuam funcionando. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
+          "Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio",
+        "final": true
+      }
+    ],
+    "gallery": {
+      "kind": "studio",
+      "purpose": "submission",
+      "initialProject": {
+        "formatVersion": 2,
+        "projectTools": [],
+        "id": "manifest-meu-jeito-7",
+        "name": "Minha criação",
+        "createdAt": 0,
+        "updatedAt": 0,
+        "mode": "blocks",
+        "files": {
+          "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Minha criação</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+          "style.css": "",
+          "script.js": ""
+        },
+        "extraFiles": [],
+        "assets": [],
+        "ir": {
+          "version": 2,
+          "html": [],
+          "css": [],
+          "behavior": {
+            "start": [],
+            "events": [],
+            "loops": []
+          },
+          "extensions": []
+        },
+        "blocksState": {
+          "blocks": {
+            "languageVersion": 0,
+            "blocks": []
+          }
+        },
+        "installedExtensions": [
+          {
+            "id": "game-2d",
+            "version": "1.2.0",
+            "installedAt": 0
+          }
+        ]
+      },
+      "gallery": {
+        "minItems": 1,
+        "maxItems": 1
+      }
+    },
+    "legacyKeys": [
+      "video-abertura",
+      "video-folha-asteroide",
+      "fala-folha-pronta",
+      "fala-relogio-das-pedras",
+      "fala-dois-sentidos-de-quadro",
+      "experimento-dois-relogios",
+      "fala-sem-campo-de-imagem",
+      "fala-monta-antes-de-apagar",
+      "video-novo-criador",
+      "fala-duas-familias",
+      "fala-apagar-o-velho",
+      "fala-por-que-logo-abaixo",
+      "video-animar-cada",
+      "fala-teste-completo",
+      "fala-enviar-o-projeto",
+      "entrega-galeria-v6",
+      "fala-editar-desenho",
+      "video-fecho-v6",
+      "quiz-v6"
+    ],
+    "previousRetireKeys": [
+      "video-abertura-v6",
+      "conferir-folha-asteroide",
+      "video-tempo-demo",
+      "demonstracao-nascimento",
+      "conferir-novo-criador",
+      "conferir-animar-cada"
+    ]
+  },
+  {
+    "slug": "aula-08",
+    "title": "Teste e compartilhe sua versão",
+    "entry": "Jogo com as duas artes animadas e regras preservadas.",
+    "outcome": "Jogo testado e entregue pela galeria; publicação no Mural opcional.",
+    "reason": "A revisão de aparência e regras já foi feita antes das alterações, na aula 1. O encerramento testa o percurso inteiro, explica a cópia publicada e permite entregar sem obrigar publicação ou recado. Saem o passeio pelo site e a tarefa de criar outro projeto.",
+    "concepts": [
+      [
+        "Projeto editável e versão publicada",
+        "Experiência published-copy antes de compartilhar.",
+        "Evita prometer que editar atualiza um cartão antigo automaticamente."
+      ],
+      [
+        "Teste de partida completa",
+        "Retomada das regras de Nave Contra Asteroides.",
+        "A mudança visual não deve perder tiro, pontos, vidas ou reinício."
+      ],
+      [
+        "Publicação",
+        "Demonstração opcional no projeto real.",
+        "Compartilhar tem destinatário e propósito, sem virar condição para concluir."
+      ]
+    ],
+    "sections": [
+      {
+        "key": "copia-publicada",
+        "title": "Compare projeto e versão publicada",
+        "bridge": "Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.",
+        "kind": "exploration",
+        "videoKey": "video-copia-publicada",
+        "speech": [
+          "Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.",
+          "Compare a cor do projeto com cada cartão publicado. Esta bancada é uma simulação; você escolhe depois se quer publicar seu jogo real. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
+        ],
+        "screen": "Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "Compare projeto e versão publicada",
+          "instructions": "Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo.",
+          "hints": [],
+          "activity": {
+            "type": "experimentation",
+            "scene": "published-copy",
+            "cast": {
+              "hero": {
+                "name": "nave",
+                "gender": "f"
+              }
+            },
+            "cenario": "meu-jeito",
+            "setup": {
+              "goals": ["first-publish", "only-project", "republish"]
+            }
+          },
+          "semPerguntaFinal": true
+        },
+        "activityKey": "experimento-copia-publicada"
+      },
+      {
+        "key": "teste-completo",
+        "title": "Jogue do começo ao reinício",
+        "bridge": "Teste a partida completa no mesmo cartão, usando suas duas artes.",
+        "kind": "application",
+        "videoKey": "video-teste-completo",
+        "speech": [
+          "Abra meu Estúdio e retome seu jogo. Clique na prévia e toque na tecla Enter para começar. Mova a nave para os lados, atire e acerte uma pedra. Confira a mudança dos pontos e as duas animações.",
+          "Deixe as pedras acertarem a nave até acabar a última vida. Veja se a partida termina e o placar para. Toque na tecla Enter para voltar à abertura e outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.",
+          "Se alguma parte falhar, volte à aula em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. A ajuda da aula está em Preciso de ajuda?. Conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste novamente e espere Salvo."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "compartilhar",
+        "title": "Mostre o jogo se quiser",
+        "bridge": "Se quiser, publique uma versão no Mural e teste o cartão. Você pode seguir sem publicar.",
+        "kind": "application",
+        "videoKey": "video-compartilhar",
+        "speech": [
+          "Com seu jogo salvo, clique em Compartilhar no Estúdio. Confira o título e escreva um resumo que conte como jogar. Clique em Gerar capa e confira se a imagem representa seu jogo. Com título, resumo e capa prontos, clique em Publicar.",
+          "Espere a confirmação Publicado!. Clique em Abrir o jogo, teste uma partida na versão publicada e compare com seu projeto. Você pode usar Copiar link para guardar o endereço. Depois clique em Fechar na janela de compartilhamento.",
+          "Publicar é opcional. Se preferir guardar o jogo por enquanto, siga para a revisão e entregue pela galeria. Se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão; o cartão antigo conserva a anterior."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio"
+      },
+      {
+        "key": "revisao",
+        "title": "Confira o que você transformou",
+        "bridge": "Responda sobre o que você acabou de fazer. Leia a explicação depois de enviar e corrija o que precisar; você pode tentar de novo sem espera. Quando acertar todas, clique em Próxima seção.",
+        "kind": "reflection",
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Depois de publicar, você muda o desenho no projeto. O cartão que já estava no Mural muda sozinho?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Não. Ele conserva a versão publicada antes."
+              },
+              {
+                "id": "b",
+                "label": "Sim, qualquer edição muda todos os cartões antigos."
+              },
+              {
+                "id": "c",
+                "label": "O cartão é apagado assim que você edita."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A publicação guarda uma cópia daquele momento. Para mostrar alterações posteriores, publique uma nova versão do projeto."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você trocou as artes e quer conferir se as regras continuam funcionando. Qual teste ajuda?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Olhar somente a capa do cartão."
+              },
+              {
+                "id": "b",
+                "label": "Jogar, marcar pontos, perder as vidas e começar outra partida."
+              },
+              {
+                "id": "c",
+                "label": "Renomear o desenho no Pinta sem abrir o jogo."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Uma partida completa confere ações e mudanças de estado. Olhar a capa não mostra se tiro, pontos, vidas e reinício continuam funcionando."
+          },
+          {
+            "id": "q3",
+            "prompt": "Você trouxe a imagem ao Estúdio, mas o jogo ainda mostra o desenho antigo. O que falta conferir?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Se você publicou o jogo antes de testar."
+              },
+              {
+                "id": "b",
+                "label": "Se aumentou o volume do aparelho."
+              },
+              {
+                "id": "c",
+                "label": "Se os blocos que criam e animam os sprites usam a nova imagem e a folha certa."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "Trazer a arte a deixa disponível nos materiais. Os blocos precisam usá-la na criação e na animação para ela aparecer durante a partida."
+          }
+        ]
+      },
+      {
+        "key": "entrega",
+        "title": "Entregue seu jogo do seu jeito",
+        "bridge": "Confira as duas artes aparecem inteiras e animadas; uma partida completa termina e recomeça corretamente. Publicar e escrever recado continuam opcionais. Envie o cartão do seu jogo pela galeria do Estúdio desta seção.",
+        "kind": "delivery",
+        "videoKey": "video-entrega",
+        "speech": [
+          "Antes de enviar, confira no seu trabalho: as duas artes aparecem inteiras e animadas; uma partida completa termina e recomeça corretamente. Publicar e escrever recado continuam opcionais. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.",
+          "Volte para esta aba da aula. Clique em Escolher no Estúdio. Na lista Meus trabalhos do Estúdio, selecione o cartão do seu jogo. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
+        ],
+        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "externalTool": "estudio",
+        "final": true
+      }
+    ],
+    "gallery": {
+      "kind": "studio",
+      "purpose": "submission",
+      "initialProject": {
+        "formatVersion": 2,
+        "projectTools": [],
+        "id": "manifest-meu-jeito-8",
+        "name": "Minha criação",
+        "createdAt": 0,
+        "updatedAt": 0,
+        "mode": "blocks",
+        "files": {
+          "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Minha criação</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+          "style.css": "",
+          "script.js": ""
+        },
+        "extraFiles": [],
+        "assets": [],
+        "ir": {
+          "version": 2,
+          "html": [],
+          "css": [],
+          "behavior": {
+            "start": [],
+            "events": [],
+            "loops": []
+          },
+          "extensions": []
+        },
+        "blocksState": {
+          "blocks": {
+            "languageVersion": 0,
+            "blocks": []
+          }
+        },
+        "installedExtensions": [
+          {
+            "id": "game-2d",
+            "version": "1.2.0",
+            "installedAt": 0
+          }
+        ]
+      },
+      "gallery": {
+        "minItems": 1,
+        "maxItems": 1
+      }
+    },
+    "legacyKeys": [
+      "video-abertura",
+      "fala-desafio-do-mes",
+      "fala-desafio-em-branco",
+      "video-publicar",
+      "fala-jogue-no-mural",
+      "fala-duas-copias",
+      "experimento-copia-publicada",
+      "experimento-tema-e-regra",
+      "fala-mesma-mecanica",
+      "fala-rotina-das-versoes",
+      "fala-duas-versoes",
+      "video-ideias-e-clube",
+      "fala-nada-disso-e-tarefa",
+      "fala-cole-o-endereco",
+      "entrega-galeria-v6",
+      "video-fecho-v6",
+      "quiz-v6"
+    ],
+    "previousRetireKeys": [
+      "video-abertura-v6",
+      "conferir-publicar",
+      "video-versoes",
+      "video-ideias",
+      "video-clube"
+    ]
+  }
+]

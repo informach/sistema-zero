@@ -100,7 +100,7 @@ const movement = diagram(
     'Enquanto estiver rodando',
     nested(
       'sz_g2d_update_each_frame',
-      'A cada quadro',
+      'A cada quadro do jogo',
       prepared('Blocos para limpar a tela e desenhar o cenário') +
         block(
           'sz_g2d_top_down',
@@ -163,7 +163,7 @@ function renderItem(item: Item): string {
       : `<div class="text-section"><h3>${item.title}</h3><p>${item.text}</p></div>`
   }
   if (item.kind === 'delivery')
-    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Teste o jogo e aperte <strong>Verificar esta etapa</strong>. Se aparecer uma pendência, corrija o bloco indicado e verifique novamente.</p><p>Quando aparecer <strong>Objetivo da etapa cumprido!</strong>, espere <strong>Salvo</strong>. Aperte <strong>Enviar para o professor</strong> e confirme em <strong>Enviar</strong>. Espere o envio terminar e aperte <strong>${item.finish}</strong>.</p></div>`
+    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta etapa</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo da etapa cumprido!</strong>, espere aparecer <strong>Salvo</strong>. Clique em <strong>Enviar para o professor</strong> e confirme em <strong>Enviar</strong>. Quando o envio terminar, clique em <strong>${item.finish}</strong>.</p></div>`
   if (item.kind === 'box')
     return `<div class="soft-box box-${item.tone ?? 'note'}"><h3>${item.title}</h3><p>${item.text}</p></div>`
   return '' // Os diagramas antigos em texto foram substituídos por encaixes desenhados.
@@ -194,7 +194,23 @@ for (const page of pages) {
         ),
     )
   }
-  if (page.id === 'p4') body = items.slice(0, 2).map(renderItem).join('') + memory
+  // Dia 2 em três montagens (05/10/2026): recolher, guardar e avisar, cada uma com seu desenho.
+  if (page.id === 'p4')
+    body =
+      items.slice(0, 2).map(renderItem).join('') +
+      diagram(
+        'A retirada acontece dentro do encontro',
+        overlap('chave', block('sz_g2d_destroy_sprite', `Destruir o sprite ${field('chave')}`)),
+      ) +
+      items.slice(2).map(renderItem).join('')
+  if (page.id === 'guardar-coleta')
+    body =
+      items.slice(0, 2).map(renderItem).join('') + memory + items.slice(2).map(renderItem).join('')
+  if (page.id === 'p5')
+    body =
+      items.map(renderItem).join('') +
+      collection +
+      '<div class="note">A mensagem conta o que aconteceu. Quem guarda a informação da coleta é <strong>temChave</strong>. O jogo pode continuar sabendo da chave mesmo quando ela não está mais no chão.</div>'
   const theme = page.kicker.startsWith('Dia 2') ? 'lesson-two' : 'lesson-one'
   if (page.id === 'p10')
     sheets.push({
@@ -208,32 +224,6 @@ for (const page of pages) {
       body: '<div class="soft-box activity"><span class="pill pill--experience">Na aula, antes do certificado</span><p>Leia a fala do Zappy e responda às quatro perguntas sobre seu jogo. Esta seção tem somente a conversa do Zappy e o quiz, sem vídeo.</p></div><div class="step"><span class="number">1</span><div><h3>Pense no que você construiu</h3><p>As perguntas retomam o movimento, a informação da chave, a resposta do farol e os testes da porta. Escolha uma resposta para cada pergunta e envie para conferir.</p></div></div><div class="step"><span class="number">2</span><div><h3>Leia e confira</h3><p>Depois do envio, leia as explicações. Se algo precisar mudar, corrija e envie novamente. Você pode tentar de novo sem esperar.</p></div></div><div class="step"><span class="number">3</span><div><h3>Siga para a celebração</h3><p>Quando todas as respostas estiverem corretas, clique em <strong>Próxima seção</strong>. O vídeo e o certificado ficam na seção seguinte.</p></div></div><div class="note">Se quiser rever uma regra, volte ao seu jogo e aos passos deste caderno. A revisão ajuda a entender a aventura que você programou.</div>',
     })
   sheets.push({ ...page, theme, body, lit: page.id === 'p10' })
-  if (page.id === 'p4')
-    sheets.push({
-      id: 'encontro-chave',
-      theme: 'lesson-two',
-      kicker: 'Dia 2 · Montagem',
-      title: 'O encontro recolhe a chave',
-      subtitle:
-        'A informação já começa em falso. Agora programe o que acontece quando o personagem encontra a chave.',
-      body:
-        items.slice(2).map(renderItem).join('') +
-        diagram(
-          'A retirada acontece dentro do encontro',
-          overlap('chave', block('sz_g2d_destroy_sprite', `Destruir o sprite ${field('chave')}`)),
-        ),
-    })
-  if (page.id === 'p5')
-    sheets.push({
-      id: 'blocos-chave',
-      theme: 'lesson-two',
-      kicker: 'Dia 2 · Confira a montagem',
-      title: 'Retirar, guardar e avisar',
-      subtitle: 'A coleta faz três coisas. Cada uma tem uma função diferente no jogo.',
-      body:
-        collection +
-        '<div class="note">A mensagem conta o que aconteceu. Quem guarda a informação da coleta é <strong>temChave</strong>. O jogo pode continuar sabendo da chave mesmo quando ela não está mais no chão.</div><div class="check"><span class="pill pill--test">Confira no seu projeto</span><p>As três ações ficam dentro do encontro entre <strong>personagem</strong> e <strong>chave</strong>, na ordem mostrada. Se o texto não mudar, confira o bloco que altera <strong>aviso</strong> e o texto encaixado nele.</p></div>',
-    })
   if (page.id === 'p7')
     sheets.push({
       id: 'blocos-porta',
@@ -255,7 +245,7 @@ function pageNumber(id: string): number {
 const courseIndex = renderItem({
   kind: 'step',
   title: 'Encontre seu passo',
-  text: `<b>Dia 1:</b> movimento, velocidades e bordas, páginas ${pageNumber('p2')} a ${pageNumber('p3')}.<br><b>Dia 2:</b> experiência, coleta e memória, páginas ${pageNumber('memoria-experiencia')} a ${pageNumber('coleta-testes')}.<br><b>Dia 3:</b> experiência, duas respostas e testes, páginas ${pageNumber('porta-experiencia')} a ${pageNumber('p8')}.<br><b>Seu jogo no Mural:</b> página ${pageNumber('p9')}.<br><b>Revisão das regras:</b> página ${pageNumber('revisao-final')}.<br><b>Certificado e ajuda:</b> página ${pageNumber('p10')}.`,
+  text: `<b>Dia 1:</b> experiências, movimento, velocidade e borda, páginas ${pageNumber('andar-experiencia')} a ${pageNumber('p3')}.<br><b>Dia 2:</b> experiência, coleta e memória, páginas ${pageNumber('memoria-experiencia')} a ${pageNumber('coleta-testes')}.<br><b>Dia 3:</b> experiência, duas respostas e testes, páginas ${pageNumber('porta-experiencia')} a ${pageNumber('p8')}.<br><b>Seu jogo com a sua cara e no Mural:</b> páginas ${pageNumber('personalizar')} e ${pageNumber('p9')}.<br><b>Revisão das regras:</b> página ${pageNumber('revisao-final')}.<br><b>Certificado e ajuda:</b> página ${pageNumber('p10')}.`,
 })
 for (const sheet of sheets) sheet.body = sheet.body.replace('<!-- course-index -->', courseIndex)
 const total = sheets.length + 1

@@ -2,6 +2,7 @@ import type { LearningManifest } from '../../../packages/core/src/learning'
 import { SERVER_BLOCK_CATALOG } from '../../../packages/studio/src/blockly/blockCatalog'
 import { courseProjects as dinoProjects } from './corre-dino-projetos-qa'
 import { courseProjects as meuJeitoProjects } from './meu-jeito-projetos-qa'
+import { etapasNave, ORDEM_NAVE } from './nave-contra-asteroides-etapas'
 import { courseProjects as naveProjects } from './nave-contra-asteroides-projetos-qa'
 
 const catalog = new Map(SERVER_BLOCK_CATALOG.map((block) => [block.type, block]))
@@ -62,10 +63,11 @@ export function lessonBlockTypes(manifest: LearningManifest): string[] {
   const source =
     manifest.courseSlug === 'corre-dino'
       ? dinoProjects()[number]
-      : manifest.courseSlug === 'nave-contra-asteroides' ||
-          manifest.courseSlug === 'desafio-primeiro-jogo'
-        ? naveProjects()[number]
-        : meuJeitoProjects()[number]
+      : manifest.courseSlug === 'nave-contra-asteroides'
+        ? etapasNave()[(ORDEM_NAVE as readonly string[]).indexOf(manifest.lessonSlug) + 1]
+        : manifest.courseSlug === 'desafio-primeiro-jogo'
+          ? naveProjects()[number]
+          : meuJeitoProjects()[number]
   const types = new Set<string>()
   const pending: unknown[] = [
     source,

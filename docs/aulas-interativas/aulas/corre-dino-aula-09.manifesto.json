@@ -2,7 +2,7 @@
   "version": 5,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-09",
-  "title": "O jogo inteiro",
+  "title": "Termine e recomece a corrida",
   "retireBlockKeys": [
     "video-abertura-editorial",
     "video-qual-cacto",
@@ -16,12 +16,215 @@
     "video-jogar-novamente",
     "fala-jogar-novamente",
     "fala-entrega-editorial",
-    "video-fecho-editorial"
+    "video-fecho-editorial",
+    "video-teste-e-envio",
+    "video-abertura",
+    "fala-colisao",
+    "video-colisao",
+    "fala-tela-vazia",
+    "fala-terceiro-andar",
+    "video-tela-fim",
+    "fala-tres-camadas",
+    "video-retorno",
+    "fala-antes-da-cena",
+    "quiz-final"
   ],
   "blocks": [
     {
-      "key": "video-teste-e-envio",
-      "plannedVideo": "Título: A volta inteira antes de enviar\n\nOrigem: novo. Entra pela regra de que toda seção com o Estúdio embarcado tem um vídeo mostrando como se faz. Duração alvo: 70 a 85 segundos.\n\nGravação de tela no jogo do fim desta aula, com o Estúdio aberto. Nenhuma montagem de bloco aqui: este clipe é teste, envio e fecho do dia. Não existe botão de play, e o clipe não procura nenhum.\n\nA volta inteira, sem corte no meio, nesta ordem:\n\n1. A página recarregando, e o menu aparecendo.\n2. Um toque na tela: a partida começa.\n3. Dois ou três cactos pulados e, no meio da partida, com o Dino correndo, uma tecla qualquer apertada. Nada acontece, e esse é o segundo teste do dia.\n4. O Dino deixado bater de propósito: a explosão, a tremida, o som e a tela de fim.\n5. Um toque na tela de fim: a partida começa outra vez, com a pista vazia e nenhum cacto herdado da anterior.\n\nConferir junto, olhando a tela: a volta fecha sozinha, do menu ao recomeço, e a tecla apertada no meio da partida não faz nada. Se não aconteceu nada, os dois andares do seu Se estão certos. É a mesma conferida da Aula 7: às vezes dar certo é uma coisa não acontecer.\n\nDepois a lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFechar com a recapitulação do módulo, que era balão e virou fim de clipe: olha o que você tem agora. O jogo abre com o nome que você deu. Quem chega aperta qualquer coisa e joga. O dino corre, pula, e os cactos vêm vindo. Quando ele bate, dá para sentir. E de lá dá para tentar de novo, com a pista limpa. Começo, jogo e fim. Agora alguém pode sentar aí e jogar o seu jogo do começo ao fim, sem você explicar nada.\n\nNo último respiro, o gancho da Aula 10, que veio de balão para cá porque ele depende de ter acabado de jogar: talvez você já tenha sentido uma coisa hoje, que às vezes você perde sem ter encostado no cacto. Isso não é azar nem defeito do seu jogo. É assunto da próxima aula."
+      "key": "video-contato",
+      "plannedVideo": "Título: Observe quando o jogo reconhece a batida\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-contato",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Aproxime o cacto aos poucos e observe quando aparece BATEU."
+      }
+    },
+    {
+      "key": "experiencia-contato",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Observe quando o jogo reconhece a batida",
+        "instructions": "Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU. Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "hitbox",
+          "cenario": "corre-dino",
+          "setup": {
+            "goals": ["contact"]
+          }
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-batida-acaba-partida",
+      "plannedVideo": "Título: Encerre a partida na batida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-batida-acaba-partida",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Mude para fim dentro da colisão entre Dino e cactos."
+      }
+    },
+    {
+      "key": "video-mapa-do-jogo",
+      "plannedVideo": "Título: Mostre a tela de fim\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-mapa-do-jogo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Mostre a tela de fim no ramo que consulta fim."
+      }
+    },
+    {
+      "key": "video-batida-sentida",
+      "plannedVideo": "Título: Dê som e imagem à batida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-batida-sentida",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na colisão, exploda cacto, trema em 8, toque derrota e mude para fim."
+      }
+    },
+    {
+      "key": "video-trocar-nao-limpa",
+      "plannedVideo": "Título: Compare voltar e reiniciar\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-trocar-nao-limpa",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Compare os dois modos de voltar e observe o começo da partida seguinte."
+      }
+    },
+    {
+      "key": "experiencia-restart",
+      "content": {
+        "kind": "interactive",
+        "title": "Compare voltar e reiniciar",
+        "instructions": "Na experiência, em No fim, o Enter faz, escolha Mudar o estado do jogo para inicio. Clique em Apertar Enter para começar e espere a partida terminar. Clique em Apertar Enter para voltar à abertura e outra vez para jogar. Observe os cactos e os números da nova partida. Quando terminar novamente, troque a ação para Reiniciar o jogo. Clique em Apertar Enter para voltar e outra vez para começar. Compare os cactos e os números com a tentativa anterior.",
+        "hints": [],
+        "required": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "restart",
+          "cenario": "corre-dino"
+        },
+        "semPerguntaFinal": true
+      }
+    },
+    {
+      "key": "video-caminho-de-volta",
+      "plannedVideo": "Título: Prepare uma nova partida\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-caminho-de-volta",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Reinicie no senão se fim do evento de qualquer tecla ou toque."
+      }
+    },
+    {
+      "key": "fala-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Retome o começo, a batida e o reinício nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar."
+      }
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A condição jogando protege o quadro, mas a criação está num relógio separado. Como fazer esse relógio esperar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Aumentar a largura da tela."
+              },
+              {
+                "id": "b",
+                "label": "Colocar a criação dentro de Se jogando no próprio relógio."
+              },
+              {
+                "id": "c",
+                "label": "Retirar o desenho do Dino."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Cada regra fica onde foi montada. A condição do quadro não envolve automaticamente outro relógio."
+          },
+          {
+            "id": "q2",
+            "prompt": "A batida mudou o estado para fim, mas nenhuma tela apareceu. O que falta?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Um ramo fim com o bloco que mostra a tela."
+              },
+              {
+                "id": "b",
+                "label": "Mais um criador de Dino."
+              },
+              {
+                "id": "c",
+                "label": "Um som dentro de Ao iniciar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Mudar o estado guarda o momento do jogo. O desenho da tela precisa de uma regra nesse estado."
+          },
+          {
+            "id": "q3",
+            "prompt": "Qual ação prepara outro grupo de cactos para uma nova partida?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Apenas mostrar a abertura."
+              },
+              {
+                "id": "b",
+                "label": "Só mudar fim para inicio."
+              },
+              {
+                "id": "c",
+                "label": "Reiniciar o jogo."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "Reiniciar repete a preparação e refaz o grupo. Trocar o estado sozinho conserva os objetos anteriores."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-09.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
+      }
     },
     {
       "key": "projeto",
@@ -65,22 +268,277 @@
           "sz_val_number",
           "sz_val_text"
         ],
+        "showcase": {
+          "enabled": false,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-corre-dino-9",
+          "id": "manifest-dino-etapa-8",
           "name": "Corre, Dino!",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": ""
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos apertando espaço\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  const cactos = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  // Quando acontecer\n  SZGame2D.onJump(() => dino, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"dino-ref-39\");\n  SZGame2D.onAnyInput(() => {\n      if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    }\n    }, \"dino-ref-41\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.applyGravity(dino);\n      SZGame2D.controlDino(dino, ctx, 14);\n      SZGame2D.drawSprite(ctx, dino);\n      SZGame2D.updateGroup(cactos);\n      SZGame2D.drawGroup(ctx, cactos);\n      SZGame2D.pruneOffscreen(ctx, cactos, 40, (cacto) => {\n\n      });\n    } else if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.showScreen(ctx, \"Corre, Dino!\", \"Pule os cactos!\", \"Aperte qualquer tecla ou toque na tela para começar\", \"#102030\");\n    }\n  }, \"dino-ref-12\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        SZGame2D.spawnObstacle(cactos, ctx, { type: \"cactus\", x: 560, size: 44, vx: -5 });\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [],
-          "ir": null,
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "dino-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 270,
+                    "__id": "dino-ref-3"
+                  },
+                  "bg": "#81d4fa",
+                  "__id": "dino-ref-1"
+                },
+                {
+                  "type": "g2d:setStageDescription",
+                  "description": "Corra com o dino e pule os cactos apertando espaço",
+                  "__id": "dino-ref-4"
+                },
+                {
+                  "type": "g2d:createDino",
+                  "varName": "dino",
+                  "x": {
+                    "type": "num",
+                    "value": 110,
+                    "__id": "dino-ref-6"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 150,
+                    "__id": "dino-ref-7"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 64,
+                    "__id": "dino-ref-8"
+                  },
+                  "color": "#8b5cf6",
+                  "__id": "dino-ref-5"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "cactos",
+                  "__id": "dino-ref-9"
+                },
+                {
+                  "type": "g2d:setScene",
+                  "name": "inicio",
+                  "__id": "dino-ref-10"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onJump",
+                  "spriteVar": "dino",
+                  "body": [
+                    {
+                      "type": "g2d:playFx",
+                      "fx": "jump",
+                      "__id": "dino-ref-40"
+                    }
+                  ],
+                  "__id": "dino-ref-39"
+                },
+                {
+                  "type": "g2d:onAnyInput",
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "inicio",
+                        "__id": "dino-ref-43"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:setScene",
+                          "name": "jogando",
+                          "__id": "dino-ref-44"
+                        }
+                      ],
+                      "__id": "dino-ref-42"
+                    }
+                  ],
+                  "__id": "dino-ref-41"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "dino-ref-13"
+                    },
+                    {
+                      "type": "g2d:forest",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "dino-ref-15"
+                      },
+                      "__id": "dino-ref-14"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-17"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:applyGravity",
+                          "spriteVar": "dino",
+                          "__id": "dino-ref-18"
+                        },
+                        {
+                          "type": "g2d:controlDino",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "jump": {
+                            "type": "num",
+                            "value": 14,
+                            "__id": "dino-ref-20"
+                          },
+                          "__id": "dino-ref-19"
+                        },
+                        {
+                          "type": "g2d:drawSprite",
+                          "spriteVar": "dino",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-21"
+                        },
+                        {
+                          "type": "g2d:updateGroup",
+                          "groupVar": "cactos",
+                          "__id": "dino-ref-22"
+                        },
+                        {
+                          "type": "g2d:drawGroup",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "__id": "dino-ref-23"
+                        },
+                        {
+                          "type": "g2d:pruneOffscreen",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "itemName": "cacto",
+                          "body": [],
+                          "__id": "dino-ref-24"
+                        }
+                      ],
+                      "elseif": [
+                        {
+                          "cond": {
+                            "type": "g2d:sceneIs",
+                            "name": "inicio",
+                            "__id": "dino-ref-25"
+                          },
+                          "then": [
+                            {
+                              "type": "g2d:showScreen",
+                              "ctxVar": "ctx",
+                              "title": {
+                                "type": "str",
+                                "value": "Corre, Dino!",
+                                "__id": "dino-ref-27"
+                              },
+                              "subtitle": {
+                                "type": "str",
+                                "value": "Pule os cactos!",
+                                "__id": "dino-ref-28"
+                              },
+                              "hint": {
+                                "type": "str",
+                                "value": "Aperte qualquer tecla ou toque na tela para começar",
+                                "__id": "dino-ref-29"
+                              },
+                              "bg": "#102030",
+                              "__id": "dino-ref-26"
+                            }
+                          ]
+                        }
+                      ],
+                      "__id": "dino-ref-16"
+                    }
+                  ],
+                  "__id": "dino-ref-12"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 1.4,
+                    "__id": "dino-ref-31"
+                  },
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "g2d:sceneIs",
+                        "name": "jogando",
+                        "__id": "dino-ref-33"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:spawnObstacle",
+                          "groupVar": "cactos",
+                          "ctxVar": "ctx",
+                          "shape": "cactus",
+                          "x": {
+                            "type": "num",
+                            "value": 560,
+                            "__id": "dino-ref-35"
+                          },
+                          "size": {
+                            "type": "num",
+                            "value": 44,
+                            "__id": "dino-ref-37"
+                          },
+                          "vx": {
+                            "type": "num",
+                            "value": -5,
+                            "__id": "dino-ref-36"
+                          },
+                          "__id": "dino-ref-34"
+                        }
+                      ],
+                      "__id": "dino-ref-32"
+                    }
+                  ],
+                  "__id": "dino-ref-30"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
@@ -483,190 +941,35 @@
           ]
         }
       }
-    },
-    {
-      "key": "video-abertura",
-      "plannedVideo": "Título: Hoje o seu jogo fica inteiro\n\nPrimeiro a dor, dez segundos. Uma partida do jogo do fim da aula 8, com o dino chegando no cacto e passando por dentro dele. Nada acontece, e a partida continua.\n\nDepois a rodada do fim do dia, em velocidade normal, sem cortes: o menu, o toque na tela, o dino correndo, os cactos vindo, a batida com explosão e tremida, a tela de fim, o toque de novo, e a partida nova começando com a pista vazia.\n\nFala: “Olha o que acontece quando o dino chega no cacto. Ele passa por dentro. Os dois estão ali e nenhum dos dois sabe do outro. Hoje isso acaba, e junto com isso o seu jogo ganha um fim e um jeito de jogar de novo. Quando esta aula terminar, o seu jogo vai ter começo, meio e fim.”\n\nVem de video-abertura-editorial: a fala de retomada se aproveita, a tela é regravada inteira, porque a rodada completa precisa ser uma partida de verdade.\n\nDuração alvo: 35 a 45 segundos."
-    },
-    {
-      "key": "fala-colisao",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "A palavra de hoje é colisão, e ela quer dizer só isso: dois objetos do jogo se encostaram. No Estúdio o bloco fala colidir. Quando você ler colidir com o sprite dino, lê na sua cabeça encostar no dino."
-      }
-    },
-    {
-      "key": "video-colisao",
-      "plannedVideo": "Título: A pergunta que o jogo faz em todo quadro\n\nEm Jogo 2D, Colisões, Encostar e bloquear, pegar o Para cada sprite do grupo que colidir com o sprite, que é o maior da lista. Arrastar para dentro do Se o estado do jogo é jogando e encaixar entre o Desenhar o grupo e o Tirar do grupo cactos quem sair da tela, nomeando os dois na fala.\n\nA fala da âncora explica o lugar: “ele mora aqui dentro do motor, junto com o resto do jogo acontecendo, porque isso não é um aviso que chega quando bate. É uma pergunta que o jogo faz em todo quadro: algum cacto está encostado no dino agora?”\n\nOs três campos, um a um: grupo cactos, sprite dino, e o terceiro, o do apelido, com cacto escrito.\n\nParada congelada no terceiro campo, dez segundos. O quadro para com três cactos na pista. O que encostou ganha contorno e legenda, os outros dois ficam sem destaque, e uma seta sai dele até o campo do apelido no bloco. O destaque não pode ser só cor: contorno mais legenda.\n\nFala em cima da imagem parada: “são vários cactos no grupo. Quando um deles bate, o jogo precisa de um jeito de falar esse aqui, o que bateu agora, não os outros. Esse nome é um apelido, e daqui pra frente, dentro desse bloco, quando você falar cacto, o jogo entende que é o cacto que acabou de bater.”\n\nDepois o vídeo volta a correr: no fazer, um bloco só, o Mudar o estado do jogo para, com fim escolhido na listinha, que já vem pronta. E o teste: clicar na área do jogo, começar, e deixar o dino bater de propósito.\n\nFunde video-qual-cacto e video-colisao-fim, que hoje descrevem o mesmo trecho duas vezes. A demonstração do apelido deixa de ser seção e vira a parada congelada acima, no instante em que o campo está na tela.\n\nDireção de gravação obrigatória: a colisão com grupo é montada DENTRO do Se o estado do jogo é jogando, no A cada quadro do jogo, entre o Desenhar o grupo e a faxina. Ela não é registro de evento e não vai para a área Quando acontecer. Nenhuma tomada pode mostrar o bloco sendo levado para lá.\n\nTrocar na fala o rótulo antigo “Ir para a tela fim” pelo atual, Mudar o estado do jogo para fim, em Jogo 2D, Jogo e telas, Telas e partida.\n\nDuração alvo: 90 a 110 segundos."
-    },
-    {
-      "key": "fala-tela-vazia",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "O jogo parou e ficou só a floresta passando. Essa tela você já viu, na Aula 7, e pelo mesmo motivo: o jogo saiu do estado jogando e foi pro estado fim, e o estado fim ainda não desenha nada. A gente resolve isso agora."
-      }
-    },
-    {
-      "key": "fala-terceiro-andar",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Essa parte você já sabe fazer, porque é igual à tela de início que você montou na Aula 8. Vai naquele mesmo Se do A cada quadro do jogo, o que já tem dois andares, e clica de novo no mais senão se."
-      }
-    },
-    {
-      "key": "video-tela-fim",
-      "plannedVideo": "Título: Três andares, três estados, um bloco só\n\nO terceiro andar nascendo embaixo do senão se o estado do jogo é inicio. A pergunta o estado do jogo é __ ? encaixada no andar novo, com fim escolhido na listinha. E dentro dele o Mostrar tela com título, subtítulo, dica e fundo.\n\nOs três textos, um a um: no título, uma frase de fim; no subtítulo, alguma coisa que dê vontade de tentar de novo; e na dica, “Aperte qualquer tecla ou toque na tela para jogar de novo”.\n\nA fala amarra a dica na regra da aula passada: “é a mesma promessa da tela de início, e ela vale aqui pelo mesmo motivo: quem está no celular tem que conseguir tentar de novo.” O fundo escuro fica como nasce.\n\nTítulo, subtítulo e cor do fundo são escolha de quem constrói. A fala diz “o meu é assim”, nunca “escreve isso”. A dica não é livre: ela é a promessa, e ela é igual para todo mundo.\n\nE aí o momento do dia até agora: zoom no bloco inteiro, os três andares lidos de cima para baixo, devagar. “Se o estado do jogo é jogando, joga. Senão se é inicio, mostra o menu. Senão se é fim, mostra a tela de fim. Três andares, três estados, um bloco só. Lembra da Aula 7, quando eu disse que o jogo fica num estado de cada vez e você não viu nada mudar na tela? Está aqui. É este bloco.”\n\nVem de video-desenhar-fim. A fala se aproveita quase inteira, com os rótulos trocados: Mudar o estado do jogo para no lugar de Ir para a tela, e o estado do jogo é __ ? no lugar de a tela atual é.\n\nDuração alvo: 50 a 65 segundos."
-    },
-    {
-      "key": "fala-tres-camadas",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "A batida está meio sem graça, né. O jogo só troca de estado e pronto. São três blocos pra resolver isso, e a gente vai botar um de cada vez, batendo entre um e outro, pra você sentir o que cada um acrescenta."
-      }
-    },
-    {
-      "key": "video-retorno",
-      "plannedVideo": "Título: Uma camada de cada vez\n\nA montagem em três camadas, cada uma seguida de uma batida de propósito. Quem conduz é a narração, e o teste vem logo depois de cada bloco entrar.\n\nCamada 1. Em Jogo 2D, Desenho e efeitos, Partículas, o Soltar explosão no sprite, encaixado como o primeiro bloco do fazer, logo acima do Mudar o estado do jogo para. No campo do sprite, cacto, que é o apelido escrito no bloco de colisão. No da cor, uma bem viva, que é escolha de quem constrói. Bate. “Explodiu.”\n\nCamada 2. Em Desenho e efeitos, Efeitos, o Tremer a tela com intensidade, logo abaixo da explosão. Ele já vem com 8, deixa assim. Bate. “Agora explodiu e a tela sacudiu junto.”\n\nCamada 3. Em Jogo 2D, Som, Efeitos prontos, o Tocar efeito, aquele mesmo do pulo, encaixado entre o Tremer a tela e o Mudar o estado do jogo para. Na listinha, derrota. Bate.\n\nE o nome, depois das três: “Isso tem nome, e o nome é retorno pro jogador. É tudo aquilo que o jogo faz pra você sentir o que aconteceu. Repara nos jogos que você joga: quando você acerta ou apanha, sempre tem um monte de coisinha junto. Som, tremida, luz, faísca voando. Nunca é uma coisa só. E foi uma batida só que disparou tudo isso.”\n\nVem de video-efeitos-batida. A fala se aproveita em parte: a montagem deixa de ser seguida e passa a ser intercalada com uma batida entre cada camada, que é o conteúdo da seção.\n\nCorreção de endereço obrigatória: a explosão está em Jogo 2D, Desenho e efeitos, Partículas. A fala antiga mandava procurar no Kit espaço, e a frase sobre reaproveitar bloco bom de outro kit perde o sentido com o endereço novo e sai.\n\nManter o texto da tela de fim como alternativa perceptível ao som, para quem joga sem áudio.\n\nDuração alvo: 60 a 75 segundos."
-    },
-    {
-      "key": "fala-antes-da-cena",
-      "content": {
-        "kind": "dialogue",
-        "pose": "thinking",
-        "text": "Perder e não poder tentar de novo é ruim. Antes de montar a volta, vamos ver uma coisa que quase todo mundo erra na primeira vez."
-      }
-    },
-    {
-      "key": "experiencia-restart",
-      "content": {
-        "kind": "interactive",
-        "title": "Jogue outra vez",
-        "instructions": "Jogue até bater e volte com Mudar o estado do jogo para inicio. Conte os cactos que ficaram na pista. Depois troque a volta por Reiniciar o jogo, jogue de novo e conte outra vez.",
-        "hints": [
-          "Depois de voltar para o início, olhe a pista e conte quantos cactos ficaram lá.",
-          "Troque o que o toque faz no fim e compare as duas pistas.",
-          "Primeiro volte com Mudar o estado do jogo para inicio. Depois escolha Reiniciar o jogo e compare."
-        ],
-        "required": true,
-        "prediction": {
-          "context": {
-            "label": "A volta pelo estado inicio",
-            "explanation": "A partida acabou com cactos espalhados na pista. A volta está ligada no Mudar o estado do jogo para inicio, que é o bloco que você já conhece."
-          },
-          "prompt": "Quando a partida recomeçar por aí, como a pista vai estar?",
-          "choices": [
-            {
-              "id": "com-cactos",
-              "label": "Com os cactos da partida anterior ainda lá"
-            },
-            {
-              "id": "vazia",
-              "label": "Vazia, como quando o jogo abriu",
-              "shows": "Conte os cactos antes de voltar e conte de novo depois de voltar. O número é o mesmo."
-            }
-          ],
-          "correctChoiceId": "com-cactos"
-        },
-        "activity": {
-          "type": "experimentation",
-          "scene": "restart",
-          "cenario": "corre-dino"
-        }
-      }
-    },
-    {
-      "key": "video-caminho-de-volta",
-      "plannedVideo": "Título: O mesmo aperto, três respostas\n\nNo Quando apertar qualquer tecla ou tocar na tela, clicar no mais senão se do Se o estado do jogo é inicio que já está lá. No andar novo, encaixar a pergunta o estado do jogo é __ ? com fim escolhido. E dentro dele o Reiniciar o jogo, em Jogo 2D, Jogo e telas, Telas e partida. Ele não tem campo nenhum.\n\nA fala explica de onde vem a pista limpa, em cima do que a cena acabou de mostrar: “o Reiniciar o jogo limpa a partida e roda as três áreas do projeto de novo, do começo, como se você tivesse acabado de abrir o jogo. Por isso a pista volta vazia: o grupo de cactos é criado outra vez, do zero.”\n\nE depois a leitura do evento inteiro, com zoom: “Se está no inicio, ele começa o jogo. Se está no fim, ele reinicia. E se está jogando, ele não faz nada, porque nenhuma das duas perguntas dá sim. O mesmo aperto, três respostas diferentes, dependendo de onde o jogo está. E você montou isso uma vez só.”\n\nVem de video-jogar-novamente. A fala se aproveita, com os rótulos trocados. Conferir na gravação que o Reiniciar o jogo não ficou solto nem caiu no andar do inicio.\n\nDuração alvo: 45 a 60 segundos."
-    },
-    {
-      "key": "quiz-final",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "O apelido cacto, dentro do bloco de colisão, aponta para o quê?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "O cacto que participou daquela batida."
-              },
-              {
-                "id": "b",
-                "label": "O grupo inteiro de cactos."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O bloco entrega uma referência ao membro do grupo que encostou, e não ao grupo."
-          },
-          {
-            "id": "q2",
-            "prompt": "Onde mora o Reiniciar o jogo?",
-            "choices": [
-              {
-                "id": "b",
-                "label": "Solto dentro do A cada quadro do jogo."
-              },
-              {
-                "id": "a",
-                "label": "No andar do senão se o estado do jogo é fim, dentro do evento de entrada."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Reiniciar depende de quem joga pedir, e só faz sentido quando a partida já acabou."
-          },
-          {
-            "id": "q3",
-            "prompt": "Por que a tela de fim é desenhada em outro andar do Se?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Porque fim e jogando são estados diferentes, e cada estado desenha o seu."
-              },
-              {
-                "id": "b",
-                "label": "Para criar mais um dino."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O jogo fica num estado de cada vez, e cada andar do Se desenha o estado dele."
-          }
-        ]
-      }
     }
   ],
   "sections": [
     {
-      "key": "jogo-inteiro",
-      "title": "Hoje o seu jogo fica inteiro",
-      "intent": "presentation",
-      "objective": "Ver o dino atravessar o cacto, e ver a rodada completa que o jogo vai ter no fim desta aula.",
-      "blockKeys": ["video-abertura"],
+      "key": "contato",
+      "title": "Observe quando o jogo reconhece a batida",
+      "intent": "exploration",
+      "objective": "Aproxime o cacto aos poucos e observe quando aparece BATEU.",
+      "blockKeys": ["video-contato", "fala-contato", "experiencia-contato"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura"]
+        "blockIds": ["video-contato", "experiencia-contato"]
       }
     },
     {
       "key": "batida-acaba-partida",
-      "title": "A batida acaba a partida",
+      "title": "Encerre a partida na batida",
       "intent": "application",
-      "objective": "Montar a pergunta que o jogo faz em todo quadro, com o apelido do cacto que bateu, e fazer a batida mudar o estado do jogo para fim.",
-      "blockKeys": ["fala-colisao", "video-colisao", "fala-tela-vazia"],
+      "objective": "Mude para fim dentro da colisão entre Dino e cactos.",
+      "blockKeys": ["video-batida-acaba-partida", "fala-batida-acaba-partida"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-batida-acaba-partida"],
         "projectChecks": [
           {
             "id": "colisao",
@@ -708,16 +1011,16 @@
     },
     {
       "key": "mapa-do-jogo",
-      "title": "O bloco vira o mapa do seu jogo",
+      "title": "Mostre a tela de fim",
       "intent": "application",
-      "objective": "Dar rosto ao estado fim e ler os três andares do Se de cima para baixo, que é o retrato do jogo inteiro.",
-      "blockKeys": ["fala-terceiro-andar", "video-tela-fim"],
+      "objective": "Mostre a tela de fim no ramo que consulta fim.",
+      "blockKeys": ["video-mapa-do-jogo", "fala-mapa-do-jogo"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-mapa-do-jogo"],
         "projectChecks": [
           {
             "id": "tela-fim",
@@ -745,16 +1048,16 @@
     },
     {
       "key": "batida-sentida",
-      "title": "Faça a batida ser sentida",
+      "title": "Dê som e imagem à batida",
       "intent": "application",
-      "objective": "Encaixar explosão, tremida e som um de cada vez, batendo entre um e outro, e sentir o que cada camada acrescenta.",
-      "blockKeys": ["fala-tres-camadas", "video-retorno"],
+      "objective": "Na colisão, exploda cacto, trema em 8, toque derrota e mude para fim.",
+      "blockKeys": ["video-batida-sentida", "fala-batida-sentida"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-batida-sentida"],
         "projectChecks": [
           {
             "id": "explodir",
@@ -803,30 +1106,30 @@
     },
     {
       "key": "trocar-nao-limpa",
-      "title": "Jogar de novo não é só trocar de estado",
+      "title": "Compare voltar e reiniciar",
       "intent": "exploration",
-      "objective": "Ver que trocar o estado do jogo deixa os cactos da partida anterior na pista, e que reiniciar começa com a pista limpa.",
-      "blockKeys": ["fala-antes-da-cena", "experiencia-restart"],
+      "objective": "Compare os dois modos de voltar e observe o começo da partida seguinte.",
+      "blockKeys": ["video-trocar-nao-limpa", "fala-trocar-nao-limpa", "experiencia-restart"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-restart"]
+        "blockIds": ["video-trocar-nao-limpa", "experiencia-restart"]
       }
     },
     {
       "key": "caminho-de-volta",
-      "title": "Monte o caminho de volta",
+      "title": "Prepare uma nova partida",
       "intent": "application",
-      "objective": "Pôr o Reiniciar o jogo no andar do fim, no mesmo evento de entrada, e ler o evento inteiro: um aperto, três respostas.",
-      "blockKeys": ["video-caminho-de-volta"],
+      "objective": "Reinicie no senão se fim do evento de qualquer tecla ou toque.",
+      "blockKeys": ["video-caminho-de-volta", "fala-caminho-de-volta"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
+        "blockIds": ["video-caminho-de-volta"],
         "projectChecks": [
           {
             "id": "reiniciar",
@@ -878,17 +1181,31 @@
       }
     },
     {
-      "key": "volta-completa",
-      "title": "A volta completa, e o jogo fica de pé",
+      "key": "revisao",
+      "title": "Confira o que você construiu",
+      "intent": "explanation",
+      "objective": "Retome o começo, a batida e o reinício nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.",
+      "blockKeys": ["fala-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Rodar o jogo inteiro do menu ao recomeço, conferir que a tecla no meio da partida não faz nada, entregar o projeto e fechar o módulo.",
-      "blockKeys": ["video-teste-e-envio", "quiz-final", "projeto"],
+      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-teste-e-envio", "projeto", "quiz-final"],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "colisao",

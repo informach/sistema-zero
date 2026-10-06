@@ -4,8 +4,8 @@
 
 - Estado de entrada: projeto enviado no Dia 2, com movimento, borda e coleta.
 - Vitória do dia: a porta confere a chave; sem ela, mostra o motivo; com ela, acende a luz e aciona a chegada do barco. A criança aprende a publicar seu jogo.
-- Seções na entrada deste review: 3 · Seções finais: 4.
-- Clipes na entrada deste review: 3 · Clipes finais: 4.
+- Seções na entrada deste review: 3 · Seções finais: 5.
+- Clipes na entrada deste review: 3 · Clipes finais: 5.
 
 ## Triagem dos conceitos
 
@@ -35,9 +35,9 @@ A revisão de 04/10 torna visíveis temChave, a pergunta e as duas respostas. O 
 - **Conclui quando:** vídeo e as duas tentativas reais na experiência.
 - **Blocos:** `video-d3-condicao`, `ponte-d3-condicao`, `experiencia-porta`.
 
-**Ponte do Zappy na página (não gravar):** A coleta já guarda uma informação. Veja como a porta usa essa informação para escolher uma resposta.
+**Ponte do Zappy na página (não gravar):** Agora teste a mesma porta sem a chave e com a chave.
 
-Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não responde. Explicar condição brevemente. Orientar os testes sem realizá-los pela criança.
+Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não responde. Explicar a condição enquanto faz: o vídeo faz cada gesto no ritmo da fala e mostra o resultado real; depois, a pessoa repete os testes na experiência, que cobra as metas.
 
 ### Seção 2. Avise quando faltar a chave
 
@@ -46,9 +46,9 @@ Abrir com o estado atual: a chave já pode ser recolhida, mas a porta ainda não
 - **Conclui quando:** vídeo e dez critérios cumulativos aprovados; não pede envio.
 - **Blocos:** novo `video-d3-sem-chave`, `ponte-d3-sem-chave`, Estúdio pela `workspaceKey: projeto`.
 
-**Ponte do Zappy na página (não gravar):** Monte a resposta sem chave. Vá ao farol sem recolher a chave e confira o aviso. Verifique esta etapa antes de seguir.
+**Ponte do Zappy na página (não gravar):** Monte o aviso de que falta a chave. Vá ao farol sem pegar a chave e clique em Verificar esta etapa antes de seguir.
 
-Criar evento separado personagem/farol e Se consultando temChave. Usar **+ senão**, encaixar aviso com texto nesse ramo; então fica vazio. Atualizar, ir ao farol sem chave e conferir luz apagada e mensagem. Verificar, corrigir, esperar Salvo e seguir em Próxima seção. A checagem aceita então vazio.
+Criar evento separado personagem/farol e Se consultando temChave. A pergunta `x > 0` que nasce no Se é um bloco de verdade: vai para a lixeira antes de pôr `valor da variável temChave` no lugar vazio, senão sobra um bloco solto ou nasce `temChave > 0`, que o critério `condicao` reprova. Na parte de baixo do Se, usar o **+** de **senão** (não o de senão se), encaixar aviso com texto nesse ramo; então fica vazio. Atualizar, ir ao farol sem chave e conferir luz apagada e mensagem. Verificar, corrigir, esperar Salvo e seguir em Próxima seção. A checagem aceita então vazio.
 
 ### Seção 3. Acenda o farol com a chave
 
@@ -57,13 +57,24 @@ Criar evento separado personagem/farol e Se consultando temChave. Usar **+ senã
 - **Conclui quando:** vídeo, quatorze critérios cumulativos aprovados e envio único do dia confirmado.
 - **Blocos:** `video-d3-decisao`, `ponte-d3-decisao`, Estúdio `projeto`.
 
-**Ponte do Zappy na página (não gravar):** Complete a resposta com chave. Teste chegar sem ela, buscar e voltar, e começar outra partida. Depois verifique e envie seu jogo.
+**Ponte do Zappy na página (não gravar):** Complete a parte então para acender o farol. Teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta etapa e envie para o professor.
 
-Retomar o mesmo Se, preservando o aviso em senão. Completar então: ganhou verdadeiro, imagem farol-aceso e aviso de chegada. Não criar outro evento, outra condição ou cópia do projeto.
+Retomar o mesmo Se, preservando o aviso em senão. Completar então: ganhou verdadeiro, imagem farol-aceso e aviso de chegada. Não criar outro evento, outra condição ou cópia do projeto. A verificação não exige a frase do exemplo.
 
 Testar o percurso contínuo: Atualizar, visitar o farol sem chave, afastar, buscar a chave e voltar na mesma partida. Esperar o barco. Atualizar depois da vitória, conferir a chave de volta e ir ao farol sem recolhê-la. Conferir as mensagens e a luz nos três momentos. Terminar em **Verificar esta etapa → Objetivo da etapa cumprido! → Salvo → Enviar para o professor → Enviar → Próxima seção**.
 
-### Seção 4. Publique seu jogo
+### Seção 4. Deixe o jogo com a sua cara
+
+- **Intenção:** encerramento (`closing`), a seção de mexa e veja do curso.
+- **Por que existe:** deixar o jogo publicado com a cara da criança, com mudanças que ficam: o personagem e os avisos.
+- **Conclui quando:** vídeo. As escolhas não viram critério.
+- **Blocos:** `video-d3-personalizar`, `ponte-d3-personalizar` e o mesmo `projeto` pela workspaceKey.
+
+**Ponte do Zappy na página (não gravar):** Escolha outro personagem no bloco Criar sprite e escreva os avisos do seu jeito. Depois teste a aventura e clique em Próxima seção.
+
+Vem depois do envio e antes de publicar. Começar pelo destino: a área **Ao iniciar** e o bloco **Criar sprite personagem**; no fim dele, clicar no nome da imagem e escolher outro personagem. Todos os personagens têm a caixa 64 × 64 e a mesma área de contato, então andar, pegar a chave e chegar ao farol continuam iguais. Depois, em **Quando acontecer**, escrever os avisos com as próprias palavras. Correção do erro provável: imagem de outro tamanho (barco, farol) muda a caixa; voltar a um personagem. Testar e seguir em **Próxima seção**.
+
+### Seção 5. Publique seu jogo
 
 - **Intenção:** encerramento com publicação (`closing`).
 - **Por que existe:** mostrar o jogo a outras pessoas.
@@ -72,7 +83,7 @@ Testar o percurso contínuo: Atualizar, visitar o farol sem chave, afastar, busc
 
 **Ponte do Zappy na página (não gravar):** Agora publique no Mural o jogo que você construiu. Espere a confirmação da publicação e feche a janela antes de clicar em Concluir aula.
 
-**Compartilhar → manter título/resumo → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Fechar → Concluir aula**. O envio anterior libera Compartilhar. Personalizar, copiar link e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula.
+**Compartilhar → manter o resumo → Gerar capa → conferir → Publicar → Seu jogo está no Mural! → Fechar → Concluir aula**. O envio anterior libera Compartilhar. Trocar a capa, copiar o link e resolver problemas ficam no tutorial direto `plataforma-publicar-no-mural`, com retorno à aula.
 
 ## Experiências e demonstrações desta aula
 
@@ -87,14 +98,15 @@ Testar o percurso contínuo: Atualizar, visitar o farol sem chave, afastar, busc
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d3-condicao` | Contexto e comandos, sem revelar respostas | Cena ampliada | 40 a 55 s | Regravar |
+| `video-d3-condicao` | Explicar fazendo: testar a porta sem e com a chave | Cena ampliada | 45 a 60 s | Regravar |
 | `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 3 a 4 min | Gravar |
 | `video-d3-decisao` | Completar então, testar a aventura e enviar | Roteiro revisado | 4 a 5 min, sem acelerar os percursos | Regravar |
+| `video-d3-personalizar` | Mexa e veja: trocar o personagem e escrever os avisos | Mesmo projeto enviado | 90 a 120 s | Gravar |
 | `video-d3-fecho` | Publicar e esperar confirmação | Mesmo projeto enviado | 45 a 60 s, incluindo espera | Regravar |
 
 ## Continuidade
 
-Preservar `condicao`, `decisao`, `fecho`, chave `projeto` e cadeia. Inserir `sem-chave` entre condicao e decisao. O envio permanece somente em decisao; a publicação continua no mesmo Estúdio. Só o Estúdio do Dia 3 tem showcase habilitado, com título e resumo do Farol. Não criar uma cópia para publicar.
+Preservar `condicao`, `decisao`, `fecho`, chave `projeto` e cadeia. Inserir `sem-chave` entre condicao e decisao e `personalizar` entre decisao e fecho. O envio permanece somente em decisao; a publicação continua no mesmo Estúdio. Só o Estúdio do Dia 3 tem showcase habilitado, com título e resumo do Farol. Não criar uma cópia para publicar.
 
 Valores: temChave é consultado, ganhou vira verdadeiro apenas na resposta com chave, farol recebe farol-aceso e aviso muda conforme o ramo. O barco preparado não é atribuído à autoria da criança.
 

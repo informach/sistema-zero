@@ -1,202 +1,194 @@
-# Roteiro de gravação · Corre Dino · Aula 02 · O Dino aparece e a floresta passa
+# Roteiro de gravação · Corre, Dino! · Aula 2
 
-## Especificações
+**Mostre o Dino e a floresta**
 
-- **Formato:** gravação de tela com narração, no Estúdio embutido.
-- **Duração:** 335 a 425 segundos de clipes; 757 palavras de narração, cerca de 5.5 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** a área `Ao iniciar` com três blocos, nesta ordem: `Preparar o jogo em tela cheia, tela 480 × 270, fundo` · `Mostrar a borda da tela, cor, espessura 4` · `Criar dinossauro dino em x 110 y 150 tamanho 64 cor`. O Dino está criado e invisível, e a pergunta "cadê o Dino" ficou aberta no fim da Aula 1.
-- **Conceitos nomeados:** quadro, motor do jogo, limpar a tela, desenhar, camadas.
-- **Dor desta aula:** O Dino está criado e invisível; o rastro discreto e a floresta sobre ele aparecem no projeto real.
-- **Vitória do dia:** o Dino aparece e corre no lugar, na frente de uma floresta que passa. É o primeiro quadro desenhado do jogo dela, e é a resposta da pergunta que ficou de ontem.
-- **Valores:** Floresta em velocidade 5; nome do sprite dino. A borda provisória sai.
-- **Campos livres:** Cores herdadas da Aula 1.
-- **Nota de produção:** Mostrar o rastro como ele realmente aparece, sem fabricar borrão. Mostrar o arraste da floresta e a retirada da borda, inclusive o desfazer.
-- **O que NÃO entra, e por quê:** Não deixar duas florestas nem a borda no projeto final.
+Fonte: `qa/corre-dino.conteudo.json`. Gerado por `qa/gerar-corre-dino.ts`. Revise a fonte e regenere os três arquivos juntos.
 
-## Seção 1. O que a gente vai fazer hoje
+Entrada: Tela e Dino criados na aula 1. Saída: Dino desenhado a cada quadro, floresta em velocidade 5, limpeza e descrição acessível; borda provisória retirada.
 
-### Clipe `video-abertura` · Hoje o seu dino aparece
-**Duração alvo:** 20 a 30 segundos; recalibrar após gravar.
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
 
-**Na tela:** Reabrir a aula no estado final da Aula 1: borda, cor e nenhum Dino na área do jogo.
+## Seção 1. Compare o desenho no começo e a cada quadro
+
+### Clipe `video-quadros` · Compare o desenho no começo e a cada quadro
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Lembra da pergunta de ontem? O Dino foi criado, mas ainda não apareceu. Hoje a gente resolve
-> isso. No fim desta aula, ele vai estar correndo na frente da floresta."
+> "Seu Dino foi criado, mas ainda não aparece. Antes de desenhá-lo, compare uma imagem feita no começo com imagens que acompanham o movimento.
+>
+> Nesta experiência, deixe Desenhar o Dino em Só no começo. Clique em Avançar 1 quadro algumas vezes e compare o desenho com o x mostrado.
+>
+> Troque para A cada quadro e avance mais alguns quadros. Por último, ligue Limpar a tela antes e avance de novo. Compare os três jeitos.
+>
+> Depois dos testes, clique em Próxima seção."
 
-**Na tela:** Mostrar por poucos segundos o resultado de hoje, com a floresta passando atrás do Dino.
+**Zappy na página (não gravar):** Compare desenho único, desenho a cada quadro e desenho com limpeza.
 
-**Narração:**
-> "Hoje vamos montar o motor que põe o Dino e a floresta em movimento. Um bloco de cada vez,
-> até ele aparecer no seu jogo."
+## Seção 2. Mostre o Dino a cada quadro
 
-## Seção 2. O jogo é um filme desenhado na hora
+### Clipe `video-motor-e-dino` · Mostre o Dino a cada quadro
 
-### Clipe `video-livrinho` · Cada página é um desenho
-**Duração alvo:** 35 a 45 segundos · **Palavras:** 62
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Folhear um livrinho real, devagar, mostrando páginas ligeiramente diferentes.
-
-**Narração:**
-> "Você já viu um livrinho de folhear? Cada página traz um desenho um pouquinho diferente.
-> Quando você passa as páginas depressa, parece que o desenho se mexe."
-
-**Na tela:** Acelerar o folhear; mostrar uma página congelada ao lado da área do jogo.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Um jogo faz algo parecido, só que desenha as páginas na hora. Cada página recebe um nome:
-> **quadro**. Daqui a pouco você vai montar um bloco que pede um quadro novo várias vezes por
-> segundo."
+> "Na experiência da seção anterior, você comparou quando o desenho é feito. Seu Dino ainda não aparece porque o projeto só cria o objeto. Agora coloque o desenho na repetição.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe um espaço vazio ao lado de Ao iniciar à vista. Abra Áreas do projeto. Pegue Enquanto estiver rodando e solte separado de Ao iniciar, com espaço entre as áreas.
+>
+> Deixe à vista o interior de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e Quadros e intervalos. Pegue A cada quadro do jogo e encaixe nessa área.
+>
+> Deixe à vista o interior de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e Criar e trocar aparência. Pegue Desenhar o sprite e encaixe dentro do quadro. Escolha dino.
+>
+> Confira: criar ficou em Ao iniciar; desenhar ficou dentro de A cada quadro do jogo, em Enquanto estiver rodando. O Dino deve aparecer parado. Se não aparecer, confira o nome nos dois blocos e o encaixe do desenho.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-## Seção 3. Ligue o motor e faça o Dino aparecer
+**Zappy na página (não gravar):** Desenhe dino dentro de A cada quadro do jogo.
 
-### Clipe `video-motor-e-dino` · O motor liga e o Dino aparece
-**Duração alvo:** 75 a 90 segundos · **Palavras:** 138
+## Seção 3. Prepare uma imagem nova em cada quadro
 
-**Na tela:** Mostrar Ao iniciar à esquerda na área de montar; abrir Áreas do projeto e soltar Enquanto estiver rodando ao lado, com espaço visível.
+### Clipe `video-limpeza` · Prepare uma imagem nova em cada quadro
 
-**Narração:**
-> "Na categoria **Áreas do projeto**, pega **Enquanto estiver rodando**. Solta ao lado do **Ao
-> iniciar**, com um espaço. Uma área prepara a partida; a outra guarda o que se repete enquanto
-> o jogo acontece."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Abrir Jogo 2D > Tempo > Quadros e intervalos; pôr A cada quadro do jogo no primeiro lugar de Enquanto estiver rodando.
-
-**Narração:**
-> "Na categoria **Jogo 2D**, abre **Tempo**, depois **Quadros e intervalos**. Pega **A cada
-> quadro do jogo** e encaixa no **Enquanto estiver rodando**, que está vazio, no primeiro lugar.
-> Esse é o motor dos quadros."
-
-**Na tela:** Abrir Jogo 2D > Sprites > Criar e trocar aparência; encaixar Desenhar o sprite no primeiro lugar de A cada quadro do jogo.
-
-**Narração:**
-> "Em **Jogo 2D**, abre **Sprites**, depois **Criar e trocar aparência**. Pega **Desenhar o
-> sprite** e encaixa dentro do **A cada quadro do jogo**, que está vazio, no primeiro lugar."
-
-**Na tela:** Abrir seletor de sprite, trocar jogador por dino; mostrar o Dino surgindo.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "O campo vem como **jogador**, mas o sprite que você criou se chama **dino**. Abre a listinha
-> e escolhe dino pelo nome. Olha o seu jogo. Cadê o Dino? Está aí! Criar deixou ele pronto;
-> desenhar trouxe ele para a tela."
+> "Na experiência Compare o desenho no começo e a cada quadro, você viu o que muda ao limpar antes de desenhar. Seu Dino ainda está parado, então imagens repetidas ocupam o mesmo lugar. Prepare a limpeza antes de acrescentar movimento.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o encaixe antes de Desenhar o sprite, dentro de A cada quadro do jogo. Abra Jogo 2D, depois Desenho e efeitos e Efeitos. Pegue Limpar a tela e encaixe nesse primeiro lugar.
+>
+> Confira a sequência dentro do quadro: Limpar a tela e Desenhar o sprite dino. O Dino continua visível. Se sumir, confira se a limpeza ficou antes do desenho. Limpar a imagem não apaga o objeto que você criou.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-### Clipe `video-limpar-a-tela` · Limpar antes de desenhar
-**Duração alvo:** 45 a 55 segundos · **Palavras:** 105
+**Zappy na página (não gravar):** Limpe a tela antes de desenhar dino.
 
-**Na tela:** Zoom nas pernas do Dino durante a corrida, mostrando só o rastro sutil real.
+## Seção 4. Compare a ordem dos desenhos
 
-**Narração:**
-> "Chega perto das pernas do Dino. Fica um rastrinho pequeno, um resto do desenho de antes. O
-> motor está desenhando quadros novos, mas ninguém limpa o quadro anterior."
+### Clipe `video-camadas` · Compare a ordem dos desenhos
 
-**Na tela:** Abrir Jogo 2D > Desenho e efeitos > Efeitos; arrastar Limpar a tela para A cada quadro do jogo, logo acima de Desenhar o sprite.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Narração:**
-> "Em **Jogo 2D**, abre **Desenho e efeitos**, depois **Efeitos**. Pega **Limpar a tela** e
-> encaixa dentro do **A cada quadro do jogo**, logo acima do **Desenhar o sprite**. Ele apaga o
-> quadro antes do desenho seguinte, como uma lousa mágica."
-
-**Na tela:** Mostrar o jogo e a pilha.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Neste jogo o efeito é discreto, e logo a floresta vai pintar a tela quase toda de novo. O
-> Limpar a tela fica porque essa ordem funciona também em jogos que não têm um fundo cobrindo
-> tudo."
+> "Seu jogo já desenha o Dino. Antes de colocar o fundo, compare como a ordem dos desenhos muda o que aparece.
+>
+> Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela.
+>
+> Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta.
+>
+> Depois dos testes, clique em Próxima seção."
 
-## Seção 5. O Dino sumiu
+**Zappy na página (não gravar):** Troque a ordem dos dois desenhos e compare o que fica visível.
 
-### Clipe `video-floresta-cobre` · Cadê o dino?
-**Duração alvo:** 30 a 40 segundos · **Palavras:** 94
+## Seção 5. Coloque a floresta atrás do Dino
 
-**Na tela:** Abrir Jogo 2D > Cenários > Fundos; encaixar Desenhar fundo de floresta no A cada quadro do jogo, logo abaixo de Desenhar o sprite dino.
+### Clipe `video-ordem-certa` · Coloque a floresta atrás do Dino
 
-**Narração:**
-> "Agora entra a floresta, e eu vou pedir que você a coloque depois do Dino de propósito. Em
-> **Jogo 2D**, abre **Cenários**, depois **Fundos**. Pega **Desenhar fundo de floresta** e
-> encaixa logo abaixo do **Desenhar o sprite dino**."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar campo velocidade 4; mudar para 5 e confirmar.
-
-**Narração:**
-> "A velocidade vem em **4**. Troca por **5** e clica fora. Olha o seu jogo. A floresta
-> apareceu, mas o Dino sumiu! Ele estava aí há um segundo."
-
-**Na tela:** Manter floresta cobrindo o Dino, sem mostrar conserto.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Não é o nome do Dino que mudou. O jeito de desenhar colocou uma coisa em cima da outra. Na
-> próxima parte você vai ver exatamente essa ordem."
+> "Na experiência da seção anterior, você comparou o fundo antes e depois do Dino. No seu jogo ainda não há floresta. Coloque o fundo antes do personagem.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o encaixe entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Abra Jogo 2D, depois Cenários e Fundos. Pegue Desenhar fundo de floresta e encaixe nesse espaço.
+>
+> Deixe a velocidade em 5. Esse número controla quanto o fundo anda por quadro. A floresta deve passar atrás do Dino. Se o Dino sumir, confira a ordem: limpar, floresta e Dino. Se houver duas florestas, retire a repetida.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-## Seção 7. Quem é desenhado depois fica por cima
+**Zappy na página (não gravar):** Desenhe uma floresta em velocidade 5 antes do Dino.
 
-### Clipe `video-ordem-certa` · Quem é desenhado depois fica por cima
-**Duração alvo:** 30 a 40 segundos · **Palavras:** 94
+## Seção 6. Retire a borda provisória
 
-**Na tela:** Enquadrar a pilha: Limpar, Desenhar o sprite, Desenhar fundo de floresta. Arrastar a floresta para entre Limpar e Desenhar o sprite.
+### Clipe `video-retirar-borda` · Retire a borda provisória
 
-**Narração:**
-> "Agora arrasta a floresta para o meio, **entre Limpar a tela e Desenhar o sprite dino**.
-> Arrasta mesmo: se copiar, duas florestas passam a rodar ao mesmo tempo."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a pilha final e o Dino reaparecendo na frente da floresta.
-
-**Narração:**
-> "A pilha ficou: limpar, desenhar a floresta, desenhar o Dino. O que é desenhado depois fica
-> por cima. Essa ordem tem nome: **camadas**. Olha o seu jogo. O Dino voltou, correndo na frente
-> do cenário."
-
-**Na tela:** Aproximar o limite do cenário dentro da antiga borda.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Repara também que a floresta para certinho no limite da telinha. Ela mesma mostra onde o jogo
-> acaba. A borda que usamos ontem já fez o trabalho dela e pode sair."
+> "A floresta já mostra onde fica a área do jogo. A borda serviu para observar o tamanho da tela; agora retire apenas esse instrumento.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista Ao iniciar e a sequência de preparar, borda e criar Dino. Separe Criar dinossauro para não apagá-lo junto. Retire Mostrar a borda da tela da montagem e encaixe Criar dinossauro de novo abaixo de Preparar o jogo em tela cheia.
+>
+> Confira: Ao iniciar conserva a tela e o Dino; a borda saiu. A floresta continua passando e o Dino continua visível. Se o Dino sumir, confira se o bloco de criação foi preservado.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
 
-## Seção 8. Tire a borda sem derrubar o resto
+**Zappy na página (não gravar):** Retire a borda e preserve a criação do Dino.
 
-### Clipe `video-retirar-borda` · Tirar uma peça sem derrubar as outras
-**Duração alvo:** 55 a 65 segundos · **Palavras:** 106
+## Seção 7. Ouça a descrição do jogo
 
-**Na tela:** Mostrar Ao iniciar com Mostrar a borda da tela acima de Criar dinossauro. Arrastar a borda normalmente rumo à lixeira, mostrando o Dino indo junto.
+### Clipe `video-descricao` · Ouça a descrição do jogo
 
-**Narração:**
-> "Olha a pilha do **Ao iniciar**. A borda está no meio e o Criar dinossauro fica embaixo dela.
-> Se eu arrastar a borda inteira para a lixeira, levo os blocos de baixo junto. Olha: os dois
-> foram."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Apertar Ctrl+Z para restaurar; abrir menu contextual da borda e apontar Apagar este bloco.
-
-**Narração:**
-> "Vamos desfazer com **Control e Z**. Os dois voltaram. Agora clica com o botão direito no
-> **Mostrar a borda da tela**. Em tela de toque, segura o bloco por um instante para abrir o
-> mesmo menu. Escolhe **Apagar este bloco**."
-
-**Na tela:** Mostrar a borda sumindo e o Criar dinossauro permanecendo em Ao iniciar.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.
 
 **Narração:**
-> "Só a borda saiu, e a pilha se ligou de novo. O Dino continua criado. Olha o seu jogo: a
-> floresta marca o limite sem precisar daquele retângulo provisório."
+> "Quem usa um leitor de tela precisa ouvir o que fazer no jogo. Compare uma tela sem descrição com uma frase que explica a tarefa e o controle.
+>
+> Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente.
+>
+> Compare o que foi lido antes e depois da frase.
+>
+> Depois dos testes, clique em Próxima seção."
 
-## Seção 9. Teste, envie e fecha
+**Zappy na página (não gravar):** Ouça a tela sem descrição e depois com a tarefa e o controle escritos.
 
-### Clipe `video-fecho` · O motor e as camadas
-**Duração alvo:** 45 a 60 segundos · **Palavras:** 106
+## Seção 8. Escreva a descrição do jogo
 
-**Na tela:** Enquadrar jogo: Dino correndo no lugar, floresta passando atrás.
+### Clipe `video-descrever-jogo` · Escreva a descrição do jogo
 
-**Narração:**
-> "Confere comigo: o Dino fica no mesmo lugar e as pernas se mexem; a floresta passa atrás dele.
-> É essa combinação que dá a sensação de corrida."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a pilha final com Limpar, floresta e Dino; conferir objetivos.
-
-**Narração:**
-> "Na pilha dos quadros, a ordem é **Limpar a tela**, **Desenhar fundo de floresta**, **Desenhar
-> o sprite dino**. No **Ao iniciar**, a criação do Dino continua lá e a borda provisória saiu.
-> Confere os objetivos da seção."
-
-**Na tela:** Esperar Salvo e clicar Enviar para o professor; mostrar fecho e quiz.
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Quando tudo estiver certo, espera **Salvo** e clica em **Enviar para o professor**. Hoje você
-> ligou o motor e aprendeu camadas: o que vem depois no desenho fica na frente. Na próxima aula,
-> o Dino aprende a pular. Antes, responde ao quiz."
+> "Na experiência da seção anterior, você ouviu o que a frase acrescenta à tela. Seu projeto ainda não tem essa descrição. Escreva a orientação do jogo que está construindo.
+>
+> Se o lugar do encaixe estiver fora da tela, arraste um espaço vazio entre os blocos até encontrá-lo. Deixe esse lugar à vista antes de buscar cada peça.
+>
+> Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro, em Ao iniciar. Abra Jogo 2D, depois Jogo e telas e Telas e partida. Pegue Descrever o jogo para leitor de tela e encaixe nesse espaço.
+>
+> No texto, escreva Corra com o dino e pule os cactos apertando espaço. Essa descrição não vira uma legenda desenhada sobre a floresta; fica disponível para a ferramenta de leitura. O pulo ainda será montado, então a frase descreve o jogo completo.
+>
+> Confira o texto e o encaixe depois da preparação da tela. O Dino e a floresta devem continuar aparecendo normalmente.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Depois, clique em Próxima seção."
+
+**Zappy na página (não gravar):** Escreva a tarefa e o controle na descrição para o leitor de tela.
+
+## Seção 9. Teste e envie seu jogo
+
+### Clipe `video-entrega` · Teste e envie seu jogo
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, mostrar Verificar esta etapa e o resultado, aguardar Salvo e seguir o encaminhamento narrado.
+
+**Narração:**
+> "Seu jogo já mostra o Dino diante da floresta. Observe se o fundo passa e se o Dino permanece visível.
+>
+> Confira a ordem dentro do quadro: limpar, floresta em velocidade 5 e desenho do Dino. Confira também a descrição em Ao iniciar e a retirada da borda.
+>
+> Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo da etapa cumprido!, espere a indicação Salvo. Clique em Enviar para o professor e confirme em Enviar. Depois, clique em Concluir aula."
+
+**Zappy na página (não gravar):** Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.

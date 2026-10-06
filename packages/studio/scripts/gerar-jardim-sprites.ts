@@ -1,26 +1,26 @@
-/** Converte os seis quadros vetoriais do Pinta em arte embutida no Estúdio. */
+/** Converte os quadros vetoriais da folha do jardim em arte embutida no Estúdio. */
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { JARDIM_FOLHA_VIEWBOX, JARDIM_QUADROS, lerQuadrosDaFolha } from '../src/arte/jardim-quadros'
 
 const root = resolve(import.meta.dir, '..')
 const source = resolve(root, 'src/arte/jardim-spritesheet.svg')
 const target = resolve(root, 'src/arte/jardim-sprites.generated.ts')
 const sheet = readFileSync(source, 'utf8')
-const frames = [
-  ...sheet.matchAll(
-    /<svg x="\d+" y="0" width="64" height="64" viewBox="0 0 64 64">([\s\S]*?)<\/svg>/g,
-  ),
-]
+const frames = lerQuadrosDaFolha(sheet)
+const names = Object.keys(JARDIM_QUADROS) as Array<keyof typeof JARDIM_QUADROS>
 
-if (frames.length !== 6 || !sheet.includes('viewBox="0 0 384 64"')) {
-  throw new Error('A folha do Pinta precisa ter seis quadros de 64 × 64.')
+if (!sheet.includes(`viewBox="${JARDIM_FOLHA_VIEWBOX}"`) || frames.size !== names.length) {
+  throw new Error(
+    `A folha do jardim precisa ter ${names.length} quadros de 64 × 64 em ${JARDIM_FOLHA_VIEWBOX}.`,
+  )
 }
 
-const names = ['coruja', 'pedras', 'arbusto', 'flores', 'raposa', 'coelho'] as const
-const entries = names.map((name, index) => {
-  const body = frames[index]?.[1]?.trim()
-  if (!body) throw new Error(`Quadro vazio: ${name}`)
+const entries = names.map((name) => {
+  const { x, y } = JARDIM_QUADROS[name]
+  const body = frames.get(`${x},${y}`)
+  if (!body) throw new Error(`Quadro vazio: ${name} (${x}, ${y})`)
   return `  ${name}: ${JSON.stringify(body)},`
 })
 

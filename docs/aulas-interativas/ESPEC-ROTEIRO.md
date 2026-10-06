@@ -11,7 +11,7 @@ o jogo, seu estado atual ou a necessidade; depois dizer o que fazer.
 
 - Apresentação: anunciar o jogo e sua situação; então convidar a jogar a versão pronta.
 - Experiência: "O esconderijo ainda não responde ao toque. Toque no arbusto. Depois ligue a reação e toque de novo."
-- Construção: "Os personagens já aparecem. Agora vamos contar cada achado."
+- Construção depois de uma experiência: lembrar o que ela mostrou, testar no próprio jogo o que ainda falta e dizer o que será montado. "Na experiência da seção anterior, cada personagem encontrado somava um em Achados. Agora vamos programar essa contagem no seu jogo! Primeiro, toque num esconderijo: o personagem aparece, mas Achados continua em zero. Vamos fazer cada personagem encontrado somar um." Sem mandar clicar em Anterior.
 - Material: "Para acompanhar a montagem, este caderno reúne os passos do jogo. Consulte quando precisar."
 - Encerramento: nomear o resultado e dar a próxima ação.
 
@@ -25,17 +25,21 @@ pedagógica e a justificativa ficam na proposta da aula, para o adulto que a pre
 Encurtar a fala não permite omitir passos. Na montagem, conduzir a criança até o resultado:
 
 1. Dizer o que ela vai fazer no jogo.
-2. Dar o caminho completo da categoria, subcategoria e seção que existem.
-3. Nomear o bloco como aparece na paleta.
-4. Dizer onde encaixar, com o bloco vizinho ou o espaço vazio de destino.
-5. Dizer qual campo mudar, o valor e o que manter.
-6. Pedir o teste concreto e dizer o resultado esperado da construção.
-7. Dar uma correção curta para o erro mais provável.
-8. Dizer como terminar, incluindo confirmação de envio quando necessária.
+2. Mostrar primeiro onde o bloco vai entrar e pedir que esse lugar fique à vista: a área, o bloco vizinho ou o espaço vazio de destino. Se ele puder estar fora da tela, ensinar a arrastar um espaço vazio entre os blocos.
+3. Só então dar o caminho completo da categoria, subcategoria e seção que existem.
+4. Nomear o bloco como aparece na paleta.
+5. Pedir para arrastar até o lugar já visível e soltar quando aparecer o encaixe.
+6. Dizer qual campo mudar, o valor e o que manter.
+7. Pedir o teste concreto e dizer o resultado esperado da construção.
+8. Dar uma correção curta para o erro mais provável.
+9. Dizer como terminar, incluindo confirmação de envio quando necessária.
 
-Exemplo: "Abra Programação e depois Variáveis. Pegue Somar 1 em variável. Encaixe dentro de
-Quando clicar ou tocar, logo abaixo do bloco de visibilidade. Deixe o número em 1 e escolha
-achados. Toque em um esconderijo e confira se Achados virou 1."
+A ordem dos passos 2 a 5 não é opcional. Com o bloco preso no mouse, a criança não consegue mover o espaço dos blocos para procurar o destino.
+
+Exemplo: "Encontre Quando clicar ou tocar e deixe à vista o bloco de visibilidade que está
+dentro dele. Abra Programação e depois Variáveis. Pegue Somar 1 em variável. Arraste e solte logo
+abaixo do bloco de visibilidade. Deixe o número em 1 e escolha achados. Toque em um esconderijo e
+confira se Achados virou 1."
 
 Nunca trocar essa sequência por "faça como eu fiz", "monte a regra" ou "agora é sua vez" sem
 ensinar a montagem. Mostrar cada gesto com tempo para acompanhar; cortar enrolação não é acelerar
@@ -71,20 +75,29 @@ Na fala, "clique em Próxima seção" basta. Não explicar o que é uma seção,
 vizinhos e as diferenças entre celular e computador. O rótulo atual é **Próxima seção**,
 mesmo quando a conversa informal usa "sessão".
 
-## 4. Experiências: dar a tarefa, deixar observar
+## 4. Experiências: explicar enquanto faz
 
-Começar pelo que testar. Dizer a ordem quando ela for necessária, sem esconder um passo
-obrigatório nas pistas. A criança pode receber comandos diretos e ainda observar o resultado
-por conta própria.
+A experiência e a explicação andam juntas (Diretrizes, seção 2). O vídeo segue esta ordem:
 
-O vídeo não precisa executar todos os testes e entregar todas as respostas. Na experiência de
-toque, apontar o arbusto e Ligar a reação ao toque, pedir os dois testes e deixar a criança
-comparar. Na experiência de contagem, pedir primeiro achado, segundo achado, espaço vazio e
-recomeço. "Explore e descubra" sozinho não orienta.
+1. Diz qual ideia vai mostrar.
+2. Faz cada gesto no ritmo da fala e mostra o resultado real.
+3. Diz por que aquilo aconteceu, com uma comparação curta do dia a dia quando ajudar.
+4. Muda a regra e explica a diferença.
+5. Termina em "Agora é a sua vez", para a pessoa repetir os testes na experiência.
 
-Uma palavra nova recebe uma explicação curta ligada ao jogo. Uma analogia só entra se ajudar
-naquele momento. Não exigir a sequência analogia, definição, justificativa, promessa e tarefa.
-Não acrescentar questionários ou mudar as experiências só para encurtar a fala.
+Exemplo do toque: "Aqui está uma experiência para entender ação e reação. Toque no arbusto.
+Nada aconteceu: o jogo ainda não sabe o que fazer com o toque. Na vida, toda ação tem uma reação.
+Se alguém faz cócegas em você, você ri. No nosso jogo, o toque é a ação. Para o jogo responder, a
+gente precisa ligar uma reação a essa ação. Agora clique em Ligar a reação ao toque e toque de novo…"
+
+A comparação parte de uma regra que a criança já vive e chega ao passo concreto, com a palavra do
+botão ou do bloco. Evitar frases abstratas como "na programação, nada é automático".
+
+Na frase da comparação, a nota de tela descreve um **meme ilustrado** de 2 a 3 segundos: um desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet. A narração explica sem depender dele.
+
+A experiência continua cobrando as metas da própria pessoa; ver o vídeo não basta. Não esconder
+um passo obrigatório nas pistas. "Explore e descubra" sozinho não orienta. Não acrescentar
+questionários ou mudar as experiências só para encurtar a fala.
 
 ## 5. Falar com quem está fazendo
 

@@ -87,7 +87,7 @@ export function desafioSection(id: keyof typeof SECTION_ART, profile: DesafioOff
 }
 
 export const INCLUDED = [
-  'A Chave do Farol: introdução, três etapas de construção e certificado.',
+  'A Chave do Farol: três etapas de construção e certificado.',
   'Explicações gravadas e Estúdio integrado às atividades do curso.',
   'Experimento da porta: comparar o jogo com e sem a chave.',
   'Caderno do Aluno, tutoriais do Como Fazer e ajuda por mensagens.',

@@ -1,207 +1,137 @@
-# Roteiro de gravação · O Jogo do Meu Jeito · Aula 02 · Desenhe a sua nave
+# Roteiro de gravação · O Jogo do Meu Jeito · Aula 2
 
-## Especificações
+**Desenhe sua nave em pixel art**
 
-- **Formato:** gravação de tela com narração, no Pinta.
-- **Duração:** 365 a 460 segundos de clipes; 942 palavras de narração, cerca de 6.9 minutos a 137 palavras por minuto. As pausas de observação e de trabalho na ferramenta ocupam o restante.
-- **Calibração:** o jogo do Dia 5 está importado no Estúdio Completo, num projeto dela, e fica intocado hoje. A galeria do Pinta está vazia, e é a primeira vez que ela abre a ferramenta.
-- **Conceitos nomeados:** pixel art, grade 32 por 32, espelho, contorno fechado, cor base, luz e sombra.
-- **Dor desta aula:** Sem contorno fechado o Balde escapa; sem direção de luz a nave fica chapada ou ilegível.
-- **Vitória do dia:** a nave dela desenhada, pintada e com volume, num cartão da galeria.
-- **Valores:** Personagem em pixel art 32 por 32, chamado nave; cerca de quatro fileiras livres embaixo para o motor.
-- **Campos livres:** Formato da nave, cores, detalhes e lado de onde vem a luz.
-- **Nota de produção:** Júlio apresenta uma nave de referência sem exigir cópia. Mostrar toda ferramenta no Pinta atual, com o espaço do motor visível até o fim.
-- **O que NÃO entra, e por quê:** Não exportar imagem ainda nem colocar a nave no jogo; isso vem depois.
+Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise a fonte e regenere proposta, roteiro e manifesto juntos.
 
-## Seção 1. O que a gente vai fazer hoje
+Entrada: Cópia do jogo salva no Estúdio. Saída: Arte nave em pixel art, 32 × 32, com corpo, cabine, luz e sombra; espaço para o motor.
 
-### Clipe `video-abertura` · A nave do Júlio, pronta
-**Duração alvo:** 30 a 40 segundos · **Palavras:** 65
+Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
-**Na tela:** Mostrar a nave do Júlio pronta, no tamanho real, com cabine, asas e luz.
+## Seção 1. Aproxime duas formas de desenhar
+
+### Clipe `video-bordas` · Aproxime duas formas de desenhar
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
 
 **Narração:**
-> "Oi, eu sou o Júlio, e vou desenhar junto com você nesta parte do curso. Esta é a minha nave.
-> No fim da aula você vai ter uma nave pronta também, com corpo, cabine e detalhes."
+> "Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.
+>
+> Olhe as bordas e os detalhes ao aproximar e afastar. Compare as duas técnicas na mesma ampliação. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
 
-**Na tela:** Mostrar duas formas alternativas pequenas ao lado da referência.
+**Zappy na página (não gravar):** Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe.
 
-**Narração:**
-> "A sua não precisa ter este formato nem estas cores. Eu vou mostrar as ferramentas e o jeito
-> de deixar o desenho legível; as escolhas da nave são suas."
+## Seção 2. Prepare a folha da nave
 
-## Seção 2. Abra o Pinta e prepare a tela da sua nave
+### Clipe `video-nova-nave` · Prepare a folha da nave
 
-### Clipe `video-novo-desenho` · Quatro perguntas antes de desenhar
-**Duração alvo:** 60 a 75 segundos · **Palavras:** 173
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Na aula, apontar Abrir meu Pinta; em outra aba, Meus desenhos > Criar novo; mostrar Pixel art e Vetor.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Clica em **Abrir meu Pinta** nesta seção. Ele abre em outra aba. Na tela **Meus desenhos**,
-> clica em **Criar novo**. Na primeira pergunta, escolhe **Pixel art**: a arte é feita de
-> quadradinhos. A opção **Vetor** usa formas e pontos; ela entra em outra aula."
+> "Clique em Abrir meu Pinta nesta seção. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Clique em Começar a desenhar.
+>
+> Confira o nome nave e a grade quadrada. Se você já tem a nave deste curso, abra esse trabalho para continuar. Não precisa criar outra igual. Reserve as quatro linhas de baixo da grade para o fogo do motor. Volte à aula para experimentar o espelho antes de desenhar o contorno.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
 
-**Na tela:** Mostrar pergunta de tipo; escolher Personagem; mostrar tamanho Pequeno 16x16 e Médio 32x32 antes de clicar Médio.
+**Zappy na página (não gravar):** Crie uma arte de personagem em pixel art, tamanho Médio, chamada nave.
 
-**Narração:**
-> "Em **O que você quer criar**, escolhe **Personagem**. Na pergunta do tamanho, lê os números
-> antes de clicar: **Pequeno** é 16 por 16, **Médio** é **32 por 32**. Clica no Médio; o clique
-> já leva para a próxima pergunta."
+## Seção 3. Descubra o que o espelho repete
 
-**Na tela:** Mostrar ajuda do nome e preencher nave minúsculo; clicar Começar a desenhar; mostrar grade.
+### Clipe `video-espelho` · Descubra o que o espelho repete
 
-**Narração:**
-> "No nome, escreve **nave**, tudo minúsculo. Lê a ajuda do campo: é esse nome que vai viajar
-> para o Estúdio depois. Clica em **Começar a desenhar**. A grade de 32 por 32 apareceu e está
-> pronta."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Pinta**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
 
 **Narração:**
-> "Pause aqui e clique em **Abrir meu Pinta**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. No seu Pinta, o desenho se chama nave e a grade de pixel
-> art tem 32 por 32 quadradinhos? Se aparecer 16 por 16, volte à escolha do tamanho."
+> "Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.
+>
+> Observe onde cada espelho coloca a cópia do traço e o que acontece ao usar o balde. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
 
-## Seção 4. O contorno da sua nave, e o espaço do motor
+**Zappy na página (não gravar):** Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas.
 
-### Clipe `video-contorno` · A nave de pé, e o espaço do motor
-**Duração alvo:** 70 a 85 segundos · **Palavras:** 174
+## Seção 4. Feche o contorno da nave
 
-**Na tela:** Mostrar referências de corpo e asas; selecionar preto, ligar Espelho lado a lado e mostrar linha tracejada.
+### Clipe `video-contorno` · Feche o contorno da nave
 
-**Narração:**
-> "Escolhe uma forma para o corpo e as asas entre as referências. No Pinta, pega uma cor escura
-> para o contorno. Liga **Espelho lado a lado** e repara na linha tracejada do meio. Um traço
-> feito de um lado aparece espelhado no outro."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Selecionar Linha; traçar lateral do corpo e das asas; fechar regiões sem tocar a borda inferior.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Na caixa de ferramentas, pega **Linha**. Traça a lateral da nave, depois liga as partes para
-> formar áreas fechadas. Mantém cerca de **quatro fileiras vazias embaixo**: o fogo do motor vai
-> precisar desse espaço na próxima aula."
+> "Na sua nave, escolha uma cor escura para o contorno. Ligue Espelho lado a lado. Escolha Linha e arraste pequenos trechos para desenhar metade da ponta, a lateral e uma asa. O espelho desenha o outro lado. Você escolhe a largura e o formato.
+>
+> Feche a base acima das quatro linhas reservadas para o fogo. Aproxime para conferir se não ficou nenhuma abertura entre os trechos do contorno. Use o Lápis para fechar um quadradinho que faltar. Desligue o espelho quando terminar. Confira se a nave cabe na grade e se o espaço do motor continua livre.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
 
-**Na tela:** Fazer um traço inadequado; desfazer pela seta curva ou Ctrl+Z e refazer.
+**Zappy na página (não gravar):** Desenhe um corpo com duas asas e deixe quatro linhas livres embaixo.
 
-**Narração:**
-> "Se uma linha não ficou como você queria, usa **Desfazer**, a seta curva da barra de cima, ou
-> **Control e Z**. Traça de novo. Isso não é errar; é desenhar. Confere se as regiões que vão
-> receber cor estão fechadas."
+## Seção 5. Pinte o corpo e a cabine
 
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Pinta**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
+### Clipe `video-cores` · Pinte o corpo e a cabine
 
-**Narração:**
-> "Pause aqui e clique em **Abrir meu Pinta**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. A sua nave tem áreas fechadas para pintar e sobra uma
-> faixa de cerca de quatro fileiras vazias embaixo para o motor? O formato das asas é escolha
-> sua."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-## Seção 5. Pinte o corpo, a cabine e os detalhes
-
-### Clipe `video-cor-base` · Balde de tinta, área por área
-**Duração alvo:** 60 a 75 segundos · **Palavras:** 167
-
-**Na tela:** Desligar Espelho lado a lado; selecionar cor média e Balde de tinta; preencher cada área fechada do corpo.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Agora desliga o **Espelho lado a lado**. Escolhe uma cor de corpo que ainda permita uma
-> sombra e uma luz. Pega o **Balde de tinta** e clica dentro de cada região fechada, uma por
-> vez."
+> "Escolha uma cor para o corpo. Pegue Balde de tinta e clique dentro do contorno. Se a cor escapar para fora, use Desfazer, feche a abertura com Lápis e tente de novo. Nas asas separadas, clique dentro de cada uma para preencher.
+>
+> Escolha outra cor e use Lápis ou Linha para desenhar uma cabine dentro do corpo. Mantenha o espaço do motor vazio. Afaste a imagem e confira se você reconhece a nave pequena, como ela vai aparecer no jogo. Aguarde o salvamento antes de voltar à aula.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
 
-**Na tela:** Se tinta escapar, desfazer e apontar abertura no contorno; escolher outra cor para cabine.
+**Zappy na página (não gravar):** Preencha a nave e desenhe uma cabine dentro do corpo.
 
-**Narração:**
-> "Se a cor escapar para fora, desfaz e procura uma abertura pequena no contorno. Fecha essa
-> abertura com a Linha e tenta o Balde outra vez. Para a cabine, escolhe uma cor diferente da do
-> corpo, para ela aparecer de longe."
+## Seção 6. Mude o lado da luz
 
-**Na tela:** Pegar Lápis para um ou dois detalhes; mostrar fundo e espaço do motor transparentes.
+### Clipe `video-luz` · Mude o lado da luz
 
-**Narração:**
-> "Com o **Lápis**, acrescenta um ou dois detalhes pequenos. A cor base ocupa a maior parte, a
-> cabine se distingue e os detalhes não precisam cobrir tudo. Olha o quadriculado do fundo e as
-> quatro fileiras do motor: eles continuam transparentes."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Pinta**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
+**Na tela:** Mostrar a experiência no estado inicial e apontar os controles citados. Deixar a execução dos testes para quem faz a aula; não demonstrar as descobertas antes da participação.
 
 **Narração:**
-> "Pause aqui e clique em **Abrir meu Pinta**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. Você distingue a cabine do corpo e ainda vê o fundo e o
-> espaço do motor transparentes? As cores podem ser as que você escolheu."
+> "Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.
+>
+> Compare a mesma forma com os tons ligados e desligados; acompanhe o lado do sol. Faça a experiência. Quando as descobertas estiverem marcadas, clique em Próxima seção."
 
-## Seção 6. A luz dá volume
+**Zappy na página (não gravar):** Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros.
 
-### Clipe `video-luz` · A mesma nave, chapada e com volume
-**Duração alvo:** 25 a 35 segundos · **Palavras:** 76
+## Seção 7. Escolha um lado para a luz
 
-**Na tela:** Mostrar mesma nave chapada e com poucos traços de volume, no mesmo tamanho, com seta da luz fora da arte.
+### Clipe `video-volume` · Escolha um lado para a luz
 
-**Narração:**
-> "A nave já tem cor, mas pode parecer um adesivo plano. Com poucos riscos mais escuros e mais
-> claros, o corpo parece ter volume. Olha a mesma nave antes e depois, sem mudar o formato."
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Virar seta da luz para um lado da nave e mostrar o outro lado escurecendo.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Você escolhe de que lado vem a luz. A seta aqui é só uma indicação de fora do desenho; ela
-> não entra na arte. Na experiência seguinte, você vê a diferença que a direção faz antes de
-> riscar na sua nave."
+> "Na sua nave, decida de qual lado vem a luz. Escolha um tom mais claro da cor do corpo e pinte uma faixa pequena nesse lado com Lápis. Escolha um tom mais escuro e pinte o lado oposto. Faça o mesmo na cabine se quiser.
+>
+> Não precisa trocar a sua paleta pela minha. Compare de perto e de longe: os tons precisam aparecer e o contorno continuar fechado. Confira se a luz está do mesmo lado no corpo e na cabine. Aguarde o salvamento e volte à aula.
+>
+> Pause aqui para fazer esta parte no seu trabalho. Use Abrir meu Pinta se a ferramenta ainda não estiver aberta. Compare o resultado com a conferência que acabamos de fazer. Antes de sair, espere Guardado na sua conta. Volte a esta aba e clique em Próxima seção."
 
-## Seção 7. Dê luz e sombra à sua nave
+**Zappy na página (não gravar):** Acrescente um tom claro e um escuro sem mudar o formato da nave.
 
-### Clipe `video-volume` · Sombras primeiro, luzes depois
-**Duração alvo:** 70 a 85 segundos · **Palavras:** 174
+## Seção 8. Entregue o desenho da nave
 
-**Na tela:** Mostrar a nave inteira e a direção de luz escolhida; pegar Lápis e fazer primeiro sombras nas regiões grandes.
+### Clipe `video-entrega` · Entregue o desenho da nave
 
-**Narração:**
-> "Escolhe o lado da luz e mantém essa direção até o fim. Pega o **Lápis**. Faz primeiro poucas
-> sombras nas partes maiores, usando um tom próximo da cor de cada parte, se ele estiver na sua
-> paleta."
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Fazer luzes do lado oposto às sombras, com riscos curtos; não forçar sombra em cabine escura.
+**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
 **Narração:**
-> "Agora acrescenta luz no lado que recebe a seta. Duas ou três linhas finas já bastam. Se uma
-> parte é pequena, como um detalhe de dois quadradinhos, escolhe só luz ou só sombra. Uma cabine
-> que já está muito escura não precisa de mais sombra."
+> "Antes de enviar, confira no seu trabalho: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Se algo estiver diferente, volte ao trecho correspondente e ajuste. Aguarde o salvamento na sua conta antes de sair da ferramenta.
+>
+> Volte para esta aba da aula. Clique em Escolher no Pinta. Na lista Meus trabalhos do Pinta, selecione a arte desta aula. Se não aparecer, confira o salvamento na ferramenta e clique em Atualizar galeria. O recado para o professor é opcional. Clique em Enviar ao professor (1). Espere Trabalho recebido pelo professor. Esse envio guarda uma cópia deste momento; você continua criando na ferramenta. Depois clique em Concluir aula."
 
-**Na tela:** Mostrar nave inteira entre zooms; desfazer excesso; manter silhueta e motor livres.
-
-**Narração:**
-> "Afasta o zoom para conferir a nave inteira. Se ficou escura demais ou o corpo perdeu a forma,
-> desfaz alguns riscos. A cabine precisa continuar diferente do corpo, e o espaço de baixo
-> continua livre para o motor."
-
-**Na tela:** Mostrar a cartela de pausa com o botão **Abrir meu Pinta**; na volta, pôr o resultado de referência à vista para comparação, sem marca de aprovação automática.
-
-**Narração:**
-> "Pause aqui e clique em **Abrir meu Pinta**. A ferramenta abre em outra aba. Faça esta parte
-> lá e volte a esta aula para comparar. A luz aparece do mesmo lado nas partes da sua nave e
-> ainda dá para reconhecer a cabine e o contorno? Você escolhe de que lado vem a luz."
-
-## Seção 8. Confira, envie e fecha
-
-### Clipe `video-fecho` · A sua nave na galeria
-**Duração alvo:** 50 a 65 segundos · **Palavras:** 113
-
-**Na tela:** Mostrar nave no Pinta, silhueta, luz e quatro fileiras livres; esperar Salvo e Guardado na sua conta.
-
-**Narração:**
-> "Confere a sua nave: contorno legível, cabine diferente do corpo, luz vindo de uma direção só
-> e espaço transparente embaixo. A cor e o formato são seus. Espera os avisos **Salvo** e
-> **Guardado na sua conta** na barra de cima."
-
-**Na tela:** Voltar à galeria pela seta da esquerda; selecionar só o cartão nave na entrega.
-
-**Narração:**
-> "Volta para **Meus desenhos** pela seta à esquerda. Na entrega da aula, escolhe só o cartão
-> **nave** e envia. Se ele ainda não apareceu, confere o salvamento e atualiza a galeria. A
-> entrega guarda esta versão, mas você pode continuar desenhando depois."
-
-**Na tela:** Mostrar cartão e zoom curto; gancho.
-
-**Narração:**
-> "O espelho ajudou no contorno, o Balde pintou as áreas e poucos tons deram volume. Na próxima
-> aula, aquele espaço de baixo vira o motor, e o motor vai se mexer."
+**Zappy na página (não gravar):** Confira a arte se chama nave, tem 32 por 32, corpo e cabine legíveis; há espaço livre embaixo e a luz vem de um lado definido. Envie a arte desta aula pela galeria do Pinta desta seção.

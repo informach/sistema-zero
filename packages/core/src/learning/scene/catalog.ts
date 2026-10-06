@@ -1291,7 +1291,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     group: 'events',
     title: 'O jogo guardou a chave?',
     instruction:
-      'Deixe Guardar a coleta desligado e aperte Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Aperte Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.',
+      'Deixe Guardar a coleta desligado e clique em Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Clique em Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.',
     manipulates: 'A regra que guarda a coleta, o encontro com a chave, o afastamento e o reinício',
     success:
       'Você comparou tirar a chave do chão com guardar que ela foi encontrada. Também conferiu o que permanece na partida e o que recomeça.',
@@ -1310,7 +1310,7 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       {
         id: 'remembered-after-leaving',
         label: 'A informação continuou guardada longe da chave',
-        pedido: 'Depois de guardar a coleta, aperte Afastar e confira temChave.',
+        pedido: 'Depois de guardar a coleta, clique em Afastar e confira temChave.',
       },
       {
         id: 'reset-after-remembering',
@@ -1349,7 +1349,88 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     hints: [
       'Veja qual valor temChave guarda antes de testar a porta.',
       'Depois da tentativa, acompanhe a resposta que ficou marcada.',
-      'Teste sem a chave. Depois escolha Levar a chave e aperte Testar a porta.',
+      'Teste sem a chave. Depois escolha Levar a chave e clique em Testar a porta.',
+    ],
+  },
+  /**
+   * ⭐ O Dia 1 do Desafio do Farol (05/10/2026): três conceitos, três experiências, a MESMA cena. Cada
+   * uso cobra um par de metas pelo `setup.goals`: o andar (`still-without-arrow`, `moves-each-frame`,
+   * a missão de fábrica), a velocidade (`step-speed-3`, `step-speed-1`) e o limite da tela
+   * (`left-the-screen`, `stayed-inside`). A bancada mostra a velocidade e o limite só no caso que os cobra.
+   * ⚠️ A missão de fábrica é o par do andar porque o motor precisa de uma: sem ela, a prévia do admin e
+   * toda experimentação sem caso não teriam meta nenhuma, e a previsão de fábrica não teria o que revelar.
+   * ⚠️ Os rótulos dos controles ("Segurar a seta para a direita", "Avançar 1 quadro", "Rodar",
+   * "Velocidade 1", "Velocidade 3", "Manter dentro da tela", "Recomeçar") são citados pelos roteiros:
+   * pedido e pista os usam letra por letra.
+   */
+  'lighthouse-walk': {
+    id: 'lighthouse-walk',
+    group: 'motion',
+    title: 'Como o personagem anda',
+    instruction:
+      'Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta e avance outros quadros, um de cada vez ou com Rodar.',
+    manipulates: 'A seta para a direita, a velocidade, o limite da tela e os quadros do jogo',
+    success:
+      'A cada quadro o jogo confere a seta. Com a seta segurada, o personagem anda um pouco; com a seta solta, o personagem fica parado.',
+    successNoCaso: {
+      'moves-each-frame+still-without-arrow':
+        'A cada quadro o jogo confere a seta. Com a seta segurada, o personagem anda um pouco; com a seta solta, o personagem fica parado.',
+      'step-speed-1+step-speed-3':
+        'A velocidade é o tanto que o personagem anda a cada quadro: com 3, anda 3; com 1, anda 1.',
+      // ⚠️ Os dois de baixo servem também à Nave (`cenario: 'nave'`): dizem "o sprite", a palavra dos
+      // blocos do Estúdio ("Mover o sprite…", "Manter o sprite… dentro da tela"), que vale nos dois jogos.
+      'left-the-screen+stayed-inside':
+        'Sem o limite, o sprite passou da borda. Com Manter dentro da tela, o sprite parou inteiro na tela.',
+      'moves-each-frame+step-speed-1+step-speed-3+still-without-arrow':
+        'A cada quadro o jogo confere a seta. Solta, o sprite fica parado. Segurada, o sprite anda o tanto da velocidade: 3 com Velocidade 3, 1 com Velocidade 1.',
+    },
+    extra: 'Quantos quadros o sprite leva para chegar à borda com velocidade 3? E com 1?',
+    goals: [
+      {
+        id: 'still-without-arrow',
+        label: 'Sem a seta, o sprite ficou parado',
+        pedido:
+          'Com Segurar a seta para a direita desligado, clique em Avançar 1 quadro e olhe o x.',
+      },
+      {
+        id: 'moves-each-frame',
+        label: 'Com a seta, o sprite andou a cada quadro',
+        pedido:
+          'Ligue Segurar a seta para a direita e clique em Avançar 1 quadro duas vezes. Olhe o x.',
+      },
+      {
+        id: 'step-speed-3',
+        label: 'Com velocidade 3, ele andou 3 a cada quadro',
+        pedido:
+          'Escolha Velocidade 3, ligue Segurar a seta para a direita e clique em Avançar 1 quadro. Olhe o x.',
+        soNoCaso: true,
+      },
+      {
+        id: 'step-speed-1',
+        label: 'Com velocidade 1, ele andou 1 a cada quadro',
+        pedido:
+          'Escolha Velocidade 1, ligue Segurar a seta para a direita e clique em Avançar 1 quadro. Olhe o x.',
+        soNoCaso: true,
+      },
+      {
+        id: 'left-the-screen',
+        label: 'Sem o limite, o sprite saiu da tela',
+        pedido:
+          'Com Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Olhe a borda da tela.',
+        soNoCaso: true,
+      },
+      {
+        id: 'stayed-inside',
+        label: 'Com o limite, o sprite ficou inteiro na tela',
+        pedido:
+          'Ligue Manter dentro da tela e Segurar a seta para a direita, clique em Recomeçar e depois em Rodar. Olhe a borda da tela.',
+        soNoCaso: true,
+      },
+    ],
+    hints: [
+      'Olhe o número do quadro e o x do sprite enquanto os quadros passam.',
+      'Compare: avance quadros com a seta solta e depois com a seta segurada.',
+      'Clique em Avançar 1 quadro com Segurar a seta para a direita desligado. Depois ligue a seta e clique em Avançar 1 quadro mais duas vezes.',
     ],
   },
   restart: {
@@ -2530,6 +2611,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'found-counter': PREVIA_INICIAL,
   'collect-and-remember': PREVIA_INICIAL,
   'lighthouse-key': PREVIA_INICIAL,
+  'lighthouse-walk': PREVIA_INICIAL,
   restart: PREVIA_INICIAL,
   hitbox: PREVIA_INICIAL,
   score: PREVIA_INICIAL,

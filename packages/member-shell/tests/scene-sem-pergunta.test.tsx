@@ -12,8 +12,8 @@ import { SceneConclusion } from '../src/components/scene-conclusion'
 /**
  * A CENA QUE ENTRA SEM A PERGUNTA DO FIM (decisão da dona, 17/09/2026).
  *
- * A Aula 1 atual tem três cenas, com perguntas herdadas do modelo. Também testamos o contrato
- * do player caso uma aula futura use `semPerguntaFinal`.
+ * Desde a revisão de 05/10/2026, a Aula 1 tem o jogo pronto e quatro experiências, e todas
+ * fecham sem a pergunta herdada do modelo (`semPerguntaFinal`), como pedem as Diretrizes.
  */
 
 const AULA_1 = resolve(
@@ -34,22 +34,28 @@ function blocosDaAula() {
 describe('a Aula 1 atual do Corre Dino chega ao player', () => {
   const cenas = blocosDaAula()
 
-  test('as três cenas continuam lá e nenhuma ganha palpite sem declaração', () => {
+  test('o jogo pronto e as quatro experiências estão lá, e nenhuma ganha palpite sem declaração', () => {
     expect([...cenas.keys()].sort()).toEqual([
       'descoberta',
       'experiencia-coordenadas',
       'experiencia-tela',
+      'experiencia-uma-vez-e-sempre',
+      'jogo-pronto',
     ])
     for (const [chave, bloco] of cenas)
       expect(publicInteractiveBlock(bloco).prediction, chave).toBeUndefined()
   })
 
-  test('as três cenas mandam a pergunta herdada do modelo', () => {
-    const comPergunta = [...cenas]
-      .filter(([, bloco]) => publicInteractiveBlock(bloco).checkpoint !== undefined)
-      .map(([chave]) => chave)
-      .sort()
-    expect(comPergunta).toEqual(['descoberta', 'experiencia-coordenadas', 'experiencia-tela'])
+  test('as quatro experiências fecham sem a pergunta herdada do modelo', () => {
+    const experiencias = [...cenas].filter(([, bloco]) => bloco.activity.type === 'experimentation')
+    expect(experiencias.map(([chave]) => chave).sort()).toEqual([
+      'descoberta',
+      'experiencia-coordenadas',
+      'experiencia-tela',
+      'experiencia-uma-vez-e-sempre',
+    ])
+    for (const [chave, bloco] of experiencias)
+      expect(publicInteractiveBlock(bloco).checkpoint, chave).toBeUndefined()
   })
 
   test('uma cena marcada sem pergunta perde o checkpoint, e o campo de autoria não vaza', () => {

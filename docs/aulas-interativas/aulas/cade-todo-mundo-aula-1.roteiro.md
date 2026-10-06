@@ -10,9 +10,9 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 
 **Narração:**
 
-> “Oi! Vamos construir o jogo Cadê Todo Mundo? Aqui está a versão pronta para você jogar antes de montar o seu.
+> “Oi! Você vai construir um jogo chamado Cadê Todo Mundo. Nele, três personagens estão escondidos no jardim, e você toca nos esconderijos para encontrar cada um.
 >
-> Tem três personagens escondidos no jardim. Toque nos esconderijos até encontrar os três. Assim você vê como o jogo funciona.
+> Aqui está a versão pronta para você jogar antes de montar o seu. Toque nos esconderijos até encontrar os três.
 >
 > Quando encontrar todo mundo, clique em Próxima seção.”
 
@@ -28,7 +28,7 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 
 **Narração:**
 
-> “Este caderno tem os passos para montar o seu jogo. Se esquecer um bloco ou onde encaixar, consulte o caderno aqui.
+> “Este caderno tem os passos para montar o seu jogo. Se esquecer qual bloco usar ou onde ele encaixa, consulte o caderno aqui.
 >
 > Você pode voltar a esta parte da aula quando precisar. Não precisa baixar nem imprimir.
 >
@@ -40,41 +40,55 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 
 ## 3. O que um toque faz?
 
-**Duração alvo:** 30 a 40 segundos.
+**Duração alvo:** 45 a 60 segundos.
 
-**Na tela:** mostrar a experiência começando com a reação desligada. Apontar para o jardim da experiência ao dizer **aqui**. Apontar para o arbusto e para **Ligar a reação ao toque** quando forem citados. Não executar o teste no vídeo nem revelar seu resultado.
+**Na tela:** mostrar a experiência com a reação desligada. Tocar no arbusto e deixar ver que nada acontece. Clicar em **Ligar a reação ao toque**, tocar de novo e deixar ver o arbusto invisível e o coelho. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase das cócegas, o Zappy morrendo de rir com uma pena fazendo cócegas, com a legenda "ação: cócega · reação: risada". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
 **Narração:**
 
-> “Aqui está uma experiência com o jardim do jogo. Toque no arbusto e veja o que acontece.
+> “Aqui está uma experiência para entender ação e reação.
 >
-> Agora clique em Ligar a reação ao toque. Toque no mesmo arbusto de novo e compare.
+> Toque no arbusto. Nada aconteceu: o jogo ainda não sabe o que fazer com o toque.
 >
-> O toque é o que você faz. A reação é o que o jogo faz depois. Teste dos dois jeitos para ver a diferença.
+> Na vida, toda ação tem uma reação. Se alguém faz cócegas em você, você ri. A cócega é a ação, e a risada é a reação.
 >
-> Quando terminar os dois testes, clique em Próxima seção.”
+> No nosso jogo, o toque é a ação. Para o jogo responder, a gente precisa ligar uma reação a essa ação.
+>
+> Agora clique em Ligar a reação ao toque e toque no arbusto de novo. Ele ficou invisível, e dá para ver o coelho que estava atrás. Essa é a reação que ligamos ao toque.
+>
+> Agora é a sua vez: faça os dois testes na experiência e clique em Próxima seção.”
 
-**Zappy abaixo do vídeo:** “Teste o mesmo toque com a reação desligada e ligada.”
+**Zappy abaixo do vídeo:** “Use o mesmo arbusto nos dois testes e compare o que acontece.”
 
-**Conferência de produção:** manter as duas metas da experiência, sem palpite nem pergunta final. Dizer como começar não significa contar o resultado. O vídeo não faz os testes pela criança.
+**Conferência de produção:** o vídeo faz cada gesto no ritmo da fala, mostra o resultado real e explica o porquê; depois, a pessoa repete os testes na experiência, que cobra as metas. A comparação do dia a dia é curta e ligada ao jogo. Sem palpite nem pergunta final.
 
 ## 4. Faça alguém aparecer
 
 **Duração alvo:** 3 a 4 minutos, incluindo os gestos de montagem e teste.
 
-**Na tela:** abrir o Estúdio incorporado com o projeto inicial. Enquadrar a área **Quando acontecer** e o evento do grupo **esconderijos**, ainda vazio. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.
+**Na tela:** abrir o Estúdio incorporado com o projeto inicial. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo na Pré-visualização e mostrar que nada acontece. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio entre os blocos se ela começar fora da tela, e enquadrar o evento do grupo **esconderijos**, ainda vazio. Deixar à vista o espaço ao lado de **fazer** antes de abrir a paleta. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.
 
 **Narração:**
 
-> “Agora faça um personagem aparecer no seu jogo quando você tocar no esconderijo. O jardim e os personagens já estão preparados. Você vai acrescentar a regra do toque.
+> “Na experiência da seção anterior, o arbusto só desapareceu depois que você ligou a reação ao toque. Agora vamos programar isso no seu jogo!
 >
-> Encontre a área Quando acontecer. Nela já está o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. Cada esconderijo é um sprite, um objeto do jogo. O nome escolhido é o esconderijo que você tocar.
+> Primeiro, toque num esconderijo. Nada acontece: o toque ainda não tem uma reação.
 >
-> Abra Jogo 2D, depois Sprites e depois Aparência. Pegue o bloco Deixar o sprite com 50% de visibilidade.
+> Vamos ligar uma: quando você tocar num esconderijo, o personagem que está atrás vai aparecer. O jardim e os personagens já estão preparados.
 >
-> Arraste esse bloco para o espaço vazio dentro de Quando clicar ou tocar. Solte quando aparecer o encaixe.
+> Encontre a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ver essa área.
 >
-> No bloco que você colocou, escolha escolhido na lista de sprites. Troque o número 50 por 0. Com zero de visibilidade, o esconderijo fica invisível e dá para ver o personagem que está atrás.
+> Nela já está o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. Cada esconderijo é um sprite, um objeto do jogo. O nome escolhido é o esconderijo que você tocar.
+>
+> Deixe à vista o espaço vazio dentro desse bloco, ao lado da palavra fazer.
+>
+> Agora abra Jogo 2D, depois Sprites e depois Aparência. Pegue o bloco Deixar o sprite jogador com 50% de visibilidade.
+>
+> Arraste até o espaço vazio ao lado de fazer e solte quando aparecer o encaixe.
+>
+> O bloco chega com o nome jogador. Clique em jogador. Na lista que abre, desça até o fim e clique em escolhido.
+>
+> Depois clique no número 50 e troque por 0. Com zero de visibilidade, o esconderijo fica invisível e dá para ver o personagem que está atrás.
 >
 > Confira: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0.”
 
@@ -82,9 +96,9 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 
 **Narração:**
 
-> “Agora teste no seu jogo. Toque em um esconderijo e veja se o personagem aparece. Depois toque em outro.
+> “Agora teste no seu jogo. Toque em um esconderijo: o personagem que está atrás aparece. Achados continua em zero por enquanto. Depois toque em outro.
 >
-> Se ninguém aparecer, confira o encaixe dentro de Quando clicar ou tocar, o nome escolhido e o número 0. Corrija o que estiver diferente e teste de novo. Por enquanto, Achados continua em zero.
+> Se ninguém aparecer, confira o encaixe dentro de Quando clicar ou tocar, o nome escolhido e o número 0. Se sempre some o mesmo esconderijo, troque o nome para escolhido. Corrija e teste de novo.
 >
 > Funcionou? Clique em Verificar esta etapa. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
@@ -94,4 +108,4 @@ Um vídeo por seção. As falas em citação são lidas; as notas de tela são s
 
 **Zappy abaixo do vídeo:** “Monte a regra do toque, teste nos esconderijos e clique em Verificar esta etapa antes de enviar seu jogo para o professor.”
 
-**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite com ___% de visibilidade; 50 é o valor inicial. A opção escolhido depende do bloco estar dentro do evento preparado. A seção exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.
+**Conferência de produção:** a Pré-visualização atualiza automaticamente. O bloco é Deixar o sprite ___ com ___% de visibilidade e nasce com jogador e 50. A opção escolhido só existe com o bloco dentro do evento preparado e aparece no fim da lista de sprites, depois dos seis sprites com imagem; é preciso rolar a lista. A seção exige vídeo, aprovação em **Verificar esta etapa** e envio. A verificação depende desse clique; o envio não a executa automaticamente. Manter o projeto da criança, sem abrir Pinta ou o Estúdio completo.

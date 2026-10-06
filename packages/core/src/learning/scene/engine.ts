@@ -75,7 +75,11 @@ import {
   HITBOX_DRAWINGS_TOUCH,
   HITBOX_VISIBLE_GAP,
   initialScene,
+  LIGHTHOUSE_WALK,
   LUGARES_NAO_SORTEADOS,
+  lighthouseWalkGone,
+  lighthouseWalkMaxX,
+  lighthouseWalkOutSeenX,
   observe,
   PLACAR_NAO_VISTO,
   POOL_CROSSING,
@@ -155,6 +159,10 @@ export function openScene(start: SceneStart): SceneState {
 function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): void {
   aberto.collection.collectedThisRound = false
   aberto.lighthouse.checkedKey = null
+  // ⚠️ O andar do Farol: o caso escolhe só a velocidade e o limite (a seta e ONDE o personagem está
+  // são sempre os de fábrica, ver `isSceneSetup`); os quadros que passaram, o rastro e a espera do
+  // Rodar são história, e ela começa vazia.
+  aberto.walk = { ...aberto.walk, frame: 0, trail: [aberto.walk.x], idle: 0, run: 0 }
   // Os fantasmas e os "onde eu estava antes" passam a apontar para onde a cena ABRE.
   aberto.place = { ...aberto.place, fromX: aberto.place.x, fromY: aberto.place.y }
   aberto.drive = {
@@ -429,6 +437,32 @@ export function stepScene(
         collectedThisRound: false,
       }
       s.caption = 'A partida recomeçou. A chave voltou ao chão.'
+      break
+    case 'hold-arrow':
+      // ⚠️ Sem legenda: a chave da bancada diz o estado, e a frase "a seta está segurada" seria a
+      // mesma coisa duas vezes. O que ela faz só aparece com o QUADRO.
+      s.walk.arrow = action.held
+      s.walk.idle = 0
+      break
+    case 'walk-speed':
+      s.walk.speed = action.speed
+      s.walk.idle = 0
+      break
+    case 'keep-on-screen':
+      s.walk.keepInside = action.enabled
+      s.walk.idle = 0
+      break
+    case 'restart-walk':
+      // As ESCOLHAS ficam (seta, velocidade, limite): recomeçar é o mesmo programa numa partida nova.
+      s.walk = {
+        ...s.walk,
+        frame: 0,
+        x: LIGHTHOUSE_WALK.start,
+        trail: [LIGHTHOUSE_WALK.start],
+        idle: 0,
+        run: 0,
+      }
+      s.caption = `De volta ao começo: quadro 0, x ${LIGHTHOUSE_WALK.start}.`
       break
     case 'key-state':
       s.lighthouse.hasKey = action.hasKey
@@ -1947,6 +1981,51 @@ export function stepScene(
   return s
 }
 
+/**
+ * Um quadro da `lighthouse-walk`, na ordem dos blocos do Dia 1: a seta segurada soma a velocidade ao
+ * x; DEPOIS, com o limite na regra, o x é preso para o personagem caber inteiro na tela.
+ *
+ * ⚠️⚠️ Cada meta só cai com o que ela afirma À VISTA (pedidos-no-motor):
+ * - `still-without-arrow`: um quadro passou com a seta solta e o x NÃO mudou. ⚠️ Conferido, e não
+ *   suposto: com o personagem fora da tela, ligar o limite com a seta solta o traz de volta.
+ * - `moves-each-frame`: `LIGHTHOUSE_WALK.runSeen` quadros SEGUIDOS com a seta segurada e o x
+ *   subindo (preso na borda, não andou; um quadro só é um passo, não "a cada quadro").
+ * - `step-speed-3` / `step-speed-1`: o x aumentou EXATAMENTE a velocidade (o limite não cortou o passo).
+ * - `left-the-screen`: sem o limite, a metade da caixa ATRAVESSOU a borda NESTE quadro
+ *   (`LIGHTHOUSE_WALK.outSeen`). ⚠️ A travessia, e não o estado: um retrato que já estivesse fora
+ *   derrubaria a meta sem a criança ver o personagem sair.
+ * - `stayed-inside`: com o limite, a seta segurada e o personagem JÁ na borda, mais um quadro e ele
+ *   continuou inteiro na tela: é o limite segurando, e não ele chegando.
+ */
+function quadroDoAndar(s: SceneState): void {
+  const walk = s.walk
+  const antes = walk.x
+  const limite = lighthouseWalkMaxX()
+  walk.frame = Math.min(walk.frame + 1, LIGHTHOUSE_WALK.max)
+  if (walk.arrow) walk.x = Math.min(walk.x + walk.speed, LIGHTHOUSE_WALK.max)
+  if (walk.keepInside) walk.x = Math.max(0, Math.min(walk.x, limite))
+  walk.trail = [...walk.trail, walk.x].slice(-LIGHTHOUSE_WALK.trail)
+  walk.idle = walk.x === antes ? Math.min(walk.idle + 1, walk.frame) : 0
+  walk.run = walk.arrow && walk.x > antes ? Math.min(walk.run + 1, walk.frame) : 0
+  if (!walk.arrow && walk.x === antes)
+    observe(s, 'still-without-arrow', 'Sem a seta, o sprite ficou parado')
+  if (walk.run >= LIGHTHOUSE_WALK.runSeen)
+    observe(s, 'moves-each-frame', 'Com a seta, o sprite andou a cada quadro')
+  if (walk.arrow && walk.x - antes === walk.speed)
+    observe(
+      s,
+      walk.speed === 3 ? 'step-speed-3' : 'step-speed-1',
+      walk.speed === 3
+        ? 'Com velocidade 3, ele andou 3 a cada quadro'
+        : 'Com velocidade 1, ele andou 1 a cada quadro',
+    )
+  const saida = lighthouseWalkOutSeenX()
+  if (!walk.keepInside && antes < saida && walk.x >= saida)
+    observe(s, 'left-the-screen', 'Sem o limite, o sprite saiu da tela')
+  if (walk.keepInside && walk.arrow && antes === limite && walk.x === limite)
+    observe(s, 'stayed-inside', 'Com o limite, o sprite ficou inteiro na tela')
+}
+
 /** Nomes alternativos de metas, aplicados somente quando a aula os escolhe. */
 function observarMetaEquivalenteDoCaso(start: SceneStart, state: SceneState): void {
   const targets = start.setup?.goals
@@ -2019,6 +2098,10 @@ function quadrosDoTempo(relogio: SceneClock, fps: number, segundos: number): num
  */
 function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
   const scene = start.scene
+  if (scene === 'lighthouse-walk') {
+    quadroDoAndar(s)
+    return
+  }
   if (scene === 'fixed-vs-read') {
     s.fixedRead.shots = s.fixedRead.shots
       .map((shot) => ({ ...shot, y: Math.max(-50, shot.y - 6) }))
@@ -2793,7 +2876,28 @@ export function sceneJumpLeftView(scene: SceneId, before: SceneState, after: Sce
  * encostados, apertar ▶ de novo não mexe em nada, e o ▶ para na primeira fatia dizendo a situação.
  */
 export function sceneClockReachedStop(scene: SceneId, after: SceneState): boolean {
+  if (scene === 'lighthouse-walk') return lighthouseWalkOut(after)
   return scene === 'circle-collision' && encostam(after)
+}
+
+/**
+ * ⚠️ O personagem da `lighthouse-walk` saiu INTEIRO da tela sem o limite (05/10/2026): dali em diante só
+ * o número cresce, e o "Rodar" não tem o que mostrar. A bancada FECHA o Rodar pela mesma régua, e o
+ * Recomeçar vira o próximo passo. Com o limite ligado o próximo quadro o traz de volta: ainda há o que ver.
+ */
+export function lighthouseWalkOut(state: SceneState): boolean {
+  return lighthouseWalkGone(state.walk) && !state.walk.keepInside
+}
+
+/**
+ * ⚠️ O "Rodar" da `lighthouse-walk` também para quando o x fica PARADO por `LIGHTHOUSE_WALK.idleStop`
+ * quadros (2 s): a seta solta, ou o limite segurando o personagem na borda. Olha a PASSAGEM por cada
+ * múltiplo, e não o estado: apertar Rodar de novo roda mais 2 s (os quadros continuam passando, que é
+ * o que a criança quer ver), em vez de parar no primeiro tique.
+ */
+function lighthouseWalkIdleStop(before: SceneState, after: SceneState): boolean {
+  const passo = LIGHTHOUSE_WALK.idleStop
+  return Math.floor(after.walk.idle / passo) > Math.floor(before.walk.idle / passo)
 }
 
 /**
@@ -2863,6 +2967,7 @@ export function sceneClockShouldStop(
   preset?: ScenePreset,
 ): boolean {
   if (scene === 'once-vs-always') return onceRunFinished(after.once, oncePreset(preset))
+  if (scene === 'lighthouse-walk' && lighthouseWalkIdleStop(before, after)) return true
   const salta = isSceneAction({ type: 'jump', input: 'tap' }, scene)
   if (salta && (after.flight.time === null || sceneJumpLeftView(scene, before, after))) return true
   return sceneClockReachedStop(scene, after)

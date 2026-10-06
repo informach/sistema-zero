@@ -2,7 +2,7 @@
   "version": 5,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-06",
-  "title": "O medidor mostra o que ninguém vê",
+  "title": "Retire os cactos que saíram",
   "retireBlockKeys": [
     "abertura",
     "explicacao",
@@ -26,7 +26,6 @@
     "video-construir-4-1",
     "zappy-construir-4",
     "zappy-convite-construir-3",
-    "video-entrega",
     "zappy-entrega",
     "zappy-revisao",
     "video-abertura-editorial",
@@ -34,59 +33,31 @@
     "fala-provocar",
     "fala-aposentar-medidor",
     "fala-entrega-editorial",
-    "video-fecho-editorial"
+    "video-fecho-editorial",
+    "video-abertura",
+    "fala-medidor-placar",
+    "fala-medidor-valor",
+    "fala-medidor-resto",
+    "fala-medidor-cor",
+    "video-medidor",
+    "video-provocar",
+    "fala-faxina-campos",
+    "fala-limpa-antes-de-ler",
+    "video-aposentar-medidor",
+    "quiz-final",
+    "fala-proxima-aula"
   ],
   "blocks": [
     {
-      "key": "video-abertura",
-      "plannedVideo": "Título: Tem uma coisa acontecendo que você não vê\n\nTela regravada. Origem: video-abertura-editorial.\n\nO jogo dela rodando, bonito, sem defeito nenhum aparente: cacto vindo, Dino pulando, tudo funcionando. Deixar rodar tempo suficiente para ela procurar o defeito e não achar.\n\nFala: olha o seu jogo. Cacto vindo, Dino pulando, tudo funcionando. Só que tem uma coisa acontecendo aí dentro, agora, que você não tem como ver. Hoje a gente vai construir um medidor para enxergar essa coisa, e depois vai consertar ela.\n\nNão dizer qual é o problema. A aula inteira depende de ele continuar invisível até o medidor acender.\n\nDuração alvo: 25 a 35 segundos."
-    },
-    {
-      "key": "fala-medidor-placar",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Em Jogo 2D, Vida e placar, Indicadores e texto na tela, pega o Mostrar placar e encaixa dentro do A cada quadro do jogo, logo abaixo do Desenhar o grupo cactos, que hoje é o último bloco de lá. Ele tem seis campos, e a gente vai passar por todos. O primeiro é o texto: apaga o que veio escrito e escreve Cactos."
-      }
-    },
-    {
-      "key": "fala-medidor-valor",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "O segundo campo é o valor, e é onde entra a peça que conta. Em Jogo 2D, Grupos, Criar e percorrer, pega o quantos sprites tem no grupo e arrasta por cima do que já está no campo do valor. No campinho do grupo dele, escolhe cactos."
-      }
-    },
-    {
-      "key": "fala-medidor-resto",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Esse bloco sabe quantos sprites estão dentro do grupo agora, e sozinho ele não mostra nada: ele só sabe o número. Por isso a gente emprestou o Mostrar placar, que é um bloco que sabe mostrar. Depois vêm o x e o y, que são o lugar do número na tela: deixa os dois como vieram, porque isso aqui é um medidor, não é o placar do jogo."
-      }
-    },
-    {
-      "key": "fala-medidor-cor",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "O quinto campo é a cor, e eu vou botar um azul escuro, porque o céu do jogo é claro e o número precisa aparecer. O sexto é o tamanho, e fica como veio. Agora olha a área do jogo."
-      }
-    },
-    {
-      "key": "video-medidor",
-      "plannedVideo": "Título: Um medidor para o invisível\n\nTela regravada. Origem: video-medidor.\n\nO gesto e os seis campos, um a um, com o encaixe do valor arrastado por cima do campo, que é o gesto que ela nunca fez antes. Termina no número aparecendo no canto da área do jogo.\n\nA fala nomeia o método: esse número é o nosso medidor. Ele não vai ficar no jogo para sempre: ele é o nosso instrumento, para enxergar o invisível.\n\nPreservar a escolha do azul escuro contra o céu claro, e o motivo dela.\n\nNeste clipe o relógio continua em 1.4. Não mexer nele aqui.\n\nDuração alvo: 60 a 70 segundos."
-    },
-    {
-      "key": "video-provocar",
-      "plannedVideo": "Título: O número que só sobe\n\nTela regravada. Origem: video-provocar, com a leitura de base acrescentada antes da provocação.\n\nEm duas partes, e a ordem é obrigatória.\n\nParte um, o ritmo normal: o medidor aceso com o relógio ainda em 1.4, e a câmera parada nele por uns segundos, mostrando o número subir devagar e não descer nunca. Fala: no ritmo do nosso jogo, com o relógio em 1.4, o problema já está acontecendo. Olha o número: ele sobe e não volta. Só que ele sobe tão devagar que você ia ficar um tempão aí olhando até desconfiar.\n\nParte dois, a provocação, e ela é dita com todas as letras: então a gente vai apressar o relógio de propósito, só para ver em dez segundos uma coisa que levaria minutos. Vai no relógio, aquele A cada 1.4 segundos fazer, e troca o 1.4 por 0.1. Isso faz nascer cacto quase sem parar. Agora olha o número: vinte, cinquenta, cento e vinte, duzentos. E ele nunca desce.\n\nFecha sem conserto: cada cacto que sai pela esquerda continua existindo. Ele some da sua vista, e o jogo continua cuidando dele: movendo, desenhando, tomando conta de um monte de cacto que ninguém vai ver de novo. E isso já estava acontecendo desde a Aula 5, no seu jogo, o tempo todo. Você não fazia ideia, e não era falta de atenção sua: foi o medidor que contou.\n\nNão encurtar a parte um. Sem a leitura de base em 1.4, a criança conclui que o acúmulo é invenção do 0.1.\n\nDuração alvo: 35 a 45 segundos."
+      "key": "video-visivel-guardado",
+      "plannedVideo": "Título: Compare a tela com o grupo\n\nRegravar no Estúdio atual. Mostrar a experiência no estado inicial e apontar os controles citados. Deixar os testes para quem faz a aula, sem antecipar os resultados.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-visivel-guardado",
       "content": {
         "kind": "dialogue",
-        "pose": "thinking",
-        "text": "O número diz que os cactos continuam lá. Só que a tela não mostra. Nesta bancada dá para olhar os bastidores e ver onde eles estão guardados."
+        "pose": "speaking",
+        "text": "Compare o grupo antes e depois de ligar a limpeza."
       }
     },
     {
@@ -94,71 +65,117 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Para onde vai o cacto que sai da tela?",
-        "instructions": "Deixa o tempo passar e vê um cacto sair da tela. Olha a prateleira dos bastidores e conta. Depois liga o Tirar do grupo quem sair da tela e compara de novo. Repara também no cacto que ainda está chegando, lá na direita.",
-        "hints": [
-          "Olhe a prateleira dos bastidores quando um cacto sai.",
-          "Conte os cactos da prateleira depois que um cacto sai.",
-          "Ligue o Tirar do grupo quem sair da tela e deixe o tempo passar de novo."
-        ],
+        "title": "Compare a tela com o grupo",
+        "instructions": "Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita.",
+        "hints": [],
         "activity": {
           "type": "experimentation",
           "scene": "cleanup",
           "cenario": "corre-dino"
         },
-        "prediction": {
-          "context": {
-            "label": "A limpeza dos cactos",
-            "explanation": "Nesta experiência, vamos comparar um cacto que saiu da tela com o que ainda está guardado nos bastidores."
-          },
-          "prompt": "O cacto que saiu da tela ainda existe no jogo?",
-          "choices": [
-            {
-              "id": "some",
-              "label": "Não, ele sumiu",
-              "shows": "Os cactos que saíram foram para a prateleira dos bastidores."
-            },
-            {
-              "id": "existe",
-              "label": "Sim, ele continua guardado"
-            }
-          ],
-          "correctChoiceId": "existe",
-          "revealOn": "invisible-stored"
-        }
+        "semPerguntaFinal": true
       }
+    },
+    {
+      "key": "video-faxina",
+      "plannedVideo": "Título: Retire do grupo quem já saiu\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-faxina",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Em Jogo 2D, Grupos, Participação e limpeza, pega o Tirar do grupo quem sair da tela, para cada um (chamado ), aquele comprido. Encaixa dentro do A cada quadro do jogo, entre o Desenhar o grupo cactos e o Mostrar placar do medidor."
+        "text": "Limpe o grupo cactos a cada quadro e conserve o intervalo 1.4."
       }
     },
     {
-      "key": "fala-faxina-campos",
+      "key": "fala-revisao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Ele tem dois campos e um espaço de fazer. No campo do grupo, escolhe cactos. O apelido vem escrito sprite: troca por cacto, para ficar com a cara do nosso jogo. E o espaço de fazer, por dentro, deixa vazio, que hoje a gente não precisa dele."
+        "text": "Retome o som e os cactos nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar."
       }
     },
     {
-      "key": "fala-limpa-antes-de-ler",
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O Dino pula com espaço e com toque. Onde ligar um som que acompanha os dois?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Em Quando o sprite pular."
+              },
+              {
+                "id": "b",
+                "label": "Somente em Quando apertar Espaço."
+              },
+              {
+                "id": "c",
+                "label": "Em Ao iniciar."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O evento do Dino acompanha o salto, independentemente do controle usado. A tecla sozinha não representa todos os pulos."
+          },
+          {
+            "id": "q2",
+            "prompt": "O jogo cria cactos a cada quadro. O que ajuda a deixar um intervalo entre os nascimentos?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Trocar a cor do cacto."
+              },
+              {
+                "id": "b",
+                "label": "Desenhar cada cacto duas vezes."
+              },
+              {
+                "id": "c",
+                "label": "Criar dentro de um relógio com intervalo."
+              }
+            ],
+            "correctChoiceIds": ["c"],
+            "explanation": "O relógio espera entre uma criação e outra. O desenho continua sendo atualizado em cada quadro."
+          },
+          {
+            "id": "q3",
+            "prompt": "Um cacto passou da borda. O que retira esse objeto do grupo?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Limpar a tela antes do fundo."
+              },
+              {
+                "id": "b",
+                "label": "Tirar do grupo quem sair da tela."
+              },
+              {
+                "id": "c",
+                "label": "Parar de desenhar o Dino."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Limpar a tela prepara outra imagem. A regra do grupo retira os objetos antigos; sair da imagem sozinho não faz isso."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nRegravar no Estúdio atual. Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Ele vem antes do medidor de propósito: primeiro a gente limpa, depois a gente lê o número. Agora olha o número, ainda com o relógio em 0.1."
+        "text": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula."
       }
-    },
-    {
-      "key": "video-faxina",
-      "plannedVideo": "Título: O número sobe e desce\n\nTela regravada. Origem: video-faxina e a primeira metade de video-aposentar-medidor, fundidos num clipe só.\n\nEm duas partes.\n\nParte um, o conserto: o gesto do bloco comprido, os dois campos, e o número subindo e descendo com o relógio ainda em 0.1. Fala: ele sobe e desce, e fica equilibrado, oscilando numa faixa em vez de crescer sem parar. Porque agora, quando o cacto sai da tela, ele é descartado de verdade. Esse número subindo e descendo é a vitória de hoje. Parece pouco, e é o retrato de um jogo saudável: nasce, sai, é descartado, e o número fica no lugar. Isso tem nome: chama faxina. E a regra vale sempre: todo jogo que faz coisas nascerem sem parar precisa de uma faxina para limpar quem já foi embora.\n\nParte dois, a prova em outro ritmo: trocar o relógio para 0.5, com o medidor aceso, e comparar. Fala: com 0.5 nasce muito menos, e o número sobe e desce bem mais baixo. Repara no que é igual nos dois: em nenhum deles o número fica só subindo. Não importa o ritmo, a faxina dá conta.\n\nNão prometer zero. O número oscila enquanto cactos novos continuam chegando.\n\nDuração alvo: 70 a 85 segundos."
-    },
-    {
-      "key": "video-aposentar-medidor",
-      "plannedVideo": "Título: O instrumento a gente guarda\n\nTela regravada. Origem: segunda metade de video-aposentar-medidor, sem as duas promessas de aulas futuras. Este clipe passou a levar o fecho do dia inteiro: absorveu os balões de gesto e de recapitulação que viviam na entrega, porque balão depois da ferramenta não existe para quem está com o Estúdio aberto do lado.\n\nO que passa na tela, nesta ordem:\n\n1. A troca do relógio de 0.5 de volta para 1.4, dita como devolução: esse é o ritmo do nosso jogo, e é ele que vale daqui para frente.\n2. A leitura tranquila do medidor nesse ritmo: um número baixo, subindo e descendo devagar. Esse é o seu jogo em paz.\n3. A apresentação do medidor antes da retirada: ele é o Mostrar placar lá embaixo, com o bloco de contar encaixado dentro dele.\n4. O arrasto do Mostrar placar para a lixeira, com o bloco de contar indo junto, porque está encaixado lá dentro. A pilha final à vista.\n5. Uma partida curta jogada depois da faxina: os cactos entram pela direita, passam e somem, e não tem mais número nenhum cobrindo a partida.\n6. A lista de objetivos conferida, um por um, e o gesto de enviar, na tela: esperar a etiqueta Salvo do Estúdio embutido e apertar o Enviar para o professor.\n\nFala de método: o medidor fez o trabalho dele. Mostrou para você um problema que era invisível, você consertou, e ele mostrou que o conserto funcionou. Agora ele sai, porque ele nunca foi parte do jogo: era instrumento, e instrumento a gente guarda quando termina de usar. Olha o seu A cada quadro do jogo agora: ele ficou com oito blocos, do Limpar a tela até a faxina, e é assim que ele fica no fim de hoje.\n\nFechar com a recapitulação do dia, que era balão e virou fim de clipe: hoje é o único dia do curso em que o seu jogo terminou com a mesma cara de quando começou. Só que ele não é o mesmo. Antes, cada cacto que saía da tela ficava guardado para sempre, e o seu jogo carregava uma fila que só crescia. Agora ele descarta quem já foi embora, sozinho, a cada quadro. Você mediu antes de consertar, consertou, e mediu de novo para ter certeza.\n\nSaem do clipe as duas promessas de peça futura, a do raio-X e a da volta do Mostrar placar. A frase de método fica, porque ela é sobre o que acabou de acontecer na tela.\n\nO gancho da Aula 7 continua em balão, logo abaixo, porque ele não depende de ter acabado de jogar.\n\nDuração alvo: 70 a 85 segundos."
     },
     {
       "key": "projeto",
@@ -176,7 +193,6 @@
           "sz_g2d_apply_gravity",
           "sz_g2d_clear",
           "sz_g2d_control_dino",
-          "sz_g2d_count_group",
           "sz_g2d_create_dino",
           "sz_g2d_create_group",
           "sz_g2d_draw_group",
@@ -194,22 +210,188 @@
           "sz_g2d_update_group",
           "sz_val_number"
         ],
+        "showcase": {
+          "enabled": false,
+          "title": "Corre, Dino!",
+          "summary": "Pule os cactos, some pontos e tente ir mais longe numa corrida que fica mais rápida."
+        },
         "initialProject": {
           "formatVersion": 2,
           "projectTools": [],
-          "id": "manifest-corre-dino-6",
+          "id": "manifest-dino-etapa-5",
           "name": "Corre, Dino!",
           "createdAt": 0,
           "updatedAt": 0,
           "mode": "blocks",
           "files": {
-            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Corre, Dino!</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": ""
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#81d4fa\");\n  SZGame2D.setStageDescription(\"Corra com o dino e pule os cactos apertando espaço\");\n  const dino = SZGame2D.createDino({ x: 110, y: 150, size: 64, color: \"#8b5cf6\" });\n  const cactos = SZGame2D.createGroup();\n  // Quando acontecer\n  SZGame2D.onJump(() => dino, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"dino-ref-28\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawForest(ctx, 5);\n    SZGame2D.applyGravity(dino);\n    SZGame2D.controlDino(dino, ctx, 14);\n    SZGame2D.drawSprite(ctx, dino);\n    SZGame2D.updateGroup(cactos);\n    SZGame2D.drawGroup(ctx, cactos);\n  }, \"dino-ref-11\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      SZGame2D.spawnObstacle(cactos, ctx, { type: \"cactus\", x: 560, size: 44, vx: -5 });\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [],
-          "ir": null,
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "dino-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 270,
+                    "__id": "dino-ref-3"
+                  },
+                  "bg": "#81d4fa",
+                  "__id": "dino-ref-1"
+                },
+                {
+                  "type": "g2d:setStageDescription",
+                  "description": "Corra com o dino e pule os cactos apertando espaço",
+                  "__id": "dino-ref-4"
+                },
+                {
+                  "type": "g2d:createDino",
+                  "varName": "dino",
+                  "x": {
+                    "type": "num",
+                    "value": 110,
+                    "__id": "dino-ref-6"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 150,
+                    "__id": "dino-ref-7"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 64,
+                    "__id": "dino-ref-8"
+                  },
+                  "color": "#8b5cf6",
+                  "__id": "dino-ref-5"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "cactos",
+                  "__id": "dino-ref-9"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onJump",
+                  "spriteVar": "dino",
+                  "body": [
+                    {
+                      "type": "g2d:playFx",
+                      "fx": "jump",
+                      "__id": "dino-ref-29"
+                    }
+                  ],
+                  "__id": "dino-ref-28"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "dino-ref-12"
+                    },
+                    {
+                      "type": "g2d:forest",
+                      "ctxVar": "ctx",
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "dino-ref-14"
+                      },
+                      "__id": "dino-ref-13"
+                    },
+                    {
+                      "type": "g2d:applyGravity",
+                      "spriteVar": "dino",
+                      "__id": "dino-ref-15"
+                    },
+                    {
+                      "type": "g2d:controlDino",
+                      "spriteVar": "dino",
+                      "ctxVar": "ctx",
+                      "jump": {
+                        "type": "num",
+                        "value": 14,
+                        "__id": "dino-ref-17"
+                      },
+                      "__id": "dino-ref-16"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "dino",
+                      "ctxVar": "ctx",
+                      "__id": "dino-ref-18"
+                    },
+                    {
+                      "type": "g2d:updateGroup",
+                      "groupVar": "cactos",
+                      "__id": "dino-ref-19"
+                    },
+                    {
+                      "type": "g2d:drawGroup",
+                      "groupVar": "cactos",
+                      "ctxVar": "ctx",
+                      "__id": "dino-ref-20"
+                    }
+                  ],
+                  "__id": "dino-ref-11"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 1.4,
+                    "__id": "dino-ref-22"
+                  },
+                  "body": [
+                    {
+                      "type": "g2d:spawnObstacle",
+                      "groupVar": "cactos",
+                      "ctxVar": "ctx",
+                      "shape": "cactus",
+                      "x": {
+                        "type": "num",
+                        "value": 560,
+                        "__id": "dino-ref-24"
+                      },
+                      "size": {
+                        "type": "num",
+                        "value": 44,
+                        "__id": "dino-ref-26"
+                      },
+                      "vx": {
+                        "type": "num",
+                        "value": -5,
+                        "__id": "dino-ref-25"
+                      },
+                      "__id": "dino-ref-23"
+                    }
+                  ],
+                  "__id": "dino-ref-21"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
           "blocksState": {
             "blocks": {
               "languageVersion": 0,
@@ -478,266 +660,39 @@
           ]
         }
       }
-    },
-    {
-      "key": "quiz-final",
-      "content": {
-        "kind": "quiz",
-        "passingScore": 100,
-        "questions": [
-          {
-            "id": "q1",
-            "prompt": "Um cacto que saiu da tela foi necessariamente apagado?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Não, pode continuar guardado no grupo."
-              },
-              {
-                "id": "b",
-                "label": "Sim, tudo fora da tela deixa de existir."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Visibilidade e existência são coisas diferentes."
-          },
-          {
-            "id": "q2",
-            "prompt": "Por que usar o mesmo ritmo antes e depois da faxina?",
-            "choices": [
-              {
-                "id": "b",
-                "label": "Para mudar o tamanho do Dino."
-              },
-              {
-                "id": "a",
-                "label": "Para comparar o efeito da limpeza."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "Manter o ritmo controla uma das variáveis da comparação."
-          },
-          {
-            "id": "q3",
-            "prompt": "Depois de tirar o medidor, a faxina deve ficar?",
-            "choices": [
-              {
-                "id": "a",
-                "label": "Sim, ela continua cuidando do grupo."
-              },
-              {
-                "id": "b",
-                "label": "Não, o medidor é que apaga os cactos."
-              }
-            ],
-            "correctChoiceIds": ["a"],
-            "explanation": "O medidor informa; a rotina de limpeza remove."
-          }
-        ]
-      }
-    },
-    {
-      "key": "fala-proxima-aula",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Na Aula 7 o seu jogo vai aprender que ele está sempre num lugar de cada vez."
-      }
     }
   ],
   "sections": [
     {
-      "key": "abertura",
-      "title": "O que a gente vai fazer hoje",
-      "intent": "presentation",
-      "objective": "Saber no primeiro minuto que a aula é sobre uma coisa que não aparece na tela, para não passar o dia procurando um defeito visível.",
-      "blockKeys": ["video-abertura"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-abertura"]
-      }
-    },
-    {
-      "key": "medidor",
-      "title": "Um medidor para ver o invisível",
-      "intent": "application",
-      "objective": "Montar o Mostrar placar com o quantos sprites tem no grupo cactos encaixado no valor. É a única peça do curso que entra sabendo que vai sair, e isso é dito na hora de montar.",
-      "blockKeys": [
-        "fala-medidor-placar",
-        "fala-medidor-valor",
-        "fala-medidor-resto",
-        "fala-medidor-cor",
-        "video-medidor"
-      ],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [],
-        "projectChecks": [
-          {
-            "id": "medidor",
-            "label": "Mostre a quantidade do grupo cactos no valor do medidor.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_score",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "inputBlocks": {
-                "VALUE": {
-                  "blockType": "sz_g2d_count_group",
-                  "fields": {
-                    "GROUP": "cactos"
-                  }
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "numero-que-so-sobe",
-      "title": "O número que só sobe",
-      "intent": "application",
-      "objective": "Ler o medidor primeiro no ritmo do jogo, com o relógio em 1.4, e só então apressar o relógio para 0.1 de propósito, sabendo que é uma lente de aumento e não o defeito.",
-      "blockKeys": ["video-provocar"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": [],
-        "projectChecks": [
-          {
-            "id": "medidor",
-            "label": "Mostre a quantidade do grupo cactos no valor do medidor.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_score",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "inputBlocks": {
-                "VALUE": {
-                  "blockType": "sz_g2d_count_group",
-                  "fields": {
-                    "GROUP": "cactos"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "id": "intervalo-cactos",
-            "label": "Mantenha a criação de cactos no relógio de 0.1 s.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_every_seconds",
-              "area": "loops",
-              "inputs": {
-                "SECS": 0.1
-              },
-              "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_g2d_spawn_obstacle",
-                  "fields": {
-                    "GROUP": "cactos"
-                  }
-                }
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "key": "visivel-guardado",
-      "title": "Sair da tela não é ser apagado",
+      "title": "Compare a tela com o grupo",
       "intent": "exploration",
-      "objective": "Abrir os bastidores, ligar e desligar a regra, e ver que o cacto que ainda está chegando pela direita não é tirado do grupo.",
-      "blockKeys": ["fala-visivel-guardado", "experiencia-visivel-guardado"],
+      "objective": "Compare o grupo antes e depois de ligar a limpeza.",
+      "blockKeys": [
+        "video-visivel-guardado",
+        "fala-visivel-guardado",
+        "experiencia-visivel-guardado"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["experiencia-visivel-guardado"]
+        "blockIds": ["video-visivel-guardado", "experiencia-visivel-guardado"]
       }
     },
     {
       "key": "faxina",
-      "title": "A faxina",
+      "title": "Retire do grupo quem já saiu",
       "intent": "application",
-      "objective": "Encaixar a faxina entre o Desenhar o grupo cactos e o medidor, e ver o mesmo número que denunciou o problema passar a subir e descer. Depois, a prova em outro ritmo.",
-      "blockKeys": ["fala-faxina", "fala-faxina-campos", "fala-limpa-antes-de-ler", "video-faxina"],
+      "objective": "Limpe o grupo cactos a cada quadro e conserve o intervalo 1.4.",
+      "blockKeys": ["video-faxina", "fala-faxina"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [],
-        "projectChecks": [
-          {
-            "id": "faxina",
-            "label": "Remova do grupo cactos quem saiu da tela, a cada quadro.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_prune_offscreen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "fields": {
-                "GROUP": "cactos"
-              }
-            }
-          },
-          {
-            "id": "medidor",
-            "label": "Mostre a quantidade do grupo cactos no valor do medidor.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_draw_score",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "inputBlocks": {
-                "VALUE": {
-                  "blockType": "sz_g2d_count_group",
-                  "fields": {
-                    "GROUP": "cactos"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "id": "medir-depois",
-            "label": "Faça a faxina antes de ler o medidor.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_g2d_prune_offscreen",
-              "area": "loops",
-              "withinBlock": "sz_g2d_update_each_frame",
-              "beforeBlock": "sz_g2d_draw_score"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "key": "devolver-e-entregar",
-      "title": "Devolve o relógio, guarda o medidor e entrega",
-      "intent": "delivery",
-      "objective": "Terminar com o projeto exatamente como a Aula 7 assume: relógio em 1.4, faxina no laço e nenhum medidor. Enviar e fechar o ciclo que ela mesma abriu no começo do dia.",
-      "blockKeys": ["video-aposentar-medidor", "fala-proxima-aula", "quiz-final", "projeto"],
-      "workspaceKey": "projeto",
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-aposentar-medidor", "projeto", "quiz-final"],
+        "blockIds": ["video-faxina"],
         "projectChecks": [
           {
             "id": "faxina",
@@ -774,7 +729,79 @@
           },
           {
             "id": "sem-medidor",
-            "label": "Retire o placar provisório usado como medidor.",
+            "label": "Mantenha o projeto sem um placar de teste para contar cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_score",
+              "count": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "Confira o que você construiu",
+      "intent": "explanation",
+      "objective": "Retome o som e os cactos nas perguntas. Leia as explicações depois de enviar. Você pode corrigir e tentar de novo quantas vezes precisar.",
+      "blockKeys": ["fala-revisao", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste e envie seu jogo",
+      "intent": "delivery",
+      "objective": "Teste o resultado da aula, verifique a etapa e envie o projeto. Confirme em Enviar e clique em Concluir aula.",
+      "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-entrega", "projeto"],
+        "projectChecks": [
+          {
+            "id": "faxina",
+            "label": "Remova do grupo cactos quem saiu da tela, a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_prune_offscreen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "GROUP": "cactos"
+              }
+            }
+          },
+          {
+            "id": "intervalo-cactos",
+            "label": "Mantenha a criação de cactos no relógio de 1.4 s.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1.4
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_spawn_obstacle",
+                  "fields": {
+                    "GROUP": "cactos"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "sem-medidor",
+            "label": "Mantenha o projeto sem um placar de teste para contar cactos.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_draw_score",
