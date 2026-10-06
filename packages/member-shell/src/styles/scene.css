@@ -633,6 +633,14 @@
   white-space: normal;
   height: auto;
 }
+/* A bancada que pede quebra em TODO botão dela (`sz-scene-quebra`, hoje a `lighthouse-walk`): a chave
+ * "Segurar a seta para a direita: desligado" tem 273px numa linha só e estourava a prancha num
+ * celular de 390 (a 320 a página rolava de lado). Opt-in, para não mexer nas outras 60 bancadas. */
+.sz-scene-quebra [data-tom] {
+  white-space: normal;
+  height: auto;
+  max-width: 100%;
+}
 /* O "Ver a explicação" da revisita: uma linha recolhida no fim do bloco, sem cartão próprio. */
 .sz-scene-explicacao {
   min-width: 0;

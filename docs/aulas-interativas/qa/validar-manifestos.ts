@@ -35,9 +35,9 @@ const arquivos = readdirSync(DIR)
   .filter((f) => f.endsWith('.manifesto.json') && f.includes(filtro))
   .sort()
 
-if (arquivos.length === 0 || (!filtro && arquivos.length !== 34)) {
+if (arquivos.length === 0 || (!filtro && arquivos.length !== 37)) {
   console.error(
-    `Esperados ${filtro ? 'manifestos com o filtro' : '34 manifestos'}, encontrados ${arquivos.length} em ${DIR}`,
+    `Esperados ${filtro ? 'manifestos com o filtro' : '37 manifestos'}, encontrados ${arquivos.length} em ${DIR}`,
   )
   process.exit(1)
 }
@@ -285,8 +285,10 @@ function diagnosticarNovoModelo(
         !fechamentoComProjetoJaEntregue
       )
         problemas.push(`seção "${chave}": conclusão não comprova a prática no projeto`)
-      if (section.externalTool && !completion.platformAction)
-        problemas.push(`seção "${chave}": conclusão não comprova a prática na ferramenta externa`)
+      // Aplicações externas são autoconferidas e culminam na galeria obrigatória.
+      // problemasPedagogicos verifica ferramenta, posição e recebimento da entrega.
+      // platformAction só modela ações internas (avatar, quarto, tema), incompatíveis
+      // com externalTool no contrato real de conclusão.
     }
   }
 

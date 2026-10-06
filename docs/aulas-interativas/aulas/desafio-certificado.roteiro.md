@@ -1,22 +1,30 @@
 # Roteiro de gravação · A Chave do Farol · Certificado
 
-Duas seções: quiz sem vídeo e celebração com um vídeo de 20 a 30 segundos e o bloco de certificado existente. Não acrescentar oferta, tour ou pedido para chamar um responsável para assistir a uma apresentação comercial. A emissão continua sendo a ação de conclusão, junto do vídeo.
+Duas seções: quiz sem vídeo e celebração com um vídeo curto e o bloco de certificado existente. Não acrescentar oferta, tour ou pedido para chamar um responsável para assistir a uma apresentação comercial. A emissão continua sendo a ação de conclusão, junto do vídeo.
 
 ## Seção 1. As regras da sua aventura
 
 **Seção sem vídeo. Não gravar clipe de quiz.** O diálogo aparece na página antes das perguntas.
 
-**Zappy na página (não gravar):** Seu personagem anda, recolhe a chave e faz o farol responder. Responda quatro perguntas sobre o que você programou. As explicações ajudam a conferir seu raciocínio e corrigir o que precisar.
+**Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Agora responda quatro perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
-**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Após enviar, a pessoa lê as explicações e pode corrigir imediatamente. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção.
+**Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Depois de enviar, a pessoa lê as explicações e pode corrigir na hora. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção.
 
 ## Seção 2. Comemore sua criação
 
 ### Vídeo `video-certificado-farol` · Comemore sua criação
 
-**Na tela:** mostrar brevemente os três grupos de blocos programados no curso e depois o botão **Pegar meu certificado**. Usar uma conta de ensaio sem certificado emitido para gravar a primeira emissão. Caso já exista, o botão real é **Baixar certificado (PDF)**; não simular uma segunda emissão. Terminar apontando **Concluir aula**.
+**Duração alvo:** 20 a 30 segundos.
+
+**Na tela:** mostrar brevemente os três grupos de blocos programados no curso e depois o botão **Pegar meu certificado**. Usar uma conta de ensaio sem certificado emitido para gravar a primeira emissão. Se já existir, o botão real é **Baixar certificado (PDF)**; não simular uma segunda emissão. Terminar apontando **Concluir aula**.
 
 **Narração:**
-> "Você programou o personagem para andar, fez o jogo guardar a coleta da chave e ensinou o farol a conferir se ela foi encontrada. Os desenhos e o movimento do barco já estavam preparados. As regras que ligaram essa aventura foram montadas por você. Aperte Pegar meu certificado para guardar essa conquista. Depois, aperte Concluir aula."
+> "Você programou o personagem para andar, fez o jogo guardar a chave e ensinou o farol a conferir se ela foi encontrada.
+>
+> Os desenhos e o barco já vieram prontos. As regras que fazem a aventura funcionar foram montadas por você.
+>
+> Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula."
 
 **Ponte do Zappy na página (não gravar):** Você programou o movimento, a coleta da chave e a decisão do farol. Clique em Pegar meu certificado para guardar essa conquista. Depois, clique em Concluir aula.
+
+**Conferência de produção:** a seção exige o vídeo e a emissão do certificado. Quem já emitiu encontra **Baixar certificado (PDF)**. A celebração não antecipa outra aula nem inclui venda.

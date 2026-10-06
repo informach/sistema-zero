@@ -137,6 +137,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       'retomada',
       'variavel-achados',
       'contar-achados',
+      'personalizar',
       'conclusao',
     ])
     const concept = m.sections.find((section) => section.key === 'variavel-achados')
@@ -156,7 +157,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       })
       expect(experience.content.semPerguntaFinal).toBe(true)
       expect(experience.content.instructions).toBe(
-        'O que acontece com Achados quando você encontra alguém, procura sem achar e começa outra busca?',
+        'Toque em um esconderijo e olhe Achados. Toque em outro. Depois toque num espaço vazio do jardim. Por último, clique em Recomeçar a busca.',
       )
       expect(experience.content.prediction).toBeUndefined()
       expect(blockPrediction(experience.content)).toBeUndefined()
@@ -280,10 +281,13 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
 
     const second = manifesto('aula-2')
     const secondStudio = second.blocks.find((b) => b.key === 'projeto')?.content
-    expect(projectCheckAuthoring(secondStudio).issues(checks('aula-2')[0]!.rule)).toEqual([])
-    expect(evaluateStudioSectionProject(checks('aula-2'), afterFirst).every((c) => !c.passed)).toBe(
-      true,
-    )
+    for (const check of checks('aula-2'))
+      expect(projectCheckAuthoring(secondStudio).issues(check.rule), check.id).toEqual([])
+    // A entrega da Aula 2 conserva a regra da Aula 1; só a contagem é nova.
+    expect(checks('aula-2').map((check) => check.id)).toEqual(['revelar-ao-toque', 'somar-achado'])
+    const depoisDaAula1 = evaluateStudioSectionProject(checks('aula-2'), afterFirst)
+    expect(depoisDaAula1.find((c) => c.checkId === 'revelar-ao-toque')?.passed).toBe(true)
+    expect(depoisDaAula1.find((c) => c.checkId === 'somar-achado')?.passed).toBe(false)
     const finished = montarProjetoCompleto()
     expect(evaluateStudioSectionProject(checks('aula-2'), finished).every((c) => c.passed)).toBe(
       true,

@@ -259,6 +259,20 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'key-state', hasKey: true },
     { type: 'try-lighthouse-door' },
   ],
+  // ⚠️ Os TRÊS casos do Dia 1 do Desafio (05/10/2026) usam esta mesma cena: o caminho derruba as seis
+  // metas, para valer como sucesso no andar, na velocidade e no limite da tela.
+  'lighthouse-walk': [
+    { type: 'advance', seconds: 1 / 30 },
+    { type: 'hold-arrow', held: true },
+    { type: 'advance', seconds: 1 / 30 },
+    { type: 'walk-speed', speed: 1 },
+    { type: 'advance', seconds: 1 / 30 },
+    { type: 'walk-speed', speed: 3 },
+    ...tempo(3),
+    { type: 'keep-on-screen', enabled: true },
+    { type: 'restart-walk' },
+    ...tempo(3),
+  ],
   // Lote 5 do Raio-X: a partida até a batida, a volta ao início com os cactos na pista, e o Reiniciar
   // que limpa a pista (o toque na tela faz as três coisas, conforme a tela e a escolha).
   restart: [

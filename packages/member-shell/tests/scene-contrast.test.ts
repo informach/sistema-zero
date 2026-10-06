@@ -581,3 +581,92 @@ describe('a tinta da cena continua legível sobre o MUNDO desenhado', () => {
     expect(falhas).toEqual([])
   })
 })
+
+/**
+ * A FAIXA "fora da tela" da `lighthouse-walk` (review de 05/10/2026).
+ *
+ * ⚠️ A parte que passou da borda é desenhada esmaecida sobre a faixa (`fill-scene-b-wash`, um âmbar
+ * translúcido). A 40% a figura caía abaixo dos 3:1 de gráfico: hoje ela vai a 60% e o que a
+ * segura é o CONTORNO tracejado do corpo, na tinta da faixa (`stroke-scene-b-ink`). Esta conta mede
+ * esse contorno (e os rótulos "fora"/"da tela") sobre a faixa composta em cima do papel do palco,
+ * no mundo claro e no espaço, em toda cor do perfil.
+ */
+describe('a faixa de fora da tela do andar continua legível', () => {
+  const css = readFileSync(join(import.meta.dir, '../src/styles/scene.css'), 'utf8')
+  const inicio = css.indexOf('.sz-scene-espaco {')
+  const blocos = {
+    claro: css.slice(0, inicio),
+    espaco: css.slice(inicio, css.indexOf('}', inicio)),
+  }
+  const token = (fonte: string, nome: string, digitos: 6 | 8) => {
+    const achado = fonte.match(
+      new RegExp(`--color-scene-${nome}:\\s*(#[0-9a-f]{${digitos}})\\s*;`, 'i'),
+    )
+    if (!achado?.[1]) throw new Error(`--color-scene-${nome} não encontrado`)
+    return achado[1]
+  }
+  const receita = (fonte: string, nome: string) => {
+    const achado = fonte.match(
+      new RegExp(
+        `--color-scene-${nome}:\\s*color-mix\\(in oklab,\\s*var\\(--primary[^)]*\\)\\s*(\\d+)%,\\s*(#[0-9a-f]{6})\\s*\\)`,
+        'i',
+      ),
+    )
+    if (!achado?.[1] || !achado[2]) throw new Error(`Receita de ${nome} não encontrada`)
+    return { pct: Number(achado[1]) / 100, base: achado[2] }
+  }
+  /** Uma cor `#rrggbbaa` composta sobre um fundo opaco (o navegador compõe em sRGB). */
+  const sobre = (cor: string, fundo: number[]) => {
+    const alfa = Number.parseInt(cor.slice(7, 9), 16) / 255
+    return hex(cor.slice(0, 7)).map((c, i) => c * alfa + (fundo[i] ?? 0) * (1 - alfa))
+  }
+
+  test('⚠️⚠️ o contorno tracejado (3:1, gráfico) e os rótulos (AA, contra o halo), em todo tema', () => {
+    const falhas: string[] = []
+    let medidos = 0
+    for (const [mundo, fonte] of Object.entries(blocos)) {
+      const lavado = token(fonte, 'b-wash', 8)
+      const tinta = hex(token(fonte, 'b-ink', 6))
+      // O que fica atrás da faixa: o papel da moldura (`bg-scene-ground`).
+      const chao = receita(fonte, 'ground')
+      // Atrás da LETRA fica o halo (`.sz-scene-frame svg text`, 3px de `--color-scene-sky`).
+      const ceu = receita(fonte, 'sky')
+      for (const [tema, primary] of Object.entries(TEMAS)) {
+        const faixa = sobre(lavado, misturar(primary, chao.base, chao.pct))
+        const contorno = contraste(tinta, faixa)
+        const rotulo = contraste(tinta, misturar(primary, ceu.base, ceu.pct))
+        medidos++
+        if (contorno < 3)
+          falhas.push(`contorno sobre a faixa (${mundo}, ${tema}): ${contorno.toFixed(2)}`)
+        if (rotulo < AA)
+          falhas.push(`"fora" contra o halo (${mundo}, ${tema}): ${rotulo.toFixed(2)}`)
+      }
+    }
+    expect(falhas).toEqual([])
+    expect(medidos).toBe(2 * Object.keys(TEMAS).length)
+  })
+
+  test('⚠️ anti-vácuo: os rótulos dependem do halo (a tinta direto na faixa clara não dá AA)', () => {
+    const lavado = token(blocos.claro, 'b-wash', 8)
+    const chao = receita(blocos.claro, 'ground')
+    const faixa = sobre(lavado, misturar(TEMAS.reserva, chao.base, chao.pct))
+    expect(contraste(hex(token(blocos.claro, 'b-ink', 6)), faixa)).toBeLessThan(AA)
+    const palco = readFileSync(
+      join(import.meta.dir, '../src/components/scene-lighthouse-walk.tsx'),
+      'utf8',
+    )
+    // Nenhum rótulo da faixa dispensa o halo.
+    expect(palco).not.toContain('data-sem-halo')
+  })
+
+  test('o palco usa essa tinta no contorno, e a parte de fora a 60% (não os 40% de antes)', () => {
+    const palco = readFileSync(
+      join(import.meta.dir, '../src/components/scene-lighthouse-walk.tsx'),
+      'utf8',
+    )
+    expect(palco).toMatch(/const FANTASMA = 0\.6\b/)
+    const contorno = palco.slice(palco.indexOf('data-contorno-fantasma'))
+    expect(contorno.slice(0, 400)).toContain('className="stroke-scene-b-ink"')
+    expect(contorno.slice(0, 400)).toContain('strokeDasharray')
+  })
+})

@@ -25,8 +25,15 @@ export {
   NOMES_DE_FIGURA,
   NOMES_DE_FUNDO,
 } from './catalogo'
-export type { FarolAssetName } from './farol-assets'
-export { FAROL_ASSETS, FAROL_HITBOXES, FAROL_LAYOUT, farolSvg, farolSvgUrl } from './farol-assets'
+export type { FarolAssetName, FarolPersonagem } from './farol-assets'
+export {
+  FAROL_ASSETS,
+  FAROL_HITBOXES,
+  FAROL_LAYOUT,
+  FAROL_PERSONAGENS,
+  farolSvg,
+  farolSvgUrl,
+} from './farol-assets'
 /**
  * O HUD do jogo: coração, barra e as cores de fábrica do placar. ⚠️ Fora de `FIGURAS`: não é
  * figura de elenco, é interface — quem o consome é o placar da cena, não o `ArteSvg`.
@@ -39,13 +46,24 @@ export {
   desenharCoracao,
   desenharCoracoes,
 } from './hud'
-export type { JardimAssetName, JardimSpriteName } from './jardim-assets'
+export type {
+  JardimAssetName,
+  JardimBicho,
+  JardimEsconderijo,
+  JardimSpriteName,
+  JardimTipo,
+} from './jardim-assets'
 export {
   JARDIM_ASSETS,
+  JARDIM_BICHOS,
+  JARDIM_CAIXAS,
+  JARDIM_ESCONDERIJOS,
   JARDIM_PARES,
+  JARDIM_SPRITE_Y,
   jardimSpriteRect,
   jardimSvg,
   jardimSvgUrl,
+  jardimTipo,
 } from './jardim-assets'
 export type {
   Ambiente,

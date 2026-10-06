@@ -24,7 +24,7 @@ export const DESAFIO_SECTIONS = {
       'O personagem começa a andar. A criança monta os controles, programa o movimento e faz o personagem permanecer dentro do cenário. Depois testa as direções e as bordas.',
       'A chave passa a fazer diferença. Ela programa o encontro com a chave, retira o objeto do chão e faz o jogo guardar que ele foi recolhido. Uma mensagem informa o que aconteceu. No passo seguinte, essa informação guardada será usada para decidir o que a porta faz.',
       'O farol confere a chave. Primeiro, a criança compara a porta com e sem a chave em uma experiência interativa. Depois monta as duas respostas no seu projeto. Sem chave, a porta avisa que ela está faltando. Com a chave, o farol acende e o movimento do barco, que já veio preparado, é acionado.',
-      'O curso inclui introdução e certificado além dessas três etapas. Vocês podem distribuir a montagem dentro dos 30 dias de acesso, conforme a rotina e o tempo que seu filho precisa para praticar.',
+      'O curso inclui a aula do certificado além dessas três etapas. Vocês podem distribuir a montagem dentro dos 30 dias de acesso, conforme a rotina e o tempo que seu filho precisa para praticar.',
     ],
   },
   ajuda: {
@@ -130,7 +130,7 @@ export const DESAFIO_FAQ = [
     id: 'duvida-7',
     title: 'Precisa terminar em três dias seguidos?',
     paragraphs: [
-      'As três etapas organizam a construção, não um prazo obrigatório de aprendizagem. Vocês têm 30 dias a partir da aprovação para distribuir as atividades, rever explicações e concluir o projeto. Além da montagem, há a introdução e a aula do certificado. Tempo de vídeo e tempo de prática são diferentes.',
+      'As três etapas organizam a construção, não um prazo obrigatório de aprendizagem. Vocês têm 30 dias a partir da aprovação para distribuir as atividades, rever explicações e concluir o projeto. Além da montagem, há a aula do certificado. Tempo de vídeo e tempo de prática são diferentes.',
       'Antes de comprar, vale combinar um primeiro momento em que o computador esteja disponível e vocês consigam abrir a aventura. Seu filho pode parar e retomar durante o acesso, mas o prazo continua correndo. Se a família vai passar esse período sem computador ou sem oportunidade de começar, faz mais sentido organizar esse começo antes da compra.',
     ],
   },

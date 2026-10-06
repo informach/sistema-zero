@@ -92,25 +92,26 @@ export function CollectionMemoryControls({
   const proximo = proximoGesto(state.collection)
   return (
     <div className="space-y-3">
-      {/* A regra que a cena executa, nos blocos que a criança vai montar no Dia 2. As duas primeiras
-          linhas são iguais nos dois modos; só a última entra e sai com "Guardar a coleta". */}
+      {/* A regra que a cena executa, na ORDEM dos blocos que a criança monta no Dia 2: destruir a
+          chave, guardar a coleta, e só depois o aviso. A linha de guardar entra e sai com "Guardar
+          a coleta"; as outras são iguais nos dois modos. */}
       <RegraDoJogo
         titulo="A regra da coleta"
         passos={[
           { id: 'evento', bloco: 'evento', texto: 'Quando o personagem encostar na chave' },
           { id: 'destruir', bloco: 'jogo', nivel: 1, texto: 'Destruir o sprite chave' },
           {
-            id: 'aviso',
-            bloco: 'programa',
-            nivel: 1,
-            texto: `Alterar aviso para "${AVISOS_DO_FAROL.coleta}"`,
-          },
-          {
             id: 'guardar',
             bloco: 'programa',
             nivel: 1,
             texto: 'Alterar temChave para verdadeiro',
             estado: remember ? undefined : 'fora',
+          },
+          {
+            id: 'aviso',
+            bloco: 'programa',
+            nivel: 1,
+            texto: `Alterar aviso para "${AVISOS_DO_FAROL.coleta}"`,
           },
         ]}
       />

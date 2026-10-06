@@ -249,6 +249,11 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     label: 'A porta do farol',
     explanation: 'Nesta experiência, você vai testar a mesma porta em duas situações.',
   },
+  'lighthouse-walk': {
+    label: 'O personagem e os quadros do jogo',
+    explanation:
+      'Nesta experiência, você avança os quadros do jogo e acompanha o x do personagem na tela do Farol.',
+  },
   'collect-and-remember': {
     label: 'A coleta e a informação guardada',
     explanation:
@@ -1287,6 +1292,37 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       ],
       correctChoiceId: 'chave',
       explanation: 'O jogo conferiu se o personagem tinha a chave antes de abrir a porta.',
+    },
+  },
+  // Modelo para outros autores: o Dia 1 do Farol usa a cena sem pergunta final.
+  'lighthouse-walk': {
+    prediction: {
+      prompt: 'A seta para a direita está solta e o jogo avança um quadro. O que o personagem faz?',
+      // ⚠️ A certa em primeiro AQUI é a régua do catálogo (`questions-order.test.ts`): com a cena
+      // entrando depois da porta, a sequência das previsões repetia o segundo lugar quatro vezes.
+      choices: [
+        { id: 'parado', label: 'Fica parado no mesmo lugar.' },
+        {
+          id: 'anda',
+          label: 'Anda um pouco para a direita.',
+          shows: 'O quadro avançou e o x do personagem continuou o mesmo.',
+        },
+      ],
+      correctChoiceId: 'parado',
+      revealOn: 'still-without-arrow',
+    },
+    explain: {
+      prompt: 'O que fez o personagem andar?',
+      choices: [
+        { id: 'uma-vez', label: 'Apertar a seta uma vez leva até o fim do caminho.' },
+        {
+          id: 'cada-quadro',
+          label: 'A cada quadro com a seta segurada, o personagem anda um pouco.',
+        },
+      ],
+      correctChoiceId: 'cada-quadro',
+      explanation:
+        'O jogo repete o movimento a cada quadro. Com a seta segurada, cada quadro soma a velocidade ao x.',
     },
   },
   restart: {

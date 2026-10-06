@@ -333,6 +333,8 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   'found-counter': [],
   'collect-and-remember': [],
   'lighthouse-key': [],
+  // O personagem é o do projeto do Farol (`FAROL_LAYOUT`), não um papel do elenco.
+  'lighthouse-walk': [],
   restart: ['hero', 'obstacle'],
   hitbox: ['hero', 'obstacle'],
   // ⚠️ Lote 5 do Raio-X: a `score` ganhou o cacto que vem na partida; `random` e `acceleration`
@@ -374,6 +376,7 @@ export const SCENE_FIXED_CENARIOS: Readonly<Partial<Record<SceneId, SceneCenario
   'found-counter': 'jardim',
   'collect-and-remember': 'farol',
   'lighthouse-key': 'farol',
+  'lighthouse-walk': 'farol',
 }
 
 /**
@@ -415,6 +418,8 @@ export function sceneCenario(
   scene: SceneId,
   declarado?: SceneCenarioId,
 ): SceneCenarioId {
+  // A comparação de movimento conserva o Farol por padrão e também tem palco de nave.
+  if (scene === 'lighthouse-walk' && declarado === 'nave') return 'nave'
   const fixo = SCENE_FIXED_CENARIOS[scene]
   if (fixo) return fixo
   if (declarado && isSceneCenario(declarado)) return declarado

@@ -9,7 +9,7 @@ O jardim já está preparado. Você monta as regras com blocos e testa até acha
 
 ## Módulo 1: Minha primeira busca
 
-**Resumo:** Jogue o exemplo, faça os personagens aparecerem e programe a contagem dos três achados.
+**Resumo:** Jogue o exemplo, faça os personagens aparecerem, programe a contagem dos três achados, deixe o jogo com a sua cara e publique.
 
 - **Aula 1:** [O primeiro achado](aulas/cade-todo-mundo-aula-1.md)
 - **Aula 2:** [Complete a busca](aulas/cade-todo-mundo-aula-2.md)
@@ -19,7 +19,7 @@ O jardim já está preparado. Você monta as regras com blocos e testa até acha
 
 O curso já foi gravado e testado com duas crianças. A revisão de 27/09/2026 muda a linguagem
 das nove seções: tarefa imediata, passos completos e tutoriais de interface no Como Fazer.
-A revisão atual tem quatro seções na Aula 1, quatro na Aula 2 e duas no certificado: quiz e celebração. São dez seções e nove vídeos.
+A revisão atual tem quatro seções na Aula 1, cinco na Aula 2 e duas no certificado: quiz e celebração. São onze seções e dez vídeos.
 
 Os arquivos plannedVideo dos manifestos são moldes de autoria. As novas falas precisam de
 novas gravações. Ao atualizar o Admin, reconciliar os blocos pelos identificadores e preservar
@@ -36,10 +36,13 @@ A Aula 2 retoma o contador em zero, propõe quatro testes na experiência e ensi
 evento de toque. A montagem continua com caminho completo, encaixe, campos e teste de 1, 2, 3.
 O fechamento ensina a publicar o mesmo jogo no Mural: Compartilhar, gerar capa, publicar,
 esperar a confirmação, fechar e concluir a aula. A publicação é a tarefa ensinada, sem novo
-bloqueio técnico de conclusão. Personalização e cópia do link ficam no Como Fazer.
+bloqueio técnico de conclusão. Trocar a capa e copiar o link ficam no Como Fazer. Antes de
+publicar, **Deixe o jogo com a sua cara** ensina a trocar bichos, esconderijos e a mensagem do final.
 
-Complemento de 03/10/2026: todas as nove seções têm uma ponte do Zappy após o vídeo.
+Complemento de 03/10/2026: toda seção com vídeo tem uma ponte do Zappy logo após o vídeo.
 Caderno, retomada e publicação receberam as falas que faltavam, sem novos critérios de conclusão.
+Hoje são dez seções com vídeo, todas com ponte (incluindo **Deixe o jogo com a sua cara**, de
+05/10/2026), mais a seção do quiz, que não tem vídeo e começa pela fala do Zappy.
 O [quiz único antes do certificado](proposta-quizzes-cursos-curtos-2026-10-03.md) integra o manifesto e o caderno: três perguntas, fala inicial do Zappy e nenhum vídeo na seção de revisão.
 
 O jardim e os personagens já vêm preparados. A narração reconhece que a criança programou
@@ -56,7 +59,7 @@ Arquivo: **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**. Fonte editável:
 **bun docs/aulas-interativas/recursos/cade-todo-mundo/gerar-caderno.ts**.
 
 A Aula 2 mantém **retireBlockKeys: ['caderno']** para o molde anterior, mas não recebe outro PDF.
-O PDF atualizado tem seis páginas: visão geral, montagem, publicação, revisão e certificado. Os desenhos usam as cores oficiais de cada bloco. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
+O PDF atualizado tem seis páginas: visão geral, montagem, troca de bichos e publicação, revisão e certificado. Os desenhos usam as cores oficiais de cada bloco. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
 Como folhear e baixar está no tutorial de materiais.
 
 ## Configuração que deve ser preservada
@@ -85,3 +88,19 @@ Na gravação, conferir rótulos atuais, envio com confirmação e conclusão. N
 verificar se começam a atividade sem explicação extra do adulto. Na abertura, devem saber
 qual jogo vão construir, jogar a versão pronta e saber como avançar. Repetir essa conferência
 nas experiências e nas duas montagens antes de substituir os vídeos.
+
+## Revisão de 05/10/2026
+
+As duas montagens passaram a começar pela retomada da experiência no próprio jogo, regra registrada nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md):
+
+- **Faça alguém aparecer:** a fala lembra que o toque sozinho não faz nada e pede para tocar num esconderijo do jogo. Nada acontece, porque ainda não há ação ligada ao toque. Só então vem a ligação.
+- **Cada personagem vale um achado:** a fala lembra a experiência da contagem e pede para tocar num esconderijo. O personagem aparece, mas Achados continua em zero.
+
+No caderno, as duas páginas de montagem trazem a retomada numa caixa de experiência, na ordem da aula. Os vídeos dessas duas seções precisam ser regravados. A retomada não manda clicar em **Anterior**: ela lembra a experiência e convida a programar ("Agora vamos programar isso no seu jogo!").
+
+Na mesma revisão:
+
+- **As experiências explicam enquanto fazem.** O vídeo faz cada teste no ritmo da fala e diz por que o resultado aconteceu. Na Aula 1, a comparação é "toda ação tem uma reação": a cócega é a ação e a risada é a reação; no jogo, a gente precisa ligar uma reação ao toque. Na Aula 2, Achados é como o placar de um jogo de futebol. Cada comparação tem um meme ilustrado nosso na nota de tela.
+- **Mexa e veja numa seção própria (seção nova da Aula 2, Deixe o jogo com a sua cara).** Só mudanças que a criança mantém. Saíram os momentos de trocar e voltar dentro das montagens (o 50% da Aula 1) e a mensagem de vitória saiu da montagem da Aula 2. Depois do envio e antes de publicar, a criança troca a imagem dos bichos e dos esconderijos nos blocos **Criar sprite**, na área **Ao iniciar**, e escreve a mensagem do final. O projeto traz sete bichos e seis esconderijos, com caixa única por tipo (72 × 87 e 161 × 144), então a troca não estica o desenho nem muda o lugar. Os sprites passaram a se chamar **bicho1** a **bicho3** e **esconderijo1** a **esconderijo3**. A seção é de fechamento (a entrega continua sendo a última montagem), conclui pelo vídeo e não tem critério. Chave nova: **personalizar**, com o vídeo **video-a2-personalizar**. No Admin, acrescentar a seção sem mexer nas outras.
+- **Projetos salvos antes da revisão** recebem as imagens novas ao abrir: o Estúdio da aula acrescenta ao projeto salvo as imagens do curso que faltam, sem trocar nenhuma das que já existem. Eles guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém o canto de cima do sprite. Por isso, nesses projetos, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo. A fala da seção serve aos dois projetos, porque cita nomes de imagens, que existem nos dois. As crianças que começarem depois recebem o projeto novo, em que bicho por bicho e esconderijo por esconderijo não muda tamanho nem lugar.
+- **A imagem do bloco é um NOME.** No fim do bloco **Criar sprite**, depois de **com imagem**, o Estúdio mostra o nome da imagem (coelho, arbusto…), e não um desenho. A fala manda clicar nesse nome para abrir a lista com as imagens do jogo e, se não achar, rolar a lista. O erro provável é escolher uma imagem do outro tipo (um esconderijo no bloco de um bicho fica grande e aparece antes do toque); a fala ensina a corrigir escolhendo de novo um desenho do mesmo tipo.

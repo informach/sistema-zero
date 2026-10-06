@@ -21,6 +21,7 @@ import { emCamadas, type ScenePilha } from './pilha'
 import {
   DELTA_RACE,
   HITBOX_DINO_SIZE,
+  lighthouseWalkGone,
   MESH_POINTS,
   numberLineAnswer,
   SCREEN_READER_EMPTY,
@@ -609,6 +610,14 @@ function leituras(scene: SceneId, state: SceneState, pilha?: ScenePilha): SceneR
           value: state.lighthouse.door === 'open' ? 'aberta' : 'fechada',
           tone: 'b',
         },
+      ]
+    case 'lighthouse-walk':
+      // ⚠️ Os três números que os blocos do Dia 1 mexem: o quadro que passa, o x que muda e a
+      // velocidade do bloco de mover. A seta e o limite são chaves da bancada, com o estado escrito.
+      return [
+        { label: 'quadro', value: String(state.walk.frame), tone: 'plain' },
+        { label: 'x', value: String(state.walk.x), tone: 'a' },
+        { label: 'velocidade', value: String(state.walk.speed), tone: 'b' },
       ]
     case 'restart':
       // ⚠️ Lote 5 do Raio-X: os cactos da pista são o assunto (quem só troca de tela começa a partida
@@ -1202,6 +1211,17 @@ function situacao(scene: SceneId, state: SceneState): string {
       return state.lighthouse.door === 'open'
         ? 'A porta abriu e a luz do farol acendeu.'
         : 'A porta do farol está fechada.'
+    case 'lighthouse-walk': {
+      // ⚠️ Sem "parado" nem "anda": é a previsão do caso do andar. A frase diz o quadro, o x e a seta,
+      // e só fala da borda quando a figura já está fora da tela inteira.
+      // ⚠️ Sem nomear a figura: a mesma cena mostra o personagem do Farol e a nave (`cenario`), e o
+      // motor não sabe qual é. "O sprite" é a palavra dos blocos nos dois jogos.
+      const { frame, x, arrow } = state.walk
+      const seta = `A seta para a direita está ${arrow ? 'segurada' : 'solta'}.`
+      return lighthouseWalkGone(state.walk)
+        ? `No quadro ${frame}, o x é ${x}: o sprite passou inteiro da borda da tela. ${seta}`
+        : `No quadro ${frame}, o x é ${x}. ${seta}`
+    }
     case 'restart': {
       const n = quantos(state.crowd.cacti.length, 'cacto', 'cactos')
       if (state.match.screen === 'start')

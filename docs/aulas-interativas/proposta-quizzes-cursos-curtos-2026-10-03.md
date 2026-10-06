@@ -16,11 +16,11 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 **Título da seção:** Como o seu jardim funciona
 
-**Zappy:** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Depois de conferir as explicações, você pode corrigir o que precisar.
+**Zappy:** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
 ### 1. A reação ao toque
 
-**Pergunta:** Você toca em um esconderijo e consegue ver o personagem que estava atrás. Qual regra que você montou faz isso acontecer?
+**Pergunta:** Você toca em um esconderijo e consegue ver o personagem que estava atrás. Que regra do seu jogo faz isso?
 
 - A. O jogo deixa o esconderijo tocado invisível.
 - B. O jogo deixa todos os esconderijos invisíveis.
@@ -28,7 +28,7 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 **Correta:** A.
 
-**Explicação:** O toque escolhe aquele esconderijo. Dentro dessa reação, você colocou a regra que deixa o esconderijo com 0% de visibilidade. Assim, o personagem que já estava atrás aparece. Os outros esconderijos continuam como estavam.
+**Explicação:** O toque escolhe aquele esconderijo e o chama de escolhido. Dentro do bloco do toque, você colocou a ação que deixa escolhido com 0% de visibilidade. Assim, o personagem que já estava atrás aparece. Os outros esconderijos continuam como estavam.
 
 ### 2. O número acompanha a busca
 
@@ -44,7 +44,7 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 ### 3. O mesmo personagem não conta duas vezes
 
-**Pergunta:** Você encontrou um personagem e tocou outra vez no mesmo lugar. Por que a contagem não deve aumentar nesse segundo toque?
+**Pergunta:** Você encontrou um personagem e tocou outra vez no mesmo lugar. Por que a contagem não aumenta nesse segundo toque?
 
 - A. Porque o jogo só pode contar até um.
 - B. Porque o jogo precisa ser reiniciado para contar o próximo.
@@ -52,13 +52,13 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 **Correta:** C.
 
-**Explicação:** O esconderijo ficou invisível depois do primeiro toque. Neste jogo, ele deixa de receber o toque que dispara a contagem. Isso impede contar o mesmo personagem de novo. Para aumentar Achados, você precisa encontrar outro personagem. Essa é uma regra deste jogo, não uma afirmação sobre todo objeto invisível em qualquer programa.
+**Explicação:** O esconderijo ficou invisível depois do primeiro toque. Neste jogo, ele deixa de receber o toque que dispara a contagem. Isso impede contar o mesmo personagem de novo. Para aumentar Achados, você precisa encontrar outro personagem.
 
 ## A Chave do Farol
 
 **Título da seção:** As regras da sua aventura
 
-**Zappy:** Seu personagem anda, recolhe a chave e faz o farol responder. Responda quatro perguntas sobre o que você programou. As explicações ajudam a conferir seu raciocínio e corrigir o que precisar.
+**Zappy:** Você fez o personagem andar, pegar a chave e acender o farol. Agora responda quatro perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
 ### 1. Movimento e borda
 
@@ -70,13 +70,13 @@ Na seção do quiz, somente Zappy e quiz, conforme o [briefing](BRIEFING.md) e a
 
 **Correta:** B.
 
-**Explicação:** Dentro de A cada quadro, primeiro o jogo move o personagem. Logo depois, a regra da borda mantém ele dentro da tela. O jogo repete essa sequência enquanto funciona; conferir a posição somente no começo não cuidaria dos movimentos seguintes.
+**Explicação:** Dentro de A cada quadro do jogo, primeiro o jogo move o personagem. Logo depois, a regra da borda mantém ele dentro da tela. O jogo repete essa sequência enquanto funciona; conferir a posição somente no começo não cuidaria dos movimentos seguintes.
 
 ### 2. Conferir a memória da coleta
 
 Atualizada em 04/10/2026, com id `q-memoria-coleta` no lugar de `q2` do Farol.
 
-**Pergunta:** Em um teste, a chave saiu do chão e apareceu o aviso de coleta, mas o farol ainda disse que faltava a chave. A porta está consultando temChave corretamente. Qual parte da coleta você deve conferir primeiro?
+**Pergunta:** Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta da porta está certa. Qual bloco da coleta você deve conferir primeiro?
 
 - A. Se o aviso usa exatamente as mesmas palavras do vídeo.
 - B. Se o encontro com a chave muda temChave para verdadeiro.
@@ -127,7 +127,7 @@ Ler as perguntas com crianças da faixa atendida, sem explicar a resposta antes.
 
 ## Estado da implementação local
 
-- Dois geradores e manifestos atualizados: Cadê Todo Mundo com dez seções e nove vídeos; Farol com onze seções e dez vídeos após a revisão de 04/10. A revisão sem vídeo foi acrescentada à aula do certificado, sem mudar os identificadores existentes.
+- Dois geradores e manifestos atualizados: Cadê Todo Mundo com onze seções e dez vídeos após a revisão de 05/10 (a seção Deixe o jogo com a sua cara entrou na Aula 2); Farol com onze seções e dez vídeos após a revisão de 04/10. A revisão sem vídeo foi acrescentada à aula do certificado, sem mudar os identificadores existentes.
 - Publicação no Members aceita quiz obrigatório em seção anterior ao certificado. A primeira emissão respeita essa seção; certificados emitidos continuam acessíveis. Os endpoints de correção e retorno à aula conservam a tentativa imediata.
 - Cadernos gerados e conferidos: Cadê Todo Mundo, seis páginas; Farol, dezenove após a revisão de 04/10. Cores importadas das definições oficiais dos blocos e limites do PDF conferidos no navegador.
 - Verificação local: 34 manifestos sem avisos; oito roteiros, dezoito vídeos; 42 tutoriais válidos. Suíte do Members: 1.325 testes aprovados, 49 testes de banco sem execução por dependerem de banco descartável. Os testes posteriores de importação/publicação dos dois cursos e preservação após inclusão de uma nova revisão também passaram.

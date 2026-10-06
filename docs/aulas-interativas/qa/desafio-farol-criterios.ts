@@ -37,9 +37,11 @@ export const movimento: SectionProjectCheck[] = [
     area: 'start',
     fields: { MODE: 'directions' },
   }),
+  // A velocidade é escolha da criança (mexa e veja do Dia 1, 05/10/2026): nenhum critério exige
+  // um número, só que o movimento esteja no lugar.
   check(
     'andar',
-    'Dentro de A cada quadro, mova personagem com velocidade 3, antes de conferir a borda.',
+    'Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.',
     {
       type: 'usesBlock',
       blockType: 'sz_g2d_update_each_frame',
@@ -48,18 +50,33 @@ export const movimento: SectionProjectCheck[] = [
         BODY: {
           blockType: 'sz_g2d_top_down',
           fields: { SPRITE: 'personagem' },
-          inputs: { SPEED: 3 },
           beforeBlock: 'sz_g2d_clamp_to_screen',
         },
       },
     },
   ),
-  check('borda', 'Mantenha personagem dentro da tela, no corpo de A cada quadro.', {
+  check('borda', 'Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.', {
     type: 'usesBlock',
     blockType: 'sz_g2d_update_each_frame',
     area: 'loops',
     inputBlocks: {
       BODY: { blockType: 'sz_g2d_clamp_to_screen', fields: { SPRITE: 'personagem' } },
+    },
+  }),
+]
+
+/**
+ * Etapas do Dia 1 antes do limite de tela (uma ideia por seção, 05/10/2026). O movimento ainda não
+ * tem o limite logo abaixo, então a ordem só é cobrada na entrega (`movimento`).
+ */
+export const movimentoSemBorda: SectionProjectCheck[] = [
+  movimento[0]!,
+  check('andar', 'Dentro de A cada quadro do jogo, mova o personagem.', {
+    type: 'usesBlock',
+    blockType: 'sz_g2d_update_each_frame',
+    area: 'loops',
+    inputBlocks: {
+      BODY: { blockType: 'sz_g2d_top_down', fields: { SPRITE: 'personagem' } },
     },
   }),
 ]
@@ -105,6 +122,25 @@ export const coleta: SectionProjectCheck[] = [
   ),
 ]
 
+/** Etapas do Dia 2: primeiro a chave sai do chão, depois o jogo guarda a coleta, por fim o aviso. */
+const porId = (id: string) => {
+  const found = coleta.find((item) => item.id === id)
+  if (!found) throw new Error(`Critério ${id} ausente`)
+  return found
+}
+export const chaveRecolhida: SectionProjectCheck[] = [...movimento, porId('recolher')]
+export const coletaGuardada: SectionProjectCheck[] = [
+  ...movimento,
+  porId('memoria'),
+  // Mesma regra, sem cobrar o aviso que só é montado na seção seguinte.
+  {
+    ...porId('encontro-chave'),
+    label: 'No encontro com a chave, retire a chave antes de mudar temChave.',
+  },
+  porId('recolher'),
+  porId('lembrar'),
+]
+
 export const portaSemChave: SectionProjectCheck[] = [
   ...coleta,
   check(
@@ -126,7 +162,7 @@ export const portaCompleta: SectionProjectCheck[] = [
   ...portaSemChave,
   check(
     'encontro-farol',
-    'No encontro com o farol, ligue ganhou e depois troque a imagem dentro de então.',
+    'No encontro com o farol, mude ganhou para verdadeiro e depois troque a imagem, dentro de então.',
     naResposta('THEN', {
       blockType: 'sz_js_var_assign',
       fields: { NAME: 'ganhou' },

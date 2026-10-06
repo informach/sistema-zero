@@ -39,8 +39,8 @@ function checks(name: string): SectionProjectCheck[] {
 }
 
 describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
-  test('todos os cinco manifestos têm conclusões coerentes', () => {
-    for (const name of ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado']) {
+  test('todos os quatro manifestos têm conclusões coerentes', () => {
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const m = manifesto(name)
       const sections = m.sections.map((section) => ({
         ...section,
@@ -58,7 +58,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
   })
 
   test('cada seção comum tem um vídeo; a atividade exige vídeo e ação da criança', () => {
-    for (const name of ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado']) {
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const m = manifesto(name)
       const byKey = new Map(m.blocks.map((block) => [block.key, block]))
       for (const section of m.sections) {
@@ -138,7 +138,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
   })
 
   test('o jogo pronto exige participação, sem exigir vitória ou alimentar a cadeia de criação', () => {
-    const m = manifesto('introducao')
+    const m = manifesto('dia-1')
     const content = m.blocks.find((block) => block.key === 'jogo-pronto')?.content
     if (content?.kind !== 'interactive' || content.activity.type !== 'project-play')
       throw new Error('Jogo pronto ausente')
@@ -146,13 +146,16 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(content.activity.targets).toEqual([])
     expect(content.activity.project).toEqual(montarProjetoFarol('concluido'))
     expect(content.activity.stage).toEqual({ width: 480, height: 360 })
-    expect(m.blocks.some((block) => block.content?.kind === 'studio')).toBe(false)
-    expect(m.sections[0]?.completion?.blockIds).toEqual(['video-intro-farol', 'jogo-pronto'])
+    const apresentacao = m.sections[0]
+    expect(apresentacao?.key).toBe('apresentacao')
+    expect(apresentacao?.workspaceKey).toBeNull()
+    expect(apresentacao?.blockKeys).not.toContain('projeto')
+    expect(apresentacao?.completion?.blockIds).toEqual(['video-intro-farol', 'jogo-pronto'])
     expect(JSON.stringify(montarProjetoFarol('dia-1').ir)).not.toContain('g2d:topDown')
   })
 
   test('o caderno tem leitor opcional sem um mapa adicional que não faz parte das aulas', () => {
-    const m = manifesto('introducao')
+    const m = manifesto('dia-1')
     const section = m.sections[1]
     expect(section?.key).toBe('caderno')
     expect(section?.completion?.blockIds).toEqual(['video-intro-caderno'])
@@ -164,13 +167,51 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(m.blocks.find((block) => block.key === 'mapa-familia')).toBeUndefined()
   })
 
-  test('a primeira montagem preserva o projeto e retira os vídeos sem prática', () => {
+  test('o Dia 1 abre com o jogo pronto e o caderno e alterna experiência e montagem', () => {
     const m = manifesto('dia-1')
-    expect(m.sections).toHaveLength(1)
-    expect(m.sections[0]?.key).toBe('borda')
-    expect(m.sections[0]?.workspaceKey).toBe('projeto')
+    expect(m.sections.map((section) => section.key)).toEqual([
+      'apresentacao',
+      'caderno',
+      'quadro',
+      'andar',
+      'tanto',
+      'velocidade',
+      'limite',
+      'borda',
+    ])
+    // Uma ideia por seção: cada experiência vem antes da montagem que aplica o conceito.
+    expect(m.sections.map((section) => section.intent)).toEqual([
+      'presentation',
+      'material',
+      'exploration',
+      'application',
+      'exploration',
+      'application',
+      'exploration',
+      'delivery',
+    ])
+    for (const section of m.sections.filter((item) => item.intent === 'application')) {
+      expect(section.workspaceKey).toBe('projeto')
+      expect(section.blockKeys).not.toContain('projeto')
+    }
+    // A velocidade é o mexa e veja do Dia 1 (05/10/2026): a criança fica com a que escolher, e a
+    // verificação só confere que o movimento continua no lugar.
+    for (const key of ['andar', 'velocidade']) {
+      const section = m.sections.find((item) => item.key === key)
+      expect(section?.completion?.projectChecks?.length, key).toBe(2)
+    }
+    // Nenhum critério do curso exige um número de velocidade.
+    for (const name of ['dia-1', 'dia-2', 'dia-3']) {
+      for (const section of manifesto(name).sections) {
+        expect(JSON.stringify(section.completion ?? {}).includes('SPEED'), section.key).toBe(false)
+      }
+    }
+    const borda = m.sections.at(-1)!
+    expect(borda.key).toBe('borda')
+    expect(borda.workspaceKey).toBe('projeto')
+    expect(borda.completion?.blockIds).toContain('projeto')
     expect(m.retireBlockKeys).toEqual(['video-d1-chegada', 'video-d1-movimento'])
-    for (const name of ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado']) {
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const current = manifesto(name)
       for (const retired of current.retireBlockKeys ?? []) {
         expect(current.blocks.some((block) => block.key === retired)).toBe(false)
@@ -197,7 +238,15 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
 
   test('a memória é experimentada antes da construção, com quatro descobertas e sem outra pergunta', () => {
     const m = manifesto('dia-2')
-    expect(m.sections.map((section) => section.key)).toEqual(['contexto', 'programar-chave'])
+    expect(m.sections.map((section) => section.key)).toEqual([
+      'contexto',
+      'recolher',
+      'guardar',
+      'programar-chave',
+    ])
+    expect(m.sections.map((section) => section.completion?.projectChecks?.length ?? 0)).toEqual([
+      0, 4, 7, 8,
+    ])
     const activity = m.blocks.find((block) => block.key === 'experiencia-memoria')?.content
     if (activity?.kind !== 'interactive') throw new Error('Experiência de memória ausente')
     expect(activity.activity.scene).toBe('collect-and-remember')
@@ -222,8 +271,15 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       'condicao',
       'sem-chave',
       'decisao',
+      'personalizar',
       'fecho',
     ])
+    // O mexa e veja do curso: fechamento depois da entrega, sem critério, no mesmo projeto.
+    const mexa = m.sections[3]!
+    expect(mexa.intent).toBe('closing')
+    expect(mexa.workspaceKey).toBe('projeto')
+    expect(mexa.completion?.blockIds).toEqual(['video-d3-personalizar'])
+    expect(mexa.completion?.projectChecks).toBeUndefined()
     const intermediate = m.sections[1]!
     const delivery = m.sections[2]!
     expect(intermediate.workspaceKey).toBe('projeto')
@@ -399,7 +455,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
   })
 
   test('cada roteiro cobre as seções e gravações do manifesto na mesma ordem', () => {
-    for (const name of ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado']) {
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const m = manifesto(name)
       const script = readFileSync(
         resolve(import.meta.dir, `../aulas/desafio-${name}.roteiro.md`),
@@ -420,7 +476,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     ) as { tutorials: Array<{ slug: string }> }
     const slugs = new Set(library.tutorials.map((tutorial) => tutorial.slug))
     let links = 0
-    for (const name of ['introducao', 'dia-1', 'dia-2', 'dia-3', 'certificado']) {
+    for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const m = manifesto(name)
       for (const block of m.blocks) {
         if (block.content?.kind !== 'materials') continue

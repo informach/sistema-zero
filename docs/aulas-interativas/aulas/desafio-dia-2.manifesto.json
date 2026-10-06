@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-d2-contexto",
-      "plannedVideo": "Título: O jogo guardou a chave?\n\nSituar a coleta que falta e apresentar a experiência. Explicar variável no mostrador temChave. Orientar coleta sem memória, reinício, Guardar a coleta ligado, novo encontro, afastamento e reinício. Não executar a experiência nem antecipar resultados. Terminar em Próxima seção.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: O jogo guardou a chave?\n\nSituar a coleta que falta e explicar fazendo: encostar na chave é um evento, e guardar é como anotar num caderno. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima seção.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d2-contexto",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Compare o que some da tela com o que fica guardado no jogo. A experiência mostra a informação temChave durante cada tentativa."
+        "text": "Agora compare o que some da tela com o que fica guardado em temChave."
       }
     },
     {
@@ -24,7 +24,7 @@
         "required": true,
         "title": "O jogo guardou a chave?",
         "semPerguntaFinal": true,
-        "instructions": "Deixe Guardar a coleta desligado e aperte Encostar na chave. Compare a chave, o aviso e temChave. Recomece a partida, ligue Guardar a coleta e encoste outra vez. Aperte Afastar e olhe o valor. Por último, recomece a partida e confira o que voltou ao começo.",
+        "instructions": "Deixe Guardar a coleta desligado e clique em Encostar na chave. Olhe a chave, o aviso e temChave. Clique em Recomeçar a partida, ligue Guardar a coleta e clique em Encostar na chave de novo. Depois clique em Afastar e, por último, em Recomeçar a partida. Acompanhe temChave em cada teste.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -34,15 +34,39 @@
       }
     },
     {
+      "key": "video-d2-recolher",
+      "plannedVideo": "Título: Recolha a chave\n\nComeçar pela retomada: no jogo, o personagem passa pela chave e nada acontece, porque nenhuma ação está ligada ao encontro. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar o encontro personagem/chave dentro dela e Destruir o sprite chave dentro dele. Testar a chave sumindo e voltando com Atualizar. Verificar esta etapa, Salvo e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-d2-recolher",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Programe o encontro com a chave e faça a chave sair do chão. Teste e clique em Verificar esta etapa."
+      }
+    },
+    {
+      "key": "video-d2-guardar",
+      "plannedVideo": "Título: Guarde que a chave foi encontrada\n\nComeçar pela retomada: como na experiência com Guardar a coleta desligado, a chave some, mas nada guarda a coleta. Criar temChave começando em falso no fim de Ao iniciar e mudar para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite. Verificar esta etapa, Salvo e Próxima seção, sem envio.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+    },
+    {
+      "key": "ponte-d2-guardar",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta etapa."
+      }
+    },
+    {
       "key": "video-d2-programar",
-      "plannedVideo": "Título: Faça o jogo guardar a chave\n\nRetomar a memória observada na experiência. Guiar declaração falsa, encontro personagem/chave, retirada, memória verdadeira e aviso. Oferecer mensagem com palavras próprias, sem exigir a mudança. Testar, verificar inclusive o movimento anterior, Salvo, envio confirmado e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Avise quem está jogando\n\nComeçar pela retomada: no jogo, a chave some, mas a mensagem continua a inicial. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo, envio confirmado e Concluir aula.\n\nRoteiro falado: desafio-dia-2.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-d2-programar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Programe a coleta: tirar a chave do chão, guardar a informação e mostrar o aviso. Teste seu jogo e use Verificar esta etapa antes de enviar."
+        "text": "Mostre um aviso quando a chave for encontrada. Teste a coleta e clique em Verificar esta etapa antes de enviar para o professor."
       }
     },
     {
@@ -114,6 +138,118 @@
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij4KICA8cmVjdCB4PSIyOS44MSIgeT0iNTcuNTMiIHdpZHRoPSI0LjQ5IiBoZWlnaHQ9IjQuMzgiIGZpbGw9IiNmYWUxYjUiLz4KICA8cG9seWdvbiBwb2ludHM9IjI4LjY1LDU2LjQyIDM0Ljk5LDU2LjE3IDM0LjMsNjAuOTQgMjkuOTIsNjAuOTQiIGZpbGw9IiMzYjVkYzkiLz4KICA8cGF0aCBkPSJNIDMwLjQ3IDQ0LjIyIEMgMzEuNyA0NC4xNSAzMy41MiA0My45OCAzNC4zNiA0NC43MSBDIDM1LjE5IDQ1LjQxIDM1LjU2IDQ4LjAxIDM1LjU2IDQ4LjgzIEwgMzUuNTQgNTUuMDcgQyAzNS41NCA1NS45IDM1Ljg0IDU2Ljk1IDM1LjAzIDU2Ljk1IEwgMjguMDQgNTYuNzUgQyAyNy4yMiA1Ni43NSAyNy42MiA1NS43IDI3LjYyIDU0Ljg3IEMgMjcuNjYgNTIuNTMgMjcuMzcgNDkuOTMgMjggNDguMTQgQyAyOC42MiA0Ni4zNyAyOS42NSA0NC4yMiAzMC40NyA0NC4yMiBaIiBmaWxsPSIjZmZmZmZmIi8+CiAgPHJlY3QgeD0iMjkuMzMiIHk9IjYxLjkyIiB3aWR0aD0iNS44OSIgaGVpZ2h0PSIyLjA1IiByeD0iMS4wMiIgZmlsbD0iIzAwMDAwMCIvPgogIDxwYXRoIGQ9Ik0gMzAuNTIgMTMuMTIgTCAzMC45NyAxMy4xMiBDIDM3LjkgMTMuMTIgNDMuNTIgMTguNzUgNDMuNTIgMjUuNjYgTCA0My41MiAzMS4xOCBDIDQzLjUyIDM4LjA4IDQ1LjI0IDQ0LjE1IDM4LjMyIDQ0LjE1IEwgMjguNyA0NC4zMSBDIDIxLjc5IDQ0LjMxIDE4LjAxIDM4LjA4IDE4LjAxIDMxLjE4IEwgMTguMDEgMjUuNjYgQyAxOC4wMSAxOC43NSAyMy42MSAxMy4xMiAzMC41MiAxMy4xMiBaIiBmaWxsPSIjZmFlMWI1Ii8+CiAgPGVsbGlwc2UgY3g9IjQwLjYyIiBjeT0iMzEuNCIgcng9IjIuNzIiIHJ5PSIzLjY2IiBmaWxsPSIjZmZmZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjQxLjk1IiBjeT0iMzIuMDkiIHJ4PSIxLjEiIHJ5PSIxLjY0IiBmaWxsPSIjMDAwMDAwIi8+CiAgPGVsbGlwc2UgY3g9IjQwLjE2IiBjeT0iMzkuNzYiIHJ4PSIwLjI5IiByeT0iMCIgZmlsbD0iI2ZmZmZmZiIvPgogIDxwYXRoIGQ9Ik0gNDMuMDIgMzcuMSBMIDQwLjIzIDM2Ljg1IEMgMzkuOCAzNy4xNSA0MC4wMiAzNy41MiAzOS44OCAzNy45IEMgMzkuNjkgMzguMzMgNDAuMjUgMzguNDIgNDAuMzMgMzguOTUgTCA0MS4zNyAzOS41MSBMIDQxLjgyIDM4LjkzIFoiIGZpbGw9IiM1ZDI3NWQiLz4KICA8cG9seWdvbiBwb2ludHM9IjQyLjkxLDM2LjkgNDIuMzksMzguNTYgNDEuNjUsMzguNDUgNDEuMDIsMzcuOTkgNDAuNjgsMzcuMTMiIGZpbGw9IiNmZmZmZmYiIHRyYW5zZm9ybT0icm90YXRlKDEzLjMgNDIuMjIgMzcuNzYpIi8+CiAgPHJlY3QgeD0iMjkuNjciIHk9IjQ1Ljg3IiB3aWR0aD0iMy45MSIgaGVpZ2h0PSIxMi4wOSIgcng9IjEuNTkiIGZpbGw9IiNmYWUxYjUiIHRyYW5zZm9ybT0icm90YXRlKDAuMyAzMS42MyA1MS45MSkiLz4KICA8cGF0aCBkPSJNIDI4Ljk1IDUxLjIyIEMgMzAuMTMgNTAuNzggMjkuNzMgNTAuMjcgMzEuNzggNTAuMjUgQyAzMy41NiA1MC4yNSAzMi44NiA1MS4xMSAzNC4wOSA1MS40OCBDIDMzLjQyIDQ5LjM4IDM0LjQ5IDQ1Ljc3IDMxLjU5IDQ1LjE4IEMgMjguNDUgNDYuMDEgMjkuMzIgNDkuMDQgMjguOTUgNTEuMjIgWiIgZmlsbD0iI2RkZTVmMCIvPgogIDxwYXRoIGQ9Ik0gMTYuNTkgMjYuNzcgTCAxNi44MiAyNC4xNSBMIDE3LjQzIDIxLjM5IEwgMTguNTIgMTguNDggTCAxOS40MyAxNy4xMSBMIDIwLjY2IDE2LjAyIEwgMjIuMDcgMTUuMTkgTCAyMy41NCAxNC42IEwgMjQuOTQgMTQuMTkgTCAyNi4yNiAxMy44MiBMIDI2LjEyIDEzLjQxIEwgMjYuMTEgMTMuMDggTCAyNi4zNSAxMy4yIEwgMjYuODkgMTMuNjcgTCAyNi41NSAxMi43NiBMIDI2LjM2IDEyLjExIEwgMjYuMzUgMTEuNzQgTCAyNi41NyAxMS44OSBMIDI2Ljk3IDEyLjIzIEwgMjcuMzkgMTIuNjYgTCAyNy44OCAxMy4xNiBMIDI4LjQgMTEuNTUgTCAyOC41OCAxMS4wMiBMIDI4Ljc2IDEwLjg1IEwgMjguODYgMTEuMDIgTCAyOC45IDExLjU1IEwgMjguOSAxMi4zIEwgMjguODYgMTMuMTIgTCAyOS44NiAxMy4yIEwgMzAuNyAxMy4xOSBMIDMxLjQ3IDEzLjEyIEwgMzIuMjUgMTMuMTIgTCAzMy4xOSAxMy4yNCBMIDM0LjM2IDEzLjQ4IEwgMzUuODQgMTMuOTkgTCAzNy43NSAxNC43NiBMIDM5LjQ4IDE1Ljc5IEwgNDAuNzggMTYuNzMgTCA0MS43NCAxNy41MyBMIDQyLjUyIDE4LjE5IEwgNDMuMTkgMTguNjcgTCA0My44NyAxOC45NiBMIDQ0LjY1IDE4Ljk4IEwgNDMuNzkgMjAuMTIgTCA0Mi45NCAyMC45MyBMIDQyLjkyIDIwLjk3IEwgNDMuNiAyMS42NCBMIDQ0LjQ5IDIyLjIyIEwgNDMuNDIgMjIuNzEgTCA0Mi40OSAyMy4wNCBMIDQxLjU4IDIzLjE3IEwgNDAuNTggMjMuMTYgTCAzOS4zMiAyMi45NSBMIDM3LjcxIDIyLjUyIEwgMzUuNzIgMjEuOTIgTCAzNS42OCAyMi4yNyBMIDM1LjU2IDIyLjYyIEwgMzUuNDUgMjMuNTcgTCAzNC44NyAyNS4wNiBMIDM0LjA4IDI2LjQ2IEwgMzMuMTQgMjcuOTMgTCAzMi4yNSAyOS40OSBMIDMxLjUzIDMxLjI4IEwgMzAuMjcgMzEuNjMgTCAyOS45MyAzMC43NCBMIDI5LjU3IDMwLjA3IEwgMjkuMTkgMjkuNjUgTCAyOC43NiAyOS41MyBMIDI4LjIgMjkuNTkgTCAyNy42OCAyOS44MyBMIDI3LjQ4IDMwLjExIEwgMjcuNTMgMzAuOTQgTCAyNy40NSAzNC4yNiBMIDI3LjQ4IDM0LjY0IEwgMjYuODggMzYuNzMgTCAyNS44IDM4LjU1IEwgMjQuMzkgNDAuMDMgTCAyMi44MSA0MS4yMSBMIDIxLjEgNDIuMSBMIDE5LjQ3IDQyLjcgTCAxOCA0My4wMyBMIDE2LjggNDMuMDcgTCAxNy43IDQxLjY4IEwgMTcuOTUgNDAuNCBMIDE3Ljg0IDQwLjQgTCAxNi44IDQwLjQgTCAxNy4yOSAzOC45NyBMIDE3LjQzIDM3LjM5IEwgMTcuMzQgMzUuNTkgTCAxNi44NCAzMS41IEwgMTYuNjQgMjkuMjEgWiIgZmlsbD0iIzEyMWEzMCIvPgogIDxyZWN0IHg9IjQzLjE4IiB5PSIzMy45IiB3aWR0aD0iMS4xNCIgaGVpZ2h0PSIyLjY5IiByeD0iMC41NyIgZmlsbD0iI2ZhZTFiNSIgdHJhbnNmb3JtPSJyb3RhdGUoMzQwLjMgNDMuNzYgMzUuMjUpIi8+Cjwvc3ZnPg==",
+              "width": 64,
+              "height": 64,
+              "sprite": {
+                "frameW": 64,
+                "frameH": 64,
+                "animations": [
+                  {
+                    "name": "parado",
+                    "from": 0,
+                    "to": 0,
+                    "fps": 1,
+                    "loop": false
+                  }
+                ],
+                "hitbox": {
+                  "x": 0.25,
+                  "y": 0.171875,
+                  "w": 0.46875,
+                  "h": 0.828125
+                }
+              }
+            },
+            {
+              "id": "desafio-farol-menina",
+              "name": "menina",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij4KICA8cmVjdCB4PSIyOS44MSIgeT0iNTcuNTMiIHdpZHRoPSI0LjQ5IiBoZWlnaHQ9IjQuMzgiIGZpbGw9IiM4YTU1MzMiLz4KICA8cG9seWdvbiBwb2ludHM9IjI4LjMsNTUuNyAzNS4yLDU1LjUgMzYuNyw2MC4yIDI3LjE1LDYwLjM1IiBmaWxsPSIjN2M0ZmQ2Ii8+CiAgPHBhdGggZD0iTSAzMC40NyA0NC4yMiBDIDMxLjcgNDQuMTUgMzMuNTIgNDMuOTggMzQuMzYgNDQuNzEgQyAzNS4xOSA0NS40MSAzNS41NiA0OC4wMSAzNS41NiA0OC44MyBMIDM1LjU0IDU1LjA3IEMgMzUuNTQgNTUuOSAzNS44NCA1Ni45NSAzNS4wMyA1Ni45NSBMIDI4LjA0IDU2Ljc1IEMgMjcuMjIgNTYuNzUgMjcuNjIgNTUuNyAyNy42MiA1NC44NyBDIDI3LjY2IDUyLjUzIDI3LjM3IDQ5LjkzIDI4IDQ4LjE0IEMgMjguNjIgNDYuMzcgMjkuNjUgNDQuMjIgMzAuNDcgNDQuMjIgWiIgZmlsbD0iI2ZmYzgzZCIvPgogIDxyZWN0IHg9IjI5LjMzIiB5PSI2MS45MiIgd2lkdGg9IjUuODkiIGhlaWdodD0iMi4wNSIgcng9IjEuMDIiIGZpbGw9IiNlODUwNWIiLz4KICA8cGF0aCBkPSJNIDMwLjUyIDEzLjEyIEwgMzAuOTcgMTMuMTIgQyAzNy45IDEzLjEyIDQzLjUyIDE4Ljc1IDQzLjUyIDI1LjY2IEwgNDMuNTIgMzEuMTggQyA0My41MiAzOC4wOCA0NS4yNCA0NC4xNSAzOC4zMiA0NC4xNSBMIDI4LjcgNDQuMzEgQyAyMS43OSA0NC4zMSAxOC4wMSAzOC4wOCAxOC4wMSAzMS4xOCBMIDE4LjAxIDI1LjY2IEMgMTguMDEgMTguNzUgMjMuNjEgMTMuMTIgMzAuNTIgMTMuMTIgWiIgZmlsbD0iIzhhNTUzMyIvPgogIDxlbGxpcHNlIGN4PSI0MC42MiIgY3k9IjMxLjQiIHJ4PSIyLjcyIiByeT0iMy42NiIgZmlsbD0iI2ZmZmZmZiIvPgogIDxlbGxpcHNlIGN4PSI0MS45NSIgY3k9IjMyLjA5IiByeD0iMS4xIiByeT0iMS42NCIgZmlsbD0iIzAwMDAwMCIvPgogIDxwYXRoIGQ9Ik0gNDMuMDIgMzcuMSBMIDQwLjIzIDM2Ljg1IEMgMzkuOCAzNy4xNSA0MC4wMiAzNy41MiAzOS44OCAzNy45IEMgMzkuNjkgMzguMzMgNDAuMjUgMzguNDIgNDAuMzMgMzguOTUgTCA0MS4zNyAzOS41MSBMIDQxLjgyIDM4LjkzIFoiIGZpbGw9IiM1ZDI3NWQiLz4KICA8cG9seWdvbiBwb2ludHM9IjQyLjkxLDM2LjkgNDIuMzksMzguNTYgNDEuNjUsMzguNDUgNDEuMDIsMzcuOTkgNDAuNjgsMzcuMTMiIGZpbGw9IiNmZmZmZmYiIHRyYW5zZm9ybT0icm90YXRlKDEzLjMgNDIuMjIgMzcuNzYpIi8+CiAgPGxpbmUgeDE9IjQyLjc1IiB5MT0iMjguNzUiIHgyPSI0NC4wNSIgeTI9IjI4LjA1IiBzdHJva2U9IiMxZjE2MTIiIHN0cm9rZS13aWR0aD0iMC43IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8bGluZSB4MT0iNDEuOTUiIHkxPSIyOC4xIiB4Mj0iNDIuODUiIHkyPSIyNyIgc3Ryb2tlPSIjMWYxNjEyIiBzdHJva2Utd2lkdGg9IjAuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHJlY3QgeD0iMjkuNjciIHk9IjQ1Ljg3IiB3aWR0aD0iMy45MSIgaGVpZ2h0PSIxMi4wOSIgcng9IjEuNTkiIGZpbGw9IiM4YTU1MzMiIHRyYW5zZm9ybT0icm90YXRlKDAuMyAzMS42MyA1MS45MSkiLz4KICA8cGF0aCBkPSJNIDI4Ljk1IDUxLjIyIEMgMzAuMTMgNTAuNzggMjkuNzMgNTAuMjcgMzEuNzggNTAuMjUgQyAzMy41NiA1MC4yNSAzMi44NiA1MS4xMSAzNC4wOSA1MS40OCBDIDMzLjQyIDQ5LjM4IDM0LjQ5IDQ1Ljc3IDMxLjU5IDQ1LjE4IEMgMjguNDUgNDYuMDEgMjkuMzIgNDkuMDQgMjguOTUgNTEuMjIgWiIgZmlsbD0iI2YyYjAxZSIvPgogIDxwYXRoIGQ9Ik0gMjIuNjUgMTAuNjUgQyAyNC4wOSA5Ljg2IDI1LjIzIDEwLjE2IDI2LjA5IDExLjU2IEMgMjcuNjQgMTEuNTkgMjguMzUgMTIuMzggMjguMjEgMTMuOTMgQyAyOS4zNSAxNC45MSAyOS4zNSAxNS44OSAyOC4yMSAxNi44NyBDIDI4LjM1IDE4LjQyIDI3LjY0IDE5LjIxIDI2LjA5IDE5LjI0IEMgMjUuMjMgMjAuNjQgMjQuMDkgMjAuOTQgMjIuNjUgMjAuMTUgQyAyMS4yMSAyMC45NCAyMC4wNyAyMC42NCAxOS4yMSAxOS4yNCBDIDE3LjY2IDE5LjIxIDE2Ljk1IDE4LjQyIDE3LjA5IDE2Ljg3IEMgMTUuOTUgMTUuODkgMTUuOTUgMTQuOTEgMTcuMDkgMTMuOTMgQyAxNi45NSAxMi4zOCAxNy42NiAxMS41OSAxOS4yMSAxMS41NiBDIDIwLjA3IDEwLjE2IDIxLjIxIDkuODYgMjIuNjUgMTAuNjUgWiIgZmlsbD0iIzFmMTYxMiIvPgogIDxwYXRoIGQ9Ik0gNDIuNCAyMS4yIEwgNDMuMSAxOS41IEMgNDIuOTUgMTguNDMgNDIuNDUgMTcuNTcgNDEuNiAxNi45IEMgNDAuNTggMTUuNSAzOS4yNSAxNC41MyAzNy42IDE0IEMgMzUuOCAxMi45OCAzMy44NiAxMi41NSAzMS44IDEyLjcgQyAyOS45OCAxMi40NyAyOC4yNCAxMi43NyAyNi42IDEzLjYgTCAyMS42IDE3LjQgQyAxOS43NSAxOC41NiAxOC42OCAyMC4yMyAxOC40IDIyLjQgQyAxNi44OSAyNC4xNiAxNi40MyAyNi4xNiAxNyAyOC40IEMgMTYuMDcgMzAuMzQgMTYuMiAzMi4yMSAxNy40IDM0IEMgMTcuMjcgMzUuOTMgMTguMDcgMzcuMzMgMTkuOCAzOC4yIEMgMjAuNzEgMzkuNTYgMjEuOTEgMzkuODkgMjMuNCAzOS4yIEMgMjQuOTMgMzguODkgMjUuNzYgMzcuOTUgMjUuOSAzNi40IEwgMjYuOSAzMS42IEwgMjguNiAyNy4yIEwgMzEuNCAyMy42IEwgMzUuMiAyMS40IEwgMzkuMiAyMS40IEwgNDIuNCAyMS4yIFoiIGZpbGw9IiMxZjE2MTIiLz4KICA8cGF0aCBkPSJNIDQwLjYgMTguMiBDIDM2LjggMTUuNCAzMS42IDE1IDI3LjIgMTYuNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjM2EyYTIyIiBzdHJva2Utd2lkdGg9IjAuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTSAzNi40IDIwLjIgQyAzMyAxOC42IDI5LjYgMTguOCAyNi44IDIwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzYTJhMjIiIHN0cm9rZS13aWR0aD0iMC43IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cGF0aCBkPSJNIDI2LjcgMTQuNyBDIDI3LjYxIDE0Ljg3IDI4LjA2IDE1LjQyIDI4LjA0IDE2LjM1IEMgMjguNjQgMTcuNDUgMjguNjQgMTguNTUgMjguMDQgMTkuNjUgQyAyOC4wNiAyMC41OCAyNy42MSAyMS4xMyAyNi43IDIxLjMgQyAyNS43OSAyMS4xMyAyNS4zNCAyMC41OCAyNS4zNiAxOS42NSBDIDI0Ljc2IDE4LjU1IDI0Ljc2IDE3LjQ1IDI1LjM2IDE2LjM1IEMgMjUuMzQgMTUuNDIgMjUuNzkgMTQuODcgMjYuNyAxNC43IFoiIGZpbGw9IiNmZjVmOGYiIHRyYW5zZm9ybT0icm90YXRlKDM4IDI2LjcgMTgpIi8+CiAgPGVsbGlwc2UgY3g9IjI4LjIiIGN5PSIzMi45IiByeD0iMi4xIiByeT0iMi45IiBmaWxsPSIjOGE1NTMzIi8+CiAgPHBhdGggZD0iTSAyOC45IDMxLjQgQyAyNy41IDMxLjcgMjcuNSAzMy45IDI4LjcgMzQuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNmU0MTI4IiBzdHJva2Utd2lkdGg9IjAuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjI4LjQiIGN5PSIzNi4xIiByeD0iMC44IiByeT0iMC44IiBmaWxsPSIjZmZkMjNmIi8+CiAgPHJlY3QgeD0iNDMuMTgiIHk9IjMzLjkiIHdpZHRoPSIxLjE0IiBoZWlnaHQ9IjIuNjkiIHJ4PSIwLjU3IiBmaWxsPSIjOGE1NTMzIiB0cmFuc2Zvcm09InJvdGF0ZSgzNDAuMyA0My43NiAzNS4yNSkiLz4KPC9zdmc+",
+              "width": 64,
+              "height": 64,
+              "sprite": {
+                "frameW": 64,
+                "frameH": 64,
+                "animations": [
+                  {
+                    "name": "parado",
+                    "from": 0,
+                    "to": 0,
+                    "fps": 1,
+                    "loop": false
+                  }
+                ],
+                "hitbox": {
+                  "x": 0.25,
+                  "y": 0.171875,
+                  "w": 0.46875,
+                  "h": 0.828125
+                }
+              }
+            },
+            {
+              "id": "desafio-farol-marinheira",
+              "name": "marinheira",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij4KICA8cmVjdCB4PSIyOS44MSIgeT0iNTcuNTMiIHdpZHRoPSI0LjQ5IiBoZWlnaHQ9IjQuMzgiIGZpbGw9IiNlOWI5OGYiLz4KICA8cG9seWdvbiBwb2ludHM9IjI4LjMsNTUuNyAzNS4yLDU1LjUgMzYuNyw2MC4yIDI3LjE1LDYwLjM1IiBmaWxsPSIjMWYzYTdhIi8+CiAgPHBhdGggZD0iTSAzMC40NyA0NC4yMiBDIDMxLjcgNDQuMTUgMzMuNTIgNDMuOTggMzQuMzYgNDQuNzEgQyAzNS4xOSA0NS40MSAzNS41NiA0OC4wMSAzNS41NiA0OC44MyBMIDM1LjU0IDU1LjA3IEMgMzUuNTQgNTUuOSAzNS44NCA1Ni45NSAzNS4wMyA1Ni45NSBMIDI4LjA0IDU2Ljc1IEMgMjcuMjIgNTYuNzUgMjcuNjIgNTUuNyAyNy42MiA1NC44NyBDIDI3LjY2IDUyLjUzIDI3LjM3IDQ5LjkzIDI4IDQ4LjE0IEMgMjguNjIgNDYuMzcgMjkuNjUgNDQuMjIgMzAuNDcgNDQuMjIgWiIgZmlsbD0iI2ZmZmZmZiIvPgogIDxyZWN0IHg9IjI4LjEiIHk9IjQ3LjciIHdpZHRoPSI3LjMiIGhlaWdodD0iMS4xNSIgZmlsbD0iIzFmM2E3YSIvPgogIDxyZWN0IHg9IjI3Ljc1IiB5PSI1MC42IiB3aWR0aD0iNy44IiBoZWlnaHQ9IjEuMTUiIGZpbGw9IiMxZjNhN2EiLz4KICA8cmVjdCB4PSIyNy42NSIgeT0iNTMuNSIgd2lkdGg9IjcuOSIgaGVpZ2h0PSIxLjE1IiBmaWxsPSIjMWYzYTdhIi8+CiAgPHBvbHlnb24gcG9pbnRzPSIzMy40LDQ0LjI1IDM2LjEsNDQuOSAzNC45LDQ4LjQiIGZpbGw9IiNlNjM5NDYiLz4KICA8cmVjdCB4PSIyOS4zMyIgeT0iNjEuOTIiIHdpZHRoPSI1Ljg5IiBoZWlnaHQ9IjIuMDUiIHJ4PSIxLjAyIiBmaWxsPSIjZTYzOTQ2Ii8+CiAgPHBhdGggZD0iTSAzMC41MiAxMy4xMiBMIDMwLjk3IDEzLjEyIEMgMzcuOSAxMy4xMiA0My41MiAxOC43NSA0My41MiAyNS42NiBMIDQzLjUyIDMxLjE4IEMgNDMuNTIgMzguMDggNDUuMjQgNDQuMTUgMzguMzIgNDQuMTUgTCAyOC43IDQ0LjMxIEMgMjEuNzkgNDQuMzEgMTguMDEgMzguMDggMTguMDEgMzEuMTggTCAxOC4wMSAyNS42NiBDIDE4LjAxIDE4Ljc1IDIzLjYxIDEzLjEyIDMwLjUyIDEzLjEyIFoiIGZpbGw9IiNlOWI5OGYiLz4KICA8ZWxsaXBzZSBjeD0iNDAuNjIiIGN5PSIzMS40IiByeD0iMi43MiIgcnk9IjMuNjYiIGZpbGw9IiNmZmZmZmYiLz4KICA8ZWxsaXBzZSBjeD0iNDEuOTUiIGN5PSIzMi4wOSIgcng9IjEuMSIgcnk9IjEuNjQiIGZpbGw9IiMwMDAwMDAiLz4KICA8cGF0aCBkPSJNIDQzLjAyIDM3LjEgTCA0MC4yMyAzNi44NSBDIDM5LjggMzcuMTUgNDAuMDIgMzcuNTIgMzkuODggMzcuOSBDIDM5LjY5IDM4LjMzIDQwLjI1IDM4LjQyIDQwLjMzIDM4Ljk1IEwgNDEuMzcgMzkuNTEgTCA0MS44MiAzOC45MyBaIiBmaWxsPSIjNWQyNzVkIi8+CiAgPHBvbHlnb24gcG9pbnRzPSI0Mi45MSwzNi45IDQyLjM5LDM4LjU2IDQxLjY1LDM4LjQ1IDQxLjAyLDM3Ljk5IDQwLjY4LDM3LjEzIiBmaWxsPSIjZmZmZmZmIiB0cmFuc2Zvcm09InJvdGF0ZSgxMy4zIDQyLjIyIDM3Ljc2KSIvPgogIDxsaW5lIHgxPSI0Mi43NSIgeTE9IjI4Ljc1IiB4Mj0iNDQuMDUiIHkyPSIyOC4wNSIgc3Ryb2tlPSIjNWEyZjE3IiBzdHJva2Utd2lkdGg9IjAuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGxpbmUgeDE9IjQxLjk1IiB5MT0iMjguMSIgeDI9IjQyLjg1IiB5Mj0iMjciIHN0cm9rZT0iIzVhMmYxNyIgc3Ryb2tlLXdpZHRoPSIwLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxyZWN0IHg9IjI5LjY3IiB5PSI0NS44NyIgd2lkdGg9IjMuOTEiIGhlaWdodD0iMTIuMDkiIHJ4PSIxLjU5IiBmaWxsPSIjZTliOThmIiB0cmFuc2Zvcm09InJvdGF0ZSgwLjMgMzEuNjMgNTEuOTEpIi8+CiAgPHBhdGggZD0iTSAyOC45NSA1MS4yMiBDIDMwLjEzIDUwLjc4IDI5LjczIDUwLjI3IDMxLjc4IDUwLjI1IEMgMzMuNTYgNTAuMjUgMzIuODYgNTEuMTEgMzQuMDkgNTEuNDggQyAzMy40MiA0OS4zOCAzNC40OSA0NS43NyAzMS41OSA0NS4xOCBDIDI4LjQ1IDQ2LjAxIDI5LjMyIDQ5LjA0IDI4Ljk1IDUxLjIyIFoiIGZpbGw9IiNmZmZmZmYiLz4KICA8cmVjdCB4PSIyOS4zNSIgeT0iNDciIHdpZHRoPSI0LjYiIGhlaWdodD0iMS4xIiByeD0iMC40IiBmaWxsPSIjMWYzYTdhIi8+CiAgPGVsbGlwc2UgY3g9IjIxLjQiIGN5PSIzOS42IiByeD0iMi4zNSIgcnk9IjIuMiIgZmlsbD0iIzVhMmYxNyIgdHJhbnNmb3JtPSJyb3RhdGUoMTIgMjEuNCAzOS42KSIvPgogIDxlbGxpcHNlIGN4PSIyMC41IiBjeT0iNDMuMyIgcng9IjIuMzUiIHJ5PSIyLjIiIGZpbGw9IiM2ZjNjMWYiIHRyYW5zZm9ybT0icm90YXRlKDggMjAuNSA0My4zKSIvPgogIDxlbGxpcHNlIGN4PSIyMCIgY3k9IjQ2LjkiIHJ4PSIyLjM1IiByeT0iMi4yIiBmaWxsPSIjNWEyZjE3IiB0cmFuc2Zvcm09InJvdGF0ZSg0IDIwIDQ2LjkpIi8+CiAgPGVsbGlwc2UgY3g9IjIwIiBjeT0iNTAuMyIgcng9IjIuMzUiIHJ5PSIyLjIiIGZpbGw9IiM2ZjNjMWYiLz4KICA8cmVjdCB4PSIxOC41NSIgeT0iNTIiIHdpZHRoPSIzLjEiIGhlaWdodD0iMS4zNSIgcng9IjAuNiIgZmlsbD0iI2U2Mzk0NiIvPgogIDxwb2x5Z29uIHBvaW50cz0iMTguOSw1My4zIDIxLjQsNTMuMyAyMS45LDU2LjEgMjAuMiw1NS4yIDE4LjUsNTYiIGZpbGw9IiM1YTJmMTciLz4KICA8cGF0aCBkPSJNIDQ0LjIgMjIuNiBDIDQ0LjM1IDIxLjc4IDQzLjg3IDE5LjkgNDMuMyAxOC43IEMgNDIuNzMgMTcuNSA0MS44NSAxNi4zNyA0MC44IDE1LjQgQyAzOS43NSAxNC40MyAzOC41MyAxMy41MyAzNyAxMi45IEMgMzUuNDcgMTIuMjcgMzMuNDMgMTEuNzIgMzEuNiAxMS42IEMgMjkuNzcgMTEuNDggMjcuNyAxMS41OCAyNiAxMi4yIEMgMjQuMyAxMi44MiAyMi43MyAxNC4xIDIxLjQgMTUuMyBDIDIwLjA3IDE2LjUgMTguOCAxNy44MiAxOCAxOS40IEMgMTcuMiAyMC45OCAxNi44MyAyMi45MyAxNi42IDI0LjggQyAxNi4zNyAyNi42NyAxNi40MyAyOC44IDE2LjYgMzAuNiBDIDE2Ljc3IDMyLjQgMTcuMDMgMzQuMSAxNy42IDM1LjYgQyAxOC4xNyAzNy4xIDE5LjAzIDM4Ljc3IDIwIDM5LjYgQyAyMC45NyA0MC40MyAyMi40NyA0MC45MyAyMy40IDQwLjYgQyAyNC4zMyA0MC4yNyAyNS4wMiAzOC43NyAyNS42IDM3LjYgQyAyNi4xOCAzNi40MyAyNi41OCAzNC45MyAyNi45IDMzLjYgQyAyNy4yMiAzMi4yNyAyNy4wMiAzMS4wMyAyNy41IDI5LjYgQyAyNy45OCAyOC4xNyAyOC45NSAyNi4yNyAyOS44IDI1IEMgMzAuNjUgMjMuNzMgMzEuNiAyMi40IDMyLjYgMjIgQyAzMy42IDIxLjYgMzQuNjMgMjIuMyAzNS44IDIyLjYgQyAzNi45NyAyMi45IDM4LjUgMjMuNjMgMzkuNiAyMy44IEMgNDAuNyAyMy45NyA0MS42MyAyMy44IDQyLjQgMjMuNiBDIDQzLjE3IDIzLjQgNDQuMDUgMjMuNDIgNDQuMiAyMi42IFoiIGZpbGw9IiM1YTJmMTciLz4KICA8cGF0aCBkPSJNIDI0LjIgMTYuMiBDIDI3LjggMTQuNCAzMi42IDE0IDM2LjggMTUuNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNmYzYzFmIiBzdHJva2Utd2lkdGg9IjAuOSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGVsbGlwc2UgY3g9IjI4IiBjeT0iMzIuOSIgcng9IjIuMSIgcnk9IjIuOSIgZmlsbD0iI2U5Yjk4ZiIvPgogIDxwYXRoIGQ9Ik0gMjguNyAzMS40IEMgMjcuMyAzMS43IDI3LjMgMzMuOSAyOC41IDM0LjMiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2NmOWE3MCIgc3Ryb2tlLXdpZHRoPSIwLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxyZWN0IHg9IjQzLjE4IiB5PSIzMy45IiB3aWR0aD0iMS4xNCIgaGVpZ2h0PSIyLjY5IiByeD0iMC41NyIgZmlsbD0iI2U5Yjk4ZiIgdHJhbnNmb3JtPSJyb3RhdGUoMzQwLjMgNDMuNzYgMzUuMjUpIi8+Cjwvc3ZnPg==",
+              "width": 64,
+              "height": 64,
+              "sprite": {
+                "frameW": 64,
+                "frameH": 64,
+                "animations": [
+                  {
+                    "name": "parado",
+                    "from": 0,
+                    "to": 0,
+                    "fps": 1,
+                    "loop": false
+                  }
+                ],
+                "hitbox": {
+                  "x": 0.25,
+                  "y": 0.171875,
+                  "w": 0.46875,
+                  "h": 0.828125
+                }
+              }
+            },
+            {
+              "id": "desafio-farol-menino",
+              "name": "menino",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij4KICA8cmVjdCB4PSIyOS44MSIgeT0iNTcuNTMiIHdpZHRoPSI0LjQ5IiBoZWlnaHQ9IjQuMzgiIGZpbGw9IiM2YjNmMjQiLz4KICA8cG9seWdvbiBwb2ludHM9IjI4LjY1LDU2LjQyIDM0Ljk5LDU2LjE3IDM0LjMsNjAuOTQgMjkuOTIsNjAuOTQiIGZpbGw9IiMzZDRhNmIiLz4KICA8cGF0aCBkPSJNIDMwLjQ3IDQ0LjIyIEMgMzEuNyA0NC4xNSAzMy41MiA0My45OCAzNC4zNiA0NC43MSBDIDM1LjE5IDQ1LjQxIDM1LjU2IDQ4LjAxIDM1LjU2IDQ4LjgzIEwgMzUuNTQgNTUuMDcgQyAzNS41NCA1NS45IDM1Ljg0IDU2Ljk1IDM1LjAzIDU2Ljk1IEwgMjguMDQgNTYuNzUgQyAyNy4yMiA1Ni43NSAyNy42MiA1NS43IDI3LjYyIDU0Ljg3IEMgMjcuNjYgNTIuNTMgMjcuMzcgNDkuOTMgMjggNDguMTQgQyAyOC42MiA0Ni4zNyAyOS42NSA0NC4yMiAzMC40NyA0NC4yMiBaIiBmaWxsPSIjMmViMzZiIi8+CiAgPHJlY3QgeD0iMjkuMzMiIHk9IjYxLjkyIiB3aWR0aD0iNS44OSIgaGVpZ2h0PSIyLjA1IiByeD0iMS4wMiIgZmlsbD0iIzFmMjQzMCIvPgogIDxwYXRoIGQ9Ik0gMzAuNTIgMTMuMTIgTCAzMC45NyAxMy4xMiBDIDM3LjkgMTMuMTIgNDMuNTIgMTguNzUgNDMuNTIgMjUuNjYgTCA0My41MiAzMS4xOCBDIDQzLjUyIDM4LjA4IDQ1LjI0IDQ0LjE1IDM4LjMyIDQ0LjE1IEwgMjguNyA0NC4zMSBDIDIxLjc5IDQ0LjMxIDE4LjAxIDM4LjA4IDE4LjAxIDMxLjE4IEwgMTguMDEgMjUuNjYgQyAxOC4wMSAxOC43NSAyMy42MSAxMy4xMiAzMC41MiAxMy4xMiBaIiBmaWxsPSIjNmIzZjI0Ii8+CiAgPGVsbGlwc2UgY3g9IjQwLjYyIiBjeT0iMzEuNCIgcng9IjIuNzIiIHJ5PSIzLjY2IiBmaWxsPSIjZmZmZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjQxLjk1IiBjeT0iMzIuMDkiIHJ4PSIxLjEiIHJ5PSIxLjY0IiBmaWxsPSIjMDAwMDAwIi8+CiAgPHBhdGggZD0iTSA0My4wMiAzNy4xIEwgNDAuMjMgMzYuODUgQyAzOS44IDM3LjE1IDQwLjAyIDM3LjUyIDM5Ljg4IDM3LjkgQyAzOS42OSAzOC4zMyA0MC4yNSAzOC40MiA0MC4zMyAzOC45NSBMIDQxLjM3IDM5LjUxIEwgNDEuODIgMzguOTMgWiIgZmlsbD0iIzVkMjc1ZCIvPgogIDxwb2x5Z29uIHBvaW50cz0iNDIuOTEsMzYuOSA0Mi4zOSwzOC41NiA0MS42NSwzOC40NSA0MS4wMiwzNy45OSA0MC42OCwzNy4xMyIgZmlsbD0iI2ZmZmZmZiIgdHJhbnNmb3JtPSJyb3RhdGUoMTMuMyA0Mi4yMiAzNy43NikiLz4KICA8cmVjdCB4PSIyOS42NyIgeT0iNDUuODciIHdpZHRoPSIzLjkxIiBoZWlnaHQ9IjEyLjA5IiByeD0iMS41OSIgZmlsbD0iIzZiM2YyNCIgdHJhbnNmb3JtPSJyb3RhdGUoMC4zIDMxLjYzIDUxLjkxKSIvPgogIDxwYXRoIGQ9Ik0gMjguOTUgNTEuMjIgQyAzMC4xMyA1MC43OCAyOS43MyA1MC4yNyAzMS43OCA1MC4yNSBDIDMzLjU2IDUwLjI1IDMyLjg2IDUxLjExIDM0LjA5IDUxLjQ4IEMgMzMuNDIgNDkuMzggMzQuNDkgNDUuNzcgMzEuNTkgNDUuMTggQyAyOC40NSA0Ni4wMSAyOS4zMiA0OS4wNCAyOC45NSA1MS4yMiBaIiBmaWxsPSIjMjQ5ODVhIi8+CiAgPHBhdGggZD0iTSAxOC40IDIxLjQgQyAxNi43NyAyMi4yMyAxNy4zNSAyNC43IDE3LjIgMjYuNCBDIDE3LjA1IDI4LjEgMTcuMiAzMC4wNyAxNy41IDMxLjYgQyAxNy44IDMzLjEzIDE4LjI4IDM0LjYzIDE5IDM1LjYgQyAxOS43MiAzNi41NyAyMC44MyAzNy4zNyAyMS44IDM3LjQgQyAyMi43NyAzNy40MyAyNCAzNi44IDI0LjggMzUuOCBDIDI1LjYgMzQuOCAyNi4wMyAzMi43MyAyNi42IDMxLjQgQyAyNy4xNyAzMC4wNyAyNy41NyAyOC44MyAyOC4yIDI3LjggQyAyOC44MyAyNi43NyAyOS43IDI2IDMwLjQgMjUuMiBDIDMxLjEgMjQuNCAzMi45NyAyMy42MyAzMi40IDIzIEMgMzEuODMgMjIuMzcgMjkuMzMgMjEuNjcgMjcgMjEuNCBDIDI0LjY3IDIxLjEzIDIwLjAzIDIwLjU3IDE4LjQgMjEuNCBaIiBmaWxsPSIjMTYxMDBkIi8+CiAgPHBhdGggZD0iTSAxNy40IDIyLjYgQyAxNS4zOCAyMS43MyAxNy4zIDE4LjkgMTcuOSAxNy40IEMgMTguNSAxNS45IDE5LjY1IDE0LjU3IDIxIDEzLjYgQyAyMi4zNSAxMi42MyAyNC4yMyAxMS45NyAyNiAxMS42IEMgMjcuNzcgMTEuMjMgMjkuNzcgMTEuMiAzMS42IDExLjQgQyAzMy40MyAxMS42IDM1LjQ3IDEyLjA3IDM3IDEyLjggQyAzOC41MyAxMy41MyAzOS44NyAxNC42NyA0MC44IDE1LjggQyA0MS43MyAxNi45MyA0Mi4zNSAxOC42MyA0Mi42IDE5LjYgQyA0Mi44NSAyMC41NyA0NC40IDIxLjEgNDIuMyAyMS42IEMgNDAuMiAyMi4xIDM0LjE1IDIyLjQzIDMwIDIyLjYgQyAyNS44NSAyMi43NyAxOS40MiAyMy40NyAxNy40IDIyLjYgWiIgZmlsbD0iI2UyM2IzYiIvPgogIDxwYXRoIGQ9Ik0gMzAuMiAxMS45IEMgMzMuMiAxNC42IDM0LjQgMTguMiAzNC4zIDIyLjEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2I4MmEyYSIgc3Ryb2tlLXdpZHRoPSIwLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSIzMC42IiBjeT0iMTEuNSIgcng9IjEuMiIgcnk9IjAuNyIgZmlsbD0iI2I4MmEyYSIvPgogIDxwYXRoIGQ9Ik0gMTcuNiAyMS4yIEMgMjQuNiAyMi40IDM0LjYgMjIuMiA0Mi40IDIwLjIgTCA0Mi42IDIyIEMgMzQuNiAyNCAyNC42IDI0LjIgMTcuNiAyMi45IFoiIGZpbGw9IiNmZmZmZmYiLz4KICA8cGF0aCBkPSJNIDM2LjYgMjAuNCBDIDQwIDE5LjYgNDMuNCAxOS4yIDQ1LjUgMjAgQyA0NiAyMC41IDQ1LjggMjEuNiA0NC44IDIyIEMgNDMgMjIuOSAzOS42IDIzLjIgMzYuOCAyMyBaIiBmaWxsPSIjYjgyYTJhIi8+CiAgPGVsbGlwc2UgY3g9IjI4LjIiIGN5PSIzMi45IiByeD0iMi4xIiByeT0iMi45IiBmaWxsPSIjNmIzZjI0Ii8+CiAgPHBhdGggZD0iTSAyOC45IDMxLjQgQyAyNy41IDMxLjcgMjcuNSAzMy45IDI4LjcgMzQuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjNTQyZjFhIiBzdHJva2Utd2lkdGg9IjAuNyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHBhdGggZD0iTSAzNi42IDI2LjEgQyAzOCAyNS4yIDM5LjkgMjUgNDEuNCAyNS42IiBmaWxsPSJub25lIiBzdHJva2U9IiMxNjEwMGQiIHN0cm9rZS13aWR0aD0iMC45IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cmVjdCB4PSI0My4xOCIgeT0iMzMuOSIgd2lkdGg9IjEuMTQiIGhlaWdodD0iMi42OSIgcng9IjAuNTciIGZpbGw9IiM2YjNmMjQiIHRyYW5zZm9ybT0icm90YXRlKDM0MC4zIDQzLjc2IDM1LjI1KSIvPgo8L3N2Zz4=",
+              "width": 64,
+              "height": 64,
+              "sprite": {
+                "frameW": 64,
+                "frameH": 64,
+                "animations": [
+                  {
+                    "name": "parado",
+                    "from": 0,
+                    "to": 0,
+                    "fps": 1,
+                    "loop": false
+                  }
+                ],
+                "hitbox": {
+                  "x": 0.25,
+                  "y": 0.171875,
+                  "w": 0.46875,
+                  "h": 0.828125
+                }
+              }
+            },
+            {
+              "id": "desafio-farol-exploradora",
+              "name": "exploradora",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij4KICA8cmVjdCB4PSIyOS44MSIgeT0iNTcuNTMiIHdpZHRoPSI0LjQ5IiBoZWlnaHQ9IjQuMzgiIGZpbGw9IiNmN2QyYjMiLz4KICA8cG9seWdvbiBwb2ludHM9IjI4LjY1LDU2LjQyIDM0Ljk5LDU2LjE3IDM0LjMsNjAuOTQgMjkuOTIsNjAuOTQiIGZpbGw9IiM3YjUyMzIiLz4KICA8cGF0aCBkPSJNIDMwLjQ3IDQ0LjIyIEMgMzEuNyA0NC4xNSAzMy41MiA0My45OCAzNC4zNiA0NC43MSBDIDM1LjE5IDQ1LjQxIDM1LjU2IDQ4LjAxIDM1LjU2IDQ4LjgzIEwgMzUuNTQgNTUuMDcgQyAzNS41NCA1NS45IDM1Ljg0IDU2Ljk1IDM1LjAzIDU2Ljk1IEwgMjguMDQgNTYuNzUgQyAyNy4yMiA1Ni43NSAyNy42MiA1NS43IDI3LjYyIDU0Ljg3IEMgMjcuNjYgNTIuNTMgMjcuMzcgNDkuOTMgMjggNDguMTQgQyAyOC42MiA0Ni4zNyAyOS42NSA0NC4yMiAzMC40NyA0NC4yMiBaIiBmaWxsPSIjZTJjMjdjIi8+CiAgPHJlY3QgeD0iMjcuNyIgeT0iNTQuOSIgd2lkdGg9IjcuODUiIGhlaWdodD0iMS4zIiBmaWxsPSIjN2E0YjIzIi8+CiAgPHJlY3QgeD0iMjkuMzMiIHk9IjYxLjkyIiB3aWR0aD0iNS44OSIgaGVpZ2h0PSIyLjA1IiByeD0iMS4wMiIgZmlsbD0iIzVhM2ExZSIvPgogIDxwYXRoIGQ9Ik0gMzAuNTIgMTMuMTIgTCAzMC45NyAxMy4xMiBDIDM3LjkgMTMuMTIgNDMuNTIgMTguNzUgNDMuNTIgMjUuNjYgTCA0My41MiAzMS4xOCBDIDQzLjUyIDM4LjA4IDQ1LjI0IDQ0LjE1IDM4LjMyIDQ0LjE1IEwgMjguNyA0NC4zMSBDIDIxLjc5IDQ0LjMxIDE4LjAxIDM4LjA4IDE4LjAxIDMxLjE4IEwgMTguMDEgMjUuNjYgQyAxOC4wMSAxOC43NSAyMy42MSAxMy4xMiAzMC41MiAxMy4xMiBaIiBmaWxsPSIjZjdkMmIzIi8+CiAgPGVsbGlwc2UgY3g9IjQwLjYyIiBjeT0iMzEuNCIgcng9IjIuNzIiIHJ5PSIzLjY2IiBmaWxsPSIjZmZmZmZmIi8+CiAgPGVsbGlwc2UgY3g9IjQxLjk1IiBjeT0iMzIuMDkiIHJ4PSIxLjEiIHJ5PSIxLjY0IiBmaWxsPSIjMDAwMDAwIi8+CiAgPHBhdGggZD0iTSA0My4wMiAzNy4xIEwgNDAuMjMgMzYuODUgQyAzOS44IDM3LjE1IDQwLjAyIDM3LjUyIDM5Ljg4IDM3LjkgQyAzOS42OSAzOC4zMyA0MC4yNSAzOC40MiA0MC4zMyAzOC45NSBMIDQxLjM3IDM5LjUxIEwgNDEuODIgMzguOTMgWiIgZmlsbD0iIzVkMjc1ZCIvPgogIDxwb2x5Z29uIHBvaW50cz0iNDIuOTEsMzYuOSA0Mi4zOSwzOC41NiA0MS42NSwzOC40NSA0MS4wMiwzNy45OSA0MC42OCwzNy4xMyIgZmlsbD0iI2ZmZmZmZiIgdHJhbnNmb3JtPSJyb3RhdGUoMTMuMyA0Mi4yMiAzNy43NikiLz4KICA8cmVjdCB4PSIyOS42NyIgeT0iNDUuODciIHdpZHRoPSIzLjkxIiBoZWlnaHQ9IjEyLjA5IiByeD0iMS41OSIgZmlsbD0iI2Y3ZDJiMyIgdHJhbnNmb3JtPSJyb3RhdGUoMC4zIDMxLjYzIDUxLjkxKSIvPgogIDxwYXRoIGQ9Ik0gMjguOTUgNTEuMjIgQyAzMC4xMyA1MC43OCAyOS43MyA1MC4yNyAzMS43OCA1MC4yNSBDIDMzLjU2IDUwLjI1IDMyLjg2IDUxLjExIDM0LjA5IDUxLjQ4IEMgMzMuNDIgNDkuMzggMzQuNDkgNDUuNzcgMzEuNTkgNDUuMTggQyAyOC40NSA0Ni4wMSAyOS4zMiA0OS4wNCAyOC45NSA1MS4yMiBaIiBmaWxsPSIjYzlhNjU5Ii8+CiAgPHBhdGggZD0iTSA0MyAxOS4yIEMgNDMuOSAyMC4yIDQzLjcgMjEuNjMgNDMuNCAyMi40IEMgNDMuMSAyMy4xNyA0Mi4xNyAyMy42MyA0MS4yIDIzLjggQyA0MC4yMyAyMy45NyAzOC43MyAyMy40MyAzNy42IDIzLjQgQyAzNi40NyAyMy4zNyAzNS40IDIzLjIgMzQuNCAyMy42IEMgMzMuNCAyNCAzMi41IDI0Ljk3IDMxLjYgMjUuOCBDIDMwLjcgMjYuNjMgMjkuNjcgMjcuNDcgMjkgMjguNiBDIDI4LjMzIDI5LjczIDI3LjkzIDMxLjIzIDI3LjYgMzIuNiBDIDI3LjI3IDMzLjk3IDI3LjUzIDM1LjgzIDI3IDM2LjggQyAyNi40NyAzNy43NyAyNS40NyAzOC4yMyAyNC40IDM4LjQgQyAyMy4zMyAzOC41NyAyMS43MyAzOC4zIDIwLjYgMzcuOCBDIDE5LjQ3IDM3LjMgMTguMjcgMzYuNjcgMTcuNiAzNS40IEMgMTYuOTMgMzQuMTMgMTYuNzIgMzIgMTYuNiAzMC4yIEMgMTYuNDggMjguNCAxNi41NyAyNi4zNyAxNi45IDI0LjYgQyAxNy4yMyAyMi44MyAxNy40MiAyMC45NyAxOC42IDE5LjYgQyAxOS43OCAxOC4yMyAyMS45MyAxNy4wNyAyNCAxNi40IEMgMjYuMDcgMTUuNzMgMjguNjcgMTUuNiAzMSAxNS42IEMgMzMuMzMgMTUuNiAzNiAxNS44IDM4IDE2LjQgQyA0MCAxNyA0Mi4xIDE4LjIgNDMgMTkuMiBaIiBmaWxsPSIjY2Y1YTI2Ii8+CiAgPHBhdGggZD0iTSAyMC42IDI2LjYgQyAyMSAzMC42IDIxLjYgMzMuNCAyMy40IDM1LjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2I4NDgxYiIgc3Ryb2tlLXdpZHRoPSIwLjgiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxlbGxpcHNlIGN4PSIzNy40IiBjeT0iMzUuNiIgcng9IjAuNDIiIHJ5PSIwLjQyIiBmaWxsPSIjZDk4NzVhIi8+CiAgPGVsbGlwc2UgY3g9IjM4LjgiIGN5PSIzNi4yIiByeD0iMC40MiIgcnk9IjAuNDIiIGZpbGw9IiNkOTg3NWEiLz4KICA8ZWxsaXBzZSBjeD0iMzcuOSIgY3k9IjM3IiByeD0iMC40MiIgcnk9IjAuNDIiIGZpbGw9IiNkOTg3NWEiLz4KICA8ZWxsaXBzZSBjeD0iMzYuNiIgY3k9IjM2LjYiIHJ4PSIwLjQyIiByeT0iMC40MiIgZmlsbD0iI2Q5ODc1YSIvPgogIDxwYXRoIGQ9Ik0gMjEuNCAxOC42IEMgMTguMjIgMTcuNzcgMjEuMjMgMTQuODcgMjEuOSAxMy42IEMgMjIuNTcgMTIuMzMgMjMuNzggMTEuNSAyNS40IDExIEMgMjcuMDIgMTAuNSAyOS41MyAxMC41NyAzMS42IDEwLjYgQyAzMy42NyAxMC42MyAzNi4yNyAxMC42NyAzNy44IDExLjIgQyAzOS4zMyAxMS43MyA0MC4yNyAxMi41NyA0MC44IDEzLjggQyA0MS4zMyAxNS4wMyA0NC4yMyAxNy44IDQxIDE4LjYgQyAzNy43NyAxOS40IDI0LjU4IDE5LjQzIDIxLjQgMTguNiBaIiBmaWxsPSIjZTJjMjdjIi8+CiAgPHJlY3QgeD0iMjEuMjUiIHk9IjE1LjIiIHdpZHRoPSIxOS45IiBoZWlnaHQ9IjIuNiIgcng9IjAuNiIgZmlsbD0iIzdhNGIyMyIvPgogIDxwYXRoIGQ9Ik0gMTYuNiAxOS4yIEMgMTguMiAxNy40IDI0IDE3LjIgMzEgMTcuMiBDIDM4IDE3LjIgNDQgMTcuNCA0NS42IDE5IEMgNDYgMTkuOCA0NS40IDIwLjYgNDQuNCAyMC42IEMgMzggMjAgMjQgMjAgMTcuOCAyMC43IEMgMTYuOCAyMC42IDE2LjMgMTkuOSAxNi42IDE5LjIgWiIgZmlsbD0iI2M5YTY1OSIvPgogIDxlbGxpcHNlIGN4PSIyOC4zIiBjeT0iMzIuOSIgcng9IjIuMSIgcnk9IjIuOSIgZmlsbD0iI2Y3ZDJiMyIvPgogIDxwYXRoIGQ9Ik0gMjkgMzEuNCBDIDI3LjYgMzEuNyAyNy42IDMzLjkgMjguOCAzNC4zIiBmaWxsPSJub25lIiBzdHJva2U9IiNlNWIwOGEiIHN0cm9rZS13aWR0aD0iMC43IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8ZWxsaXBzZSBjeD0iNDAuNSIgY3k9IjMxLjMiIHJ4PSIzLjc1IiByeT0iNC4xNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMmIyYjJiIiBzdHJva2Utd2lkdGg9IjEuMSIvPgogIDxsaW5lIHgxPSIzNi44IiB5MT0iMzAuNCIgeDI9IjI5LjgiIHkyPSIzMS4yIiBzdHJva2U9IiMyYjJiMmIiIHN0cm9rZS13aWR0aD0iMS4xIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8cmVjdCB4PSI0My4xOCIgeT0iMzMuOSIgd2lkdGg9IjEuMTQiIGhlaWdodD0iMi42OSIgcng9IjAuNTciIGZpbGw9IiNmN2QyYjMiIHRyYW5zZm9ybT0icm90YXRlKDM0MC4zIDQzLjc2IDM1LjI1KSIvPgo8L3N2Zz4=",
               "width": 64,
               "height": 64,
               "sprite": {
@@ -973,10 +1109,239 @@
       }
     },
     {
-      "key": "programar-chave",
+      "key": "recolher",
+      "title": "Recolha a chave",
+      "intent": "application",
+      "objective": "Programar o encontro entre personagem e chave e tirar a chave da partida.",
+      "blockKeys": ["video-d2-recolher", "ponte-d2-recolher"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d2-recolher"],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Mostre somente as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "recolher",
+            "label": "Retire a chave dentro do encontro entre personagem e chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fields": {
+                "A": "personagem",
+                "B": "chave"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "guardar",
       "title": "Guarde que a chave foi encontrada",
+      "intent": "application",
+      "objective": "Criar temChave em falso e guardar verdadeiro no encontro com a chave.",
+      "blockKeys": ["video-d2-guardar", "ponte-d2-guardar"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-d2-guardar"],
+        "projectChecks": [
+          {
+            "id": "direcional",
+            "label": "Mostre somente as quatro direções.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_enable_classic_controls",
+              "area": "start",
+              "fields": {
+                "MODE": "directions"
+              }
+            }
+          },
+          {
+            "id": "andar",
+            "label": "Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_top_down",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  },
+                  "beforeBlock": "sz_g2d_clamp_to_screen"
+                }
+              }
+            }
+          },
+          {
+            "id": "borda",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_update_each_frame",
+              "area": "loops",
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_clamp_to_screen",
+                  "fields": {
+                    "SPRITE": "personagem"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "memoria",
+            "label": "Crie temChave começando em falso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_create",
+              "area": "start",
+              "fields": {
+                "NAME": "temChave"
+              },
+              "inputs": {
+                "VALUE": false
+              }
+            }
+          },
+          {
+            "id": "encontro-chave",
+            "label": "No encontro com a chave, retire a chave antes de mudar temChave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fields": {
+                "A": "personagem",
+                "B": "chave"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  },
+                  "beforeBlock": "sz_js_var_assign"
+                }
+              }
+            }
+          },
+          {
+            "id": "recolher",
+            "label": "Retire a chave dentro do encontro entre personagem e chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fields": {
+                "A": "personagem",
+                "B": "chave"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_g2d_destroy_sprite",
+                  "fields": {
+                    "SPRITE": "chave"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "lembrar",
+            "label": "Mude temChave para verdadeiro dentro do encontro com a chave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_overlap",
+              "area": "events",
+              "fields": {
+                "A": "personagem",
+                "B": "chave"
+              },
+              "inputBlocks": {
+                "BODY": {
+                  "blockType": "sz_js_var_assign",
+                  "fields": {
+                    "NAME": "temChave"
+                  },
+                  "inputs": {
+                    "VALUE": true
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "programar-chave",
+      "title": "Avise quem está jogando",
       "intent": "delivery",
-      "objective": "Criar a variável e programar o encontro com a chave no jogo real.",
+      "objective": "Mostrar o aviso da coleta, testar a coleta inteira e enviar a atividade.",
       "blockKeys": ["video-d2-programar", "ponte-d2-programar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -999,7 +1364,7 @@
           },
           {
             "id": "andar",
-            "label": "Dentro de A cada quadro, mova personagem com velocidade 3, antes de conferir a borda.",
+            "label": "Dentro de A cada quadro do jogo, mova o personagem, antes de mantê-lo dentro da tela.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_update_each_frame",
@@ -1010,9 +1375,6 @@
                   "fields": {
                     "SPRITE": "personagem"
                   },
-                  "inputs": {
-                    "SPEED": 3
-                  },
                   "beforeBlock": "sz_g2d_clamp_to_screen"
                 }
               }
@@ -1020,7 +1382,7 @@
           },
           {
             "id": "borda",
-            "label": "Mantenha personagem dentro da tela, no corpo de A cada quadro.",
+            "label": "Dentro de A cada quadro do jogo, mantenha o personagem dentro da tela.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_update_each_frame",

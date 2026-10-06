@@ -70,8 +70,8 @@ export function OnceVsAlwaysStage({
     ? `${hearts} vidas e ${hits} batidas.`
     : prepared.id === 'duas-caixas-nave'
       ? heroX >= 620
-        ? 'A nave saiu da cena.'
-        : 'A nave está visível no espaço.'
+        ? castText('O Dino saiu da cena.', chosenCast)
+        : castText('O Dino está visível na cena.', chosenCast)
       : prepared.id === 'tres-caixas-tiro'
         ? `${shots} tiros.`
         : prepared.id === 'tres-caixas-som'

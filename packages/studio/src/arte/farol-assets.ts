@@ -14,12 +14,32 @@ export const FAROL_LAYOUT = {
   personagemNaPorta: { x: 358, y: 137, w: 64, h: 64 },
 } as const
 
+/**
+ * As imagens que a criança pode dar ao sprite `personagem` (o original primeiro). Trocar a imagem
+ * não muda o jogo: todas têm a caixa de 64 × 64, os pés na mesma linha e a MESMA área de contato
+ * (`arte/__tests__/farol-personagens.test.ts` confere caixa, contato e silhueta).
+ */
+export const FAROL_PERSONAGENS = [
+  'personagem',
+  'menina',
+  'marinheira',
+  'menino',
+  'exploradora',
+] as const satisfies readonly FarolAssetName[]
+export type FarolPersonagem = (typeof FAROL_PERSONAGENS)[number]
+
 /** Frações do SVG: ignoram transparência e luz; o contato da torre fica na base. */
 const porta = { x: 46 / 128, y: 105 / 128, w: 36 / 128, h: 23 / 128 }
+/** Do alto da cabeça ao pé: a mesma para todo personagem. */
+const corpo = { x: 16 / 64, y: 11 / 64, w: 30 / 64, h: 53 / 64 }
 export const FAROL_HITBOXES: Partial<
   Record<FarolAssetName, { x: number; y: number; w: number; h: number }>
 > = {
-  personagem: { x: 16 / 64, y: 11 / 64, w: 30 / 64, h: 53 / 64 },
+  personagem: corpo,
+  menina: corpo,
+  marinheira: corpo,
+  menino: corpo,
+  exploradora: corpo,
   chave: { x: 3 / 32, y: 2 / 32, w: 28 / 32, h: 29 / 32 },
   'farol-apagado': porta,
   'farol-aceso': porta,

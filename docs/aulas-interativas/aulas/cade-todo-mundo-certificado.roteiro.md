@@ -6,7 +6,7 @@ Um vídeo. O conteúdo precisa ser regravado antes de substituir o vídeo public
 
 **Seção sem vídeo. Não gravar clipe de quiz.** O diálogo aparece na página antes das perguntas.
 
-**Zappy na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Depois de conferir as explicações, você pode corrigir o que precisar.
+**Zappy na página (não gravar):** Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.
 
 **Conferência de produção:** usar as perguntas e explicações do quiz final do manifesto. Após enviar, a pessoa lê as explicações e pode corrigir imediatamente. Com todas as respostas corretas, avança em Próxima seção. Não acrescentar vídeo, material ou certificado nesta seção.
 
@@ -18,7 +18,7 @@ Um vídeo. O conteúdo precisa ser regravado antes de substituir o vídeo public
 
 **Narração:**
 
-> “Você terminou o Cadê Todo Mundo! Fez os personagens aparecerem e o jogo contar cada achado.
+> “Você terminou o Cadê Todo Mundo! O jardim e os personagens já vieram prontos. Você programou o toque que revela cada personagem e a contagem dos achados.
 >
 > Parabéns pelo seu jogo!
 >

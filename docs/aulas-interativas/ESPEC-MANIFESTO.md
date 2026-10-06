@@ -142,7 +142,7 @@ na seção de entrega.
 quando o primeiro PDF deve aparecer como livro na outra coluna, sem duplicar o bloco nem o upload.
 Um item `file` precisa do
 `attachmentId` de um arquivo realmente anexado à aula. O manifesto não contém bytes nem URL privada.
-Na introdução do Desafio e na primeira aula de Corre, Dino! e O Jogo do Meu Jeito, os blocos dos
+No Dia 1 do Desafio e na primeira aula de Corre, Dino! e O Jogo do Meu Jeito, os blocos dos
 cadernos já são criados com `items: []`. Os PDFs precisam ser enviados e vinculados no admin;
 o PDF vigente do Farol está em `output/pdf/desafio-farol-caderno.pdf`. Gravar os vídeos de apresentação
 depois de anexar os arquivos reais. O material atual do Desafio é somente o Caderno do Aluno;

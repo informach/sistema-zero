@@ -6,7 +6,7 @@ type CourseReview = { title: string; intro: string; content: ManifestQuiz }
 export const cadeTodoMundo = {
   title: 'Como o seu jardim funciona',
   intro:
-    'Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Depois de conferir as explicações, você pode corrigir o que precisar.',
+    'Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.',
   content: {
     kind: 'quiz',
     passingScore: 100,
@@ -14,7 +14,7 @@ export const cadeTodoMundo = {
       {
         id: 'q1',
         prompt:
-          'Você toca em um esconderijo e consegue ver o personagem que estava atrás. Qual regra que você montou faz isso acontecer?',
+          'Você toca em um esconderijo e consegue ver o personagem que estava atrás. Que regra do seu jogo faz isso?',
         choices: [
           {
             id: 'a',
@@ -31,7 +31,7 @@ export const cadeTodoMundo = {
         ],
         correctChoiceIds: ['a'],
         explanation:
-          'O toque escolhe aquele esconderijo. Dentro dessa reação, você colocou a regra que deixa o esconderijo com 0% de visibilidade. Assim, o personagem que já estava atrás aparece. Os outros esconderijos continuam como estavam.',
+          'O toque escolhe aquele esconderijo e o chama de escolhido. Dentro do bloco do toque, você colocou a ação que deixa escolhido com 0% de visibilidade. Assim, o personagem que já estava atrás aparece. Os outros esconderijos continuam como estavam.',
       },
       {
         id: 'q2',
@@ -58,7 +58,7 @@ export const cadeTodoMundo = {
       {
         id: 'q3',
         prompt:
-          'Você encontrou um personagem e tocou outra vez no mesmo lugar. Por que a contagem não deve aumentar nesse segundo toque?',
+          'Você encontrou um personagem e tocou outra vez no mesmo lugar. Por que a contagem não aumenta nesse segundo toque?',
         choices: [
           {
             id: 'a',
@@ -75,7 +75,7 @@ export const cadeTodoMundo = {
         ],
         correctChoiceIds: ['c'],
         explanation:
-          'O esconderijo ficou invisível depois do primeiro toque. Neste jogo, ele deixa de receber o toque que dispara a contagem. Isso impede contar o mesmo personagem de novo. Para aumentar Achados, você precisa encontrar outro personagem. Essa é uma regra deste jogo, não uma afirmação sobre todo objeto invisível em qualquer programa.',
+          'O esconderijo ficou invisível depois do primeiro toque. Neste jogo, ele deixa de receber o toque que dispara a contagem. Isso impede contar o mesmo personagem de novo. Para aumentar Achados, você precisa encontrar outro personagem.',
       },
     ],
   },
@@ -84,7 +84,7 @@ export const cadeTodoMundo = {
 export const farol = {
   title: 'As regras da sua aventura',
   intro:
-    'Seu personagem anda, recolhe a chave e faz o farol responder. Responda quatro perguntas sobre o que você programou. As explicações ajudam a conferir seu raciocínio e corrigir o que precisar.',
+    'Você fez o personagem andar, pegar a chave e acender o farol. Agora responda quatro perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez.',
   content: {
     kind: 'quiz',
     passingScore: 100,
@@ -109,12 +109,12 @@ export const farol = {
         ],
         correctChoiceIds: ['b'],
         explanation:
-          'Dentro de A cada quadro, primeiro o jogo move o personagem. Logo depois, a regra da borda mantém ele dentro da tela. O jogo repete essa sequência enquanto funciona; conferir a posição somente no começo não cuidaria dos movimentos seguintes.',
+          'Dentro de A cada quadro do jogo, primeiro o jogo move o personagem. Logo depois, a regra da borda mantém ele dentro da tela. O jogo repete essa sequência enquanto funciona; conferir a posição somente no começo não cuidaria dos movimentos seguintes.',
       },
       {
         id: 'q-memoria-coleta',
         prompt:
-          'Em um teste, a chave saiu do chão e apareceu o aviso de coleta, mas o farol ainda disse que faltava a chave. A porta está consultando temChave corretamente. Qual parte da coleta você deve conferir primeiro?',
+          'Você pegou a chave: ela sumiu do chão e o aviso mudou. Mas, no farol, o jogo disse que falta a chave. A pergunta da porta está certa. Qual bloco da coleta você deve conferir primeiro?',
         choices: [
           {
             id: 'a',

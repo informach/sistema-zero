@@ -54,6 +54,30 @@ describe('experiência de memória da coleta', () => {
     expect(ligado).toContain('Guardar a coleta: ligado')
   })
 
+  test('a regra segue a ordem dos blocos do Dia 2: Destruir, temChave, aviso', () => {
+    for (const lembrar of [false, true]) {
+      const html = renderToStaticMarkup(
+        <CollectionMemoryControls
+          state={stepScene(start, initial, { type: 'remember-collection', enabled: lembrar })}
+          dispatch={() => {}}
+        />,
+      )
+      const destruir = html.indexOf('Destruir o sprite chave')
+      const guardar = html.indexOf('Alterar temChave para verdadeiro')
+      const aviso = html.indexOf('Alterar aviso para')
+      expect(destruir).toBeGreaterThan(-1)
+      expect(destruir).toBeLessThan(guardar)
+      expect(guardar).toBeLessThan(aviso)
+      // Desligado, o encaixe vazio é o de temChave (o 3º passo), e não o do aviso.
+      const fora = html.indexOf('data-estado="fora"')
+      if (lembrar) expect(fora).toBe(-1)
+      else {
+        expect(fora).toBeGreaterThan(destruir)
+        expect(fora).toBeLessThan(guardar)
+      }
+    }
+  })
+
   test('o interruptor fecha depois da coleta e diz por que precisa recomeçar', () => {
     const html = renderToStaticMarkup(
       <CollectionMemoryControls state={without} dispatch={() => {}} />,

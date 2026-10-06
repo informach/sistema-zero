@@ -9,7 +9,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Depois de conferir as explicações, você pode corrigir o que precisar."
+        "text": "Você fez os personagens aparecerem e ensinou o jogo a contar. Agora responda três perguntas sobre essas regras. Se errar alguma, leia o porquê, clique em Tentar de novo! e responda outra vez."
       }
     },
     {
@@ -20,7 +20,7 @@
         "questions": [
           {
             "id": "q1",
-            "prompt": "Você toca em um esconderijo e consegue ver o personagem que estava atrás. Qual regra que você montou faz isso acontecer?",
+            "prompt": "Você toca em um esconderijo e consegue ver o personagem que estava atrás. Que regra do seu jogo faz isso?",
             "choices": [
               {
                 "id": "a",
@@ -36,7 +36,7 @@
               }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "O toque escolhe aquele esconderijo. Dentro dessa reação, você colocou a regra que deixa o esconderijo com 0% de visibilidade. Assim, o personagem que já estava atrás aparece. Os outros esconderijos continuam como estavam."
+            "explanation": "O toque escolhe aquele esconderijo e o chama de escolhido. Dentro do bloco do toque, você colocou a ação que deixa escolhido com 0% de visibilidade. Assim, o personagem que já estava atrás aparece. Os outros esconderijos continuam como estavam."
           },
           {
             "id": "q2",
@@ -60,7 +60,7 @@
           },
           {
             "id": "q3",
-            "prompt": "Você encontrou um personagem e tocou outra vez no mesmo lugar. Por que a contagem não deve aumentar nesse segundo toque?",
+            "prompt": "Você encontrou um personagem e tocou outra vez no mesmo lugar. Por que a contagem não aumenta nesse segundo toque?",
             "choices": [
               {
                 "id": "a",
@@ -76,14 +76,14 @@
               }
             ],
             "correctChoiceIds": ["c"],
-            "explanation": "O esconderijo ficou invisível depois do primeiro toque. Neste jogo, ele deixa de receber o toque que dispara a contagem. Isso impede contar o mesmo personagem de novo. Para aumentar Achados, você precisa encontrar outro personagem. Essa é uma regra deste jogo, não uma afirmação sobre todo objeto invisível em qualquer programa."
+            "explanation": "O esconderijo ficou invisível depois do primeiro toque. Neste jogo, ele deixa de receber o toque que dispara a contagem. Isso impede contar o mesmo personagem de novo. Para aumentar Achados, você precisa encontrar outro personagem."
           }
         ]
       }
     },
     {
       "key": "video-certificado",
-      "plannedVideo": "Título: Você criou seu primeiro jogo!\n\nReconhecer as duas regras que a criança programou e comemorar antes do encaminhamento. Pedir Pegar meu certificado e, após o download, terminar em Concluir aula, sem acrescentar falas depois da ação de saída. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.\n\nRoteiro falado completo: cade-todo-mundo-certificado.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
+      "plannedVideo": "Título: Comemore sua criação\n\nReconhecer o que veio pronto e as duas regras que a criança programou, e comemorar antes do encaminhamento. Pedir Pegar meu certificado e, após o download, terminar em Concluir aula, sem acrescentar falas depois da ação de saída. Sem tour do PDF ou de pastas; a ajuda fica no Como Fazer. Sem oferta comercial. Regravar a fala. Alvo: 15 a 25 segundos.\n\nRoteiro falado completo: cade-todo-mundo-certificado.roteiro.md. Gravar no Estúdio atual, sem Pinta ou Estúdio completo."
     },
     {
       "key": "ponte-certificado",
@@ -99,7 +99,7 @@
         "kind": "certificate",
         "introLine": "Certificamos que",
         "coursePhrase": "concluiu Cadê Todo Mundo?",
-        "bodyText": "Criou um jogo de procurar personagens com toque, reação e contagem de achados."
+        "bodyText": "Programou o toque que revela os personagens e a contagem dos achados."
       }
     }
   ],
@@ -122,7 +122,7 @@
       "key": "certificado",
       "title": "Comemore sua criação",
       "intent": "delivery",
-      "objective": "Assistir à mensagem final e emitir o certificado do primeiro jogo criado.",
+      "objective": "Assistir à mensagem final e emitir o certificado do curso.",
       "blockKeys": ["video-certificado", "ponte-certificado", "certificado"],
       "workspaceKey": null,
       "externalTool": null,

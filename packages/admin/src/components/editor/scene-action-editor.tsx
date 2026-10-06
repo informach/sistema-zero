@@ -3,6 +3,7 @@
 import {
   decimal,
   isSceneAction,
+  isSceneSetupAction,
   MAP_TILES,
   SCENE_LIMITS,
   SCENE_PORTS,
@@ -59,6 +60,14 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Encostar na chave', value: { type: 'collect-key' } },
   { label: 'Afastar da chave', value: { type: 'leave-key' } },
   { label: 'Recomeçar a partida', value: { type: 'restart-collection' } },
+  // O andar do Farol (05/10/2026), o Dia 1 do Desafio: os nomes são os da bancada da criança.
+  { label: 'Segurar a seta para a direita', value: { type: 'hold-arrow', held: true } },
+  { label: 'Soltar a seta para a direita', value: { type: 'hold-arrow', held: false } },
+  { label: 'Velocidade 1', value: { type: 'walk-speed', speed: 1 } },
+  { label: 'Velocidade 3', value: { type: 'walk-speed', speed: 3 } },
+  { label: 'Ligar Manter dentro da tela', value: { type: 'keep-on-screen', enabled: true } },
+  { label: 'Desligar Manter dentro da tela', value: { type: 'keep-on-screen', enabled: false } },
+  { label: 'Recomeçar o andar', value: { type: 'restart-walk' } },
   { label: 'Usar o número 400 no tiro', value: { type: 'value-source', source: 'fixed' } },
   { label: 'Ler o centro x da nave no tiro', value: { type: 'value-source', source: 'read' } },
   { label: 'Mostrar as marcas da caixa', value: { type: 'box-marks', on: true } },
@@ -300,6 +309,9 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   'rule-toggle': ['enabled'],
   'key-state': ['hasKey'],
   'remember-collection': ['enabled'],
+  'hold-arrow': ['held'],
+  'walk-speed': ['speed'],
+  'keep-on-screen': ['enabled'],
   'play-move': ['direction'],
   'place-in-area': ['card', 'area'],
   'score-place': ['clock', 'guarded'],
@@ -685,10 +697,16 @@ export function SceneActionEditor({
   onChange: (actions: SceneAction[]) => void
   minimo?: number
   maximo?: number
-  /** O caso não aceita `reset`: ele voltaria para o próprio caso, em laço. */
+  /**
+   * Editando um CASO: só as ações que o caso aceita (`isSceneSetupAction`): sem `reset`, que
+   * voltaria ao próprio caso em laço, e sem as que a cena recusa no caso (o tempo e a seta no andar
+   * do Farol).
+   */
   semReset?: boolean
 }) {
-  const choices = sceneActionChoices(scene).filter((c) => !semReset || c.value.type !== 'reset')
+  const choices = sceneActionChoices(scene).filter(
+    (c) => !semReset || isSceneSetupAction(c.value, scene),
+  )
   const replace = (index: number, action: SceneAction) =>
     onChange(value.map((a, i) => (i === index ? action : a)))
   return (

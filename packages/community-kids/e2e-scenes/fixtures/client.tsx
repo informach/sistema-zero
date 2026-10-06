@@ -4,16 +4,64 @@ import { SceneActivityView } from '@sistemazero/member-shell/components/scene-ac
 import { resolveLessonSplit } from '@sistemazero/member-shell/lib/lesson-split'
 import { createRoot } from 'react-dom/client'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
+import farolDia1 from '../../../../docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json'
 import farolDia2 from '../../../../docs/aulas-interativas/aulas/desafio-dia-2.manifesto.json'
 import farolDia3 from '../../../../docs/aulas-interativas/aulas/desafio-dia-3.manifesto.json'
-import manifesto from '../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-1.manifesto.json'
+import naveDia1 from '../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-1.manifesto.json'
+import navePrimeira from '../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-primeira-nave.manifesto.json'
 
 const params = new URLSearchParams(location.search)
+// Desde a reestruturação da Nave (05/10/2026), as experiências do antigo Dia 1 ficaram em
+// "primeira-nave"; a de camadas continua no Dia 1.
 const blocks =
-  params.get('course') === 'farol' ? [...farolDia2.blocks, ...farolDia3.blocks] : manifesto.blocks
+  params.get('course') === 'farol'
+    ? [...farolDia1.blocks, ...farolDia2.blocks, ...farolDia3.blocks]
+    : [...navePrimeira.blocks, ...naveDia1.blocks]
 const source = blocks.find((block) => block.key === (params.get('block') ?? 'experiencia-areas'))
 if (!source || !isInteractiveBlock(source.content)) throw new Error('Experiência não encontrada')
-const original = source.content
+/**
+ * Os testes de layout do palpite precisam de uma cena com palpite. Os cursos deixaram de usá-lo
+ * nessas cenas (Diretrizes, 05/10/2026), mas o player continua oferecendo o recurso; por isso os
+ * dois palpites de antes ficam aqui, como dado do teste, e não no manifesto.
+ */
+const PALPITES_DE_TESTE: Record<string, unknown> = {
+  'experiencia-coordenadas': {
+    context: {
+      label: 'Os números x e y',
+      explanation:
+        'Nesta experiência, vamos usar os números x e y para escolher onde a nave aparece na tela do jogo.',
+    },
+    prompt: 'Se o y AUMENTAR, para onde a nave vai?',
+    choices: [
+      { id: 'cima', label: 'Para cima', shows: 'Aumentando o y, a nave desceu.' },
+      { id: 'baixo', label: 'Para baixo' },
+    ],
+    correctChoiceId: 'baixo',
+    revealOn: 'down',
+  },
+  'experiencia-criar-mostrar': {
+    context: {
+      label: 'Bastidores e tela do jogo',
+      explanation:
+        'Nesta experiência, vamos comparar o que existe nos bastidores com o que aparece na tela do jogo.',
+    },
+    prompt: 'Você cria a nave, mas ainda não manda desenhar. O que aparece na tela?',
+    choices: [
+      {
+        id: 'aparece',
+        label: 'A nave aparece',
+        shows: 'A tela continuou vazia até a nave ser desenhada.',
+      },
+      { id: 'vazia', label: 'A tela fica vazia' },
+    ],
+    correctChoiceId: 'vazia',
+    revealOn: 'hidden',
+  },
+}
+const palpite = params.get('course') === 'farol' ? undefined : PALPITES_DE_TESTE[source.key]
+const original = palpite
+  ? ({ ...source.content, prediction: palpite } as typeof source.content)
+  : source.content
 const content = publicInteractiveBlock(original)
 if (content.activity.type !== 'experimentation') throw new Error('Bloco não é experiência')
 const root = document.getElementById('root')

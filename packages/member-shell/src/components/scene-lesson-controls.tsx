@@ -22,6 +22,7 @@ import { FixedVsReadControls } from './scene-fixed-vs-read'
 import { FoundCounterControls } from './scene-found-counter'
 import { InvincibilityControls } from './scene-invincibility'
 import { LighthouseKeyControls } from './scene-lighthouse-key'
+import { LighthouseWalkControls } from './scene-lighthouse-walk'
 import { MotionAmountControls } from './scene-motion-amount'
 import { MotorSceneControls } from './scene-motor-controls'
 import { NucleoSceneControls } from './scene-nucleo-controls'
@@ -122,6 +123,18 @@ export function LessonSceneControls({
       {m === 'lighthouse-key' && <LighthouseKeyControls state={state} dispatch={dispatch} />}
       {m === 'collect-and-remember' && (
         <CollectionMemoryControls state={state} dispatch={dispatch} />
+      )}
+      {/* O andar do Farol: a bancada inteira (a seta, a velocidade, o limite e o tempo) é dela, e o
+          que aparece depende do CASO (`goals`). O Rodar é o relógio do player (`onRunning`). */}
+      {m === 'lighthouse-walk' && (
+        <LighthouseWalkControls
+          state={state}
+          dispatch={dispatch}
+          goals={goals}
+          cenario={cenario}
+          tocando={tocando}
+          onRunning={onRunning}
+        />
       )}
       {m === 'fixed-vs-read' && <FixedVsReadControls state={state} dispatch={dispatch} />}
       {m === 'collision-pair' && <CollisionPairControls state={state} dispatch={dispatch} />}

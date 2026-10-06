@@ -45,7 +45,8 @@ describe('projeto inicial Cadê Todo Mundo?', () => {
   test('leva arte própria embutida, sem Pinta ou rede', () => {
     const p = montarProjetoCadeTodoMundo()
     expect(p.installedExtensions.map((e) => e.id)).toEqual(['game-2d'])
-    expect(sanitizeProjectAssets(p.assets)).toHaveLength(7)
+    // O fundo, os 7 bichos e os 6 esconderijos: a Aula 2 ensina a trocar a imagem de cada sprite.
+    expect(sanitizeProjectAssets(p.assets)).toHaveLength(14)
     expect(p.assets.every((a) => a.dataUrl.startsWith('data:image/svg+xml;base64,'))).toBe(true)
     const jardim = p.assets.find((a) => a.name === 'jardim')
     const coelho = p.assets.find((a) => a.name === 'coelho')
@@ -64,22 +65,30 @@ describe('projeto inicial Cadê Todo Mundo?', () => {
   })
 
   test('personagens e esconderijos usam as dimensões e posições da arte nova', () => {
+    // Desde 05/10/2026 há uma caixa só por tipo (72 × 87 nos bichos, 161 × 144 nos esconderijos)
+    // e um Y por tipo: a criança troca a imagem de um sprite sem o desenho esticar nem sair do
+    // lugar. Antes cada sprite tinha o seu (arbusto 166, raposa 190, pedras 185, coruja 187,
+    // flores 138); o coelho ficou onde estava.
     const expectedY = {
       coelho: 181,
-      arbusto: 166,
-      raposa: 190,
-      pedras: 185,
-      coruja: 187,
-      flores: 138,
+      arbusto: 137,
+      raposa: 181,
+      pedras: 137,
+      coruja: 181,
+      flores: 137,
     }
     const sprites = IR_CADE_TODO_MUNDO.behavior.start.filter(
       (statement) => statement.type === 'g2d:createImageSprite',
     )
-    for (const { personagem, esconderijo, centroX } of JARDIM_PARES) {
-      for (const name of [personagem, esconderijo]) {
+    // Os nomes dos sprites são neutros (bicho1, esconderijo1…): a imagem pode mudar sem o nome mentir.
+    for (const [i, { personagem, esconderijo, centroX }] of JARDIM_PARES.entries()) {
+      for (const [varName, name] of [
+        [`bicho${i + 1}`, personagem],
+        [`esconderijo${i + 1}`, esconderijo],
+      ] as const) {
         expect(
           sprites.find(
-            (sprite) => sprite.type === 'g2d:createImageSprite' && sprite.varName === name,
+            (sprite) => sprite.type === 'g2d:createImageSprite' && sprite.varName === varName,
           ),
         ).toMatchObject({
           x: centroX - JARDIM_ASSETS[name].width / 2,

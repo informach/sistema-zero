@@ -15,7 +15,7 @@ python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py
 
 Requisitos: Bun, Python com `playwright` e Chrome ou Edge instalado. A geração usa arquivos locais, sem baixar fontes ou imagens. Saída: [desafio-farol-caderno.pdf](../../../../output/pdf/desafio-farol-caderno.pdf). HTML e relatório de limites ficam em `tmp/pdfs/desafio-farol/` para inspeção.
 
-O PDF atual tem 15 páginas. Após editar passos ou diagramas, conferir também a navegação por páginas e renderizar o PDF inteiro para revisão visual. A validação de limites complementa essa revisão, não substitui a leitura. Não reduzir fonte ou omitir instruções para caber na página.
+O PDF atual tem 21 páginas. Após editar passos ou diagramas, conferir também a navegação por páginas e renderizar o PDF inteiro para revisão visual. A validação de limites complementa essa revisão, não substitui a leitura. Não reduzir fonte ou omitir instruções para caber na página.
 
 O mapa para responsáveis foi retirado por orientação de 03/10/2026. A revisão antes do certificado está implementada nos materiais locais. O caderno orienta responder na aula e corrigir com as explicações; não antecipa o gabarito.
 
@@ -23,7 +23,7 @@ O mesmo verificador pode gerar o caderno do Cadê Todo Mundo com `python docs/au
 
 ## Artes personalizadas — 03/10/2026
 
-Os sete SVGs do `pack-game-farol` ficam em `packages/studio/src/arte/assets/farol/`. O jogo usa `cenario-farol-limpo.svg` como fundo; `cenario-farol.svg` é a referência composta, pois já contém personagem, chave, torre e barco.
+Os sete SVGs do `pack-game-farol` e os quatro personagens desenhados em 05/10/2026 (`menina`, `marinheira`, `menino` e `exploradora`, com a caixa 64 × 64 e a área de contato do personagem original) ficam em `packages/studio/src/arte/assets/farol/`. O jogo usa `cenario-farol-limpo.svg` como fundo; `cenario-farol.svg` é a referência composta, pois já contém personagem, chave, torre e barco.
 
 O palco tem **480 × 360**, proporção original do cenário. `packages/studio/src/arte/farol-assets.ts` compartilha as posições e as áreas de contato entre o projeto preparado, a atividade da porta e as ilustrações do caderno. A luz não é área de contato. O barco parte fora da tela e chega à água em `(387, 240)`. Os nomes dos assets e a progressão das aulas foram preservados.
 

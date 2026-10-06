@@ -1,8 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { FAROL_LAYOUT, farolSvg } from '../../../packages/studio/src/arte/farol-assets'
+import {
+  FAROL_HITBOXES,
+  FAROL_LAYOUT,
+  FAROL_PERSONAGENS,
+  farolSvg,
+} from '../../../packages/studio/src/arte/farol-assets'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/project'
-import { SZIRV2Schema } from '../../../packages/studio/src/ir/schema'
+import { type SZIRV2, SZIRV2Schema } from '../../../packages/studio/src/ir/schema'
 import { exampleHarness } from '../../../packages/studio/src/official-extensions/game-2d/__tests__/examplePlaythroughHarness'
 import { gameTwoDBlocks } from '../../../packages/studio/src/official-extensions/game-2d/blockCatalog'
 import { montarProjetoFarol } from './desafio-farol-projeto'
@@ -48,6 +53,10 @@ describe('projeto preparado A Chave do Farol', () => {
     const files = {
       cenario: 'cenario-farol-limpo',
       personagem: 'player-farol',
+      menina: 'menina-farol',
+      marinheira: 'marinheira-farol',
+      menino: 'menino-farol',
+      exploradora: 'exploradora-farol',
       chave: 'chave-farol',
       'farol-apagado': 'farol-apagado',
       'farol-aceso': 'farol-aceso',
@@ -90,6 +99,10 @@ describe('projeto preparado A Chave do Farol', () => {
       expect(project.assets.map((asset) => asset.name)).toEqual([
         'cenario',
         'personagem',
+        'menina',
+        'marinheira',
+        'menino',
+        'exploradora',
         'chave',
         'farol-apagado',
         'farol-aceso',
@@ -101,6 +114,62 @@ describe('projeto preparado A Chave do Farol', () => {
     expect(JSON.stringify(d2.ir)).toContain('g2d:topDown')
     expect(JSON.stringify(d2.ir)).not.toContain('g2d:onOverlap')
     expect(JSON.stringify(d3.ir)).toContain('g2d:onOverlap')
+  })
+
+  test('as imagens de personagem vêm logo depois do original, com a mesma caixa e o mesmo contato', () => {
+    const assets = montarProjetoFarol('concluido').assets ?? []
+    const inicio = assets.findIndex((asset) => asset.name === 'personagem')
+    const personagens = assets.slice(inicio, inicio + FAROL_PERSONAGENS.length)
+    expect(personagens.map((asset) => asset.name)).toEqual([...FAROL_PERSONAGENS])
+    for (const asset of personagens) {
+      expect([asset.width, asset.height], asset.name).toEqual([64, 64])
+      expect(asset.sprite?.hitbox, asset.name).toEqual(FAROL_HITBOXES.personagem)
+      expect(asset.sprite?.frameW, asset.name).toBe(64)
+      expect(asset.sprite?.frameH, asset.name).toBe(64)
+    }
+  })
+
+  test('trocar a imagem do sprite personagem não muda o jogo: mesmo tamanho, mesmos encontros', () => {
+    /** Onde o personagem encosta na chave e na porta, numa grade em volta de cada uma. */
+    function encontros(imagem: string, semContato = false) {
+      const project = montarProjetoFarol('concluido')
+      const ir = structuredClone(project.ir) as SZIRV2
+      const cria = ir.behavior.start.find(
+        (st) => st.type === 'g2d:createImageSprite' && st.varName === 'personagem',
+      )
+      if (cria?.type !== 'g2d:createImageSprite') throw new Error('sprite personagem ausente')
+      cria.image = imagem
+      const assets = (project.assets ?? []).map((asset) =>
+        semContato && asset.name === imagem ? { ...asset, sprite: undefined } : asset,
+      )
+      const game = exampleHarness({ name: project.name, experience: 'game', ir, assets })
+      const [personagem, chave, farol] = game.sprites
+      if (!personagem || !chave || !farol) throw new Error('Personagens preparados ausentes')
+      game.nextFrame()
+      const api = game.api as unknown as { isColliding(a: unknown, b: unknown): boolean }
+      const mapa: boolean[] = []
+      for (const alvo of [chave, farol])
+        for (let dy = -72; dy <= 40; dy += 4)
+          for (let dx = -72; dx <= 40; dx += 4) {
+            personagem.x = alvo.x + dx
+            personagem.y = alvo.y + dy
+            mapa.push(api.isColliding(personagem, alvo))
+          }
+      expect(game.errors).toEqual([])
+      expect(game.warnings).toEqual([])
+      return { mapa, w: personagem.w, h: personagem.h }
+    }
+
+    const original = encontros('personagem')
+    expect(original.mapa.filter(Boolean).length).toBeGreaterThan(20)
+    expect(original.mapa.filter((v) => !v).length).toBeGreaterThan(20)
+    for (const imagem of FAROL_PERSONAGENS) {
+      const trocado = encontros(imagem)
+      expect([trocado.w, trocado.h], imagem).toEqual([original.w, original.h])
+      expect(trocado.mapa, imagem).toEqual(original.mapa)
+    }
+    // anti-vácuo: sem a área de contato no asset, a mesma grade encosta em outros lugares
+    expect(encontros('menina', true).mapa).not.toEqual(original.mapa)
   })
 
   test('o jogo real anda, recolhe a chave uma vez e só acende o farol depois dela', () => {

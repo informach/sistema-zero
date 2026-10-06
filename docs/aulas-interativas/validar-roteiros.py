@@ -67,7 +67,7 @@ def audit(manifest_path):
         for line in body.splitlines():
             if line == '**Narração:**':
                 in_speech = True
-            elif in_speech and line.startswith('> '):
+            elif in_speech and (line.startswith('> ') or line == '>'):
                 spoken_parts.append(line[2:])
             else:
                 in_speech = False
@@ -109,8 +109,8 @@ def audit(manifest_path):
 manifests = sorted(ROOT.glob('*.manifesto.json'))
 prefix = sys.argv[1] if len(sys.argv) > 1 else ''
 selected = [path for path in manifests if not prefix or path.name.startswith(prefix)]
-if not selected or (not prefix and len(selected) != 34):
-    expected = 'manifestos com o prefixo' if prefix else '34 manifestos'
+if not selected or (not prefix and len(selected) != 37):
+    expected = 'manifestos com o prefixo' if prefix else '37 manifestos'
     print(f'ERRO: esperados {expected}, encontrados {len(selected)} em {ROOT}')
     raise SystemExit(1)
 total = 0
