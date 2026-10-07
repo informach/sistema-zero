@@ -67,7 +67,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A área é escolhida uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Usar área de colisão, que chega com 80 % do tamanho, e solte no fim de Ao iniciar. No sprite, escolha dino e deixe a porcentagem em 80.
 >
-> Agora comece a partida e olhe o contorno. Olha só: ele ficou menor, mas o Dino continua do mesmo tamanho, 64, porque só a área da batida mudou! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Usar área de colisão está no fim de Ao iniciar, com dino e 80, e o tamanho do Dino continua 64. Depois de corrigir, teste de novo.
+> Agora comece a partida e olhe o contorno: ele ficou menor, mas o Dino continua do mesmo tamanho, 64, porque só a área da batida mudou! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Usar área de colisão está no fim de Ao iniciar, com dino e 80, e o tamanho do Dino continua 64. Depois de corrigir, teste de novo.
 >
 > Deixe um cacto chegar e compare a batida com a do teste anterior. Se quiser, teste 70 e 85 nesse campo e compare. Você pode escolher um valor entre 70 e 85, e, no exemplo, fica 80. Não mude o tamanho do desenho para tentar ajustar a área, porque isso encolheria o Dino.
 >

@@ -203,7 +203,10 @@ test('experiências: o conceito primeiro, a demonstração na primeira pessoa e 
           : 'Esta é uma experiência para a gente entender',
       )
       cenasVistas.add(cena)
-      expect(falas[1], section.key).toStartWith('Olha aqui: ')
+      // Na demonstração do leitor de tela, o resultado precisa ser ouvido.
+      expect(falas[1], section.key).toStartWith(
+        section.key === 'descricao' ? 'Escute o que acontece' : 'Olha aqui: ',
+      )
       expect(falas.at(-1)).toBe(SUA_VEZ)
       const demonstracao = falas.slice(0, -1).join(' ')
       expect(demonstracao, section.key).not.toMatch(ordemParaQuemAssiste)
@@ -299,7 +302,7 @@ test('falas conversam: ponte com convite e saída, retomada no jogo e sem "entã
 })
 
 // A retomada é uma ponte, não um segundo vídeo da experiência (Diretrizes, 06/10/2026, à noite):
-// primeiro o problema no jogo da criança, com "Tá vendo?" e o porquê; depois a lembrança, como
+// primeiro o problema no jogo da criança, com um chamado adequado ao efeito e o porquê; depois a lembrança, como
 // solução; e o anúncio uma vez só, colado ao primeiro passo. Sem teste quando o efeito ainda não
 // aparece no jogo. Teto de 50 palavras, para a versão longa não voltar.
 const RETOMADA_SEM_TESTE = new Set([
@@ -326,7 +329,13 @@ test('retomadas curtas: o problema, a lembrança e um anúncio só', () => {
         expect(texto, id).not.toContain('Tá vendo?')
       } else {
         expect(lembra, id).toBe(1)
-        expect(falas[0], id).toContain('Tá vendo?')
+        // O pulo desta retomada ainda não tem som: chamar a escuta, sem pedir para vê-lo.
+        if (id === 'aula-04/som-no-pulo') {
+          expect(falas[0], id).toContain('Percebeu?')
+          expect(falas[0], id).not.toContain('Tá vendo?')
+        } else {
+          expect(falas[0], id).toContain('Tá vendo?')
+        }
         expect(falas[0], id).toMatch(/\b(?:porque|por isso)\b/)
       }
       // O anúncio fecha a lembrança, uma vez só, e diz o que vai ser montado.

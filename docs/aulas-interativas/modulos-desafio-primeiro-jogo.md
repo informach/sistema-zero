@@ -1,5 +1,7 @@
 # Módulos do Desafio do Primeiro Jogo
 
+**Revisão de continuidade da conversa, 07/10/2026:** a abertura anuncia a surpresa sem pedir segredo; o encerramento do Dia 2 reconhece o que a criança programou e retoma a promessa numa fala ligada ao envio. Propostas, roteiros e gerador dos manifestos atualizados. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
+
 **Título do curso:** Desafio do Primeiro Jogo · A Chave do Farol
 
 **Descrição curta:** Programe sua primeira aventura: encontre a chave e acenda o farol para guiar um barco.

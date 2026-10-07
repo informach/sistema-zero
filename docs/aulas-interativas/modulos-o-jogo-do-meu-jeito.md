@@ -1,5 +1,7 @@
 # Módulos do curso O Jogo do Meu Jeito
 
+**Revisão de continuidade da conversa, 07/10/2026:** preparar a folha da nave termina no próximo passo que falta; a observação das pedras começa voltando à prévia e iniciando a partida. Fonte, roteiros, manifestos e Mapa da Aventura (33 páginas) atualizados. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
+
 **Título:** O Jogo do Meu Jeito
 
 **Descrição curta:** Desenhe, anime e coloque suas próprias artes no jogo.

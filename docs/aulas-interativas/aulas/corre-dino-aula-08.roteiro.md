@@ -29,7 +29,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.
 >
-> Olhe a área do jogo. Olha só: a abertura aparece, porque o estado está em inicio! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no ramo senão se o estado do jogo é inicio, está Mostrar tela, com o título, o subtítulo e a dica. Depois de corrigir, teste de novo.
+> Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no ramo senão se o estado do jogo é inicio, está Mostrar tela, com o título, o subtítulo e a dica. Depois de corrigir, teste de novo.
 >
 > A abertura ainda não começa a partida com um toque ou uma tecla, porque, por enquanto, você só montou o desenho.
 >
