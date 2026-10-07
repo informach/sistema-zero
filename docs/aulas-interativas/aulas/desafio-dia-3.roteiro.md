@@ -177,10 +177,12 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 3 a 4 minutos, incluindo as escolhas, o teste e a verificação.
 
-**Na tela:** manter o projeto enviado. Mostrar rapidamente a galeria do Mapa da Aventura e voltar ao Estúdio. Deixar à vista **Ao iniciar** e **Criar sprite personagem**; no campo **com imagem**, abrir a lista em **aventureiro** e escolher **pirata**. Apontar o nome do sprite, que continua personagem, e os campos de posição e tamanho, sem editá-los. Escolher **barco-pirata** em **Criar sprite barco** e **chave-de-estrela** em **Criar sprite chave**. Aguardar a atualização a cada escolha. Não listar as opções antigas de compatibilidade como parte do catálogo novo.
+**Na tela:** Antes de gravar, preparar duas versões completas do jogo em duas cópias do projeto, com o farol aceso e o barco chegando: **robo**, **lancha**, **chave-prateada**, o par **farol-colorido** e **ilha-nevada**; e **mergulhador**, **veleiro**, **chave-dourada**, o par **farol-de-madeira** e **costa-rochosa** (nenhuma das duas é a combinação que o vídeo monta depois). No "olha quantas versões essa aventura pode ter", mostrar as duas rodando, alguns segundos cada, antes de abrir as opções. Depois, no "Olha aqui", abrir o Mapa da Aventura na primeira página da surpresa e passar pelas galerias de personagens, cenários, barcos, chaves e faróis, por alguns segundos. Voltar ao Estúdio, no projeto enviado. Deixar à vista **Ao iniciar** e **Criar sprite personagem**; no campo **com imagem**, abrir a lista em **aventureiro** e escolher **pirata**. Apontar o nome do sprite, que continua personagem, e os campos de posição e tamanho, sem editá-los. Escolher **barco-pirata** em **Criar sprite barco** e **chave-de-estrela** em **Criar sprite chave**. Aguardar a atualização a cada escolha. Não listar as opções antigas de compatibilidade como parte do catálogo novo.
 
 **Narração:**
-> "Agora o jogo vai ficar com a sua cara! Você pode trocar o personagem, o barco, a chave, o farol e o cenário. O Mapa da Aventura mostra cada opção com o mesmo nome da lista de imagens, e o que você escolher fica no jogo.
+> "Sua missão deu certo! E a surpresa chegou: olha quantas versões essa aventura pode ter: outro personagem, outro cenário, outro barco… Que combinação você vai criar?
+>
+> Olha aqui: estas são todas as opções que você pode usar. Estão no seu Mapa da Aventura, com o mesmo nome da lista de imagens. E o que você escolher fica no jogo.
 >
 > Comece pelo personagem. Em Ao iniciar, deixe à vista o bloco Criar sprite personagem. No fim dele, depois de com imagem, clique em aventureiro para abrir a lista. Olha aqui: eu vou escolher pirata.
 >
@@ -203,7 +205,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Na tela:** clicar em **Atualizar**. Ir ao farol sem a chave; afastar-se, buscar a chave e voltar na mesma partida. Esperar a luz do farol de pedra e a chegada do barco pirata.
 
 **Narração:**
-> "Agora teste a sua combinação! Clique em Atualizar e vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!"
+> "Agora teste a sua combinação! Clique em Atualizar e vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando! Agora a aventura tem a sua cara, e é com essa cara que o seu jogo vai para o Mural."
 
 **Na tela:** apontar, uma vez só e depois do teste, cada imagem no bloco do mesmo tipo e os dois blocos do farol. Clicar em **Verificar esta parte**; depois de **Objetivo cumprido!**, esperar **Salvo** e apontar **Próxima parte**.
 
@@ -212,9 +214,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Hora de deixar o jogo com a sua cara! Escolha seu personagem, barco, chave, farol e cenário. Teste a combinação, clique em Verificar esta parte e depois em Próxima parte.
+**Ponte do Zappy na página (não gravar):** A surpresa chegou! Que combinação você vai criar? Escolha seu personagem, barco, chave, farol e cenário. Teste a combinação, clique em Verificar esta parte e depois em Próxima parte.
 
-**Conferência de produção:** uma ideia só, trocar imagens pelas do mesmo tipo (decisão da dona, 06/10/2026: o par do farol veio da antiga seção de farol e avisos para cá). O catálogo tem oito personagens, quatro cenários, quatro barcos, três chaves e quatro pares de faróis. Os sprites mantêm os nomes personagem, barco, chave e farol; cada categoria compartilha dimensões e área de contato, e os faróis conservam a porta no mesmo lugar, então não instruir a compensar tamanho ou posição. A conclusão exige o vídeo e a verificação, que confere só que a imagem dentro de então é um farol aceso, de qualquer modelo ou a antiga farol-aceso: nenhuma escolha estética vira critério. Novas imagens são acrescentadas ao projeto salvo sem apagar imagens antigas nem substituir blocos da criança. Caso a gravação use um projeto anterior, o nome da imagem original pode ser personagem, barco, chave, cenario, farol-apagado ou farol-aceso; selecionar a opção nova pelo mesmo campo.
+**Conferência de produção:** é a revelação da surpresa plantada no vídeo de abertura do Dia 1 e lembrada no fim do Dia 2 (decisão do responsável, 07/10/2026): a fala comemora a missão, diz que a surpresa chegou, mostra duas versões completas do jogo e só então as galerias do Mapa (decisão do responsável, 07/10/2026: cada curso revela o que tem de próprio; no Farol, o quanto a aventura inteira pode mudar). Não chamar de surpresa nenhuma outra coisa do curso. Uma ideia só, trocar imagens pelas do mesmo tipo (decisão da dona, 06/10/2026: o par do farol veio da antiga seção de farol e avisos para cá). O catálogo tem oito personagens, quatro cenários, quatro barcos, três chaves e quatro pares de faróis. Os sprites mantêm os nomes personagem, barco, chave e farol; cada categoria compartilha dimensões e área de contato, e os faróis conservam a porta no mesmo lugar, então não instruir a compensar tamanho ou posição. A conclusão exige o vídeo e a verificação, que confere só que a imagem dentro de então é um farol aceso, de qualquer modelo ou a antiga farol-aceso: nenhuma escolha estética vira critério. Novas imagens são acrescentadas ao projeto salvo sem apagar imagens antigas nem substituir blocos da criança. Caso a gravação use um projeto anterior, o nome da imagem original pode ser personagem, barco, chave, cenario, farol-apagado ou farol-aceso; selecionar a opção nova pelo mesmo campo.
 
 ## Seção 5. Escreva seus avisos
 

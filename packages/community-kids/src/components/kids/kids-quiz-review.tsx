@@ -1,5 +1,7 @@
 'use client'
 
+import { falaDaExplicacaoDoQuiz } from '@sistemazero/core/learning/scene'
+import { ZappyOuvirButton } from '@sistemazero/member-shell/components/zappy-ouvir-button'
 import { renderInline, renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Check, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -82,14 +84,24 @@ export function QuizReview({
                 </div>
                 {correction.explanation ? (
                   <div className="mt-2 rounded-xl bg-card px-3 py-2">
-                    <p
-                      className={cn(
-                        'mb-1 font-bold text-xs',
-                        correction.correct ? 'text-success-foreground' : 'text-destructive',
-                      )}
-                    >
-                      {correction.correct ? 'Isso! Por quê:' : 'Por quê:'}
-                    </p>
+                    <div className="mb-1 flex items-center justify-between gap-2">
+                      <p
+                        className={cn(
+                          'font-bold text-xs',
+                          correction.correct ? 'text-success-foreground' : 'text-destructive',
+                        )}
+                      >
+                        {correction.correct ? 'Isso! Por quê:' : 'Por quê:'}
+                      </p>
+                      {/* A explicação na voz do Zappy: o MP3 chega aqui, na correção, e nunca
+                          antes (ele conta a resposta). Sem MP3, a voz do navegador. */}
+                      <ZappyOuvirButton
+                        textos={[falaDaExplicacaoDoQuiz(correction.explanation)]}
+                        audioUrl={correction.explanationAudioUrl}
+                        rotulo={`Ouvir a explicação da pergunta ${questionIndex + 1}`}
+                        className="shrink-0"
+                      />
+                    </div>
                     <div className="lesson-prose text-muted-foreground">
                       {renderMarkdown(correction.explanation, { helpReturnPath })}
                     </div>

@@ -58,14 +58,14 @@
     },
     {
       "key": "video-d3-personalizar",
-      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nUma ideia só: trocar cada imagem por outra do mesmo tipo, pelos nomes da galeria do Mapa. No projeto enviado, em Ao iniciar, trocar a imagem de Criar sprite personagem, barco e chave; o farol em par, o modelo apagado no Criar sprite farol e o mesmo modelo aceso no Trocar imagem do sprite farol, dentro de então; o cenário em Desenhar o cenário, dentro de A cada quadro do jogo. Demonstrar pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha, mantendo nomes dos sprites, posição, largura e altura. Testar sem a chave e com a chave na mesma partida; conferir uma vez só, depois do teste. Verificar esta parte, Salvo e Próxima parte. As escolhas ficam no jogo e não viram critério.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Deixe o jogo com a sua cara\n\nRevelar a surpresa plantada na abertura do Dia 1: começar com Sua missão deu certo! E a surpresa chegou: olha quantas versões essa aventura pode ter, mostrar duas versões completas já montadas rodando (robo, lancha, chave-prateada, farol-colorido e ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira e costa-rochosa), perguntar Que combinação você vai criar? e só então mostrar as galerias do Mapa da Aventura (A surpresa do final); depois voltar ao Estúdio, no projeto enviado. Uma ideia só: trocar cada imagem por outra do mesmo tipo, pelos nomes da galeria do Mapa. No projeto enviado, em Ao iniciar, trocar a imagem de Criar sprite personagem, barco e chave; o farol em par, o modelo apagado no Criar sprite farol e o mesmo modelo aceso no Trocar imagem do sprite farol, dentro de então; o cenário em Desenhar o cenário, dentro de A cada quadro do jogo. Demonstrar pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha, mantendo nomes dos sprites, posição, largura e altura. Testar sem a chave e com a chave na mesma partida e dizer que é com essa cara que o jogo vai para o Mural; conferir uma vez só, depois do teste. Verificar esta parte, Salvo e Próxima parte. As escolhas ficam no jogo e não viram critério.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-personalizar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de deixar o jogo com a sua cara! Escolha seu personagem, barco, chave, farol e cenário. Teste a combinação, clique em Verificar esta parte e depois em Próxima parte."
+        "text": "A surpresa chegou! Que combinação você vai criar? Escolha seu personagem, barco, chave, farol e cenário. Teste a combinação, clique em Verificar esta parte e depois em Próxima parte."
       }
     },
     {

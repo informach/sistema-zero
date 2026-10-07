@@ -2,6 +2,8 @@ import { ValidationError } from '@sistemazero/core/errors'
 import { journeySlotsForTier } from '@sistemazero/core/journey'
 import { isInteractiveBlock, isPdfAttachment } from '@sistemazero/core/learning'
 import {
+  isQuizQuestionSpeech,
+  isQuizVozes,
   isSceneVozes,
   SCENE_IDS,
   type SceneId,
@@ -504,6 +506,12 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
   if (content.kind === 'quiz') {
     const problem = validateQuizAuthoring(content)
     if (problem) throw new InvalidContentCommandError(problem)
+    // A mesma régua da voz do balão: um dicionário torto publicaria um quiz mudo, sem erro.
+    if (
+      !isQuizVozes(content.vozes) ||
+      !content.questions.every((q) => isQuizQuestionSpeech(q.zappySpeech))
+    )
+      throw new InvalidContentCommandError('A voz deste quiz está inválida. Gere a voz de novo.')
     return
   }
   // Estúdio: limita o peso no jsonb e valida o discriminante crítico do projeto

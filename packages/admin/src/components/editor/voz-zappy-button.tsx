@@ -4,9 +4,11 @@ import { publicInteractiveBlock } from '@sistemazero/core/learning'
 import {
   chaveDeVoz,
   falasDaCena,
+  falasDoQuiz,
   roteiroDoZappy,
   type SceneVozes,
   textoFalado,
+  VOZ_LIMITS,
 } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -58,6 +60,22 @@ export function falasDaAula(blocos: readonly BlocoDoRascunho[]): FalasDoBloco[] 
       if (speechText) {
         saida.push({ ...bloco, falas: [{ visibleText, speechText }], vozes: content.vozes })
       }
+      continue
+    }
+    if (content.kind === 'quiz') {
+      // Pergunta com as alternativas e explicação de cada questão (core `voz-quiz.ts`). ⚠️ O MP3
+      // da explicação fica no bloco, mas só sai para a criança na correção (é gabarito).
+      // Questão pela metade (enunciado ou alternativa em branco) fica de fora: gravar o rascunho
+      // pagaria uma fala que vai mudar.
+      const prontas = content.questions.filter(
+        (q) => q.prompt.trim() && q.choices.every((c) => c.label.trim()),
+      )
+      // ⚠️ A rota recusa o LOTE inteiro com um roteiro acima do teto da chave, e um enunciado de
+      // 5000 caracteres somado a 20 alternativas passa disso: essa fala fica na voz do navegador.
+      const falas = falasDoQuiz({ questions: prontas })
+        .filter((fala) => fala.speechText.length <= VOZ_LIMITS.chave)
+        .map(({ visibleText, speechText }) => ({ visibleText, speechText }))
+      if (falas.length) saida.push({ ...bloco, falas, vozes: content.vozes })
       continue
     }
     if (content.kind !== 'interactive') continue

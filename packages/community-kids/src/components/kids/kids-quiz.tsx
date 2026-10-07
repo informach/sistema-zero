@@ -1,5 +1,7 @@
 'use client'
 
+import { falaDaQuestaoDoQuiz, letraDaAlternativa } from '@sistemazero/core/learning/scene'
+import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
 import { renderInline, renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -19,8 +21,6 @@ interface Props {
   /** Estado das tentativas vindo do GET da aula (hidrata score/cooldown). */
   quizState: QuizStateView | null
 }
-
-const CHOICE_LETTERS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
 /**
  * Quiz estilo Duolingo: intro com mascote → UMA pergunta por vez (segmentos
@@ -288,6 +288,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
 
   // ── Wizard: uma pergunta por vez ───────────────────────────────────────────
   const question = activeQuestion as QuizQuestion
+  const questionSpeech = falaDaQuestaoDoQuiz(question)
   const chosen = answers[question.id]
   const isLast = step === questions.length - 1
   // Foco-roving: a opção marcada é o único tab-stop (ou a 1ª, se nada marcado).
@@ -349,8 +350,31 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
         Pergunta {step + 1} de {questions.length}
       </p>
 
-      {/* Enunciado em markdown (negrito/títulos/listas/imagens); sz-display dá a fonte da marca. */}
-      <div className="lesson-prose sz-display text-lg md:text-xl">{promptNode}</div>
+      {/* ⭐ A pergunta é uma FALA do Zappy (07/10/2026): o balão tem o "Ouvir", que lê o
+          enunciado e cada alternativa com a letra da carta ("Letra A: …"), para quem ainda não
+          lê sozinho. A `key` por pergunta cala a fala ao avançar: sem ela, a voz da pergunta
+          anterior seguiria por cima da nova. */}
+      <DialogueBlockView
+        key={question.id}
+        content={{ kind: 'dialogue', text: questionSpeech?.visibleText ?? question.prompt }}
+        speech={
+          questionSpeech
+            ? {
+                texts: [questionSpeech.visibleText],
+                roteiros: [questionSpeech.speechText],
+                vozes: content.vozes,
+                fallbackToBrowser: true,
+              }
+            : undefined
+        }
+        mascot={
+          /* Mudo, como o balão de instrução: a fala é o "Ouvir", não um chime a cada pergunta. */
+          <KidsMascotAnimated expression="speaking" className="size-16 sm:size-20" sound={false} />
+        }
+      >
+        {/* Enunciado em markdown (negrito/títulos/listas/imagens); sz-display dá a fonte da marca. */}
+        <div className="lesson-prose sz-display text-lg md:text-xl">{promptNode}</div>
+      </DialogueBlockView>
 
       <div
         ref={groupRef}
@@ -388,7 +412,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
                     : 'border-border text-muted-foreground',
                 )}
               >
-                {CHOICE_LETTERS[ci] ?? '•'}
+                {letraDaAlternativa(ci)}
               </span>
               {/* Opção: markdown INLINE (negrito/itálico/código/imagens) — o <button>
                   só aceita conteúdo inline; `plainLinks` evita aninhar <a> num <button>.

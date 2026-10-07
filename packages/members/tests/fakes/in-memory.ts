@@ -28,7 +28,7 @@ import {
   type PintaBlock,
   pintaAssetKindOf,
 } from '../../src/domain/course/lesson-block'
-import type { QuizAttemptSummary } from '../../src/domain/course/quiz'
+import { type QuizAttemptSummary, quizGateFingerprint } from '../../src/domain/course/quiz'
 import {
   EntitlementAggregate,
   type EntitlementState,
@@ -186,10 +186,6 @@ function stableJson(value: unknown): string {
 // Espelho do Drizzle: editar bloco NUNCA apaga entregas — quiz apaga TENTATIVAS
 // quando as questões/nota mudam; Estúdio zera SÓ a correção quando a ATIVIDADE
 // muda (o projeto do aluno fica); Pinta não toca a entrega.
-function quizGateFingerprint(content: LessonBlockContent): string {
-  if (content.kind !== 'quiz') return 'none'
-  return stableJson({ questions: content.questions, passingScore: content.passingScore ?? null })
-}
 
 function studioActivityFingerprint(content: LessonBlockContent): string {
   if (content.kind !== 'studio') return 'none'

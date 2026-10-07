@@ -401,42 +401,42 @@
             "id": "texto",
             "title": "Confira o nome e o resumo",
             "body": "Confira o **Resumo do projeto**. Na Fase 2 do Cadê Todo Mundo?, o nome do jogo e o resumo já vêm prontos: pode deixar como está. Nos outros projetos, a janela também mostra o **Título**, e você pode manter ou ajustar os textos prontos. Se estiverem vazios, escreva o nome do jogo e uma frase contando como jogar.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/texto-b0bc73017bc1fdb6.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/texto-3d7b0008ed24ee47.webp",
             "imageAlt": "Janela Compartilhar no Mural dos Criadores com o Resumo do projeto já preenchido destacado."
           },
           {
             "id": "capa",
             "title": "Escolha a capa",
             "body": "Em **Capa do projeto**, clique em **Gerar capa** e espere a imagem aparecer. Ela já fica incluída na publicação, sem precisar baixar e enviar um arquivo. Confira a capa antes de seguir. Para usar outra imagem, clique em **Enviar uma imagem** e escolha uma imagem PNG ou JPG.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/capa-885365388ae81804.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/capa-a7946833c44c54c1.webp",
             "imageAlt": "Janela Compartilhar com a parte Capa do projeto e o botão Gerar capa destacado ao lado de Enviar uma imagem."
           },
           {
             "id": "publicar",
             "title": "Publique",
             "body": "Com título, resumo e capa prontos, clique em **Publicar** e espere a confirmação.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/publicar-b73455a2325c9cd3.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/publicar-bb3a2ef8f48eb507.webp",
             "imageAlt": "Janela Compartilhar com a capa gerada e o botão Publicar destacado."
           },
           {
             "id": "link",
             "title": "Copie o link para jogar",
             "body": "Clique em **Copiar link de jogar** e mande o link para a sua família e os seus amigos. O link abre o jogo direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/link-9ce446e1dccb24b5.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/link-ea775b0885a41268.webp",
             "imageAlt": "Comemoração Seu jogo está no Mural! com o botão Copiar link de jogar destacado."
           },
           {
             "id": "copia",
             "title": "Lembre da versão publicada",
             "body": "O Mural guarda uma cópia daquele momento. Mudar o projeto no editor não muda essa cópia. Na fase, o jogo só pode ser compartilhado uma vez.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/copia-1434b0e354413158.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/copia-189f0c40cb7872ea.webp",
             "imageAlt": "Janela Compartilhar com o aviso de que a versão publicada no Mural é uma cópia separada do projeto destacado."
           },
           {
             "id": "opcional",
             "title": "Conclua a fase",
             "body": "Na última parte da Fase 2 do Cadê Todo Mundo?, você publica o seu jogo. Quando aparecer **Seu jogo está no Mural!**, clique em **Fechar** e depois em **Concluir fase**.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/opcional-672773ea9b38e2a3.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-publicar-no-mural/opcional-af5fe807ac901d04.webp",
             "imageAlt": "Comemoração Seu jogo está no Mural! com o botão Fechar destacado, antes de concluir a fase."
           }
         ],

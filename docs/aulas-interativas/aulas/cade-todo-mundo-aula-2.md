@@ -90,6 +90,11 @@ O caderno continua disponível na Aula 1, sem novo upload ou bloco.
 
 ### Deixe o jogo com a sua cara
 
+É a revelação da surpresa plantada na abertura da Aula 1 (decisão do responsável, 07/10/2026). A fala
+começa com "A surpresa chegou! Olha quem mais pode brincar de se esconder!" e mostra, no Mapa da
+Aventura, a página **A surpresa do final**, com todos os bichos e esconderijos; só então vai
+para o Estúdio. Fecha ligando as escolhas à publicação: "é com essa cara que ele vai para o Mural".
+
 Seção de mexa e veja, de fechamento: vem depois do envio ao professor e antes de publicar, para o
 jogo publicado ter a cara da criança. Só traz mudanças que a criança mantém. Começar pelo destino:
 trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e
@@ -125,7 +130,7 @@ por tipo, com as imagens do jogo e os nomes exatos da lista. A criança pode con
 antes de trocar, seguindo os passos de personalização e o teste na mesma página. A publicação
 fica na página 6; a revisão e o certificado, na 7.
 
-**Zappy abaixo do vídeo:** “Hora de deixar o jogo com a sua cara! Troque bichos e esconderijos clicando no nome da imagem, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
+**Zappy abaixo do vídeo:** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
 
 ### Publique seu jogo
 

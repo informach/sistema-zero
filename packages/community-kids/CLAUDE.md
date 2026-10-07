@@ -3085,6 +3085,15 @@ infraestrutura de LIP SYNC. Nada disso é consumido ainda, e é o que torna o Ri
 aqui em vez de um WebM com alpha (que faria as poses por um décimo do peso, mas nunca o Zappy
 falando o texto do balão com a boca sincronizada).
 
+⭐ **O Zappy da pergunta do quiz (07/10/2026).** Desde que a pergunta virou fala do Zappy (balão com
+"Ouvir"), o Zappy aparece ao lado de cada pergunta. Num navegador de captura do staging ele saiu
+desenhado fora do centro, metade cortada na borda do quadrado, enquanto o Zappy da fala logo acima
+saía inteiro. Isso não se reproduziu com as peças reais, nem no celular e no computador, em 1x e 2x,
+nem com a densidade trocada com a página aberta, nem na parte montada como a página de fase. A guarda
+ficou em `e2e-scenes/quiz-zappy.spec.ts` (página `/quiz-zappy` do ensaio, com fala, vídeo e quiz pelo
+`KidsLessonBlocks`): ela lê os PIXELS dos dois canvas e exige o desenho inteiro e centrado, e reprova
+com o enquadramento do Rive estragado de propósito (`Fit.None` + `TopLeft`).
+
 ## A arte da trilha virou Rive — 21/09/2026
 
 O SVG animado por módulo (`illustration`, de 20/09) durou um dia. Saiu inteiro:

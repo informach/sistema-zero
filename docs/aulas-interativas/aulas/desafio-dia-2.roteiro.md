@@ -167,15 +167,17 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro Destruir o sprite chave, depois Alterar temChave para verdadeiro e, por último, Alterar aviso para a sua mensagem. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta parte**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo cumprido!**, esperar **Salvo**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem exigir recado e aguardar. Apontar **Concluir fase**.
+**Na tela:** clicar em **Verificar esta parte**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo cumprido!**, esperar **Salvo**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem exigir recado e aguardar. No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir fase**.
 
 **Narração:**
 > "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
 > Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
 >
+> Agora o seu jogo já guarda a chave e avisa quem está jogando. E o segredo do começo da aventura? A surpresa está quase aqui: ela chega na próxima fase.
+>
 > Quando o envio terminar, clique em Concluir fase."
 
 **Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar o seu projeto.
 
-**Conferência de produção:** a verificação confere também o movimento do Dia 1 e não exige copiar o texto do aviso. A seção exige o vídeo, a aprovação em **Verificar esta parte** e o envio confirmado.
+**Conferência de produção:** a verificação confere também o movimento do Dia 1 e não exige copiar o texto do aviso. Antes de Concluir fase, a fala lembra uma vez só a surpresa plantada no Dia 1, sem dizer o que é (decisão do responsável, 07/10/2026). A seção exige o vídeo, a aprovação em **Verificar esta parte** e o envio confirmado.

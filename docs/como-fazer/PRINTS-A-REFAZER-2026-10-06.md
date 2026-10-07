@@ -29,10 +29,11 @@ novos a capturar (seção "Prints novos").
 
 ## Situação em 07/10/2026
 
-Refeitos 72 prints: 68 da lista (conta Leninha; o do Pensa e os dois "Concluir fase" na conta
-Lipe) e 4 de fora dela: `estudio-materiais-do-jogo/usar` e `pinta-usar-no-estudio/bloco` (mostravam
+Refeitos 78 prints: 68 da lista (conta Leninha; o do Pensa e os dois "Concluir fase" na conta
+Lipe) e 10 de fora dela: `estudio-materiais-do-jogo/usar` e `pinta-usar-no-estudio/bloco` (mostravam
 **Atividade no Estúdio** e **Reenviar ao professor**), `plataforma-jogar-no-mural/jogo` (o Mural
-novo) e `plataforma-trocar-de-perfil/selecionar` (da lista de conferir). As imagens estão no CDN de produção e os links já estão em
+novo), `plataforma-trocar-de-perfil/selecionar` e os seis da janela Compartilhar e da comemoração
+do Mural (os dois últimos grupos vieram da lista de conferir). As imagens estão no CDN de produção e os links já estão em
 [como-fazer.json](como-fazer.json). Os dois "Concluir fase" (`plataforma-abrir-uma-aula/concluir` e
 `plataforma-pegar-certificado/concluir`) foram tirados na conta da equipe, que não tem o certificado
 liberado: o botão aparece aceso como a criança o vê pronta, sem ter sido clicado.
@@ -46,6 +47,11 @@ Ainda faltam:
   entrega pela galeria: o O Jogo do Meu Jeito publicado lá tem uma fase só, sem galeria.
 - **`plataforma-pegar-certificado/pegar`.** Precisa de um perfil que concluiu as fases de antes e
   ainda não pegou o certificado (a Leninha já pegou; o Lipe não concluiu as fases).
+- **Conferidos os 15 da lista "conferir":** só os prints da janela Compartilhar e da comemoração do
+  Mural mostravam, no fundo desfocado, "Atividade no Estúdio" e "Reenviar ao pro…". Os seis
+  (`texto`, `capa`, `copia`, `publicar`, `link`, `opcional`) foram refeitos em 07/10/2026, com um
+  jogo novo publicado no Mural do staging pela Leninha (autorizado pela dona). Os outros não mostram
+  rótulo antigo.
 - Os vídeos fictícios das fases ainda mostram "AULA 1 DE 3" e "SEÇÃO 1 DE 1" na capa: somem quando
   os vídeos novos forem gravados.
 

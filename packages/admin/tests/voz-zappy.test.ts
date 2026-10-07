@@ -55,6 +55,69 @@ describe('roteiro enviado para a voz do Zappy', () => {
     expect(chaveDeVoz(fala?.falas[0]?.speechText ?? '')).toContain('Clique no botão xis.')
   })
 
+  test('o quiz grava pergunta e explicação, e deixa de fora a questão pela metade', () => {
+    const [fala] = falasDaAula([
+      {
+        id: 'quiz-1',
+        content: {
+          kind: 'quiz',
+          passingScore: 70,
+          questions: [
+            {
+              id: 'q1',
+              prompt: 'Qual bloco faz o **Dino** pular?',
+              choices: [
+                { id: 'a', label: 'Pular' },
+                { id: 'b', label: 'Girar' },
+              ],
+              correctChoiceIds: ['a'],
+              explanation: 'O bloco Pular muda a altura.',
+            },
+            {
+              id: 'q2',
+              prompt: 'Ainda escrevendo',
+              choices: [
+                { id: 'a', label: 'Uma' },
+                { id: 'b', label: '' },
+              ],
+              correctChoiceIds: [],
+            },
+          ],
+        },
+      },
+    ])
+    expect(fala?.falas.map((f) => f.visibleText)).toEqual([
+      'Qual bloco faz o Dino pular? Letra A: Pular. Letra B: Girar.',
+      'O bloco Pular muda a altura.',
+    ])
+  })
+
+  test('a pergunta longa demais para a rota fica de fora, sem derrubar o lote', () => {
+    const [fala] = falasDaAula([
+      {
+        id: 'quiz-longo',
+        content: {
+          kind: 'quiz',
+          questions: [
+            {
+              id: 'q1',
+              prompt: 'Pergunta curta?',
+              choices: [
+                { id: 'a', label: 'Sim' },
+                { id: 'b', label: 'Não' },
+              ],
+              correctChoiceIds: ['a'],
+              explanation: 'Uma explicação. '.repeat(400),
+            },
+          ],
+        },
+      },
+    ])
+    expect(fala?.falas.map((f) => f.visibleText)).toEqual([
+      'Pergunta curta? Letra A: Sim. Letra B: Não.',
+    ])
+  })
+
   test('aplica o perfil global quando a autora ainda não fez um ajuste', () => {
     expect(roteiroDoZappy('Use a tecla X e a tecla Y.')).toBe('Use a tecla xis e a tecla ípsilon.')
   })

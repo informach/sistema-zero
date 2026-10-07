@@ -1,5 +1,12 @@
 'use client'
 
+import {
+  falaDaExplicacaoDoQuiz,
+  falaDaPerguntaDoQuiz,
+  type QuizQuestionSpeech,
+  type SceneVozes,
+  type ZappySpeechOverride,
+} from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
@@ -8,12 +15,45 @@ import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { JsonImportPanel } from '@/components/admin/json-import-panel'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
+import { ZappySpeechEditor, type ZappySpeechRow } from '@/components/editor/zappy-speech-editor'
 import { parseQuizImport, QUIZ_IMPORT_EXAMPLE } from '@/lib/lesson-block-import'
 import type { QuizQuestion } from '@/lib/types'
 
 export interface QuizValue {
   questions: QuizQuestion[]
   passingScore?: number
+  /** A voz do Zappy (pergunta e explicação de cada questão), gerada pelo botão da aula. */
+  vozes?: SceneVozes
+}
+
+type QuizSpeechSlot = keyof QuizQuestionSpeech
+
+/** Ajuste vazio não viaja: `{}` e `{ question: undefined }` viram ausência. */
+function semAjusteVazio(speech: QuizQuestionSpeech): QuizQuestionSpeech | undefined {
+  const limpo = Object.fromEntries(Object.entries(speech).filter(([, v]) => v !== undefined))
+  return Object.keys(limpo).length ? limpo : undefined
+}
+
+/** As falas da questão que o painel "Como o Zappy fala" mostra: pergunta e explicação. */
+function linhasDaFala(q: QuizQuestion): ZappySpeechRow[] {
+  const linhas: ZappySpeechRow[] = []
+  const pergunta = falaDaPerguntaDoQuiz(q)
+  if (pergunta)
+    linhas.push({
+      id: 'question',
+      label: 'Pergunta e alternativas',
+      visibleText: pergunta,
+      override: q.zappySpeech?.question,
+    })
+  const explicacao = q.explanation ? falaDaExplicacaoDoQuiz(q.explanation) : ''
+  if (explicacao)
+    linhas.push({
+      id: 'explanation',
+      label: 'Explicação',
+      visibleText: explicacao,
+      override: q.zappySpeech?.explanation,
+    })
+  return linhas
 }
 
 /**
@@ -60,6 +100,10 @@ export function QuizBuilder({
       ...value,
       questions: value.questions.map((q) => (q.id === id ? { ...q, ...patch } : q)),
     })
+  }
+
+  function patchSpeech(q: QuizQuestion, slot: QuizSpeechSlot, override?: ZappySpeechOverride) {
+    patchQuestion(q.id, { zappySpeech: semAjusteVazio({ ...q.zappySpeech, [slot]: override }) })
   }
 
   function removeQuestion(id: string) {
@@ -248,6 +292,42 @@ export function QuizBuilder({
                     }
                   />
                 </Field>
+
+                {/* A criança pode OUVIR a pergunta, as alternativas ("Letra A: …") e a explicação
+                    na voz do Zappy. O painel só existe para acertar uma pronúncia; quem grava a
+                    aula inteira é o botão "Gerar a voz do Zappy". */}
+                {q.prompt.trim() ? (
+                  <details className="rounded-lg border border-border p-2">
+                    <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+                      Voz do Zappy (pronúncia)
+                    </summary>
+                    <div className="mt-2">
+                      <ZappySpeechEditor
+                        rows={linhasDaFala(q)}
+                        onChange={(slot, override) =>
+                          patchSpeech(q, slot as QuizSpeechSlot, override)
+                        }
+                        onPreviewVoice={(slot, override, novasVozes) =>
+                          onChange({
+                            ...value,
+                            vozes: { ...value.vozes, ...novasVozes },
+                            questions: value.questions.map((atual) =>
+                              atual.id === q.id
+                                ? {
+                                    ...atual,
+                                    zappySpeech: semAjusteVazio({
+                                      ...atual.zappySpeech,
+                                      [slot]: override,
+                                    }),
+                                  }
+                                : atual,
+                            ),
+                          })
+                        }
+                      />
+                    </div>
+                  </details>
+                ) : null}
               </div>
             ))
           )}

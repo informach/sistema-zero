@@ -1,4 +1,10 @@
-import type { QuizBlock, QuizChoice } from './lesson-block'
+import {
+  type QuizQuestionSpeech,
+  type SceneVozes,
+  vozesPublicasDoQuiz,
+} from '@sistemazero/core/learning/scene'
+import { stableJson } from '../shared/stable-json'
+import type { LessonBlockContent, QuizBlock, QuizChoice } from './lesson-block'
 
 export {
   gradeLearningQuiz as gradeQuizAttempt,
@@ -79,23 +85,52 @@ export function computeRetryAvailableAt(
 /** Bloco de quiz PROJETADO para o aluno — sem `correctChoiceIds`/`explanation`. */
 export interface MemberQuizContent {
   kind: 'quiz'
-  questions: { id: string; prompt: string; choices: QuizChoice[] }[]
+  questions: {
+    id: string
+    prompt: string
+    choices: QuizChoice[]
+    /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */
+    zappySpeech?: Pick<QuizQuestionSpeech, 'question'>
+  }[]
   passingScore: number | null
+  /** Só as falas das perguntas (`vozesPublicasDoQuiz`). */
+  vozes?: SceneVozes
 }
 
 /**
  * Remove o gabarito do bloco antes de ir ao client (o GET da aula NUNCA revela
- * `correctChoiceIds`/`explanation`; correções só na resposta do submit).
+ * `correctChoiceIds`/`explanation`, nem a voz ou a pronúncia da explicação; correções só na
+ * resposta do submit, que traz também o MP3 da explicação).
  * `passingScore: null` = quiz de fixação (não bloqueia a conclusão da aula).
  */
 export function toMemberFacingQuizContent(block: QuizBlock): MemberQuizContent {
+  const vozes = vozesPublicasDoQuiz(block)
   return {
     kind: 'quiz',
     questions: block.questions.map((q) => ({
       id: q.id,
       prompt: q.prompt,
       choices: q.choices.map((c) => ({ id: c.id, label: c.label })),
+      ...(q.zappySpeech?.question ? { zappySpeech: { question: q.zappySpeech.question } } : {}),
     })),
     passingScore: block.passingScore ?? null,
+    ...(vozes ? { vozes } : {}),
   }
+}
+
+/**
+ * O que, num quiz, faz as tentativas antigas deixarem de valer: as questões (enunciado,
+ * alternativas, gabarito, explicação) e a nota de corte. Mudou isso, as tentativas do bloco são
+ * apagadas na publicação.
+ *
+ * ⚠️⚠️ A VOZ fica de fora: o dicionário (`vozes`) e a pronúncia (`zappySpeech`) não mudam o que
+ * a criança respondeu. Com a pronúncia dentro, ajustar como o Zappy fala "Letra A" apagaria a
+ * aprovação de todo mundo que já passou no quiz (e a aula voltaria a trancar a conclusão).
+ */
+export function quizGateFingerprint(content: LessonBlockContent): string {
+  if (content.kind !== 'quiz') return 'none'
+  return stableJson({
+    questions: content.questions.map(({ zappySpeech: _voz, ...q }) => q),
+    passingScore: content.passingScore ?? null,
+  })
 }

@@ -277,7 +277,7 @@ function pageNumber(id: string): number {
 const courseIndex = renderItem({
   kind: 'step',
   title: 'Encontre seu passo',
-  text: `<b>Dia 1:</b> experiências, movimento e borda, páginas ${pageNumber('andar-experiencia')} a ${pageNumber('p3')}.<br><b>Dia 2:</b> experiência, coleta e memória, páginas ${pageNumber('memoria-experiencia')} a ${pageNumber('coleta-testes')}.<br><b>Dia 3:</b> experiência, duas respostas e testes, páginas ${pageNumber('porta-experiencia')} a ${pageNumber('p8')}.<br><b>Personalize seu jogo:</b> escolhas, galerias, mensagens e posição da chave, páginas ${pageNumber('personalizar')} a ${pageNumber('posicionar-chave')}.<br><b>Publique no Mural:</b> página ${pageNumber('p9')}.<br><b>Revisão das regras:</b> página ${pageNumber('revisao-final')}.<br><b>Certificado e ajuda:</b> página ${pageNumber('p10')}.`,
+  text: `<b>Dia 1:</b> experiências, movimento e borda, páginas ${pageNumber('andar-experiencia')} a ${pageNumber('p3')}.<br><b>Dia 2:</b> experiência, coleta e memória, páginas ${pageNumber('memoria-experiencia')} a ${pageNumber('coleta-testes')}.<br><b>Dia 3:</b> experiência, duas respostas e testes, páginas ${pageNumber('porta-experiencia')} a ${pageNumber('p8')}.<br><b>A surpresa do final:</b> escolhas, galerias, avisos e posição da chave, páginas ${pageNumber('personalizar')} a ${pageNumber('posicionar-chave')}.<br><b>Publique no Mural:</b> página ${pageNumber('p9')}.<br><b>Revisão das regras:</b> página ${pageNumber('revisao-final')}.<br><b>Certificado e ajuda:</b> página ${pageNumber('p10')}.`,
 })
 for (const sheet of sheets) sheet.body = sheet.body.replace('<!-- course-index -->', courseIndex)
 const total = sheets.length + 1

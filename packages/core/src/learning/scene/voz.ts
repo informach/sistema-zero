@@ -129,10 +129,15 @@ export type SceneVozes = Readonly<Record<string, string>>
  * o que vale a pena GERAR é o admin, com um teto próprio e um recado que nomeia a fala.
  */
 export function isSceneVozes(value: unknown): value is SceneVozes {
+  return isVozesDoZappy(value, VOZ_LIMITS.entradas)
+}
+
+/** A régua do dicionário, com o teto de entradas de quem o usa (a cena ou o quiz). */
+export function isVozesDoZappy(value: unknown, maxEntradas: number): value is SceneVozes {
   if (value === undefined) return true
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
   const entradas = Object.entries(value as Record<string, unknown>)
-  if (entradas.length > VOZ_LIMITS.entradas) return false
+  if (entradas.length > maxEntradas) return false
   for (const [chave, url] of entradas) {
     if (!chave || chave.length > VOZ_LIMITS.chave) return false
     if (!isChaveDeVoz(chave)) return false

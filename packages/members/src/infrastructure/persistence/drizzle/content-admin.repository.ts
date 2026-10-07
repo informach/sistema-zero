@@ -18,6 +18,7 @@ import {
   NoShowcaseBlockError,
 } from '../../../domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
+import { quizGateFingerprint } from '../../../domain/course/quiz'
 import type {
   AttachmentFields,
   CloneCourseOverrides,
@@ -201,10 +202,8 @@ async function retrySortOrderCollision<T>(operation: () => Promise<T>): Promise<
  * (histórico de respostas de questões que não existem mais — não é trabalho
  * autoral). Pinta não tem correção: editar o bloco não toca a entrega.
  */
-export function quizGateFingerprint(content: LessonBlockContent): string {
-  if (content.kind !== 'quiz') return 'none'
-  return stableJson({ questions: content.questions, passingScore: content.passingScore ?? null })
-}
+// A régua mora no domínio (`quizGateFingerprint`), para o fake dos testes usar a MESMA.
+export { quizGateFingerprint }
 
 export function studioActivityFingerprint(content: LessonBlockContent): string {
   if (content.kind !== 'studio') return 'none'

@@ -6,6 +6,7 @@ Confere os limites antes de substituir o PDF. Não gera mapa para responsáveis.
 from pathlib import Path
 import json
 import shutil
+import os
 import subprocess
 import sys
 
@@ -32,7 +33,9 @@ def main():
     html = WORK / "caderno.html"
     if not html.exists():
         raise RuntimeError("O gerador não produziu o HTML do caderno.")
+    # CHROME_PATH aponta outro Chrome (Linux, CI); sem ela, os caminhos do Windows de sempre.
     browser_path = next((p for p in [
+        *([Path(os.environ["CHROME_PATH"])] if os.environ.get("CHROME_PATH") else []),
         Path("C:/Program Files/Google/Chrome/Application/chrome.exe"),
         Path("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"),
     ] if p.exists()), None)

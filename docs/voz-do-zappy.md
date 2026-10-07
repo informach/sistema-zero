@@ -57,8 +57,36 @@ O que ganha voz:
 | --- | --- |
 | Fala do Zappy (`dialogue`) | o balão inteiro |
 | Experimentação e demonstração | a instrução, a pergunta do palpite com as opções, a pergunta do fim |
+| Quiz (`quiz`) | cada pergunta com as alternativas ("Letra A: …"), e a explicação de cada questão |
 
 Depois de gerar, **publique a aula**: o dicionário viaja no bloco, como qualquer outro conteúdo.
+
+## O quiz (07/10/2026)
+
+O quiz é o único lugar da aula em que a criança precisa ler sozinha para seguir. Quem ainda lê com
+dificuldade travava ali, e o quiz media leitura em vez do conteúdo. Agora:
+
+- **A pergunta e as alternativas** ganham "Ouvir". As alternativas mostram uma LETRA na tela (o Kids
+  já tinha; o player adulto ganhou) e a voz diz a mesma letra: "Qual bloco faz o Dino pular? Letra
+  A: Pular. Letra B: Girar." Com quatro opções, um "ou… ou… ou…" não diz qual botão é qual.
+- **A explicação da correção** também ganha "Ouvir", depois de a criança responder.
+- No Kids, a pergunta virou uma fala do Zappy: o enunciado mora no balão, com a boca andando junto
+  do áudio. No adulto, o "Ouvir" fica ao lado do enunciado.
+- O markdown da autoria (negrito, imagem, link, código) é limpo antes de virar fala
+  (`textoDoMarkdownParaFala`). Alternativa só de imagem vira "Letra A: a imagem.", ou o texto
+  alternativo da imagem quando ela tem um.
+- Sem MP3, o "Ouvir" usa a voz do navegador, como na instrução da cena: aqui ele é muleta de quem
+  ainda não lê, e qualquer voz serve.
+
+⚠️⚠️ **A explicação é GABARITO.** O dicionário do bloco guarda o MP3 dela, mas o GET da aula só leva
+as falas das perguntas (`vozesPublicasDoQuiz`). O endereço do MP3 da explicação chega na resposta do
+envio (`explanationAudioUrl`, calculado por `gradeLearningQuiz`), junto da correção, como o texto
+dela sempre chegou. A pronúncia ajustada da explicação também não sai no GET.
+
+O painel de pronúncia do quiz fica dentro de cada pergunta, em "Voz do Zappy (pronúncia)", com uma
+linha para a pergunta e outra para a explicação. O botão "Gerar a voz do Zappy" pula a questão
+pela metade (enunciado ou alternativa em branco). O dicionário do quiz aceita até 60 falas (30
+questões × 2).
 
 ## Ajustar uma pronúncia
 
@@ -163,6 +191,8 @@ procedimento estão em `aulas-interativas/raio-x-implantacao.md`.)
 | Peça | Arquivo |
 | --- | --- |
 | A chave, a fila e o extrator de textos (puros, testados) | `packages/core/src/learning/scene/voz.ts` |
+| A fala do quiz, as letras e o que sai no GET | `packages/core/src/learning/scene/voz-quiz.ts` |
+| O "Ouvir" fora do balão (quiz adulto, explicação) | `packages/member-shell/src/components/zappy-ouvir-button.tsx` |
 | A geração (ElevenLabs + R2) | `packages/admin/src/server/voz-zappy.ts` |
 | A rota | `packages/admin/src/app/api/media/voz-zappy/route.ts` |
 | O botão | `packages/admin/src/components/editor/voz-zappy-button.tsx` |

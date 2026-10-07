@@ -64,6 +64,14 @@ const trailBundle = await Bun.build({
   ],
 })
 if (!trailBundle.success) throw new Error(trailBundle.logs.join('\n'))
+const quizBundle = await Bun.build({
+  entrypoints: [resolve(import.meta.dir, 'quiz-zappy-client.tsx')],
+  target: 'browser',
+  define: { 'process.env.NODE_ENV': JSON.stringify('production'), 'process.env': '{}' },
+})
+if (!quizBundle.success) throw new Error(quizBundle.logs.join('\n'))
+const quizScript = quizBundle.outputs.find((output) => output.path.endsWith('.js'))
+if (!quizScript) throw new Error('Bundle do quiz não foi gerado')
 const trailScript = trailBundle.outputs.find((output) => output.path.endsWith('.js'))
 if (!trailScript) throw new Error('Bundle da trilha não foi gerado')
 
@@ -131,6 +139,10 @@ Bun.serve({
   async fetch(request) {
     const path = new URL(request.url).pathname
     if (path === '/trail-rive.js') return new Response(trailScript)
+    if (path === '/quiz-zappy.js') return new Response(quizScript)
+    // O Zappy animado do balão (`fala.riv`) e a pose parada que o cobre enquanto carrega.
+    if (/^\/zappy\/[a-z-]+\.(riv|webp)$/.test(path))
+      return new Response(Bun.file(resolve(app, `public${path}`)))
     if (
       path === '/rive/rive.wasm' ||
       path === '/zappy/happy.riv' ||
@@ -164,7 +176,9 @@ Bun.serve({
             ? '/lesson-video.js'
             : path === '/trail-rive'
               ? '/trail-rive.js'
-              : '/client.js'
+              : path === '/quiz-zappy'
+                ? '/quiz-zappy.js'
+                : '/client.js'
     const extraStyles =
       path === '/project-play-authoring'
         ? '<link rel="stylesheet" href="/project-play-authoring.css">'

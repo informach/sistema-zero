@@ -48,12 +48,18 @@ export function DialogueBlockView({
   content,
   mascot,
   speech,
+  children,
 }: {
   content: DialogueBlock
   /** Figura de quem fala. Sem ela o balão vira um recado destacado. */
   mascot?: ReactNode
   /** A cena fornece sua fala de forma explícita; diálogos autorados mantêm a regra atual. */
   speech?: DialogueSpeech
+  /**
+   * Corpo rico no lugar do texto simples (a pergunta do quiz é markdown, com imagem). O
+   * `content.text` continua sendo a legenda da narração.
+   */
+  children?: ReactNode
 }) {
   const voz = useSceneVoice()
   /**
@@ -123,7 +129,11 @@ export function DialogueBlockView({
         {/* Texto de verdade, no fluxo normal: nada de `role="status"` (isto não é
             aviso) nem de `blockquote` (a atribuição é o mascote, que é decorativo
             e some para o leitor de tela, o que deixaria uma citação sem autor). */}
-        <p className="whitespace-pre-line text-pretty text-base text-foreground">{content.text}</p>
+        {children ?? (
+          <p className="whitespace-pre-line text-pretty text-base text-foreground">
+            {content.text}
+          </p>
+        )}
         {speech?.audioUrl ? (
           <audio
             ref={audio}

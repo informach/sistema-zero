@@ -17,6 +17,7 @@ import {
   type LessonDraftIssue,
 } from '@sistemazero/core/learning'
 import {
+  falasDoQuiz,
   reconciliarVozesDoZappy,
   roteiroDoZappy,
   type SceneVozes,
@@ -472,12 +473,20 @@ export function buildContent(
           : { allowTools: [...PINTA_TOOL_PRESETS[f.pintaToolPreset]] }),
         ...(opt(f.pintaChain) ? { chain: f.pintaChain.trim() } : {}),
       }
-    default:
+    default: {
+      // O dicionário só guarda o que ainda casa com o texto (e a pronúncia) de AGORA: uma pergunta
+      // reescrita não pode publicar o MP3 da versão anterior.
+      const vozes = reconciliarVozesDoZappy(
+        falasDoQuiz(f.quiz).map((fala) => fala.speechText),
+        f.quiz.vozes,
+      )
       return {
         kind: 'quiz',
         questions: f.quiz.questions,
         ...(f.quiz.passingScore != null ? { passingScore: f.quiz.passingScore } : {}),
+        ...(vozes ? { vozes } : {}),
       }
+    }
   }
 }
 
@@ -661,9 +670,11 @@ function LessonEditorSession({
       const content: LessonBlockContent =
         atual.kind === 'dialogue'
           ? { ...atual, vozes }
-          : atual.kind === 'interactive' && atual.activity?.type === 'experimentation'
-            ? { ...atual, activity: { ...atual.activity, vozes } }
-            : atual
+          : atual.kind === 'quiz'
+            ? { ...atual, vozes }
+            : atual.kind === 'interactive' && atual.activity?.type === 'experimentation'
+              ? { ...atual, activity: { ...atual.activity, vozes } }
+              : atual
       if (content === atual) return
       session.enqueue({ type: 'block', block: { id, content } }, true)
     },
@@ -855,7 +866,7 @@ function LessonEditorSession({
       caption: c.kind === 'image' ? (c.caption ?? '') : '',
       quiz:
         c.kind === 'quiz'
-          ? { questions: c.questions, passingScore: c.passingScore }
+          ? { questions: c.questions, passingScore: c.passingScore, vozes: c.vozes }
           : EMPTY_BLOCK.quiz,
       captions: c.kind === 'video' ? (c.captions ?? []) : [],
       ebookAttachmentId: c.kind === 'ebook' ? c.attachmentId : '',

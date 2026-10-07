@@ -1,5 +1,9 @@
 import type { InteractiveBlock } from '@sistemazero/core/learning'
-import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
+import type {
+  QuizQuestionSpeech,
+  SceneVozes,
+  ZappySpeechOverride,
+} from '@sistemazero/core/learning/scene'
 
 export type { InteractiveBlock } from '@sistemazero/core/learning'
 
@@ -118,12 +122,19 @@ export interface QuizQuestion {
   choices: QuizChoice[]
   correctChoiceIds: string[]
   explanation?: string
+  /** Pronúncia da pergunta e da explicação, presa ao texto falado (core `voz-quiz.ts`). */
+  zappySpeech?: QuizQuestionSpeech
 }
 
 export interface QuizBlock {
   kind: 'quiz'
   questions: QuizQuestion[]
   passingScore?: number
+  /**
+   * A voz do Zappy: pergunta e explicação de cada questão. ⚠️ Guarda o MP3 da explicação, que é
+   * gabarito: a projeção do aluno só deixa sair o das perguntas (`toMemberFacingQuizContent`).
+   */
+  vozes?: SceneVozes
 }
 
 /**

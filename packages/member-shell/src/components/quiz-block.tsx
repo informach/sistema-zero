@@ -1,6 +1,11 @@
 'use client'
 
 import { gradeLearningQuiz, isManifestQuiz } from '@sistemazero/core/learning'
+import {
+  falaDaExplicacaoDoQuiz,
+  falaDaQuestaoDoQuiz,
+  letraDaAlternativa,
+} from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -12,6 +17,7 @@ import { renderMarkdown } from '../lib/markdown'
 import type { QuizAttemptResultView, QuizBlock, QuizStateView } from '../lib/types'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
+import { ZappyOuvirButton } from './zappy-ouvir-button'
 
 interface Props {
   blockId: string
@@ -177,74 +183,108 @@ function QuizSession({ blockId, content, quizState }: Props) {
       {questions.map((q, qi) => {
         const chosen = answers[q.id]
         const correction = corrections.get(q.id)
+        const fala = falaDaQuestaoDoQuiz(q)
+        const promptId = `${blockId}-${q.id}-prompt`
         return (
-          <fieldset
-            key={q.id}
-            className="flex flex-col gap-2"
-            disabled={formDisabled || correction?.correct === true}
-          >
-            <legend className="flex gap-1.5 text-sm font-medium text-foreground">
-              <span className="shrink-0">{qi + 1}.</span>
-              {/* Enunciado em markdown (negrito/títulos/listas/imagens) — renderer puro/XSS-safe. */}
-              <div className="lesson-prose flex-1">{renderMarkdown(q.prompt)}</div>
-            </legend>
-            {q.choices.map((choice) => {
-              const selected = chosen === choice.id
-              // Pós-submit: destaca a escolha do aluno (certa/errada) e o gabarito.
-              const isCorrectChoice = correction?.correctChoiceIds.includes(choice.id) ?? false
-              const showCorrection = correction !== undefined
-              return (
-                <label
-                  key={choice.id}
-                  // Visual da referência (LessonExperience): opção elevada sobre o card
-                  // (bg-background + shadow-sm) e radio na cor do tema (accent-primary).
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg border bg-background px-4 py-3 text-sm shadow-sm transition-colors',
-                    formDisabled ? 'cursor-default' : 'cursor-pointer',
-                    selected ? 'border-ring' : 'border-border',
-                    !formDisabled && !selected && 'hover:bg-muted/40',
-                    showCorrection && isCorrectChoice && 'border-accent dark:border-primary',
-                    showCorrection && selected && !isCorrectChoice && 'border-destructive',
-                  )}
-                >
-                  <input
-                    type="radio"
-                    name={`${blockId}-${q.id}`}
-                    value={choice.id}
-                    checked={selected}
-                    disabled={formDisabled || correction?.correct === true}
-                    onChange={() => choose(q.id, choice.id)}
-                    className="size-4 shrink-0 accent-primary"
-                  />
-                  {/* Texto da opção em markdown (formatação rica + imagens). */}
-                  <div className="lesson-prose flex-1 text-foreground">
-                    {renderMarkdown(choice.label)}
-                  </div>
-                  {showCorrection && isCorrectChoice ? (
-                    <CheckCircle2 className="size-4 text-accent dark:text-primary" />
-                  ) : null}
-                  {showCorrection && selected && !isCorrectChoice ? (
-                    <XCircle className="size-4 text-destructive" />
-                  ) : null}
-                </label>
-              )
-            })}
+          // ⚠️ "Ouvir" e a explicação ficam FORA do `fieldset`: depois de responder ele fica
+          // `disabled`, e um `<fieldset disabled>` desliga todo botão de dentro — justo quando a
+          // criança quer ouvir a correção.
+          <div key={q.id} className="flex flex-col gap-2">
+            <div className="flex items-start gap-3">
+              <div
+                id={promptId}
+                className="flex flex-1 gap-1.5 text-sm font-medium text-foreground"
+              >
+                <span className="shrink-0">{qi + 1}.</span>
+                {/* Enunciado em markdown (negrito/títulos/listas/imagens) — renderer puro/XSS-safe. */}
+                <div className="lesson-prose flex-1">{renderMarkdown(q.prompt)}</div>
+              </div>
+              {fala ? (
+                <ZappyOuvirButton
+                  textos={[fala.visibleText]}
+                  roteiros={[fala.speechText]}
+                  vozes={content.vozes}
+                  rotulo={`Ouvir a pergunta ${qi + 1}`}
+                  className="shrink-0"
+                />
+              ) : null}
+            </div>
+            <fieldset
+              aria-labelledby={promptId}
+              className="flex flex-col gap-2"
+              disabled={formDisabled || correction?.correct === true}
+            >
+              {q.choices.map((choice, ci) => {
+                const selected = chosen === choice.id
+                // Pós-submit: destaca a escolha do aluno (certa/errada) e o gabarito.
+                const isCorrectChoice = correction?.correctChoiceIds.includes(choice.id) ?? false
+                const showCorrection = correction !== undefined
+                return (
+                  <label
+                    key={choice.id}
+                    // Visual da referência (LessonExperience): opção elevada sobre o card
+                    // (bg-background + shadow-sm) e radio na cor do tema (accent-primary).
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg border bg-background px-4 py-3 text-sm shadow-sm transition-colors',
+                      formDisabled ? 'cursor-default' : 'cursor-pointer',
+                      selected ? 'border-ring' : 'border-border',
+                      !formDisabled && !selected && 'hover:bg-muted/40',
+                      showCorrection && isCorrectChoice && 'border-accent dark:border-primary',
+                      showCorrection && selected && !isCorrectChoice && 'border-destructive',
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name={`${blockId}-${q.id}`}
+                      value={choice.id}
+                      checked={selected}
+                      disabled={formDisabled || correction?.correct === true}
+                      onChange={() => choose(q.id, choice.id)}
+                      className="size-4 shrink-0 accent-primary"
+                    />
+                    {/* A letra é a mesma que a voz do Zappy diz ("Letra A: …"). Fica fora do
+                        nome acessível: o leitor de tela já lê a opção, e o nome dela não muda. */}
+                    <span aria-hidden="true" className="sz-display shrink-0 text-muted-foreground">
+                      {letraDaAlternativa(ci)}
+                    </span>
+                    {/* Texto da opção em markdown (formatação rica + imagens). */}
+                    <div className="lesson-prose flex-1 text-foreground">
+                      {renderMarkdown(choice.label)}
+                    </div>
+                    {showCorrection && isCorrectChoice ? (
+                      <CheckCircle2 className="size-4 text-accent dark:text-primary" />
+                    ) : null}
+                    {showCorrection && selected && !isCorrectChoice ? (
+                      <XCircle className="size-4 text-destructive" />
+                    ) : null}
+                  </label>
+                )
+              })}
+            </fieldset>
             {correction?.explanation ? (
               <div className="rounded-lg bg-muted/60 px-3 py-2 text-xs">
-                <p
-                  className={cn(
-                    'mb-1 font-semibold',
-                    correction.correct ? 'text-accent dark:text-primary' : 'text-foreground',
-                  )}
-                >
-                  {correction.correct ? 'Isso! Por quê:' : 'Por quê:'}
-                </p>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <p
+                    className={cn(
+                      'font-semibold',
+                      correction.correct ? 'text-accent dark:text-primary' : 'text-foreground',
+                    )}
+                  >
+                    {correction.correct ? 'Isso! Por quê:' : 'Por quê:'}
+                  </p>
+                  <ZappyOuvirButton
+                    textos={[falaDaExplicacaoDoQuiz(correction.explanation)]}
+                    audioUrl={correction.explanationAudioUrl}
+                    rotulo={`Ouvir a explicação da pergunta ${qi + 1}`}
+                    className="shrink-0"
+                  />
+                </div>
                 <div className="lesson-prose text-muted-foreground">
                   {renderMarkdown(correction.explanation)}
                 </div>
               </div>
             ) : null}
-          </fieldset>
+          </div>
         )
       })}
 

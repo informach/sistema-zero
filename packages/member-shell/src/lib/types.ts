@@ -4,7 +4,11 @@ import type {
   LessonSection,
   SectionProgressView,
 } from '@sistemazero/core/learning'
-import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
+import type {
+  QuizQuestionSpeech,
+  SceneVozes,
+  ZappySpeechOverride,
+} from '@sistemazero/core/learning/scene'
 
 // "Como fazer" (biblioteca de ajuda do Kids): as views nascem no core e valem nos dois lados.
 export type {
@@ -432,12 +436,16 @@ export interface QuizQuestion {
   id: string
   prompt: string
   choices: { id: string; label: string }[]
+  /** Pronúncia da pergunta na voz do Zappy (a da explicação não vem no GET). */
+  zappySpeech?: QuizQuestionSpeech
 }
 export interface QuizBlock {
   kind: 'quiz'
   questions: QuizQuestion[]
   /** Nota de corte que BLOQUEIA a conclusão da aula; `null` = quiz de fixação. */
   passingScore?: number | null
+  /** A voz do Zappy das PERGUNTAS. A da explicação chega no submit (`explanationAudioUrl`). */
+  vozes?: SceneVozes
 }
 /**
  * Interativo v3: HTML que roda SEMPRE em iframe sandbox 16:9 (largura total).
@@ -714,6 +722,8 @@ export interface QuizQuestionResultView {
   correct: boolean
   correctChoiceIds: string[]
   explanation: string | null
+  /** A explicação na voz do Zappy, quando a autoria a gerou. */
+  explanationAudioUrl?: string
 }
 
 // ── Gamificação (XP/streak/badges — vitrine v1 = community-kids) ────────────
