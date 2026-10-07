@@ -96,9 +96,9 @@ Seções, blocos, critérios, identificadores e durações não mudaram. No Admi
 
 **A surpresa do final, 07/10/2026.** Decisão do responsável (Diretrizes, seção 2, "A surpresa do final"), só aqui e no Cadê Todo Mundo?, os primeiros cursos da criança (nos seguintes ela já sabe que pode personalizar): a personalização do Dia 3 passa a ser anunciada desde o começo.
 
-- **Plantar:** o vídeo `video-intro-farol` conta, antes de passar a vez, que no fim da aventura tem uma surpresa que vai deixar o jogo ainda mais seu (alvo de 50 a 65 s; era 45 a 60).
+- **Plantar:** o vídeo `video-intro-farol` conta, antes de passar a vez, que lá no fim desta aventura tem uma surpresa que vai deixar o jogo do seu jeito, com palavras diferentes das do Cadê Todo Mundo? para quem fizer os dois cursos (alvo de 50 a 65 s; era 45 a 60).
 - **Lembrar:** o vídeo `video-d2-programar` comemora o que a criança programou e lembra a surpresa entre o envio e **Concluir fase**.
-- **Revelar:** o vídeo `video-d3-personalizar` começa com "Chegou a hora da surpresa!", passa pelas galerias do Mapa da Aventura e, depois do teste, diz que é com essa cara que o jogo vai para o Mural; a ponte `ponte-d3-personalizar` começa igual.
+- **Revelar:** o vídeo `video-d3-personalizar` começa com "Sua missão deu certo! E a surpresa chegou: olha quantas versões essa aventura pode ter…", mostra duas versões completas do jogo, passa pelas galerias do Mapa da Aventura e, depois do teste, diz que é com essa cara que o jogo vai para o Mural; a ponte `ponte-d3-personalizar` começa com "A surpresa chegou!".
 - **Mapa da Aventura:** a primeira página cita a surpresa, o índice chama as páginas 17 a 24 de **A surpresa do final**, e a página da personalização e as quatro galerias têm o sobretítulo **Dia 3 · A surpresa do final**. Continua com 27 páginas.
 
 Seções, blocos, critérios e identificadores não mudaram. No Admin: importar os manifestos dos Dias 1, 2 e 3 e substituir o anexo do Mapa da Aventura. Regravar os três vídeos citados.

@@ -174,7 +174,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
 >
-> Agora o seu jogo já guarda a chave e avisa quem está jogando. E lembra da surpresa do começo da aventura? Ela está chegando: vem na próxima fase.
+> Agora o seu jogo já guarda a chave e avisa quem está jogando. E o segredo do começo da aventura? A surpresa está quase aqui: ela chega na próxima fase.
 >
 > Quando o envio terminar, clique em Concluir fase."
 

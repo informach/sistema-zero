@@ -7,7 +7,7 @@
     "items": [
       {
         "kind": "text",
-        "text": "O cenário, os desenhos e o movimento do barco já vêm preparados. Você faz o personagem andar, recolher a chave e decidir quando acender o farol. E no fim da aventura tem uma surpresa esperando por você: ela vai deixar o seu jogo ainda mais seu."
+        "text": "O cenário, os desenhos e o movimento do barco já vêm preparados. Você faz o personagem andar, recolher a chave e decidir quando acender o farol. E lá no fim desta aventura tem uma surpresa guardada para você: com ela, o jogo vai ficar do seu jeito."
       },
       {
         "kind": "box",
@@ -389,7 +389,7 @@
     "id": "personalizar",
     "kicker": "Dia 3 · A surpresa do final",
     "title": "Deixe o jogo com a sua cara",
-    "subtitle": "Chegou a surpresa: o seu jogo não precisa ficar igual ao do vídeo. Troque as imagens pelas que você quiser; as suas escolhas ficam no jogo.",
+    "subtitle": "A surpresa chegou: olha quantas versões essa aventura pode ter! Troque as imagens pelas que você quiser; as suas escolhas ficam no jogo.",
     "items": [
       {
         "kind": "step",

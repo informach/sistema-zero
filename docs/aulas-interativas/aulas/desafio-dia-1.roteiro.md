@@ -18,7 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 50 a 65 segundos.
 
-**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. No "Olha aqui", segurar a seta da tela para a direita por um instante e deixar ver o personagem andar um pouco; parar antes da chave. Não percorrer o caminho nem mostrar o barco chegando. No "guarde este segredo", falar olhando para a câmera, num tom de quem conta um segredo, sem mostrar nada da personalização. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. No "Olha aqui", segurar a seta da tela para a direita por um instante e deixar ver o personagem andar um pouco; parar antes da chave. Não percorrer o caminho nem mostrar o barco chegando. No "Psiu, um segredo", falar olhando para a câmera, num tom de quem conta um segredo, sem mostrar nada da personalização. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
 > "Oi! Neste desafio, você vai programar o jogo A Chave do Farol. Antes de montar o seu, você vai jogar a versão pronta, para ver como o jogo funciona.
@@ -29,7 +29,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Já o caminho até a chave e depois até o farol, esse eu deixo para você descobrir.
 >
-> Ah, e guarde este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.
+> Psiu, um segredo: lá no fim desta aventura tem uma surpresa guardada para você. Com ela, o jogo vai ficar do seu jeito.
 >
 > Agora é a sua vez: jogue até o farol acender e o barco chegar. Quando terminar, clique em Próxima parte."
 

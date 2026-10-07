@@ -113,7 +113,7 @@ Decisão do responsável (Diretrizes, seção 2, "A surpresa do final"), só aqu
 
 - **Plantar:** o vídeo `video-a1-abertura` conta, antes de passar a vez, que no fim da aventura tem uma surpresa que vai deixar o jogo ainda mais seu (alvo de 40 a 55 s; era 35 a 45).
 - **Lembrar:** o vídeo da montagem da Aula 1 (`video-a1-programar`) comemora o que a criança programou e lembra a surpresa entre o envio e **Concluir fase**.
-- **Revelar:** o vídeo `video-a2-personalizar` começa com "Chegou a hora da surpresa!", mostra a galeria do Mapa da Aventura e fecha dizendo que é com essa cara que o jogo vai para o Mural; a ponte `ponte-a2-personalizar` começa igual.
+- **Revelar:** o vídeo `video-a2-personalizar` começa com "A surpresa chegou! Olha quem mais pode brincar de se esconder!", mostra a galeria do Mapa da Aventura e fecha dizendo que é com essa cara que o jogo vai para o Mural; a ponte `ponte-a2-personalizar` começa com "A surpresa chegou!".
 - **Mapa da Aventura:** a visão geral ganhou o cartão 3, **A surpresa do final**, e a página 5 tem o sobretítulo **Fase 2 · A surpresa do final**, com "o seu jogo não precisa ficar igual ao do vídeo". Continua com 7 páginas.
 
 Seções, blocos, critérios e identificadores não mudaram. No Admin: importar os manifestos das Aulas 1 e 2 e substituir o anexo do Mapa da Aventura. Regravar os três vídeos citados.

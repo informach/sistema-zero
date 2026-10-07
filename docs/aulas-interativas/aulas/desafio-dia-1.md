@@ -47,7 +47,7 @@ Os antigos vídeos `video-d1-chegada` e `video-d1-movimento` permanecem aposenta
 
 **Ponte do Zappy na página (não gravar):** Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima parte.
 
-O vídeo é uma demonstração, como nas experiências: apresenta a aventura, mostra como se anda com um gesto só ("Olha aqui: quando eu seguro a seta da tela para a direita…"), sem resolver o caminho, e só no fim passa a vez. Antes de passar a vez, planta a surpresa do final (decisão do responsável, 07/10/2026): "Ah, e guarde este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu." Conta que a surpresa existe, sem dizer o que é; ela é lembrada uma vez no fim do Dia 2 e revelada em **Deixe o jogo com a sua cara**, no Dia 3.
+O vídeo é uma demonstração, como nas experiências: apresenta a aventura, mostra como se anda com um gesto só ("Olha aqui: quando eu seguro a seta da tela para a direita…"), sem resolver o caminho, e só no fim passa a vez. Antes de passar a vez, planta a surpresa do final (decisão do responsável, 07/10/2026): "Psiu, um segredo: lá no fim desta aventura tem uma surpresa guardada para você. Com ela, o jogo vai ficar do seu jeito." Conta que a surpresa existe, sem dizer o que é; ela é lembrada uma vez no fim do Dia 2 e revelada em **Deixe o jogo com a sua cara**, no Dia 3.
 
 ### Seção 2. Seu Mapa da Aventura
 
