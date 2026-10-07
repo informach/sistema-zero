@@ -453,6 +453,15 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   a câmera o leria e levaria o visitante ao staging). O conteúdo fotografado (plano `ParOuImpar`,
   a dúvida nos Recados, o cavaleiro `base-3-2` em Materiais do jogo) está no perfil de teste Lipe;
   os roteiros só leem.
+- **Recaptura de 07/10/2026 (vocabulário da aventura):** 19 telas refeitas no perfil Lipe com
+  `KIDS_CDP_PORT` (Explorar, Recados da equipe, fase/parte, Voltar à fase, Enviar meu projeto). O
+  `tela-certificado` saiu da conta Leninha (`KIDS_CURSO_CONCLUIDO=cade-todo-mundo`), a única com o
+  certificado do Cadê já como "Certificado de Criador": o do Lipe é da Nave, ainda não reimportada,
+  com "Certificado de Conclusão". O jogo pronto clica nos esconderijos pela posição DO JOGO (o layout
+  mudou e o clique em pixel caía fora) e o certificado mira o botão Baixar certificado. Ficaram as
+  de antes `tela-estudio-lista`, `tela-pinta` e `tela-animacao` (não tinham rótulo velho, e as novas
+  saíram com "Buscando…" da nuvem e cartões sem capa). Os vídeos fictícios das fases ainda mostram
+  "AULA 1 DE 3": somem com os vídeos novos.
 - **Recaptura de 01/10/2026 à tarde (pedidos da dona):** (1) **os desenhos BONITOS**: o boneco
   `heroi` foi apagado por ela ("muito simples"); o Pinta mostra o cavaleiro `base-3-2`, o animado
   `dumb-animation` e o cenário `dumb-scene-2`, e a galeria entra com a busca `base`; o Molda
