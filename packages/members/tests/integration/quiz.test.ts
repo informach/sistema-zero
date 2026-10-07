@@ -388,4 +388,47 @@ describe('Quiz server-side', () => {
     })
     expect(torto.status).toBe(400)
   })
+
+  test('ajustar a voz ou a pronúncia NÃO apaga a aprovação de quem já passou', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const lessonId = course.lessonIds[0]
+    const blockId = seedQuizBlock(courses, lessonId, { passingScore: 100 })
+    expect(
+      (await readJson(await submit(app, lessonId, blockId, { q1: ['b'], q2: ['a'] }))).passed,
+    ).toBe(true)
+    const atual = courses.blocks.find((b) => b.id === blockId)?.content as {
+      questions: { id: string; prompt: string; choices: { label: string }[] }[]
+    }
+    const questions = atual.questions.map((q) =>
+      q.id === 'q1'
+        ? {
+            ...q,
+            zappySpeech: {
+              question: {
+                sourceText: '2 + 2? Letra A: 3. Letra B: 4.',
+                speechText: 'Dois mais dois? Letra A: três. Letra B: quatro.',
+              },
+            },
+          }
+        : q,
+    )
+    const vozes = Object.fromEntries(
+      falasDoQuiz({ questions }).map((f) => [
+        f.key,
+        `https://cdn.test/aulas/voz/${f.questionId}.mp3`,
+      ]),
+    )
+    const patched = await updateBlock(app, lessonId, blockId, {
+      ...atual,
+      kind: 'quiz',
+      questions,
+      vozes,
+    })
+    expect(patched.status, await patched.clone().text()).toBe(200)
+    const lesson = await readJson(await getLesson(app, course.slug, lessonId))
+    const quiz = lesson.blocks.find((b: { kind: string }) => b.kind === 'quiz')
+    expect(quiz.quizState.passed).toBe(true)
+  })
 })

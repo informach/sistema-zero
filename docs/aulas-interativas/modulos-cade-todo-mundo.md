@@ -109,7 +109,7 @@ Na mesma revisão:
 
 ## A surpresa do final, 07/10/2026
 
-Decisão do responsável (Diretrizes, seção 2, "A personalização é a surpresa do final"): a seção **Deixe o jogo com a sua cara** passa a ser anunciada desde o começo.
+Decisão do responsável (Diretrizes, seção 2, "A surpresa do final"), só aqui e na Chave do Farol, os primeiros cursos da criança (nos seguintes ela já sabe que pode personalizar): a seção **Deixe o jogo com a sua cara** passa a ser anunciada desde o começo.
 
 - **Plantar:** o vídeo `video-a1-abertura` conta, antes de passar a vez, que no fim da aventura tem uma surpresa que vai deixar o jogo ainda mais seu (alvo de 40 a 55 s; era 35 a 45).
 - **Lembrar:** o vídeo da montagem da Aula 1 (`video-a1-programar`) comemora o que a criança programou e lembra a surpresa entre o envio e **Concluir fase**.

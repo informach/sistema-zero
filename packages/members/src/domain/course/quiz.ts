@@ -3,7 +3,8 @@ import {
   type SceneVozes,
   vozesPublicasDoQuiz,
 } from '@sistemazero/core/learning/scene'
-import type { QuizBlock, QuizChoice } from './lesson-block'
+import { stableJson } from '../shared/stable-json'
+import type { LessonBlockContent, QuizBlock, QuizChoice } from './lesson-block'
 
 export {
   gradeLearningQuiz as gradeQuizAttempt,
@@ -115,4 +116,21 @@ export function toMemberFacingQuizContent(block: QuizBlock): MemberQuizContent {
     passingScore: block.passingScore ?? null,
     ...(vozes ? { vozes } : {}),
   }
+}
+
+/**
+ * O que, num quiz, faz as tentativas antigas deixarem de valer: as questões (enunciado,
+ * alternativas, gabarito, explicação) e a nota de corte. Mudou isso, as tentativas do bloco são
+ * apagadas na publicação.
+ *
+ * ⚠️⚠️ A VOZ fica de fora: o dicionário (`vozes`) e a pronúncia (`zappySpeech`) não mudam o que
+ * a criança respondeu. Com a pronúncia dentro, ajustar como o Zappy fala "Letra A" apagaria a
+ * aprovação de todo mundo que já passou no quiz (e a aula voltaria a trancar a conclusão).
+ */
+export function quizGateFingerprint(content: LessonBlockContent): string {
+  if (content.kind !== 'quiz') return 'none'
+  return stableJson({
+    questions: content.questions.map(({ zappySpeech: _voz, ...q }) => q),
+    passingScore: content.passingScore ?? null,
+  })
 }

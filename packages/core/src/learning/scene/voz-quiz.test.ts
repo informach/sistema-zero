@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { gradeLearningQuiz } from '../quiz'
-import { chaveDeVoz, roteiroDoZappy } from './voz'
+import { chaveDeVoz, isZappySpeechText, roteiroDoZappy } from './voz'
 import {
   audioDaExplicacao,
   falaDaPerguntaDoQuiz,
@@ -40,6 +40,17 @@ describe('a fala do quiz', () => {
       ),
     ).toBe('Título. vermelho. azul. veja o tutorial. mover()')
     expect(textoDoMarkdownParaFala('nome_da_variavel')).toBe('nome_da_variavel')
+  })
+
+  it('fala os comparadores e não confunde a pergunta com uma tag', () => {
+    const fala = falaDaPerguntaDoQuiz({
+      prompt: 'O que acontece quando x > 0 e y < 5?',
+      choices: [{ label: 'x >= 1' }, { label: '<b>Nada</b>' }],
+    })
+    expect(fala).toBe(
+      'O que acontece quando x maior que 0 e y menor que 5? Letra A: x maior ou igual a 1. Letra B: Nada.',
+    )
+    expect(isZappySpeechText(fala)).toBe(true)
   })
 
   it('a alternativa só de imagem sem descrição não deixa a letra calada', () => {

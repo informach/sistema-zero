@@ -180,7 +180,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Na tela:** manter o projeto enviado. No "Chegou a hora da surpresa", abrir o Mapa da Aventura na primeira página da surpresa e, no "Olha aqui", passar pelas galerias de personagens, cenários, barcos, chaves e faróis, por alguns segundos. Voltar ao Estúdio. Deixar à vista **Ao iniciar** e **Criar sprite personagem**; no campo **com imagem**, abrir a lista em **aventureiro** e escolher **pirata**. Apontar o nome do sprite, que continua personagem, e os campos de posição e tamanho, sem editá-los. Escolher **barco-pirata** em **Criar sprite barco** e **chave-de-estrela** em **Criar sprite chave**. Aguardar a atualização a cada escolha. Não listar as opções antigas de compatibilidade como parte do catálogo novo.
 
 **Narração:**
-> "Chegou a hora da surpresa! O seu jogo não precisa ficar igual ao meu: agora é você quem escolhe o personagem, o barco, a chave, o farol e o cenário.
+> "Chegou a hora da surpresa! O seu jogo não precisa ficar igual ao meu: agora você escolhe o personagem, o barco, a chave, o farol e o cenário.
 >
 > Olha aqui: estas são todas as opções que você pode usar. Estão no seu Mapa da Aventura, com o mesmo nome da lista de imagens. E o que você escolher fica no jogo.
 >

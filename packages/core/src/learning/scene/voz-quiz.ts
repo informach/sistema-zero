@@ -48,7 +48,7 @@ export function textoDoMarkdownParaFala(markdown: string): string {
     .replace(/^\s*```.*$/gm, '')
     .replace(/!\[([^\]]*)\]\([^)\s]*\)(?:\{[^}]*\})?/g, '$1')
     .replace(/\[([^\]]+)\]\([^)\s]*\)/g, '$1')
-    .replace(/<[^>]*>/g, ' ')
+    .replace(/<\/?[a-zA-Z][^<>]*>/g, ' ')
     .replace(/`([^`]*)`/g, '$1')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/\*([^*]+)\*/g, '$1')
@@ -60,11 +60,24 @@ export function textoDoMarkdownParaFala(markdown: string): string {
         linha
           .replace(/^\s*#{1,6}\s+/, '')
           .replace(/^\s*>\s?/, '')
-          .replace(/^\s*(?:[-*+]|\d+[.)])\s+/, ''),
+          .replace(/^\s*(?:[-*+]|\d+[.)])\s+/, '')
+          .replace(/\s*(>=|<=|>|<)\s*/g, (_s, sinal: string) => ` ${COMPARADOR[sinal]} `),
       ),
     )
     .filter(Boolean)
   return linhas.map((linha, i) => (i < linhas.length - 1 ? comPontuacao(linha) : linha)).join(' ')
+}
+
+/**
+ * O comparador como se fala. ⚠️ Não é só pronúncia: um "<" e um ">" soltos na mesma frase
+ * ("x > 0 e y < 5") parecem uma tag para `isZappySpeechText`, e a rota da voz recusaria o LOTE
+ * inteiro, deixando a aula toda sem a voz do Zappy.
+ */
+const COMPARADOR: Record<string, string> = {
+  '>=': 'maior ou igual a',
+  '<=': 'menor ou igual a',
+  '>': 'maior que',
+  '<': 'menor que',
 }
 
 const semPontoFinal = (texto: string) => texto.trim().replace(/[.!?…:;,]+$/, '')

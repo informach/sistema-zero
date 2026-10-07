@@ -55,7 +55,7 @@ quando eu toco num esconderijo…"), deixa os outros para a criança descobrir e
 vez: jogar até encontrar os três, pois a seção exige esse resultado, e clicar em **Próxima parte**.
 
 Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): "Ah, e
-guarda este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo
+guarde este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo
 ainda mais seu." Conta que a surpresa existe, sem dizer o que é. Ela é revelada em **Deixe o jogo com
 a sua cara**, na Aula 2, e lembrada uma vez no fim desta aula.
 
@@ -110,8 +110,8 @@ Após o teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os b
 novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar **Enviar
 meu projeto**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
 fase**. O recado é opcional. Entre o envio e **Concluir fase**, uma frase comemora o que a criança
-programou e lembra a surpresa uma vez só, sem mostrar nada dela ("E lembra da surpresa que eu te
-contei? Ela está chegando: vem na próxima fase."). A verificação exige esse clique; o envio não a
+programou e lembra a surpresa uma vez só, sem mostrar nada dela ("E lembra da surpresa do começo
+da aventura? Ela está chegando: vem na próxima fase."). A verificação exige esse clique; o envio não a
 executa automaticamente.
 
 ## Tutoriais retirados do vídeo

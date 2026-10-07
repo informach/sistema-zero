@@ -98,7 +98,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Narração:**
 
-> “Chegou a hora da surpresa! O seu jogo não precisa ficar igual ao meu: agora é você quem escolhe quem se esconde, onde se esconde e qual mensagem aparece no final.
+> “Chegou a hora da surpresa! O seu jogo não precisa ficar igual ao meu: agora você escolhe quem se esconde, onde se esconde e qual mensagem aparece no final.
 >
 > Olha aqui: estes são todos os bichos e todos os esconderijos que você pode usar. Eles estão no seu Mapa da Aventura, com o nome de cada um. E tudo o que você mudar fica no seu jogo.
 >

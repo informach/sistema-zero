@@ -92,6 +92,32 @@ describe('roteiro enviado para a voz do Zappy', () => {
     ])
   })
 
+  test('a pergunta longa demais para a rota fica de fora, sem derrubar o lote', () => {
+    const [fala] = falasDaAula([
+      {
+        id: 'quiz-longo',
+        content: {
+          kind: 'quiz',
+          questions: [
+            {
+              id: 'q1',
+              prompt: 'Pergunta curta?',
+              choices: [
+                { id: 'a', label: 'Sim' },
+                { id: 'b', label: 'Não' },
+              ],
+              correctChoiceIds: ['a'],
+              explanation: 'Uma explicação. '.repeat(400),
+            },
+          ],
+        },
+      },
+    ])
+    expect(fala?.falas.map((f) => f.visibleText)).toEqual([
+      'Pergunta curta? Letra A: Sim. Letra B: Não.',
+    ])
+  })
+
   test('aplica o perfil global quando a autora ainda não fez um ajuste', () => {
     expect(roteiroDoZappy('Use a tecla X e a tecla Y.')).toBe('Use a tecla xis e a tecla ípsilon.')
   })

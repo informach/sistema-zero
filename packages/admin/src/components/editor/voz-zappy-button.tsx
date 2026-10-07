@@ -8,6 +8,7 @@ import {
   roteiroDoZappy,
   type SceneVozes,
   textoFalado,
+  VOZ_LIMITS,
 } from '@sistemazero/core/learning/scene'
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -69,10 +70,11 @@ export function falasDaAula(blocos: readonly BlocoDoRascunho[]): FalasDoBloco[] 
       const prontas = content.questions.filter(
         (q) => q.prompt.trim() && q.choices.every((c) => c.label.trim()),
       )
-      const falas = falasDoQuiz({ questions: prontas }).map(({ visibleText, speechText }) => ({
-        visibleText,
-        speechText,
-      }))
+      // ⚠️ A rota recusa o LOTE inteiro com um roteiro acima do teto da chave, e um enunciado de
+      // 5000 caracteres somado a 20 alternativas passa disso: essa fala fica na voz do navegador.
+      const falas = falasDoQuiz({ questions: prontas })
+        .filter((fala) => fala.speechText.length <= VOZ_LIMITS.chave)
+        .map(({ visibleText, speechText }) => ({ visibleText, speechText }))
       if (falas.length) saida.push({ ...bloco, falas, vozes: content.vozes })
       continue
     }

@@ -8,7 +8,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 40 a 55 segundos.
 
-**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No "guarda este segredo", falar olhando para a câmera, num tom de quem conta um segredo, sem mostrar nada da personalização. No fim, apontar para a área jogável ao passar a vez e para **Próxima parte**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No "guarde este segredo", falar olhando para a câmera, num tom de quem conta um segredo, sem mostrar nada da personalização. No fim, apontar para a área jogável ao passar a vez e para **Próxima parte**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
 
@@ -18,7 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > E os outros dois? Esses eu deixo para você descobrir.
 >
-> Ah, e guarda este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.
+> Ah, e guarde este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.
 >
 > Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima parte.”
 
@@ -106,7 +106,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
 >
-> Olha só o que você programou: agora os seus personagens aparecem! E lembra da surpresa que eu te contei? Ela está chegando: vem na próxima fase.
+> Agora os seus personagens já aparecem quando alguém toca num esconderijo. E lembra da surpresa do começo da aventura? Ela está chegando: vem na próxima fase.
 >
 > Quando o envio terminar, clique em Concluir fase.”
 

@@ -94,7 +94,7 @@ Seções, blocos, critérios, identificadores e durações não mudaram. No Admi
 - `personalizar` passou a ter a verificação `acender` (a mesma regra da entrega): a imagem dentro de então precisa ser um farol aceso, de qualquer um dos quatro modelos ou o antigo `farol-aceso`. Ela não julga a escolha; só impede publicar um jogo cujo farol não acende. Por isso a parte termina em **Verificar esta parte → Objetivo cumprido! → Salvo → Próxima parte**. É a única exceção à regra "o mexa e veja conclui pelo vídeo", registrada também nas Diretrizes.
 - Os vídeos ficaram enxutos, com a conferência uma vez só, depois do teste. O tempo de vídeo entre o envio (`decisao`) e a publicação (`fecho`) caiu de cerca de 9 a 12,5 minutos para cerca de 7,5 a 10,5 minutos; o do Dia 3 inteiro, de 18 a 24 para 16,5 a 22,5 minutos. Seções e vídeos do curso continuam 20 e 19; o Mapa continua com 27 páginas, com a galeria dos faróis logo depois das outras galerias e a página dos avisos depois dela.
 
-**A surpresa do final, 07/10/2026.** Decisão do responsável (Diretrizes, seção 2, "A personalização é a surpresa do final"): a personalização do Dia 3 passa a ser anunciada desde o começo.
+**A surpresa do final, 07/10/2026.** Decisão do responsável (Diretrizes, seção 2, "A surpresa do final"), só aqui e no Cadê Todo Mundo?, os primeiros cursos da criança (nos seguintes ela já sabe que pode personalizar): a personalização do Dia 3 passa a ser anunciada desde o começo.
 
 - **Plantar:** o vídeo `video-intro-farol` conta, antes de passar a vez, que no fim da aventura tem uma surpresa que vai deixar o jogo ainda mais seu (alvo de 50 a 65 s; era 45 a 60).
 - **Lembrar:** o vídeo `video-d2-programar` comemora o que a criança programou e lembra a surpresa entre o envio e **Concluir fase**.
