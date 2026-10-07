@@ -162,6 +162,17 @@ function diagnosticar(m: Record<string, unknown>): string[] {
         p.push('retireBlockKeys tem chave repetida')
     }
   }
+  // Um bloco de materiais por fase (decisão da dona, 07/10/2026): o Mapa da Aventura, os links do
+  // Como fazer e o que mais a fase oferecer para consultar ficam juntos, sob o selo "Consulte".
+  if (Array.isArray(m.blocks)) {
+    const materiais = (m.blocks as Array<Record<string, unknown>>).filter(
+      (b) => (b.content as Record<string, unknown> | undefined)?.kind === 'materials',
+    )
+    if (materiais.length > 1)
+      p.push(
+        `a fase tem ${materiais.length} blocos de materiais (${materiais.map((b) => b.key).join(', ')}); junte tudo num bloco só`,
+      )
+  }
   return p
 }
 

@@ -141,25 +141,35 @@ const aberturaBlocks = [
     'ponte-intro-caderno',
     'Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.',
   ),
+  // UM bloco de materiais por fase (07/10/2026, decisão da dona): o Mapa da Aventura e, logo
+  // abaixo, a ajuda do Como Fazer, sob o selo "Consulte". O PDF do Mapa é anexado no Admin e a
+  // importação o mantém à frente dos itens do manifesto. Consultar a ajuda é opcional: o jogo e a
+  // tarefa vêm antes dos tutoriais de interface.
   {
     key: 'materiais-farol',
     content: {
       kind: 'materials',
       title: 'Mapa da Aventura: A Chave do Farol',
       bookPreview: true,
-      items: [],
+      items: [
+        {
+          id: 'texto-ajuda',
+          kind: 'text',
+          markdown:
+            'Precisa de ajuda com a plataforma? Abra um destes passo a passo do Como fazer.',
+        },
+        // Rótulo = título EXATO do tutorial em docs/como-fazer/como-fazer.json (full review 06/10/2026).
+        ...linksComoFazer([
+          ['plataforma-baixar-materiais', 'Como abrir o Mapa da Aventura e os materiais'],
+          ['plataforma-abrir-uma-aula', 'Como abrir uma fase e trocar de parte'],
+          ['plataforma-ampliar-a-atividade', 'Como dar mais espaço ao jogo e à experiência'],
+          ['plataforma-mostrar-o-menu', 'Como mostrar o menu e a lista de fases'],
+          ['plataforma-voltar-para-a-aula', 'Como continuar uma fase'],
+          ['plataforma-pedir-ajuda', 'Como pedir ajuda à equipe'],
+        ]),
+      ],
     },
   },
-  // Consultar a ajuda é opcional. O jogo e a tarefa vêm antes dos tutoriais de interface.
-  ajudaComoFazer('ajuda-como-fazer-intro', 'Como Fazer: ajuda para usar a plataforma', [
-    // Rótulo = título EXATO do tutorial em docs/como-fazer/como-fazer.json (full review 06/10/2026).
-    ['plataforma-baixar-materiais', 'Como abrir o Mapa da Aventura e os materiais'],
-    ['plataforma-abrir-uma-aula', 'Como abrir uma fase e trocar de parte'],
-    ['plataforma-ampliar-a-atividade', 'Como dar mais espaço ao jogo e à experiência'],
-    ['plataforma-mostrar-o-menu', 'Como mostrar o menu e a lista de fases'],
-    ['plataforma-voltar-para-a-aula', 'Como continuar uma fase'],
-    ['plataforma-pedir-ajuda', 'Como pedir ajuda à equipe'],
-  ]),
 ]
 const aberturaSections = [
   secao(
@@ -175,7 +185,7 @@ const aberturaSections = [
     'Seu Mapa da Aventura',
     'material',
     'Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.',
-    ['video-intro-caderno', 'ponte-intro-caderno', 'materiais-farol', 'ajuda-como-fazer-intro'],
+    ['video-intro-caderno', 'ponte-intro-caderno', 'materiais-farol'],
     ['video-intro-caderno'],
   ),
 ]
@@ -217,6 +227,9 @@ const dia1 = {
     'experiencia-velocidade',
     'video-d1-velocidade',
     'ponte-d1-velocidade',
+    // 07/10/2026: a ajuda do Como Fazer entrou no bloco do Mapa (um bloco de materiais por fase).
+    'ajuda-como-fazer-intro',
+    'ajuda-d1',
   ],
   blocks: [
     ...aberturaBlocks,
@@ -273,10 +286,6 @@ const dia1 = {
       'Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte antes de enviar o seu projeto.',
     ),
     projeto('dia-1'),
-    ajudaComoFazer('ajuda-d1', 'Se precisar de ajuda', [
-      ['plataforma-ampliar-a-atividade', 'Como dar mais espaço ao jogo e à experiência'],
-      ['plataforma-pedir-ajuda', 'Como pedir ajuda à equipe'],
-    ]),
   ],
   sections: [
     ...aberturaSections,
@@ -293,7 +302,7 @@ const dia1 = {
       'Faça o personagem andar',
       'application',
       'Ativar as quatro setas e mover o personagem dentro de A cada quadro do jogo.',
-      ['video-d1-andar', 'ponte-d1-andar', 'ajuda-d1'],
+      ['video-d1-andar', 'ponte-d1-andar'],
       ['video-d1-andar'],
       'projeto',
       movimentoSemBorda,
@@ -631,20 +640,21 @@ const dia3 = {
   ],
 }
 
-/** Ajuda opcional na mesma aba, com retorno à aula preservado pelo member-shell. */
+/** Links do Como Fazer: abrem na mesma aba, com retorno à fase preservado pelo member-shell. */
+function linksComoFazer(links: Array<[slug: string, label: string]>) {
+  return links.map(([slug, label]) => ({
+    id: `link-${slug}`,
+    kind: 'link' as const,
+    url: `/como-fazer/${slug}`,
+    label,
+  }))
+}
+
+/** Ajuda opcional numa fase sem Mapa: o único bloco de materiais dela. */
 function ajudaComoFazer(key: string, title: string, links: Array<[slug: string, label: string]>) {
   return {
     key,
-    content: {
-      kind: 'materials' as const,
-      title,
-      items: links.map(([slug, label]) => ({
-        id: `link-${slug}`,
-        kind: 'link' as const,
-        url: `/como-fazer/${slug}`,
-        label,
-      })),
-    },
+    content: { kind: 'materials' as const, title, items: linksComoFazer(links) },
   }
 }
 

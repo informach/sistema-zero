@@ -1366,9 +1366,10 @@ PDF na direita quando houver espaço (ou depois do download em tela estreita).
 O `kids-lesson-attachments.tsx` foi APAGADO e a linha de arquivo herdou o desenho dele (bolinha da
   marca, nome truncado, tipo/tamanho e relevo 3D). A ação “Baixar” aparece numa pílula explícita
   à direita, usando `--pen-acao`; o componente compartilhado também mostra a preparação e confirma
-  o arquivo recebido. O chip é "Materiais" (`Backpack`, `kids-unit-cyan`
-— a mesma cor e o mesmo ícone do card que ele substituiu) e é um SUBSTANTIVO, como "Em breve": os
-verbos são das atividades. ⚠️ Materiais são opcionais por padrão; apenas os arquivos marcados
+  o arquivo recebido. O chip é **"Consulte"** (`Backpack`, `kids-unit-cyan` — a mesma cor e o
+mesmo ícone do card que ele substituiu): era "Materiais" até 06/10/2026 e "Baixe" por um dia, e a
+dona escolheu em 07/10 UM nome que sirva para arquivo, link do Como fazer, vídeo e recado, porque
+cada fase tem UM bloco de materiais só, que mistura os tipos. ⚠️ Materiais são opcionais por padrão; apenas os arquivos marcados
 pela autora como obrigatórios travam a seção, em conjunto com outros critérios como 90% do vídeo.
 O arquivo marcado mostra “Obrigatório para avançar”. ⚠️⚠️ O item de arquivo aponta para o
 ANEXO da aula pelo id e nunca carrega a URL — as regras, e o porquê, estão no CLAUDE.md do
