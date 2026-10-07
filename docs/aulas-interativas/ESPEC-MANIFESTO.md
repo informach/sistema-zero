@@ -93,7 +93,11 @@ atualizada lá também**.
 
 - `version` sempre **5**.
 - `retireBlockKeys` é opcional. Lista as chaves de blocos importados antes
-  que devem sair do rascunho. Nenhuma delas pode estar em `blocks`.
+  que saíram do manifesto. Nenhuma delas pode estar em `blocks`. Desde 07/10/2026 a lista não é
+  mais necessária para tirar um bloco do rascunho: ao reimportar, todo bloco que veio de uma
+  importação e não está mais em `blocks` sai sozinho, inclusive vídeo já vinculado (o vídeo
+  continua no Vimeo). A chave listada só dá nome ao bloco na prévia do Admin. Blocos criados à mão
+  no Admin ficam no fim da aula no modo padrão e saem no modo "Substituir o rascunho inteiro".
 - `title` é o título da aula, até 200 caracteres.
 
 ## 3. Chaves

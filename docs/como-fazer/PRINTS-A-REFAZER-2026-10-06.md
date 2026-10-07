@@ -27,6 +27,28 @@ criação da galeria**, **Como ler e responder aos recados da equipe** e **Como 
 você enviou**; os slugs não mudaram). A galeria, que não tinha print nenhum, ganhou três prints
 novos a capturar (seção "Prints novos").
 
+## Situação em 07/10/2026
+
+Refeitos 72 prints: 68 da lista (conta Leninha; o do Pensa e os dois "Concluir fase" na conta
+Lipe) e 4 de fora dela: `estudio-materiais-do-jogo/usar` e `pinta-usar-no-estudio/bloco` (mostravam
+**Atividade no Estúdio** e **Reenviar ao professor**), `plataforma-jogar-no-mural/jogo` (o Mural
+novo) e `plataforma-trocar-de-perfil/selecionar` (da lista de conferir). As imagens estão no CDN de produção e os links já estão em
+[como-fazer.json](como-fazer.json). Os dois "Concluir fase" (`plataforma-abrir-uma-aula/concluir` e
+`plataforma-pegar-certificado/concluir`) foram tirados na conta da equipe, que não tem o certificado
+liberado: o botão aparece aceso como a criança o vê pronta, sem ter sido clicado.
+
+Ainda faltam:
+
+- **`plataforma-baixar-materiais`, os cinco passos.** O PDF anexado no staging ainda é o Caderno do
+  Aluno antigo (capa "Caderno do Aluno", 4 páginas), e o selo do bloco mudou para **Consulte** em
+  07/10/2026. Refazer depois de trocar o PDF do Mapa no Admin e de o selo novo estar no ar.
+- **Galeria (`plataforma-enviar-trabalho-da-galeria`, 3 prints novos).** Nenhuma fase do staging tem
+  entrega pela galeria: o O Jogo do Meu Jeito publicado lá tem uma fase só, sem galeria.
+- **`plataforma-pegar-certificado/pegar`.** Precisa de um perfil que concluiu as fases de antes e
+  ainda não pegou o certificado (a Leninha já pegou; o Lipe não concluiu as fases).
+- Os vídeos fictícios das fases ainda mostram "AULA 1 DE 3" e "SEÇÃO 1 DE 1" na capa: somem quando
+  os vídeos novos forem gravados.
+
 ## Como ler a lista
 
 - **Certo**: o rótulo antigo é o elemento destacado no print, ou o print foi capturado com o menu da
@@ -60,7 +82,7 @@ novos a capturar (seção "Prints novos").
 | **Verificar esta etapa**, **Objetivos desta etapa**, **Objetivo da etapa cumprido!** | **Verificar esta parte**, **Objetivos desta parte**, **Objetivo cumprido!** |
 | Ajuda: **Enviar ao professor** | **Enviar para a equipe** |
 | Recado: **Voltar à seção: …**, autor "Professor(a)" | **Voltar à parte: …**, autor **Equipe**, título "Conversa com a equipe" |
-| Selo do bloco de materiais: **Materiais** | **Baixe** |
+| Selo do bloco de materiais: **Materiais** | **Consulte** (era **Baixe** de 06/10 a 07/10/2026) |
 | **Caderno do Aluno: …**, **Seu Caderno do Aluno** | **Mapa da Aventura: …**, **Seu Mapa da Aventura** |
 | Quiz: **Nota mínima N%**, revisão **Correção** | **Meta: N% de acertos**, revisão **Respostas** |
 | Mural: **Avisar professor** | **Avisar a equipe** |
@@ -165,7 +187,7 @@ novos a capturar (seção "Prints novos").
 
 | Passo | Hoje mostra | Precisa mostrar | Certeza |
 | --- | --- | --- | --- |
-| `encontrar` | Selo **Materiais** e o material **Caderno do Aluno: …** | Selo **Baixe** e **Mapa da Aventura: …** | certo |
+| `encontrar` | Selo **Materiais** e o material **Caderno do Aluno: …** | Selo **Consulte** e **Mapa da Aventura: …** | certo |
 | `livro` | PDF do Caderno do Aluno aberto como livro | PDF novo do Mapa da Aventura (os PDFs estão sendo gerados de novo junto com os cursos) | certo |
 | `paginas` | PDF do Caderno do Aluno no modo **Ler por páginas** | PDF novo do Mapa da Aventura | certo |
 | `baixar` | Nome do arquivo **Caderno do Aluno: …** (ou "Material da aula") ao lado de **Baixar** | **Mapa da Aventura: …** (ou "Material da fase") | provável |

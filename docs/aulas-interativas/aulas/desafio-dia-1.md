@@ -54,7 +54,7 @@ O vídeo é uma demonstração, como nas experiências: apresenta a aventura, mo
 - **Intenção:** material (`material`).
 - **Por que existe:** apresentar o apoio que acompanha as aulas.
 - **Conclui quando:** vídeo; leitura, impressão e download opcionais.
-- **Blocos:** `video-intro-caderno`, `ponte-intro-caderno`, `materiais-farol` com bookPreview e `ajuda-como-fazer-intro`.
+- **Blocos:** `video-intro-caderno`, `ponte-intro-caderno` e `materiais-farol` com bookPreview: o único bloco de materiais da fase, com o PDF do Mapa (anexado no Admin), um recado curto e os seis links do Como Fazer (07/10/2026).
 
 **Ponte do Zappy na página (não gravar):** Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
@@ -76,7 +76,7 @@ Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 2
 - **Intenção:** aplicação (`application`), com verificação e sem envio.
 - **Por que existe:** montar no jogo o que a experiência mostrou.
 - **Conclui quando:** vídeo e aprovação de dois critérios: as quatro direções e o movimento dentro de A cada quadro do jogo.
-- **Blocos:** `video-d1-andar`, `ponte-d1-andar` e a ajuda opcional `ajuda-d1`; Estúdio pela `workspaceKey: projeto`.
+- **Blocos:** `video-d1-andar` e `ponte-d1-andar`; Estúdio pela `workspaceKey: projeto`. A ajuda opcional que ficava aqui (`ajuda-d1`) entrou no bloco do Mapa em 07/10/2026.
 
 **Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte.
 

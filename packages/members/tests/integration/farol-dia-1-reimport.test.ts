@@ -207,7 +207,7 @@ test('o Dia 1 novo reimporta em modo preservar sobre a versão de 05/10, aposent
   expect((await readDraft(env.app, lessonId)).document).toEqual(after.document)
 })
 
-test('um vídeo retirado que já tem Vimeo escolhido continua protegido', async () => {
+test('um vídeo retirado que já tem Vimeo escolhido sai do rascunho e a prévia diz qual era', async () => {
   const { env, lessonId, atual, importar, id } = await setup()
   const draft = await readDraft(env.app, lessonId)
   const linked = await changeDraft(env.app, lessonId, {
@@ -218,12 +218,18 @@ test('um vídeo retirado que já tem Vimeo escolhido continua protegido', async 
   })
   expect(linked.status).toBe(200)
   const result = await importar(atual)
-  expect(result.status).toBe(400)
-  expect(result.preview.error?.message).toContain('vídeos vinculados')
-  expect((await readDraft(env.app, lessonId)).document.sections).toHaveLength(8)
+  expect(result.status, JSON.stringify(result.preview)).toBe(200)
+  expect(result.preview.blocks).toContainEqual({
+    id: id('block', 'video-d1-tanto'),
+    label: 'video-d1-tanto (Vimeo 123456789)',
+    action: 'retire',
+  })
+  const after = await readDraft(env.app, lessonId)
+  expect(after.document.sections).toHaveLength(atual.sections.length)
+  expect(after.document.blocks.some((b) => b.id === id('block', 'video-d1-tanto'))).toBe(false)
 })
 
-test('um vídeo retirado que já tem fonte no bloco continua protegido', async () => {
+test('um vídeo retirado que já tem fonte no bloco também sai do rascunho', async () => {
   const { env, lessonId, atual, importar, id } = await setup()
   const blockId = id('block', 'video-d1-velocidade')
   const saved = await changeDraft(env.app, lessonId, {
@@ -235,8 +241,13 @@ test('um vídeo retirado que já tem fonte no bloco continua protegido', async (
   })
   expect(saved.status).toBe(200)
   const result = await importar(atual)
-  expect(result.status).toBe(400)
+  expect(result.status, JSON.stringify(result.preview)).toBe(200)
+  expect(result.preview.blocks).toContainEqual({
+    id: blockId,
+    label: 'video-d1-velocidade (Vimeo 987654321)',
+    action: 'retire',
+  })
   expect((await readDraft(env.app, lessonId)).document.blocks.some((b) => b.id === blockId)).toBe(
-    true,
+    false,
   )
 })

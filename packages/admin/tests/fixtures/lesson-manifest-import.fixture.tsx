@@ -30,6 +30,11 @@ mock.module('@/lib/api', () => ({
         blocks: [
           { id: 'mantido', action: 'preserve' },
           { id: 'removido', label: 'Quiz · Fechamento antigo', action: 'remove' },
+          {
+            id: 'video-antigo',
+            label: 'Vídeo vinculado (Vimeo 1232673566) · Avise quem está jogando',
+            action: 'remove',
+          },
         ],
         removedSections: [{ id: 'antiga', title: 'Fechamento antigo' }],
       }
@@ -83,7 +88,7 @@ test('confirma todas as remoções antes de substituir o rascunho', async () => 
     await act(async () => {
       setValue.call(textarea, source)
       textarea.dispatchEvent(new Event('input', { bubbles: true }))
-      inputInLabel('Substituir o rascunho pelo manifesto')?.click()
+      inputInLabel('Substituir o rascunho inteiro')?.click()
     })
     await act(async () => button('Conferir importação')?.click())
 
@@ -92,7 +97,7 @@ test('confirma todas as remoções antes de substituir o rascunho', async () => 
     expect(container.textContent).toContain('Quiz · Fechamento antigo')
     expect(button('Substituir rascunho')?.disabled).toBe(true)
 
-    await act(async () => inputInLabel('Entendo que tudo que não está no manifesto')?.click())
+    await act(async () => inputInLabel('Entendo que os blocos criados aqui no Admin')?.click())
     expect(button('Substituir rascunho')?.disabled).toBe(false)
     await act(async () => button('Substituir rascunho')?.click())
 
@@ -103,6 +108,56 @@ test('confirma todas as remoções antes de substituir o rascunho', async () => 
     expect(typeof calls[1]?.body.operationId).toBe('string')
     expect(imported).toBe(1)
     expect(container.textContent).toContain('Rascunho substituído pelo manifesto')
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})
+
+test('atualizar pelo manifesto é o padrão e aplica sem confirmação extra, mostrando o que sai', async () => {
+  calls.length = 0
+  const source = await Bun.file(
+    resolve(
+      import.meta.dir,
+      '../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-1.manifesto.json',
+    ),
+  ).text()
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  const button = (label: string) =>
+    [...container.querySelectorAll<HTMLButtonElement>('button')].find(
+      (candidate) => candidate.textContent?.trim() === label,
+    )
+  try {
+    await act(async () =>
+      root.render(
+        <LessonManifestImport
+          lessonId="lesson"
+          lessonSlug="dia-1"
+          courseSlug="nave-contra-asteroides"
+          disabled={false}
+          beforeImport={async () => {}}
+          onImported={async () => {}}
+        />,
+      ),
+    )
+    const textarea = container.querySelector('textarea')!
+    const setValue = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value')!.set!
+    await act(async () => {
+      setValue.call(textarea, source)
+      textarea.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await act(async () => button('Conferir importação')?.click())
+
+    expect(calls[0]?.body.mode).toBe('preserve')
+    expect(container.textContent).toContain('Blocos que sairão do rascunho')
+    expect(container.textContent).toContain('Vídeo vinculado (Vimeo 1232673566)')
+    expect(container.textContent).toContain('2 saem do rascunho')
+    expect(button('Aplicar ao rascunho desta aula')?.disabled).toBe(false)
+    await act(async () => button('Aplicar ao rascunho desta aula')?.click())
+    expect(calls[1]?.body.mode).toBe('preserve')
+    expect(container.textContent).toContain('Rascunho atualizado pelo manifesto')
   } finally {
     await act(async () => root.unmount())
     container.remove()

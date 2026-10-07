@@ -10,7 +10,9 @@
     "ponte-d1-tanto",
     "experiencia-velocidade",
     "video-d1-velocidade",
-    "ponte-d1-velocidade"
+    "ponte-d1-velocidade",
+    "ajuda-como-fazer-intro",
+    "ajuda-d1"
   ],
   "blocks": [
     {
@@ -1661,15 +1663,12 @@
         "kind": "materials",
         "title": "Mapa da Aventura: A Chave do Farol",
         "bookPreview": true,
-        "items": []
-      }
-    },
-    {
-      "key": "ajuda-como-fazer-intro",
-      "content": {
-        "kind": "materials",
-        "title": "Como Fazer: ajuda para usar a plataforma",
         "items": [
+          {
+            "id": "texto-ajuda",
+            "kind": "text",
+            "markdown": "Precisa de ajuda com a plataforma? Abra um destes passo a passo do Como fazer."
+          },
           {
             "id": "link-plataforma-baixar-materiais",
             "kind": "link",
@@ -3131,27 +3130,6 @@
           ]
         }
       }
-    },
-    {
-      "key": "ajuda-d1",
-      "content": {
-        "kind": "materials",
-        "title": "Se precisar de ajuda",
-        "items": [
-          {
-            "id": "link-plataforma-ampliar-a-atividade",
-            "kind": "link",
-            "url": "/como-fazer/plataforma-ampliar-a-atividade",
-            "label": "Como dar mais espaço ao jogo e à experiência"
-          },
-          {
-            "id": "link-plataforma-pedir-ajuda",
-            "kind": "link",
-            "url": "/como-fazer/plataforma-pedir-ajuda",
-            "label": "Como pedir ajuda à equipe"
-          }
-        ]
-      }
     }
   ],
   "sections": [
@@ -3174,12 +3152,7 @@
       "title": "Seu Mapa da Aventura",
       "intent": "material",
       "objective": "Conhecer o caderno opcional que acompanha o conteúdo das aulas e a ajuda disponível.",
-      "blockKeys": [
-        "video-intro-caderno",
-        "ponte-intro-caderno",
-        "materiais-farol",
-        "ajuda-como-fazer-intro"
-      ],
+      "blockKeys": ["video-intro-caderno", "ponte-intro-caderno", "materiais-farol"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -3207,7 +3180,7 @@
       "title": "Faça o personagem andar",
       "intent": "application",
       "objective": "Ativar as quatro setas e mover o personagem dentro de A cada quadro do jogo.",
-      "blockKeys": ["video-d1-andar", "ponte-d1-andar", "ajuda-d1"],
+      "blockKeys": ["video-d1-andar", "ponte-d1-andar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],

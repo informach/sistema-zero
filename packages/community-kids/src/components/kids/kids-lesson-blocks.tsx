@@ -180,8 +180,10 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
  *
  * ⚠️ O DESENHO vem do `MaterialsBlockView` do member-shell (um só, para os dois apps) e quem
  * o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`. Aqui só entra o chip,
- * como em todo bloco do kids. O chip é um SUBSTANTIVO (como "Em breve"), não um verbo: material
- * complementar não é uma atividade a fazer, e prometer uma seria mentira.
+ * como em todo bloco do kids. O chip é **"Consulte"** desde 07/10/2026 (decisão da dona): UM nome
+ * que serve para tudo o que o bloco junta (o Mapa da Aventura para baixar, um link do Como fazer,
+ * um vídeo de apoio, um recado). "Baixe" (06/10) mentia quando o item era um link, e cada fase tem
+ * UM bloco de materiais só, que mistura os tipos.
  */
 function Materials({
   blockId,
@@ -194,7 +196,7 @@ function Materials({
 }) {
   return (
     <div className="kids-unit-cyan flex flex-col gap-3">
-      <BlockChip icon={Backpack} label="Baixe" themeClass="kids-unit-cyan" />
+      <BlockChip icon={Backpack} label="Consulte" themeClass="kids-unit-cyan" />
       <MaterialsBlockView blockId={blockId} blockRevision={blockRevision} content={content} />
     </div>
   )

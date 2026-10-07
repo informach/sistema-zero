@@ -235,11 +235,18 @@ síntese. Guia operacional (custo, licença, diagnóstico): **`docs/voz-do-zappy
 
 ## Importar e substituir o rascunho (21/09/2026)
 
-`LessonManifestImport` oferece dois modos explícitos. **Atualizar e preservar** é o padrão e mantém
-o comportamento seguro anterior. **Substituir o rascunho pelo manifesto** trata o arquivo como a
-aula completa: a prévia lista todas as seções e todos os blocos omitidos, a autora confirma a
-remoção e só então o Admin envia `mode: replace` na aplicação. Trocar o modo ou o JSON invalida a
-prévia e gera outro `operationId`.
+`LessonManifestImport` oferece dois modos explícitos. ⭐⭐ **O manifesto manda no que ele criou
+(07/10/2026, decisão da dona):** nos DOIS modos, todo bloco que veio de uma importação (id gerado
+por `importedLearningId`, versão 5) e não está mais no arquivo sai do rascunho, inclusive vídeo já
+vinculado ao Vimeo. Relato que motivou: o Dia 2 do Desafio importado numa aula que já tinha
+recebido o Dia 1 deixava o vídeo vinculado do Dia 1 grudado na última parte, duas mídias numa parte
+só, e ela teria de limpar à mão a cada atualização do manifesto ("quero subir o manifesto e já
+configurar tudo"). **Atualizar pelo manifesto** é o padrão e aplica sem confirmação extra; a
+diferença entre os modos é só o que a autora CRIOU À MÃO no Admin (`crypto.randomUUID()`, versão
+4): o padrão o mantém no fim da última seção, **Substituir o rascunho inteiro** o remove e exige a
+caixa de confirmação. A prévia lista numa lista só ("Blocos que sairão do rascunho") tudo o que
+sai, e o vídeo vinculado aparece como "Vídeo vinculado (Vimeo N) · Seção", para a autora escolher
+de novo se precisar. Trocar o modo ou o JSON invalida a prévia e gera outro `operationId`.
 
 A substituição continua sendo uma única escrita concorrente no rascunho. Blocos que reaparecem com
 a mesma chave preservam ID e vídeo vinculado; o projeto inicial do Estúdio é atualizado pelo

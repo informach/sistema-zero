@@ -501,7 +501,7 @@ async function main() {
           altura = 920
           await foto('tela-aprendizagem')
           altura = 800
-          await clicar('Voltar à aula', 0, 1200)
+          await clicar('Voltar à fase', 0, 1200)
           await aoTopo()
           await foto('tela-aula')
           // O vídeo toca alguns segundos e pausa: a explicação parada ao lado do experimento.
@@ -543,10 +543,19 @@ async function main() {
         nomes: ['tela-jogo-pronto', 'tela-contador', 'tela-certificado'],
         rodar: async () => {
           await abrirSecao(0, 'apresentacao')
-          await clicarEm(800, 465)
-          await Bun.sleep(900)
-          await clicarEm(940, 480)
-          await Bun.sleep(900)
+          // Dois esconderijos (o arbusto e as pedras) pela posição DO JOGO, e não da tela: o
+          // layout da fase muda e um clique cravado em pixels caía fora do jogo (07/10/2026).
+          const jogo = (await avaliar(
+            `(() => { const f = [...document.querySelectorAll('main iframe')].filter((e) => !(e.src || '').includes('vimeo')).at(-1); if (!f) return null; const r = f.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height } })()`,
+          )) as { x: number; y: number; w: number; h: number } | null
+          if (!jogo) throw new Error('O jogo pronto não apareceu na fase.')
+          for (const [fx, fy] of [
+            [0.24, 0.62],
+            [0.47, 0.62],
+          ] as const) {
+            await clicarEm(jogo.x + jogo.w * fx, jogo.y + jogo.h * fy)
+            await Bun.sleep(900)
+          }
           await paraFora()
           await foto('tela-jogo-pronto')
           await abrirSecao(1, 'variavel-achados')
@@ -566,7 +575,12 @@ async function main() {
           await avaliar(
             `(() => { for (const e of document.querySelectorAll('p, span, div')) if (e.children.length === 0 && /^N[ºo°]\\s*SZ-\\d{4}-/.test(e.textContent.trim())) e.style.visibility = 'hidden'; return 'ok' })()`,
           )
-          await aoTopo()
+          // O bloco do certificado pode vir depois de um vídeo: a foto mira o botão dele.
+          const achou = await avaliar(
+            `(() => { const b = [...document.querySelectorAll('main button')].find((e) => /Baixar certificado/.test(e.textContent || '')); if (!b) return false; b.scrollIntoView({ block: 'center' }); return true })()`,
+          )
+          if (!achou) await aoTopo()
+          await Bun.sleep(800)
           await foto('tela-certificado')
         },
       },

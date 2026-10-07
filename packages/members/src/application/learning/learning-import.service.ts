@@ -6,7 +6,7 @@ import {
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
-import { importedLearningId } from '../../domain/learning/learning-import'
+import { importedLearningId, isImportedLearningId } from '../../domain/learning/learning-import'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { LessonDraftRepository } from '../../domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
@@ -28,24 +28,29 @@ const BLOCK_KIND_LABELS: Readonly<Record<string, string>> = {
   video: 'Vídeo',
 }
 
-function removalLabel(document: LessonDraftDocument, block: DraftBlock): string {
-  const section = document.sections.find((candidate) => candidate.blockIds.includes(block.id))
-  const kind = BLOCK_KIND_LABELS[block.content.kind] ?? block.content.kind
-  return section ? `${kind} · ${section.title}` : kind
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
+
+/** O Vimeo já escolhido para um bloco de vídeo, pela fonte do bloco ou pelo `plannedVideos`. */
+function linkedVimeoId(document: LessonDraftDocument, block: DraftBlock): string | null {
+  if (block.content.kind !== 'video') return null
+  const planned = document.plannedVideos.find((video) => video.blockId === block.id)
+  if (planned?.videoId) return planned.videoId
+  const { src } = block.content
+  if (typeof src !== 'string' || src.trim() === '') return null
+  return src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)?.[1] ?? src.trim()
 }
 
 /**
- * Um vídeo que ainda é só PLANO pode sair pelo `retireBlockKeys`, como as falas e as experiências
- * da mesma seção retirada (Dia 1 do Farol, 06/10/2026). Plano = sem fonte no bloco e sem Vimeo
- * escolhido no `plannedVideos`. Com qualquer um dos dois, o vídeo já é mídia da autora e fica
- * protegido: a importação recusa em vez de apagar.
+ * "Vídeo vinculado (Vimeo 123) · Seção". O número do Vimeo vai junto porque o vídeo que sai do
+ * rascunho continua no Vimeo, e é por ele que a autora o escolhe de novo se precisar.
  */
-function isUnlinkedPlannedVideo(document: LessonDraftDocument, block: DraftBlock): boolean {
-  if (block.content.kind !== 'video') return false
-  const { src } = block.content
-  if (typeof src === 'string' && src.trim() !== '') return false
-  const planned = document.plannedVideos.find((video) => video.blockId === block.id)
-  return planned !== undefined && planned.videoId === null
+function removalLabel(document: LessonDraftDocument, block: DraftBlock): string {
+  const section = document.sections.find((candidate) => candidate.blockIds.includes(block.id))
+  const vimeo = linkedVimeoId(document, block)
+  const kind = vimeo
+    ? `Vídeo vinculado (Vimeo ${vimeo})`
+    : (BLOCK_KIND_LABELS[block.content.kind] ?? block.content.kind)
+  return section ? `${kind} · ${section.title}` : kind
 }
 
 function importedContent(
@@ -228,35 +233,35 @@ export class LearningImportService {
       (manifest.retireBlockKeys ?? []).map((key) => importedLearningId(lessonId, 'block', key)),
     )
     const omitted = draft.document.blocks.filter((block) => !used.has(block.id))
-    const retained: DraftBlock[] = []
-    if (mode === 'replace') {
-      for (const block of omitted)
-        actions.push({
-          id: block.id,
-          label: removalLabel(draft.document, block),
-          action: 'remove',
-        })
-    } else {
-      for (const block of draft.document.blocks.filter((b) => retireIds.has(b.id))) {
-        if (
-          !['rich_text', 'dialogue', 'interactive', 'materials'].includes(block.content.kind) &&
-          !isUnlinkedPlannedVideo(draft.document, block)
-        )
-          throw new ValidationError(
-            'Só instruções, descobertas, materiais e vídeos ainda não vinculados podem ser aposentados pelo manifesto. Projetos, vídeos vinculados e quizzes são preservados.',
+    // O manifesto é a fonte da verdade do que ELE criou: um bloco de importação anterior que não
+    // está mais no arquivo sai do rascunho nos dois modos, inclusive vídeo já vinculado (o vídeo
+    // continua no Vimeo e a versão publicada só muda ao publicar). Pedido da dona em 07/10/2026,
+    // depois de reimportar o Dia 2 do Desafio numa aula que já tinha recebido o Dia 1 e achar o
+    // vídeo antigo grudado na última parte: "quero subir o manifesto e já configurar tudo".
+    // O que muda entre os modos é só o que a autora criou à mão no Admin.
+    const retained =
+      mode === 'replace' ? [] : omitted.filter((block) => !isImportedLearningId(block.id))
+    for (const block of omitted) {
+      if (retained.includes(block)) continue
+      const key = retireIds.has(block.id)
+        ? manifest.retireBlockKeys?.find(
+            (candidate) => importedLearningId(lessonId, 'block', candidate) === block.id,
           )
-        const key = manifest.retireBlockKeys?.find(
-          (key) => importedLearningId(lessonId, 'block', key) === block.id,
-        )
-        actions.push({ id: block.id, label: key ?? block.content.kind, action: 'retire' })
-      }
-      retained.push(...omitted.filter((block) => !retireIds.has(block.id)))
-      for (const block of retained) add(block)
-      // Blocos avulsos existentes continuam visíveis até a autora decidir onde colocá-los.
-      const closing =
-        document.sections.findLast((s) => s.intent === 'closing') ?? document.sections.at(-1)
-      if (closing) closing.blockIds.push(...retained.map((b) => b.id))
+        : undefined
+      const vimeo = linkedVimeoId(draft.document, block)
+      actions.push(
+        key
+          ? { id: block.id, label: vimeo ? `${key} (Vimeo ${vimeo})` : key, action: 'retire' }
+          : { id: block.id, label: removalLabel(draft.document, block), action: 'remove' },
+      )
     }
+    for (const block of retained) add(block)
+    // Blocos criados no Admin continuam visíveis até a autora decidir onde colocá-los.
+    const closing =
+      document.sections.findLast((s) => s.intent === 'closing') ?? document.sections.at(-1)
+    if (closing && retained.length) closing.blockIds.push(...retained.map((b) => b.id))
+    const leaving = omitted.filter((block) => !retained.includes(block))
+    const linkedLeaving = leaving.filter((block) => linkedVimeoId(draft.document, block))
     for (const video of draft.document.plannedVideos)
       if (
         !document.plannedVideos.some((v) => v.blockId === video.blockId) &&
@@ -269,12 +274,10 @@ export class LearningImportService {
     )
     if (invalid) throw new ValidationError(invalid)
     const sectionIds = new Set(document.sections.map((section) => section.id))
-    const removedSections =
-      mode === 'replace'
-        ? draft.document.sections
-            .filter((section) => !sectionIds.has(section.id))
-            .map((section) => ({ id: section.id, title: section.title }))
-        : []
+    // As seções vêm SEMPRE inteiras do manifesto, então as que ele não tem saem nos dois modos.
+    const removedSections = draft.document.sections
+      .filter((section) => !sectionIds.has(section.id))
+      .map((section) => ({ id: section.id, title: section.title }))
     return {
       lessonId,
       fingerprint: draft.revision,
@@ -289,23 +292,36 @@ export class LearningImportService {
               'O projeto inicial do Estúdio será substituído pelo manifesto. Projetos e entregas já salvos pelos alunos não são apagados.',
             ]
           : []),
-        ...(mode === 'replace'
+        ...(leaving.length || removedSections.length
           ? [
-              omitted.length || removedSections.length
-                ? `A substituição removerá ${omitted.length} bloco(s) e ${removedSections.length} seção(ões) ausentes no manifesto.`
-                : 'O manifesto já representa todo o rascunho; não há conteúdo adicional para remover.',
+              mode === 'replace'
+                ? `A substituição removerá ${leaving.length} bloco(s) e ${removedSections.length} seção(ões) ausentes no manifesto.`
+                : `Sai do rascunho o que não está mais no manifesto: ${plural(leaving.length, 'bloco', 'blocos')} e ${plural(removedSections.length, 'seção', 'seções')}.`,
+            ]
+          : mode === 'replace'
+            ? ['O manifesto já representa todo o rascunho; não há conteúdo adicional para remover.']
+            : []),
+        ...(linkedLeaving.length
+          ? [
+              linkedLeaving.length === 1
+                ? 'Um vídeo já vinculado sai do rascunho porque o manifesto não tem mais esse vídeo. Ele continua no Vimeo, com o número na lista abaixo.'
+                : `${linkedLeaving.length} vídeos já vinculados saem do rascunho porque o manifesto não tem mais esses vídeos. Eles continuam no Vimeo, com o número na lista abaixo.`,
             ]
           : []),
-        ...(actions.some((action) => action.action === 'retire')
+        ...(leaving.length
           ? [
-              'Os blocos importados listados como aposentados sairão do rascunho. Projetos, vídeos originais e histórico de evidências são preservados.',
+              'Projetos e entregas já salvos pelos alunos e o histórico de evidências não são apagados.',
             ]
           : []),
         ...(draft.isPublished
           ? ['A aula publicada permanece disponível. Esta importação altera somente o rascunho.']
           : []),
         ...(retained.length
-          ? ['Os materiais opcionais existentes ficam no fim da última seção.']
+          ? [
+              retained.length === 1
+                ? 'Um bloco criado aqui no Admin, fora do manifesto, fica no fim da última seção.'
+                : `${retained.length} blocos criados aqui no Admin, fora do manifesto, ficam no fim da última seção.`,
+            ]
           : []),
         ...(document.plannedVideos.length
           ? [

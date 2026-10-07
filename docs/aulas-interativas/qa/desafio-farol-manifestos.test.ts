@@ -160,11 +160,21 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     const section = m.sections[1]
     expect(section?.key).toBe('caderno')
     expect(section?.completion?.blockIds).toEqual(['video-intro-caderno'])
-    expect(m.blocks.find((block) => block.key === 'materiais-farol')?.content).toMatchObject({
-      kind: 'materials',
-      bookPreview: true,
-      items: [],
-    })
+    const materiais = m.blocks.find((block) => block.key === 'materiais-farol')?.content
+    expect(materiais).toMatchObject({ kind: 'materials', bookPreview: true })
+    // O PDF do Mapa entra pelo Admin (a importação o mantém à frente); no manifesto ficam só o
+    // recado e os links do Como Fazer, no MESMO bloco (um bloco de materiais por fase, 07/10/2026).
+    if (materiais?.kind !== 'materials') throw new Error('materiais-farol ausente')
+    expect(materiais.items.map((item) => item.kind)).toEqual([
+      'text',
+      'link',
+      'link',
+      'link',
+      'link',
+      'link',
+      'link',
+    ])
+    expect(m.blocks.filter((block) => block.content?.kind === 'materials')).toHaveLength(1)
     expect(m.blocks.find((block) => block.key === 'mapa-familia')).toBeUndefined()
   })
 
@@ -214,6 +224,8 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       'experiencia-velocidade',
       'video-d1-velocidade',
       'ponte-d1-velocidade',
+      'ajuda-como-fazer-intro',
+      'ajuda-d1',
     ])
     for (const name of ['dia-1', 'dia-2', 'dia-3', 'certificado']) {
       const current = manifesto(name)
@@ -528,6 +540,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
         }
       }
     }
-    expect(links).toBe(9)
+    // 6 no bloco do Mapa do Dia 1 e 1 na publicação do Dia 3 (os 2 do "andar" saíram em 07/10).
+    expect(links).toBe(7)
   })
 })
