@@ -1,5 +1,9 @@
 import type { InteractiveBlock } from '@sistemazero/core/learning'
-import type { SceneVozes, ZappySpeechOverride } from '@sistemazero/core/learning/scene'
+import type {
+  QuizQuestionSpeech,
+  SceneVozes,
+  ZappySpeechOverride,
+} from '@sistemazero/core/learning/scene'
 /**
  * Contratos compartilhados entre o BFF e os componentes do painel. Espelham as
  * views do @sistemazero/catalog e o UserView do @sistemazero/auth (type-only —
@@ -557,11 +561,15 @@ export interface QuizQuestion {
   choices: { id: string; label: string }[]
   correctChoiceIds: string[]
   explanation?: string
+  /** Pronúncia da pergunta e da explicação na voz do Zappy (core `voz-quiz.ts`). */
+  zappySpeech?: QuizQuestionSpeech
 }
 export interface QuizBlock {
   kind: 'quiz'
   questions: QuizQuestion[]
   passingScore?: number
+  /** A voz do Zappy: pergunta e explicação de cada questão, gerada pelo botão da aula. */
+  vozes?: SceneVozes
 }
 /** Interativo v3: SEMPRE iframe sandbox com HTML (embedType/src/height = legado). */
 export interface EmbedBlock {

@@ -1,3 +1,8 @@
+import {
+  type QuizQuestionSpeech,
+  type SceneVozes,
+  vozesPublicasDoQuiz,
+} from '@sistemazero/core/learning/scene'
 import type { QuizBlock, QuizChoice } from './lesson-block'
 
 export {
@@ -79,23 +84,35 @@ export function computeRetryAvailableAt(
 /** Bloco de quiz PROJETADO para o aluno — sem `correctChoiceIds`/`explanation`. */
 export interface MemberQuizContent {
   kind: 'quiz'
-  questions: { id: string; prompt: string; choices: QuizChoice[] }[]
+  questions: {
+    id: string
+    prompt: string
+    choices: QuizChoice[]
+    /** Só a pronúncia da PERGUNTA: a da explicação contaria o gabarito. */
+    zappySpeech?: Pick<QuizQuestionSpeech, 'question'>
+  }[]
   passingScore: number | null
+  /** Só as falas das perguntas (`vozesPublicasDoQuiz`). */
+  vozes?: SceneVozes
 }
 
 /**
  * Remove o gabarito do bloco antes de ir ao client (o GET da aula NUNCA revela
- * `correctChoiceIds`/`explanation`; correções só na resposta do submit).
+ * `correctChoiceIds`/`explanation`, nem a voz ou a pronúncia da explicação; correções só na
+ * resposta do submit, que traz também o MP3 da explicação).
  * `passingScore: null` = quiz de fixação (não bloqueia a conclusão da aula).
  */
 export function toMemberFacingQuizContent(block: QuizBlock): MemberQuizContent {
+  const vozes = vozesPublicasDoQuiz(block)
   return {
     kind: 'quiz',
     questions: block.questions.map((q) => ({
       id: q.id,
       prompt: q.prompt,
       choices: q.choices.map((c) => ({ id: c.id, label: c.label })),
+      ...(q.zappySpeech?.question ? { zappySpeech: { question: q.zappySpeech.question } } : {}),
     })),
     passingScore: block.passingScore ?? null,
+    ...(vozes ? { vozes } : {}),
   }
 }

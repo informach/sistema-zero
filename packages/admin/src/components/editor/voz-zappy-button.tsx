@@ -4,6 +4,7 @@ import { publicInteractiveBlock } from '@sistemazero/core/learning'
 import {
   chaveDeVoz,
   falasDaCena,
+  falasDoQuiz,
   roteiroDoZappy,
   type SceneVozes,
   textoFalado,
@@ -58,6 +59,21 @@ export function falasDaAula(blocos: readonly BlocoDoRascunho[]): FalasDoBloco[] 
       if (speechText) {
         saida.push({ ...bloco, falas: [{ visibleText, speechText }], vozes: content.vozes })
       }
+      continue
+    }
+    if (content.kind === 'quiz') {
+      // Pergunta com as alternativas e explicação de cada questão (core `voz-quiz.ts`). ⚠️ O MP3
+      // da explicação fica no bloco, mas só sai para a criança na correção (é gabarito).
+      // Questão pela metade (enunciado ou alternativa em branco) fica de fora: gravar o rascunho
+      // pagaria uma fala que vai mudar.
+      const prontas = content.questions.filter(
+        (q) => q.prompt.trim() && q.choices.every((c) => c.label.trim()),
+      )
+      const falas = falasDoQuiz({ questions: prontas }).map(({ visibleText, speechText }) => ({
+        visibleText,
+        speechText,
+      }))
+      if (falas.length) saida.push({ ...bloco, falas, vozes: content.vozes })
       continue
     }
     if (content.kind !== 'interactive') continue

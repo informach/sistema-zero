@@ -60,6 +60,7 @@ export * from './start'
 export * from './state'
 // A voz do Zappy: o dicionário `texto falado → MP3` e a regra do tudo-ou-nada da fala.
 export * from './voz'
+export * from './voz-quiz'
 
 export interface ExperimentationActivity {
   type: 'experimentation'

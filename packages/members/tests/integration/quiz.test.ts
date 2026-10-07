@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { falasDoQuiz } from '@sistemazero/core/learning/scene'
 import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
@@ -334,5 +335,57 @@ describe('Quiz server-side', () => {
     expect((await submit(app, outro.lessonIds[0], outroBlock, { q1: ['b'] })).status).toBe(403)
 
     expect((await submit(app, lessonId, blockId, 'nao-e-objeto')).status).toBe(400)
+  })
+
+  test('a voz do Zappy: publicar guarda o dicionário, o GET só leva a pergunta e a correção leva a explicação', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    const lessonId = course.lessonIds[0]
+    const blockId = seedQuizBlock(courses, lessonId, { passingScore: 100 })
+    const questions = [
+      {
+        id: 'q1',
+        prompt: '2 + 2?',
+        choices: [
+          { id: 'a', label: '3' },
+          { id: 'b', label: '4' },
+        ],
+        correctChoiceIds: ['b'],
+        explanation: 'Dois mais dois dá quatro.',
+        zappySpeech: {
+          explanation: {
+            sourceText: 'Dois mais dois dá quatro.',
+            speechText: 'Dois mais dois, quatro.',
+          },
+        },
+      },
+    ]
+    const vozes = Object.fromEntries(
+      falasDoQuiz({ questions }).map((f) => [f.key, `https://cdn.test/aulas/voz/${f.slot}.mp3`]),
+    )
+    const patched = await updateBlock(app, lessonId, blockId, {
+      kind: 'quiz',
+      passingScore: 100,
+      questions,
+      vozes,
+    })
+    expect(patched.status, await patched.clone().text()).toBe(200)
+
+    const raw = await (await getLesson(app, course.slug, lessonId)).text()
+    expect(raw).toContain('https://cdn.test/aulas/voz/question.mp3')
+    expect(raw).not.toContain('explanation.mp3')
+    expect(raw).not.toContain('Dois mais dois')
+
+    const body = await readJson(await submit(app, lessonId, blockId, { q1: ['a'] }))
+    expect(body.questions[0].explanationAudioUrl).toBe('https://cdn.test/aulas/voz/explanation.mp3')
+
+    const torto = await updateBlock(app, lessonId, blockId, {
+      kind: 'quiz',
+      passingScore: 100,
+      questions,
+      vozes: { 'zappy:outro:texto': 'https://cdn.test/x.mp3' },
+    })
+    expect(torto.status).toBe(400)
   })
 })

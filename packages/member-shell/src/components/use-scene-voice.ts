@@ -239,6 +239,17 @@ export function useSceneVoice() {
     },
     [parar, sintetizar, tocar],
   )
+  /**
+   * Toca MP3s que já chegaram resolvidos, sem dicionário: a explicação do quiz, cujo endereço vem
+   * na resposta do envio (o roteiro dela não viaja, porque contaria o gabarito antes da hora).
+   */
+  const tocarArquivos = useCallback(
+    (urls: readonly string[]) => {
+      parar()
+      if (urls.length) tocar(urls)
+    },
+    [parar, tocar],
+  )
   useEffect(() => parar, [parar])
-  return { temVoz, falando, falar, parar }
+  return { temVoz, falando, falar, parar, tocarArquivos }
 }

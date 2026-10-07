@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { falasDoQuiz } from '@sistemazero/core/learning/scene'
 import type { QuizBlock } from '../../src/domain/course/lesson-block'
 import {
   computeRetryAvailableAt,
@@ -96,6 +97,40 @@ describe('toMemberFacingQuizContent (anti-vazamento de gabarito)', () => {
       ],
     })
     expect(m.passingScore).toBe(100)
+  })
+
+  test('a voz da explicação fica no servidor e só volta na correção', () => {
+    const falas = falasDoQuiz(quiz)
+    const vozes = Object.fromEntries(
+      falas.map((f) => [f.key, `https://cdn.test/aulas/voz/${f.questionId}-${f.slot}.mp3`]),
+    )
+    const comVoz: QuizBlock = {
+      ...quiz,
+      vozes,
+      questions: quiz.questions.map((q) =>
+        q.id === 'q1'
+          ? {
+              ...q,
+              zappySpeech: {
+                question: { sourceText: 'x', speechText: 'x' },
+                explanation: { sourceText: 'Aritmética básica.', speechText: 'Conta de somar.' },
+              },
+            }
+          : q,
+      ),
+    }
+    const m = toMemberFacingQuizContent(comVoz)
+    expect(JSON.stringify(m)).not.toContain('-explanation.mp3')
+    expect(JSON.stringify(m)).not.toContain('Conta de somar')
+    expect(Object.values(m.vozes ?? {}).sort()).toEqual([
+      'https://cdn.test/aulas/voz/q1-question.mp3',
+      'https://cdn.test/aulas/voz/q2-question.mp3',
+    ])
+    expect(m.questions[0]?.zappySpeech).toEqual({ question: { sourceText: 'x', speechText: 'x' } })
+    const nota = gradeQuizAttempt({ ...quiz, vozes }, { q1: ['a'], q2: ['b', 'c'] })
+    expect(nota.questions[0]?.explanationAudioUrl).toBe(
+      'https://cdn.test/aulas/voz/q1-explanation.mp3',
+    )
   })
 
   test('quiz sem passingScore expõe null (fixação, não bloqueia)', () => {

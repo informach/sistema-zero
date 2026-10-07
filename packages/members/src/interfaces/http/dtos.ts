@@ -1122,6 +1122,10 @@ const RichTextBlockSchema = t.Object({
   markdown: t.Optional(t.String({ maxLength: 200_000 })),
   codeLanguageHints: t.Optional(t.Array(t.String({ maxLength: 40 }))),
 })
+const ZappySpeechOverrideSchema = t.Object({
+  sourceText: t.String({ minLength: 1, maxLength: 6000 }),
+  speechText: t.String({ minLength: 1, maxLength: 6000 }),
+})
 const DialogueBlockSchema = t.Object({
   kind: t.Literal('dialogue'),
   pose: t.Optional(
@@ -1140,12 +1144,7 @@ const DialogueBlockSchema = t.Object({
   vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
   // A grafia fica em `text`; este roteiro só corrige a pronúncia. Sem declará-lo, o normalize
   // apagaria a chave do MP3 que o player deve procurar.
-  zappySpeech: t.Optional(
-    t.Object({
-      sourceText: t.String({ minLength: 1, maxLength: 6000 }),
-      speechText: t.String({ minLength: 1, maxLength: 6000 }),
-    }),
-  ),
+  zappySpeech: t.Optional(ZappySpeechOverrideSchema),
 })
 const VideoBlockSchema = t.Object({
   kind: t.Literal('video'),
@@ -1194,8 +1193,19 @@ const QuizBlockSchema = t.Object({
       ),
       correctChoiceIds: t.Array(t.String({ maxLength: 64 })),
       explanation: t.Optional(t.String({ maxLength: 5000 })),
+      // A pronúncia da voz do Zappy. Sem declará-la, o normalize do Elysia a apagaria e o
+      // player procuraria o MP3 pela chave padrão.
+      zappySpeech: t.Optional(
+        t.Object({
+          question: t.Optional(ZappySpeechOverrideSchema),
+          explanation: t.Optional(ZappySpeechOverrideSchema),
+        }),
+      ),
     }),
   ),
+  // A voz do Zappy do quiz (régua completa em `isQuizVozes`, no serviço). ⚠⚠ Fora do DTO, o
+  // `normalize` do Elysia apagaria o dicionário e o quiz publicaria mudo, sem erro nenhum.
+  vozes: t.Optional(t.Record(t.String(), t.String({ maxLength: 4000 }))),
   // Nota de corte é % inteira (o score do aluno é inteiro 0–100; 99.5 só "passaria"
   // com 100 e confundiria a autoria).
   passingScore: t.Optional(t.Integer({ minimum: 0, maximum: 100 })),
