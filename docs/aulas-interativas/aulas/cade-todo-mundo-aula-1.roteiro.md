@@ -6,9 +6,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## 1. Bem-vindo ao jardim
 
-**Duração alvo:** 35 a 45 segundos.
+**Duração alvo:** 40 a 55 segundos.
 
-**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No fim, apontar para a área jogável ao passar a vez e para **Próxima parte**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** mostrar o jogo pronto nesta seção, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No "guarda este segredo", falar olhando para a câmera, num tom de quem conta um segredo, sem mostrar nada da personalização. No fim, apontar para a área jogável ao passar a vez e para **Próxima parte**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
 
@@ -18,11 +18,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > E os outros dois? Esses eu deixo para você descobrir.
 >
+> Ah, e guarda este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.
+>
 > Agora é a sua vez: jogue até encontrar os três personagens. Quando terminar, clique em Próxima parte.”
 
 **Zappy abaixo do vídeo:** “Sua vez! Jogue a versão pronta e encontre os três personagens. Depois, clique em Próxima parte.”
 
-**Conferência de produção:** o vídeo é uma demonstração: mostra como se joga com UM achado, sem revelar os outros esconderijos, e só no fim passa a vez. A seção exige assistir ao vídeo e encontrar os três personagens. A cópia jogável é independente do projeto de construção. Pausa, replay, ampliação e reinício ficam no Como Fazer.
+**Conferência de produção:** o vídeo é uma demonstração: mostra como se joga com UM achado, sem revelar os outros esconderijos, e só no fim passa a vez. Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): conta que existe, sem dizer o que é; a revelação é a seção Deixe o jogo com a sua cara, na Aula 2. A seção exige assistir ao vídeo e encontrar os três personagens. A cópia jogável é independente do projeto de construção. Pausa, replay, ampliação e reinício ficam no Como Fazer.
 
 ## 2. Seu Mapa da Aventura
 
@@ -92,7 +94,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora falta o número. Clique no 50 e troque por 0. Com zero de visibilidade, o esconderijo fica invisível, e aí dá para ver o personagem que está atrás dele.”
 
-**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Mostrar **Salvo**, abrir **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. Apontar **Concluir fase**.
+**Na tela:** mostrar a Pré-visualização atualizada. Tocar em um esconderijo e, no "Olha só", deixar ver o personagem; depois tocar em outro. Deixar visíveis o resultado e os blocos. Após o teste, clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Mostrar **Salvo**, abrir **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar a confirmação. No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir fase**.
 
 **Narração:**
 
@@ -103,6 +105,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
 > Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
+>
+> Olha só o que você programou: agora os seus personagens aparecem! E lembra da surpresa que eu te contei? Ela está chegando: vem na próxima fase.
 >
 > Quando o envio terminar, clique em Concluir fase.”
 

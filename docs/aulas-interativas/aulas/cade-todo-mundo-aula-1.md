@@ -37,7 +37,7 @@ Próxima parte.". No Mapa da Aventura, a página da Fase 1 deixou de inverter a�
 
 | Seção | Vídeo | O que fazer | Conclusão |
 | --- | --- | --- | --- |
-| Bem-vindo ao jardim | 35 a 45 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
+| Bem-vindo ao jardim | 40 a 55 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
 | Seu Mapa da Aventura | 25 a 35 s | conhecer o mapa e seguir; ler aqui mesmo ou baixar, se quiser | vídeo |
 | O que um toque faz? | 70 a 90 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
 | Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
@@ -53,6 +53,11 @@ A primeira fala diz qual jogo será construído e apresenta a versão pronta. O 
 demonstração, como nas experiências: o narrador mostra como se joga com UM achado ("Olha aqui:
 quando eu toco num esconderijo…"), deixa os outros para a criança descobrir e só no fim passa a
 vez: jogar até encontrar os três, pois a seção exige esse resultado, e clicar em **Próxima parte**.
+
+Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): "Ah, e
+guarda este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo
+ainda mais seu." Conta que a surpresa existe, sem dizer o que é. Ela é revelada em **Deixe o jogo com
+a sua cara**, na Aula 2, e lembrada uma vez no fim desta aula.
 
 O jogo pronto é uma cópia separada do projeto de construção. O Zappy resume a ação. O vídeo
 não apresenta seções, player, ampliação, reinício, caderno ou Estúdio.
@@ -104,7 +109,9 @@ Se não funcionar, conferir encaixe, sprite e valor. **Achados** ainda fica em z
 Após o teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e verificar
 novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar **Enviar
 meu projeto**, confirmar em **Enviar** e aguardar a conclusão do envio antes de **Concluir
-fase**. O recado é opcional. A verificação exige esse clique; o envio não a
+fase**. O recado é opcional. Entre o envio e **Concluir fase**, uma frase comemora o que a criança
+programou e lembra a surpresa uma vez só, sem mostrar nada dela ("E lembra da surpresa que eu te
+contei? Ela está chegando: vem na próxima fase."). A verificação exige esse clique; o envio não a
 executa automaticamente.
 
 ## Tutoriais retirados do vídeo

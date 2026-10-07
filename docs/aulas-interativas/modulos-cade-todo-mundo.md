@@ -107,6 +107,17 @@ Na mesma revisão:
 - **Projetos salvos antes da revisão** recebem as imagens novas ao abrir: o Estúdio da aula acrescenta ao projeto salvo as imagens do curso que faltam, sem trocar nenhuma das que já existem. Eles guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém o canto de cima do sprite. Por isso, nesses projetos, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo. A fala da seção serve aos dois projetos, porque cita nomes de imagens, que existem nos dois. As crianças que começarem depois recebem o projeto novo, em que bicho por bicho e esconderijo por esconderijo não muda tamanho nem lugar.
 - **A imagem do bloco é um NOME.** No fim do bloco **Criar sprite**, depois de **com imagem**, o Estúdio mostra o nome da imagem (coelho, arbusto…), e não um desenho. A fala manda clicar nesse nome para abrir a lista com as imagens do jogo e, se não achar, rolar a lista. O erro provável é escolher uma imagem do outro tipo (um esconderijo no bloco de um bicho fica grande e aparece antes do toque); a fala ensina a corrigir escolhendo de novo um desenho do mesmo tipo.
 
+## A surpresa do final, 07/10/2026
+
+Decisão do responsável (Diretrizes, seção 2, "A personalização é a surpresa do final"): a seção **Deixe o jogo com a sua cara** passa a ser anunciada desde o começo.
+
+- **Plantar:** o vídeo `video-a1-abertura` conta, antes de passar a vez, que no fim da aventura tem uma surpresa que vai deixar o jogo ainda mais seu (alvo de 40 a 55 s; era 35 a 45).
+- **Lembrar:** o vídeo da montagem da Aula 1 (`video-a1-programar`) comemora o que a criança programou e lembra a surpresa entre o envio e **Concluir fase**.
+- **Revelar:** o vídeo `video-a2-personalizar` começa com "Chegou a hora da surpresa!", mostra a galeria do Mapa da Aventura e fecha dizendo que é com essa cara que o jogo vai para o Mural; a ponte `ponte-a2-personalizar` começa igual.
+- **Mapa da Aventura:** a visão geral ganhou o cartão 3, **A surpresa do final**, e a página 5 tem o sobretítulo **Fase 2 · A surpresa do final**, com "o seu jogo não precisa ficar igual ao do vídeo". Continua com 7 páginas.
+
+Seções, blocos, critérios e identificadores não mudaram. No Admin: importar os manifestos das Aulas 1 e 2 e substituir o anexo do Mapa da Aventura. Regravar os três vídeos citados.
+
 ## Revisão de 06/10/2026
 
 A pedido do responsável, todas as falas passaram a conversar com a criança e a chamar a atenção dela. A regra entrou nas [Diretrizes Pedagógicas](DIRETRIZES-PEDAGOGICAS.md), seção 6, para os próximos cursos já nascerem assim. Seções, blocos, critérios e identificadores não mudaram.

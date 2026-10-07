@@ -76,7 +76,7 @@ A mudança de temChave não aparece no jogo. A fala diz isso com honestidade: qu
 
 **Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar o seu projeto.
 
-Testar coleta, mudança do aviso e reinício por Atualizar. O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta parte → Objetivo cumprido! → Salvo → Enviar meu projeto → Enviar → Concluir fase**.
+Testar coleta, mudança do aviso e reinício por Atualizar. O texto do aviso com as palavras da criança fica para o mexa e veja do Dia 3. Conferir **Verificar esta parte → Objetivo cumprido! → Salvo → Enviar meu projeto → Enviar → Concluir fase**. Entre o envio e **Concluir fase**, uma frase comemora o que a criança programou e lembra uma vez só a surpresa plantada no Dia 1, sem mostrar nada dela ("E lembra da surpresa que eu te contei? Ela está chegando: vem na próxima fase.").
 
 ## Experiências e demonstrações desta aula
 

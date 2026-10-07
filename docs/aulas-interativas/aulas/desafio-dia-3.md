@@ -82,7 +82,9 @@ Testar o percurso contínuo: Atualizar, visitar o farol sem chave, afastar, busc
 - **Conclui quando:** vídeo e a verificação `acender` (a imagem dentro de então é um farol aceso, de qualquer modelo). As escolhas não viram critério.
 - **Blocos:** `video-d3-personalizar`, `ponte-d3-personalizar` e o mesmo `projeto` pela workspaceKey.
 
-**Ponte do Zappy na página (não gravar):** Hora de deixar o jogo com a sua cara! Escolha seu personagem, barco, chave, farol e cenário. Teste a combinação, clique em Verificar esta parte e depois em Próxima parte.
+**Ponte do Zappy na página (não gravar):** Chegou a hora da surpresa! O seu jogo não precisa ficar igual ao do vídeo: escolha seu personagem, barco, chave, farol e cenário. Teste a combinação, clique em Verificar esta parte e depois em Próxima parte.
+
+É a revelação da surpresa plantada na abertura do Dia 1 e lembrada no fim do Dia 2 (decisão do responsável, 07/10/2026). A fala começa com "Chegou a hora da surpresa!", diz que o jogo não precisa ficar igual ao do vídeo e mostra as galerias do Mapa da Aventura (páginas **A surpresa do final**); depois do teste, liga as escolhas à publicação ("é com essa cara que o seu jogo vai para o Mural").
 
 Em **Ao iniciar**, selecionar a imagem no fim do **Criar sprite** correspondente. O sprite continua personagem, barco, chave ou farol; os nomes dos desenhos mudam. O farol é escolhido em par: o modelo apagado em **Ao iniciar → Criar sprite farol** e o mesmo modelo aceso em **então → Trocar imagem do sprite farol para**. O cenário é escolhido no **Desenhar o cenário** dentro de **A cada quadro do jogo**, em **Enquanto estiver rodando**. Cada categoria mantém dimensões e contato, e os faróis mantêm a porta no mesmo lugar: mudar só imagem, sem compensar posição ou tamanho. Testar o farol sem a chave e com a chave na mesma partida, esperar o barco, conferir uma vez só e terminar em **Verificar esta parte → Objetivo cumprido! → Salvo → Próxima parte**.
 
@@ -154,7 +156,7 @@ Retomar x/y da experiência. Em **Ao iniciar → Criar sprite chave**, editar so
 | `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 60 a 75 s | Regravar |
 | `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 3 a 4 min | Gravar |
 | `video-d3-decisao` | Completar então, testar o jogo e enviar | Roteiro revisado | 4 a 5 min, sem acelerar os percursos | Regravar |
-| `video-d3-personalizar` | Trocar personagem, barco, chave, o par do farol e cenário; testar e verificar | Mesmo projeto enviado | 3 a 4 min | Regravar |
+| `video-d3-personalizar` | Revelar a surpresa do final; trocar personagem, barco, chave, o par do farol e cenário; testar e verificar | Mesmo projeto enviado | 3 a 4 min | Regravar |
 | `video-d3-farol-mensagens` | Escrever os quatro avisos e testar | Mesmo projeto enviado | 90 a 120 s | Gravar |
 | `video-d3-posicao` | Mudar x e y separadamente na experiência | Cena nova | 70 a 90 s | Gravar |
 | `video-d3-posicionar-chave` | Escolher um lugar e testar o percurso | Mesmo projeto enviado | 2 a 3 min | Gravar |

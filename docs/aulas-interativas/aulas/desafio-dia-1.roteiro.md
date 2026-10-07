@@ -16,9 +16,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-intro-farol` · Seu primeiro jogo: A Chave do Farol
 
-**Duração alvo:** 45 a 60 segundos.
+**Duração alvo:** 50 a 65 segundos.
 
-**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. No "Olha aqui", segurar a seta da tela para a direita por um instante e deixar ver o personagem andar um pouco; parar antes da chave. Não percorrer o caminho nem mostrar o barco chegando. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. No "Olha aqui", segurar a seta da tela para a direita por um instante e deixar ver o personagem andar um pouco; parar antes da chave. Não percorrer o caminho nem mostrar o barco chegando. No "guarda este segredo", falar olhando para a câmera, num tom de quem conta um segredo, sem mostrar nada da personalização. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Narração:**
 > "Oi! Neste desafio, você vai programar o jogo A Chave do Farol. Antes de montar o seu, você vai jogar a versão pronta, para ver como o jogo funciona.
@@ -29,11 +29,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Já o caminho até a chave e depois até o farol, esse eu deixo para você descobrir.
 >
+> Ah, e guarda este segredo: no fim da aventura tem uma surpresa esperando por você. Ela vai deixar o seu jogo ainda mais seu.
+>
 > Agora é a sua vez: jogue até o farol acender e o barco chegar. Quando terminar, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Sua vez! Jogue a versão pronta: pegue a chave e leve o personagem até o farol. Depois, clique em Próxima parte.
 
-**Conferência de produção:** o vídeo é uma demonstração: mostra como se anda com um gesto só, sem resolver o caminho, e só no fim passa a vez. A seção exige o vídeo e a participação no jogo pronto; vencer não é requisito técnico. A fala dá o objetivo completo para quem quiser terminar. Pausa, replay, ampliação e reinício ficam no Como Fazer.
+**Conferência de produção:** o vídeo é uma demonstração: mostra como se anda com um gesto só, sem resolver o caminho, e só no fim passa a vez. Antes de passar a vez, a fala planta a surpresa do final (decisão do responsável, 07/10/2026): conta que existe, sem dizer o que é; a revelação é a seção Deixe o jogo com a sua cara, no Dia 3. A seção exige o vídeo e a participação no jogo pronto; vencer não é requisito técnico. A fala dá o objetivo completo para quem quiser terminar. Pausa, replay, ampliação e reinício ficam no Como Fazer.
 
 ## Seção 2. Seu Mapa da Aventura
 

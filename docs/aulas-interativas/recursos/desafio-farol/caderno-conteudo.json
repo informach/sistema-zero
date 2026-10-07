@@ -7,7 +7,7 @@
     "items": [
       {
         "kind": "text",
-        "text": "O cenário, os desenhos e o movimento do barco já vêm preparados. Você faz o personagem andar, recolher a chave e decidir quando acender o farol."
+        "text": "O cenário, os desenhos e o movimento do barco já vêm preparados. Você faz o personagem andar, recolher a chave e decidir quando acender o farol. E no fim da aventura tem uma surpresa esperando por você: ela vai deixar o seu jogo ainda mais seu."
       },
       {
         "kind": "box",
@@ -387,9 +387,9 @@
   },
   {
     "id": "personalizar",
-    "kicker": "Dia 3 · Com a sua cara",
+    "kicker": "Dia 3 · A surpresa do final",
     "title": "Deixe o jogo com a sua cara",
-    "subtitle": "Depois de enviar, troque as imagens pelas que você quiser. As suas escolhas ficam no jogo.",
+    "subtitle": "Chegou a surpresa: o seu jogo não precisa ficar igual ao do vídeo. Troque as imagens pelas que você quiser; as suas escolhas ficam no jogo.",
     "items": [
       {
         "kind": "step",
@@ -426,7 +426,7 @@
   },
   {
     "id": "galeria-personagens",
-    "kicker": "Dia 3 · Com a sua cara",
+    "kicker": "Dia 3 · A surpresa do final",
     "title": "Quem vive a aventura?",
     "subtitle": "Em Criar sprite personagem, escolha a imagem pelo nome que aparece aqui.",
     "items": [
@@ -444,7 +444,7 @@
   },
   {
     "id": "galeria-cenarios",
-    "kicker": "Dia 3 · Com a sua cara",
+    "kicker": "Dia 3 · A surpresa do final",
     "title": "Onde a história acontece?",
     "subtitle": "Escolha o cenário no bloco Desenhar o cenário, dentro de A cada quadro do jogo.",
     "items": [
@@ -462,7 +462,7 @@
   },
   {
     "id": "galeria-objetos",
-    "kicker": "Dia 3 · Com a sua cara",
+    "kicker": "Dia 3 · A surpresa do final",
     "title": "Qual barco? Qual chave?",
     "subtitle": "Em Ao iniciar, escolha a imagem no Criar sprite barco e no Criar sprite chave.",
     "items": [
@@ -484,7 +484,7 @@
   },
   {
     "id": "galeria-farois",
-    "kicker": "Dia 3 · Com a sua cara",
+    "kicker": "Dia 3 · A surpresa do final",
     "title": "Apagado e aceso: escolha o par",
     "subtitle": "O nome do modelo precisa combinar nas duas imagens. A porta fica no mesmo lugar.",
     "items": [
