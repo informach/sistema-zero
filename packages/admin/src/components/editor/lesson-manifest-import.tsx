@@ -102,7 +102,7 @@ export function LessonManifestImport({
       setNotice(
         mode === 'replace'
           ? 'Rascunho substituído pelo manifesto. Confira a prévia antes de publicar.'
-          : 'Roteiro importado no rascunho. Confira a prévia antes de publicar.',
+          : 'Rascunho atualizado pelo manifesto. Confira a prévia antes de publicar.',
       )
     } catch (e) {
       setError((e as ApiError).message || 'Não foi possível importar.')
@@ -110,6 +110,8 @@ export function LessonManifestImport({
       setBusy(false)
     }
   }
+  const leaving =
+    preview?.blocks.filter((b) => b.action === 'retire' || b.action === 'remove') ?? []
   return (
     <details className="rounded-2xl border border-border bg-card p-5">
       <summary className="cursor-pointer font-semibold">Importar roteiro com seções</summary>
@@ -122,9 +124,11 @@ export function LessonManifestImport({
           <strong>
             {courseSlug} / {lessonSlug}
           </strong>
-          . A prévia mostra os blocos que serão criados ou atualizados. O projeto inicial do Estúdio
-          vem sempre do manifesto; projetos já salvos pelos alunos e arquivos anexados não são
-          apagados.
+          . O manifesto manda no que ele criou: o que saiu do arquivo sai do rascunho, inclusive
+          vídeo já vinculado (ele continua no Vimeo). A prévia mostra o que entra, o que muda e o
+          que sai. O projeto inicial do Estúdio vem sempre do manifesto; projetos já salvos pelos
+          alunos e arquivos anexados não são apagados, e a versão publicada só muda quando você
+          publicar.
         </p>
         <fieldset className="space-y-2 rounded-xl border border-border p-4">
           <legend className="px-1 text-sm font-semibold">Como importar</legend>
@@ -137,8 +141,9 @@ export function LessonManifestImport({
               onChange={() => changeMode('preserve')}
             />
             <span>
-              <strong className="block">Atualizar e preservar</strong>
-              Mantém no fim da aula os conteúdos que o manifesto não menciona.
+              <strong className="block">Atualizar pelo manifesto</strong>
+              Deixa a aula igual ao arquivo. Só os blocos que você criou aqui no Admin, fora do
+              manifesto, ficam no fim da aula.
             </span>
           </label>
           <label className="flex min-h-11 items-start gap-3 text-sm">
@@ -150,8 +155,8 @@ export function LessonManifestImport({
               onChange={() => changeMode('replace')}
             />
             <span>
-              <strong className="block">Substituir o rascunho pelo manifesto</strong>
-              Remove do rascunho todas as seções e os blocos que não estão no arquivo. A versão
+              <strong className="block">Substituir o rascunho inteiro</strong>
+              Remove também os blocos criados aqui no Admin que não estão no arquivo. A versão
               publicada não muda.
             </span>
           </label>
@@ -210,24 +215,9 @@ export function LessonManifestImport({
             <p className="text-sm">
               {preview.blocks.filter((b) => b.action === 'create').length} blocos novos ·{' '}
               {preview.blocks.filter((b) => b.action === 'update').length} atualizados ·{' '}
-              {preview.blocks.filter((b) => b.action === 'preserve').length} preservados ·{' '}
-              {preview.blocks.filter((b) => b.action === 'retire').length} instruções antigas
-              aposentadas · {preview.blocks.filter((b) => b.action === 'remove').length} removidos
+              {preview.blocks.filter((b) => b.action === 'preserve').length} sem mudança ·{' '}
+              {leaving.length} saem do rascunho
             </p>
-            {preview.blocks.some((b) => b.action === 'retire') && (
-              <details className="text-sm">
-                <summary className="cursor-pointer">
-                  Conferir instruções que sairão do rascunho
-                </summary>
-                <ul className="mt-2 list-disc pl-5">
-                  {preview.blocks
-                    .filter((b) => b.action === 'retire')
-                    .map((block) => (
-                      <li key={block.id}>{block.label ?? block.id}</li>
-                    ))}
-                </ul>
-              </details>
-            )}
             {preview.removedSections.length > 0 && (
               <details open className="text-sm">
                 <summary className="cursor-pointer font-medium">Seções que sairão</summary>
@@ -238,15 +228,15 @@ export function LessonManifestImport({
                 </ul>
               </details>
             )}
-            {preview.blocks.some((b) => b.action === 'remove') && (
+            {leaving.length > 0 && (
               <details open className="text-sm">
-                <summary className="cursor-pointer font-medium">Blocos que sairão</summary>
+                <summary className="cursor-pointer font-medium">
+                  Blocos que sairão do rascunho
+                </summary>
                 <ul className="mt-2 list-disc pl-5">
-                  {preview.blocks
-                    .filter((b) => b.action === 'remove')
-                    .map((block) => (
-                      <li key={block.id}>{block.label ?? block.id}</li>
-                    ))}
+                  {leaving.map((block) => (
+                    <li key={block.id}>{block.label ?? block.id}</li>
+                  ))}
                 </ul>
               </details>
             )}
@@ -275,7 +265,8 @@ export function LessonManifestImport({
                   checked={replacementConfirmed}
                   onChange={(event) => setReplacementConfirmed(event.target.checked)}
                 />
-                Entendo que tudo que não está no manifesto será removido deste rascunho.
+                Entendo que os blocos criados aqui no Admin que não estão no manifesto também serão
+                removidos deste rascunho.
               </label>
             )}
             <Button
