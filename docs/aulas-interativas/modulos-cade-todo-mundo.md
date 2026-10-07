@@ -112,7 +112,7 @@ Na mesma revisão:
 Decisão do responsável (Diretrizes, seção 2, "A surpresa do final"), só aqui e na Chave do Farol, os primeiros cursos da criança (nos seguintes ela já sabe que pode personalizar): a seção **Deixe o jogo com a sua cara** passa a ser anunciada desde o começo.
 
 - **Plantar:** o vídeo `video-a1-abertura` conta, antes de passar a vez, que no fim da aventura tem uma surpresa que vai deixar o jogo ainda mais seu (alvo de 40 a 55 s; era 35 a 45).
-- **Lembrar:** o vídeo da montagem da Aula 1 (`video-a1-programar`) comemora o que a criança programou e lembra a surpresa entre o envio e **Concluir fase**.
+- **Lembrar:** o vídeo da montagem da Aula 1 (`video-a1-programar`) reconhece a conquista depois do envio com "Pronto, você já programou a primeira regra do seu jogo!" e lembra a surpresa antes de **Concluir fase**. A fala acompanha o encerramento, sem pedir que a criança olhe novamente para um resultado já testado.
 - **Revelar:** o vídeo `video-a2-personalizar` começa com "A surpresa chegou! Olha quem mais pode brincar de se esconder!", mostra a galeria do Mapa da Aventura e fecha dizendo que é com essa cara que o jogo vai para o Mural; a ponte `ponte-a2-personalizar` começa com "A surpresa chegou!".
 - **Mapa da Aventura:** a visão geral ganhou o cartão 3, **A surpresa do final**, e a página 5 tem o sobretítulo **Fase 2 · A surpresa do final**, com "o seu jogo não precisa ficar igual ao do vídeo". Continua com 7 páginas.
 

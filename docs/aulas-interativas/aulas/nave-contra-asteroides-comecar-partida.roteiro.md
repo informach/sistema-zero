@@ -78,10 +78,10 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar tocando na barra de espaço com a abertura na tela e, no "Repare", deixar ouvir o som do tiro. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar tocando na barra de espaço com a abertura na tela e, no "Percebeu?", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Repare: com a abertura na tela, quando você toca na barra de espaço, dá para ouvir o som do tiro, mesmo sem a partida ter começado. É que o relógio das pedras e o evento da barra de espaço ficam em outros lugares do projeto, fora do Se que você montou. Agora faça essas duas ações esperarem a partida também.
+> "Com a abertura na tela, clique na área do jogo e toque na barra de espaço. Percebeu? O som do tiro toca antes de a partida começar. É que o relógio das pedras e o evento da barra de espaço ficam fora do Se que você montou. Agora vamos fazer essas duas ações esperarem a partida também.
 >
 > Comece pelas pedras. Deixe à vista o bloco A cada 40 quadros e um espaço livre perto dele. Pegue o bloco que cria asteroides, de dentro do relógio, e solte nesse espaço livre por enquanto.
 >
@@ -95,7 +95,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve Criar tiro e Tocar efeito, juntos, para dentro do então, nessa ordem.
 >
-> Agora teste: clique na área do jogo e toque na barra de espaço com a abertura na tela. Olha só: não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.
+> Agora teste: clique na área do jogo e toque na barra de espaço com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.
 >
 > Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas. Por isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está o Se jogando, com o criador de asteroides no então. E, dentro do evento da barra de espaço, está outro Se jogando, com Criar tiro e Tocar efeito no então.
 >

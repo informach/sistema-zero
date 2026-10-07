@@ -201,7 +201,7 @@
     },
     {
       "key": "video-tiros-voam",
-      "plannedVideo": "Título: Mova e desenhe os tiros\n\nRegravar no Estúdio atual. Começar mostrando o som sem tiro: tocar na barra de espaço e, no \"Repare\", deixar ouvir o som com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mova e desenhe os tiros\n\nRegravar no Estúdio atual. Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros.\n\nFala completa em nave-contra-asteroides-dia-2.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-tiros-voam",

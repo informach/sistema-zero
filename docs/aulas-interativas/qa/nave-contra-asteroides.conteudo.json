@@ -1319,9 +1319,9 @@
         "key": "tiros-voam",
         "title": "Mova e desenhe os tiros",
         "bridge": "Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.",
-        "screen": "Começar mostrando o som sem tiro: tocar na barra de espaço e, no \"Repare\", deixar ouvir o som com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros.",
+        "screen": "Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros.",
         "speech": [
-          "Repare: quando você toca na barra de espaço, dá para ouvir o som do tiro, mas nenhum tiro aparece. É que o seu jogo já cria o tiro, só que ainda não manda mover nem desenhar os tiros. Agora faça o jogo mostrar esses tiros subindo.",
+          "Clique na área do seu jogo e toque na barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.",
           "Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.",
           "Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima.",
           "Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe. Escolha tiros nesse bloco também.",
@@ -1411,7 +1411,7 @@
         "bridge": "Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.",
         "screen": "Começar pela retomada: atirar algumas vezes e, no \"Tá vendo?\", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador.",
         "speech": [
-          "Clique no seu jogo e atire. Tá vendo? Os tiros somem lá em cima, mas continuam no grupo, porque ainda falta a regra de limpeza.",
+          "Clique no seu jogo e atire. Tá vendo? Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo.",
           "Lembra da experiência da parte anterior? Ligada, a regra tirava do grupo quem saía da tela. Agora a gente vai pôr essa regra no seu jogo!",
           "A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, deixe à vista o espaço entre Mover os sprites do grupo tiros e Desenhar o grupo tiros, dentro de A cada quadro do jogo.",
           "Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.",
@@ -3723,16 +3723,16 @@
         "key": "relogio-e-tiro",
         "title": "Espere a partida para criar pedras e tiros",
         "bridge": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.",
-        "screen": "Começar tocando na barra de espaço com a abertura na tela e, no \"Repare\", deixar ouvir o som do tiro. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce.",
+        "screen": "Começar tocando na barra de espaço com a abertura na tela e, no \"Percebeu?\", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce.",
         "speech": [
-          "Repare: com a abertura na tela, quando você toca na barra de espaço, dá para ouvir o som do tiro, mesmo sem a partida ter começado. É que o relógio das pedras e o evento da barra de espaço ficam em outros lugares do projeto, fora do Se que você montou. Agora faça essas duas ações esperarem a partida também.",
+          "Com a abertura na tela, clique na área do jogo e toque na barra de espaço. Percebeu? O som do tiro toca antes de a partida começar. É que o relógio das pedras e o evento da barra de espaço ficam fora do Se que você montou. Agora vamos fazer essas duas ações esperarem a partida também.",
           "Comece pelas pedras. Deixe à vista o bloco A cada 40 quadros e um espaço livre perto dele. Pegue o bloco que cria asteroides, de dentro do relógio, e solte nesse espaço livre por enquanto.",
           "Deixe à vista o espaço de dentro de A cada 40 quadros, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro do relógio. Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.",
           "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve o criador de asteroides para dentro do então desse Se. O intervalo continua 40, mas agora a pedra só é criada quando o estado é jogando.",
           "Agora os tiros. Encontre o evento da barra de espaço, em Quando acontecer, e deixe à vista um espaço livre perto dele. Pegue a sequência pelo primeiro bloco, Criar tiro, e solte nesse espaço por enquanto. Tocar efeito vai junto, porque está encaixado logo abaixo.",
           "Deixe à vista o espaço de dentro do evento da barra de espaço, que ficou vazio. Abra Programação e depois Lógica e Se, pegue outro Se e solte dentro do evento. Arraste a pergunta x maior que 0 para a lixeira e deixe à vista o lugar vazio ao lado de Se.",
           "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve Criar tiro e Tocar efeito, juntos, para dentro do então, nessa ordem.",
-          "Agora teste: clique na área do jogo e toque na barra de espaço com a abertura na tela. Olha só: não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.",
+          "Agora teste: clique na área do jogo e toque na barra de espaço com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.",
           "Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas. Por isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está o Se jogando, com o criador de asteroides no então. E, dentro do evento da barra de espaço, está outro Se jogando, com Criar tiro e Tocar efeito no então."
         ],
         "checks": [
@@ -4173,7 +4173,7 @@
         "bridge": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.",
         "screen": "Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?.",
         "speech": [
-          "Repare: no seu jogo, a partida continua mesmo quando as vidas acabam, porque ele ainda não sabe quando a partida termina. Agora faça a partida acabar quando chegar a 26 pontos ou quando as vidas acabarem.",
+          "No seu jogo, comece uma partida e deixe as vidas acabarem. A partida continua, porque você ainda não programou quando ela termina. Agora faça a partida acabar quando chegar a 26 pontos ou quando as vidas acabarem.",
           "Primeiro, a meta. Os 26 pontos não mudam durante a partida, por isso a meta vai numa constante, que é um nome que guarda um valor que não muda. A constante é criada uma vez, quando o jogo começa, em Ao iniciar: deixe à vista o espaço entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio.",
           "Agora abra Programação e depois Variáveis, e pegue o bloco Criar constante com valor. Arraste e solte entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio. O nome chega como PI: troque PI por alvo e o 0 do valor por 26.",
           "Agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida. Ela vai no fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo, logo depois de Desenhar as vidas do sprite: deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.",

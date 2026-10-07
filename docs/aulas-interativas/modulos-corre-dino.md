@@ -1,5 +1,7 @@
 # Módulos do Corre, Dino!
 
+**Revisão de continuidade da conversa, 07/10/2026:** saíram chamados duplos para o mesmo resultado; o leitor de tela e o pulo chamam a escuta; a batida retoma a regra já montada; a publicação espera a confirmação. Fonte, roteiros, manifestos e Mapa da Aventura (56 páginas) atualizados. Os testes editoriais distinguem os chamados de som dos visuais. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
+
 **Título do curso:** Corre, Dino!
 
 **Descrição curta:** Construa uma corrida com Dino, cactos, pontos e dificuldade que aumenta.

@@ -118,10 +118,10 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar mostrando o som sem tiro: tocar na barra de espaço e, no "Repare", deixar ouvir o som com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Repare: quando você toca na barra de espaço, dá para ouvir o som do tiro, mas nenhum tiro aparece. É que o seu jogo já cria o tiro, só que ainda não manda mover nem desenhar os tiros. Agora faça o jogo mostrar esses tiros subindo.
+> "Clique na área do seu jogo e toque na barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.
 >
 > Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
 >
@@ -167,7 +167,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 **Na tela:** Começar pela retomada: atirar algumas vezes e, no "Tá vendo?", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
 **Narração:**
-> "Clique no seu jogo e atire. Tá vendo? Os tiros somem lá em cima, mas continuam no grupo, porque ainda falta a regra de limpeza.
+> "Clique no seu jogo e atire. Tá vendo? Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo.
 >
 > Lembra da experiência da parte anterior? Ligada, a regra tirava do grupo quem saía da tela. Agora a gente vai pôr essa regra no seu jogo!
 >

@@ -55,7 +55,7 @@ const send = 'Depois, clique em Enviar meu projeto e confirme em Enviar.'
 // do Mural oferece Copiar link de jogar antes de Fechar (ajuste do responsável em 06/10/2026).
 // O opcional vira convite, e as frases conversam em vez de virar lista (revisão de 06/10/2026).
 const publish =
-  'Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa, confira a imagem e clique em Publicar. E pronto: Seu jogo está no Mural! Que conquista! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
+  'Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
 
 /**
  * Onde a fala aparece: no vídeo (`video`) ou no Mapa da Aventura (`mapa`), que é lido e não
@@ -83,7 +83,7 @@ export function semChamados(paragrafo: string): string {
     .replace(/\bRepare n([oa]s?) /g, 'Confira $1 ')
     .replace(/, (?:olha aqui|olha só|repare): /g, ', ')
     .replace(
-      /(?:Tá vendo\? |(?:Olha aqui|Olha só|Repare): |Repare que )(\p{L})/gu,
+      /(?:(?:Tá vendo|Percebeu)\? |(?:Olha aqui|Olha só|Repare): |Repare que )(\p{L})/gu,
       (_, letra: string) => letra.toUpperCase(),
     )
 }

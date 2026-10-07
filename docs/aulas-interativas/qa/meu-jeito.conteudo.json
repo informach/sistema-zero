@@ -1396,7 +1396,7 @@
           "A folha vai entrar no fim de Ao iniciar, por isso deixe primeiro esse lugar à vista. Se precisar, arraste um espaço vazio da área de blocos até encontrar o último bloco.",
           "Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.",
           "No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta fase. Na imagem, escolha nave e deixe largura e altura dos quadros em 32.",
-          "Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador, porque aquele é o tamanho da nave na tela, e não o do recorte. Repare: a folha está preparada, mas a nave ainda não anima, porque ainda falta mandar o jogo animar."
+          "Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador, porque aquele é o tamanho da nave na tela, e não o do recorte. Com isso, a folha está preparada. Para a nave animar, ainda falta ligar essa folha ao sprite, e é isso que você vai fazer na próxima parte."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
         "externalTool": "estudio"
@@ -1594,9 +1594,9 @@
           "Lembra da experiência da parte anterior? Um relógio fazia as pedras nascerem, e o outro trocava os desenhos de cada pedra. O de nascer já existe no seu jogo, por isso agora a gente vai ligar o dos desenhos, começando pela folha do asteroide.",
           "Clique em Abrir meu Estúdio e retome o mesmo cartão da fase anterior. A nova folha vai entrar no fim de Ao iniciar, logo depois da animação da nave, por isso deixe esse lugar à vista.",
           "Agora, em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros e encaixe no fim de Ao iniciar, depois da animação da nave. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro, porque o seu asteroide foi desenhado em 64 por 64.",
-          "Confira as duas folhas: folha-nave continua 32 por 32, e folha-asteroide usa 64 por 64. Repare que as pedras do jogo ainda não mudaram, porque carregar a folha só deixa os quadros prontos. Ainda falta trocar o criador das pedras."
+          "Confira as duas folhas: folha-nave continua 32 por 32, e folha-asteroide usa 64 por 64. Depois, clique na prévia e comece uma partida com Enter. Repare que as pedras ainda usam o desenho antigo, porque carregar a folha só deixa os quadros prontos. Ainda falta trocar o criador das pedras."
         ],
-        "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
+        "screen": "Mostrar cada gesto narrado e conferir os recortes nas duas folhas. Depois, voltar à prévia, começar uma partida com Enter e apontar as pedras ainda com o desenho antigo. Não pedir para observar as pedras enquanto só os blocos ou a abertura estão na tela.",
         "externalTool": "estudio"
       },
       {

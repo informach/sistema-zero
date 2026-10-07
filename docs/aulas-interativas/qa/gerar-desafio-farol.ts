@@ -107,7 +107,7 @@ const aberturaBlocks = [
     'video-intro-farol',
     'Seu primeiro jogo: A Chave do Farol',
     'desafio-dia-1.roteiro.md',
-    'Anunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (Psiu, um segredo: lá no fim desta aventura tem uma surpresa guardada para você. Com ela, o jogo vai ficar do seu jeito.); só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.',
+    'Anunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (E tem uma coisa esperando por você lá no fim desta aventura: uma surpresa para deixar o jogo do seu jeito.); só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.',
   ),
   fala(
     'ponte-intro-farol',
@@ -382,7 +382,7 @@ const dia2 = {
       'video-d2-programar',
       'Avise quem está jogando',
       'desafio-dia-2.roteiro.md',
-      'Começar pela retomada, curta e nesta ordem: o problema no jogo (a chave some, mas a mensagem continua a inicial), a lembrança da experiência (o aviso mudava) e o anúncio colado ao primeiro passo. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo e envio confirmado. Antes de Concluir fase, comemorar o que a criança programou e lembrar a surpresa uma vez só, sem mostrar nada dela (E o segredo do começo da aventura? A surpresa está quase aqui: ela chega na próxima fase.). Terminar em Concluir fase.',
+      'Começar pela retomada, curta e nesta ordem: o problema no jogo (a chave some, mas a mensagem continua a inicial), a lembrança da experiência (o aviso mudava) e o anúncio colado ao primeiro passo. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo e envio confirmado. Antes de Concluir fase, reconhecer a conquista com Pronto, você programou a coleta da chave e o aviso do seu jogo! e lembrar a surpresa uma vez só, sem mostrar nada dela (E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.). Terminar em Concluir fase.',
     ),
     fala(
       'ponte-d2-programar',

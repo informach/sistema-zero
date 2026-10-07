@@ -50,7 +50,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro do quadro. No nome, escolha dino.
 >
-> Olhe a área do jogo. Olha só: o Dino aparece, parado no lugar em que foi criado! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar dinossauro continua em Ao iniciar, e Desenhar o sprite dino está dentro de A cada quadro do jogo, em Enquanto estiver rodando, com o nome dino nos dois blocos. Depois de corrigir, teste de novo.
+> Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar dinossauro continua em Ao iniciar, e Desenhar o sprite dino está dentro de A cada quadro do jogo, em Enquanto estiver rodando, com o nome dino nos dois blocos. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
@@ -71,7 +71,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A limpeza tem que vir antes do desenho, em todo quadro: primeiro o jogo apaga a imagem velha e, depois, desenha a nova. Por isso, deixe à vista o lugar logo antes de Desenhar o sprite, no começo de A cada quadro do jogo. Depois, abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Limpar a tela e solte nesse primeiro lugar.
 >
-> Olhe o Dino. Olha só: ele continua aparecendo, e a sombra embaixo dele volta a ficar clarinha, porque agora cada quadro começa com a tela limpa! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela e, logo abaixo, Desenhar o sprite dino. Depois de corrigir, teste de novo.
+> Agora olhe o Dino: ele continua aparecendo, e a sombra embaixo dele volta a ficar clarinha, porque agora cada quadro começa com a tela limpa! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela e, logo abaixo, Desenhar o sprite dino. Depois de corrigir, teste de novo.
 >
 > Limpar a tela só apaga a imagem: o Dino que você criou continua no jogo.
 >
@@ -117,7 +117,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada quadro, e é ele que faz o Dino parecer correr pela floresta.
 >
-> Olhe a área do jogo. Olha só: a floresta passa atrás do Dino! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela, depois Desenhar fundo de floresta, com velocidade 5, e, por último, Desenhar o sprite dino, com uma floresta só. Depois de corrigir, teste de novo.
+> Agora olhe a área do jogo: a floresta passa atrás do Dino! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela, depois Desenhar fundo de floresta, com velocidade 5, e, por último, Desenhar o sprite dino, com uma floresta só. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
@@ -136,7 +136,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: dentro de Ao iniciar, a borda está entre a preparação da tela e Criar dinossauro. Se você puxar a borda, Criar dinossauro sai junto, porque está encaixado embaixo dela. Por isso, primeiro arraste Criar dinossauro para um espaço vazio. Depois, arraste Mostrar a borda da tela para a lixeira e, por último, encaixe Criar dinossauro de novo, logo abaixo de Preparar o jogo em tela cheia.
 >
-> Olhe a área do jogo. Olha só: a floresta continua passando, e o Dino continua aparecendo, agora sem a borda! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar tem Preparar o jogo em tela cheia e, logo abaixo, Criar dinossauro, sem a borda. Depois de corrigir, teste de novo.
+> Agora olhe a área do jogo: a floresta continua passando, e o Dino continua aparecendo, agora sem a borda! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar tem Preparar o jogo em tela cheia e, logo abaixo, Criar dinossauro, sem a borda. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
 
@@ -148,12 +148,12 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Se o navegador não tiver voz, mostrar a leitura escrita. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Gravar com voz disponível no navegador. No "Escute", deixar ouvir a leitura inteira, sem falar nem tocar música por cima, mantendo também a leitura escrita à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
 
 **Narração:**
 > "Esta é uma experiência para a gente entender o que ouve uma pessoa que usa leitor de tela. O leitor de tela é um programa que lê a tela em voz alta para quem não consegue ver bem.
 >
-> Olha aqui: quando eu clico em Ouvir a tela com o campo vazio, ele diz só: Tela do jogo. Imagem. O programa não vê o desenho, por isso não tem como contar o que acontece.
+> Escute o que acontece quando eu clico em Ouvir a tela com o campo vazio. O leitor diz só: Tela do jogo. Imagem. O programa não vê o desenho, por isso não tem como contar o que acontece.
 >
 > Agora eu escrevo Corra com o dino e pule os cactos apertando espaço e clico em Ouvir a tela de novo. Ele lê a frase inteira, e as marcas mostram que ela diz o que fazer e como jogar.
 >

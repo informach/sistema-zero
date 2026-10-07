@@ -77,7 +77,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora deixe à vista o espaço vazio do então, dentro do Se. Arraste a pilha que você separou, segurando pela gravidade, e solte nesse espaço. A limpeza e a floresta ficam fora do Se, antes dele, porque a floresta também passa na tela de início.
 >
-> Agora olhe o jogo. Olha só: com o estado em inicio, o Dino e os cactos deixam de aparecer, e só a floresta continua passando, porque as ações da partida esperam o estado jogando.
+> Agora olhe o jogo: com o estado em inicio, o Dino e os cactos deixam de aparecer, e só a floresta continua passando, porque as ações da partida esperam o estado jogando.
 >
 > Para conferir se essas ações ainda funcionam, troque, por um momento, o estado em Ao iniciar para jogando. Teste um pulo e espere um cacto entrar.
 >

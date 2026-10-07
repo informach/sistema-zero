@@ -1,5 +1,7 @@
 # Nave Contra Asteroides
 
+**Revisão de continuidade da conversa, 07/10/2026:** os testes vêm antes de comentar seus resultados; som, desaparecimento da tela e retirada do grupo têm falas distintas. A publicação espera a confirmação antes da comemoração. Fonte, roteiros, manifestos e Mapa da Aventura (39 páginas) atualizados. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
+
 **Título do curso:** Nave Contra Asteroides
 
 **Descrição curta:** Monte um jogo de nave com tiros, asteroides, pontos, três vidas e uma partida que você pode recomeçar.
