@@ -36,6 +36,14 @@ export function letraDaAlternativa(indice: number): string {
 }
 
 /**
+ * Uma tag de verdade: nome e atributos bem formados (`<b>`, `</b>`, `<img src="a.png" />`). ⚠️ Não
+ * basta "< seguido de letra até o próximo >": em `x<y && y>0` isso apagava `<y && y>` e a voz lia
+ * "x 0". Aqui o "&&" não é atributo, então a comparação fica e vira fala logo abaixo.
+ */
+const TAG_HTML =
+  /<\/?[a-zA-Z][a-zA-Z0-9-]*(?:\s+[a-zA-Z_:][-\w:.]*(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*\s*\/?>/g
+
+/**
  * O markdown da autoria como a VOZ o lê: sem marcação, sem endereço de imagem ou de link.
  *
  * ⚠️ Cobre o que o `renderMarkdown` do member-shell desenha (negrito, itálico, código, imagem com
@@ -48,7 +56,7 @@ export function textoDoMarkdownParaFala(markdown: string): string {
     .replace(/^\s*```.*$/gm, '')
     .replace(/!\[([^\]]*)\]\([^)\s]*\)(?:\{[^}]*\})?/g, '$1')
     .replace(/\[([^\]]+)\]\([^)\s]*\)/g, '$1')
-    .replace(/<\/?[a-zA-Z][^<>]*>/g, ' ')
+    .replace(TAG_HTML, ' ')
     .replace(/`([^`]*)`/g, '$1')
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/\*([^*]+)\*/g, '$1')
@@ -61,7 +69,9 @@ export function textoDoMarkdownParaFala(markdown: string): string {
           .replace(/^\s*#{1,6}\s+/, '')
           .replace(/^\s*>\s?/, '')
           .replace(/^\s*(?:[-*+]|\d+[.)])\s+/, '')
-          .replace(/\s*(>=|<=|>|<)\s*/g, (_s, sinal: string) => ` ${COMPARADOR[sinal]} `),
+          .replace(/\s*(>=|<=|>|<)\s*/g, (_s, sinal: string) => ` ${COMPARADOR[sinal]} `)
+          .replace(/\s*&&\s*/g, ' e ')
+          .replace(/\s*\|\|\s*/g, ' ou '),
       ),
     )
     .filter(Boolean)

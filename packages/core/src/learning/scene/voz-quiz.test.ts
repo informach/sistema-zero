@@ -53,6 +53,31 @@ describe('a fala do quiz', () => {
     expect(isZappySpeechText(fala)).toBe(true)
   })
 
+  it('comparação colada não vira tag: x<y && y>0 é lido por inteiro', () => {
+    const fala = falaDaPerguntaDoQuiz({
+      prompt: 'O que acontece se x<y && y>0?',
+      choices: [{ label: 'a<=b || c>=d' }, { label: '<img src="a.png" alt="" /> Nada' }],
+    })
+    expect(fala).toBe(
+      'O que acontece se x menor que y e y maior que 0? Letra A: a menor ou igual a b ou c maior ou igual a d. Letra B: Nada.',
+    )
+    expect(isZappySpeechText(fala)).toBe(true)
+  })
+
+  it('x<y && y>0 é lido inteiro no texto, entre crases e em bloco de código; HTML de verdade sai', () => {
+    const lido = 'x menor que y e y maior que 0'
+    expect(textoDoMarkdownParaFala('Se x<y && y>0, o personagem anda.')).toBe(
+      `Se ${lido}, o personagem anda.`,
+    )
+    expect(textoDoMarkdownParaFala('Confira `x<y && y>0` no bloco.')).toBe(
+      `Confira ${lido} no bloco.`,
+    )
+    expect(textoDoMarkdownParaFala('```\nx<y && y>0\n```')).toBe(lido)
+    expect(textoDoMarkdownParaFala('<b>Atenção</b> x<y && y>0<br/>')).toBe(`Atenção ${lido}`)
+    expect(textoDoMarkdownParaFala('<span class="dica">x<y && y>0</span>')).toBe(lido)
+    expect(isZappySpeechText(textoDoMarkdownParaFala('Confira `x<y && y>0`.'))).toBe(true)
+  })
+
   it('a alternativa só de imagem sem descrição não deixa a letra calada', () => {
     expect(
       falaDaPerguntaDoQuiz({
