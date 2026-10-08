@@ -72,6 +72,14 @@ const quizBundle = await Bun.build({
 if (!quizBundle.success) throw new Error(quizBundle.logs.join('\n'))
 const quizScript = quizBundle.outputs.find((output) => output.path.endsWith('.js'))
 if (!quizScript) throw new Error('Bundle do quiz não foi gerado')
+const mascotBundle = await Bun.build({
+  entrypoints: [resolve(import.meta.dir, 'mascot-idle-client.tsx')],
+  target: 'browser',
+  define: { 'process.env.NODE_ENV': JSON.stringify('production'), 'process.env': '{}' },
+})
+if (!mascotBundle.success) throw new Error(mascotBundle.logs.join('\n'))
+const mascotScript = mascotBundle.outputs.find((output) => output.path.endsWith('.js'))
+if (!mascotScript) throw new Error('Bundle do mascote não foi gerado')
 const trailScript = trailBundle.outputs.find((output) => output.path.endsWith('.js'))
 if (!trailScript) throw new Error('Bundle da trilha não foi gerado')
 
@@ -140,6 +148,7 @@ Bun.serve({
     const path = new URL(request.url).pathname
     if (path === '/trail-rive.js') return new Response(trailScript)
     if (path === '/quiz-zappy.js') return new Response(quizScript)
+    if (path === '/mascot-idle.js') return new Response(mascotScript)
     // O Zappy animado do balão (`fala.riv`) e a pose parada que o cobre enquanto carrega.
     if (/^\/zappy\/[a-z-]+\.(riv|webp)$/.test(path))
       return new Response(Bun.file(resolve(app, `public${path}`)))
@@ -168,17 +177,19 @@ Bun.serve({
     if (path === '/scene.css')
       return new Response(styles.css, { headers: { 'Content-Type': 'text/css' } })
     const entrypoint =
-      path === '/project-play-authoring'
-        ? '/project-play-authoring.js'
-        : path === '/project-play'
-          ? '/project-play.js'
-          : path === '/lesson-video'
-            ? '/lesson-video.js'
-            : path === '/trail-rive'
-              ? '/trail-rive.js'
-              : path === '/quiz-zappy'
-                ? '/quiz-zappy.js'
-                : '/client.js'
+      path === '/mascot-idle'
+        ? '/mascot-idle.js'
+        : path === '/project-play-authoring'
+          ? '/project-play-authoring.js'
+          : path === '/project-play'
+            ? '/project-play.js'
+            : path === '/lesson-video'
+              ? '/lesson-video.js'
+              : path === '/trail-rive'
+                ? '/trail-rive.js'
+                : path === '/quiz-zappy'
+                  ? '/quiz-zappy.js'
+                  : '/client.js'
     const extraStyles =
       path === '/project-play-authoring'
         ? '<link rel="stylesheet" href="/project-play-authoring.css">'

@@ -1,459 +1,452 @@
-# 01 · Destaques: textos e montagem
+# Destaques: copy completa por story
 
-**Revisão solicitada aplicada em 05/10/2026.** Mantidos seis destaques e as três seções de Como funciona: A Jornada, Como é cada aula e As ferramentas. A primeira seção apresenta a experiência completa; as seguintes aprofundam assuntos diferentes. A verificação da montagem agora descreve os objetivos conferidos nas etapas que têm esse recurso, e Dúvidas 8 acolhe o pedido de ajuda com a aula. Nem todo curso traz comandos novos, e cada recurso informa sua condição de acesso. As datas estão em [Postagens](03-postagens.md#3-stories-e-formação-dos-destaques) e os links em [Links e publicação](apoio/links-e-publicacao.md#links-prontos).
+**Revisão: 08/10/2026.** Direção e bio no [guia principal](README.md). Os seis destaques são **Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós**. A ordem é viva: uma atualização pode trazer o destaque para a frente. Como funciona e Sobre nós podem ficar ao final; os fixados orientam quem chega. São **53 telas na seleção inicial**, numeradas abaixo; os blocos entram pelo [calendário único](03-postagens.md#calendário).
 
-**Ordem no perfil:** Como funciona → Projetos → Alunos → Dúvidas → Avaliações → Sobre nós. Conferir a disposição no aplicativo depois de atualizar.
+## Como produzir estas telas
 
-**Capas dos destaques:** [ver a prévia circular](capas/index.html) ou [baixar os PNGs em ZIP](capas/capas-instagram.zip). As seis capas estão numeradas na ordem do perfil: `01-como-funciona.png`, `02-projetos.png`, `03-alunos.png`, `04-duvidas.png`, `05-avaliacoes.png` e `06-sobre-nos.png`. A engrenagem com lápis, gerada para o antigo destaque Ferramentas, ficou como [imagem de apoio](capas/apoio-secao-ferramentas.png) e pode ilustrar a tela de título da seção 3 de Como funciona. No recorte, manter o símbolo centralizado e a margem azul; os nomes ficam nos títulos dos destaques.
+Cada bloco de citação é texto público completo. **Cartela** usa esse texto na arte, sem fala adicional. **Vídeo** usa o texto como fala de Helena ou Júlio e como legenda fiel; a sobreposição indicada é o título curto. Cenas são orientações internas. Manter tempo de leitura e observação; não comprimir dois stories numerados numa tela. As perguntas de Dúvidas são títulos funcionais de FAQ.
 
-| Destaque | O que produzir |
-| --- | --- |
-| [Como funciona](#como-funciona) | Três seções, cada uma aberta por uma tela de título: A Jornada (sete stories), Como é cada aula (seis) e As ferramentas (sete unidades de roteiro) |
-| [Projetos](#projetos) | Três telas por curso, começando pelo jogo; um bloco novo a cada lançamento |
-| [Alunos](#alunos) | Clipes curtos de crianças fazendo aulas, com contexto quando necessário |
-| [Dúvidas](#dúvidas) | Vinte respostas, organizadas em quatro blocos |
-| [Avaliações](#avaliações) | Relatos literais autorizados das famílias |
-| [Sobre nós](#sobre-nós) | Quatro stories com Helena e Júlio e a preparação das aulas |
-
-**Como gravar e diagramar:** os blocos de citação são a copy. As notas de cena e produção ficam fora da arte. A fala deve soar como uma explicação para uma pessoa; usar legendas sincronizadas. Não colocar o parágrafo inteiro sobre o vídeo como um cartão. Cada tela apresenta uma ideia e dá tempo para ver a ação, com cerca de 20 a 35 palavras. Na seção 3 de Como funciona, a demonstração e sua condição de acesso podem ocupar duas telas consecutivas. Nos stories de texto, dividir uma resposta longa preservando a resposta e sua justificativa. Não acelerar a fala para caber numa contagem fixa.
-
-**Materiais a separar:** uma criação real de criança, autorizada, com desenho e regras feitos por ela; um curso disponível; telas reais da aula, das ferramentas e da Jornada (as capturas usadas nas páginas de oferta estão em `packages/funnel/public/img/comunidade-dos-criadores/tela-*.webp`); cenas reais de alunos; trechos literais de avaliações e gravação do casal. Há projetos e relatos autorizados, conforme informado pelo responsável; os arquivos ainda precisam ser selecionados, inclusive confirmar as cenas de aula. O cartão do jogo sai cortado no QR, como nas páginas de oferta.
+Links L0 e L5 e o destino da bio, LB, estão em [Links e publicação](apoio/links-e-publicacao.md). Quando não houver sticker indicado, a tela não tem link nem interação adicional. As cenas do Farol operadas pelo casal recebem o rótulo visível **Demonstração da equipe**. Não narrar depoimentos como se Helena ou Júlio fossem seus autores.
 
 ## Como funciona
 
-**O que este destaque explica:** como seu filho evolui na plataforma, como é cada aula e o que ele cria com cada ferramenta. São três seções, como os blocos de Dúvidas, e cada uma abre com uma tela de título curta para quem avança saber onde está. As seções podem ser publicadas em dias diferentes, conforme [Postagens](03-postagens.md#3-stories-e-formação-dos-destaques); ficam no mesmo destaque, na ordem 1, 2 e 3. Stickers: seções 1 e 2 → L1; seção 3 → L2.
+**Função:** contar o primeiro passo antes de detalhar ferramentas ou planos. Nove telas: formato e condições foram separados para preservar a leitura.
 
-**Como manter a sequência clara:** a seção 1 precisa bastar para entender o começo, a rotina, a continuidade e a participação da família; seu fechamento e seu link são completos. A seção 2 acompanha uma tarefa dentro de uma aula. A seção 3 mostra o que a criança cria com as ferramentas e as condições de acesso. Evitar reabrir as seções 2 e 3 com outra apresentação geral. O roteiro mantém 20 unidades e três telas de título; dividir uma unidade quando a demonstração ou a leitura pedir, preservando o raciocínio. A primeira tela já apresenta os três assuntos, sem acrescentar outra abertura.
+### CF01 · O jogo e a regra
 
-**A tese da orientação, para todo o destaque:** a plataforma foi feita para a criança saber o próximo passo. Mostrar isso pelo que existe na tela: a fala do Zappy na aula, com o botão “Ouvir”; o vídeo passo a passo; “Uma pista” e “Conferir” nas experiências; a faixa “O que falta para seguir” no pé da aula; “Verificar esta etapa” nas montagens que têm essa verificação; a próxima aula indicada na trilha; os tutoriais do Como fazer; o Clube para trocar ideias; e, mais adiante, o Zappy do Estúdio. Falar da intenção do desenho, sem garantir que nenhuma criança terá dúvida nem que toda criança acompanha sozinha desde a primeira aula. Não destacar mensagens à equipe nem tempo de espera neste destaque; esse caminho fica em Dúvidas 8.
+**Vídeo. Cena:** mostrar personagem, chave e farol; depois o farol aceso e o barco chegando à costa. **Sobreposição:** A Chave do Farol.
 
-### Seção 1 · A Jornada
+> Neste jogo, o personagem precisa pegar uma chave para acender o farol e ajudar um barco a chegar à costa. No Desafio do Primeiro Jogo, seu filho aprende, passo a passo, a fazer essa aventura funcionar.
 
-**O que esta seção explica:** a metodologia geral para seu filho evoluir. Como ele começa, como a aula cabe em casa, por que ele sabe o próximo passo e como passa a usar o que aprende nas próprias criações. Os jogos ensinados ficam em [Projetos](#projetos); a aula por dentro, na seção 2; os nomes dos postos e as condições de cada recurso, na seção 3 e em [Dúvidas](#dúvidas).
+### CF02 · Primeiro, experimentar
 
-#### Tela de título da seção 1
+**Vídeo. Cena:** experiência da porta, com os dois estados visíveis. **Sobreposição:** Primeiro, experimentar.
 
-> Como funciona
->
-> 1 · A Jornada
-> 2 · Como é cada aula
-> 3 · As ferramentas
+> Antes de ensinar a fazer o farol acender, a aula deixa seu filho experimentar. Ele chega à porta com a chave e sem ela. Assim, vê o que muda e entende por que precisa buscá-la.
 
-**Cena:** apresentar os três assuntos com letra legível e destacar “1 · A Jornada” como a seção atual, com a Jornada ao fundo (`tela-jornada`). Dar tempo para ler; sem fala. Nas aberturas seguintes, usar “2 de 3” e “3 de 3” para situar a continuação.
+### CF03 · Da experiência aos blocos
 
-#### 1.1 · O que seu filho aprende a criar
+**Vídeo. Cena:** transição identificada da experiência para a montagem da condição e seu teste. **Sobreposição:** Montar e ver se funciona.
 
-> Nas nossas aulas, seu filho aprende programação criando jogos. Ele começa por projetos guiados, em que cada aula ensina uma parte do jogo, e aos poucos passa a usar o que aprendeu nas ideias dele.
+> Depois, a aula mostra como encaixar blocos na tela para dizer ao jogo o que fazer. Seu filho monta essa parte e joga das duas formas, com a chave e sem ela, para conferir se funcionou.
 
-**Cena:** jogo de curso funcionando, regra de movimento e uma variação feita no Estúdio. Identificar “Demonstração da equipe” quando for o caso. Informar “Para crianças de 9 a 14 anos”. Não apresentar o curso extra como entrada obrigatória.
+### CF04 · As partes se conectam
 
-#### 1.2 · Como a aula entra na rotina
+**Vídeo. Cena:** movimento, coleta e porta no mesmo projeto. **Sobreposição:** Buscar a chave e acender o farol.
 
-> As aulas são gravadas e feitas no computador, com internet, mouse e teclado. Vocês combinam o horário. Seu filho assiste a um passo, pausa para fazer aquela parte e continua quando termina a montagem.
+> Para chegar até aí, ele já aprendeu a fazer o personagem andar e pegar a chave. Agora junta essas partes: vai buscar a chave, leva até o farol e vê a luz acender.
 
-**Cena:** computador, explicação ao lado da atividade e pausa real do vídeo. O foco é a organização da aula em casa; a demonstração completa fica na seção 2.
+### CF05 · Escolhas que ficam no projeto
 
-#### 1.3 · Feito para ele saber o próximo passo
+**Vídeo. Cena:** personalização real, trocando personagem e cenário pelas opções disponíveis. **Sobreposição:** Escolher o visual do jogo.
 
-> A aula apresenta uma tarefa de cada vez e mostra como conferir o resultado. Seu filho faz aquela parte antes de seguir. Quando termina, a trilha indica a próxima aula.
+> Os desenhos já vêm prontos para ele começar a aprender programação. Depois, seu filho escolhe o personagem e o cenário entre as opções da aula. Também escreve as mensagens que vão aparecer no jogo.
 
-**Cena:** tarefa explicada, criança ou equipe testando o resultado e próxima aula na trilha. É a visão geral; os recursos usados durante uma tentativa aparecem na seção 2.
+### CF06 · Uma conversa em família
 
-#### 1.4 · Quando pode começar uma ideia própria
+**Vídeo. Cena:** Helena mostra a Júlio uma versão do Farol e aponta a chave. **Sobreposição:** Uma escolha para mostrar.
 
-> O primeiro curso é o de entrada. Quando ele conclui esse curso e publica o projeto, chega ao posto Construtor e duas ferramentas se abrem: o Estúdio livre, para começar um jogo do zero, e o Pinta, para desenhar os próprios personagens.
+> Quando o jogo estiver pronto, você pode jogar com ele. Se a chave estiver num lugar diferente, peça que conte por que a colocou ali. Ele tem uma escolha dele para mostrar, e vocês têm um assunto para conversar.
 
-**Cena:** projeto do curso publicado, Estúdio livre e desenho entrando no jogo. O posto Construtor pode aparecer na interface, sem exigir que o pai memorize o nome. Mostrar essa passagem somente com o curso de entrada correto.
+### CF07 · Como estudar
 
-#### 1.5 · Como o aprendizado continua
+**Cartela. Título:** Aulas gravadas, no computador.
 
-> Cada curso seguinte traz outro jogo para construir. Os comandos que ele conquista ficam reunidos no Estúdio, para combinar nas próprias criações. Ele pode aproveitar um movimento que aprendeu e experimentar outra brincadeira com ele.
+> O Desafio é para crianças de 9 a 14 anos e precisa de computador com internet, mouse e teclado. As aulas são gravadas: seu filho pode pausar para fazer cada passo e voltar ao vídeo quando precisar.
 
-**Cena:** a trilha com o curso seguinte e a paleta do Estúdio com os comandos conquistados. Escolher um exemplo que exista no material disponível. A sequência de cursos e os recursos alcançáveis precisam corresponder ao catálogo publicado. Não prometer comando novo a cada curso.
+### CF08 · Acesso e pagamento
 
-#### 1.6 · O jogo chega à família
+**Cartela. Título:** Pagamento único, 30 dias de acesso.
 
-> O jogo publicado no Mural tem um link só dele, para vocês abrirem juntos ou mandarem a quem quiserem. Enquanto jogam, peça que ele explique uma regra. No Clube, ele mostra as criações e conversa com outros criadores.
+> Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento. Nesse tempo, seu filho faz as aulas, monta o jogo e pode compartilhá-lo no Mural, onde outras pessoas podem jogar. A compra não vira uma assinatura.
 
-**Cena:** Mural, jogo aberto pelo link e Clube. Identificar encenação da equipe e preservar o contexto dos registros reais. O link publicado é público; cortar o QR quando a captura apontar para ambiente de teste.
+### CF09 · Primeiro passo e continuidade
 
-#### 1.7 · Como você acompanha
+**Vídeo. Cena:** casal com o projeto e, no fecho, oferta do Desafio. **Sobreposição:** Conheça o Desafio do Primeiro Jogo. **Sticker:** Conhecer o Desafio → L0, origem cf09.
 
-> Na área do responsável, você acompanha os cursos e as criações dele e pode receber um resumo da semana por e-mail. No link, veja uma aula por dentro e conheça o que ele pode começar a criar.
-
-**Cena:** área da família, ajuste do resumo semanal e casal no fecho. Sticker **Ver como aprende** → L1.
-
-### Seção 2 · Como é cada aula
-
-**O que esta seção explica:** a metodologia da aula, com uma aula do Cadê Todo Mundo? como exemplo, sem apresentá-lo como entrada obrigatória da Comunidade. Jogo pronto, explicação, experiência, montagem, verificação e próximo passo. Cada recurso de orientação aparece como cena real na tela. A peça de feed dona dessa tese é F05.
-
-#### Tela de título da seção 2
-
-> 2 de 3 · Como é cada aula
->
-> Acompanhe uma tarefa do começo ao teste.
-
-**Cena:** título no padrão visual do perfil, com a aula ao fundo (`tela-aula-estudio`). Dar tempo para ler, sem fala, e entrar diretamente na tarefa abaixo. O nome do curso identifica o exemplo.
-
-#### 2.1 · O jogo pronto vem primeiro
-
-> Um clique no esconderijo, e o personagem aparece. Antes de programar, seu filho joga essa versão pronta para saber aonde vai chegar. O jardim e os personagens vêm desenhados, e a atenção fica nas regras.
-
-**Cena:** jogo funcionando (`tela-jogo-pronto`), com um personagem sendo encontrado. Identificar “Demonstração da equipe” e o curso Cadê Todo Mundo?.
-
-#### 2.2 · A aula diz o que fazer
-
-> Em cada etapa, o Zappy, personagem da aula, diz o que fazer, e o botão “Ouvir” toca essa fala para quem prefere escutar.
-
-**Cena:** fala real do Zappy na aula e o botão “Ouvir”. Esse Zappy é o personagem das aulas, com falas preparadas pela equipe; não confundir com o assistente de inteligência artificial do Estúdio (seção 3).
-
-#### 2.3 · Experimentar antes de montar
-
-> Um comando faz mais sentido depois que ele vê o efeito. Na experiência, clica com a reação desligada, depois ligada, e compara. Se empacar, clica em “Uma pista”, e “Conferir” diz se ele chegou lá.
-
-**Cena:** a experiência real de ligar e desligar a reação ao clique (`tela-regra-desligada`, `tela-regra-ligada`), com os botões “Uma pista” e “Conferir” visíveis. A captura precisa corresponder à atividade publicada.
-
-#### 2.4 · Montar seguindo o vídeo
-
-> Agora ele monta essa reação no projeto, seguindo o vídeo passo a passo e pausando quando precisa. Depois, clica no esconderijo para conferir se o personagem aparece.
-
-**Cena:** trecho do vídeo, pausa durante a montagem, comando no projeto e clique de teste com o personagem aparecendo.
-
-#### 2.5 · A aula confere com ele
-
-> Nas etapas com verificação, ele pode conferir os objetivos da montagem. A tela mostra o que já cumpriu e o que ainda falta, para ele voltar àquela parte e tentar novamente.
-
-**Cena:** etapa real com “Verificar esta etapa”: mostrar os objetivos, um item ainda não cumprido, a alteração correspondente e a nova conferência. O recurso confere os critérios definidos para aquela montagem; não diagnostica qualquer erro do jogo nem está presente em todas as etapas. O teste do personagem continua sendo feito no jogo.
-
-**Alternativa se a aula escolhida não tiver essa verificação:** usar a fala abaixo e mostrar a comparação com o vídeo. Não trocar de curso no meio da sequência para encaixar o botão.
-
-> Se o personagem não aparece, ele volta ao trecho do vídeo e compara a montagem. Depois de ajustar aquela parte, clica de novo no esconderijo e observa se o resultado mudou.
-
-#### 2.6 · O próximo passo já está indicado
-
-> A faixa no pé da aula mostra o que falta para seguir. Ao concluir, ele encontra a próxima aula na trilha. No link, acompanhe essa sequência por dentro.
-
-**Cena:** faixa de pendências da mesma aula, conclusão e próxima aula indicada. Encerrar com o casal e o sticker **Ver a aula por dentro** → L1. A participação da família já foi apresentada na seção 1.
-
-### Seção 3 · As ferramentas
-
-**O que esta seção explica:** o que seu filho consegue fazer com cada recurso, por meio de uma ação visível, e quando ele abre. O nome identifica a ferramenta depois que a situação está clara. Usar telas reais do Estúdio, Pinta, Pensa, Zappy e Molda. As unidades 3.1 a 3.7 são roteiro; a condição de acesso faz parte da mesma explicação e pode ocupar uma continuação, com o nome do recurso visível.
-
-**Antes de gravar:** conferir a [disponibilidade por recurso](#disponibilidade-por-recurso). A versão abaixo explica os requisitos. Para recursos avançados, acrescentar na própria demonstração a frase de disponibilidade escolhida após a conferência. Não apresentar uma conta de equipe com acesso completo como evidência de que uma criança consegue alcançar esse recurso com os cursos publicados.
-
-#### Tela de título da seção 3
-
-> 3 de 3 · As ferramentas
->
-> Veja o que seu filho pode criar e quando cada recurso abre.
-
-**Cena:** tela de título no padrão visual do perfil, com o Estúdio ao fundo (`tela-estudio`). Poucos segundos, sem fala.
-
-#### 3.1 · Estúdio: a regra aparece no jogo
-
-> Seu filho quer que um personagem ande quando aperta uma tecla. No Estúdio, ele monta essa regra com blocos e joga para testar. Pode ajustar o movimento e comparar as versões.
-
-**Cena:** tecla, bloco correspondente e comparação entre dois ajustes do movimento. Mostrar o uso de uma regra, sem repetir a explicação da aula da seção 2. Se a captura for do Estúdio livre, manter a condição de acesso de 3.2 junto da demonstração.
-
-#### 3.2 · Estúdio: usar o que aprendeu em outra criação
-
-> Para um jogo de corrida, ele pode combinar um movimento que aprendeu com uma regra de pontuação. O Estúdio livre reúne os comandos que já conquistou, para usar e testar essas combinações.
->
-> Esse uso livre abre depois de concluir o curso de entrada e publicar o projeto no Mural. É o posto Construtor. As ferramentas ficam disponíveis durante o período de acesso.
-
-**Cena:** projeto no Estúdio livre, com os comandos de movimento e pontuação conquistados pela conta. Mostrar como entram na criação. Se a captura tiver outra mecânica, adaptar o exemplo à combinação real. Não usar “curso publicado” para falar do projeto que a criança publica.
-
-#### 3.3 · Pinta: o desenho entra no jogo
-
-> No Pinta, ele desenha personagens, cenários e animações, e leva o desenho para o jogo no Estúdio. Se o personagem some no fundo, volta ao desenho, troca a cor e testa de novo.
->
-> O Pinta abre junto do Estúdio livre, no posto Construtor, depois do curso de entrada concluído e do projeto publicado.
-
-**Cena:** desenho, importação no Estúdio, dificuldade de contraste e ajuste real. Preservar a mesma criação para que a relação entre a mudança e o resultado fique visível.
-
-#### 3.4 · Pensa: decidir por onde começar
-
-> Seu filho imaginou um jogo, mas ainda precisa decidir o objetivo e os controles. No Pensa, uma conversa com inteligência artificial ajuda a organizar essas escolhas em tarefas. Quem decide é ele, e a lista mostra por onde começar.
->
-> O Pensa faz parte do posto Inventor e usa créditos de inteligência artificial da família. Para chegar a esse posto, ele conclui os cursos exigidos e publica os projetos.
-
-**Cena:** conversa real, escolha e tarefa aberta no Pinta ou Estúdio. Acrescentar a condição atual conforme a conferência abaixo; “posto Inventor” sozinho não comprova disponibilidade.
-
-#### 3.5 · Zappy: investigar um erro
-
-> Ele aperta a tecla, mas o personagem fica parado. No Estúdio, pode contar ao Zappy o que tentou. A inteligência artificial sugere o que conferir; seu filho faz o ajuste e testa para ver se resolveu.
->
-> Essa ajuda abre no posto Inventor e usa os mesmos créditos da família que o Pensa.
-
-**Cena:** usar uma dúvida real da captura; adaptar a primeira frase se o erro for outro. Mostrar sugestão, ajuste feito pela pessoa e novo teste. Não confundir esse assistente com as falas preparadas do Zappy nas aulas. Acrescentar a condição atual junto da demonstração.
-
-#### 3.6 · Molda: experimentar uma forma em 3D
-
-> No Molda, ele cria modelos em três dimensões. Pode girar a visão para ver o objeto de outro lado, ajustar a forma e conferir de novo. Esses modelos podem fazer parte dos jogos 3D que constrói no Estúdio.
->
-> O Molda pertence ao posto Explorador de Mundos. Para chegar até ele, seu filho conclui e publica os projetos das etapas anteriores.
-
-**Cena:** modelo real sendo girado e ajustado. Mostrar a passagem ao jogo 3D somente se houver captura correspondente. Acrescentar a condição atual junto do recurso.
-
-#### 3.7 · Escolher pelo que seu filho pode fazer
-
-> Antes de escolher a assinatura, veja os cursos publicados e as ferramentas que seu filho consegue alcançar com eles. Parte do percurso ainda está em preparação. No link, conheça os recursos e mostre a ele o que dá para criar.
-
-**Cena:** catálogo e mapa coerentes com a conferência; casal no fecho. Sticker **Ver as ferramentas** → L2. Atualizar a frase sobre preparação quando mudar o catálogo.
-
-#### Disponibilidade por recurso
-
-**Nota de produção, fora da copy:** requisitos conferidos na documentação da Jornada e na oferta local. O catálogo ativo necessário para confirmar quais postos são alcançáveis não foi consultado nesta revisão. A implementação de uma ferramenta não comprova que todos os cursos para liberá-la estejam publicados. Registrar aqui a verificação no ambiente de publicação antes de gravar; esta tabela é a fonte única para as unidades 3.1 a 3.7 da seção 3, F01 e F06–F09.
-
-| Recurso | Requisito a conferir junto do catálogo | Situação da conferência |
-| --- | --- | --- |
-| Estúdio nas aulas | Curso e atividade publicados com os recursos mostrados | Pendente de conferir o curso da captura |
-| Estúdio livre e Pinta | Curso de entrada publicado, concluível e com publicação de projeto; posto Construtor | Pendente de conferir o percurso no catálogo |
-| Pensa e Zappy no Estúdio | Nove posições obrigatórias concluíveis, com os projetos publicados, até Inventor; serviço e créditos | Pendente de conferir o percurso no catálogo |
-| Molda e jogos 3D | Dezessete posições obrigatórias concluíveis, com os projetos publicados, até Explorador de Mundos | Pendente de conferir o percurso no catálogo |
-| Código ao lado dos blocos / código puro | Cursos necessários até Gênio da Criação / Lenda | Pendente; apresentados somente em F09 |
-
-Depois da conferência, registrar data, ambiente, cursos/posições disponíveis e evidência. Aplicar **uma** destas frases na própria unidade do recurso, mantendo a identificação na tela; não usar as alternativas como se fossem simultaneamente verdadeiras:
-
-- **Percurso alcançável:** “Os cursos necessários para chegar a essa etapa já estão publicados. Seu filho libera o recurso quando conclui esse caminho e publica os projetos exigidos.”
-- **Percurso incompleto:** “Ainda faltam cursos publicados para chegar a essa etapa. Estamos mostrando uma possibilidade do percurso em preparação; esse recurso ainda não pode ser alcançado por quem começa agora.”
-
-Se a disponibilidade continuar sem conferência, produzir a demonstração interna e deixar a peça sem publicação. Não substituir essa informação por uma ressalva genérica só no último story. Os requisitos individuais continuam visíveis mesmo quando o percurso já estiver publicado.
+> No botão, veja o jogo, as aulas e o valor do Desafio. É um começo para vocês conhecerem a proposta na prática. Se quiserem outros cursos depois, podem escolher a assinatura da Comunidade dos Criadores, paga separadamente.
 
 ## Projetos
 
-**O que este destaque mostra:** os jogos que seu filho aprende a construir nos cursos disponíveis. Abrir diretamente pelo projeto. A aula por dentro está na seção 2 de Como funciona; aqui, cada curso aparece pelo jogo.
+**Função:** apresentar todos os projetos da Comunidade dos Criadores e ampliar o destaque a cada novo projeto. O catálogo inicial confirmado pelo responsável inclui **A Chave do Farol, Cadê Todo Mundo?, Nave Contra Asteroides e Corre Dino**. O Farol abre a apresentação, identificado como o primeiro projeto pelo Desafio do Primeiro Jogo. A sequência de exposição não estabelece uma ordem obrigatória de cursos.
 
-**Este destaque é alimentado a cada lançamento.** Cada curso novo publicado na assinatura vira um bloco de três telas, acrescentado aqui na semana em que sai: jogo funcionando → o que a criança programa e como aprende → posição do curso e próximo passo. A sequência de blocos mostra que a plataforma recebe projetos novos ao longo do tempo. Acrescentar somente cursos cuja publicação e inclusão na assinatura tenham sido conferidas.
+**Formato fixo: dois stories por projeto, oito telas no catálogo inicial.** São cartelas estáticas, com toda a copy escrita abaixo. O primeiro story apresenta o jogo por duas imagens; o segundo mostra um trecho dos blocos no Estúdio e explica as habilidades praticadas nessa construção.
 
-### P01 · Cadê Todo Mundo? em funcionamento
+### Composição das duas telas
 
-> Três personagens se escondem pelo jardim. O jogador clica nos esconderijos até encontrar todos. No curso Cadê Todo Mundo?, seu filho aprende a programar essa brincadeira: fazer o personagem aparecer e contar quantos já foram encontrados.
+- **Story 1, o jogo:** duas capturas da mesma versão jogável, empilhadas e com o mesmo tamanho. Pelo menos uma precisa mostrar o jogo em andamento, com a ação e os elementos que permitem entender como se joga. Quando houver telas próprias de abertura e encerramento, escolher apenas uma delas para acompanhar a imagem da partida em ação; nunca usar só abertura e encerramento. Selecionar a combinação que melhor apresenta cada jogo e usar os rótulos escritos em seu roteiro, correspondentes aos momentos mostrados. Manter enquadramento, escala e aparência do projeto para facilitar a comparação. O nome do jogo fica acima das imagens, e a copy curta fica abaixo delas.
+- **Story 2, as habilidades:** uma captura real do Estúdio com um trecho ampliado dos blocos, ligado à habilidade descrita. Preservar o evento ou a condição que dá contexto à regra. Destacar apenas o trecho relevante com um contorno e a chamada já escrita para cada tela. O nome do projeto e a habilidade ficam no topo; a copy explica a relação em linguagem para o responsável.
+- As duas imagens representam **momentos da partida do mesmo jogo pronto**, em ordem cronológica. Em jogos cujo começo e final já mostram o cenário e os elementos da partida, essa comparação pode ser mantida. Os rótulos identificam o momento real da captura, sem chamar uma cena em andamento de tela inicial ou final. A identificação é sobre o jogo, não sobre um antes e depois de aprendizagem.
+- Usar o rótulo **“Demonstração da equipe”** nas duas telas. Os textos em citação são a copy integral da arte; as notas de captura não entram na publicação. A peça deve ser compreensível pela imagem e pelo texto, sem depender de narração.
+- Na captura dos blocos, priorizar leitura no celular: aproximar a regra e manter uma indicação visual do Estúdio. Mostrar um trecho suficiente para entender a relação, sem reduzir todo o programa a letras pequenas. O código real continua intacto; contorno e chamada são elementos da composição.
+- As habilidades são práticas das atividades. Relacionar cada uma à regra mostrada, sem prometer resultados escolares ou cognitivos gerais a partir de uma captura.
 
-**Cena:** abrir pela partida, com um personagem aparecendo e a contagem mudando. Nome “Cadê Todo Mundo?” visível desde o começo; identificar “Demonstração da equipe”.
+**Presença do Cadê:** a orientação mais recente do responsável inclui o jogo neste catálogo. Sua campanha de entrada e seus convites presenciais continuam separados. Não inserir resgate de presente ou campanha gratuita nesta apresentação.
 
-### P02 · O que seu filho faz na aula
+**Acesso:** o link do Farol leva ao Desafio, L0. Os outros projetos levam à Comunidade, L5. Mostrar o catálogo não significa que todos os cursos estejam incluídos na compra avulsa do Desafio.
 
-> O jardim e os personagens já vêm desenhados, para ele se concentrar nas regras. A aula mostra como fazer o clique revelar um personagem. Ele pausa para montar, clica para testar e depois aprende a contar os encontrados.
+### PJ01 · Farol: o jogo que a criança constrói
 
-**Cena:** desenho preparado, explicação, pausa, montagem e resultado do clique. Dar tempo para relacionar a instrução ao efeito. Os recursos que guiam a aula estão na seção 2 de Como funciona.
+**Cartela com duas imagens. Título:** A Chave do Farol · Primeiro projeto pelo Desafio.
 
-### P03 · Onde esse curso entra
+**Captura de começo:** partida já iniciada, com o personagem no cenário jogável, farol apagado, chave ainda no cenário e barco afastado da costa. Mostrar o percurso que o personagem pode fazer até a chave e o farol.
 
-> Esse curso é extra da assinatura, disponível em qualquer etapa. Ele permite praticar essa construção, mas não conta para mudar de posto. No fim, seu filho pode chamar você para procurar os personagens no jogo que montou.
+**Captura de final:** chave recolhida, farol aceso e barco já na costa. Aguardar a chegada do barco antes de capturar.
 
-**Cena:** curso identificado como extra e partida em família, se houver registro autorizado. Sticker **Ver a aula por dentro** → L1.
+**Rótulos nas imagens:** Começo da partida / Final da partida.
 
-**Condição de produção:** confirmar publicação e inclusão do curso antes de apresentar P01–P03 como catálogo disponível. O curso extra não libera sozinho o Estúdio livre; essa liberação exige concluir o curso obrigatório de entrada e publicar seu projeto. Só acrescentar uma frase sobre comandos que entram nas ferramentas dele depois de conferir no admin a lista de blocos deste curso (a lista mora no banco, não no repositório). O Farol tem oferta própria e não entra neste catálogo por suposição.
+**Copy completa:**
 
-Nos próximos cursos, mostrar a mecânica real, o que vem preparado e o que a criança constrói. Explicar se é curso da sequência, bônus ou extra somente no ponto em que isso orienta a escolha. Para falar de comandos novos, conferir os blocos cadastrados no curso: alguns cursos permitem praticar comandos já conhecidos. Atualizar o bloco que mudar, sem manter datas ou expressões como “hoje” na versão permanente.
+> Seu filho aprende a fazer o personagem buscar uma chave e acender o farol para ajudar um barco a chegar à costa. As aulas mostram cada passo desse primeiro jogo.
+
+### PJ02 · Farol: planejar ações e conferir resultados
+
+**Cartela com imagem do Estúdio. Título:** A Chave do Farol · Pensar na ordem dos passos.
+
+**Recorte:** regra do encontro entre personagem e farol, com a condição que consulta a variável temChave. Manter visíveis as respostas com e sem chave; destacar a condição e o ramo que acende o farol. O movimento do barco vem preparado pela equipe.
+
+**Chamada junto ao destaque:** Com a chave, o farol acende.
+
+**Copy completa:**
+
+> Ele aprende a colocar os passos na ordem certa: pegar a chave antes de acender o farol. Depois, joga com e sem a chave para conferir se o jogo faz o que ele programou.
+
+**Sticker:** Conhecer o Desafio → L0, origem pj02.
+
+### PJ03 · Cadê Todo Mundo: o jogo que a criança constrói
+
+**Cartela com duas imagens. Título:** Cadê Todo Mundo? · Um jogo de encontrar personagens.
+
+**Captura de começo:** jardim jogável com os três esconderijos que a criança pode tocar e contador Achados em zero. A busca já está aberta, com os elementos do jogo visíveis.
+
+**Captura de final:** os três personagens revelados, Achados em três e mensagem de conclusão da busca visível. Usar a mesma escolha de bichos e esconderijos nas duas capturas.
+
+**Rótulos nas imagens:** Começo da partida / Final da partida.
+
+**Copy completa:**
+
+> Seu filho monta um jogo de procurar três personagens. O jardim e os desenhos vêm prontos. Nas aulas, ele aprende a fazer cada personagem aparecer quando alguém toca no esconderijo.
+
+### PJ04 · Cadê Todo Mundo: relacionar ações e consequências
+
+**Cartela com imagem do Estúdio. Título:** Cadê Todo Mundo? · Conferir a contagem.
+
+**Recorte:** evento do toque no esconderijo, com a regra que o deixa invisível e soma um à variável Achados. Manter evento e ações juntos; destacar a soma ligada ao toque.
+
+**Chamada junto ao destaque:** Cada personagem encontrado soma um.
+
+**Copy completa:**
+
+> Seu filho faz o jogo contar cada personagem encontrado. Depois, toca nos esconderijos para conferir a conta. Assim, aprende a ligar o que acontece na tela à mudança no placar.
+
+**Sticker:** Conhecer a Comunidade → L5, origem pj04.
+
+### PJ05 · Nave Contra Asteroides: o jogo que a criança constrói
+
+**Cartela com duas imagens. Título:** Nave Contra Asteroides · Uma partida no espaço.
+
+**Captura em andamento:** nave disparando, com tiro e asteroides visíveis na mesma cena. Preservar o placar e as vidas reais daquele momento; não exigir pontos em zero nem três vidas. Selecionar uma captura que mostre a ação do jogo, sem usar a tela de abertura.
+
+**Captura de final:** tela real de vitória depois de atingir a meta do jogo. Usar a vitória obtida na partida; preservar os elementos e textos que a própria tela exibe.
+
+**Rótulos nas imagens:** Jogo em andamento / Final da partida.
+
+**Copy completa:**
+
+> Com a ajuda das aulas, seu filho constrói um jogo de nave. Ele aprende a fazer a nave andar, atirar nos asteroides e ganhar pontos. Também prepara o fim da partida e o recomeço.
+
+### PJ06 · Nave Contra Asteroides: organizar regras que trabalham juntas
+
+**Cartela com imagem do Estúdio. Título:** Nave Contra Asteroides · Conferir o que fez.
+
+**Recorte:** colisão entre tiro e asteroide, com a soma de um na variável pontos. Manter visível o evento ao qual a soma pertence e destacar esse comando. Desenhos e efeitos vêm dos blocos preparados.
+
+**Chamada junto ao destaque:** Um acerto acrescenta um ponto.
+
+**Copy completa:**
+
+> Seu filho aprende a fazer cada acerto valer um ponto. Ao jogar, confere se o placar aumenta como deveria. É uma forma de aprender a conferir o próprio trabalho: a conta precisa acompanhar os acertos.
+
+**Sticker:** Conhecer a Comunidade → L5, origem pj06.
+
+### PJ07 · Corre Dino: o jogo que a criança constrói
+
+**Cartela com duas imagens. Título:** Corre Dino · Uma corrida com obstáculos.
+
+**Captura em andamento:** Dino no ar durante um salto sobre um cacto, com pista, obstáculo e placar real visíveis. Escolher um momento que mostre como se joga; não exigir placar em zero nem usar a tela de abertura.
+
+**Captura de final:** tela de fim após uma batida, com a pontuação da partida e o convite de recomeço do próprio jogo. O final mostrado é o encerramento daquela corrida.
+
+**Rótulos nas imagens:** Jogo em andamento / Final da partida.
+
+**Copy completa:**
+
+> Seu filho cria um jogo em que o dinossauro pula cactos para seguir correndo. Com a ajuda das aulas, faz o placar contar pontos com o tempo e a corrida ficar mais difícil.
+
+### PJ08 · Corre Dino: observar, comparar e ajustar
+
+**Cartela com imagem do Estúdio. Título:** Corre Dino · Comparar tentativas e ajustar.
+
+**Recorte:** regra ensinada no final do curso que altera a velocidade e verifica o limite escolhido. Manter a condição e a alteração de velocidade juntas; destacar a condição que limita o aumento da dificuldade.
+
+**Chamada junto ao destaque:** A velocidade aumenta até este limite.
+
+**Copy completa:**
+
+> A corrida vai ficando mais rápida, e seu filho aprende a colocar um limite nessa velocidade. Ele joga para ver como ficou e ajusta esse limite. Assim, pratica comparar tentativas e mudar o que fez.
+
+**Sticker:** Conhecer a Comunidade → L5, origem pj08.
+
+### Como acrescentar novos projetos
+
+Cada projeto novo recebe **duas telas com copy completa**: montagem com dois momentos do jogo, pelo menos um deles em andamento; depois, recorte de blocos e habilidades praticadas. Se houver telas de abertura e encerramento, escolher uma delas para acompanhar a ação, conforme o que melhor apresenta o jogo. Acrescentar o bloco preservando o catálogo já apresentado. Escrever títulos, rótulos, chamadas, texto da arte e convite antes da produção.
+
+No segundo story, explicar a habilidade pelo que acontece no jogo. Por exemplo: pegar a chave antes de acender o farol ajuda a explicar a ordem dos passos. Usar palavras que uma criança de 10 anos consiga entender, falando com o responsável. As experiências e a montagem guiada fazem parte das aulas; a imagem apresenta ao responsável um recorte dessa construção.
+
+Usar os próximos IDs PJ disponíveis e acrescentar o bloco ao calendário e aos links. Indicar o acesso correspondente. O Farol continua identificado como primeiro projeto, mesmo quando o destaque recebe novas telas; não é necessário republicá-lo para alterar a posição do destaque no perfil.
+
+Fontes: [Farol](../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md), [Cadê Todo Mundo?](../../../../aulas-interativas/modulos-cade-todo-mundo.md), [Nave Contra Asteroides](../../../../aulas-interativas/modulos-nave-contra-asteroides.md) e [Corre Dino](../../../../aulas-interativas/modulos-corre-dino.md). A lista de projetos existentes e a direção visual foram confirmadas pelo responsável nesta conversa.
 
 ## Alunos
 
-**O que este destaque mostra:** crianças usando as aulas e as ferramentas. Começar diretamente pelo vídeo. A cena é o conteúdo principal; a copy ajuda a compreender uma ação que esteja visível.
+**Função:** mostrar crianças fazendo cursos e atividades da Comunidade, com suas reações e participação reais. **Alunos é um destaque vivo**, que recebe novos stories conforme novos registros forem selecionados. A seleção inicial indicada pelo responsável tem quatro vídeos, nesta ordem: **Rafael, Jeffrey, Débora e André**. Esses nomes orientam o primeiro lote de produção; a abertura apresenta a atividade, sem anunciar uma lista ou quantidade fixa de crianças. O foco é o envolvimento na atividade, não explicar o curso ou repetir um depoimento. Avaliações é o lugar dos relatos.
 
-Selecionar, por exemplo, quatro a seis clipes de cinco a doze segundos, conforme o material disponível. Essa quantidade é uma referência de edição. O vídeo pode mostrar mãos e tela, sem exigir o rosto.
+Escolher em cada vídeo um trecho contínuo, legível e com tempo para perceber a criança participando. Preservar reações espontâneas; não exigir sorriso, elogio ou uma fala comercial. O nome do curso não precisa ser uma chamada na arte. Não atribuir todos os registros ao Farol nem misturar crianças como uma única trajetória. A apresentação do Cadê Todo Mundo? no catálogo de Projetos não muda a entrada principal pelo Desafio. Débora e André são filhos de Helena e Júlio; o vínculo aparece junto de cada vídeo.
 
-| Se o vídeo mostra… | Texto possível sobre a cena |
-| --- | --- |
-| Pausa da explicação para fazer um passo | “Ele pausou o vídeo para montar essa parte no tempo dele.” |
-| Retorno a um trecho da aula | “Ela voltou ao trecho da aula para ver onde o comando entra.” |
-| Execução do projeto depois da montagem | “Regra montada. Agora ele testa no jogo.” |
-| Alteração seguida de outro teste | “Ela mudou a regra e jogou de novo para comparar.” |
-| Apresentação do projeto à família | “Agora é ele quem mostra como o jogo funciona.” |
+**Variação das legendas:** cada vídeo destaca uma ação diferente: Rafael aprendendo, Jeffrey explorando, Débora mudando o jogo do jeito dela e André jogando para conferir o que fez. Selecionar nos vídeos os momentos que correspondem a essas ações. Se o registro mostrar outra ação, escrever uma legenda igualmente específica e fiel ao que aparece; não encenar o comportamento para sustentar a frase.
 
-Ajustar os pronomes à pessoa do registro. Usar a frase somente quando a ação puder ser reconhecida na cena. Se a imagem já explicar o momento, basta identificar o curso ou a ferramenta; não é preciso preencher cada vídeo com texto.
+### AL01 · Crianças em atividade
 
-Não transformar as cenas de crianças diferentes numa história de antes e depois de um único aluno. Não pedir elogio, entrevista ou fala comercial para produzir o destaque. Nome e idade só entram se forem úteis e estiverem autorizados.
+**Vídeo do casal. Sobreposição:** Alunos na Comunidade dos Criadores.
 
-**Seleção necessária:** conferir se os arquivos disponíveis incluem crianças fazendo aulas ou usando as ferramentas. Um projeto pronto não substitui esse registro. Material de piloto, de outra versão ou dos filhos dos fundadores recebe seu contexto verdadeiro. Não abrir destaque vazio. Um sticker **Conhecer as aulas** pode encerrar uma seleção; o link opcional está no documento de publicação.
+> Aqui você vê as crianças fazendo as aulas da Comunidade dos Criadores. Acompanhe um pouco de como elas montam os jogos, fazem escolhas e colocam suas ideias para funcionar.
+
+### AL02 · Rafael
+
+**Vídeo real do Rafael aprendendo um passo da programação.** Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+
+> Rafael aprendendo a fazer uma parte do jogo funcionar.
+
+### AL03 · Jeffrey
+
+**Vídeo real do Jeffrey explorando uma escolha e observando seu efeito.** Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+
+> Jeffrey explorando o que muda quando faz uma escolha.
+
+### AL04 · Débora
+
+**Vídeo real da Débora personalizando uma parte do projeto.** Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+
+> Débora dando o seu jeito ao jogo.
+>
+> Filha de Helena e Júlio.
+
+### AL05 · André
+
+**Vídeo real do André testando sua criação.** Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+
+> André jogando para conferir o que acabou de fazer.
+>
+> Filho de Helena e Júlio.
+
+### AL06 · Conhecer um primeiro passo
+
+**Vídeo do casal. Sobreposição:** Conheça o Desafio do Primeiro Jogo. **Sticker:** Conhecer o Desafio → L0, origem al06.
+
+> Para conhecer uma primeira atividade para seu filho, veja o Desafio do Primeiro Jogo no botão. As aulas ensinam a construir A Chave do Farol. Você pode ver o jogo e como as aulas funcionam antes de comprar.
+
+### Como acrescentar novos alunos
+
+Manter a abertura AL01: ela apresenta o destaque e continua válida quando novas crianças entram. Acrescentar os novos vídeos com os próximos IDs AL disponíveis, sem substituir os primeiros registros nem regravar a abertura para enumerar participantes. As seis telas AL01 a AL06 formam apenas o lote inicial; AL06 é o convite desse lote e não impede novos vídeos depois dele.
+
+Cada novo story mostra um registro real de uma criança em atividade, com nome e uma legenda completa que descreva a ação visível. Variar a abordagem conforme o trecho selecionado: aprender, explorar, personalizar, testar ou outra ação observável. Escrever a copy a partir do vídeo, antes de produzir a tela. Manter a identificação de vínculo com os criadores junto ao registro, quando houver, como já previsto para Débora e André. Registrar a nova peça no calendário; incluir destino em Links e publicação apenas se houver sticker.
 
 ## Dúvidas
 
-**Como responder:** a resposta vem primeiro. Depois, o raciocínio, com um exemplo do dia a dia da família quando ele ajudar, no tom de uma conversa. Cada resposta abaixo é uma unidade de conversa, que pode ocupar um ou dois stories. A pergunta permanece visível durante a resposta. Este destaque é o dono das condições de uso e de contratação; os outros só fazem menções curtas. A orientação segue a tese de Como funciona: a plataforma foi feita para a criança saber o próximo passo. A conversa com a equipe aparece uma vez, leve, na resposta 8.
+**Função:** responder antes da compra. Dezoito cartelas, distribuídas em quatro blocos no calendário. O título de cada tela entra na arte junto da resposta. Não há fala adicional.
 
-### Bloco 1 · Adequação e rotina
+### DU01 · Para qual idade é o Desafio?
 
-#### 1. Para qual idade são as aulas?
+> Para crianças de 9 a 14 anos. As aulas ensinam programação desde o começo. Seu filho precisa conseguir ler e usar mouse e teclado. Vale estar junto na primeira aula para ver de que ajuda ele precisa.
 
-> Para crianças de 9 a 14 anos. As aulas são em português, e seu filho precisa ler as instruções e usar mouse e teclado, porque é assim que acompanha a aula e monta o jogo. Saber programar não está entre os requisitos.
->
-> Na primeira aula, vale sentar junto. Você vê o que a atividade pede e percebe onde ele ainda quer companhia, como achar um comando na tela ou entender uma instrução mais longa.
+### DU02 · Dá para fazer no celular?
 
-#### 2. Serve para quem nunca programou?
+> Para fazer o curso, seu filho precisa de computador ou notebook com internet, mouse e teclado. Pelo celular, você pode conhecer as aulas e o jogo antes de comprar.
 
-> Serve. As primeiras aulas ensinam desde o começo: onde fica um comando, como encaixá-lo e o que esse comando muda no jogo.
->
-> O cenário e os personagens já vêm preparados, e ele constrói uma regra de cada vez. Assiste ao passo, monta no projeto e joga para conferir. Quando o personagem responde do jeito que ele esperava, aquela parte do jogo já é dele.
+### DU03 · As aulas são ao vivo?
 
-#### 3. As aulas são ao vivo?
+> As aulas são gravadas. Vocês escolhem o horário, e seu filho pode pausar o vídeo para fazer cada passo ou assistir de novo. Não há um professor ao vivo durante a atividade.
 
-> Não, as aulas são gravadas. O horário é o que vocês combinarem, e ele acompanha a explicação no ritmo da montagem. O vídeo mostra um passo em alguns segundos; achar o bloco pode levar mais. Ele pausa o vídeo, faz o passo e continua.
->
-> Se perdeu um detalhe, revê só aquele trecho.
+### DU04 · Como ele recebe ajuda?
 
-#### 4. Ele pode fazer pelo celular?
+> Ele pode rever o vídeo e comparar o que fez com a explicação. Se ainda tiver dúvida, usa o botão “Preciso de ajuda” para escrever à equipe. A resposta chega por mensagem na área Recados e pode levar um tempo.
 
-> Não. Para fazer as aulas e criar os jogos, ele precisa de um computador com internet, navegador, mouse e teclado.
->
-> As aulas foram pensadas para esses controles: ele usa o mouse para montar os comandos e o teclado em várias tarefas. Por isso, celular e tablet não são os aparelhos indicados. Vale reservar o computador da família no horário que vocês combinarem.
+**Cena de apoio opcional:** rodapé real da aula, sem enviar mensagem para produzir a captura. O botão infantil atual é “Verificar esta parte”.
 
-#### 5. Ele precisa entrar todos os dias?
+### DU05 · Preciso acompanhar o tempo todo?
 
-> Não. Vocês escolhem os dias e o tempo que cabem na rotina de casa. Ele faz uma parte, guarda o projeto e continua em outro dia, dentro do período de acesso.
->
-> Antes de desligar, confiram juntos o aviso de que o projeto ficou salvo e combinem qual parte ele quer fazer na próxima vez. Na volta, ele sabe por onde recomeçar.
+> Isso varia de criança para criança. No começo, ajude seu filho a entrar na conta e abrir a aula. Observe como ele acompanha o vídeo e faz a atividade. A partir daí, vocês vão descobrindo quando ele precisa de companhia.
 
-#### 6. Eu preciso saber programação para ajudar?
+### DU06 · Precisa terminar em três dias?
 
-> Não. A programação fica com as aulas, que mostram como montar cada parte e o que observar no jogo.
->
-> Você ajuda de outro jeito: organizando o horário e conhecendo os controles com ele no começo. Depois, peça para ver o que ele fez. É pela explicação dele que você conhece a criação.
+> Não. Vocês têm 30 dias de acesso a partir da aprovação do pagamento e podem dividir as aulas nesse período. Seu filho precisa de tempo para assistir, montar e jogar para conferir o que fez.
 
-### Bloco 2 · Orientação, ferramentas e acompanhamento
+### DU07 · O pagamento se repete?
 
-#### 7. Como meu filho recebe orientação durante a aula?
+> Você paga uma vez pelo Desafio. Não há nova cobrança automática quando o acesso termina. No botão, confira o preço e as formas de pagamento.
 
-> Pela própria aula, que foi desenhada para ele saber o próximo passo. O Zappy, personagem da aula, explica o que fazer, e o botão “Ouvir” toca essa fala. O vídeo mostra cada passo na tela.
->
-> Nas etapas que têm “Verificar esta etapa”, ele confere quais objetivos da montagem já cumpriu e quais ainda faltam. Isso dá uma referência para retomar aquela parte. Nas experiências, “Uma pista” ajuda a observar, e “Conferir” mostra o que ele já descobriu.
+**Sticker:** Ver valor e condições → L0, origem du07.
 
-#### 8. E se ele travar numa parte?
+### DU08 · O que está incluído nos 30 dias?
 
-> Dentro da plataforma, ele tem mais de um caminho. Além do que a aula mostra, o Como fazer tem tutoriais de cada ferramenta, e no Clube ele pode mostrar o que está construindo e ver como outros criadores resolveram coisas parecidas. Tudo foi pensado para ele avançar com autonomia.
->
-> Se ainda precisar de ajuda com a aula, ele pode escrever para a equipe pelo botão “Preciso de ajuda”, contando o que tentou. A conversa fica nos Recados.
+> As aulas de A Chave do Farol e o espaço para montar o jogo. Seu filho também pode publicá-lo no Mural, onde pode jogar as criações dos colegas, comentar e reagir. Outros cursos e ferramentas fazem parte da assinatura da Comunidade.
 
-#### 9. O que ele faz depois de terminar um curso?
+### DU09 · O que acontece depois dos 30 dias?
 
-> Nos cursos da sequência da Jornada, publica o projeto no Mural e continua pelo próximo curso disponível. Os comandos previstos no curso passam a compor os recursos dele no Estúdio; se já os conhecia, o curso serviu para praticá-los em outra construção.
->
-> Depois do curso de entrada, com o projeto publicado, o Estúdio fica livre. Aí ele pode voltar ao jogo que fez, mudar uma regra e testar outra versão, ou começar uma ideia própria com as ferramentas que já tem.
+> As aulas e a edição do jogo deixam de estar disponíveis por essa compra. Seu filho ainda pode ver e jogar no Mural, mas não publicar, comentar ou reagir. Os projetos ficam guardados na conta; para voltar a estudar ou editar, é preciso ter um acesso que inclua essas atividades.
 
-#### 10. Além das aulas, o que mais ele encontra na plataforma?
+### DU10 · Como funciona a garantia?
 
-> Lugares para mostrar e conversar sobre o que ele cria. O Mural reúne os jogos publicados, cada um com link e cartão com QR para a família abrir. No Clube, ele troca ideias com outros criadores por publicações e respostas.
->
-> Quando disponível para a etapa, o desafio do mês traz um tema para criar. Missões, conquistas, avatar e quarto deixam o espaço com a cara dele. O tempo de uso continua sendo combinado em casa.
+> Você tem sete dias corridos, a partir da compra, para pedir o dinheiro de volta pelo canal indicado nos termos. A garantia não acrescenta dias aos 30 dias de acesso. No botão, confira as regras da garantia e como fazer o pedido.
 
-#### 11. Tudo fica liberado assim que eu assino?
+**Sticker:** Consultar condições → L0, origem du10.
 
-> Não. Seu filho começa pelas aulas do curso de entrada. Ao concluir esse curso e publicar o projeto no Mural, ele chega ao posto Construtor e abre o Estúdio livre e o Pinta. Pensa, Zappy e Molda vêm em postos seguintes da Jornada.
->
-> No Estúdio livre, ele usa os comandos que aprendeu nos cursos. Algumas etapas ainda dependem da publicação de novos cursos, e a inteligência artificial tem limite de uso. Confira o que já está disponível antes de escolher o plano.
+### DU11 · Ele precisa desenhar os personagens?
 
-#### 12. Como eu acompanho o que ele está aprendendo?
+> Não. O cenário e os desenhos vêm prontos. Seu filho aprende a fazer o personagem andar, pegar a chave e acender o farol. Depois, escolhe entre os desenhos disponíveis e escreve as mensagens do jogo. O Desafio não é um curso de desenho.
 
-> Pela área do responsável, que reúne os cursos, as atividades e as entregas de cada filho. Lá, você também pode ativar o resumo da semana por e-mail.
->
-> Os registros ajudam a escolher uma criação para ver com ele. Peça que mostre uma parte que programou. Se mudou a pontuação, joguem juntos e confiram o placar. Quando ele explica por que o número mudou, você tem uma pista do que entendeu.
+### DU12 · O jogo é feito no Roblox ou Minecraft?
 
-#### 13. Uma assinatura atende meus dois filhos?
+> O jogo é feito no Estúdio do Sistema Zero, o espaço de criação que abre junto da aula. Ali, seu filho encaixa blocos para dizer ao jogo o que fazer. Mostre A Chave do Farol a ele antes de escolher o curso.
 
-> Sim. Os planos mensal e anual permitem até dois perfis de criança. Cada um guarda os próprios projetos e continua de onde parou, nos horários que vocês organizarem.
->
-> Um pode estar no primeiro curso enquanto o outro já avançou, porque as ferramentas abrem conforme o caminho de cada um. Se usarem recursos de inteligência artificial, o limite de uso é compartilhado pelos dois perfis.
+### DU13 · Quem pode abrir o jogo publicado?
 
-### Bloco 3 · Assinatura
+> Qualquer pessoa que tenha o link pode abrir o jogo. Para jogar, o aparelho precisa ter os controles que ele usa, como teclado. Combine com seu filho para quem vocês vão mandar o link.
 
-#### 14. Quais são os planos?
+### DU14 · Esconder o perfil torna o link privado?
 
-> Mensal ou anual. Nos dois, seu filho tem acesso aos cursos publicados, aos que forem acrescentados durante a assinatura e às ferramentas conforme avança na Jornada.
->
-> O que muda é o período e a forma de pagar. No botão, você vê o valor total de cada opção, as formas de pagamento e como funciona a renovação, antes de contratar.
+> Não. Você controla se os colegas podem ver o perfil do seu filho; no começo, essa opção fica desligada. Mas o jogo publicado tem um link público. Quem receber esse link pode abrir o jogo, mesmo com o perfil escondido.
 
-**Sticker:** **Ver planos e valores** → L5. Os valores são consultados na oferta vigente. Se a peça for adaptada para a pergunta “Quanto custa?”, a resposta deve começar pelo preço e pelo período de cobrança conferidos naquele momento; não usar esta resposta sobre planos para desviar da pergunta sobre valor.
+### DU15 · O link continua depois do curso?
 
-#### 15. A assinatura renova sozinha?
+> O fim do acesso às aulas não apaga o jogo publicado. O link continua funcionando enquanto a publicação estiver disponível. Se ela for retirada por vocês ou pela equipe, ou ficar indisponível, o link pode deixar de abrir o jogo.
 
-> No cartão, sim. O plano mensal renova a cada mês, e o anual, a cada ano. Se decidir parar, você cancela a próxima renovação na área do responsável.
->
-> No anual pago por Pix, não há renovação automática. Quando os 12 meses terminam, vocês contratam de novo se quiserem manter o acesso.
+### DU16 · Como ele pode continuar depois do Desafio?
 
-#### 16. Posso cancelar?
+> Se vocês quiserem outros cursos, podem assinar a Comunidade dos Criadores. Seu filho continua na mesma conta, com os jogos que já fez. As ferramentas de criação vão sendo liberadas conforme ele avança nas atividades. No botão, veja os cursos, os planos e como funciona a cobrança.
 
-> Sim. Você cancela a próxima renovação em “Minhas compras”, na área do responsável, e seu filho continua com acesso até o fim do período já pago.
->
-> Se cancelar hoje, por exemplo, ele segue com as aulas até o último dia desse período, e a próxima cobrança não acontece. O reembolso dentro da garantia é outro pedido, feito pelo canal indicado nos termos.
+**Sticker:** Conhecer a Comunidade → L5, origem du16.
 
-#### 17. E se ele não se adaptar?
+### DU17 · Posso começar direto pela Comunidade?
 
-> Na primeira contratação, você tem sete dias, contados da compra, para pedir o reembolso integral. O interesse de uma criança vai e volta, e esses dias servem para ver como ele reage a uma aula de verdade: abram juntos as aulas disponíveis e observem como ele acompanha a atividade.
->
-> O pedido vai pelo canal indicado nos termos da assinatura. Cancelar a próxima renovação, sozinho, não faz esse pedido. Os sete dias também valem para uma nova contratação anual por Pix; as renovações automáticas no cartão seguem os termos.
+> Pode. A assinatura da Comunidade já inclui o Desafio enquanto estiver ativa. Comprar o Desafio separado é uma opção para conhecer as aulas primeiro. Se vocês já são assinantes, usem a conta que têm para abrir o curso.
 
-**Sticker:** **Consultar condições** → L5. Conferir correspondência com a oferta e os termos antes de publicar. Não apresentar a garantia como aula gratuita.
+**Sticker:** Ver os planos → L5, origem du17.
 
-### Bloco 4 · Participação e visibilidade
+### DU18 · Como escolher esse primeiro passo?
 
-#### 18. O perfil do meu filho fica visível para os colegas?
+> Mostre A Chave do Farol ao seu filho e conversem sobre a ideia de criar esse jogo. Confiram também o computador e um horário para começar. No botão, você vê as aulas, o preço e o que está incluído antes de decidir.
 
-> Só se você decidir. A opção começa desligada, e quem pode ligar é você, na área da família.
->
-> Antes de mudar, conversem sobre o que ele gostaria de mostrar. Essa escolha vale só para o perfil. Os jogos publicados por link têm outra configuração: esconder o perfil não torna esses links privados.
-
-#### 19. Quem pode abrir um jogo publicado por link?
-
-> Qualquer pessoa que tenha o link, num aparelho compatível com os controles do jogo. O link é público, inclusive quando o perfil do seu filho está oculto para os colegas.
->
-> Por isso, combinem quais projetos publicar e com quem compartilhar. Se ele quiser mandar o jogo para a avó, por exemplo, conversem sobre essa diferença antes de enviar.
-
-#### 20. E se uma conversa no Clube incomodar meu filho?
-
-> Ele avisa a equipe pelo caminho de denúncia do Clube. Conheçam juntos onde fica essa opção e combinem que ele também procure você se alguma conversa o incomodar.
->
-> O Clube tem regras de convivência, mas elas não substituem a conversa em casa. Se acontecer algo, ouça o que houve e ajude seu filho a relatar a situação.
-
-As vinte respostas entram nos quatro blocos do calendário: 6, 7, 4 e 3. Dividir uma explicação longa é preferível a reduzir a letra ou eliminar o motivo da resposta. Manter a pergunta identificável na continuação. Novas dúvidas entram no bloco correspondente; uma condição que mudou substitui a resposta antiga.
+**Sticker:** Conhecer o Desafio → L0, origem du18.
 
 ## Avaliações
 
-**O que este destaque mostra:** o que outras famílias contam da experiência. Começar com um relato real. A fala da família permanece literal; não reescrevê-la para encaixar no tom da marca.
+**Função:** reunir relatos de crianças, adultos e responsáveis sobre suas experiências. A primeira seleção contém os três relatos infantis já autorizados pelo responsável em 08/10/2026. Relatos de adultos ou responsáveis entram quando houver a fala real, com copy final própria; não criar frases para representar pessoas ainda não ouvidas. Os textos foram localizados no histórico Git c3c142e8f^, arquivo packages/funnel/src/components/funnel/oferta/DesafioOfertaBody.astro, seção DEPOIMENTOS. Durante esta revisão, o usuário confirmou que as três crianças também testaram o Farol e reafirmaram as falas. Esse esclarecimento atualiza o contexto de uso: a copy pública não menciona uma experiência anterior.
 
-**Apresentação curta, junto do primeiro relato:**
+Do Rafael, usar o trecho literal sobre compartilhar o link, que não menciona a nave. Débora e André são filhos de Helena e Júlio, conforme confirmação do usuário; identificar o vínculo junto de cada fala. Nesta seleção, os relatos são das crianças. Futuras falas de adultos e responsáveis terão sua autoria identificada corretamente. Não acrescentar estrelas, nota média, idade, compra comprovada ou resultado típico. As cartelas com nomes dispensam fotografias e filmagens nesta versão. “No último dia” é parte da fala de Débora, não uma promessa de conclusão em prazo fixo.
 
-> Uma das famílias que participaram das nossas aulas contou como foi. As palavras são dela, e ela autorizou a gente a compartilhar com você.
+### AV01 · Apresentação dos relatos
 
-Usar “participaram das nossas aulas” somente se esse for o contexto verdadeiro. Identificar curso ou modalidade quando necessário. Material de piloto ou de outra versão precisa dessa informação na própria peça.
+**Cartela. Título:** O que contam sobre as aulas.
 
-**Montagem:** apresentação curta → trecho literal → identificação autorizada. Se o próprio relato já situar a experiência, a apresentação pode ser dispensada. Selecionar trechos que contem o que aconteceu, por exemplo como o filho acompanhou uma aula ou mostrou uma criação. Não acrescentar um resultado que a família não relatou.
+> Aqui a gente reúne os relatos sobre as aulas. Você pode conhecer o que as pessoas acharam antes de escolher uma atividade para seu filho.
 
-Uma avaliação pode ocupar uma ou duas telas, com tempo para ler. Nome, relação com o aluno e imagem seguem a autorização. O corpo da avaliação ainda depende da seleção dos relatos existentes; não há depoimento inventado neste roteiro.
+### AV02 · Rafael
+
+**Cartela. Identificação completa:** Rafael · Relato sobre o Desafio do Primeiro Jogo.
+
+> “No fim eu peguei o link e mandei pro meu amigo jogar.”
+
+### AV03 · Débora
+
+**Cartela. Identificação completa:** Débora, filha de Helena e Júlio · Relato sobre o Desafio do Primeiro Jogo.
+
+> “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.”
+
+### AV04 · André
+
+**Cartela. Identificação completa:** André, filho de Helena e Júlio · Relato sobre o Desafio do Primeiro Jogo.
+
+> “Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um maior.”
+
+### AV05 · Conhecer o projeto
+
+**Cartela. Título:** Conheça A Chave do Farol. **Sticker:** Ver A Chave do Farol → L0, origem av05.
+
+> A Chave do Farol é o jogo que seu filho aprende a construir no Desafio. No botão, veja como são as aulas, o que está incluído e quanto custa.
 
 ## Sobre nós
 
-**O que esta sequência conta:** quem são Helena e Júlio, de onde veio a Comunidade e como isso aparece nas aulas que seu filho encontra. A história é a mesma da oferta: criar jogos com o André, os pedidos dele para testar e explicar, e a decisão de preparar um começo guiado para outras crianças. Não mencionar condição de saúde do André nem acrescentar fatos que não estejam registrados.
+**Função:** apresentar Helena e Júlio, sua experiência profissional e a situação em casa que levou à criação da Comunidade. O fio da história é o interesse do André por jogar e assistir a jogos → a decisão de usar parte desse tempo para ensiná-lo a criar → o aprendizado durante a criação e as mudanças percebidas pela família → a vontade de levar essa experiência a outras famílias. O casal permanece no centro. O jeito de ensinar aparece como parte da história; o funcionamento da Comunidade é explicado no destaque próprio.
 
-### Story 1 · Quem está falando com você
+**Formato:** sete stories: cinco vídeos com o casal, um vídeo narrado sobre a foto do certificado e uma cartela com a foto do André com as medalhas. O certificado aparece durante o relato das mudanças na escola, com a fala completa e a informação do primeiro lugar. Nos vídeos, usar a fala integral e a legenda fiel, alternando quem fala de forma natural. Na cartela das medalhas, usar apenas o título e a copy indicados, sem narração adicional. Deixar tempo para observar as fotografias. Os títulos abaixo são a copy completa das sobreposições; as notas de cena não são faladas. O casal abre e encerra a história, e um bastidor atual pode acompanhar o último vídeo. O fecho convida a conhecer o destaque Como funciona, citado pelo nome.
 
-> Programar é o nosso trabalho, e criar jogos com o nosso filho, o André, levou esse trabalho para dentro de casa. Somos Helena e Júlio, desenvolvedores de sistemas formados em Sistemas de Informação.
+**Base da apresentação:** formação, profissão e início da criação em família estão na [apresentação dos fundadores na oferta](../../../../../packages/funnel/src/funnels/comunidade-dos-criadores/oferta/shared.ts). Em 08/10/2026, o responsável acrescentou à história o interesse do André por jogar e assistir a jogos e a decisão de usar parte do tempo de tela para ensiná-lo a criar. Também relatou mais interesse por aprender, participação nas aulas, concentração, melhora nas notas e medalhas em olimpíadas de matemática. Esses resultados entram como observações dos pais sobre o André; não atribuir toda a mudança à programação nem prometer que outras crianças terão os mesmos resultados. Não acrescentar notas, quantidade de medalhas, datas ou categorias de premiação. A copy usa “olimpíadas de matemática” para manter a fala simples.
 
-**Cena:** os dois olhando para a câmera. Usar registros familiares apenas quando forem apropriados e autorizados.
+**Direção da narrativa:** mostrar uma escolha possível dentro do tempo de tela que já existia. A família usa seu conhecimento profissional para ensinar a criar a partir de um interesse do filho. Evitar culpa, desqualificação de jogar ou assistir e afirmações de que todo tempo de tela precisa produzir resultados. Não acrescentar tempo de carreira, títulos ou episódios sem fonte. Não encenar lembranças como gravações antigas. As credenciais técnicas não são apresentadas como formação em pedagogia.
 
-### Story 2 · O que essa experiência trouxe
+**Registros das conquistas:** a foto das medalhas e o certificado foram propostos pela família. Selecionar o certificado real para SN04 e a foto das medalhas para SN05. Em 08/10/2026, o responsável esclareceu que André está no sexto ano do ensino fundamental e, desde o segundo ano, fica entre os cinco primeiros da turma, na maioria das vezes em primeiro lugar. Esse histórico vem do relato da família. A fala usa “desde o segundo ano” para contar a trajetória sem depender do ano escolar atual; não afirmar primeiro lugar em todas as etapas.
 
-> O André passou a chamar a gente para testar uma regra. Explicava por que tinha escolhido aquilo e imaginava outra versão. Daí nasceu a Comunidade dos Criadores: um começo guiado, em português, para outras crianças.
+O certificado disponível registra uma dessas conquistas: primeiro lugar na turma na primeira etapa letiva deste ano, conforme confirmação da família. Na fala e na imagem, apresentá-lo como um exemplo dessa trajetória. O certificado da segunda etapa ainda não foi recebido e fica fora desta versão. A história volta ao casal depois das duas telas com fotografias. O documento comprova o reconhecimento escrito nele; não comprova, por si só, todo o histórico, a causa da melhora ou o resultado do curso. Conferir a legibilidade e recortar dados pessoais que não sejam necessários para mostrar a conquista. Não recriar nem alterar os dados do documento.
 
-**Cena:** casal com um projeto. A história se baseia no relato dos fundadores já registrado na oferta; não encenar uma lembrança como registro antigo.
+### SN01 · Quem fala com você
 
-### Story 3 · Como a gente prepara uma aula
+**Cena:** casal diante da câmera, falando com o responsável. A formação entra na fala e na legenda fiel, sem uma segunda cartela de currículo. **Sobreposição:** Helena e Júlio.
 
-> Para preparar uma aula, a gente escolhe uma parte do jogo e divide em passos que seu filho consegue testar. Se a tarefa é revelar um personagem, ele confere cada parte com um clique no esconderijo.
+> Somos Helena e Júlio, pais do André e da Débora. Nós dois somos formados em Sistemas de Informação e trabalhamos com programação.
 
-**Cena:** bastidor real do roteiro, comando e resultado correspondentes. Mostrar a tarefa citada. F12 aprofunda essa decisão de preparo; aqui basta um exemplo.
+### SN02 · Uma escolha para o tempo de tela
 
-### Story 4 · Como você pode conhecer o trabalho dele
+**Cena:** continuar com o casal contando a decisão. Não é necessário mostrar uma tela de jogo ou ter imagens antigas. **Sobreposição:** Uma parte do tempo para criar.
 
-> A gente quer que você também conheça o que seu filho está criando: jogar a versão dele e ouvir por que ele mudou uma regra. No link, conheça esse começo e mostre a ele.
+> O André sempre gostou muito de jogar e de assistir a vídeos de jogos. A gente decidiu aproveitar esse interesse: passamos a usar uma parte do tempo que ele já ficava na tela para ensiná-lo a criar seus próprios jogos.
 
-**Cena:** casal e demonstração do jogo. Sticker **Conhecer a proposta** → L0.
+### SN03 · O interesse por aprender
 
-## Manutenção
+**Cena:** casal contando o que viveu com o André. Manter o foco nos pais e na lembrança, sem inserir um passo a passo da plataforma. **Sobreposição:** Aprender fazendo os próprios jogos.
 
-**Projetos é alimentado a cada lançamento:** cada curso novo publicado na assinatura ganha um bloco de três telas, acrescentado na semana em que sai, dizendo o que aquele curso entrega. Uma mudança na aula (novo recurso de orientação, nova forma de conferir) atualiza a seção 2 de Como funciona e as respostas 3, 7 e 8 de Dúvidas. Uma ferramenta nova, a mudança de seus requisitos ou novos cursos publicados atualizam a seção 3 e a tabela de disponibilidade; conferir também as telas 1.4 e 1.5, Dúvidas 9 a 11 e as peças F01 e F06–F09, conforme o assunto alterado. Novas cenas entram em Alunos; novos relatos entram em Avaliações. Mudanças de acesso, formato ou contratação atualizam Dúvidas. Sobre nós muda quando a história apresentada mudar.
+> Para fazer um jogo funcionar, é preciso pensar no que vem primeiro, testar e ajustar quando algo dá errado. Foi nesse processo que vimos o André se interessar cada vez mais por aprender. Depois, chamava a gente para jogar e contava como tinha feito.
 
-Antes de gravar, ler a sequência em voz alta: uma pessoa que ainda não conhece a Comunidade consegue entender a resposta e explicar o que seu filho faria? Se falta uma ligação entre duas frases, escrever essa ligação. Cortar repetição e informação lateral, preservando o raciocínio.
+### SN04 · As mudanças que percebemos no André
 
-Referências de redação: [análise profunda da copy](pesquisas/analise-profunda-copy-2026-10-04.md), [Jornada do Criador](../../../../jornada-do-criador.md) (princípio pedagógico, paleta do Estúdio e matriz dos níveis), copy viva das páginas de oferta em `packages/funnel/src/funnels/comunidade-dos-criadores/oferta/` (inclusive `continuidade.ts`), [diretrizes pedagógicas](../../../../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md), [oferta sobre criação de jogos](../copy/pagina-b-criacao-de-jogos.md) e [respostas da página de continuidade](../copy/pagina-e-continuidade.md#sobre-os-próximos-passos-do-seu-filho). Os rótulos de orientação citados (“Ouvir”, “Uma pista”, “Conferir”, “O que falta para seguir”, “Verificar esta etapa”, “Preciso de ajuda”) foram conferidos nos componentes da aula em `packages/member-shell/src/components/`. As regras de clareza orientam a conversa com o adulto; os procedimentos das aulas continuam próprios dos cursos.
+**Vídeo narrado com foto real do certificado ao fundo. Cena:** Helena ou Júlio relata as observações como pai ou mãe enquanto aparece o certificado já recebido, referente ao primeiro lugar na turma na primeira etapa letiva do ano. A imagem ilustra uma das conquistas mencionadas na trajetória. Manter o reconhecimento e a identificação do André legíveis. Exibir as legendas conforme a fala, em uma faixa que não cubra essas informações; não colocar o parágrafo inteiro sobre o documento de uma vez. Reservar uma pausa ao final para observar a imagem. **Sobreposição:** O que percebemos no André.
 
-[Voltar ao guia](README.md) · [Produzir os fixados](02-fixados.md) · [Ver calendário](03-postagens.md)
+> Nesse período, a gente também percebeu mudanças na escola. O André passou a se envolver mais nas aulas e a se concentrar melhor. As notas também melhoraram. Desde o segundo ano do ensino fundamental, ele tem ficado entre os cinco primeiros da turma e, na maioria das vezes, em primeiro lugar. Esse certificado é de uma dessas conquistas.
+
+### SN05 · André com as medalhas
+
+**Cartela com foto real. Cena:** André com as medalhas que a família selecionou para mostrar. Manter o rosto e as medalhas visíveis, com o texto em uma área livre da fotografia. **Título:** André, nosso filho.
+
+> Ele também conquistou medalhas em olimpíadas de matemática.
+
+### SN06 · Por que criamos a Comunidade
+
+**Cena:** voltar ao casal, retomando a história depois das fotografias. **Sobreposição:** Da nossa casa para outras famílias.
+
+> Essa experiência nos deu vontade de ajudar outras famílias a aproveitar uma parte do tempo de tela para aprender criando. Foi assim que nasceu a Comunidade dos Criadores.
+
+### SN07 · O trabalho que fazemos hoje
+
+**Cena:** começar e terminar com o casal. Durante a fala sobre preparação, pode entrar um breve bastidor atual de Helena e Júlio revendo um roteiro ou preparando uma gravação. Manter as pessoas como assunto da imagem. **Sobreposição:** As aulas que a gente prepara. **Sem sticker:** o convite é para o destaque Como funciona, sem indicar posição no perfil.
+
+> Hoje, somos nós que preparamos as aulas, usando o que sabemos de programação para ensinar as crianças a fazer seus jogos. No destaque Como funciona, você conhece melhor esse trabalho.
+
+## Manutenção e conferência
+
+**Manter a ordem viva.** Projetos, Alunos, Avaliações e Dúvidas recebem atualizações quando houver conteúdo útil. Não republicar aberturas para empurrar Como funciona ou Sobre nós para a frente. Cada destaque tem contexto próprio, e os fixados conduzem aos assuntos pelo nome. Se uma resposta ficar desatualizada, retirar a tela antiga e publicar a substituta; não deixar duas condições conflitantes. Rever o destaque inteiro quando o acúmulo atrapalhar a leitura, preservando apenas o que continua útil.
+
+Conferir oferta e interface publicadas antes de gravar. Se uma condição mudar, revisar CF07 a CF09, Dúvidas e F03. A abertura AV01 não fixa nomes, quantidade ou idade de quem dá o relato, para continuar válida com novos participantes. Novos relatos podem ampliar a seleção com sua origem e contexto. Manter as citações literais; ao escolher um trecho, preservar o sentido da fala. Novos vídeos de crianças em atividade ampliam Alunos; novos relatos de crianças, adultos e responsáveis ampliam Avaliações. São funções diferentes, com copy final para cada entrada.
+
+Fonte do curso: [módulos](../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md), [movimento](../../../../aulas-interativas/aulas/desafio-dia-1.roteiro.md), [coleta e memória](../../../../aulas-interativas/aulas/desafio-dia-2.roteiro.md) e [condição e personalização](../../../../aulas-interativas/aulas/desafio-dia-3.roteiro.md). Captação e acesso em [Demonstração do Farol](apoio/valor-e-demonstracao-2026-10-03.md).
+
+[Guia e bio](README.md) · [Fixados](02-fixados.md) · [Calendário e stories do ciclo](03-postagens.md)

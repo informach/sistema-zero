@@ -138,7 +138,7 @@ export function KidsMascotAnimated({
       <MascotRiveCanvas
         key={montagem}
         expression={expression}
-        className="size-full"
+        className="size-full min-h-0 min-w-0"
         silencioso={!(sound ?? ZAPPY_RIVE_COM_SOM[expression])}
         tocando={tocando}
         onPronto={() => setCarga({ montagem, pronto: true, falhou: false })}

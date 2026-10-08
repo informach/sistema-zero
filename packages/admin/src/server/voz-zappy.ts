@@ -29,8 +29,8 @@ import { MediaNotConfiguredError, r2ObjectExists, r2PublicUrl, r2PutObject } fro
  * conhecem: eles recebem URL de MP3 público, como qualquer outra mídia de aula.
  */
 
-/** A voz que a dona criou no ElevenLabs. A env só existe para trocar sem deploy. */
-const VOZ_PADRAO = '0zTjt1MBEwfzcDnBGtaL'
+/** Voz própria do Zappy. A env permite trocar a voz sem alterar o código. */
+const VOZ_PADRAO = 'uj19ZrP8mFHr1twXk7aq'
 
 /**
  * `eleven_multilingual_v2`: o modelo com português de verdade.

@@ -27,9 +27,9 @@ const telas = comunidade.imagesBase
         <p class="bio-lead">Ele começa jogando o que vai construir, experimenta os conceitos ao lado da explicação e programa o jogo passo a passo. Conforme avança, encontra novas ferramentas e orientações para desenvolver seus projetos, além de uma comunidade para trocar ideias e compartilhar suas criações.</p>
         <p class="kof-chip bio-age"><span class="material-symbols-rounded" aria-hidden="true">sports_esports</span>Comunidade dos Criadores · 9 a 14 anos</p>
         <nav class="bio-links" aria-label="Escolha por onde começar">
-          <a class="kof-btn bio-principal" href={link('/como-funciona/')} data-analytics-id="bio-como-funciona">Ver como meu filho aprende<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
-          <a class="bio-link" href={link(`${desafio.basePath}/quiz`)} data-analytics-id="bio-desafio-quiz"><span class="kof-ladrilho kof-ladrilho--amarelo" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span><span class="bio-link-texto">Encontrar um primeiro passo para meu filho<small>Responda sobre os interesses dele e receba uma orientação, sem cadastro.</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
-          <a class="bio-link" href={link(`${comunidade.basePath}/oferta`)} data-analytics-id="bio-comunidade"><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">rocket_launch</span></span><span class="bio-link-texto">Conhecer a Comunidade e os planos<small>Veja o que a assinatura oferece à sua família</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
+          <a class="kof-btn bio-principal" href={link('/como-funciona/')} data-analytics-id="bio-como-funciona"><span class="bio-link-texto">Como funciona<small>Veja como seu filho aprende criando jogos.</small></span><span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+          <a class="bio-link" href={link(`${desafio.basePath}/oferta`)} data-analytics-id="bio-desafio-oferta"><span class="kof-ladrilho kof-ladrilho--amarelo" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span><span class="bio-link-texto">Desafio do Primeiro Jogo<small>Um primeiro jogo para conhecer as aulas na prática.</small><small class="bio-link-detail">Pagamento único · 30 dias de acesso</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
+          <a class="bio-link" href={link(`${comunidade.basePath}/oferta`)} data-analytics-id="bio-comunidade"><span class="kof-ladrilho kof-ladrilho--rosa" aria-hidden="true"><span class="material-symbols-rounded">rocket_launch</span></span><span class="bio-link-texto">Comunidade dos Criadores<small>Cursos e ferramentas para criar novos projetos.</small><small class="bio-link-detail">Assinatura · inclui o Desafio</small></span><span class="material-symbols-rounded bio-seta" aria-hidden="true">chevron_right</span></a>
         </nav>
       </div>
       <figure class="bio-telas">
@@ -96,8 +96,10 @@ const telas = comunidade.imagesBase
     justify-content: space-between;
     padding: 0.875rem 1.25rem 0.875rem 1.5rem;
     font-size: 1rem;
+    border-radius: 20px;
+    text-align: left;
   }
-  .bio-principal .material-symbols-rounded { font-size: 1.375rem; }
+  .bio-principal .material-symbols-rounded { font-size: 1.375rem; flex-shrink: 0; }
   .bio-link {
     --k3d-altura: 4px;
     display: grid;
@@ -130,6 +132,8 @@ const telas = comunidade.imagesBase
     line-height: 1.35;
     color: var(--kof-tinta-suave);
   }
+  .bio-principal .bio-link-texto small { color: inherit; }
+  .bio-link-texto .bio-link-detail { margin-top: 0.5rem; font-weight: 800; color: inherit; }
   .bio-seta { font-size: 1.5rem; color: var(--kof-tinta-suave); transition: color 0.12s ease, translate 0.12s ease; }
   .bio-link:hover .bio-seta { color: var(--kof-acao); translate: 2px 0; }
 

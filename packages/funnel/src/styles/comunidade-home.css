@@ -345,30 +345,30 @@
   max-width: 32rem;
   font-size: 0.875rem;
 }
-.cdc-home .home-quiz {
+.cdc-home .home-first-step {
   padding: clamp(1.5rem, 3vw, 2rem);
   color: var(--kof-tinta);
 }
-.cdc-home .home-quiz h3.kof-display {
+.cdc-home .home-first-step h3.kof-display {
   margin: 1.25rem 0 1rem;
   color: var(--kof-tinta);
   font-size: 1.875rem;
 }
-.cdc-home .home-quiz p {
+.cdc-home .home-first-step p {
   color: var(--kof-tinta-suave);
   line-height: 1.65;
 }
-.cdc-home .home-quiz > a {
+.cdc-home .home-first-step > a {
   margin-block: 1.5rem;
   width: 100%;
 }
-.cdc-home .home-quiz .kof-btn--secundario {
+.cdc-home .home-first-step .kof-btn--secundario {
   background: var(--kof-carta);
   color: var(--kof-acao);
   border: 1px solid var(--kof-linha);
   --k3d-degrau: var(--kof-carta-degrau);
 }
-.cdc-home .home-quiz .kof-btn:focus-visible {
+.cdc-home .home-first-step .kof-btn:focus-visible {
   outline-color: var(--kof-acao);
 }
 .cdc-home .home-faq {

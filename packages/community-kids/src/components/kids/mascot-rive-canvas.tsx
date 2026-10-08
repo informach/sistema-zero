@@ -1,7 +1,14 @@
 'use client'
 
-import { Alignment, Fit, Layout, RuntimeLoader, useRive } from '@rive-app/react-canvas'
-import { useEffect } from 'react'
+import {
+  Alignment,
+  Fit,
+  Layout,
+  RuntimeLoader,
+  useResizeCanvas,
+  useRive,
+} from '@rive-app/react-canvas'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   type MascotExpression,
   ZAPPY_RIVE_ARTBOARD,
@@ -54,26 +61,58 @@ export function MascotRiveCanvas({
   onFalhou: () => void
 }) {
   const regido = tocando !== undefined
-  const { RiveComponent, rive } = useRive({
-    src: ZAPPY_RIVE_SRC[expression],
-    artboard: ZAPPY_RIVE_ARTBOARD,
-    // ⚠️ A TIMELINE, não a state machine — é onde a animação está. O porquê (com a
-    // medição) fica em `ZAPPY_RIVE_TIMELINE`, no mascot.tsx.
-    animations: ZAPPY_RIVE_TIMELINE,
-    layout: LAYOUT,
-    autoplay: !regido,
-    enableRiveAssetCDN: false,
-    onLoad: onPronto,
-    onLoadError: onFalhou,
+  const { RiveComponent, rive, canvas, container } = useRive(
+    {
+      src: ZAPPY_RIVE_SRC[expression],
+      artboard: ZAPPY_RIVE_ARTBOARD,
+      // ⚠️ A TIMELINE, não a state machine — é onde a animação está. O porquê (com a
+      // medição) fica em `ZAPPY_RIVE_TIMELINE`, no mascot.tsx.
+      animations: ZAPPY_RIVE_TIMELINE,
+      layout: LAYOUT,
+      autoplay: !regido,
+      enableRiveAssetCDN: false,
+      onLoadError: onFalhou,
+    },
+    { shouldResizeCanvasToContainer: false },
+  )
+
+  // O elemento só chega depois da primeira montagem; a referência nova liga seu observer.
+  const containerRef = useMemo(() => ({ current: container }), [container])
+  const prontoRef = useRef(onPronto)
+  prontoRef.current = onPronto
+  const quadroPronto = useRef<number | null>(null)
+  const redimensionar = useCallback(() => {
+    if (!rive) return
+    // O resize padrão do hook desenha ANTES de atualizar o enquadramento. Se o Rive está
+    // parado, a otimização pode pular a próxima pintura e deixá-lo fora do canvas. Esta API
+    // ajusta tamanho, enquadramento e invalida o desenho antes de repintar, nessa ordem.
+    rive.resizeDrawingSurfaceToCanvas()
+    if (quadroPronto.current !== null) cancelAnimationFrame(quadroPronto.current)
+    quadroPronto.current = requestAnimationFrame(() => {
+      quadroPronto.current = null
+      prontoRef.current()
+    })
+  }, [rive])
+  useResizeCanvas({
+    riveLoaded: !!rive,
+    canvasElem: canvas,
+    containerRef,
+    onCanvasHasResized: redimensionar,
   })
+  useEffect(
+    () => () => {
+      if (quadroPronto.current !== null) cancelAnimationFrame(quadroPronto.current)
+    },
+    [],
+  )
 
   /**
    * ⭐⭐ A boca anda com o áudio. Medido no navegador antes de existir (harness com `getImageData`
    * dentro do `requestAnimationFrame`, `useOffscreenRenderer: false` — o `toDataURL()` já mentiu
    * nesta mesma casa):
-   * - `autoplay: false` PINTA o primeiro quadro e fica nele (1 assinatura distinta em 20 quadros):
-   *   o runtime aplica o quadro 0 ao instanciar a animação e desenha uma vez ao terminar o load.
-   *   O Zappy aparece parado, de boca fechada — nunca um buraco na tela.
+   * - `autoplay: false` aplica o primeiro quadro e fica nele (1 assinatura distinta em 20 quadros).
+   *   A pintura inicial precisa do resize acima: `onLoad` sozinho ainda não garante o desenho
+   *   dentro do canvas. A imagem só sai depois desse ajuste e da oportunidade de pintar.
    * - `play()` roda em LAÇO sozinho (a `Timeline 1` do `fala.riv` emite `Loop`, nunca `Stop`):
    *   não existe fim de animação para religar.
    * - ⚠️⚠️ PARAR é `stop` + `pause` + `drawFrame`, nesta ordem, e não `pause` sozinho: `pause`

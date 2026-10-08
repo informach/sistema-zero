@@ -49,8 +49,8 @@ const EnvSchema = z
     // na criança é MP3 no R2. Sem a chave, o botão de gerar responde 503 e a cena continua na
     // voz do navegador — nada quebra, só não gera.
     ELEVENLABS_API_KEY: z.string().optional(),
-    // A voz do Zappy. O padrão é a voz que a dona criou no ElevenLabs; a env só existe para
-    // trocar sem deploy (uma voz nova, um teste).
+    // Voz própria do Zappy. A env permite substituir o padrão sem alterar o código;
+    // reinicie o serviço após mudar a configuração do ambiente.
     ELEVENLABS_VOICE_ID: z.string().optional(),
     // Vimeo (vídeos das aulas: upload TUS + capa + transcrição).
     VIMEO_ACCESS_TOKEN: z.string().optional(),

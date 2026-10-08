@@ -1,78 +1,143 @@
-# Instagram: comece por aqui
+# Instagram: posicionamento e guia de execução
 
-**Revisão dos ajustes solicitados em 05/10/2026.** Perfil: **@criecomhelenaejulio**. Mantidos seis destaques e três fixados. Como funciona tem três seções: **1 · A Jornada**, uma apresentação completa da experiência; **2 · Como é cada aula**, uma tarefa do começo ao teste; **3 · As ferramentas**, possibilidades de criação e acesso. Projetos recebe os jogos de cada curso lançado. A verificação é descrita pelos objetivos que confere nas etapas em que existe. F05 acompanha uma tentativa da criança, e Dúvidas 8 explica o pedido de ajuda sem restringi-lo a dúvidas “muito específicas”. Cada texto continua com um único lugar de manutenção.
+**Revisão: 08/10/2026. Perfil: @criecomhelenaejulio.** A proposta aprovada foi incorporada a estes documentos. O ciclo ainda está em preparação. Esta revisão altera os materiais locais e os acessos da página inicial do funil; aplicação no perfil, gravação e publicação são etapas de produção.
 
-## O que abrir para executar
+**Atalhos:** [Posicionamento](#posicionamento) · [Bio e perfil](#perfil-e-bio-completos) · [Diretrizes de escrita e pedagogia](#direção-de-escrita-e-pedagogia) · [Orientações de produção](#orientações-de-produção).
 
-| Quero fazer | Documento | O que está pronto nele |
+## Posicionamento
+
+O Instagram de Helena e Júlio apresenta o **Desafio do Primeiro Jogo como primeiro passo** para famílias com crianças de **9 a 14 anos**. O exemplo principal é **A Chave do Farol**: a criança aprende a fazer o personagem andar, pegar uma chave e acender o farol quando chega com ela.
+
+Queremos mostrar **o que a criança faz na aula, como recebe ajuda e o que consegue mostrar para a família**. O responsável precisa entender a atividade antes de decidir pela compra. Usar cenas do jogo e das aulas para explicar, sem prometer melhora na escola ou resultados que não foram medidos.
+
+**Formulação pública do posicionamento:**
+
+> No Desafio do Primeiro Jogo, seu filho aprende a criar A Chave do Farol. As aulas mostram como fazer o personagem andar, pegar a chave e acender o farol. Ele faz uma parte de cada vez e joga para conferir se funcionou. Para criar outros jogos depois, vocês podem conhecer os cursos da Comunidade dos Criadores.
+
+**Visão de continuidade da marca:**
+
+> Seu filho aprende criando jogos, da primeira experiência às próprias ideias.
+
+Falar com o responsável que está escolhendo uma atividade, considerando também o interesse da criança. O primeiro ciclo prioriza famílias interessadas em jogos e em compreender o que acontece durante a aula. Interesse visual e formação tecnológica podem entrar como motivações, sempre ligados à entrega mostrada. Não prometer carreira, independência imediata, melhora escolar ou resultados cognitivos que não foram medidos.
+
+### Papel de cada oferta
+
+| Oferta | Papel no Instagram | Limite da comunicação |
 | --- | --- | --- |
-| Montar os destaques | **[01 · Destaques](01-destaques.md)** | Ordem, função, copy por tela, cenas e montagem dos seis destaques |
-| Produzir os três posts fixados | **[02 · Fixados](02-fixados.md)** | Roteiros, capas, legendas e materiais de F01, F02 e F03 |
-| Fazer as próximas postagens | **[03 · Postagens](03-postagens.md)** | Calendário único de 05 a 30/10, roteiros F04–F12 e distribuição dos stories |
+| Desafio do Primeiro Jogo | Primeiro passo sugerido e principal exemplo de aprendizagem; oferta acessível pela página da bio | Percurso guiado do Farol, pagamento único e 30 dias de acesso a partir da aprovação do pagamento |
+| A Chave do Farol | Projeto ensinado no Desafio; referência principal das demonstrações deste ciclo | Artes, cenário e movimento do barco preparados; regras montadas com orientação; personalização pelas opções ensinadas |
+| Comunidade dos Criadores | Continuidade opcional, com outros cursos e ferramentas conforme o plano e a Jornada | Assinatura contratada separadamente; concluir o Desafio avulso não libera automaticamente todas as ferramentas |
+| Cadê Todo Mundo? | Projeto do catálogo apresentado no destaque Projetos | Sua campanha de entrada continua nos casos presenciais específicos; a apresentação do jogo não inclui convite de presente |
+| Nave Contra Asteroides | Projeto do catálogo apresentado no destaque Projetos | Movimento, tiros, asteroides, pontos, vidas e recomeço; acesso pela Comunidade |
+| Corre Dino | Projeto do catálogo apresentado no destaque Projetos | Pulo, obstáculos, placar, recomeço e dificuldade; acesso pela Comunidade |
 
-Na hora de colocar os links e publicar, consultar **[Links e publicação](apoio/links-e-publicacao.md)**. O calendário aponta para a copy de Destaques e Fixados, sem repetir esses roteiros.
+**Projetos é o catálogo vivo da Comunidade.** Apresentar os quatro jogos já existentes, com A Chave do Farol identificado como primeiro projeto. Usar dois stories por jogo: primeiro, uma montagem com duas capturas do mesmo jogo, com pelo menos uma mostrando a partida em andamento; depois, um recorte legível dos blocos no Estúdio com as habilidades que a criança pratica. Quando houver telas de abertura e encerramento, escolher uma delas para acompanhar a ação do jogo. Os rótulos correspondem aos momentos mostrados. O texto completo fica na arte, e cada regra mostrada corresponde à explicação para o responsável. Acrescentar cada novo projeto nesse formato, com copy completa e exemplos concretos para o responsável. A prioridade do Desafio na entrada não reduz o catálogo mostrado neste destaque.
 
-**Capas dos destaques:** [prévia com recorte circular](capas/index.html) · [baixar os PNGs em ZIP](capas/capas-instagram.zip). As seis capas estão prontas, numeradas na ordem do guia 01. A engrenagem com lápis, gerada para o antigo destaque Ferramentas, ficou como [imagem de apoio](capas/apoio-secao-ferramentas.png) da abertura da seção 3 de Como funciona.
+A Comunidade também pode ser contratada diretamente e inclui o Desafio durante a assinatura ativa. Não apresentar a compra avulsa como requisito para assinar nem oferecer de novo um acesso já incluído na conta.
 
-## Ordem de trabalho
+### O que o Sobre nós precisa mostrar
 
-1. **Separar o material:** exemplo de curso disponível, cenas reais de crianças nas aulas, trechos literais de avaliações e gravação do casal. Há projetos e relatos autorizados; os arquivos ainda precisam ser selecionados, inclusive confirmar as cenas de aula.
-2. **Montar os destaques pelo documento 01.** Como funciona → Projetos → Alunos → Dúvidas → Avaliações → Sobre nós. Como funciona tem três seções, cada uma aberta por uma tela de título, para os pais saberem em que parte estão. Projetos mostra os jogos ensinados e recebe cada curso novo; Alunos mostra crianças em aula; Avaliações reúne relatos das famílias.
-3. **Produzir os fixados pelo documento 02.** Do primeiro curso aos próprios jogos → Alunos em aula → Como funciona na sua casa.
-4. **Executar e acompanhar o documento 03.** Três posts e três dias de stories por semana. Os stories formam os destaques; as 20 respostas de Dúvidas entram em quatro blocos. As datas podem ser ajustadas nesse mesmo calendário conforme a produção.
+O destaque [Sobre nós](01-destaques.md#sobre-nós) apresenta **Helena e Júlio: quem são, qual é sua experiência, qual situação viveram em casa e como ela levou à criação da Comunidade**. A autoridade vem da formação em Sistemas de Informação, do trabalho com programação e da responsabilidade por preparar as aulas. O André já gostava de jogar e assistir a jogos; os pais decidiram usar parte desse tempo de tela para ensiná-lo a criar. Essa escolha explica a origem familiar. O casal permanece no centro da fala e da imagem.
 
-**Situação da entrega:** os ajustes solicitados foram aplicados nos três guias e nas orientações de produção. Antes de publicar, conferir o catálogo na [tabela de disponibilidade](01-destaques.md#disponibilidade-por-recurso), selecionar os registros autorizados e finalizar captação e edição. A revisão da copy não confirma disponibilidade em produção nem representa publicações agendadas. A foto e o nome do Instagram já foram atualizados pelo responsável.
+As sete telas seguem uma conversa: apresentar o casal → contar o interesse do André e a decisão sobre parte do tempo de tela → mostrar o aprendizado durante a criação → relatar as mudanças na escola e o primeiro lugar, com o certificado ao fundo → mostrar uma foto do André com as medalhas → explicar por que criaram a Comunidade → apresentar a responsabilidade pelas aulas e convidar a conhecer esse trabalho. São cinco vídeos com o casal, um vídeo narrado sobre a foto do certificado e uma cartela com a foto das medalhas. O casal conduz a história antes e depois das fotografias.
 
-## Direção de escrita para todas as peças
+O relato acrescentado pelo responsável em 08/10/2026 inclui mais participação nas aulas, concentração, notas melhores e medalhas em olimpíadas de matemática. Apresentar como a experiência observada pelos pais no André, sem atribuir toda a mudança à programação ou transformá-la em promessa para os alunos. A oportunidade apresentada é dar mais um uso à tecnologia a partir do interesse da criança, dentro de parte do tempo que a família já permite. Preservar o lugar de brincar, jogar e assistir na história, sem culpa para os pais.
 
-A referência principal são as **páginas de oferta da Comunidade no funil** (a copy viva fica em `packages/funnel/src/funnels/comunidade-dos-criadores/oferta/`; a redação de origem está nas [páginas da oferta](../copy/README.md), especialmente [criação de jogos](../copy/pagina-b-criacao-de-jogos.md) e as [respostas da continuidade](../copy/pagina-e-continuidade.md)). Cada peça segue a mesma sequência das páginas: **situação da família → por que ela acontece → o que a criança faz com a orientação → o que dá para ver no jogo → o que isso significa para a família**. Aplicar também a clareza das [diretrizes pedagógicas](../../../../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md). A copy conversa com pais e mães sobre seus filhos.
+A família também propôs mostrar as medalhas e esclareceu o histórico escolar: em 08/10/2026, André está no sexto ano do ensino fundamental e, desde o segundo ano, fica entre os cinco primeiros da turma, na maioria das vezes em primeiro lugar. A fala usa “desde o segundo ano” para contar essa trajetória sem citar o ano escolar atual. O certificado já recebido, de primeiro lugar na turma na primeira etapa letiva do ano, aparece ao fundo como um registro de uma dessas conquistas. O histórico é o relato dos pais; a imagem comprova o reconhecimento específico escrito nela. As legendas acompanham a fala sem cobrir o reconhecimento. A foto das medalhas tem seu próprio story. O certificado da segunda etapa ainda não foi recebido e fica fora desta versão. Não ampliar a colocação para toda a escola nem transformar “na maioria das vezes” em primeiro lugar em todas as etapas. Selecionar os registros reais e preservar a leitura do reconhecimento.
 
-- **A criação própria dá sentido à continuidade.** Mostrar como a criança usa o que aprende em outra ideia. Alguns cursos apresentam comandos novos; outros permitem praticar os já conhecidos. Explicar os postos e requisitos no ponto em que orientam o acesso, sem exigir que os pais decorem os nomes para compreender o começo.
-- **A plataforma oferece referências para continuar.** Partir da situação da criança: entender a tarefa, comparar uma montagem, consultar uma ação, ajustar e testar. Instrução, vídeo e tutorial entram quando ajudam nessa situação. Nas etapas com verificação, o recurso indica objetivos cumpridos e pendentes; não identifica qualquer erro do jogo. Algumas crianças precisam de companhia no começo. Dúvidas 8 explica como pedir ajuda à equipe com a aula, sem exigir que a dúvida seja excepcional.
-- **Abrir pela cena, nunca pelo produto.** A primeira frase mostra um resultado no jogo, uma situação de casa ou uma decisão. O nome da Comunidade vem no fecho ou na legenda.
-- **Dizer a causa.** Por que a criança trava num tutorial, por que o cenário vem pronto, por que experimentar antes de montar.
-- **Terminar no momento da família.** Ele chama para jogar, mostra a regra, conta por que mudou. É esse o resultado que a família quer ver.
-- **Uma ideia por peça.** A seção 1 de Como funciona apresenta a experiência e fecha com um próximo passo completo. A seção 2 acompanha uma tarefa; a seção 3 demonstra possibilidades de criação. Projetos mostra os jogos ensinados, e Dúvidas reúne as respostas de decisão. F05 acompanha uma dificuldade durante a montagem, em oito slides; F07 explica os comandos conquistados; F09 detalha os postos. Preservar condições de acesso onde forem necessárias, sem repetir a apresentação geral em cada seção.
-- **Variar entre peças vizinhas.** O post e os stories do mesmo dia, e as peças da mesma semana, não abrem pela mesma cena nem repetem a mesma frase de explicação. Antes de reaproveitar uma fala, conferir no calendário o que sai perto dela. Fatos e condições (idade, equipamento, orientação, liberação, planos e garantia) mantêm a mesma redação em todos os guias.
-- **Responder primeiro.** Se a pergunta é se serve para quem nunca programou, começar com “Serve” e explicar como o curso ensina esse começo. Quando depende de uma condição, dizer qual é.
-- **Desenvolver o raciocínio.** Explicar por que o apoio serve naquela situação. Pausar o vídeo, por exemplo, dá tempo para seu filho terminar a montagem antes de seguir a explicação.
-- **Usar cenas que a família reconheça.** O filho esqueceu um passo, quer testar outra cor, chamou alguém para jogar ou precisa de ajuda. Ligar o recurso ao que ele está tentando fazer.
-- **Escrever como uma conversa de Helena e Júlio com uma pessoa.** Ler em voz alta, explicar termos necessários e manter a ligação entre as frases. Títulos orientam a leitura; o corpo desenvolve a ideia.
-- **Dar a cada formato o espaço que precisa.** Uma resposta pode ocupar duas telas. Um vídeo de aluno pode precisar só de contexto. Relatos de famílias continuam literais. Aumentar o texto só faz sentido quando acrescenta compreensão.
+O jeito de ensinar aparece com sutileza, ligado às escolhas e à responsabilidade dos fundadores. As demonstrações de funcionamento, ferramentas e projetos ficam nos destaques correspondentes. A formação é mencionada uma vez, sem inventar anos de experiência, títulos ou resultados. O fecho mantém a conversa e remete a Como funciona pelo nome, sem sticker de oferta. A história não acrescenta promessa de aula ao vivo, atendimento individual ou resposta imediata dos fundadores.
 
-Essa direção vale para a copy inteira: falas, carrosséis, legendas, dúvidas, chamadas e stories. O mesmo cuidado orienta as próximas revisões, pelos métodos de conteúdo editorial e revisão de copy do [Fluxo Criativo adaptado ao projeto](../../../../../.agents/marketing/README.md).
+## Perfil e bio completos
 
-## Perfil de referência
+**Nome:** Helena e Júlio | Programação Infantil
 
-**Nome:** Helena e Júlio | Programação Infantil. **Arroba:** @criecomhelenaejulio. **Foto:** a imagem do casal já aplicada ao Instagram. Conferir os dois rostos no recorte circular ao preparar variações. Os avatares continuam fazendo parte das aulas e da identidade da experiência infantil.
+**Arroba:** @criecomhelenaejulio
 
-**Bio vigente de referência:**
+**Foto:** foto do casal já escolhida, com os dois rostos legíveis no recorte circular. Os avatares permanecem na identidade das aulas.
+
+**Categoria:** Educação, se disponível na conta.
+
+**Bio para aplicar:**
 
 ```text
-🎮 Aulas online de programação • 9 a 14 anos
-💡 Seu filho aprende criando os próprios jogos
-👇 Veja como funciona
+🎮 Programação para crianças de 9 a 14 anos
+💡 Seu filho aprende criando o primeiro jogo
+👇 Conheça as aulas e escolha por onde começar
 ```
 
-**Título do link:** Veja como seu filho aprende. Copiar o URL da linha Bio em [Links e publicação](apoio/links-e-publicacao.md#links-prontos). Conferir quebra de linhas e a opção de categoria Educação disponível na conta. A bio já coincidia com essa redação na conferência registrada em 04/10; a organização dos documentos não alterou a conta.
+**Título do link:** Conheça as aulas e escolha por onde começar
 
-## Onde ficaram os outros documentos
+**Destino:** página inicial do funil, `https://sistemazero.com.br/`, com o endereço completo em [Links e publicação](apoio/links-e-publicacao.md#links-prontos).
 
-| Pasta | Para que consultar |
-| --- | --- |
-| [apoio/](apoio/) | Links, checklist, [demonstração da plataforma](apoio/valor-e-demonstracao-2026-10-03.md) e [recursos de produção](apoio/capacidades-redes-sociais-2026-10-04.md) |
-| [pesquisas/](pesquisas/) | Análises da Kodland, pesquisas anteriores e auditoria que fundamentaram as decisões |
-| [historico/](historico/) | Versões substituídas, [proposta aprovada original](historico/proposta-destaques-e-fixados-2026-10-04.md) e registros da página inicial |
-| [evidencias/](evidencias/) | Capturas e dados usados nas pesquisas |
+A bio apresenta público, atividade e próximo passo. O link abre a página inicial com três caminhos, nesta ordem: Como funciona, oferta do Desafio e oferta da Comunidade. Os botões dos produtos abrem diretamente suas ofertas. Os quizzes ficam para campanhas específicas e não são destinos dos posts ou destaques deste ciclo. Manter a página inicial como destino da bio durante todo o ciclo, inclusive quando F12 apresentar a Comunidade.
 
-As pesquisas guardam o que foi observado e recomendado em cada data. O histórico guarda a evolução. Para executar, usar sempre os três guias desta página. A fundamentação da proposta aprovada está preservada no histórico; não é necessário reler os estudos para montar uma peça.
+### Copy dos três caminhos na página inicial
 
-## Como manter organizado
+| Botão | Explicação completa | Informação complementar | Destino |
+| --- | --- | --- | --- |
+| Como funciona | Veja como seu filho aprende criando jogos. | — | `/como-funciona/` |
+| Desafio do Primeiro Jogo | Um primeiro jogo para conhecer as aulas na prática. | Pagamento único · 30 dias de acesso | `/kids/desafio-primeiro-jogo/oferta` |
+| Comunidade dos Criadores | Cursos e ferramentas para criar novos projetos. | Assinatura · inclui o Desafio | `/kids/comunidade-dos-criadores/oferta` |
 
-- Melhorou uma frase de destaque: editar **01 · Destaques**.
-- Mudou roteiro ou legenda de um fixado: editar **02 · Fixados**.
-- Mudou data, pauta ou texto de F04 em diante: editar **03 · Postagens**. Manter esse arquivo como o calendário vigente ao iniciar outro ciclo.
-- Mudou destino ou procedimento de publicação: editar **Links e publicação** e conferir as referências nas peças afetadas.
-- Uma mudança substitui uma decisão importante: guardar a versão anterior em **historico/**, atualizar a data no guia vigente e seus vínculos. Revisões pequenas são feitas no próprio arquivo, sem criar outra proposta concorrente.
+Cada botão usa o nome da opção, uma frase curta e a informação essencial da contratação. Manter os detalhes da experiência nas páginas de destino. A explicação aparece junto ao botão, antes do clique. O Desafio é uma primeira experiência paga; a Comunidade também recebe iniciantes e pode ser contratada diretamente. O cadastro acontece no fluxo de contratação, não é a promessa desses botões. O prazo do Desafio começa na aprovação do pagamento; sua inclusão na Comunidade vale durante a assinatura ativa, conforme as ofertas.
 
-Os nomes dos guias permanecem estáveis. Aprovação editorial, arquivo final, agendamento e publicação devem ser registrados como etapas diferentes.
+Nos Reels e carrosséis, indicar o nome do botão que a família deve escolher ao abrir a bio. Nos stories, o sticker pode levar diretamente à oferta pertinente. A página Como funciona também oferece os dois produtos diretamente. A implementação dos acessos está em [index.astro](../../../../../packages/funnel/src/pages/index.astro) e [como-funciona.astro](../../../../../packages/funnel/src/pages/como-funciona.astro).
+
+## Documentos para produzir
+
+| Material | Fonte única da copy | Conteúdo |
+| --- | --- | --- |
+| Seis destaques | [01 · Destaques](01-destaques.md) | Texto de cada tela, fala, cena, identificação e sticker |
+| Três fixados | [02 · Fixados](02-fixados.md) | F01, F02 e F03, com capas, roteiros completos e legendas; alternativa integral de F02 com demonstração da equipe |
+| Ciclo de quatro semanas | [03 · Postagens](03-postagens.md) | Único calendário, nove peças adicionais F04 a F12 e doze sequências de stories completas |
+| Destinos e publicação | [Links e publicação](apoio/links-e-publicacao.md) | Links completos, identificação da origem, produção e medição |
+| Captação do produto | [Demonstração do Farol](apoio/valor-e-demonstracao-2026-10-03.md) | O que gravar, sequência pedagógica e limites de cada cena |
+| Produção dos materiais | [Capacidades e limites](apoio/capacidades-redes-sociais-2026-10-04.md) | Entregáveis, arquivos necessários e condições de operação |
+
+Os 12 posts incluem os três fixados, não são 15 posts. F09 passa a mostrar a porta e F08, a autoria do projeto. As versões antigas sobre postos e inteligência artificial não pertencem a este ciclo. Os IDs identificam peças, não sua ordem de publicação.
+
+**Destaques:** Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós. Essa é uma referência de organização inicial, não uma posição permanente. A ordem é viva: atualizações podem trazer o destaque para a frente. Como funciona e Sobre nós podem permanecer ao final; os três fixados orientam quem chega. Não republicar stories só para recompor uma ordem. [Prévia das capas](capas/index.html) · [PNGs em ZIP](capas/capas-instagram.zip). Manter as seis capas. Projetos apresenta Farol, Cadê Todo Mundo?, Nave Contra Asteroides e Corre Dino. Alunos é um destaque vivo de crianças em atividade. Começa com vídeos de Rafael, Jeffrey, Débora e André e recebe novos registros conforme forem selecionados. A abertura não enumera nomes nem fixa quantidade; cada criança é identificada no próprio vídeo, com legendas variadas sobre aprender, explorar, personalizar e testar, sempre correspondentes à ação filmada. Avaliações reúne relatos de crianças, adultos e responsáveis; a primeira seleção usa as falas já confirmadas de Rafael, Débora e André. Identificar Débora e André como filhos de Helena e Júlio. Cada tipo de conteúdo tem sua função no guia 01.
+
+## Direção de escrita e pedagogia
+
+A voz comercial tem fonte única nas [regras de copy](../../../../../packages/marketing/src/domain/copy/light-copy-rules.ts). A pedagogia continua nas [Diretrizes Pedagógicas](../../../../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md), na [especificação dos roteiros](../../../../aulas-interativas/ESPEC-ROTEIRO.md) e nos [módulos do Desafio](../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md). As orientações abaixo aplicam essas fontes ao Instagram, sem substituí-las.
+
+**Critério de clareza definido pelo responsável:** escrever de um jeito que uma criança de 10 anos consiga entender, continuando a falar com o adulto que escolhe e paga pelo curso. O pai não precisa conhecer programação para entender a publicação. Usar palavras comuns, explicar o que acontece e ligar uma frase à seguinte. A simplicidade deve estar no texto inteiro: capa, fala, título, legenda, resposta, sticker e convite.
+
+- **Começar pelo que a pessoa vê.** “O personagem pega a chave e a luz acende” explica mais que “ele trabalha condições”. Só nomear um conceito de programação se esse nome ajudar a entender a cena.
+- **Explicar a palavra necessária na primeira vez.** Blocos são peças na tela que dizem ao jogo o que fazer. Estúdio é o espaço onde a criança monta o jogo. Mural é o lugar onde pode compartilhar e jogar as criações. Explicar no contexto; não colocar um glossário na publicação.
+- **Dar ao pai uma informação útil.** Mostrar o que seu filho fará, como a aula ajuda, o que pode escolher, como conferir se funcionou ou o que precisa para começar. Uma frase que apenas diz “a orientação conecta a ideia à construção” precisa ser substituída por uma ação que dê para imaginar.
+- **Manter o respeito pelo adulto.** Usar “você” e “seu filho”, sem voz de bebê, diminutivos em sequência ou uma aula de vocabulário. A programação pode ser nova para o leitor; a conversa continua sendo entre adultos.
+- **Deixar as notas da equipe fora da fala.** Termos como “recorte do método”, “conta elegível”, “critérios configurados” e “autoria” orientam produção. Na publicação, dizer o que aconteceu e quem fez. Manter o rótulo “Demonstração da equipe” nas imagens quando previsto.
+- **Encerrar quando a informação estiver completa.** Cortar frases que repetem a anterior sem acrescentar nada. Uma legenda pode explicar o que a família vai ver; não precisa descrever a própria estratégia de marketing.
+
+- **Conversa que continua.** Cada frase retoma a ação ou a ideia anterior. Explicar por que o resultado acontece e o que ele permite fazer. Ler em voz alta como Helena ou Júlio falando com uma pessoa; evitar uma coleção de slogans ou frases cortadas.
+- **Contexto antes da ação.** Mostrar o personagem, a chave ou a porta antes de apontar um bloco. Uma peça desenvolve uma ideia; um carrossel conduz o raciocínio de um slide ao seguinte.
+- **Experiência antes da montagem de um conceito novo.** Ao apresentar o método, preservar a passagem entre observar e comparar, montar com orientação e testar. A comparação temporária da experiência é diferente da personalização salva no projeto.
+- **Fala ligada à tela.** “Eu” identifica quem demonstra; “a gente” acompanha o raciocínio do casal; “você” se dirige ao responsável. Apontamentos como “aqui” precisam de referência visível. Depois de enviar o projeto, reconhecer o que foi concluído e conectar o próximo passo, sem mandar olhar uma tela que já foi fechada.
+- **Causa e consequência concretas.** A porta responde porque o jogo consulta a informação da chave. Mudar a posição da chave altera o percurso. Não converter essas cenas em promessa de domínio de programação ou de transferência automática para a escola.
+- **Autoria precisa.** A criança programa regras guiadas e faz escolhas nas etapas previstas. Os desenhos disponíveis, o cenário e o movimento do barco são preparados pela equipe. Escolher uma arte não é desenhá-la. Não apresentar mudança de velocidade como personalização do Farol: essa escolha foi retirada do curso.
+- **Orientação visível.** Mostrar explicação, montagem, teste e critérios quando pertinentes. O botão infantil atual é “Verificar esta parte”. A verificação confere os critérios configurados; não encontra qualquer problema nem mede, sozinha, a compreensão. Ajuda por mensagens pode ter espera.
+- **Instrução no ritmo de quem acompanha.** Os Reels deste ciclo são demonstrações para o adulto. Se uma futura peça ensinar uma montagem executável, conservar os passos, o destino do encaixe e o teste. Para encurtar, reduzir o assunto, não acelerar gestos essenciais.
+- **Próximo passo que corresponde ao assunto.** Convite pela bio nomeia o botão da oferta desejada; stickers levam diretamente à oferta. Os quizzes ficam para campanhas específicas. Continuidade leva à Comunidade e explicita a contratação separada. Não inventar segredo, urgência ou surpresa comercial.
+- **Adulto decide, criança participa da conversa.** O convite de compra fica na fala dirigida ao responsável. Uma cena de conquista infantil não termina com a criança pedindo assinatura. Curso e aula são termos adequados ao marketing; trechos da aula preservam aventura, fase, parte e Mapa da Aventura.
+
+Não é necessário repetir todas as condições em cada peça. Idade, equipamento e formato aparecem cedo; preço, prazo, renovação e alcance do acesso ficam explícitos nos conteúdos de decisão. Condições relevantes para uma promessa nunca ficam escondidas numa nota de produção.
+
+## Orientações de produção
+
+1. Gravar primeiro o Farol: personagem andando, chave sendo pega, farol com e sem chave, escolhas de visual e publicação do jogo. Usar conta com acesso correspondente ao Desafio; acesso administrativo não comprova o que a família recebe.
+2. Identificar na imagem **“Demonstração da equipe”** quando a equipe opera o produto. Nos recortes pedagógicos, indicar experiência, montagem guiada ou teste. Esses rótulos estão escritos nos roteiros.
+3. Ler as falas como uma conversa antes de gravar: um responsável que nunca programou precisa entender o que está acontecendo e por que aquilo importa. Captar Helena e Júlio em tom de conversa. Os tempos sugeridos orientam edição; preservar a pausa necessária para ver o efeito. Usar legendas fiéis à fala e conferir legibilidade no celular, inclusive com os controles do Instagram sobrepostos.
+4. Em carrosséis, o texto público de cada slide está completo. Notas de cena e objetivo não entram na arte. Em stories, o documento informa se o texto é cartela, fala ou sobreposição; não acrescentar outra explicação improvisada.
+5. Registros de alunos e relatos precisam de contexto e autorização correspondentes. Não encenar uma dificuldade como registro espontâneo, juntar crianças diferentes como uma trajetória única ou adaptar um elogio antigo para parecer resultado do Farol.
+6. Não inserir preço fixo nas artes permanentes. A oferta mostra o valor vigente, com pagamento único e prazo de acesso. Conferir produto, checkout, telas e destinos publicados antes da divulgação.
+7. Reaproveitar captações quando fizer sentido, variando o ponto da conversa entre peças vizinhas. Mostrar o raciocínio dentro do recorte escolhido, em vez de repetir uma lista de recursos.
+
+## Execução e manutenção
+
+**T0** será a primeira publicação efetiva, após os materiais iniciais e os destinos estarem prontos. O calendário usa quatro semanas relativas e três posts mais três dias de stories por semana. Não há obrigação de recuperar as antigas datas de outubro. O guia 03 concentra também a formação inicial dos destaques, para não manter outro calendário.
+
+A [proposta incorporada](pesquisas/proposta-melhoria-2026-10-08.md) e a [pesquisa de 08/10](pesquisas/pesquisa-evidencias-2026-10-08.md) preservam a fundamentação. As [versões anteriores](historico/2026-10-08-antes-do-desafio/README.md) são históricas. Orientações antigas sobre campanha, ferramentas ou destinos não prevalecem sobre estes guias.
+
+Editar a copy no documento que a contém. Ao mudar uma condição, conferir Destaques, Fixados, Postagens e Links. Registrar separadamente revisão editorial, prova selecionada, arquivo final, agendamento e publicação. As métricas serão lidas depois da publicação; esta revisão não demonstra aumento de conversão nem resultado de aprendizagem.

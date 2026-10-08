@@ -1,85 +1,103 @@
-# Links e publicação
+# Links e publicação do Instagram
 
-**Consolidado em 04/10/2026; estrutura de seis destaques em 05/10.** Apoio aos três guias de execução. Copy em [Destaques](../01-destaques.md) e [Fixados](../02-fixados.md); datas em [Postagens](../03-postagens.md).
-
-Fonte de produto: **versão local**, por orientação explícita do usuário. A publicação está em andamento; conferir os destinos após a conclusão, antes de aplicar os links no Instagram. Não é necessário esperar o deploy para produzir os materiais.
+**Revisão: 08/10/2026.** Apoio ao [guia principal](../README.md), à copy de [Destaques](../01-destaques.md), aos [Fixados](../02-fixados.md) e ao [único calendário](../03-postagens.md). O ciclo está em preparação. A referência de oferta e acesso foi conferida no produto local; antes de divulgar, verificar os destinos efetivamente publicados.
 
 ## Destinos canônicos
 
-| Código | Função | URL alvo |
+| Código | Quando usar | Destino |
 | --- | --- | --- |
-| L0 | Bio e visão de entrada | `https://sistemazero.com.br/` |
-| L1 | Como aprende | `https://sistemazero.com.br/como-funciona/#como-aprende` |
-| L2 | Continuidade, criação e ferramentas | `https://sistemazero.com.br/como-funciona/#criar-mais` |
-| L3 | Orientação durante o percurso | `https://sistemazero.com.br/como-funciona/#orientacao` |
-| L4 | Rotina em família | `https://sistemazero.com.br/como-funciona/#na-rotina` |
-| L5 | Planos da Comunidade | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta#planos` |
-| L6 | Primeiro passo pelo Desafio | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/quiz` |
-| L7 | Orientação da Comunidade | `https://sistemazero.com.br/kids/comunidade-dos-criadores/quiz` |
+| LB | Bio e entrada com Como funciona, Desafio e Comunidade | https://sistemazero.com.br/ |
+| L0 | Conhecer o Desafio, suas aulas, valor e condições; botão do Desafio e stickers do Farol | https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta |
+| L5 | Conhecer planos da Comunidade como continuidade opcional ou contratação direta | https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta#planos |
 
-Os IDs de L1 a L4 estão em `packages/funnel/src/pages/como-funciona.astro`; `#planos` pertence à oferta. **Não usar as antigas âncoras da página longa diretamente na raiz. Não existe `#recursos`.** O conteúdo dos recursos está dentro de `#criar-mais`.
+LB identifica a página da bio. L0 e L5 preservam os destinos comerciais; L6 e os antigos L1 a L4 e L7 ficam fora deste ciclo. Os quizzes do Desafio e da Comunidade continuam disponíveis para campanhas específicas, com links e origem definidos na respectiva campanha. Não reutilizar um convite ao quiz nas peças do Instagram por hábito.
 
-Na raiz local, os três caminhos são: **Ver como meu filho aprende**, **Encontrar um primeiro passo para meu filho** e **Conhecer a Comunidade e os planos**. O segundo leva a L6. L7 continua uma opção dentro da apresentação da Comunidade; não confundir os dois quizzes nem descrever respostas como diagnóstico pedagógico.
+A bio continua em LB durante todo o ciclo. Na página inicial, Como funciona abre `/como-funciona/`; Desafio do Primeiro Jogo abre a oferta do Desafio; Comunidade dos Criadores abre a oferta da Comunidade desde o início da página. A copy completa dos botões está no [guia principal](../README.md#copy-dos-três-caminhos-na-página-inicial). Nos stories, L5 pode abrir a seção de planos conforme o sticker. F12 também pode orientar a escolha do botão da Comunidade na bio.
 
 ## Links prontos
 
-UTMs desta rodada: `utm_source=instagram`, `utm_medium=organic_social`, `utm_campaign=comunidade_202610`. O identificador da peça entra em `utm_content`. **Query antes do fragmento `#`.** Sem nome, e-mail ou dados da criança nos links.
+Campanha: **desafio_instagram_ciclo01**. Origem instagram, mídia organic_social. O identificador corresponde à tela canônica quando ela é publicada em stories e salva no destaque; esse link não distingue as duas superfícies. Query antes do fragmento. Não incluir nome, e-mail ou qualquer dado da criança.
 
-| Uso | Link para copiar |
-| --- | --- |
-| Bio | `https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=bio` |
-| S01 · Como funciona, seção 1 · A Jornada, tela final | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s01_como_funciona#como-aprende` |
-| Alunos · fecho opcional, sticker “Conhecer as aulas” | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=alunos_aulas#como-aprende` |
-| S04 · Como funciona, seção 2 · Como é cada aula, tela final | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s04_como_funciona_aula#como-aprende` |
-| S06 · Sobre nós, tela 4 | `https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s06_sobre_nos` |
-| S07 · Como funciona, seção 3 · As ferramentas, tela final | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s07_como_funciona_ferramentas#criar-mais` |
-| S08 · Projetos, sticker do projeto | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s08_projetos#como-aprende` |
-| S09 · Dúvidas, planos e condições | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s09_duvidas_planos#planos` |
-| S12 · Bastidor de Helena e Júlio e os planos | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=s12_planos#planos` |
-| Resposta complementar sobre orientação, quando solicitada | `https://sistemazero.com.br/como-funciona/?utm_source=instagram&utm_medium=organic_social&utm_campaign=comunidade_202610&utm_content=duvidas_orientacao#orientacao` |
+| Uso | Texto completo do link ou sticker | Endereço para copiar |
+| --- | --- | --- |
+| Bio | Conheça as aulas e escolha por onde começar | `https://sistemazero.com.br/?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=bio` |
+| CF09 / S01 | Conhecer o Desafio | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=cf09` |
+| AV05 / S04 | Ver A Chave do Farol | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=av05` |
+| DU07 / S06 | Ver valor e condições | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du07` |
+| DU10 / S06 | Consultar condições | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du10` |
+| PJ02 / S07 | Conhecer o Desafio | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=pj02` |
+| PJ04 / S07 | Conhecer a Comunidade | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=pj04#planos` |
+| PJ06 / S08 | Conhecer a Comunidade | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=pj06#planos` |
+| PJ08 / S09 | Conhecer a Comunidade | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=pj08#planos` |
+| AL06 / S08 | Conhecer o Desafio | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=al06` |
+| S10.3 | Conhecer o Desafio | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=s10` |
+| DU16 / S11 | Conhecer a Comunidade | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du16#planos` |
+| DU17 / S11 | Ver os planos | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du17#planos` |
+| DU18 / S11 | Conhecer o Desafio | `https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du18` |
+| S12.3 | Conhecer a Comunidade | `https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=s12#planos` |
 
-Os demais stories apresentam respostas, relatos ou interações sem link obrigatório. O link opcional de Alunos pode encerrar uma seleção; não precisa aparecer em cada clipe. Não acrescentar link comercial em toda tela. Nos posts, “link na bio” remete ao link comum L0: ele não identifica sozinho qual post levou à visita.
+Os demais stories não levam link, salvo o que seus roteiros já especificam. A caixa de perguntas S05.3 e a enquete S10.2 têm texto completo no calendário. Não criar resposta automática, link em comentário ou convite de mensagem que ainda não tenha sido planejado.
+
+**Atribuição da bio:** os três botões preservam as UTMs sanitizadas da entrada. Os cliques usam os identificadores `bio-como-funciona`, `bio-desafio-oferta` e `bio-comunidade`; separar o novo acesso à oferta do antigo `bio-desafio-quiz` nos relatórios.
+
+**Limite de atribuição:** o link comum da bio não identifica sozinho qual Reel ou carrossel provocou a visita. A origem de um sticker ajuda a localizar a sequência, mas salvá-lo num destaque não cria uma medição separada. Não usar a campanha de Instagram em palestras presenciais.
 
 ## Aplicação em ordem
 
-1. Separar os materiais: gravação do projeto, cenas reais de alunos, relatos literais e uma captação de Helena e Júlio. Nome e foto do perfil já foram atualizados pelo responsável. A referência de perfil está no [guia de entrada](../README.md#perfil-de-referência).
-2. Produzir pelos documentos [Destaques](../01-destaques.md) e [Fixados](../02-fixados.md). Aproveitar as capturas nas peças relacionadas; manter as identificações de demonstração da equipe e de registros reais.
-3. Conferir os destinos publicados em celular, conteúdo e rolagem das âncoras. Conferir o link completo da bio com UTMs. A publicação do site não é presumida pela existência da copy local. Verificar a navegação de um quiz sem enviar cadastro nem realizar compra de teste em produção.
-4. Publicar conforme o [único calendário](../03-postagens.md). Formar Como funciona (três seções, nesta ordem), Projetos, Alunos, Dúvidas, Avaliações e Sobre nós com os blocos indicados. Cada curso novo lançado entra em Projetos na semana do lançamento. Fixar F01, F02 e F03 depois de publicados; conferir ordem e leitura no perfil.
-5. Guardar URL/ID real, data e versão de cada publicação no fluxo existente. Conferir disponibilidade dos comentários e caixas usados nas peças; se houver comentários limitados, usar a alternativa escrita em F10 com a enquete S10.
-6. Prosseguir com os lotes do mês. Registrar tempo de produção e perguntas recebidas. Atualizar os textos no guia responsável quando uma condição mudar.
+1. Conferir oferta, conta e acesso do Desafio: Farol, idade, computador, formato gravado, pagamento único e 30 dias contados da aprovação. A Comunidade é outro contrato. Não usar privilégios administrativos como prova do acesso do comprador.
+2. Separar captações reais do produto e do casal. Os três relatos escritos estão transcritos nos guias; o usuário autorizou o uso, confirmou o teste do Farol pelas crianças e identificou Débora e André como seus filhos. Essa informação deve permanecer junto das falas.
+3. Produzir conforme os roteiros completos. Reaproveitar capturas mantendo autoria, contexto e rótulo de demonstração. Os assets são arquivos de produção; este documento não declara que vídeos ou artes já tenham sido renderizados.
+4. Conferir oferta e links completos em celular, incluindo o destino depois de tocar e a posição de chegada na seção de planos. Não presumir publicação remota a partir do código local. A conferência de navegação não exige realizar compra nem enviar mensagens.
+5. Aplicar bio, nome do link e materiais no Instagram quando a equipe executar a publicação. Usar os três dias semanais do calendário para formar os destaques e publicar os posts. Fixar F01, F02 e F03 depois de publicados, conferindo a apresentação no perfil.
+6. Deixar a ordem dos destaques acompanhar as atualizações. Projetos, Alunos, Avaliações e Dúvidas podem vir para a frente; Como funciona e Sobre nós podem ficar ao final. Usar nomes reconhecíveis e os fixados como orientação, sem publicar conteúdo vazio para reorganizar posições.
+7. Registrar URL ou ID real, data, versão e arquivo final de cada peça no fluxo existente. Revisão editorial, material produzido, agendamento e publicação são estados diferentes.
 
-Cada peça continua em produção até haver arquivo final e revisão em celular. Datas de planejamento e aprovação editorial não equivalem a agendamento ou publicação.
+## Manutenção dos destaques
 
-## Conversas e respostas úteis
+| Destaque | O que justifica atualizar | O que conferir |
+| --- | --- | --- |
+| Como funciona | Mudança no percurso ou na forma de aprender | Preservar a apresentação inicial completa; retirar explicações superadas |
+| Projetos | Novo projeto acrescentado à Comunidade ou mudança relevante em um projeto existente | Manter duas cartelas por projeto: dois momentos da partida, com pelo menos um em andamento, e recorte dos blocos ligado às habilidades; ampliar o catálogo com copy completa; Farol identificado como primeiro projeto; links conforme o acesso |
+| Alunos | Novo vídeo autorizado de uma criança fazendo atividades | Acrescentar o registro mantendo a abertura sem lista de nomes ou quantidade fixa; escrever a legenda completa conforme a ação e identificar a criança e eventual vínculo com os criadores |
+| Dúvidas | Pergunta recorrente ou mudança de condição | Resposta direta; substituir condições antigas em vez de acumular versões conflitantes |
+| Avaliações | Novo relato autorizado de criança, adulto ou responsável | Palavras literais, atribuição, vínculo familiar quando houver e contexto confirmado |
+| Sobre nós | Mudança relevante na apresentação do casal | História verdadeira e conexão com a preparação das aulas |
 
-Não enviar prospecção automática: as respostas servem para atender uma pergunta recebida. Consultar as respostas vigentes em [Dúvidas](../01-destaques.md#dúvidas), escolhendo a que responde à pergunta recebida. Essa é a fonte única do texto sobre formato, orientação, equipamento, perfis, contratação e visibilidade. Complementar com uma demonstração pertinente ou um link acima quando ajudar a família.
+Revisar o conjunto quando o volume dificultar encontrar a resposta. Não prometer “primeiro destaque” ou “último destaque” na copy; indicar o nome. Uma nova resposta exige texto final antes de entrar na produção, não apenas um tema no calendário.
 
-Para preço, informar o valor vigente junto do período, formas de pagamento e renovação. Conferir a oferta antes de responder. Dúvidas novas recorrentes entram no mesmo guia, evitando manter respostas divergentes em outro arquivo.
+## Conversas e respostas
 
-## Registro semanal no fluxo existente
+Usar as respostas completas de [Dúvidas](../01-destaques.md#dúvidas) para atender perguntas recebidas, escolhendo o trecho que responde à questão. Não enviar prospecção por causa deste plano.
 
-Usar o app de marketing para conteúdo, checklist, assets e publicações. Registrar resultados no fluxo existente, sem criar um publicador ou CRM paralelo.
+Para encaminhar a oferta após uma pergunta sobre valor, usar esta mensagem completa:
 
-Campos mínimos por peça: ID editorial; URL/ID publicado; versão; formato; data/fuso; duração ou número de slides; alcance; salvamentos; compartilhamentos; retenção disponível; respostas pertinentes; toques no link; sessões com UTM; compras atribuídas quando disponíveis; tempo de produção; decisão.
+> Você paga uma vez pelo Desafio do Primeiro Jogo e tem 30 dias de acesso, contados da aprovação do pagamento. Aqui você pode ver o preço, as formas de pagamento e o que está incluído: https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta
 
-Registrar **ausente** quando o dado não está acessível. Métricas de sete dias para cada post; fechamento em 06/11. A implementação local de [medição do funil](../../../../medicao-funil.md) precisa receber dados reais após a publicação para sustentar análise. Nenhum ganho de alcance, conversão ou aprendizagem foi demonstrado por esta revisão.
+Para uma pergunta sobre continuidade:
 
-## Checklist da peça final
+> Se vocês quiserem outros cursos, podem conhecer a assinatura da Comunidade dos Criadores. Ela é paga separadamente e já inclui o Desafio enquanto estiver ativa. As ferramentas de criação vão sendo liberadas conforme seu filho avança nas atividades. Aqui estão os cursos, os planos e como funciona a cobrança: https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta#planos
 
-- A abertura mostra uma decisão, uma ação ou uma situação concreta.
-- A resposta começa pelo que foi perguntado e explica o motivo, com um exemplo pertinente quando ajuda.
-- O texto liga a explicação ao que o filho faz e ao que a família consegue observar, sem depender de uma lista de ferramentas.
-- Falas, legendas e slides foram lidos como uma conversa; cada frase prepara a seguinte e não há cortes que escondam uma explicação necessária.
-- A fala corresponde à captura e à disponibilidade dos recursos. A [conferência por recurso](../01-destaques.md#disponibilidade-por-recurso) está registrada e sua condição aparece junto da demonstração, inclusive em F01 e F06–F09; uma conta da equipe não comprova o acesso de quem começa.
-- A peça distingue comandos novos de prática de comandos já conquistados. Quando fala em publicar, identifica o projeto, não o curso.
-- A peça acompanha uma situação da criança e mostra como ela usa a orientação para continuar. Quando aparecer “Verificar esta etapa”, a captura tem critérios configurados e a copy fala dos objetivos cumpridos e pendentes. Não apresentar o recurso como diagnóstico de qualquer erro do jogo. O pedido de ajuda à equipe com a aula está em Dúvidas 8, sem restringi-lo a dúvidas excepcionais.
-- A primeira seção de Como funciona explica a experiência e fecha com seu próprio link. As seções seguintes aprofundam a tarefa e a criação, com títulos que indicam “2 de 3” e “3 de 3”. F05 usa oito slides para acompanhar a mesma tentativa, incluindo a conferência e o teste.
-- Zappy de diálogos da aula e assistente de inteligência artificial têm papéis distintos.
-- Materiais preparados, demonstrações da equipe e casos de alunos estão identificados corretamente.
-- Legendas de vídeo, contraste, capa, som e recorte foram vistos no celular.
-- A duração permite ouvir a explicação e ver a ação. Respostas longas foram divididas em telas legíveis, com a pergunta identificada na continuação.
-- Há um próximo passo principal, com destino correto.
-- Responsável, assets e checklist estão completos antes da aprovação.
+Essas respostas são para uso manual quando a pergunta existir. Se for informar um número, ler o valor vigente na oferta naquele momento; este guia não fixa preço na arte nem inventa desconto.
 
-Esta organização não publicou, agendou nem cadastrou peças no app. As alterações de nome e foto do Instagram foram informadas pelo responsável.
+## Conferência editorial e de produção
+
+- A publicação faz sentido para quem nunca programou. Usar palavras que uma criança de 10 anos consiga entender, falando com o responsável. A abertura mostra uma cena ou uma decisão, e uma frase prepara a seguinte.
+- A imagem mostra o que a fala explica. Ao apresentar uma ideia nova, mostrar a criança experimentando antes de montar no jogo e jogando depois para conferir.
+- Fica claro o que já vem pronto, o que a criança aprende a fazer e o que ela pode escolher para o jogo ficar do jeito dela.
+- A fala acompanha o estado visível. “Verificar esta parte” é o rótulo infantil atual; o recurso confere os critérios configurados, não todo problema possível.
+- As legendas de Alunos variam conforme a ação visível: aprender, explorar, personalizar e testar. Evitar repetir a mesma frase trocando apenas o nome.
+- Gravações da equipe estão identificadas. Relatos mantêm as palavras escolhidas; Débora e André aparecem como filhos de Helena e Júlio.
+- Projetos apresenta Farol, Cadê Todo Mundo?, Nave Contra Asteroides e Corre Dino. O Cadê aparece como parte do catálogo; sua campanha de entrada permanece presencial. Os links e as condições não apresentam os demais cursos ou ferramentas livres como incluídos na compra avulsa do Desafio.
+- Idade, equipamento, formato, prazo e contratação correspondem à oferta. Garantia não vira teste gratuito nem aumenta o acesso.
+- As cartelas de Projetos mostram dois momentos reais da mesma partida, com pelo menos uma imagem do jogo em andamento, e um trecho legível de blocos ligado à habilidade descrita. Não usar só telas de abertura e encerramento; conferir se os rótulos correspondem às capturas. No Farol, o final tem farol aceso e barco já na costa.
+- Cada tela tem copy completa, título ou sobreposição quando previsto, e sticker com texto e destino corretos. A arte final tem leitura confortável no celular.
+- Não há referência obrigatória à posição dos destaques. O próximo passo é encontrável pelo nome e pelo destino.
+- O CTA se dirige ao adulto e corresponde ao que a página de chegada entrega.
+
+## Registro e leitura
+
+Usar o app ou fluxo de marketing já existente para checklist, arquivos, publicações e resultados. Não criar outro publicador ou CRM. Campos: ID editorial, versão, URL publicada, data e fuso, formato, duração ou slides, alcance, retenção disponível, salvamentos, compartilhamentos, respostas pertinentes, toques, sessões atribuíveis, compras quando vinculáveis e tempo de produção.
+
+Os critérios e as janelas estão em [Leitura dos resultados](../03-postagens.md#leitura-dos-resultados). Registrar dados ausentes como ausentes. A existência local de [medição do funil](../../../../medicao-funil.md) não comprova que origem, pagamento e atividade do curso já estejam vinculados em produção. Conferir a disponibilidade real antes de calcular as taxas.
+
+Esta entrega inclui a revisão editorial e a aplicação local dos acessos da página inicial e de Como funciona no código do funil. Não houve agendamento, publicação no Instagram ou disparo de mensagens. A publicação do site depende do fluxo de implantação.
