@@ -76,7 +76,7 @@ try {
   await firstBatch
   assert.equal(await visitor.locator('#sz-metrics-notice').isVisible(), false)
   assert.ok(!(await context.cookies()).some((c) => c.name === 'sz_metrics'))
-  await visitor.getByRole('link', { name: /Ver como meu filho aprende/ }).click()
+  await visitor.getByRole('link', { name: /^Como funciona/ }).click()
   await visitor.waitForURL('**/como-funciona/**')
   const capture = spawn(
     process.execPath,

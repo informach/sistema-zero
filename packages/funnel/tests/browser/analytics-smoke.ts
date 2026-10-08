@@ -49,7 +49,7 @@ try {
   await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
   await page.getByRole('button', { name: 'Ativar métricas' }).click()
   await page.waitForResponse((r) => r.url().endsWith('/api/analytics/events') && r.status() === 200)
-  await page.getByRole('link', { name: /Ver como meu filho aprende/ }).click()
+  await page.getByRole('link', { name: /^Como funciona/ }).click()
   await page.waitForURL('**/como-funciona/**')
   assert.equal(new URL(page.url()).searchParams.get('utm_source'), 'qa_analytics')
   await page.locator('.home-faq summary').first().click()

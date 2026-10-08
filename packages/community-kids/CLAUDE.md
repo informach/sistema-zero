@@ -3035,8 +3035,15 @@ volta do `renderInstruction`) —, e a régua que o traduz em "toca ou não" é 
   `requestAnimationFrame`, `useOffscreenRenderer: false`): a `State Machine 1` do arquivo novo
   segue CONGELADA (1 quadro distinto em 240, mesmo com a camada `Mouth` que ela ganhou), a
   `Timeline 1` anima (240/240) e **repete sozinha** (6 `Loop` em 12 s, zero `Stop`) — por isso não
-  existe rede de religar —, e `autoplay: false` PINTA o primeiro quadro, inclusive depois do
-  resize.
+  existe rede de religar. **Correção de 08/10/2026:** o resize padrão do hook desenhava antes de
+  atualizar o enquadramento. Se a carga terminasse antes da primeira observação do canvas, o
+  Zappy parado podia ficar completamente fora da área visível; a otimização do runtime pulava
+  o redesenho até a criança apertar "Ouvir". `MascotRiveCanvas` usa `useResizeCanvas` com
+  `resizeDrawingSurfaceToCanvas()` para ajustar tamanho/enquadramento e invalidar a pintura
+  nessa ordem. O WebP sai após o ajuste e o próximo quadro, não no `onLoad`. O item do grid
+  tem `min-w-0 min-h-0` para o canvas anterior não impedir a redução de tamanho no celular.
+  `e2e-scenes/mascot-idle.spec.ts` reproduz a ordem de carga com o Rive real e mede pixels;
+  cobre também resize, fala/parada e fallback de rede.
 - ⚠️ **O nome do arquivo mudou de propósito** (`speaking.riv` → `fala.riv`): `/zappy/*` tem
   `Cache-Control` de um dia, e sobrescrever serviria o arquivo VELHO com o código novo pelas 24 h
   seguintes — em staging isso lê como "a animação não funcionou". O `tests/mascot-assets.test.ts`

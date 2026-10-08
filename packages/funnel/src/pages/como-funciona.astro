@@ -24,7 +24,6 @@ const f = COMUNIDADE_DOS_CRIADORES
 const img = (file: string) => `${f.imagesBase}/${file}`
 const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
 const ofertaUrl = link(`${f.basePath}/oferta`)
-const quizUrl = link(`${f.basePath}/quiz`)
 const desafioUrl = link(`${DESAFIO_PRIMEIRO_JOGO.basePath}/oferta`)
 const title = 'Como seu filho aprende criando jogos | Sistema Zero'
 const description =
@@ -234,12 +233,12 @@ Astro.response.headers.set('Cache-Control', 'no-store')
             <a class="kof-btn kof-btn--grande kof-btn--sobre-navy" href={ofertaUrl} data-home-cta="B06">Conhecer a Comunidade e os planos<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
             <p class="home-offer-note">Veja os planos, as condições de acesso e renovação e a garantia vigente antes de contratar.</p>
           </div>
-          <aside class="kof-carta home-quiz" aria-labelledby="title-quiz">
+          <aside class="kof-carta home-first-step" aria-labelledby="title-primeiro-passo">
             <span class="kof-ladrilho kof-ladrilho--roxo" aria-hidden="true"><span class="material-symbols-rounded">explore</span></span>
-            <h3 class="kof-display" id="title-quiz">Encontre um caminho na Comunidade.</h3>
-            <p>Responda sobre o que ele gosta de fazer e o que sua família procura. Ao final do quiz, você recebe uma orientação e uma ideia para experimentar em casa.</p>
-            <a class="kof-btn kof-btn--secundario" href={quizUrl} data-home-cta="B07">Encontrar um caminho para meu filho<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
-            <p class="home-note">Você também pode conhecer a Comunidade diretamente pelo botão dos planos.</p>
+            <h3 class="kof-display" id="title-primeiro-passo">Começar pelo Desafio do Primeiro Jogo.</h3>
+            <p>Um primeiro jogo guiado para seu filho experimentar nosso jeito de aprender e vocês perceberem se a proposta combina com ele.</p>
+            <a class="kof-btn kof-btn--secundario" href={desafioUrl} data-home-cta="B07-desafio">Conhecer o Desafio do Primeiro Jogo<span class="material-symbols-rounded" aria-hidden="true">arrow_forward</span></a>
+            <p class="home-note">Pagamento único · 30 dias de acesso. A Comunidade também pode ser contratada diretamente e inclui o Desafio durante a assinatura ativa.</p>
           </aside>
         </div>
       </section>

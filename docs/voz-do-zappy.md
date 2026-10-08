@@ -4,11 +4,13 @@ As falas do Zappy e as instruções das cenas saem na voz dele, gravada no Eleve
 do sistema operacional da criança. Este é o guia operacional: como ligar, quanto custa, o que fazer
 quando algo não fala.
 
-Decidido em 17/09/2026; roteiro de pronúncia implementado em 18/09/2026.
+Decidido em 17/09/2026; roteiro de pronúncia implementado em 18/09/2026; voz própria adotada em 08/10/2026.
 
-⚠️ **A voz é a do André**, uma criança de 12 anos — é ele que faz o Zappy. No ElevenLabs ela se
-chama `AndrePro` (clonada, pt), id `0zTjt1MBEwfzcDnBGtaL`. Quem trocar a voz um dia troca só a env:
-o id entra no hash do arquivo, então nada do que já está no ar se mistura com a voz nova.
+**O Zappy tem uma voz própria**, criada no ElevenLabs com o nome `Zappy`, id
+`uj19ZrP8mFHr1twXk7aq`. Ela substitui a voz do André nas novas gerações. Para trocar a voz,
+atualize `ELEVENLABS_VOICE_ID` no Admin de cada ambiente e reinicie o serviço. O id entra no
+hash do arquivo, então as novas gerações usam arquivos próprios. Os áudios já publicados
+continuam com a voz em que foram gerados até que sejam gerados novamente e a aula seja republicada.
 
 ## A ideia em uma frase
 
@@ -33,7 +35,7 @@ Duas envs no serviço **admin** — e só nele:
 
 ```
 ELEVENLABS_API_KEY=<a chave>
-ELEVENLABS_VOICE_ID=0zTjt1MBEwfzcDnBGtaL   # opcional: o código já usa esta voz
+ELEVENLABS_VOICE_ID=uj19ZrP8mFHr1twXk7aq   # opcional: o código já usa esta voz
 ```
 
 ⚠️ Localmente a chave vai no `.env`; **nunca** commitada. ⚠️ `KEY=` vazio quebra o boot (o Zod trata

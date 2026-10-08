@@ -70,12 +70,11 @@ recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckou
 = landing de área (redireciona ao produto, ou "em breve" se vazia). **`/` (raiz,
 `src/pages/index.astro`) = página "bio" da marca kids** (destino do link da bio do Instagram
 @criecomhelenaejulio): entrada com avatar, posicionamento e três acessos: como funciona (principal),
-quiz do Desafio e oferta da Comunidade. O quiz da Comunidade fica contextual em como funciona. A apresentação
+oferta do Desafio e oferta da Comunidade. Cada acesso explica seu papel; o Desafio informa pagamento único e 30 dias, e a Comunidade informa assinatura e inclusão do Desafio. Os quizzes ficam para campanhas específicas e não são um passo obrigatório da entrada pelo Instagram. A apresentação
 com prints reais, percurso jogar → experimentar → programar → continuar → criar, recursos e FAQ
 fica em `/como-funciona/` (`src/pages/como-funciona.astro`), com seção própria para orientação pelas
 atividades, Como fazer, Pensa, Zappy, Mural/Clube e equipe via Recados. Reutiliza tokens das ofertas, conteúdo
-em `src/content/home-comunidade.ts` e estilos `comunidade-home.css`. Oferta da Comunidade é o
-destino comercial principal; quiz e Desafio são entradas complementares. Links preservam a
+em `src/content/home-comunidade.ts` e estilos `comunidade-home.css`. O Desafio apresenta uma primeira experiência paga; a Comunidade oferece assinatura e pode ser contratada diretamente. Ambos têm acesso direto à oferta na página inicial. Links preservam a
 atribuição sanitizada, com HTML `no-store`; a raiz não cria lead. URLs planas antigas → 301.
 
 **Métricas próprias (03/10/2026):** `src/analytics/`, `components/Analytics.astro` no BaseLayout,
@@ -266,7 +265,8 @@ página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOI
 "acesso AO Desafio" × "acesso À Comunidade"). Imagens em `public/img/comunidade-dos-criadores/`
 (capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
 dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
-(`/`) apresenta a Comunidade como oferta principal. A ampliação dos prints é compartilhada
+(`/`) apresenta Como funciona primeiro, o Desafio como primeiro passo e a Comunidade como
+continuidade ou contratação direta. A ampliação dos prints é compartilhada
 entre a raiz e as ofertas pelo componente `ComunidadeImageZoom.astro`.
 **Quatro copies da Comunidade (01/10/2026):** a referência vigente está em
 `docs/marketing/kids/comunidade-dos-criadores/copy/`. Conteúdo tipado em

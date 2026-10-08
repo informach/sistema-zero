@@ -227,8 +227,9 @@ síntese. Guia operacional (custo, licença, diagnóstico): **`docs/voz-do-zappy
   `content.vozes` do próprio bloco. ⚠⚠ O `aplicarVozes` do `lesson-editor-client` SUBSTITUI o
   dicionário, nunca funde: a chave é o texto, então fundir guardaria para sempre a entrada da frase
   ANTIGA — lixo que conta no teto de 40 entradas do core.
-- **Envs (só no admin)**: `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID` (opcional; o padrão já é a voz
-  da dona). Ausentes → 503 amigável e a aula segue na voz do navegador. ⚠⚠ A chave NÃO vai para o
+- **Envs (só no admin)**: `ELEVENLABS_API_KEY` e `ELEVENLABS_VOICE_ID` (opcional; o padrão é a voz
+  própria do Zappy, `uj19ZrP8mFHr1twXk7aq`, desde 08/10/2026). Reiniciar o Admin após trocar a env.
+  Sem a chave → 503 amigável e a aula segue na voz do navegador. ⚠⚠ A chave NÃO vai para o
   community/kids: a criança recebe URL de MP3 público, como qualquer mídia de aula.
 - ⚠ **Reimportar um manifesto apaga o dicionário daquela aula** (o manifesto não o carrega). Basta
   clicar no botão de novo: o áudio continua no R2 e é reaproveitado sem custo.
