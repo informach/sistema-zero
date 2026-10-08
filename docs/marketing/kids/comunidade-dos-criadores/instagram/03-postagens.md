@@ -18,7 +18,7 @@ Cada linha é uma ocasião de publicação dentro da semana. A referência de ca
 | 2 / 3 | F09 · A porta confere a chave | Reel; comparar duas respostas | S06 · Dúvidas sobre a compra, quatro telas | Desafio |
 | 3 / 1 | F06 · O mesmo jogo, outras escolhas | Reel; personalização com artes disponíveis | S07 · Farol e Cadê Todo Mundo?, quatro telas | Desafio e Comunidade |
 | 3 / 2 | F04 · Uma partida em família | Reel; convite para conhecer uma escolha | S08 · Alunos e Nave Contra Asteroides, oito telas | Desafio e Comunidade |
-| 3 / 3 | F08 · O que vem pronto e o que ele programa | Carrossel; esclarecer autoria | S09 · Compartilhamento e Corre Dino, sete telas | Comunidade |
+| 3 / 3 | F08 · O que vem pronto e o que ele programa | Carrossel; esclarecer autoria | S09 · Compartilhamento e Corre Dino, sete telas | Desafio em F08; Comunidade em S09 |
 | 4 / 1 | F07 · O jogo lembra da chave | Carrossel; conectar coleta e memória | S10 · Escolher o caminho, três telas novas | Desafio |
 | 4 / 2 | F11 · Um começo que cabe na rotina | Carrossel; apoiar decisão | S11 · Próximos passos, três telas | Comunidade e Desafio, conforme cada tela |
 | 4 / 3 | F12 · Depois do primeiro jogo | Reel; continuidade opcional | S12 · Da experiência ao próximo passo, três telas novas | Comunidade |

@@ -265,7 +265,8 @@ página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOI
 "acesso AO Desafio" × "acesso À Comunidade"). Imagens em `public/img/comunidade-dos-criadores/`
 (capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
 dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
-(`/`) apresenta a Comunidade como oferta principal. A ampliação dos prints é compartilhada
+(`/`) apresenta Como funciona primeiro, o Desafio como primeiro passo e a Comunidade como
+continuidade ou contratação direta. A ampliação dos prints é compartilhada
 entre a raiz e as ofertas pelo componente `ComunidadeImageZoom.astro`.
 **Quatro copies da Comunidade (01/10/2026):** a referência vigente está em
 `docs/marketing/kids/comunidade-dos-criadores/copy/`. Conteúdo tipado em

@@ -128,7 +128,7 @@ Os depoimentos ficam no destaque Avaliações. Este fixado usa vídeos de ativid
 
 ### F02B · Alternativa integral: bastidor da equipe
 
-Usar somente se a equipe decidir adiar a montagem dos vídeos de alunos. Substitui F02 naquele espaço do calendário; não é um 13º post. Esta alternativa não representa aluno e vai para Como funciona, não para Alunos ou Avaliações.
+Usar somente se a equipe decidir adiar a montagem dos vídeos de alunos. Substitui F02 naquele espaço do calendário e como post fixado; não é um 13º post nem um quarto fixado. Se F02B não for usado, F02 continua sendo o fixado. Esta alternativa mostra o bastidor da equipe e remete a Como funciona; não deve ser apresentada como registro de Alunos ou Avaliações.
 
 **Capa:**
 
@@ -246,6 +246,6 @@ Usar somente se a equipe decidir adiar a montagem dos vídeos de alunos. Substit
 >
 > Abra o link da bio e escolha Desafio do Primeiro Jogo. Veja o jogo com seu filho antes de decidir.
 
-**Conferência final dos fixados:** capa e legenda precisam continuar verdadeiras quando vistas isoladamente. F01 apresenta o produto; F02 mostra alunos em atividade, com identificação e vínculos familiares; F03 explica o contrato atual. Conferir no aplicativo quais posts estão fixados depois de publicar. Destaques são acessados pelo nome, sem prometer posição permanente.
+**Conferência final dos fixados:** capa e legenda precisam continuar verdadeiras quando vistas isoladamente. F01 apresenta o produto; F02 mostra alunos em atividade, com identificação e vínculos familiares, ou dá lugar a F02B com o bastidor da equipe; F03 explica o contrato atual. Conferir no aplicativo quais posts estão fixados depois de publicar. Destaques são acessados pelo nome, sem prometer posição permanente.
 
 [Guia e bio](README.md) · [Destaques](01-destaques.md) · [Calendário](03-postagens.md)
