@@ -52,6 +52,12 @@
 > sharp, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e entender
 > padrões**, use o **MCP do Octocode** em repositórios GitHub relevantes.
 
+**Áudio do aviso de vídeo (08/10/2026):** `LessonVideoGate` recebe `audioUrl` pelo
+`LessonPlayerContext.videoGateAudioUrl` e `sectionId` pelo `LessonSections`. No Kids, o
+`ZappyOuvirButton` lê a orientação com a gravação fornecida pelo app. Não iniciar som
+automaticamente nem contar a narração como vídeo assistido. A chave do botão por seção
+encerra a fala sem remontar a atividade. O texto fica em `lib/video-gate-copy.ts`.
+
 Núcleo COMPARTILHADO dos apps de área do aluno (**community** = adulto e **community-kids** =
 infanto-juvenil). Extraído do `@sistemazero/community` em 06/2026 (regra do usuário: código
 reutilizável NUNCA é cópia por app). Consumido como **TS source** via `exports` map (modelo do

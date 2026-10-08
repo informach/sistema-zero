@@ -149,6 +149,8 @@ Bun.serve({
     if (path === '/trail-rive.js') return new Response(trailScript)
     if (path === '/quiz-zappy.js') return new Response(quizScript)
     if (path === '/mascot-idle.js') return new Response(mascotScript)
+    if (path === '/zappy/assista-ao-video-v1.mp3')
+      return new Response(Bun.file(resolve(app, `public${path}`)))
     // O Zappy animado do balão (`fala.riv`) e a pose parada que o cobre enquanto carrega.
     if (/^\/zappy\/[a-z-]+\.(riv|webp)$/.test(path))
       return new Response(Bun.file(resolve(app, `public${path}`)))

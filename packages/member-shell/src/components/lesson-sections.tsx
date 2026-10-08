@@ -1317,6 +1317,8 @@ function LessonSectionsContent({
                     gate={videoGate}
                     kids={kids}
                     mascot={player?.videoGateMascot}
+                    audioUrl={player?.videoGateAudioUrl}
+                    sectionId={section.id}
                     onWatch={watchVideo}
                   >
                     {/* ⚠️⚠️ Os editores são da AULA, não da seção (por decisão explícita lá em

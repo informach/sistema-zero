@@ -37,6 +37,7 @@ import type {
   LessonCompleteResult,
   LessonDetailView,
 } from '@/lib/types'
+import videoGateVoice from '@/lib/zappy-video-gate-voice.json'
 
 interface Props {
   course: CourseDetailView
@@ -192,6 +193,7 @@ export function LessonPlayer({
       videoGateMascot: (
         <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" sound={false} />
       ),
+      videoGateAudioUrl: videoGateVoice.url,
       renderInstruction: (text, pose = 'speaking', speech) => (
         <DialogueBlockView
           content={{ kind: 'dialogue', text, pose }}
