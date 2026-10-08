@@ -1859,6 +1859,9 @@ o mesmo foco de áudio do vídeo. A chave por seção encerra a fala ao mudar de
 a atividade. Ouvir não altera progresso nem libera a tranca. Ao mudar texto ou voz, gerar outro
 arquivo com nome novo (cache de `/zappy/`). Cobertura: `tests/video-gate-voice.test.tsx` e
 `e2e-scenes/lesson-video.spec.ts`, com o MP3 real e a disposição no celular.
+Na revisão, o CI revelou o aviso transbordando ao mostrar o percentual assistido. O shell
+agora sobrepõe aviso e atividade numa célula de grid, reservando a altura de ambos. O teste
+confere a altura reservada e o clique real, inclusive com progresso e em telas pequenas.
 
 A régua e a estrutura moram no member-shell (§"Vídeo antes da atividade + o vídeo flutuante"
 de lá); aqui mora a PELE e o Zappy.

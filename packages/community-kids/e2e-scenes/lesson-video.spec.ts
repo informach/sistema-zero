@@ -102,6 +102,13 @@ test('o aviso cabe no celular', async ({ page }, info) => {
   await expect.poll(() => videoTime(page)).toBeGreaterThan(0.5)
   await page.locator('video').evaluate((video: HTMLVideoElement) => video.pause())
   await expect(page.getByText(/Você já viu \d+% do vídeo/)).toBeVisible()
+  // O aviso precisa caber na altura reservada no fluxo, inclusive depois de mostrar progresso.
+  // Se transbordar, o fim da página pode deixar a ação de vídeo sob o rodapé fixo.
+  const bounds = await page.locator('.sz-lesson-video-gate-host').evaluate((host) => ({
+    hostBottom: host.getBoundingClientRect().bottom,
+    cardBottom: host.querySelector('.sz-lesson-video-gate-card')!.getBoundingClientRect().bottom,
+  }))
+  expect(bounds.cardBottom).toBeLessThanOrEqual(bounds.hostBottom)
   await page.getByRole('button', { name: 'Ouvir a orientação' }).click()
   await expect(page.getByRole('button', { name: 'Parar', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Ver o vídeo' }).click()

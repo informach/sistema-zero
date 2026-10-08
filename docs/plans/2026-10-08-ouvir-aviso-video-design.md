@@ -20,3 +20,8 @@ Alterar texto ou voz exige gerar outro arquivo com nome novo, por causa do cache
 
 Validação: testes do aviso e do foco de mídia; reprodução do MP3 real no Chromium; aviso
 inteiro visível a 390 px; suites, tipos, lint e builds dos dois apps consumidores do shell.
+
+Na revisão, o CI encontrou o botão de vídeo coberto pelo rodapé quando surgia o percentual
+assistido. A reprodução local mediu o cartão 81 px além da altura reservada. Aviso e atividade
+passaram a ocupar a mesma célula de grid, cuja altura acomoda o maior dos dois, preservando
+a montagem do jogo. O teste confere essa reserva e os cliques reais após aparecer o progresso.

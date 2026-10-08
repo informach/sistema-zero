@@ -48,12 +48,14 @@ export function LessonVideoGate({
   const videoBlockId = gate.videoBlockId
 
   return (
-    <div className={cn('sz-lesson-video-gate-host relative', gate.locked && 'min-h-[22rem]')}>
-      <div className="space-y-6" inert={gate.locked || undefined}>
+    // A mesma célula sobrepõe o aviso ao jogo e reserva a altura do maior dos dois.
+    // Um aviso absoluto transbordava quando o progresso aparecia e escondia a ação sob o rodapé.
+    <div className={cn('sz-lesson-video-gate-host relative grid', gate.locked && 'min-h-[22rem]')}>
+      <div className="col-start-1 row-start-1 min-w-0 space-y-6" inert={gate.locked || undefined}>
         {children}
       </div>
       {gate.locked && videoBlockId ? (
-        <div className="sz-lesson-video-gate absolute inset-0 z-10 flex justify-center px-4 py-6">
+        <div className="sz-lesson-video-gate relative col-start-1 row-start-1 z-10 flex justify-center px-4 py-6">
           <div
             aria-hidden
             className="sz-lesson-video-gate-veil absolute inset-0 rounded-2xl bg-background/75"

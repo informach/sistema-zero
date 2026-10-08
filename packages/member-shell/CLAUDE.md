@@ -57,6 +57,9 @@
 `ZappyOuvirButton` lê a orientação com a gravação fornecida pelo app. Não iniciar som
 automaticamente nem contar a narração como vídeo assistido. A chave do botão por seção
 encerra a fala sem remontar a atividade. O texto fica em `lib/video-gate-copy.ts`.
+O aviso e a atividade ocupam a mesma célula de grid: a altura do aviso participa do fluxo.
+Com overlay absoluto, a linha de progresso fazia o cartão ultrapassar a altura reservada
+e deixava "Ver o vídeo" sob o rodapé fixo no celular (reproduzido no CI e localmente).
 
 Núcleo COMPARTILHADO dos apps de área do aluno (**community** = adulto e **community-kids** =
 infanto-juvenil). Extraído do `@sistemazero/community` em 06/2026 (regra do usuário: código
