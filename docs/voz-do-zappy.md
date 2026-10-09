@@ -63,6 +63,19 @@ O que ganha voz:
 
 Depois de gerar, **publique a aula**: o dicionário viaja no bloco, como qualquer outro conteúdo.
 
+## A orientação para assistir ao vídeo (08/10/2026)
+
+No Kids, o aviso **Primeiro, assista ao vídeo** também tem **Ouvir**, abaixo da explicação.
+Ele usa a voz própria do Zappy, só começa por toque e muda para **Parar** durante a fala.
+Ouvir não libera a atividade. O vídeo e a orientação compartilham o foco de áudio: um
+interrompe o outro. Trocar de parte ou liberar a atividade também encerra a orientação.
+
+Essa frase pertence à interface, e sua gravação acompanha o app em
+`community-kids/public/zappy/assista-ao-video-v1.mp3`; não depende de republicar cada aula.
+O texto, a voz, o modelo e o formato usados estão em `src/lib/zappy-video-gate-voice.json`
+do Kids. Ao mudar a frase ou a voz, gere outro MP3 e use um nome novo, pois os arquivos em
+`/zappy/` têm cache prolongado. As falas autoradas das aulas continuam pelo Admin.
+
 ## O quiz (07/10/2026)
 
 O quiz é o único lugar da aula em que a criança precisa ler sozinha para seguir. Quem ainda lê com

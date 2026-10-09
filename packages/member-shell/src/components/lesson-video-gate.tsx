@@ -5,6 +5,8 @@ import { Play } from 'lucide-react'
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react'
 import { cn } from '../lib/cn'
 import type { VideoGate } from '../lib/video-gate'
+import { KIDS_VIDEO_GATE_COPY } from '../lib/video-gate-copy'
+import { ZappyOuvirButton } from './zappy-ouvir-button'
 
 /** Quanto tempo o "Pronto!" fica à vista depois que a atividade abre. */
 export const VIDEO_GATE_DONE_MS = 8000
@@ -26,12 +28,17 @@ export function LessonVideoGate({
   gate,
   kids,
   mascot,
+  audioUrl,
+  sectionId,
   onWatch,
   children,
 }: {
   gate: VideoGate
   kids: boolean
   mascot?: ReactNode
+  /** Gravação do aviso, fornecida pelo app que possui o arquivo do Zappy. */
+  audioUrl?: string
+  sectionId: string
   /** "Ver o vídeo": leva a criança até ele (e tenta dar play). */
   onWatch: (videoBlockId: string) => void
   children: ReactNode
@@ -41,12 +48,14 @@ export function LessonVideoGate({
   const videoBlockId = gate.videoBlockId
 
   return (
-    <div className={cn('sz-lesson-video-gate-host relative', gate.locked && 'min-h-[22rem]')}>
-      <div className="space-y-6" inert={gate.locked || undefined}>
+    // A mesma célula sobrepõe o aviso ao jogo e reserva a altura do maior dos dois.
+    // Um aviso absoluto transbordava quando o progresso aparecia e escondia a ação sob o rodapé.
+    <div className={cn('sz-lesson-video-gate-host relative grid', gate.locked && 'min-h-[22rem]')}>
+      <div className="col-start-1 row-start-1 min-w-0 space-y-6" inert={gate.locked || undefined}>
         {children}
       </div>
       {gate.locked && videoBlockId ? (
-        <div className="sz-lesson-video-gate absolute inset-0 z-10 flex justify-center px-4 py-6">
+        <div className="sz-lesson-video-gate relative col-start-1 row-start-1 z-10 flex justify-center px-4 py-6">
           <div
             aria-hidden
             className="sz-lesson-video-gate-veil absolute inset-0 rounded-2xl bg-background/75"
@@ -59,7 +68,7 @@ export function LessonVideoGate({
             <h3 id={titleId} className="sz-lesson-video-gate-title font-semibold text-xl">
               {kids ? (
                 <>
-                  Primeiro, assista ao vídeo <span aria-hidden>🎬</span>
+                  {KIDS_VIDEO_GATE_COPY.title} <span aria-hidden>🎬</span>
                 </>
               ) : (
                 'Assista ao vídeo primeiro'
@@ -67,9 +76,18 @@ export function LessonVideoGate({
             </h3>
             <p className="sz-lesson-video-gate-text text-muted-foreground">
               {kids
-                ? 'Veja o vídeo uma vez até o fim para entender como funciona. Depois esta parte abre, e é a sua vez!'
+                ? KIDS_VIDEO_GATE_COPY.text
                 : 'A atividade abre depois que você assistir ao vídeo uma vez.'}
             </p>
+            {kids && audioUrl ? (
+              <ZappyOuvirButton
+                // Trocar de parte encerra a fala sem remontar a atividade atrás do aviso.
+                key={sectionId}
+                textos={[KIDS_VIDEO_GATE_COPY.title, KIDS_VIDEO_GATE_COPY.text]}
+                audioUrl={audioUrl}
+                rotulo="Ouvir a orientação"
+              />
+            ) : null}
             {percent > 0 ? (
               <p className="sz-lesson-video-gate-progress rounded-full bg-muted px-3 py-1 font-semibold text-sm">
                 {kids

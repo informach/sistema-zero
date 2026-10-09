@@ -1851,6 +1851,18 @@ tela sem saída. A página não precisa mais buscar gamificação para desempata
 
 ## "Primeiro, assista ao vídeo" + o vídeo flutuante na aula (03/10/2026)
 
+**Ouvir a orientação (08/10/2026):** `videoGateAudioUrl` no contexto do player fornece o MP3
+`/zappy/assista-ao-video-v1.mp3`, gravado com a voz própria do Zappy. O registro de geração está
+em `src/lib/zappy-video-gate-voice.json`; um teste confere que seu texto corresponde ao aviso.
+O botão compartilhado `ZappyOuvirButton` aparece abaixo da explicação, sem autoplay, e disputa
+o mesmo foco de áudio do vídeo. A chave por seção encerra a fala ao mudar de parte sem remontar
+a atividade. Ouvir não altera progresso nem libera a tranca. Ao mudar texto ou voz, gerar outro
+arquivo com nome novo (cache de `/zappy/`). Cobertura: `tests/video-gate-voice.test.tsx` e
+`e2e-scenes/lesson-video.spec.ts`, com o MP3 real e a disposição no celular.
+Na revisão, o CI revelou o aviso transbordando ao mostrar o percentual assistido. O shell
+agora sobrepõe aviso e atividade numa célula de grid, reservando a altura de ambos. O teste
+confere a altura reservada e o clique real, inclusive com progresso e em telas pequenas.
+
 A régua e a estrutura moram no member-shell (§"Vídeo antes da atividade + o vídeo flutuante"
 de lá); aqui mora a PELE e o Zappy.
 - O `lesson-player-client.tsx` passa `videoGateMascot` no contexto (`KidsMascotAnimated`

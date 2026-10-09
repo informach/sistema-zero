@@ -22,6 +22,43 @@ async function play(page: Page, rate = 1) {
 const videoTime = (page: Page) =>
   page.locator('video').evaluate((video: HTMLVideoElement) => video.currentTime)
 
+test('Ouvir toca a orientação gravada e cede o áudio ao vídeo', async ({ page }) => {
+  // Mantém o Audio real: observa o MP3 distribuído pelo app, sem simular sua reprodução.
+  await page.addInitScript(() => {
+    const NativeAudio = window.Audio
+    const observed = window as Window & { gateAudios?: HTMLAudioElement[] }
+    observed.gateAudios = []
+    window.Audio = class extends NativeAudio {
+      constructor(src?: string) {
+        super(src)
+        observed.gateAudios?.push(this)
+      }
+    }
+  })
+  await page.goto('/lesson-video?gate')
+  const audioState = () =>
+    page.evaluate(() => {
+      const audio = (window as Window & { gateAudios?: HTMLAudioElement[] }).gateAudios?.[0]
+      return { time: audio?.currentTime ?? 0, paused: audio?.paused ?? true, src: audio?.src }
+    })
+  expect((await audioState()).src).toBeUndefined()
+  await page.getByRole('button', { name: 'Ouvir a orientação' }).click()
+  await expect.poll(async () => (await audioState()).time).toBeGreaterThan(0)
+  expect((await audioState()).src).toContain('/zappy/assista-ao-video-v1.mp3')
+  await expect(page.getByRole('button', { name: 'Parar', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Ver o vídeo' }).click()
+  await expect.poll(async () => (await audioState()).paused).toBe(true)
+  await expect(page.getByRole('button', { name: 'Ouvir a orientação' })).toBeVisible()
+  await expect.poll(() => videoTime(page)).toBeGreaterThan(0)
+  await page.getByRole('button', { name: 'Ouvir a orientação' }).click()
+  await expect
+    .poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.paused))
+    .toBe(true)
+  await expect.poll(async () => (await audioState()).time).toBeGreaterThan(0)
+  await page.getByRole('button', { name: 'Parar', exact: true }).click()
+  await expect.poll(async () => (await audioState()).paused).toBe(true)
+})
+
 test('a atividade abre depois de ver o vídeo uma vez', async ({ page }, info) => {
   await page.setViewportSize({ width: 1366, height: 768 })
   await page.goto('/lesson-video?gate')
@@ -60,7 +97,43 @@ test('o aviso cabe no celular', async ({ page }, info) => {
   await expect(card).toBeInViewport({ ratio: 1 })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: info.outputPath('aviso-390.png'), fullPage: true })
+  // O percentual assistido acrescenta outra linha: Ouvir e Ver o vídeo continuam alcançáveis.
+  await play(page)
+  await expect.poll(() => videoTime(page)).toBeGreaterThan(0.5)
+  await page.locator('video').evaluate((video: HTMLVideoElement) => video.pause())
+  await expect(page.getByText(/Você já viu \d+% do vídeo/)).toBeVisible()
+  // O aviso precisa caber na altura reservada no fluxo, inclusive depois de mostrar progresso.
+  // Se transbordar, o fim da página pode deixar a ação de vídeo sob o rodapé fixo.
+  const bounds = await page.locator('.sz-lesson-video-gate-host').evaluate((host) => ({
+    hostBottom: host.getBoundingClientRect().bottom,
+    cardBottom: host.querySelector('.sz-lesson-video-gate-card')!.getBoundingClientRect().bottom,
+  }))
+  expect(bounds.cardBottom).toBeLessThanOrEqual(bounds.hostBottom)
+  await page.getByRole('button', { name: 'Ouvir a orientação' }).click()
+  await expect(page.getByRole('button', { name: 'Parar', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Ver o vídeo' }).click()
+  await expect
+    .poll(() => page.locator('video').evaluate((video: HTMLVideoElement) => video.paused))
+    .toBe(false)
 })
+
+for (const viewport of [
+  { width: 320, height: 568 },
+  { width: 844, height: 340 },
+]) {
+  test(`as ações do aviso são alcançáveis em tela pequena (${viewport.width}x${viewport.height})`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport)
+    await page.goto('/lesson-video?gate')
+    await fonts(page)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.getByRole('button', { name: 'Ouvir a orientação' }).click()
+    await expect(page.getByRole('button', { name: 'Parar', exact: true })).toBeVisible()
+    await page.getByRole('button', { name: 'Ver o vídeo' }).click()
+    await expect.poll(() => videoTime(page)).toBeGreaterThan(0)
+  })
+}
 
 for (const viewport of [
   { width: 1366, height: 768 },

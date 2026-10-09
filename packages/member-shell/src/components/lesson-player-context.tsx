@@ -70,6 +70,8 @@ export interface LessonPlayerContextValue {
    * dele, o adulto e o admin ficam sem.
    */
   videoGateMascot?: ReactNode
+  /** MP3 do aviso "assista ao vídeo primeiro", distribuído pelo app Kids. */
+  videoGateAudioUrl?: string
   videoWatchRequiredBlockIds?: string[]
   materialRequiredBlockIds?: string[]
   materialRequiredItems?: { blockId: string; itemIds: string[] }[]
