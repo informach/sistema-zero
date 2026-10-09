@@ -91,12 +91,18 @@ não inclui campainha, tour de controles ou retorno à seção do caderno.
 
 ### Faça alguém aparecer
 
-Começar pela retomada, numa conversa curta: lembrar que, na experiência da seção anterior, o
-arbusto só ficou invisível depois de ligar a reação ao toque, e convidar a fazer isso no jogo; pedir
-um toque num esconderijo do próprio jogo ("Tá vendo? Não acontece nada, porque o toque ainda não tem
-nenhuma reação ligada a ele") e explicar que o toque é a ação e que a reação que a gente quer é o
-esconderijo ficar invisível. Não dizer que o jardim e os personagens estão preparados: a criança vê
-o que já está no projeto. Só então mostrar o evento que já está em **Quando acontecer** ("Olha aqui:
+Começar pela retomada, numa conversa curta: pedir um toque num esconderijo do próprio jogo e
+mostrar que nada acontece, porque o toque ainda não tem nenhuma reação ligada a ele. Depois,
+lembrar que, na experiência da parte anterior, o arbusto só ficou invisível depois de ligar a reação
+ao toque, e convidar a fazer isso com os esconderijos do jogo.
+
+Antes de "Para começar, encontre a área Quando acontecer", apresentar os comandos como instruções
+que dizem ao jogo o que fazer e que aparecem como bloquinhos. No "Olha aqui: neste menu", apontar
+a paleta de comandos como o lugar de escolher os blocos, sem pegar nenhum ainda. Esta é a primeira
+montagem: a apresentação liga a experiência ao uso dos blocos. Não repetir a explicação de ação e
+reação nem dizer que o jardim e os personagens estão preparados.
+
+Só então mostrar o evento que já está em **Quando acontecer** ("Olha aqui:
 nessa área já tem o bloco…", é ele que percebe o toque), trazendo a área à vista se ela começar fora
 da tela, e explicar **escolhido** como o esconderijo tocado. Com o espaço ao lado de **fazer** à vista,
 ensinar o caminho **Jogo 2D > Sprites > Aparência** e o bloco de visibilidade, que nasce com

@@ -80,6 +80,11 @@ Anexar somente `output/pdf/desafio-farol-caderno.pdf` ao leitor. O caderno tem 2
 
 **Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte.
 
+Depois da retomada da experiência e antes de procurar **Ao iniciar**, apresentar os comandos como
+instruções que dizem ao jogo o que fazer e que aparecem como bloquinhos. No "Olha aqui: neste menu",
+apontar a paleta de comandos como o lugar de escolher os blocos, sem pegar nenhum ainda. Esta é a
+primeira montagem do Desafio, que também recebe quem nunca programou; a fala completa está no roteiro.
+
 Com o destino à vista antes de cada bloco: controles com só as quatro direções no fim de Ao iniciar; movimento dentro de **A cada quadro do jogo**, logo abaixo de Desenhar o cenário praia-tropical.
 
 ### Seção 5. Até onde ele pode ir?

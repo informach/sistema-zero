@@ -87,12 +87,14 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 3 a 4 minutos, incluindo encaixes, teste e verificação. Não acelerar os encaixes para caber na estimativa.
 
-**Na tela:** abrir o projeto inicial da seção. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no jogo (sem setas na tela; no "Tá vendo?", manter o personagem parado à vista), depois a lembrança da experiência e, colado ao primeiro passo, o anúncio. Depois deixar à vista o fim da área **Ao iniciar**, com os blocos preparados; se for preciso, arrastar um espaço vazio entre os blocos. Só então abrir **Jogo 2D → Controles → Teclado, ações e toque**, arrastar **Ativar controles clássicos** até o fim de **Ao iniciar** e selecionar só as quatro direções. A Pré-visualização atualiza sozinha; aguardar a atualização sem recomendar Atualizar a cada encaixe.
+**Na tela:** abrir o projeto inicial da seção. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no jogo (sem setas na tela; no "Tá vendo?", manter o personagem parado à vista), depois a lembrança da experiência e o anúncio da montagem. Apresentar os comandos como bloquinhos; no "Olha aqui: neste menu", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois deixar à vista o fim da área **Ao iniciar**, com os blocos preparados; se for preciso, arrastar um espaço vazio entre os blocos. Só então abrir **Jogo 2D → Controles → Teclado, ações e toque**, arrastar **Ativar controles clássicos** até o fim de **Ao iniciar** e selecionar só as quatro direções. A Pré-visualização atualiza sozinha; aguardar a atualização sem recomendar Atualizar a cada encaixe.
 
 **Narração:**
 > "Aqui no seu jogo, não tem seta na tela. Tá vendo? O personagem fica parado, porque faltam as setas e o movimento.
 >
 > Lembra da experiência da parte anterior? Com a seta segurada, ele andava a cada quadro. Agora a gente vai pôr as setas e o movimento no seu jogo!
+>
+> Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.
 >
 > As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
 >
