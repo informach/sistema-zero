@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Grupo cactos, nascimento a cada 1,4 segundo em x 560, tamanho 44 e vx -5; movimento e desenho em cada quadro.
 - Seções: 6. Vídeos: 6.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 O intervalo e a direção da velocidade são observados antes dos blocos. Grupo e relógio são preparados numa seção; criação e depois atualização e desenho têm montagens próprias. A avalanche fica na experiência, sem exigir montar e desmontar uma regra errada no projeto.
@@ -30,6 +32,10 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 **Zappy na página (não gravar):** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-espaco-e-tempo-avatar-01. Professora até “Eles formam uma parede, e o Dino não teria como pular.”. Antes: Deixar o tempo parado com a parede de cactos visível. Debinha: “Como eu deixo um espaço entre eles?”. Retomada da professora: “Agora eu levo Criar cacto para o relógio e escolho 1,4 s.”. Depois: Mover Criar cacto para o relógio de 1,4 s; deixar os dois nascimentos acontecerem no tempo real.
+
 **Experiência existente:** `spawn`. Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Prepare o grupo e o relógio
@@ -39,6 +45,10 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 **Blocos na página:** video-grupo-e-relogio → fala-grupo-e-relogio.
 
 **Zappy na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-grupo-e-relogio-avatar-01. Professora até “O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E como eu faço aparecer um cacto de cada vez?”. Retomada da professora: “Agora vem o relógio.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -53,6 +63,10 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 **Zappy na página (não gravar):** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-numero-negativo-avatar-01. Professora até “Em cada quadro, o jogo soma a velocidade ao x.”. Antes: Mostrar o cacto avançando para a direita com velocidade 5 e o x na faixa. Debinha: “E se eu quiser que o cacto vá para o outro lado?”. Retomada da professora: “Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda.”. Depois: Trocar para -5 e avançar os quadros; depois testar as duas velocidades em zero.
+
 **Experiência existente:** `velocity`. Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 4. Crie os cactos no relógio
@@ -62,6 +76,10 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 **Blocos na página:** video-criar-cactos → fala-criar-cactos.
 
 **Zappy na página (não gravar):** Agora crie os cactos no relógio! Coloque No grupo criar obstáculo dentro do relógio, com x 560, vx -5 e tamanho 44. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-criar-cactos-avatar-01. Professora até “Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Ah, ele vai entrar pela beirada!”. Retomada da professora: “Confira se ficou assim: No grupo criar obstáculo está dentro do relógio de 1.4 segundo, com o grupo cactos, x 560, vx -5 e tamanho 44.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -76,6 +94,12 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 **Blocos na página:** video-mover-e-desenhar → fala-mover-e-desenhar.
 
 **Zappy na página (não gravar):** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-mover-e-desenhar-avatar-01. Professora até “Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora quero ver os cactos chegando!”. Retomada da professora: “Agora espere alguns cactos nascerem.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-mover-e-desenhar-avatar-02. Professora até “Depois de corrigir, teste de novo.”. Antes: Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras. Debinha: “O cacto passou pelo meu Dino!”. Retomada da professora: “Neste ponto, isso pode acontecer. Agora pule um deles.”. Depois: Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

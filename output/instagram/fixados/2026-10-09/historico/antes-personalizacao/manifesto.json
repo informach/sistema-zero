@@ -1,0 +1,337 @@
+{
+  "format": "1080x1350",
+  "ratio": "4:5",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/02-fixados.md",
+  "carousels": [
+    {
+      "id": "F01",
+      "slug": "01-o-primeiro-jogo",
+      "title": "O primeiro jogo do seu filho",
+      "badge": "O PRIMEIRO JOGO",
+      "objective": "Apresentar A Chave do Farol, mostrando experimentar, montar e testar uma regra.",
+      "slides": [
+        {
+          "title": "O primeiro jogo do seu filho.",
+          "body": [
+            "Conheça A Chave do Farol, o jogo que ele aprende a construir no Desafio do Primeiro Jogo."
+          ],
+          "type": "cover",
+          "images": ["output/instagram/projetos/2026-10-09/capturas/farol-final.png"],
+          "demo": true,
+          "scene": "Captura real do Farol aceso, com o personagem e o barco visíveis.",
+          "file": "01-capa.png"
+        },
+        {
+          "title": "Uma chave faz a diferença.",
+          "body": [
+            "Sem a chave, o farol continua apagado. Com ela, a luz acende e ajuda o barco a chegar à costa."
+          ],
+          "type": "compare",
+          "images": [
+            "output/instagram/como-funciona/2026-10-09/capturas/06-experiencia-sem-chave.png",
+            "output/instagram/como-funciona/2026-10-09/capturas/07-experiencia-com-chave.png"
+          ],
+          "labels": ["Sem a chave", "Com a chave"],
+          "demo": true,
+          "scene": "Duas capturas da mesma experiência: porta sem chave e porta com chave.",
+          "file": "02-slide.png"
+        },
+        {
+          "title": "Primeiro, ele experimenta.",
+          "body": [
+            "Antes de montar a parte do farol, seu filho testa a porta com a chave e sem ela.",
+            "Assim, vê o que precisa acontecer no jogo."
+          ],
+          "type": "photo",
+          "images": [
+            "output/instagram/como-funciona/2026-10-09/capturas/06-experiencia-sem-chave.png"
+          ],
+          "demo": true,
+          "scene": "Experiência interativa da porta sem chave; não apresentar como primeira aula do curso.",
+          "file": "03-slide.png"
+        },
+        {
+          "title": "Depois, ele monta.",
+          "body": [
+            "Os comandos do jogo aparecem em bloquinhos. A aula mostra quais escolher e como encaixar para fazer a luz acender só quando o personagem trouxer a chave."
+          ],
+          "type": "code",
+          "images": ["output/instagram/projetos/2026-10-09/capturas/farol-blocos.png"],
+          "demo": true,
+          "scene": "Recorte real dos blocos da condição que confere a chave; não inventar blocos.",
+          "file": "04-slide.png"
+        },
+        {
+          "title": "E joga para conferir.",
+          "body": [
+            "Seu filho testa as duas situações no jogo que montou.",
+            "Se a luz não funcionar como ele esperava, pode rever o passo e ajustar."
+          ],
+          "type": "photo",
+          "images": ["output/instagram/projetos/2026-10-09/capturas/farol-final.png"],
+          "demo": true,
+          "scene": "Jogo em andamento com farol aceso; o texto explica a verificação, sem fingir registro de um aluno.",
+          "file": "05-slide.png"
+        },
+        {
+          "title": "Uma parte de cada vez.",
+          "body": [
+            "O cenário, os desenhos e o movimento do barco já vêm preparados.",
+            "Seu filho se concentra em fazer o personagem andar, pegar a chave e acender o farol."
+          ],
+          "type": "photo",
+          "images": ["output/instagram/projetos/2026-10-09/capturas/farol-inicio.png"],
+          "demo": true,
+          "scene": "Visão completa do jogo para distinguir o material preparado das regras que a criança monta.",
+          "file": "06-slide.png"
+        },
+        {
+          "title": "Conheça as aulas antes de escolher.",
+          "body": [
+            "Abra o link da bio e escolha Desafio do Primeiro Jogo.",
+            "Veja a aventura com seu filho e conversem sobre a ideia de criar esse jogo."
+          ],
+          "type": "cover",
+          "images": [
+            "output/instagram/quem-somos/2026-10-09/cenas-contexto-v2/SN01-fundadores-no-trabalho.png"
+          ],
+          "cta": "Link da bio → Desafio do Primeiro Jogo",
+          "scene": "Cena de Helena e Júlio já produzida para Quem somos; texto dirige o convite ao responsável.",
+          "file": "07-slide.png"
+        }
+      ],
+      "caption": [
+        "No Desafio do Primeiro Jogo, seu filho aprende a construir A Chave do Farol. Ele faz o personagem andar, pegar a chave e acender a luz para ajudar o barco a chegar à costa.",
+        "A aula começa pela ideia que ele pode experimentar. Depois, mostra como montar os comandos em bloquinhos. Seu filho joga para conferir o que fez e ajusta quando precisa.",
+        "O cenário, os desenhos e o movimento do barco já vêm preparados. A criança aprende a montar as regras com a ajuda das aulas.",
+        "As explicações são gravadas, e o curso precisa de computador com internet, mouse e teclado. Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento.",
+        "Abra o link da bio e escolha Desafio do Primeiro Jogo para ver as aulas, o valor e o que está incluído. As capturas do jogo e dos blocos são demonstrações da equipe."
+      ]
+    },
+    {
+      "id": "F02",
+      "slug": "02-alunos-em-atividade",
+      "title": "Alunos em atividade",
+      "badge": "ALUNOS",
+      "objective": "Apresentar os alunos e as ações de aprender, personalizar e testar; versão provisória com imagens já autorizadas.",
+      "provisional": true,
+      "slides": [
+        {
+          "title": "Alunos em atividade.",
+          "body": [
+            "Na Comunidade dos Criadores, a criança monta, faz escolhas e testa o próprio jogo."
+          ],
+          "type": "cover",
+          "images": [
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL02-rafael-aprendendo.png",
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL03-jeffrey-explorando.png",
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL04-debora-personalizando-v2.png",
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL05-andre-testando.png",
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL07-fernando-mostrando.png"
+          ],
+          "scene": "Montagem com as cinco cenas provisórias de Rafael, Jeffrey, Débora, André e Fernando.",
+          "file": "01-capa.png"
+        },
+        {
+          "title": "Rafael",
+          "role": "Aluno",
+          "body": ["Rafael aprendendo a fazer uma parte do jogo funcionar."],
+          "type": "student",
+          "images": [
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL02-rafael-aprendendo.png"
+          ],
+          "scene": "Cena provisória gerada com a referência do Rafael, montando no computador.",
+          "file": "02-slide.png"
+        },
+        {
+          "title": "Jeffrey",
+          "role": "Aluno",
+          "body": ["Jeffrey explorando o que muda quando faz uma escolha."],
+          "type": "student",
+          "images": [
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL03-jeffrey-explorando.png"
+          ],
+          "scene": "Cena provisória gerada com a foto fornecida do Jeffrey, explorando o jogo no computador.",
+          "file": "03-slide.png"
+        },
+        {
+          "title": "Débora",
+          "role": "Aluna",
+          "body": ["Débora dando o seu jeito ao jogo."],
+          "type": "student",
+          "images": [
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL04-debora-personalizando-v2.png"
+          ],
+          "scene": "Cena provisória da Débora vendo o Farol com as escolhas de aparência.",
+          "file": "04-slide.png"
+        },
+        {
+          "title": "André",
+          "role": "Aluno",
+          "body": ["André jogando para conferir o que acabou de fazer."],
+          "type": "student",
+          "images": [
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL05-andre-testando.png"
+          ],
+          "scene": "Cena provisória do André usando o teclado para testar o Farol.",
+          "file": "05-slide.png"
+        },
+        {
+          "title": "Fernando",
+          "role": "Aluno",
+          "body": ["Fernando mostrando o que fez no jogo."],
+          "type": "student",
+          "images": [
+            "output/instagram/alunos/2026-10-09/cenas-provisorias/AL07-fernando-mostrando.png"
+          ],
+          "scene": "Cena provisória gerada com a foto fornecida do Fernando, mostrando uma parte do jogo.",
+          "file": "06-slide.png"
+        },
+        {
+          "title": "Seu filho também pode começar.",
+          "body": [
+            "No link da bio, escolha Desafio do Primeiro Jogo.",
+            "Ele aprende a construir A Chave do Farol, uma parte de cada vez, com a ajuda das aulas."
+          ],
+          "type": "cover",
+          "images": ["output/instagram/projetos/2026-10-09/capturas/farol-inicio.png"],
+          "demo": true,
+          "cta": "Link da bio → Desafio do Primeiro Jogo",
+          "scene": "Captura real do Farol; convite ao responsável, sem atribuir promessa de resultado aos alunos.",
+          "file": "07-slide.png"
+        }
+      ],
+      "caption": [
+        "Conheça Rafael, Jeffrey, Débora, André e Fernando, alunos da Comunidade dos Criadores.",
+        "Durante as aulas, as crianças aprendem a montar partes do jogo, fazer escolhas e jogar para conferir o que criaram. Cada atividade dá uma oportunidade de colocar uma ideia para funcionar.",
+        "Para conhecer uma primeira atividade para seu filho, abra o link da bio e escolha Desafio do Primeiro Jogo. As aulas ensinam a construir A Chave do Farol no computador.",
+        "Esta versão usa imagens geradas a partir das fotos dos alunos. Os vídeos das atividades serão incluídos depois."
+      ]
+    },
+    {
+      "id": "F03",
+      "slug": "03-como-comecar",
+      "title": "Como começar pelo Desafio",
+      "badge": "COMO COMEÇAR",
+      "objective": "Ajudar o responsável a conferir idade, equipamento, formato, ajuda e condições da compra.",
+      "slides": [
+        {
+          "title": "Como começar pelo Desafio.",
+          "body": ["Conheça as aulas e veja o que vocês precisam para criar A Chave do Farol."],
+          "type": "cover",
+          "images": [
+            "output/instagram/quem-somos/2026-10-09/cenas-contexto-v2/SN01-fundadores-no-trabalho.png"
+          ],
+          "scene": "Cena de Helena e Júlio no computador, já produzida para Quem somos.",
+          "file": "01-capa.png"
+        },
+        {
+          "title": "Pensado para crianças de 9 a 14 anos.",
+          "body": [
+            "A proposta é aprender a criar jogos, fazendo cada vez mais por conta própria.",
+            "Crianças mais novas podem fazer com um responsável. Quem é mais velho também pode participar, se tiver interesse em criar jogos."
+          ],
+          "type": "text",
+          "feature": "9 a 14",
+          "featureLabel": "anos",
+          "scene": "Cartela tipográfica; destacar a faixa principal e manter as possibilidades fora dela na mesma tela.",
+          "file": "02-slide.png"
+        },
+        {
+          "title": "No computador, fica mais fácil montar.",
+          "body": [
+            "Seu filho precisa de computador ou notebook com internet, mouse e teclado.",
+            "A tela maior ajuda a enxergar a aula e os blocos. O mouse facilita encaixar os comandos; o teclado permite testar os movimentos."
+          ],
+          "type": "photo",
+          "images": [
+            "output/instagram/quem-somos/2026-10-09/cenas-contexto-v2/SN07-helena-e-julio-preparando-aula.png"
+          ],
+          "scene": "Cena já produzida do casal trabalhando no computador; sem inventar uma tela de atendimento.",
+          "file": "03-slide.png"
+        },
+        {
+          "title": "A aula acompanha o ritmo dele.",
+          "body": [
+            "Como as aulas são gravadas, seu filho pode pausar para montar e voltar à explicação quando precisar.",
+            "Vocês escolhem o horário de estudar."
+          ],
+          "type": "text",
+          "feature": "Pausar.\nFazer.\nRever.",
+          "scene": "Cartela com verbos claros para explicar a vantagem do formato gravado.",
+          "file": "04-slide.png"
+        },
+        {
+          "title": "Quando aparece uma dúvida.",
+          "body": [
+            "Seu filho pode rever o trecho da aula e comparar com o que montou.",
+            "Pelo botão “Preciso de ajuda”, ele escreve para a equipe. A resposta chega por mensagem nos Recados e fica guardada para consultar depois."
+          ],
+          "type": "text",
+          "feature": "A dúvida vai pela aula.\nA resposta fica\nnos Recados.",
+          "scene": "Cartela explicativa; não fabricar conversas nem prometer resposta imediata.",
+          "file": "05-slide.png"
+        },
+        {
+          "title": "Pagamento único.\n30 dias de acesso.",
+          "body": [
+            "O acesso começa quando o pagamento é aprovado.",
+            "Nesse período, seu filho assiste às aulas, monta o jogo e usa o Mural, o espaço para publicar, jogar e comentar as criações da comunidade."
+          ],
+          "type": "text",
+          "feature": "30",
+          "featureLabel": "dias de acesso",
+          "scene": "Cartela tipográfica; não inserir preço fixo nem cronômetro de urgência.",
+          "file": "06-slide.png"
+        },
+        {
+          "title": "Depois dos 30 dias.",
+          "body": [
+            "Seu filho ainda pode ver e jogar no Mural. O projeto fica guardado, mas as aulas e a edição deixam de estar disponíveis por essa compra.",
+            "O Desafio não vira assinatura. Para continuar criando, vocês podem conhecer os planos da Comunidade."
+          ],
+          "type": "text",
+          "feature": "Continuar é uma\nescolha de vocês.",
+          "scene": "Cartela de continuidade; não sugerir cobrança automática ou liberação permanente do curso.",
+          "file": "07-slide.png"
+        },
+        {
+          "title": "Sete dias de garantia.",
+          "body": [
+            "Você tem sete dias corridos a partir da compra para pedir o dinheiro de volta, pelo canal indicado nos termos.",
+            "Nesse período, vocês podem conhecer as aulas e ver como seu filho acompanha a proposta."
+          ],
+          "type": "text",
+          "feature": "7",
+          "featureLabel": "dias corridos a partir da compra",
+          "scene": "Cartela com a garantia informada na oferta; sem estender o prazo de acesso.",
+          "file": "08-slide.png"
+        },
+        {
+          "title": "Conversem sobre o primeiro jogo.",
+          "body": [
+            "Mostre A Chave do Farol ao seu filho.",
+            "No link da bio, escolha Desafio do Primeiro Jogo para ver o preço e o que está incluído. O destaque Dúvidas também explica o acesso, a ajuda e a garantia."
+          ],
+          "type": "cover",
+          "images": ["output/instagram/projetos/2026-10-09/capturas/farol-inicio.png"],
+          "demo": true,
+          "cta": "Link da bio → Desafio do Primeiro Jogo",
+          "scene": "Captura real do jogo; convite ao adulto para avaliar junto da criança.",
+          "file": "09-slide.png"
+        }
+      ],
+      "caption": [
+        "O Desafio do Primeiro Jogo é uma forma de conhecer as aulas da Comunidade dos Criadores. Seu filho aprende a construir A Chave do Farol, com explicações gravadas e atividades no computador.",
+        "A proposta foi pensada para crianças de 9 a 14 anos. Crianças mais novas podem fazer com um responsável; quem é mais velho também pode participar, se tiver interesse em criar jogos.",
+        "É preciso computador ou notebook com internet, mouse e teclado. Seu filho pode pausar a aula para fazer a atividade e rever uma explicação. Nas primeiras aulas, fique por perto para perceber de que ajuda ele precisa.",
+        "Se surgir uma dúvida, ele pode escrever para a equipe pela aula. A resposta chega por mensagem nos Recados, onde a conversa fica guardada.",
+        "Você paga uma vez e tem 30 dias de acesso a partir da aprovação do pagamento. Isso inclui as aulas, o espaço de montar o jogo e o Mural para publicar, jogar e comentar. Depois desse prazo, o projeto fica guardado e ele ainda pode ver e jogar no Mural; as aulas e a edição dependem de um novo acesso.",
+        "A garantia é de sete dias corridos a partir da compra. O pedido de devolução segue o canal e as condições dos termos disponíveis na oferta.",
+        "A compra do Desafio não vira assinatura. A Comunidade é uma opção de continuidade contratada separadamente.",
+        "Abra o link da bio e escolha Desafio do Primeiro Jogo. Veja o jogo com seu filho antes de decidir."
+      ]
+    }
+  ],
+  "target": "C:\\Users\\tocha\\projects\\sistema-zero\\docs\\marketing\\kids\\comunidade-dos-criadores\\instagram\\producao\\fixados"
+}

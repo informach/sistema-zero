@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Um efeito de pulo ligado ao evento do Dino, sem evento provisório de tecla.
 - Seções: 4. Vídeos: 4.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 As duas experiências mostram espera por um evento e diferença entre tecla e pulo. A construção aplica diretamente o evento do Dino, evitando programar um som na tecla só para desfazê-lo. O resultado e o som do projeto original são preservados.
@@ -39,6 +41,10 @@ As duas experiências mostram espera por um evento e diferença entre tecla e pu
 
 **Zappy na página (não gravar):** Sua vez! Teste a tecla repetida e o toque com o som nos dois lugares e compare os contadores. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-dedo-e-pulo-avatar-01. Professora até “porque esse pulo não veio da tecla Espaço.”. Antes: Concluir o teste por tecla e o teste por toque; deixar os contadores à vista e o Dino pousado. Dedé: “Eu quero que todo pulo tenha som!”. Retomada da professora: “Vamos ligar o som ao pulo. Agora eu levo Tocar efeito para Quando o Dino pular e faço os mesmos testes.”. Depois: Levar Tocar efeito para Quando o Dino pular, soltar a peça e repetir os testes.
+
 **Experiência existente:** `jump-sound`. Deixe Tocar efeito em Quando apertar Espaço. Clique em Apertar Espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, clique em Tocar para pular. Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: Apertar Espaço duas vezes no mesmo salto e Tocar para pular uma vez. Compare os contadores. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 3. Ligue o som ao pulo do Dino
@@ -48,6 +54,14 @@ As duas experiências mostram espera por um evento e diferença entre tecla e pu
 **Blocos na página:** video-som-no-pulo → fala-som-no-pulo.
 
 **Zappy na página (não gravar):** Agora ligue o som ao pulo do seu Dino! Crie a área Quando acontecer e coloque um único Tocar efeito pulo dentro de Quando o sprite pular. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-som-no-pulo-avatar-01. Professora até “Agora deixe à vista o espaço vazio dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área. No nome, escolha dino. É esse bloco que percebe o pulo do Dino, venha ele da tecla ou do toque.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Até quando eu pular pelo toque, o som vai tocar!”. Retomada da professora: “Agora deixe à vista o espaço vazio dentro de Quando o sprite pular.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-som-no-pulo-avatar-02. Professora até “Escute: agora o pulo vem com som!”. Antes: Tocar o efeito do salto inteiro antes da reação; não sobrepor as vozes ao som. Dedé: “Uhu! Agora dá para ouvir!”. Retomada da professora: “Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-som-no-pulo-avatar-03. Professora até “porque o som está ligado ao pulo, e não à tecla.”. Antes: Concluir os testes sem sobrepor vozes ao som; esperar o Dino pousar. Dedé: “O meu ainda está sem som.”. Retomada da professora: “Vamos conferir onde o som ficou. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o projeto tem um único Tocar efeito, com pulo, e ele está dentro de Quando o sprite dino pular, em Quando acontecer.”. Depois: Apontar o evento e o efeito na conferência; mostrar também o clique que libera o áudio, se necessário.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

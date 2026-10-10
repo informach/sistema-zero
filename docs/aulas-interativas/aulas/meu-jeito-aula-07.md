@@ -8,6 +8,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 - Resultado: Nave e asteroides autorais animados no mesmo jogo, com tiro, pontos e vidas.
 - Seções: 6. Vídeos: 5.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 O relógio de nascimento e a velocidade da animação são comparados antes dos encaixes. A troca do criador conserva o sorteio, o grupo e a velocidade. Animar fica logo depois de criar cada pedra, dentro da condição jogando.
@@ -28,6 +30,10 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 **Blocos na página:** video-dois-relogios → fala-dois-relogios → experimento-dois-relogios.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-dois-relogios-avatar-01. Professora até “cada uma trocou de desenho 8 vezes por segundo.”. Antes: Parar o Tempo após o primeiro teste, com os dois controles e os contadores à vista. Debinha: “Dá para nascer menos pedra e o desenho trocar mais rápido?”. Retomada da professora: “Agora eu mudo os dois relógios, cada um para um lado.”. Depois: Mudar nascimento para 40 e desenhos por segundo para 16; recomeçar e comparar os dois efeitos.
+
 **Experiência existente:** `two-clocks`. Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no Tempo, o botão com o triângulo. Deixe nascerem três pedras e veja o número em cada uma ao entrar. Clique em Tempo para parar. Mude o nascimento para 40 e os desenhos por segundo para 16. Clique em Voltar ao começo, ligue Tempo e observe por três segundos. Sem palpite, pistas ou pergunta final.
 
 ### Seção 2. Prepare a folha do asteroide
@@ -35,6 +41,10 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 **Tarefa / Zappy na página:** Agora prepare a folha do seu asteroide! Carregue folha-asteroide com quadros de 64 por 64 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-folha-pedra → fala-folha-pedra.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-folha-pedra-avatar-01. Professora até “Agora, em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros e encaixe no fim de Ao iniciar, depois da animação da nave. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro, porque o seu asteroide foi desenhado em 64 por 64.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Se eu usar o tamanho da nave aqui, vou cortar minha pedra!”. Retomada da professora: “Confira as duas folhas: folha-nave continua 32 por 32, e folha-asteroide usa 64 por 64.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
@@ -44,6 +54,10 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 **Blocos na página:** video-trocar-pedra → fala-trocar-pedra.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-trocar-pedra-avatar-01. Professora até “porque o sorteio continua no x.”. Antes: Concluir a troca do criador e mostrar a folha inteira espremida no teste, sem corrigir o recorte antes da hora. Debinha: “A minha pedra ficou espremida!”. Retomada da professora: “Elas ainda aparecem com a folha inteira espremida, porque falta ligar a animação de cada pedra.”. Depois: Apontar a folha inteira espremida e explicar que falta ligar a animação. Depois retomar a conferência do criador e a autoconferência, mantendo a animação para a próxima parte.
+
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 4. Anime cada pedra depois de criar
@@ -51,6 +65,10 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 **Tarefa / Zappy na página:** Agora anime cada pedra depois de criar! Coloque a animação girando logo abaixo do criador, dentro do mesmo Se. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-animar-pedra → fala-animar-pedra.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-animar-pedra-avatar-01. Professora até “Escolha sprite asteroide e folha folha-asteroide. Em Escolher, selecione girando, e os valores chegam preenchidos, como na nave. Repare: o carregamento da folha continua no Ao iniciar, e o comando de animar fica aqui, depois de cada nascimento.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Quero ver as minhas pedras caindo!”. Retomada da professora: “Agora comece uma partida e observe pelo menos três pedras entrando com a animação.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

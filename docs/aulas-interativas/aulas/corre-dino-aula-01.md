@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Tela 480 × 270, borda 4 e Dino criado em (110, 150), tamanho 64, ainda sem desenho.
 - Seções: 10. Vídeos: 10.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A abertura e o caderno ficam junto da primeira construção. Preparação, tamanho, coordenadas e criação têm experiências antes da aplicação. O Dino invisível é explicado como resultado da criação sem desenho, sem suspense obrigatório para a aula seguinte.
@@ -71,6 +73,12 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Agora prepare a tela do seu jogo! Coloque Ao iniciar no projeto e, dentro dela, a tela de 480 por 270. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-area-e-tela-avatar-01. Professora até “A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “A tela vai ser preparada só quando eu começar!”. Retomada da professora: “Agora deixe à vista o espaço vazio dentro de Ao iniciar.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-area-e-tela-avatar-02. Professora até “Agora olhe a área do jogo: a cor aparece!”. Antes: Manter o fundo azul à vista, depois da atualização do jogo. Debinha: “A tela já ficou azul!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Coloque a área Ao iniciar no projeto.
@@ -83,6 +91,10 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 **Blocos na página:** video-borda → fala-borda.
 
 **Zappy na página (não gravar):** Agora mostre onde a tela do seu jogo acaba! Coloque Mostrar a borda da tela logo abaixo da preparação, com espessura 4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-borda-avatar-01. Professora até “A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Qual cor vai aparecer melhor?”. Retomada da professora: “Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco, porque, com duas cores parecidas, a borda some no fundo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -97,6 +109,10 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Sua vez! Mude só o x, depois só o y, e termine com o Dino em x 0 e y 0. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-coordenadas-avatar-01. Professora até “O x conta de um lado para o outro.”. Antes: Mostrar o Dino indo para a direita ao aumentar somente x, com y ainda em 150. Debinha: “E para fazer ele descer?”. Retomada da professora: “Quando eu aumento só o y, para 200, o Dino desce.”. Depois: Aumentar somente y para 200 e acompanhar a descida; continuar os testes com os dois números.
+
 **Experiência existente:** `coordinates`. Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções. Por último, coloque x em 0 e y em 0. Observe onde fica essa posição. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 8. Compare criar e mostrar
@@ -107,6 +123,10 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Sua vez! Clique em Criar o Dino, depois em Mostrar o Dino na tela, e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-criar-e-mostrar-avatar-01. Professora até “Ele só não foi desenhado.”. Antes: Clicar em Criar o Dino e deixar os bastidores ocupados e a tela vazia à vista. Debinha: “Como eu faço ele aparecer?”. Retomada da professora: “Quando eu clico em Mostrar o Dino na tela, o mesmo Dino aparece na tela do jogo.”. Depois: Clicar em Mostrar o Dino na tela só depois da pergunta e comparar os dois lugares.
+
 **Experiência existente:** `world`. Clique em Criar o Dino. Compare os bastidores com a tela do jogo. Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 9. Crie o Dino nos bastidores
@@ -116,6 +136,10 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 **Blocos na página:** video-criar-dino → fala-criar-dino.
 
 **Zappy na página (não gravar):** Agora crie o seu Dino! Coloque Criar dinossauro logo abaixo da borda, com x 110, y 150 e tamanho 64. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-criar-dino-avatar-01. Professora até “O bloco chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Escolhi a cor! Mas cadê o Dino?”. Retomada da professora: “Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar. Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

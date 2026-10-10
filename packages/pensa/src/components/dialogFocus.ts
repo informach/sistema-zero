@@ -6,7 +6,7 @@
  * A11y é contrato, não enfeite: sem a prisão do Tab o leitor de tela vai parar atrás do
  * scrim, e sem a volta do foco a criança que fechou pelo teclado cai no `body`.
  */
-import { type RefObject, useEffect, useRef } from 'react'
+import { type RefObject, useEffect, useLayoutEffect, useRef } from 'react'
 
 function focusable(root: HTMLElement): HTMLElement[] {
   return Array.from(
@@ -37,11 +37,12 @@ export function useDialogFocus({
   returnFocusTo?: RefObject<HTMLElement | null>
 }): void {
   // Em refs porque o `keydown` é registrado UMA vez: sem isso o Esc fecharia com o
-  // `busy`/`onClose` da primeira renderização. Atualizadas em efeito, nunca durante o render
-  // (o React 19 pode descartar uma renderização pela metade).
+  // `busy`/`onClose` da primeira renderização. Atualizar no commit, antes de receber teclas:
+  // um efeito passivo deixaria o teclado usando o estado anterior depois da tela mudar.
+  // Não escrever durante o render, que o React pode descartar pela metade.
   const busyRef = useRef(busy)
   const closeRef = useRef(onClose)
-  useEffect(() => {
+  useLayoutEffect(() => {
     busyRef.current = busy
     closeRef.current = onClose
   })

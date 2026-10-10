@@ -1,0 +1,248 @@
+{
+  "format": "1080x1920 PNG",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/01-destaques.md",
+  "linksSource": "docs/marketing/kids/comunidade-dos-criadores/instagram/apoio/links-e-publicacao.md",
+  "finalDirectory": "C:\\Users\\tocha\\projects\\sistema-zero\\docs\\marketing\\kids\\comunidade-dos-criadores\\instagram\\producao\\destaques\\duvidas",
+  "stories": [
+    {
+      "id": "DU01",
+      "file": "01-idade-e-participacao.png",
+      "title": "Para qual idade é a Comunidade?",
+      "copy": "A Comunidade, incluindo o Desafio, foi pensada para crianças de 9 a 14 anos aprenderem a criar jogos com autonomia. Crianças mais novas podem fazer acompanhadas dos pais ou de um responsável. Quem é mais velho também pode participar, se tiver interesse em aprender a criar jogos.",
+      "paragraphs": [
+        "A Comunidade, incluindo o Desafio, foi pensada para crianças de 9 a 14 anos aprenderem a criar jogos com autonomia.",
+        "Crianças mais novas podem fazer acompanhadas dos pais ou de um responsável.",
+        "Quem é mais velho também pode participar, se tiver interesse em aprender a criar jogos."
+      ]
+    },
+    {
+      "id": "DU02",
+      "file": "02-computador-e-equipamento.png",
+      "title": "Dá para fazer no celular?",
+      "copy": "Para criar os jogos, é preciso um computador ou notebook com internet, mouse e teclado. A tela maior ajuda seu filho a enxergar a aula e os blocos. O mouse facilita encaixar os comandos; o teclado permite testar os movimentos do personagem.",
+      "paragraphs": [
+        "Para criar os jogos, é preciso um computador ou notebook com internet, mouse e teclado.",
+        "A tela maior ajuda seu filho a enxergar a aula e os blocos. O mouse facilita encaixar os comandos; o teclado permite testar os movimentos do personagem."
+      ]
+    },
+    {
+      "id": "DU03",
+      "file": "03-aulas-gravadas.png",
+      "title": "As aulas são ao vivo?",
+      "copy": "As aulas são gravadas, então seu filho pode pausar para montar, rever uma parte difícil e testar antes de seguir. Ele avança no tempo de que precisa para praticar, no horário que cabe na rotina de vocês.",
+      "paragraphs": [
+        "As aulas são gravadas, então seu filho pode pausar para montar, rever uma parte difícil e testar antes de seguir.",
+        "Ele avança no tempo de que precisa para praticar, no horário que cabe na rotina de vocês."
+      ]
+    },
+    {
+      "id": "DU04",
+      "file": "04-como-receber-ajuda.png",
+      "title": "Como ele recebe ajuda?",
+      "copy": "Na aula, o botão “Preciso de ajuda” envia a dúvida à equipe. A resposta chega por mensagem nos Recados e fica guardada para consultar depois. Enquanto espera, seu filho pode rever o trecho do vídeo e comparar com o que montou.",
+      "paragraphs": [
+        "Na aula, o botão “Preciso de ajuda” envia a dúvida à equipe. A resposta chega por mensagem nos Recados e fica guardada para consultar depois.",
+        "Enquanto espera, seu filho pode rever o trecho do vídeo e comparar com o que montou."
+      ]
+    },
+    {
+      "id": "DU05",
+      "file": "05-acompanhamento-da-familia.png",
+      "title": "Preciso acompanhar o tempo todo?",
+      "copy": "Acompanhe as primeiras atividades e observe quando seu filho precisa de ajuda. As aulas mostram cada passo para que ele vá fazendo mais por conta própria. Você pode participar pedindo que ele mostre o jogo e explique o que fez; não precisa saber programar.",
+      "paragraphs": [
+        "Acompanhe as primeiras atividades e observe quando seu filho precisa de ajuda.",
+        "As aulas mostram cada passo para que ele vá fazendo mais por conta própria.",
+        "Você pode participar pedindo que ele mostre o jogo e explique o que fez; não precisa saber programar."
+      ]
+    },
+    {
+      "id": "DU06",
+      "file": "06-tempo-para-fazer-o-desafio.png",
+      "title": "Precisa terminar o Desafio em três dias?",
+      "copy": "Não. No Desafio, vocês têm 30 dias de acesso a partir da aprovação do pagamento. As aulas podem ser divididas nesse período, reservando tempo para montar, jogar e ajustar o projeto antes de continuar.",
+      "paragraphs": [
+        "Não. No Desafio, vocês têm 30 dias de acesso a partir da aprovação do pagamento.",
+        "As aulas podem ser divididas nesse período, reservando tempo para montar, jogar e ajustar o projeto antes de continuar."
+      ]
+    },
+    {
+      "id": "DU07",
+      "file": "07-pagamento-unico-do-desafio.png",
+      "title": "O Desafio é uma assinatura?",
+      "copy": "Não. Você paga uma vez pelo Desafio e conhece as aulas antes de decidir se quer continuar. Ao fim dos 30 dias de acesso, não há nova cobrança. A Comunidade é uma assinatura contratada separadamente. No botão, veja o valor e as formas de pagamento.",
+      "paragraphs": [
+        "Não. Você paga uma vez pelo Desafio e conhece as aulas antes de decidir se quer continuar.",
+        "Ao fim dos 30 dias de acesso, não há nova cobrança. A Comunidade é uma assinatura contratada separadamente.",
+        "No botão, veja o valor e as formas de pagamento."
+      ],
+      "sticker": {
+        "label": "Ver valor e condições",
+        "url": "https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du07",
+        "bounds": {
+          "x": 204,
+          "y": 1510,
+          "width": 672,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "DU08",
+      "file": "08-o-que-o-desafio-inclui.png",
+      "title": "O que está incluído no Desafio?",
+      "copy": "O Desafio inclui as aulas de A Chave do Farol, o espaço para montar o jogo e 30 dias de Mural completo. Ali, seu filho pode publicar seu jogo, jogar criações dos colegas, comentar e reagir. Outros cursos e ferramentas pertencem à assinatura da Comunidade.",
+      "paragraphs": [
+        "O Desafio inclui as aulas de A Chave do Farol, o espaço para montar o jogo e 30 dias de Mural completo.",
+        "Ali, seu filho pode publicar seu jogo, jogar criações dos colegas, comentar e reagir.",
+        "Outros cursos e ferramentas pertencem à assinatura da Comunidade."
+      ]
+    },
+    {
+      "id": "DU09",
+      "file": "09-depois-dos-30-dias.png",
+      "title": "O que muda depois dos 30 dias do Desafio?",
+      "copy": "As aulas e a edição do jogo deixam de estar disponíveis, mas o projeto fica guardado. Seu filho ainda pode ver e jogar no Mural, sem publicar, comentar ou reagir. Para voltar às aulas e à edição, vocês precisam de um novo acesso que inclua essas atividades.",
+      "paragraphs": [
+        "As aulas e a edição do jogo deixam de estar disponíveis, mas o projeto fica guardado.",
+        "Seu filho ainda pode ver e jogar no Mural, sem publicar, comentar ou reagir.",
+        "Para voltar às aulas e à edição, vocês precisam de um novo acesso que inclua essas atividades."
+      ]
+    },
+    {
+      "id": "DU10",
+      "file": "10-garantia-do-desafio.png",
+      "title": "Como funciona a garantia do Desafio?",
+      "copy": "Você tem sete dias corridos a partir da compra para pedir o dinheiro de volta, pelo canal indicado nos termos. Nesse período, pode conhecer as aulas e observar como seu filho acompanha a proposta. A garantia não amplia os 30 dias de acesso. No botão, veja como solicitar.",
+      "paragraphs": [
+        "Você tem sete dias corridos a partir da compra para pedir o dinheiro de volta, pelo canal indicado nos termos.",
+        "Nesse período, pode conhecer as aulas e observar como seu filho acompanha a proposta. A garantia não amplia os 30 dias de acesso.",
+        "No botão, veja como solicitar."
+      ],
+      "sticker": {
+        "label": "Consultar condições",
+        "url": "https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du10",
+        "bounds": {
+          "x": 204,
+          "y": 1510,
+          "width": 672,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "DU11",
+      "file": "11-cenario-e-desenhos-prontos.png",
+      "title": "No Desafio, ele precisa desenhar?",
+      "copy": "Não. No Desafio, o cenário e os desenhos vêm prontos para seu filho se concentrar em fazer o jogo funcionar: mover o personagem, pegar a chave e acender o farol. Ele também escolhe entre os desenhos disponíveis e escreve as mensagens para personalizar o jogo.",
+      "paragraphs": [
+        "Não. No Desafio, o cenário e os desenhos vêm prontos para seu filho se concentrar em fazer o jogo funcionar: mover o personagem, pegar a chave e acender o farol.",
+        "Ele também escolhe entre os desenhos disponíveis e escreve as mensagens para personalizar o jogo."
+      ]
+    },
+    {
+      "id": "DU12",
+      "file": "12-onde-o-jogo-e-criado.png",
+      "title": "O Desafio ensina Roblox ou Minecraft?",
+      "copy": "O Desafio ensina a criar no Estúdio do Sistema Zero, que abre junto da aula. Seu filho encaixa blocos, as peças que dizem ao jogo o que fazer. A explicação fica ao lado, então ele pode acompanhar, montar e testar no mesmo espaço.",
+      "paragraphs": [
+        "O Desafio ensina a criar no Estúdio do Sistema Zero, que abre junto da aula.",
+        "Seu filho encaixa blocos, as peças que dizem ao jogo o que fazer.",
+        "A explicação fica ao lado, então ele pode acompanhar, montar e testar no mesmo espaço."
+      ]
+    },
+    {
+      "id": "DU13",
+      "file": "13-quem-pode-jogar.png",
+      "title": "Quem pode abrir o jogo publicado?",
+      "copy": "Qualquer pessoa que receber o link pode jogar, usando um aparelho com os controles necessários, como teclado. Seu filho pode mostrar o que criou para amigos e familiares. Como o link é público, combinem com quem vão compartilhar.",
+      "paragraphs": [
+        "Qualquer pessoa que receber o link pode jogar, usando um aparelho com os controles necessários, como teclado.",
+        "Seu filho pode mostrar o que criou para amigos e familiares.",
+        "Como o link é público, combinem com quem vão compartilhar."
+      ]
+    },
+    {
+      "id": "DU14",
+      "file": "14-perfil-e-link-publico.png",
+      "title": "Esconder o perfil torna o link privado?",
+      "copy": "Não. O perfil começa escondido dos colegas, e você escolhe quando torná-lo visível. O jogo publicado tem um link público separado: quem receber esse link pode abri-lo, mesmo com o perfil escondido.",
+      "paragraphs": [
+        "Não. O perfil começa escondido dos colegas, e você escolhe quando torná-lo visível.",
+        "O jogo publicado tem um link público separado: quem receber esse link pode abri-lo, mesmo com o perfil escondido."
+      ]
+    },
+    {
+      "id": "DU15",
+      "file": "15-link-depois-do-curso.png",
+      "title": "O link continua depois do curso?",
+      "copy": "Sim. Seu filho pode continuar mostrando o jogo depois que o acesso às aulas terminar, enquanto a publicação estiver disponível. Se vocês ou a equipe retirarem o jogo, ou se ele ficar indisponível, o link pode deixar de funcionar.",
+      "paragraphs": [
+        "Sim. Seu filho pode continuar mostrando o jogo depois que o acesso às aulas terminar, enquanto a publicação estiver disponível.",
+        "Se vocês ou a equipe retirarem o jogo, ou se ele ficar indisponível, o link pode deixar de funcionar."
+      ]
+    },
+    {
+      "id": "DU16",
+      "file": "16-continuar-na-comunidade.png",
+      "title": "Como ele pode continuar depois do Desafio?",
+      "copy": "Vocês podem assinar a Comunidade e seguir com outros cursos, na mesma conta e com os projetos guardados. As ferramentas de criação vão sendo liberadas conforme seu filho avança nas atividades. No botão, veja os cursos, os planos e a cobrança.",
+      "paragraphs": [
+        "Vocês podem assinar a Comunidade e seguir com outros cursos, na mesma conta e com os projetos guardados.",
+        "As ferramentas de criação vão sendo liberadas conforme seu filho avança nas atividades.",
+        "No botão, veja os cursos, os planos e a cobrança."
+      ],
+      "sticker": {
+        "label": "Conhecer a Comunidade",
+        "url": "https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du16#planos",
+        "bounds": {
+          "x": 204,
+          "y": 1510,
+          "width": 672,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "DU17",
+      "file": "17-comecar-pela-comunidade.png",
+      "title": "Posso começar direto pela Comunidade?",
+      "copy": "Pode. A assinatura da Comunidade inclui o Desafio enquanto estiver ativa. Assim, seu filho pode começar pelo primeiro jogo e seguir pelos outros cursos. Comprar só o Desafio permite conhecer as aulas antes de escolher a assinatura. Se já assinam a Comunidade, usem a mesma conta.",
+      "paragraphs": [
+        "Pode. A assinatura da Comunidade inclui o Desafio enquanto estiver ativa. Assim, seu filho pode começar pelo primeiro jogo e seguir pelos outros cursos.",
+        "Comprar só o Desafio permite conhecer as aulas antes de escolher a assinatura. Se já assinam a Comunidade, usem a mesma conta."
+      ],
+      "sticker": {
+        "label": "Ver os planos",
+        "url": "https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du17#planos",
+        "bounds": {
+          "x": 204,
+          "y": 1510,
+          "width": 672,
+          "height": 100
+        }
+      }
+    },
+    {
+      "id": "DU18",
+      "file": "18-interesse-em-criar-jogos.png",
+      "title": "Como saber se meu filho tem interesse?",
+      "copy": "Mostre A Chave do Farol e converse sobre a ideia de criar um jogo assim. Observe se seu filho tem vontade de aprender a fazer o personagem andar, pegar a chave e acender o farol. No botão, vocês conhecem as aulas, o preço e o que está incluído no Desafio.",
+      "paragraphs": [
+        "Mostre A Chave do Farol e converse sobre a ideia de criar um jogo assim.",
+        "Observe se seu filho tem vontade de aprender a fazer o personagem andar, pegar a chave e acender o farol.",
+        "No botão, vocês conhecem as aulas, o preço e o que está incluído no Desafio."
+      ],
+      "sticker": {
+        "label": "Conhecer o Desafio",
+        "url": "https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=du18",
+        "bounds": {
+          "x": 204,
+          "y": 1510,
+          "width": 672,
+          "height": 100
+        }
+      }
+    }
+  ]
+}

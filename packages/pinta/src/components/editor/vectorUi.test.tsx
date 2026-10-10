@@ -946,20 +946,10 @@ describe('UI vetorial (F5)', () => {
     expect(screen.getByText(COPY.vector.insertTitle)).toBeTruthy()
   })
 
-  it('caixa de ferramentas: espessuras no topo, grade e os dois slots de cor no pé', async () => {
+  it('espessura fica em Aparência; caixa mantém ferramentas e cores', async () => {
     await openVectorEditor()
-    // Presets de espessura (espelho dos tamanhos de pincel do pixel): seis
-    // degraus de meio em meio, com vírgula no rótulo; o antigo "4" não existe mais.
-    for (const label of ['0,5', '1', '1,5', '2', '2,5', '3']) {
-      expect(
-        screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: ${label}` }),
-      ).toBeTruthy()
-    }
-    expect(screen.queryByRole('button', { name: `${COPY.vector.strokeWidth}: 4` })).toBeNull()
-    // Toggle da grade de apoio (mesmo botão do pixel).
+    expect(screen.queryByRole('button', { name: /^Espessura do contorno:/ })).toBeNull()
     expect(screen.getByRole('button', { name: COPY.tools.grid })).toBeTruthy()
-    // Slots: preenchimento (verde default) na frente + o swatch verde da grade
-    // de cores compartilham o rótulo; contorno preto só existe no slot.
     expect(
       screen.getAllByRole('button', { name: `${COPY.vector.fill}: verde` }).length,
     ).toBeGreaterThanOrEqual(2)
@@ -967,80 +957,70 @@ describe('UI vetorial (F5)', () => {
     expect(screen.getByRole('button', { name: COPY.vector.swapFillStroke })).toBeTruthy()
   })
 
-  it('escolher 0,5 desenha um contorno de meio pixel e o slider acompanha', async () => {
+  it('espessura inicia em 1, edita até 10 e mantém a escolha entre ferramentas', async () => {
     await openVectorEditor()
     const stage = measureStage()
-    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: 0,5` }))
+    const slider = screen.getByLabelText(COPY.vector.strokeWidth) as HTMLInputElement
+    expect(slider.value).toBe('1')
+    expect(slider.min).toBe('0.5')
+    expect(slider.max).toBe('10')
+    expect(slider.step).toBe('0.5')
     fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
     drawRect(stage, [16, 16], [64, 64])
-    await waitFor(() => {
-      expect(stage.querySelector('rect[stroke-width="0.5"]')).toBeTruthy()
-    })
-    const slider = screen.getByLabelText(COPY.vector.strokeWidth) as HTMLInputElement
-    expect(slider.value).toBe('0')
-    expect(slider.getAttribute('aria-valuetext')).toBe('0,5')
+    expect(stage.querySelector('rect[stroke-width="1"]')).toBeTruthy()
 
-    // O degrau mais grosso agora é o 3 (o retângulo recém-desenhado segue selecionado).
-    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: 3` }))
-    await waitFor(() => {
-      expect(stage.querySelector('rect[stroke-width="3"]')).toBeTruthy()
-    })
-    expect(slider.value).toBe('5')
+    fireEvent.change(slider, { target: { value: '0.5' } })
+    expect(stage.querySelector('rect[stroke-width="0.5"]')).toBeTruthy()
+    expect(slider.getAttribute('aria-valuetext')).toBe('0,5')
+    expect(within(slider.closest('label') as HTMLLabelElement).getByText('0,5')).toBeTruthy()
+    fireEvent.change(slider, { target: { value: '10' } })
+    expect(stage.querySelector('rect[stroke-width="10"]')).toBeTruthy()
+    expect(within(slider.closest('label') as HTMLLabelElement).getByText('10')).toBeTruthy()
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    expect(stage.querySelector('rect[stroke-width="0.5"]')).toBeTruthy()
+    fireEvent.click(screen.getAllByRole('button', { name: /^Refazer/ })[0] as HTMLElement)
+    expect(stage.querySelector('rect[stroke-width="10"]')).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.ellipse }))
+    drawRect(stage, [100, 100], [160, 160])
+    expect(stage.querySelector('ellipse[stroke-width="10"]')).toBeTruthy()
   })
 
-  it('traço antigo de 8 mantém a espessura e o slider para no ÚLTIMO degrau', async () => {
-    await openVectorEditor(
-      undefined,
-      async (seed) => {
-        const { createVectorBackgroundAsset } = await import('../../core/project')
-        const grosso = createVectorBackgroundAsset({ name: 'grosso', width: 480, height: 360 })
-        await seed.getState().importAssets([
-          {
-            ...grosso,
-            shapes: [
-              {
-                id: 'g1',
-                type: 'rect',
-                x: 20,
-                y: 20,
-                w: 80,
-                h: 80,
-                rx: 0,
-                fill: '#ff2121',
-                stroke: { color: '#000000', width: 8 },
-                opacity: 1,
-                rotation: 0,
-              },
-            ],
-          },
-        ])
+  it.each([8, 64])('espessura antiga de %s permanece intacta ao selecionar', async (width) => {
+    const stage = await openWithShapes([
+      {
+        id: 'g1',
+        type: 'rect',
+        x: 20,
+        y: 20,
+        w: 80,
+        h: 80,
+        rx: 0,
+        fill: '#ff2121',
+        stroke: { color: '#000000', width },
+        opacity: 1,
+        rotation: 0,
       },
-      'grosso',
-    )
-    const stage = measureStage()
-    const rect = stage.querySelector('rect[stroke-width="8"]')
-    if (!rect) throw new Error('retângulo com traço de 8 esperado')
-
-    // Selecionar a forma faz o painel ler a espessura DELA (inspetor).
+    ])
+    const rect = stage.querySelector(`rect[stroke-width="${width}"]`)
+    if (!rect) throw new Error('retângulo com espessura original esperado')
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
     fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
     fireEvent.pointerUp(stage, { pointerId: 1 })
     await waitFor(() => {
       expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
     })
-
-    // O desenho continua com 8 (o modelo não muda)...
-    expect(stage.querySelector('rect[stroke-width="8"]')).toBeTruthy()
-    // ...nenhum degrau acende (acender o "3" mentiria)...
-    for (const label of ['0,5', '1', '1,5', '2', '2,5', '3']) {
-      const button = screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: ${label}` })
-      expect(button.getAttribute('aria-pressed')).toBe('false')
-    }
-    // ...e o slider para no FIM dizendo a espessura real (antes caía no degrau
-    // mais fino, o oposto do que a forma tem).
+    expect(stage.querySelector(`rect[stroke-width="${width}"]`)).toBeTruthy()
     const slider = screen.getByLabelText(COPY.vector.strokeWidth) as HTMLInputElement
-    expect(slider.value).toBe('5')
-    expect(slider.getAttribute('aria-valuetext')).toBe('8')
+    expect(slider.value).toBe(String(Math.min(width, 10)))
+    expect(slider.getAttribute('aria-valuetext')).toBe(String(width))
+    expect(
+      within(slider.closest('label') as HTMLLabelElement).getByText(String(width)),
+    ).toBeTruthy()
+    expect(
+      (screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement).disabled,
+    ).toBe(true)
   })
 
   it('slots de cor distinguem ÁREA preenchida de MOLDURA de contorno', async () => {

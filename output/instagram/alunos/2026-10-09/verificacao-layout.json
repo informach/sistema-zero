@@ -1,0 +1,383 @@
+{
+  "passed": true,
+  "completeImages": 7,
+  "provisionalGeneratedScenes": 5,
+  "videoOverlays": 5,
+  "stories": [
+    {
+      "id": "AL01",
+      "kind": "intro",
+      "checks": {
+        "copyMatches": true,
+        "dimensions": true,
+        "titleClear": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideBounds": true,
+        "imagesLoaded": true,
+        "videoAreaClear": true
+      },
+      "title": {
+        "x": 72,
+        "y": 270,
+        "width": 948,
+        "height": 155.5,
+        "bottom": 425.5,
+        "right": 1020
+      },
+      "copy": {
+        "x": 78,
+        "y": 1240,
+        "width": 924,
+        "height": 331.46875,
+        "bottom": 1571.46875,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1750,
+        "width": 936,
+        "height": 65,
+        "bottom": 1815,
+        "right": 1008
+      },
+      "visual": {
+        "x": 52,
+        "y": 535,
+        "width": 976,
+        "height": 650,
+        "bottom": 1185,
+        "right": 1028
+      },
+      "link": null,
+      "passed": true
+    },
+    {
+      "id": "AL02",
+      "kind": "student",
+      "checks": {
+        "copyMatches": true,
+        "dimensions": true,
+        "titleClear": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideBounds": true,
+        "imagesLoaded": true,
+        "videoAreaClear": true
+      },
+      "title": {
+        "x": 78,
+        "y": 278,
+        "width": 924,
+        "height": 149.140625,
+        "bottom": 427.140625,
+        "right": 1002
+      },
+      "copy": {
+        "x": 78,
+        "y": 1520,
+        "width": 924,
+        "height": 134.5,
+        "bottom": 1654.5,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1750,
+        "width": 936,
+        "height": 65,
+        "bottom": 1815,
+        "right": 1008
+      },
+      "visual": {
+        "x": 52,
+        "y": 480,
+        "width": 976,
+        "height": 970,
+        "bottom": 1450,
+        "right": 1028
+      },
+      "link": null,
+      "passed": true,
+      "alpha": {
+        "center": 0,
+        "header": 255,
+        "footer": 255
+      }
+    },
+    {
+      "id": "AL03",
+      "kind": "student",
+      "checks": {
+        "copyMatches": true,
+        "dimensions": true,
+        "titleClear": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideBounds": true,
+        "imagesLoaded": true,
+        "videoAreaClear": true
+      },
+      "title": {
+        "x": 78,
+        "y": 278,
+        "width": 924,
+        "height": 149.140625,
+        "bottom": 427.140625,
+        "right": 1002
+      },
+      "copy": {
+        "x": 78,
+        "y": 1520,
+        "width": 924,
+        "height": 134.5,
+        "bottom": 1654.5,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1750,
+        "width": 936,
+        "height": 65,
+        "bottom": 1815,
+        "right": 1008
+      },
+      "visual": {
+        "x": 52,
+        "y": 480,
+        "width": 976,
+        "height": 970,
+        "bottom": 1450,
+        "right": 1028
+      },
+      "link": null,
+      "passed": true,
+      "alpha": {
+        "center": 0,
+        "header": 255,
+        "footer": 255
+      }
+    },
+    {
+      "id": "AL04",
+      "kind": "student",
+      "checks": {
+        "copyMatches": true,
+        "dimensions": true,
+        "titleClear": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideBounds": true,
+        "imagesLoaded": true,
+        "videoAreaClear": true
+      },
+      "title": {
+        "x": 78,
+        "y": 278,
+        "width": 924,
+        "height": 149.140625,
+        "bottom": 427.140625,
+        "right": 1002
+      },
+      "copy": {
+        "x": 78,
+        "y": 1520,
+        "width": 924,
+        "height": 67.25,
+        "bottom": 1587.25,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1750,
+        "width": 936,
+        "height": 65,
+        "bottom": 1815,
+        "right": 1008
+      },
+      "visual": {
+        "x": 52,
+        "y": 480,
+        "width": 976,
+        "height": 970,
+        "bottom": 1450,
+        "right": 1028
+      },
+      "link": null,
+      "passed": true,
+      "alpha": {
+        "center": 0,
+        "header": 255,
+        "footer": 255
+      }
+    },
+    {
+      "id": "AL05",
+      "kind": "student",
+      "checks": {
+        "copyMatches": true,
+        "dimensions": true,
+        "titleClear": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideBounds": true,
+        "imagesLoaded": true,
+        "videoAreaClear": true
+      },
+      "title": {
+        "x": 78,
+        "y": 278,
+        "width": 924,
+        "height": 149.140625,
+        "bottom": 427.140625,
+        "right": 1002
+      },
+      "copy": {
+        "x": 78,
+        "y": 1520,
+        "width": 924,
+        "height": 134.5,
+        "bottom": 1654.5,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1750,
+        "width": 936,
+        "height": 65,
+        "bottom": 1815,
+        "right": 1008
+      },
+      "visual": {
+        "x": 52,
+        "y": 480,
+        "width": 976,
+        "height": 970,
+        "bottom": 1450,
+        "right": 1028
+      },
+      "link": null,
+      "passed": true,
+      "alpha": {
+        "center": 0,
+        "header": 255,
+        "footer": 255
+      }
+    },
+    {
+      "id": "AL07",
+      "kind": "student",
+      "checks": {
+        "copyMatches": true,
+        "dimensions": true,
+        "titleClear": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideBounds": true,
+        "imagesLoaded": true,
+        "videoAreaClear": true
+      },
+      "title": {
+        "x": 78,
+        "y": 278,
+        "width": 924,
+        "height": 149.140625,
+        "bottom": 427.140625,
+        "right": 1002
+      },
+      "copy": {
+        "x": 78,
+        "y": 1520,
+        "width": 924,
+        "height": 134.5,
+        "bottom": 1654.5,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1750,
+        "width": 936,
+        "height": 65,
+        "bottom": 1815,
+        "right": 1008
+      },
+      "visual": {
+        "x": 52,
+        "y": 480,
+        "width": 976,
+        "height": 970,
+        "bottom": 1450,
+        "right": 1028
+      },
+      "link": null,
+      "passed": true,
+      "alpha": {
+        "center": 0,
+        "header": 255,
+        "footer": 255
+      }
+    },
+    {
+      "id": "AL06",
+      "kind": "cta",
+      "checks": {
+        "copyMatches": true,
+        "dimensions": true,
+        "titleClear": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideBounds": true,
+        "imagesLoaded": true,
+        "videoAreaClear": true
+      },
+      "title": {
+        "x": 72,
+        "y": 270,
+        "width": 948,
+        "height": 164.15625,
+        "bottom": 434.15625,
+        "right": 1020
+      },
+      "copy": {
+        "x": 78,
+        "y": 1270,
+        "width": 924,
+        "height": 292.640625,
+        "bottom": 1562.640625,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1750,
+        "width": 936,
+        "height": 65,
+        "bottom": 1815,
+        "right": 1008
+      },
+      "visual": {
+        "x": 52,
+        "y": 485,
+        "width": 976,
+        "height": 732,
+        "bottom": 1217,
+        "right": 1028
+      },
+      "link": {
+        "x": 204,
+        "y": 1600,
+        "width": 672,
+        "height": 96,
+        "bottom": 1696,
+        "right": 876
+      },
+      "passed": true
+    }
+  ]
+}

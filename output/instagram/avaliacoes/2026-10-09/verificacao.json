@@ -1,0 +1,42 @@
+[
+  {
+    "id": "AV01",
+    "file": "01-o-que-contam-sobre-as-aulas.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 178516,
+    "copy": "conferida"
+  },
+  {
+    "id": "AV02",
+    "file": "02-relato-rafael.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 121638,
+    "copy": "conferida; Rafael · Aluno, contexto e fala literal"
+  },
+  {
+    "id": "AV03",
+    "file": "03-relato-debora.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 135990,
+    "copy": "conferida; Débora · Aluna, contexto e fala literal"
+  },
+  {
+    "id": "AV04",
+    "file": "04-relato-andre.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 133089,
+    "copy": "conferida; André · Aluno, contexto e fala literal"
+  },
+  {
+    "id": "AV05",
+    "file": "05-conheca-a-chave-do-farol.png",
+    "width": 1080,
+    "height": 1920,
+    "bytes": 172583,
+    "copy": "conferida"
+  }
+]

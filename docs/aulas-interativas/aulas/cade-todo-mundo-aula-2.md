@@ -30,6 +30,23 @@ nessa parte) o desenho novo cabe no lugar do antigo. Na publicação, **Comparti
 "uma setinha para cima", a ponte pede ajuda a um adulto se precisar e a ajuda escrita fala em "a
 área de ajuda", sem "nossa". Seções, blocos e critérios não mudaram.
 
+## Vozes e produção
+
+Aplicação de 10/10/2026: **Dedé** participa dos cinco vídeos, alternando com a Debinha da Aula 1.
+O [roteiro completo](cade-todo-mundo-aula-2.roteiro.md) separa **Professora**, **Dedé (avatar)** e
+**Zappy na página (não gravar)**, com entrada e saída em cada participação. A gravação e a edição
+desta versão ainda não foram confirmadas. Os tempos da tabela são referências anteriores às
+inserções; medir a versão final sem acelerar a montagem.
+
+Dedé pergunta por que o número ficou no zero, o que acontece ao tocar num espaço vazio e onde
+entra o bloco que conta. Na personalização, escolhe o gato; na publicação, pergunta como mostrar
+o jogo à família. A professora responde logo depois, mantendo os passos completos. A pergunta do
+espaço vazio passa para Dedé, sem repetição na voz da professora. A escolha do gato é um exemplo,
+não um requisito. As nove entradas e seus IDs estão em [Avatares nos vídeos](../AVATARES-NOS-VIDEOS.md).
+
+Zappy continua nas instruções da página, com o recurso Ouvir da plataforma. No meme e na tela de
+publicação, sua presença é somente visual: não incluir voz do mascote na gravação.
+
 ## Sequência
 
 | Seção | Vídeo | O que fazer | Conclusão |
@@ -45,11 +62,11 @@ nessa parte) o desenho novo cabe no lugar do antigo. Na publicação, **Comparti
 ### Volte ao seu jardim
 
 Começar dizendo que a tarefa é fazer o jogo contar os personagens encontrados. Mostrar um toque
-revelando o personagem ("Olha aqui…") e chamar a atenção para **Achados**, que continua em zero
-("Mas repare no número Achados…"). Encaminhar para **Próxima parte**.
+revelando o personagem ("Olha aqui…"), com **Achados** ainda em zero. Dedé pergunta "Ué, por que
+o número ficou no zero?"; a professora explica que o jogo ainda não conta e encaminha para **Próxima parte**.
 A seção tem vídeo e ponte do Zappy, sem ferramenta. A fala não pode pedir que a criança manipule um projeto ali.
 
-**Zappy abaixo do vídeo:** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima parte para começar.”
+**Zappy na página (não gravar):** “Seus personagens já aparecem, mas Achados ainda fica em zero. Então vamos ensinar o jogo a contar: clique em Próxima parte para começar.”
 
 ### Um número que acompanha a busca
 
@@ -70,15 +87,19 @@ Começar pela retomada, curta (umas 50 palavras) e nesta ordem: primeiro o probl
 num esconderijo do próprio jogo (o personagem aparece, mas Achados continua em zero, porque o jogo
 ainda não conta); depois a lembrança da experiência da seção anterior (cada personagem encontrado
 somava um em Achados); por fim, o convite uma vez só, colado ao primeiro passo ("Agora a gente vai
-fazer o seu jogo contar do mesmo jeito!"). A retomada não repete a explicação da variável. Com a
-ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Somar ___ em variável ___**,
+fazer o seu jogo contar do mesmo jeito!"). A retomada não repete a explicação da variável.
+Separar a procura da área da identificação do bloco, apontando cada um no ritmo da fala:
+"Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço
+vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar
+num sprite do grupo esconderijos." Só então mostrar a ação de visibilidade dentro dele.
+Com a ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Somar ___ em variável ___**,
 que nasce com **1** e **contador**, logo abaixo dela. Manter **1** e trocar **contador** por
 **achados**. A verificação da entrega também confere a regra da Aula 1.
 
 Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória, que aparece quando
 **Achados** chega a 3; a fala diz que quem faz a mensagem aparecer é a contagem que a criança montou. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
 outro toque. A montagem não lista os blocos antes do teste: a lista entra uma vez, depois dele, com o
-gatilho genérico ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …"),
+gatilho genérico ("Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: …"),
 cobrindo encaixe, ordem, número e variável.
 
 Depois do teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e
@@ -130,7 +151,7 @@ por tipo, com as imagens do jogo e os nomes exatos da lista. A criança pode con
 antes de trocar, seguindo os passos de personalização e o teste na mesma página. A publicação
 fica na página 6; a revisão e o certificado, na 7.
 
-**Zappy abaixo do vídeo:** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
+**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
 
 ### Publique seu jogo
 
@@ -152,9 +173,13 @@ Preservar a chave **conclusao**, o mesmo projeto e a conclusão pelo vídeo. Pub
 esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mural. Não dizer
 “compartilhar é opcional” nem anunciar certificado, próxima seção ou próxima aula na fala.
 
-**Zappy abaixo do vídeo:** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir fase.”
+**Zappy na página (não gravar):** “Hora de mostrar o seu jogo! Publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Depois clique em Fechar e em Concluir fase.”
 
-## Conferência antes de regravar
+## Conferência da gravação e edição
+
+Conferir as nove entradas do Dedé, cada uma antes da resposta e do gesto correspondente.
+Manter o placar e os blocos visíveis. As perguntas precisam se ligar às respostas sem repetir a
+mesma explicação; a criança não substitui quem assiste nem executa os passos no lugar da professora.
 
 Conferir a continuidade do projeto enviado e o projeto de retomada quando não há trabalho salvo.
 Não tratar essa cópia como se fosse o arquivo pessoal da criança. Testar as quatro metas da
@@ -178,3 +203,14 @@ comemoração, **Copiar link de jogar** e **Link copiado!**, Fechar e Concluir f
 O tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas
 de capa e link público. As novas falas precisam ser regravadas antes de substituir os vídeos
 atuais e o caminho precisa de ensaio com crianças.
+
+## Revisão de ritmo e entendimento · 10/10/2026
+
+O roteiro tem 9 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
+
+| Entrada | Depois da professora | Criança | Retomada da professora |
+| --- | --- | --- | --- |
+| A2P3-D02 | “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!” | Dedé: “Agora sim! Já está contando!” | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” |
+| A2P3-D03 | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” | Dedé: “E se eu tocar aqui de novo?” | “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.” |
+| A2P4-D02 | “Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.” | Dedé: “Meu gato vai se esconder atrás de uma pedra!” | “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.” |
+| A2P4-D03 | “Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.” | Dedé: “Troquei os desenhos e não precisei arrumar tudo de novo!” | “Agora vamos mudar a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.” |

@@ -1,0 +1,41 @@
+ALUNOS · Sete stories completos de 1080 × 1920
+
+VERSÃO ATUAL
+A pedido do responsável em 09/10/2026, Rafael, Jeffrey, Débora, André e Fernando aparecem em cenas provisórias geradas com suas referências de rosto. Essas imagens representam as atividades previstas e serão substituídas por vídeos; não são registros reais das aulas. Jeffrey e Fernando foram incluídos com as referências fornecidas pelo responsável.
+
+ORDEM DOS ARQUIVOS
+01-alunos-na-comunidade.png — AL01
+02-rafael-aprendendo.png — AL02 · Rafael
+03-jeffrey-explorando.png — AL03 · Jeffrey
+04-debora-personalizando.png — AL04 · Débora
+05-andre-testando.png — AL05 · André
+06-fernando-mostrando.png — AL07 · Fernando
+07-conhecer-o-desafio.png — AL06
+
+Os números dos arquivos indicam a ordem deste lote. Os IDs do roteiro foram preservados, incluindo AL06 para o link. A abertura não fixa nomes nem quantidade de alunos. Novos registros podem entrar depois do convite.
+
+COPY DAS CRIANÇAS
+AL02 · Rafael · Aluno
+Rafael aprendendo a fazer uma parte do jogo funcionar.
+
+AL03 · Jeffrey · Aluno
+Jeffrey explorando o que muda quando faz uma escolha.
+
+AL04 · Débora · Aluna
+Débora dando o seu jeito ao jogo.
+
+AL05 · André · Aluno
+André jogando para conferir o que acabou de fazer.
+
+AL07 · Fernando · Aluno
+Fernando mostrando o que fez no jogo.
+
+SUBSTITUIÇÃO PELOS VÍDEOS
+A subpasta molduras contém cinco PNGs com centro transparente, nomes, Aluno/Aluna e legendas. Posicionar a moldura correspondente sobre o vídeo em uma tela de 1080 × 1920. Janela da imagem: x 52, y 480, largura 976, altura 970, cantos de 32 pixels. Ajustar o vídeo sem esticar nem cortar o rosto ou a atividade. Conferir a legenda com o que aparece na gravação e preservar o áudio e as reações espontâneas.
+
+LINK DO CONVITE
+Na imagem 07 (AL06), adicionar um sticker de link do Instagram sobre a área amarela. O botão desenhado indica a posição; o sticker é necessário para receber cliques.
+Texto: Conhecer o Desafio
+Destino: https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=al06
+
+Salvar no destaque Alunos.

@@ -1,0 +1,864 @@
+{
+  "passed": true,
+  "pngs": 48,
+  "content": [
+    {
+      "id": "AV01",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV02",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV08",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV08",
+      "kind": "citacao-no-trecho-transcrito",
+      "passed": true,
+      "sourceStart": 1.92,
+      "sourceEnd": 13.54
+    },
+    {
+      "id": "AV03",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV10",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV10",
+      "kind": "citacao-no-trecho-transcrito",
+      "passed": true,
+      "sourceStart": 56.14,
+      "sourceEnd": 62.14
+    },
+    {
+      "id": "AV07",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV07",
+      "kind": "citacao-no-trecho-transcrito",
+      "passed": true,
+      "sourceStart": 101.42,
+      "sourceEnd": 109.34
+    },
+    {
+      "id": "AV09",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV09",
+      "kind": "recortes-conferidos-com-palavras-e-segundos",
+      "passed": true,
+      "parts": [
+        {
+          "text": "Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer.",
+          "start": 69.48,
+          "end": 77.28,
+          "passed": true
+        },
+        {
+          "text": "Ele ficou mais",
+          "start": 78.02,
+          "end": 78.66,
+          "passed": true
+        },
+        {
+          "text": "responsável com as coisas dele.",
+          "start": 81.52,
+          "end": 83.24,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "AV04",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV11",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV11",
+      "kind": "recortes-conferidos-com-palavras-e-segundos",
+      "passed": true,
+      "parts": [
+        {
+          "text": "Vai criando, vai sendo mais criativo.",
+          "start": 25.26,
+          "end": 27.92,
+          "passed": true
+        },
+        {
+          "text": "‘Eu quero mudar isso aqui no jogo.’",
+          "start": 28.58,
+          "end": 30.22,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "AV06",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV06",
+      "kind": "citacao-no-trecho-transcrito",
+      "passed": true,
+      "sourceStart": 0,
+      "sourceEnd": 8.14
+    },
+    {
+      "id": "AV12",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AV12",
+      "kind": "recortes-conferidos-com-palavras-e-segundos",
+      "passed": true,
+      "parts": [
+        {
+          "text": "O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada.",
+          "start": 1.06,
+          "end": 7.68,
+          "passed": true
+        },
+        {
+          "text": "O curso incentivou ele a desenvolver, a programar, não a jogar.",
+          "start": 15,
+          "end": 20.14,
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "AV05",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AL01",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AL02",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AL03",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AL04",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AL05",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AL07",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "AL06",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01-1",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01-2",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01-3",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01-4",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01-5",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01-6",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01-7",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01-8",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F01",
+      "kind": "legenda-completa",
+      "passed": true,
+      "length": 919
+    },
+    {
+      "id": "F01",
+      "kind": "texto-alternativo-completo",
+      "passed": true
+    },
+    {
+      "id": "F01",
+      "kind": "instrucoes",
+      "passed": true
+    },
+    {
+      "id": "F02-1",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F02-2",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F02-3",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F02-4",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F02-5",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F02-6",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F02-7",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F02",
+      "kind": "legenda-completa",
+      "passed": true,
+      "length": 559
+    },
+    {
+      "id": "F02",
+      "kind": "texto-alternativo-completo",
+      "passed": true
+    },
+    {
+      "id": "F02",
+      "kind": "instrucoes",
+      "passed": true
+    },
+    {
+      "id": "F03-1",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03-2",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03-3",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03-4",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03-5",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03-6",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03-7",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03-8",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03-9",
+      "kind": "copy-no-guia",
+      "passed": true
+    },
+    {
+      "id": "F03",
+      "kind": "legenda-completa",
+      "passed": true,
+      "length": 1382
+    },
+    {
+      "id": "F03",
+      "kind": "texto-alternativo-completo",
+      "passed": true
+    },
+    {
+      "id": "F03",
+      "kind": "instrucoes",
+      "passed": true
+    }
+  ],
+  "counts": [
+    {
+      "folder": "destaques\\avaliacoes",
+      "expected": 12,
+      "actual": 12,
+      "passed": true
+    },
+    {
+      "folder": "destaques\\alunos",
+      "expected": 7,
+      "actual": 7,
+      "passed": true
+    },
+    {
+      "folder": "destaques\\alunos\\molduras",
+      "expected": 5,
+      "actual": 5,
+      "passed": true
+    },
+    {
+      "folder": "fixados\\01-o-primeiro-jogo",
+      "expected": 8,
+      "actual": 8,
+      "passed": true
+    },
+    {
+      "folder": "fixados\\02-alunos-em-atividade",
+      "expected": 7,
+      "actual": 7,
+      "passed": true
+    },
+    {
+      "folder": "fixados\\03-como-comecar",
+      "expected": 9,
+      "actual": 9,
+      "passed": true
+    }
+  ],
+  "layouts": [
+    {
+      "type": "avaliacoes",
+      "passed": true
+    },
+    {
+      "type": "alunos",
+      "passed": true
+    },
+    {
+      "type": "fixados",
+      "passed": true
+    }
+  ],
+  "files": [
+    {
+      "file": "destaques\\avaliacoes\\01-o-que-contam-sobre-as-aulas.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "00442221cc56843dfbe78ad60e5fec813a6b27a46416cce6dc5f18edd15df261"
+    },
+    {
+      "file": "destaques\\avaliacoes\\02-relato-rafael.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "390b26eaa1790c9a8d63fea4e10feb6a41f9a7b5cad0b75f830df568a9463c50"
+    },
+    {
+      "file": "destaques\\avaliacoes\\03-relato-daniel-organizacao.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "a812f181cf08fc1f37680374758de799c07575972f774d4db58bcbf3bd3c04d7"
+    },
+    {
+      "file": "destaques\\avaliacoes\\04-relato-debora.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "444199741029abf56b391f0a392b37db78c609b90e7ddb5c24bdb8b9e95eaf51"
+    },
+    {
+      "file": "destaques\\avaliacoes\\05-relato-flavia-autonomia.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "888f042243416dedee45b4bb68131952aaa0a36fe1ada6a535fe4998dc20504d"
+    },
+    {
+      "file": "destaques\\avaliacoes\\06-relato-jeffrey.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "6b6ef3ef6b744992b6a519bfa9cc12241711234641b15059d08e43c6e72eac91"
+    },
+    {
+      "file": "destaques\\avaliacoes\\07-relato-harle-responsabilidade.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "d87fefc1a3ee6b0c3dba6c9a93586f232f058498101fb204d45e5fcf2e173935"
+    },
+    {
+      "file": "destaques\\avaliacoes\\08-relato-andre.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "0ad5a9e1669c888288aed92a75eeea24bd953cd6b01631a7c98ada71527284d9"
+    },
+    {
+      "file": "destaques\\avaliacoes\\09-relato-daniel-criatividade.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "f169da602608b6e1dedb4f0e0289a3d4907dc08e2f1140a3eef23655f6081879"
+    },
+    {
+      "file": "destaques\\avaliacoes\\10-relato-fernando.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "c5a129b8ccfea0d40aa6d55fd72f13f1b93227e0a4870f4480a918c79f30b96c"
+    },
+    {
+      "file": "destaques\\avaliacoes\\11-relato-flavia-criar.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "fec64bc560a929983dd110f3faf05732ba8858e42deaad911b163cbb511c050a"
+    },
+    {
+      "file": "destaques\\avaliacoes\\12-conheca-a-chave-do-farol.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "9bd0aea0c86b5e26def8bac2cedeb8797e25d82b83baa7a718272a336287cac7"
+    },
+    {
+      "file": "destaques\\avaliacoes\\publicacao.txt",
+      "passed": true,
+      "size": null,
+      "sha256": "5fcb667c794d47973fc13e56ae2f15aab89dbe33b1dbb6b390b83f1fc0d9bfb0"
+    },
+    {
+      "file": "destaques\\avaliacoes\\fontes-dos-relatos.txt",
+      "passed": true,
+      "size": null,
+      "sha256": "d3b819731241af30c1c5c2a2b083e5516d6b6852807ad67b5e00634ca78b1d16"
+    },
+    {
+      "file": "destaques\\alunos\\01-alunos-na-comunidade.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "0bb35b63ff0c028580bebcbf782dee83eb80677eb5e850c52a46bbdd1a8760b7"
+    },
+    {
+      "file": "destaques\\alunos\\02-rafael-aprendendo.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "9f92ec1ae960f75603b1ee4129bfb5639ce941560b0ee81ae068c17b30f20192"
+    },
+    {
+      "file": "destaques\\alunos\\molduras\\02-rafael-moldura.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "676e42276a849abb560f1f9b13cb9de839c2c4506152e52988cd6464e38b2b99"
+    },
+    {
+      "file": "destaques\\alunos\\03-jeffrey-explorando.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "4fe080341f83b27f375e20ee43f355cfd71443da0e2a272e024b2e190e6bb545"
+    },
+    {
+      "file": "destaques\\alunos\\molduras\\03-jeffrey-moldura.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "156dac4b9bc46fabe9b65c43af13fa4af75811e431566f6825b92e1eee6d8d7c"
+    },
+    {
+      "file": "destaques\\alunos\\04-debora-personalizando.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "f35fd6e6036d9dc52d659432a1877b6847d308d3e4997f13cd00f79653c695d4"
+    },
+    {
+      "file": "destaques\\alunos\\molduras\\04-debora-moldura.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "f02a611da82b1c8614cb30fcf2faa3be53c6131ec94febd1d296b86bff34da79"
+    },
+    {
+      "file": "destaques\\alunos\\05-andre-testando.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "1ea16adfcc5ea3431495620d4f9143a85a23147c9ce071b5174ac65496b7ab28"
+    },
+    {
+      "file": "destaques\\alunos\\molduras\\05-andre-moldura.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "55704d020eb69d0407ea83a20e34ad15a61f30c81a8797e9d620dbbf287793fc"
+    },
+    {
+      "file": "destaques\\alunos\\06-fernando-mostrando.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "dc6cf5256a6213a62a2162e76057c0627aa32bf8afe82389076c969f01354964"
+    },
+    {
+      "file": "destaques\\alunos\\molduras\\06-fernando-moldura.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "01baadaaa8d047d4bc4175f0e74f1c6ae043a312e1d5cc375d23fb974b1bdd62"
+    },
+    {
+      "file": "destaques\\alunos\\07-conhecer-o-desafio.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "e2ccc1d00839b099ceb50a5aed21ac5f19f0160686e8fac6b2a56a10e33b85e2"
+    },
+    {
+      "file": "destaques\\alunos\\publicacao.txt",
+      "passed": true,
+      "size": null,
+      "sha256": "647d4f1e66ad7cbe2380c053cf8b9f32ed34efe35896fe4cdfc16824645cbe82"
+    },
+    {
+      "file": "fixados\\01-o-primeiro-jogo\\01-capa.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "31d3efbdaea8c73f87b4d2f802af2b46de5334d57c445bc8869499907a59701e"
+    },
+    {
+      "file": "fixados\\01-o-primeiro-jogo\\02-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "c787f4ca5f6d89b657c56c92d7f54cc34021c04791ec019e76879f77920bbe43"
+    },
+    {
+      "file": "fixados\\01-o-primeiro-jogo\\03-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "0c5530267a37eb08324f68f48d788adbaabb89f76571ad183c444a2cd941095f"
+    },
+    {
+      "file": "fixados\\01-o-primeiro-jogo\\04-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "70e0953196a7b67cfdaef2af02aa786c83b38825e638293526416d06e51541a1"
+    },
+    {
+      "file": "fixados\\01-o-primeiro-jogo\\05-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "74c5536da31d16133d1c374cc321da91acb17a1e5c73c641d649d5192566829b"
+    },
+    {
+      "file": "fixados\\01-o-primeiro-jogo\\06-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "2e245083adf9678018f635a4c64a98d24cb363fa544735a20afa557a7774cbad"
+    },
+    {
+      "file": "fixados\\01-o-primeiro-jogo\\07-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "1a4b78294172eb49906a0e855a2c8836eb6bf884429ff84165c5c5be7a4856b4"
+    },
+    {
+      "file": "fixados\\01-o-primeiro-jogo\\08-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "2ff6904b2f88696a299cdfaad8c1565384758f43544293644cb8b4a9c058ca99"
+    },
+    {
+      "file": "fixados\\02-alunos-em-atividade\\01-capa.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "577a8f8e15cc4e03bff44e02b250aded0b7afb0bb6107f1ec6f3f1d3f9229edd"
+    },
+    {
+      "file": "fixados\\02-alunos-em-atividade\\02-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "20dc211b41cb716102c68d09c629f00cb6e9fa4b1cc2c778f06158e1133217c4"
+    },
+    {
+      "file": "fixados\\02-alunos-em-atividade\\03-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "264e8982c3ca5285152f7c88297beb4d23518ccb8cfe956d6363e372dd3cb265"
+    },
+    {
+      "file": "fixados\\02-alunos-em-atividade\\04-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "1d892bbbe0180141c126c06387745b14624be4e7ea5bf13c3c3250033fa621cc"
+    },
+    {
+      "file": "fixados\\02-alunos-em-atividade\\05-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "704791b03c566bd940c3b25ba2379b4a82eeba0946fc62483c769fda491697b6"
+    },
+    {
+      "file": "fixados\\02-alunos-em-atividade\\06-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "d99e917420b535c903f234ea62f6b4826342c3ea37993862ef286700cf4f7aff"
+    },
+    {
+      "file": "fixados\\02-alunos-em-atividade\\07-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "f9f0c2b14dcaec0424f8cde1af2fbef7cda952a936b93c08c8918d53193bbc62"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\01-capa.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "17e17b6dc37cd9ad53ef83d1eee993e60a8a386c47072a80fba34454701aa6af"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\02-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "666be562669eee68a590d6d016cd4d36580b9a3335f99917e7d161e3bab24597"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\03-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "0c321f9190709d23f282bf42594a1529f632efb22adfc2e9fbc3b6c4275de53c"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\04-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "58a2d7820a03fda2b4facbc12ade3d2eb6e7b0d1a72d302e0b096acd1f0ec01f"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\05-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "37c99c7db6b257056e192327b983c0f601d492174c7258a535e347dd93eec880"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\06-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "a26642e949805fd4b092d2a927f89d6fd430d9da253306dc1f296f3907b1bb91"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\07-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "fa8a6c02dc8577208938a7822ee49fe03af95816f9614044bf4458cfa56b12f7"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\08-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "b49f983d0887772d144a45255d8e6ffeb0a4ba1822791b8aa1e92a0554943d55"
+    },
+    {
+      "file": "fixados\\03-como-comecar\\09-slide.png",
+      "passed": true,
+      "size": {
+        "width": 1080,
+        "height": 1350
+      },
+      "sha256": "5cadf175ddfb2ab43a12f2b1c72bce2eee6c85bf340c1f4bc944ced66229983e"
+    }
+  ]
+}

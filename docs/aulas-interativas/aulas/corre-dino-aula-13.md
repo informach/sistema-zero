@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Base velocidade começa em -5, diminui a cada 5 segundos até -9, com variação de 0 a 1; descrição dos três controles e publicação opcional.
 - Seções: 8. Vídeos: 7.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A régua prepara a comparação de números negativos. A experiência de aceleração vem antes da mudança da base e do relógio. Guardar a base, preparar o relógio e limitar a soma são montagens separadas. O fechamento testa e publica o próprio jogo; a visita ao modo Ponte, indisponível neste curso, foi retirada.
@@ -30,6 +32,10 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 **Zappy na página (não gravar):** Sua vez! Compare os sinais da pergunta e acompanhe o marcador na régua, de -5 até -9. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-regua-negativos-avatar-01. Professora até “No seu jogo, velocidade mais para a esquerda é cacto mais rápido.”. Antes: Mostrar os três passos de -5 a -8 na régua, sem antecipar a comparação. Debinha: “Qual é maior: menos cinco ou menos nove?”. Retomada da professora: “Eu clico em Voltar ao começo e escolho o sinal maior que, o símbolo >.”. Depois: Voltar ao começo, escolher > e comparar -5 e -9 com a posição dos números à vista.
+
 **Experiência existente:** `number-line`. Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >. Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta. Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Compare a base com cada cacto
@@ -40,6 +46,10 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 **Zappy na página (não gravar):** Sua vez! Compare a base com os cactos novos e os antigos e, depois, desligue a condição e avance. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-o-que-o-freio-segura-avatar-01. Professora até “Os cactos que já nasceram não trocam de número: cada um guarda a velocidade que recebeu ao nascer.”. Antes: Passar cinco intervalos com a condição ligada; deixar a base em -9 e os números dos cactos visíveis. Debinha: “Com a base em menos nove, pode nascer um cacto mais rápido?”. Retomada da professora: “Com a base parada em -9, eu continuo clicando até nascer um cacto com -10.”. Depois: Continuar até nascer um cacto -10 e explicar a diferença entre a base e o sorteio.
+
 **Experiência existente:** `acceleration`. Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram. Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base. Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 3. Guarde a velocidade base
@@ -49,6 +59,10 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 **Blocos na página:** video-numero-que-manda → fala-numero-que-manda.
 
 **Zappy na página (não gravar):** Agora guarde a velocidade base numa variável! Crie velocidade com -5 em Ao iniciar e use o valor dela na conta do vx dos cactos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-numero-que-manda-avatar-01. Professora até “A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar variável pontos. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Troque contador por velocidade e o valor por -5.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Ah! Vou poder mudar esse número durante a corrida!”. Retomada da professora: “Agora deixe à vista o -5 do lado esquerdo da conta, no vx do bloco que cria os cactos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -64,6 +78,10 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 **Zappy na página (não gravar):** Agora prepare o relógio da dificuldade! Crie um relógio de 5 segundos com um Se jogando, separado dos outros dois. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-relogio-da-dificuldade-avatar-01. Professora até “A base só pode mudar durante a partida. Por isso, deixe à vista o espaço vazio dentro desse relógio, abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Se eu demorar na abertura, a corrida não vai começar mais rápida!”. Retomada da professora: “Deixe à vista o lugar vazio da pergunta.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Prepare um relógio de 5 segundos com Se jogando.
@@ -75,6 +93,12 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 **Blocos na página:** video-acelerador-e-freio → fala-acelerador-e-freio.
 
 **Zappy na página (não gravar):** Agora faça a corrida acelerar até um limite! No relógio de 5 segundos, some -1 em velocidade só enquanto a base for maior que -9. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-acelerador-e-freio-avatar-01. Professora até “Agora deixe à vista o lado esquerdo da comparação do Se de dentro. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Até onde a velocidade pode mudar?”. Retomada da professora: “O sinal já chega como >, maior que: mantenha.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-acelerador-e-freio-avatar-02. Professora até “Agora deixe à vista o espaço vazio do então do Se de dentro. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte ali. Escolha velocidade e coloque -1 no valor da soma. Somar -1 deixa a base menor, e base menor é cacto mais rápido.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Quero ver a corrida ficando mais rápida!”. Retomada da professora: “Agora teste uma partida longa.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -110,6 +134,10 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
 **Zappy na página (não gravar):** Hora de testar e enviar o seu Corre, Dino! Teste a corrida inteira, clique em Verificar esta parte e depois em Enviar meu projeto, confirmando em Enviar. Se quiser, mostre o seu jogo no Mural e, por último, clique em Concluir fase.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-entrega-avatar-01. Professora até “as regras que fazem essas partes funcionarem juntas!”. Antes: Concluir todos os testes de partida, derrota, reinício e controles, com o jogo construído à vista. Debinha: “Agora eu quero mostrar a minha corrida!”. Retomada da professora: “Você pode! Primeiro vamos conferir e enviar o seu projeto. Funcionou?”. Depois: Seguir primeiro a verificação e o envio; mostrar a publicação opcional apenas depois da confirmação.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 

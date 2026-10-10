@@ -1,0 +1,315 @@
+[
+  {
+    "start": 58.2,
+    "end": 66.36,
+    "text": "Foi muito legal, o Rafa ficou bastante empolgado com o curso, acabava uma aula e ele vinha",
+    "words": [
+      {
+        "start": 58.2,
+        "end": 58.6,
+        "text": " Foi"
+      },
+      {
+        "start": 58.6,
+        "end": 58.92,
+        "text": " muito"
+      },
+      {
+        "start": 58.92,
+        "end": 59.3,
+        "text": " legal,"
+      },
+      {
+        "start": 60.16,
+        "end": 60.3,
+        "text": " o"
+      },
+      {
+        "start": 60.3,
+        "end": 60.5,
+        "text": " Rafa"
+      },
+      {
+        "start": 60.5,
+        "end": 60.72,
+        "text": " ficou"
+      },
+      {
+        "start": 60.72,
+        "end": 61.3,
+        "text": " bastante"
+      },
+      {
+        "start": 61.3,
+        "end": 62.08,
+        "text": " empolgado"
+      },
+      {
+        "start": 62.08,
+        "end": 62.480000000000004,
+        "text": " com"
+      },
+      {
+        "start": 62.480000000000004,
+        "end": 62.66,
+        "text": " o"
+      },
+      {
+        "start": 62.66,
+        "end": 63.4,
+        "text": " curso,"
+      },
+      {
+        "start": 65.34,
+        "end": 65.58,
+        "text": " acabava"
+      },
+      {
+        "start": 65.58,
+        "end": 65.82,
+        "text": " uma"
+      },
+      {
+        "start": 65.82,
+        "end": 66.0,
+        "text": " aula"
+      },
+      {
+        "start": 66.0,
+        "end": 66.16,
+        "text": " e"
+      },
+      {
+        "start": 66.16,
+        "end": 66.22,
+        "text": " ele"
+      },
+      {
+        "start": 66.22,
+        "end": 66.36,
+        "text": " vinha"
+      }
+    ]
+  },
+  {
+    "start": 66.36,
+    "end": 70.86,
+    "text": "contar, aprendi isso aqui e me mostrava no computador, olha que eu agora aprendi, agora",
+    "words": [
+      {
+        "start": 66.36,
+        "end": 66.64,
+        "text": " contar,"
+      },
+      {
+        "start": 66.8,
+        "end": 67.1,
+        "text": " aprendi"
+      },
+      {
+        "start": 67.1,
+        "end": 67.3,
+        "text": " isso"
+      },
+      {
+        "start": 67.3,
+        "end": 67.56,
+        "text": " aqui"
+      },
+      {
+        "start": 67.56,
+        "end": 67.74,
+        "text": " e"
+      },
+      {
+        "start": 67.74,
+        "end": 67.8,
+        "text": " me"
+      },
+      {
+        "start": 67.8,
+        "end": 68.14,
+        "text": " mostrava"
+      },
+      {
+        "start": 68.14,
+        "end": 68.26,
+        "text": " no"
+      },
+      {
+        "start": 68.26,
+        "end": 68.78,
+        "text": " computador,"
+      },
+      {
+        "start": 68.82,
+        "end": 68.96000000000001,
+        "text": " olha"
+      },
+      {
+        "start": 68.96000000000001,
+        "end": 69.1,
+        "text": " que"
+      },
+      {
+        "start": 69.1,
+        "end": 69.28,
+        "text": " eu"
+      },
+      {
+        "start": 69.28,
+        "end": 69.46000000000001,
+        "text": " agora"
+      },
+      {
+        "start": 69.46000000000001,
+        "end": 70.38,
+        "text": " aprendi,"
+      },
+      {
+        "start": 70.78,
+        "end": 70.86,
+        "text": " agora"
+      }
+    ]
+  },
+  {
+    "start": 70.86,
+    "end": 75.72,
+    "text": "a tela mexe, eu consigo jogar o bonequinho pra lá e pra cá, e isso ele ficava falando",
+    "words": [
+      {
+        "start": 70.86,
+        "end": 71.0,
+        "text": " a"
+      },
+      {
+        "start": 71.0,
+        "end": 71.14,
+        "text": " tela"
+      },
+      {
+        "start": 71.14,
+        "end": 71.6,
+        "text": " mexe,"
+      },
+      {
+        "start": 71.74,
+        "end": 71.82,
+        "text": " eu"
+      },
+      {
+        "start": 71.82,
+        "end": 72.06,
+        "text": " consigo"
+      },
+      {
+        "start": 72.06,
+        "end": 72.44,
+        "text": " jogar"
+      },
+      {
+        "start": 72.44,
+        "end": 72.56,
+        "text": " o"
+      },
+      {
+        "start": 72.56,
+        "end": 72.86,
+        "text": " bonequinho"
+      },
+      {
+        "start": 72.86,
+        "end": 73.06,
+        "text": " pra"
+      },
+      {
+        "start": 73.06,
+        "end": 73.16,
+        "text": " lá"
+      },
+      {
+        "start": 73.16,
+        "end": 73.34,
+        "text": " e"
+      },
+      {
+        "start": 73.34,
+        "end": 73.48,
+        "text": " pra"
+      },
+      {
+        "start": 73.48,
+        "end": 73.74,
+        "text": " cá,"
+      },
+      {
+        "start": 74.44,
+        "end": 74.62,
+        "text": " e"
+      },
+      {
+        "start": 74.62,
+        "end": 74.82,
+        "text": " isso"
+      },
+      {
+        "start": 74.82,
+        "end": 75.03999999999999,
+        "text": " ele"
+      },
+      {
+        "start": 75.03999999999999,
+        "end": 75.38,
+        "text": " ficava"
+      },
+      {
+        "start": 75.38,
+        "end": 75.72,
+        "text": " falando"
+      }
+    ]
+  },
+  {
+    "start": 75.72,
+    "end": 76.98,
+    "text": "até ele ia pra casa dos avós.",
+    "words": [
+      {
+        "start": 75.72,
+        "end": 75.96000000000001,
+        "text": " até"
+      },
+      {
+        "start": 75.96000000000001,
+        "end": 76.06,
+        "text": " ele"
+      },
+      {
+        "start": 76.06,
+        "end": 76.18,
+        "text": " ia"
+      },
+      {
+        "start": 76.18,
+        "end": 76.3,
+        "text": " pra"
+      },
+      {
+        "start": 76.3,
+        "end": 76.46000000000001,
+        "text": " casa"
+      },
+      {
+        "start": 76.46000000000001,
+        "end": 76.66,
+        "text": " dos"
+      },
+      {
+        "start": 76.66,
+        "end": 76.98,
+        "text": " avós."
+      }
+    ]
+  }
+]

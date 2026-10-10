@@ -13,6 +13,21 @@
 
 **Full review de 06/10/2026:** "então" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram "por isso", "para o jogo responder" ou duas frases. A abertura da experiência ganhou o porquê ("Para o jogo saber que a chave foi pega, ele precisa guardar essa informação") e o evento passou a ser "uma coisa que acontece no jogo". Na criação da área **Quando acontecer**, o destino virou "um lugar sem blocos, ao lado das áreas", para não se confundir com o "espaço vazio" que se arrasta para abrir lugar. A ponte da experiência termina em "Quando terminar, clique em Próxima parte.". Seções, blocos e critérios não mudaram.
 
+## Vozes e produção · 10/10/2026
+
+**Dedé** participa em 6 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-2.roteiro.md) identifica **Professora**, **Dedé (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+
+As participações distinguem a chave sumir, a informação ficar guardada e o aviso orientar quem joga. Não mostrar temChave no jogo como se existisse um mostrador; ele pertence à experiência separada.
+
+| Entrada | Fala de Dedé |
+| --- | --- |
+| F2P1-D01 | “Mas a chave sumiu. Por que ainda está falso?” |
+| F2P2-D01 | “A chave some para sempre?” |
+| F2P3-D01 | “Como eu vejo se o jogo guardou a chave?” |
+| F2P4-D01 | “Agora quem joga vai saber para onde ir!” |
+
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
@@ -100,3 +115,12 @@ A verificação é cumulativa em cada montagem: a seção 2 confere o movimento 
 Preservar as seções `contexto` e `programar-chave` (agora a entrega do aviso), os vídeos existentes e a chave do Estúdio. As seções `recolher` e `guardar` são novas. Manter a aposentadoria histórica de `video-d2-teste`.
 
 A aula entrega movimento, borda e coleta; não programa a porta. Valores: temChave começa falso e vira verdadeiro na coleta; aviso recebe a mensagem; ganhou continua falso. O Dia 3 retoma prioritariamente o envio da criança. Não substituir mídia existente por plannedVideo sem reconciliação no admin.
+
+## Revisão de ritmo e entendimento · 10/10/2026
+
+O roteiro tem 6 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
+
+| Entrada | Depois da professora | Criança | Retomada da professora |
+| --- | --- | --- | --- |
+| F2P2-R01 | “No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.” | Dedé: “Se eu só passar perto da chave, não vale!” | “Agora vem a ação: tirar a chave do chão. Ela vai dentro desse encontro. Deixe à vista o espaço vazio dentro dele.” |
+| F2P3-R01 | “Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.” | Dedé: “Ah! Na partida nova eu tenho que buscar a chave outra vez!” | “Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.” |

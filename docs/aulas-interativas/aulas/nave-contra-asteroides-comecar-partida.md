@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.
 - Seções: 4. Vídeos: 4.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida. Os finais ficam para a aula seguinte.
@@ -30,6 +32,10 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 **Zappy na página (não gravar):** Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-estado-do-jogo-avatar-01. Professora até “todo mundo espera o sinal de largada, e ninguém sai correndo antes.”. Antes: Deixar passar quatro segundos na abertura, com a peça dentro do Se e o contador esperando. Dedé: “Agora as pedras estão esperando a partida!”. Retomada da professora: “Isso. Vamos começar para ver o que muda. Por último, eu clico em Toque para começar, na tela da experiência.”. Depois: Começar por toque na experiência e distinguir esse começo pronto do Enter que será programado no projeto.
+
 **Experiência existente:** `game-state`. Use Tempo para soltar o tempo se estiver parado. Na abertura, deixe Criar asteroide fora de Se o estado do jogo é jogando e observe o tempo e as pedras. Mova para dentro do Se e observe de novo sem começar. Depois toque na tela para começar e compare. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Separe a abertura da partida
@@ -39,6 +45,18 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 **Blocos na página:** video-embrulhar → fala-embrulhar.
 
 **Zappy na página (não gravar):** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-embrulhar-avatar-01. Professora até “Para começar, você vai tirar a sequência de dentro de A cada quadro do jogo, sem apagar nada. Deixe à vista um lugar livre do espaço dos blocos, perto de A cada quadro do jogo. Depois, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte nesse lugar. Os blocos encaixados abaixo dele vão juntos. Não apague nem crie cópias, porque daqui a pouco essa sequência volta inteira para dentro do Se.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “A sequência saiu inteira, sem apagar nada!”. Retomada da professora: “Agora deixe à vista o espaço de dentro de A cada quadro do jogo, que ficou vazio.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-embrulhar-avatar-02. Professora até “Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é e solte no lugar vazio ao lado de Se. No menu desse bloco, escolha jogando. Assim, o Se pergunta se a partida já começou.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Posso ficar na abertura sem perder uma vida!”. Retomada da professora: “Agora devolva a sequência para dentro do Se: deixe à vista o espaço do então, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte dentro do então.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-embrulhar-avatar-03. Professora até “O ramo novo também chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra de novo Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue outro o estado do jogo é, solte nesse lugar e deixe inicio no menu.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Quem chegar ao meu jogo vai ver essa tela primeiro!”. Retomada da professora: “Deixe à vista o espaço do então desse senão se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-embrulhar-avatar-04. Professora até “O bloco já vem com o título Nave contra Asteroides e o subtítulo Destrua os asteroides! Mantenha os dois. A dica já vem Aperte Enter para começar: mantenha também, porque é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “E como o jogo começa nessa tela?”. Retomada da professora: “Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-embrulhar-avatar-05. Professora até “Olha só: a abertura aparece!”. Antes: Manter a abertura real à vista. A tecla Enter ainda não inicia a partida nesta parte. Dedé: “A abertura apareceu!”. Retomada da professora: “Isso acontece porque o jogo começa em inicio, e o ramo de inicio mostra a tela.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -56,6 +74,14 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 **Zappy na página (não gravar):** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-relogio-e-tiro-avatar-01. Professora até “Deixe à vista o espaço de dentro de A cada 40 quadros, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro do relógio. Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Qual pergunta vai dentro desse relógio?”. Retomada da professora: “Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-relogio-e-tiro-avatar-02. Professora até “Agora os tiros. Encontre o evento da barra de espaço, em Quando acontecer, e deixe à vista um espaço livre perto dele. Pegue a sequência pelo primeiro bloco, Criar tiro, e solte nesse espaço por enquanto. Tocar efeito vai junto, porque está encaixado logo abaixo.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Assim não vai ter barulho de tiro antes de começar!”. Retomada da professora: “Deixe à vista o espaço de dentro do evento da barra de espaço, que ficou vazio.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-relogio-e-tiro-avatar-03. Professora até “porque o Se responde não enquanto o jogo está em inicio.”. Antes: Concluir a montagem e o teste sem som na abertura, sem concluir nada pela ausência de pedras na imagem. Dedé: “E como eu confiro se as pedras também esperam?”. Retomada da professora: “Para isso, a gente precisa olhar os blocos. Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas.”. Depois: Voltar aos blocos e conferir o Se jogando no relógio e no evento da barra de espaço.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Dentro do relógio de 40 quadros, crie asteroide só se o estado do jogo é jogando.
@@ -70,6 +96,14 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 **Blocos na página:** video-enter → fala-enter → projeto.
 
 **Zappy na página (não gravar):** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-enter-avatar-01. Professora até “Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Mas só pode começar se estiver na abertura, né?”. Retomada da professora: “O Enter só pode começar a partida quando o jogo está na abertura, por isso dentro desse evento vai um Se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-enter-avatar-02. Professora até “Deixe à vista o espaço do então desse Se. Na mesma categoria Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha jogando. Assim, o Enter começa a partida só quando o jogo está na abertura.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Vou testar o Enter!”. Retomada da professora: “Agora teste: clique na área do jogo e toque em Enter.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-enter-avatar-03. Professora até “Agora teste: clique na área do jogo e toque em Enter. Olha só: a abertura some e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “E se eu apertar Enter no meio da partida?”. Retomada da professora: “Agora toque em Enter durante a partida.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 

@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Limpeza do grupo a cada quadro, com o intervalo original 1,4 segundo preservado.
 - Seções: 4. Vídeos: 3.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A experiência torna visível o conteúdo do grupo. O medidor temporário e a criação acelerada, depois retirados no desenho antigo, deixam de ser desvios obrigatórios. A montagem atua diretamente sobre a limpeza, com o mesmo programa final.
@@ -29,6 +31,10 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 **Zappy na página (não gravar):** Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-visivel-guardado-avatar-01. Professora até “Por isso o grupo tem mais cactos do que a tela.”. Antes: Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave. Dedé: “Eu achei que sair da tela já tirava o cacto do jogo!”. Retomada da professora: “Tem, sim. Vamos tirar do grupo os que já saíram. Depois que dois cactos saem, a chave abre.”. Depois: Ligar a regra e acompanhar os números até ficarem iguais.
+
 **Experiência existente:** `cleanup`. Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Retire do grupo quem já saiu
@@ -38,6 +44,12 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 **Blocos na página:** video-faxina → fala-faxina.
 
 **Zappy na página (não gravar):** Agora tire do grupo os cactos que já saíram! Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-faxina-avatar-01. Professora até “Agora a gente vai colocar a regra que tira esses cactos de lá!”. Antes: Retomar a experiência com o projeto aberto, sem pegar blocos ainda. Dedé: “Onde essa regra entra?”. Retomada da professora: “A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados.”. Depois: Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa.
+
+ID video-faxina-avatar-02. Professora até “Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Se um cacto sair da tela, ele sai da lista também!”. Retomada da professora: “Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

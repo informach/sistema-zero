@@ -93,7 +93,7 @@ import {
   toEditablePath,
 } from '../../../vector/pathNodes'
 import { ALL_CORNERS, type RectCornerMask } from '../../../vector/rectCorners'
-import { DEFAULT_STYLE, type ShapeStyle } from '../../../vector/shapes'
+import { DEFAULT_STROKE_WIDTH, DEFAULT_STYLE, type ShapeStyle } from '../../../vector/shapes'
 import { usePintaApp } from '../../appContext'
 import { useToast } from '../../ui/Toast'
 import { useEditor, useEditorStores, useSession } from '../editorContext'
@@ -928,7 +928,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     }
     if (activeChannel === 'stroke') {
       applyStyle({
-        stroke: hex === 'none' ? null : { color: hex, width: style.stroke?.width ?? 2 },
+        stroke:
+          hex === 'none'
+            ? null
+            : { color: hex, width: style.stroke?.width ?? DEFAULT_STROKE_WIDTH },
       })
       return
     }
@@ -944,7 +947,10 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   function adoptChannelColor(hex: string): void {
     if (activeChannel === 'stroke') {
       adoptStyle({
-        stroke: hex === 'none' ? null : { color: hex, width: style.stroke?.width ?? 2 },
+        stroke:
+          hex === 'none'
+            ? null
+            : { color: hex, width: style.stroke?.width ?? DEFAULT_STROKE_WIDTH },
       })
       return
     }
@@ -957,7 +963,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * passa a cor DO COMEÇO para o contorno.
    */
   function swapFillStroke(): void {
-    const width = style.stroke?.width ?? 2
+    const width = style.stroke?.width ?? DEFAULT_STROKE_WIDTH
     const nextFill: VectorFill = style.stroke ? style.stroke.color : 'none'
     const nextStroke: VectorStroke | null =
       typeof style.fill === 'string'

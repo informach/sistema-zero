@@ -990,12 +990,13 @@ olho, renomear e reordenar continuam livres; para excluir, destranca antes. Tile
 
 ## Editor de VETOR: paridade + recursos (08/2026, inspiração Vectorpea)
 
-Pedido da usuária: o vetor com o MESMO layout do pixel (a criança não estranha ao trocar) e só
-ADIÇÕES de recursos — nada removido. Palco SEM canto arredondado nos DOIS editores (o raio da
+Pedido original: o vetor com o MESMO layout do pixel (a criança não estranha ao trocar).
+Em 10/10/2026, a usuária pediu retirar os botões de espessura do vetor e concentrar o ajuste em
+Aparência. Palco SEM canto arredondado nos DOIS editores (o raio da
 moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondados).
 
-- **Layout espelho do pixel**: caixa à ESQUERDA (espessuras do traço fixas no topo, ferramentas em
-  DUAS colunas rolando no meio, e os slots PREENCHIMENTO/CONTORNO fixos no pé — espelho do
+- **Layout espelho do pixel**: caixa à ESQUERDA (ferramentas em DUAS colunas rolando e os slots
+  PREENCHIMENTO/CONTORNO fixos no pé — espelho do
   principal/secundária, com botão de trocar; o slot clicado = `activeChannel`, quem recebe a
   próxima cor). Os dois slots têm símbolos diferentes: preenchimento é uma PLACA cheia; contorno é
   uma MOLDURA vazada. Os símbolos se sobrepõem visualmente, mas os BOTÕES não: cada canal preserva
@@ -1005,15 +1006,14 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   Aparência) · faixa (Spritesheet/peças + zoom) em LARGURA TOTAL. A coluna dupla do
   vector-sprite MORREU (`PixelRightColumn` saiu do ramo vetor). Tela estreita: caixa horizontal +
   disclosure "Cores e camadas" (`VectorPanelsDisclosure`).
-- **Espessuras do contorno (02/09/2026, pedido dela)**: seis degraus `0,5 / 1 / 1,5 / 2 / 2,5 / 3`
-  (o 1 era grosso demais para ser o primeiro e o 8 não se usava), fonte ÚNICA `STROKE_WIDTHS` +
-  `strokeWidthIndex`/`formatStrokeWidth`/`strokeDotSize` em `vectorTools.ts` (antes a caixa e o
-  slider de Aparência tinham cada um a sua lista). O default de forma nova continua 2. Desenho
-  antigo com 4/6/8 desenha igual (o sanitize aceita até 64): nenhuma bolinha acende (igualdade
-  estrita; acender o "3" mentiria) e o slider para no ÚLTIMO degrau com `aria-valuetext` dizendo a
-  espessura real. ⚠️ Antes o `findIndex` devolvia -1 e o `Math.max(-1, 0)` mostrava o degrau mais
-  FINO para um traço grosso. Rótulos com vírgula ("Espessura do contorno: 0,5"). Testes:
-  `vector/vectorTools.test.ts` + 2 casos de UI em `vectorUi.test.tsx` (0,5 no palco; legado 8).
+- **Espessura do contorno (10/10/2026)**: ajuste único na aba Aparência, de 0,5 a 10,
+  com passo 0,5 e valor atual visível. A caixa vertical e a barra horizontal não têm botões de
+  espessura. Novas formas usam `DEFAULT_STROKE_WIDTH = 1` (`vector/shapes.ts`); a escolha
+  acompanha as próximas formas ao trocar de ferramenta. O controle edita também a seleção,
+  com desfazer/refazer, e fica desabilitado sem contorno. Desenhos antigos preservam o traço
+  original (o modelo continua aceitando até 64): somente a posição do range é limitada; o
+  número visível e `aria-valuetext` informam a espessura real. `formatStrokeWidth` mantém a
+  vírgula decimal. Testes de criação, edição, histórico e arquivos antigos em `vectorUi.test.tsx`.
 - **Papel BRANCO fixo** no palco (sem xadrez — decisão de produto: cor absoluta nos 2 temas;
   forma branca sem contorno some — mitigado pelo contorno preto default e pela grade).
 - **Grade de apoio + snap** (`vector/grid.ts`): botão Grade na caixa (mesmo `session.showGrid` do

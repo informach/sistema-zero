@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Dino desenhado a cada quadro, floresta em velocidade 5, limpeza e descrição acessível; borda provisória retirada.
 - Seções: 9. Vídeos: 9.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de uma vez e sempre já aconteceu antes de Ao iniciar. A descrição para o leitor de tela, presente no projeto canônico, agora tem experiência e instrução explícitas.
@@ -40,6 +42,12 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 **Zappy na página (não gravar):** Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-motor-e-dino-avatar-01. Professora até “Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área. Tudo o que ficar dentro dele vai acontecer de novo em cada quadro.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Ah! O desenho precisa acompanhar o Dino enquanto ele se mexe!”. Retomada da professora: “Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-motor-e-dino-avatar-02. Professora até “Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado!”. Antes: Esperar o Dino aparecer na prévia antes da reação. Dedé: “Olha, o Dino apareceu!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar dinossauro continua em Ao iniciar, e Desenhar o sprite dino está dentro de A cada quadro do jogo, em Enquanto estiver rodando, com o nome dino nos dois blocos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Encaixe A cada quadro dentro de Enquanto estiver rodando.
@@ -53,6 +61,10 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 **Zappy na página (não gravar):** Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-limpeza-avatar-01. Professora até “cada desenho novo cai em cima do velho.”. Antes: Aproximar a sombra que escurece, antes de pegar qualquer bloco. Dedé: “Como eu tiro essa sombra escura?”. Retomada da professora: “É isso que a gente vai resolver. Lembra da experiência da primeira parte desta fase?”. Depois: Retomar a experiência e montar a limpeza antes do desenho, com todos os encaixes e testes.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Limpe a tela antes de desenhar o Dino.
@@ -65,6 +77,10 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 **Zappy na página (não gravar):** Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-camadas-avatar-01. Professora até “Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.”. Antes: Mostrar a floresta cobrindo quase todo o Dino; manter a ordem inicial. Dedé: “Como eu trago o Dino para a frente?”. Retomada da professora: “Quando eu coloco o Dino depois da Floresta, ele aparece inteiro, sem nada na frente.”. Depois: Trocar o Dino para depois da Floresta e deixar o resultado aparecer antes da explicação.
+
 **Experiência existente:** `layers`. Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela. Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 5. Coloque a floresta atrás do Dino
@@ -74,6 +90,10 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 **Blocos na página:** video-ordem-certa → fala-ordem-certa.
 
 **Zappy na página (não gravar):** Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-ordem-certa-avatar-01. Professora até “O lugar da floresta é entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Deixe esse espaço à vista. Depois, abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Agora falta fazer a floresta andar!”. Retomada da professora: “Repare: o bloco chega com velocidade 4.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -103,6 +123,10 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 **Zappy na página (não gravar):** Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-descricao-avatar-01. Professora até “O programa não vê o desenho, por isso não tem como contar o que acontece.”. Antes: Deixar a leitura do campo vazio terminar antes da entrada; não sobrepor as vozes. Dedé: “A gente pode escrever como se joga!”. Retomada da professora: “Pode, sim. Agora eu escrevo Corra com o dino e pule os cactos apertando espaço e clico em Ouvir a tela de novo.”. Depois: Escrever a descrição e ouvir a leitura inteira sem voz do avatar nem da professora por cima.
+
 **Experiência existente:** `screen-reader`. Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente. Compare o que foi lido antes e depois da frase. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 8. Escreva a descrição do jogo
@@ -112,6 +136,10 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 **Blocos na página:** video-descrever-jogo → fala-descrever-jogo.
 
 **Zappy na página (não gravar):** Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-descrever-jogo-avatar-01. Professora até “A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia. Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Essa frase vai ficar escrita no jogo?”. Retomada da professora: “Ela fica guardada para o leitor de tela ler em voz alta. No texto, apague a frase que veio no bloco e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos apertando espaço.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

@@ -1,0 +1,61 @@
+AVALIAÇÕES · FONTES DOS RELATOS
+
+Rafael, Débora e André: falas já presentes na oferta e confirmadas pelo usuário para o Desafio do Primeiro Jogo. Fonte histórica: c3c142e8f^, packages/funnel/src/components/funnel/oferta/DesafioOfertaBody.astro, seção DEPOIMENTOS. Retratos: packages/funnel/public/img/desafio-primeiro-jogo/depo-{rafael,debora,andre}.webp.
+
+Os segundos abaixo localizam os trechos escolhidos. Ajustes: maiúscula inicial, pontuação e aspas de uma fala dentro de outra. As cartelas omitem os marcadores de corte por orientação do usuário. Os recortes abaixo registram os segundos de cada parte utilizada. As palavras e o sentido foram preservados; não foram inseridos resultados. Os temas abaixo dos nomes são editoriais, fora das aspas. Transcrição completa: faster-whisper small; conferência dos trechos: medium, com marcação de palavras. Arquivos de trabalho: output/instagram/avaliacoes/2026-10-09/fontes.
+
+AV08 · Daniel · Pai do Rafael
+Vídeo: C:\Users\tocha\Downloads\Isso trouxe para o meu filho organização, lógica e criatividade _ Daniel, PCD.mp4
+Trecho: 1.92s–13.54s
+Fala: Foi um curso que trouxe pro Rafa uma questão de se pensar, de se organizar, tanto na lógica, na matemática.
+Retrato: daniel-12s.png (00:12)
+Conferência: fontes/daniel-beneficios-conferidos.json
+
+AV10 · Flávia · Mãe do Fernando
+Vídeo: C:\Users\tocha\Downloads\Isso não incentivou meu filho a jogar, mas a desenvolver _ Flávia, PCD.mp4
+Trecho: 56.14s–62.14s
+Fala: No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.
+Retrato: flavia-60s.png (01:00)
+Conferência: fontes/flavia-trecho-conferido.json
+
+AV07 · Jeffrey · Aluno
+Vídeo: C:\Users\tocha\Downloads\Ele conseguiu se expressar com isso _ Jeffrey, PCD.mp4
+Trecho: 101.42s–109.34s
+Fala: Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.
+Retrato: foto de referência fornecida pelo usuário: jeffrey.png
+
+AV09 · Harle · Pai do Jeffrey
+Vídeo: C:\Users\tocha\Downloads\Meu filho autista superou todas as expectativas _ Harle, PCD.mp4
+Trecho: 69.48s–83.24s
+Fala: Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer. Ele ficou mais responsável com as coisas dele.
+Retrato: harle-60s.png (01:00)
+Conferência: fontes/harle-trecho-conferido.json
+Recorte 69.48s–77.28s: Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer.
+Recorte 78.02s–78.66s: Ele ficou mais
+Recorte 81.52s–83.24s: responsável com as coisas dele.
+
+AV11 · Daniel · Pai do Rafael
+Vídeo: C:\Users\tocha\Downloads\Isso trouxe para o meu filho organização, lógica e criatividade _ Daniel, PCD.mp4
+Trecho: 25.26s–30.22s
+Fala: Vai criando, vai sendo mais criativo. ‘Eu quero mudar isso aqui no jogo.’
+Retrato: daniel-12s.png (00:12)
+Conferência: fontes/daniel-beneficios-conferidos.json
+Recorte 25.26s–27.92s: Vai criando, vai sendo mais criativo.
+Recorte 28.58s–30.22s: ‘Eu quero mudar isso aqui no jogo.’
+
+AV06 · Fernando · Aluno
+Vídeo: C:\Users\tocha\Downloads\Eu me sinto muito feliz fazendo isso _ Fernando, PCD.mp4
+Trecho: 0.00s–8.14s
+Fala: Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.
+Retrato: foto de referência fornecida pelo usuário: fernando.png
+
+AV12 · Flávia · Mãe do Fernando
+Vídeo: C:\Users\tocha\Downloads\Isso não incentivou meu filho a jogar, mas a desenvolver _ Flávia, PCD.mp4
+Trecho: 1.06s–20.14s
+Fala: O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada. O curso incentivou ele a desenvolver, a programar, não a jogar.
+Retrato: flavia-60s.png (01:00)
+Conferência: fontes/flavia-beneficios-conferidos.json
+Recorte 1.06s–7.68s: O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada.
+Recorte 15.00s–20.14s: O curso incentivou ele a desenvolver, a programar, não a jogar.
+
+Daniel: organização e raciocínio em AV08; criatividade, com a ideia de mudar o jogo, em AV11. Harle: iniciativa de acompanhar as atividades e responsabilidade com as coisas dele, em AV09. Flávia: independência em AV10; uso da tela para criar em AV12. Os cinco trechos dos responsáveis alternam com os cinco relatos infantis. Cada fala se refere à experiência daquela família. Os títulos dos vídeos não foram usados como promessa da Comunidade.

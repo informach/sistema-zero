@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Variável pontos começa em zero, aumenta somente no acerto e aparece no placar.
 - Seções: 2. Vídeos: 2.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um valor.
@@ -29,6 +31,10 @@ Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um
 
 **Zappy na página (não gravar):** Sua vez! Mude pontos com o placar desligado, depois ligue Mostrar placar e compare. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-variavel-avatar-01. Professora até “O placar do estádio só mostra o que já foi anotado.”. Antes: Somar dois pontos com o placar desligado e concluir a comparação com o bloquinho. Dedé: “Como eu mostro os pontos que já estão guardados?”. Retomada da professora: “Agora eu ligo Mostrar placar.”. Depois: Ligar Mostrar placar e comparar o valor da tela com o valor guardado.
+
 **Experiência existente:** `variable`. Mude pontos para 1 e volte para 0 com Mostrar placar desligado. Some 1 duas vezes e observe o número guardado. Ligue Mostrar placar, compare e some 1 novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Some um ponto a cada acerto
@@ -38,6 +44,16 @@ Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um
 **Blocos na página:** video-pontos-e-placar → fala-placar → projeto.
 
 **Zappy na página (não gravar):** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir fase.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-pontos-e-placar-avatar-01. Professora até “O valor já vem em 0: mantenha, porque cada partida começa sem pontos.”. Antes: Concluir Criar variável pontos com valor 0 em Ao iniciar; soltar o mouse antes da entrada. Dedé: “Onde eu coloco o bloco que soma?”. Retomada da professora: “O ponto só pode ser somado quando um tiro acerta uma pedra.”. Depois: Localizar o fim da colisão e mostrar onde a soma entra; depois montar o placar fora da colisão.
+
+ID video-pontos-e-placar-avatar-02. Professora até “Agora o placar, que precisa aparecer em todo quadro, e não só no acerto. Por isso, ele fica fora da colisão: deixe à vista o encaixe logo depois do bloco inteiro da colisão, ainda dentro de A cada quadro do jogo.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Mesmo sem acertar outra pedra, eu vou ver quantos pontos tenho!”. Retomada da professora: “Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse encaixe.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-pontos-e-placar-avatar-03. Professora até “O número do placar precisa ler o valor guardado em pontos. Deixe à vista o número do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse número e escolha pontos. Assim, o placar mostra o número que o jogo guardou, em vez de mostrar sempre o mesmo número.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Se eu acertar mais uma pedra, o número muda junto!”. Retomada da professora: “O placar já vem em x 12, y 30 e tamanho 24: mantenha.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-pontos-e-placar-avatar-04. Professora até “Olha só: Pontos vai para 1!”. Antes: Manter o primeiro ponto visível, sem fazer outro disparo durante a fala. Dedé: “Acertei e ganhei um ponto!”. Retomada da professora: “E, se você acertar outra, o placar soma mais 1.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 

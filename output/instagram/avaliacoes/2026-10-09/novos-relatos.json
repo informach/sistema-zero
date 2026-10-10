@@ -1,0 +1,144 @@
+[
+  {
+    "id": "AV06",
+    "name": "Fernando",
+    "role": "Aluno",
+    "photo": "fernando",
+    "context": "Relato sobre criar jogos.",
+    "quote": "Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Eu me sinto muito feliz fazendo isso _ Fernando, PCD.mp4",
+    "sourceStart": 0,
+    "sourceEnd": 8.14,
+    "type": "quote",
+    "quoteMarkup": "Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar."
+  },
+  {
+    "id": "AV07",
+    "name": "Jeffrey",
+    "role": "Aluno",
+    "photo": "jeffrey",
+    "context": "Relato sobre criar jogos.",
+    "quote": "Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Ele conseguiu se expressar com isso _ Jeffrey, PCD.mp4",
+    "sourceStart": 101.42,
+    "sourceEnd": 109.34,
+    "type": "quote",
+    "quoteMarkup": "Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias."
+  },
+  {
+    "id": "AV08",
+    "name": "Daniel",
+    "role": "Pai do Rafael",
+    "photo": "daniel",
+    "context": "Organizar as ideias.",
+    "quote": "Foi um curso que trouxe pro Rafa uma questão de se pensar, de se organizar, tanto na lógica, na matemática.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Isso trouxe para o meu filho organização, lógica e criatividade _ Daniel, PCD.mp4",
+    "sourceStart": 1.92,
+    "sourceEnd": 13.54,
+    "type": "quote",
+    "quoteMarkup": "Foi um curso que trouxe pro Rafa uma questão de se pensar, de se organizar, tanto na lógica, na matemática.",
+    "slug": "daniel-organizacao",
+    "sourceTranscript": "daniel-beneficios-conferidos.json"
+  },
+  {
+    "id": "AV09",
+    "name": "Harle",
+    "role": "Pai do Jeffrey",
+    "photo": "harle",
+    "context": "Mais responsabilidade.",
+    "quote": "Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer. Ele ficou mais responsável com as coisas dele.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Meu filho autista superou todas as expectativas _ Harle, PCD.mp4",
+    "sourceStart": 69.48,
+    "sourceEnd": 83.24,
+    "type": "quote",
+    "quoteMarkup": "Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer.<br><br>Ele ficou mais responsável com as coisas dele.",
+    "slug": "harle-responsabilidade",
+    "sourceTranscript": "harle-trecho-conferido.json",
+    "quoteParts": [
+      {
+        "text": "Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer.",
+        "start": 69.48,
+        "end": 77.28
+      },
+      {
+        "text": "Ele ficou mais",
+        "start": 78.02,
+        "end": 78.66
+      },
+      {
+        "text": "responsável com as coisas dele.",
+        "start": 81.52,
+        "end": 83.24
+      }
+    ]
+  },
+  {
+    "id": "AV10",
+    "name": "Flávia",
+    "role": "Mãe do Fernando",
+    "photo": "flavia",
+    "context": "Fazer por conta própria.",
+    "quote": "No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Isso não incentivou meu filho a jogar, mas a desenvolver _ Flávia, PCD.mp4",
+    "sourceStart": 56.14,
+    "sourceEnd": 62.14,
+    "type": "quote",
+    "quoteMarkup": "No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.",
+    "slug": "flavia-autonomia",
+    "sourceTranscript": "flavia-trecho-conferido.json"
+  },
+  {
+    "id": "AV11",
+    "name": "Daniel",
+    "role": "Pai do Rafael",
+    "photo": "daniel",
+    "slug": "daniel-criatividade",
+    "type": "quote",
+    "context": "Ter ideias para o jogo.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Isso trouxe para o meu filho organização, lógica e criatividade _ Daniel, PCD.mp4",
+    "sourceStart": 25.26,
+    "sourceEnd": 30.22,
+    "sourceTranscript": "daniel-beneficios-conferidos.json",
+    "quoteParts": [
+      {
+        "text": "Vai criando, vai sendo mais criativo.",
+        "start": 25.26,
+        "end": 27.92
+      },
+      {
+        "text": "‘Eu quero mudar isso aqui no jogo.’",
+        "start": 28.58,
+        "end": 30.22
+      }
+    ],
+    "quote": "Vai criando, vai sendo mais criativo. ‘Eu quero mudar isso aqui no jogo.’",
+    "quoteMarkup": "Vai criando, vai sendo mais criativo.<br><br>‘Eu quero mudar isso aqui no jogo.’"
+  },
+  {
+    "id": "AV12",
+    "name": "Flávia",
+    "role": "Mãe do Fernando",
+    "photo": "flavia",
+    "slug": "flavia-criar",
+    "type": "quote",
+    "context": "Usar a tela para criar.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Isso não incentivou meu filho a jogar, mas a desenvolver _ Flávia, PCD.mp4",
+    "sourceStart": 1.06,
+    "sourceEnd": 20.14,
+    "sourceTranscript": "flavia-beneficios-conferidos.json",
+    "quoteParts": [
+      {
+        "text": "O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada.",
+        "start": 1.06,
+        "end": 7.68
+      },
+      {
+        "text": "O curso incentivou ele a desenvolver, a programar, não a jogar.",
+        "start": 15.0,
+        "end": 20.14
+      }
+    ],
+    "quote": "O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada. O curso incentivou ele a desenvolver, a programar, não a jogar.",
+    "quoteMarkup": "O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada.<br><br>O curso incentivou ele a desenvolver, a programar, não a jogar."
+  }
+]

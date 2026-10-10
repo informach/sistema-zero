@@ -1,0 +1,186 @@
+{
+  "stories": [
+    {
+      "id": "DU01",
+      "file": "01-idade-e-participacao.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 145919,
+      "sha256": "3864071aefb2ce4d8a4c68f98e0fd5fe24d6971f847b17d22e6f77d4c3db605b",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU02",
+      "file": "02-computador-e-equipamento.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 120126,
+      "sha256": "a91fed64b51c647cfc22d1af73bb20f2f57f5bb367bcca8aae3c6828cd294b07",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU03",
+      "file": "03-aulas-gravadas.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 110188,
+      "sha256": "d67ff02e82fa71cb2c3d93708e9d589d5aa855c5b9e78cd6734720caa3ee832c",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU04",
+      "file": "04-como-receber-ajuda.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 119724,
+      "sha256": "fc1f49175fe4c24aa3f7802b8cc548fa7bb11998478228398008a95bafa56b5c",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU05",
+      "file": "05-acompanhamento-da-familia.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 136494,
+      "sha256": "95653990f920e2b50e554f43d6e2ded035ef3683feb05e780fe5a79e68edc02d",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU06",
+      "file": "06-tempo-para-fazer-o-desafio.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 126274,
+      "sha256": "59ef52743439c1d50093e5e7e80b84e5c6815def8aef9d2c3c1f5a499b8c836a",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU07",
+      "file": "07-pagamento-unico-do-desafio.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 140598,
+      "sha256": "7d4e6fc8cf31704a3ac4a229b761b0edafd49583e481a61a8d244eba54faccfb",
+      "copy": "conferida com roteiro",
+      "sticker": "Ver valor e condições"
+    },
+    {
+      "id": "DU08",
+      "file": "08-o-que-o-desafio-inclui.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 134877,
+      "sha256": "ce3438dcdc7670e02c2792aa33e061713997868c9ec0cdab1d249a2550451ee9",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU09",
+      "file": "09-depois-dos-30-dias.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 146504,
+      "sha256": "89fbc2022c52f17ae410e8d3a93bee0a9c6173727adae21ba44be98117c87457",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU10",
+      "file": "10-garantia-do-desafio.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 150121,
+      "sha256": "a83c617a5bf1279c52b913c2c21d2da972dbb3877ed44820b01f6510f7078fce",
+      "copy": "conferida com roteiro",
+      "sticker": "Consultar condições"
+    },
+    {
+      "id": "DU11",
+      "file": "11-cenario-e-desenhos-prontos.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 137489,
+      "sha256": "bae0c85b0e9a9f9be8b63605d4f448d96a83fad4667cc825fade6a11b0fd0c4a",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU12",
+      "file": "12-onde-o-jogo-e-criado.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 129265,
+      "sha256": "c72f832eea9f398f048538bb774e44e675fa4a1dee257be75d6a78bf2d406b72",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU13",
+      "file": "13-quem-pode-jogar.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 126761,
+      "sha256": "07ceca193a1d3f2a520041f56ce01a529289a1e08c04b4e2f5cecdd01d999feb",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU14",
+      "file": "14-perfil-e-link-publico.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 122785,
+      "sha256": "2d11c3f9223b422484180643e198f4ea978df9ee82ccf29f1c7daed529783604",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU15",
+      "file": "15-link-depois-do-curso.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 122276,
+      "sha256": "e31db640e277f6b03bd838262d99a4ff5a69fbc2960b0039be5e26d1dbe93a82",
+      "copy": "conferida com roteiro",
+      "sticker": null
+    },
+    {
+      "id": "DU16",
+      "file": "16-continuar-na-comunidade.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 150152,
+      "sha256": "02c56022133740d768bc634527a8bc670d80b04e0d9328948d93c7d7d80611dd",
+      "copy": "conferida com roteiro",
+      "sticker": "Conhecer a Comunidade"
+    },
+    {
+      "id": "DU17",
+      "file": "17-comecar-pela-comunidade.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 149269,
+      "sha256": "28e11020dcfbaacb2e59c523c83419a991a6c065cd5bbb288cec216b1a5e2c13",
+      "copy": "conferida com roteiro",
+      "sticker": "Ver os planos"
+    },
+    {
+      "id": "DU18",
+      "file": "18-interesse-em-criar-jogos.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 144855,
+      "sha256": "17b5310d007f27e570817bf67b1c0337aab00b2ac205d1a7fc5d08c635ae8791",
+      "copy": "conferida com roteiro",
+      "sticker": "Conhecer o Desafio"
+    }
+  ],
+  "visualReview": "18 artes conferidas; títulos e respostas completos, sem sobreposição; espaçamento do DU17 ajustado.",
+  "links": "Cinco destinos idênticos ao guia de publicação."
+}

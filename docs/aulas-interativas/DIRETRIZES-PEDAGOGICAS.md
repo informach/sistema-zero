@@ -121,7 +121,7 @@ As áreas do projeto e os blocos de valor continuam disponíveis como estrutura 
 
 Um curso posterior pode ensinar HTML, CSS, Pinta, outras extensões ou código quando isso fizer parte de seu objetivo e estiver liberado naquele ponto da jornada. Registrar a escolha e conferir a paleta real. Não ampliar o acesso só para acomodar um roteiro antigo.
 
-Reconhecer o que veio pronto e o que a pessoa programou. Não atribuir a ela o desenho de artes preparadas ou todas as regras de um jogo que recebeu parcialmente montado. Esse reconhecimento fica na comemoração e no caderno ("O jardim e os personagens já vieram prontos, mas olha só o que você programou…"). Na montagem, não dizer em frase solta o que já está preparado, como "O jardim e os personagens já estão preparados": a criança vê o que já está no projeto, e a frase solta quebra a conversa. O que vem pronto só entra na fala quando ajuda a ação, no momento em que ela o encontra e com o papel que tem ali: "Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos. É ele que percebe quando alguém toca num esconderijo"; "Escolha aviso. É essa variável que mostra a mensagem na tela". Ajuste do responsável em 06/10/2026.
+Comemorar o que a pessoa fez e o resultado no jogo, sem atribuir a ela o desenho de artes preparadas ou regras que não montou. O preparo do cenário, dos personagens e das regras iniciais é informação interna da equipe; não usar essa informação como ressalva na comemoração, no caderno ou na descrição do curso. A fala pode dizer "Olha só o que você programou: o toque que faz cada personagem aparecer e a contagem dos achados". Só mencionar um elemento existente quando isso orienta a ação: "Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos. É ele que percebe quando alguém toca num esconderijo"; "Escolha aviso. É essa variável que mostra a mensagem na tela". Explicar o papel do elemento, sem insistir que ele veio pronto. Ajuste do responsável em 10/10/2026.
 
 ## 4. Quizzes: quantidade, lugar e correção
 
@@ -157,7 +157,7 @@ Se publicar é a tarefa da seção, a aula ensina o caminho mínimo: Compartilha
 
 - A tarefa vem na primeira frase: "Agora faça o personagem andar pelo mapa."
 - Uma ação por parágrafo, com o caminho completo: "Abra Jogo 2D, depois Movimento e depois Movimentos prontos. Pegue o bloco…".
-- Depois de montar, a criança testa direto: o teste diz o resultado esperado. A conferência entra UMA vez, depois do teste, com um gatilho genérico e a lista do que precisa estar lá: "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0. Depois de corrigir, teste de novo." Quando o resultado aparece, o próprio teste já conferiu. Não acrescentar um caso de erro que repete um item da lista ("se sempre some o mesmo esconderijo, troque para escolhido" já está em "o sprite é escolhido"); um aviso a mais só entra quando diz o que a lista não cobre, como um gesto ou um lugar da tela. Ajuste do responsável em 06/10/2026, à noite, na parte 4 da Aula 1 do Cadê: a lista antes do teste, a mesma lista depois dele e um caso de erro repetindo um item cansavam. Quando o efeito não aparece na tela (uma variável sem mostrador) e não há teste, "Confira se ficou assim:" continua logo depois da montagem, porque é a única conferência.
+- Depois de montar, a criança testa direto: o teste diz o resultado esperado. A conferência entra UMA vez, depois do teste, com um gatilho genérico e a lista do que precisa estar lá: "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0. Depois de corrigir, teste de novo." Quando o resultado aparece, o próprio teste já conferiu. Não acrescentar um caso de erro que repete um item da lista ("se sempre some o mesmo esconderijo, troque para escolhido" já está em "o sprite é escolhido"); um aviso a mais só entra quando diz o que a lista não cobre, como um gesto ou um lugar da tela. Ajuste do responsável em 06/10/2026, à noite, na parte 4 da Aula 1 do Cadê: a lista antes do teste, a mesma lista depois dele e um caso de erro repetindo um item cansavam. Quando o efeito não aparece na tela (uma variável sem mostrador) e não há teste, "Confira se ficou assim:" continua logo depois da montagem, porque é a única conferência. Abertura esclarecida em 09/10/2026, na parte 4 da Aula 1 do Cadê: dizer que algo não funcionou no jogo deixa claro quando conferir, sem depender de a criança retomar a palavra isso. Usar essa formulação nas próximas revisões de roteiros.
 - A verificação usa sempre a mesma fórmula: "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente."
 - Para botões, "clique em"; no jogo, "toque" ou "segure". Não usar "aperte". Vale também para o Como Fazer: botões e controles com "clique em" ("clique no", "clique na"); tocar num objeto dentro do jogo segue como as fases falam ("toque nos esconderijos"). Decisão do responsável em 06/10/2026.
 - Palavra nova ganha uma frase ligada ao jogo, no momento do uso: "No jogo, o personagem é um sprite, que é um objeto do jogo que você pode programar."
@@ -165,7 +165,7 @@ Se publicar é a tarefa da seção, a aula ensina o caminho mínimo: Compartilha
 
 Falar com “você”, em português brasileiro, com contexto concreto, acentuação e frases naturais. Sem travessões nas falas, metáforas não marcadas, perguntas retóricas que escondem uma ordem, excesso de elogios ou linguagem comercial. A referência de público atual é de 9 a 14 anos; não chamar quem assiste de “criança” na narração.
 
-**Três vozes, cada uma com um papel.** A fala trata quem faz a aula como protagonista e o narrador como parceiro:
+**Três formas de conversar: você, a gente e eu.** São escolhas de linguagem, não três personagens ou vozes de gravação. A fala trata quem faz a aula como protagonista e o narrador como parceiro:
 
 - **Você**: o que é da criança, o que ela faz e o que ela conquista. “Você vai construir um jogo chamado Cadê Todo Mundo”, “Toque num esconderijo”, “o seu jogo”, “Olha só o que você programou!”. As ações ficam no imperativo, dirigidas a ela (“Arraste…”, “Clique…”); “a gente arrasta o bloco” deixa dúvida sobre quem faz, porque no vídeo o narrador também arrasta.
 - **A gente / vamos**: o raciocínio e o convite, como um amigo ao lado. “Para o jogo ter essa reação, a gente precisa ligar a reação ao toque.” (na experiência); “Agora a gente vai fazer isso com os esconderijos do seu jogo!” (no fim da retomada)
@@ -229,6 +229,62 @@ As falas citam os botões da fase pelo nome exato:
 “Fase” e “parte” só aparecem na fala quando ajudam (“Lembra da experiência da parte anterior?”); “aqui” e “agora” costumam bastar, e ninguém precisa ouvir “nesta fase” a cada frase. Endereços das páginas (`/cursos`, `/aulas`), identificadores, chaves de seção e nomes de arquivo continuam iguais. Os guardas que barram a volta das palavras da escola: o teste `copy-vocabulario` do app Kids, nas telas; o validador de roteiros (`validar-roteiros.py`), na narração dos roteiros (no Cadê, também na fala do Zappy); o teste `qa/vocabulario-crianca.test.ts`, no texto dos manifestos que vira tela, com a concordância (“o fase”, “na Mundo”); e o validador do Como Fazer (`docs/como-fazer/validar.ts`), nos títulos, resumos, passos e textos alternativos dos tutoriais, com a concordância e o “clique em” dos botões. Os três últimos usam a mesma régua, `qa/palavras-da-escola.ts`; o do Kids tem a lista dele em `packages/member-shell/src/lib/lesson-copy-kids.ts`. O “guia” como pessoa tem a régua `GUIA_PESSOA`, no mesmo arquivo, lida pelo teste dos manifestos (manifesto e roteiro inteiros) e pelo validador do Como Fazer; nas telas, pelo `GUIA_PESSOA` do `copy-vocabulario`. Desde 06/10/2026, os testes de `docs/aulas-interativas/qa` e o validador do Como Fazer rodam no CI. Decisão do responsável em 06/10/2026; vale para todos os cursos e para a plataforma.
 
 Não localizar a ferramenta como “aqui ao lado” ou “aí embaixo”: a posição muda com o tamanho da tela. Mostrar e nomear a atividade. Posições internas estáveis e encaixes continuam sendo descritos. Na gravação, conferir que o efeito citado está realmente visível; não fabricá-lo na edição. Na ferramenta externa, comparar o trabalho com sinais observáveis; assistir ao vídeo não comprova a criação.
+
+### Debinha e Dedé nos vídeos
+
+Dentro do vídeo, a professora conduz a explicação e a montagem. Debinha ou Dedé aparece por um
+momento para fazer uma pergunta, dizer o que entendeu, contar uma dificuldade ou reagir a uma
+descoberta. A fala seguinte da professora dá continuidade à conversa. Não repetir a mesma pergunta
+nas duas vozes nem usar a criança para substituir um passo que precisa ser ensinado.
+
+Manter **uma criança por aula**, em todas as suas partes, alternando na aula seguinte. Na Aula 1
+do Cadê Todo Mundo?, o responsável confirmou **Debinha** nos quatro vídeos já gravados. A alternância
+foi aplicada aos roteiros seguintes: **Dedé** na Aula 2 e **Debinha** na celebração do certificado.
+Registrar o nome no cabeçalho de produção. A alternância não
+obriga a inserir um avatar em toda parte, nem cria vídeo em seção que não o tem.
+
+Usar entradas curtas quando contribuírem para a conversa, sem pergunta a cada comando ou bordão
+repetido. As duas crianças podem perguntar, entender e comemorar; não deixar uma sempre com o
+papel de quem erra. Uma dificuldade como “No meu não deu certo” abre uma ajuda concreta, mantendo
+“Se algo não funcionou no seu jogo…” para que quem acertou saiba que pode continuar.
+
+Revisão de ritmo de 10/10/2026: distribuir perguntas, descobertas e reações nos trechos longos,
+especialmente depois de um gesto concluído ou de um teste. Não limitar a uma entrada por vídeo
+nem interromper todo comando. Uma fala de entendimento precisa trazer um exemplo ou uma
+consequência, como “Se eu tocar no arbusto, ele vira o escolhido!”. Repetir a definição não
+mostra uma descoberta. Reações breves de surpresa e comemoração continuam cabendo; “Agora sim!”
+vem depois do resultado e, quando houver “Funcionou?”, responde a essa pergunta. O avatar
+reage à própria tentativa, sem afirmar que o jogo de quem assiste também funcionou.
+
+No roteiro, separar **Professora/Professor**, **Debinha (avatar)** ou **Dedé (avatar)** e **Na tela**.
+Marcar a entrada e a saída, sem sobrepor vozes ou cobrir o que está sendo demonstrado. Manter os
+passos completos e a passagem da vez para quem assiste. Em material já gravado, preservar o áudio
+e registrar os pontos de edição; não transformar a inserção do avatar numa exigência de regravação.
+
+**Zappy não tem fala dentro do vídeo.** Pode aparecer visualmente no meme ou na interface. Sua
+orientação permanece como **Zappy na página (não gravar)**, inclusive com o recurso Ouvir da
+plataforma. A regra de um vídeo e um diálogo externo por seção trata dos blocos da página; as
+participações de Debinha e Dedé são trechos do vídeo, não novos blocos de diálogo.
+
+Decisão do responsável em 10/10/2026. As oito inserções da Aula 1, as nove da Aula 2 e a comemoração
+do certificado estão em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md) e nos respectivos roteiros.
+O documento distingue gravação informada, texto preparado e edição a conferir.
+
+Aplicação à **Chave do Farol**, também em 10/10/2026: Debinha no Dia 1, Dedé no Dia 2, Debinha no
+Dia 3 e Dedé no certificado. São 29 participações; os vídeos do Mapa e dos quatro avisos continuam
+sem intervenção. A montagem da resposta com chave recebe três entradas: no problema inicial, depois de
+configurar a luz e antes do reinício. As falas variam entre dúvida, descoberta e comemoração, mantendo os passos completos
+e “então” somente como nome do espaço do bloco Se. Roteiros, propostas e direções dos manifestos
+atualizados; gravação e edição desta versão ainda não confirmadas.
+
+Aplicação aos demais cursos em **10/10/2026**: **Corre, Dino!** (13 aulas, 75 participações),
+**Nave Contra Asteroides** (9 aulas, 78 participações) e **O Jogo do Meu Jeito** (8 aulas, 38
+participações). Debinha começa cada curso e alterna com Dedé pela ordem das aulas, não pelo nome
+numérico do arquivo. Cada entrada tem âncora literal, fala da criança e notas de tela antes e depois;
+a professora conserva todos os passos e responde antes de passar a vez. As fontes editoriais e os
+geradores preservam essas marcações nas propostas, nos roteiros e nos manifestos. Mapa da Aventura,
+quizzes e falas do Zappy não recebem essas intervenções. Gravação, edição e publicação das novas
+versões ainda não confirmadas. A ordem completa está em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md).
 
 ## 7. Como manter as decisões vivas
 

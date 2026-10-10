@@ -1,0 +1,109 @@
+{
+  "format": "1080x1920 PNG",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/01-destaques.md",
+  "finalDirectory": "C:\\Users\\tocha\\projects\\sistema-zero\\docs\\marketing\\kids\\comunidade-dos-criadores\\instagram\\producao\\destaques\\alunos",
+  "videoWindow": {
+    "x": 52,
+    "y": 480,
+    "width": 976,
+    "height": 970,
+    "radius": 32
+  },
+  "excluded": [],
+  "stories": [
+    {
+      "id": "AL01",
+      "file": "01-alunos-na-comunidade.png",
+      "kind": "intro",
+      "title": "Alunos na Comunidade<br>dos Criadores.",
+      "copy": "Aqui você vê as crianças fazendo as aulas da Comunidade dos Criadores. Acompanhe um pouco de como elas montam os jogos, fazem escolhas e colocam suas ideias para funcionar.",
+      "paragraphs": [
+        "Aqui você vê as crianças fazendo as aulas da Comunidade dos Criadores.",
+        "Acompanhe um pouco de como elas montam os jogos, fazem escolhas e colocam suas ideias para funcionar."
+      ],
+      "status": "arte estática pronta"
+    },
+    {
+      "id": "AL02",
+      "file": "02-rafael-aprendendo.png",
+      "overlayFile": "02-rafael-moldura.png",
+      "scene": "AL02-rafael-aprendendo.png",
+      "kind": "student",
+      "name": "Rafael",
+      "role": "Aluno",
+      "copy": "Rafael aprendendo a fazer uma parte do jogo funcionar.",
+      "paragraphs": ["Rafael aprendendo a fazer uma parte do jogo funcionar."],
+      "status": "story completo com cena gerada provisória; substituir pelo vídeo posteriormente"
+    },
+    {
+      "id": "AL03",
+      "file": "03-jeffrey-explorando.png",
+      "overlayFile": "03-jeffrey-moldura.png",
+      "scene": "AL03-jeffrey-explorando.png",
+      "kind": "student",
+      "name": "Jeffrey",
+      "role": "Aluno",
+      "copy": "Jeffrey explorando o que muda quando faz uma escolha.",
+      "paragraphs": ["Jeffrey explorando o que muda quando faz uma escolha."],
+      "status": "story completo com cena gerada provisória; substituir pelo vídeo posteriormente"
+    },
+    {
+      "id": "AL04",
+      "file": "04-debora-personalizando.png",
+      "overlayFile": "04-debora-moldura.png",
+      "scene": "AL04-debora-personalizando-v2.png",
+      "kind": "student",
+      "name": "Débora",
+      "role": "Aluna",
+      "copy": "Débora dando o seu jeito ao jogo.",
+      "paragraphs": ["Débora dando o seu jeito ao jogo."],
+      "status": "story completo com cena gerada provisória; substituir pelo vídeo posteriormente"
+    },
+    {
+      "id": "AL05",
+      "file": "05-andre-testando.png",
+      "overlayFile": "05-andre-moldura.png",
+      "scene": "AL05-andre-testando.png",
+      "kind": "student",
+      "name": "André",
+      "role": "Aluno",
+      "copy": "André jogando para conferir o que acabou de fazer.",
+      "paragraphs": ["André jogando para conferir o que acabou de fazer."],
+      "status": "story completo com cena gerada provisória; substituir pelo vídeo posteriormente"
+    },
+    {
+      "id": "AL07",
+      "file": "06-fernando-mostrando.png",
+      "overlayFile": "06-fernando-moldura.png",
+      "scene": "AL07-fernando-mostrando.png",
+      "kind": "student",
+      "name": "Fernando",
+      "role": "Aluno",
+      "copy": "Fernando mostrando o que fez no jogo.",
+      "paragraphs": ["Fernando mostrando o que fez no jogo."],
+      "status": "story completo com cena gerada provisória; substituir pelo vídeo posteriormente"
+    },
+    {
+      "id": "AL06",
+      "file": "07-conhecer-o-desafio.png",
+      "kind": "cta",
+      "title": "Conheça o Desafio<br>do Primeiro Jogo.",
+      "copy": "Para conhecer uma primeira atividade para seu filho, veja o Desafio do Primeiro Jogo no botão. As aulas ensinam a construir A Chave do Farol. Você pode ver o jogo e como as aulas funcionam antes de comprar.",
+      "paragraphs": [
+        "Para conhecer uma primeira atividade para seu filho, veja o Desafio do Primeiro Jogo no botão.",
+        "As aulas ensinam a construir A Chave do Farol. Você pode ver o jogo e como as aulas funcionam antes de comprar."
+      ],
+      "status": "arte estática pronta",
+      "sticker": {
+        "label": "Conhecer o Desafio",
+        "url": "https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=al06",
+        "bounds": {
+          "x": 204,
+          "y": 1600,
+          "width": 672,
+          "height": 96
+        }
+      }
+    }
+  ]
+}

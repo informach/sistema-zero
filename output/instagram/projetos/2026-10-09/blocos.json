@@ -1,0 +1,94 @@
+[
+  {
+    "key": "farol",
+    "clip": {
+      "x": 300,
+      "y": 200,
+      "width": 1173,
+      "height": 655
+    },
+    "highlight": {
+      "x": 79.84674072265625,
+      "y": 78.16064453125,
+      "width": 1090.1532775886033,
+      "height": 324.4404296875
+    },
+    "selected": {
+      "type": "sz_g2d_on_overlap",
+      "text": "Quando o sprite personagem começar a encostar no sprite farol fazer Se valor da variável temChave então Alterar variável ganhou para verdadeiro senão Alterar variável aviso para texto A porta não abriu. Falta a chave. adicionar senão se senão se remover o último",
+      "width": 793.3659820556641,
+      "height": 442
+    },
+    "highlightText": "Se valor da variável temChave então Alterar variável ganhou para verdadeiro senão Alterar variável aviso para texto A porta não abriu. Falta a chave. adicionar senão se senão se remover o último",
+    "scale": 1.4747292251785893
+  },
+  {
+    "key": "cade",
+    "clip": {
+      "x": 300,
+      "y": 200,
+      "width": 1027,
+      "height": 322
+    },
+    "highlight": {
+      "x": 88.57022094726562,
+      "y": 169.60000610351562,
+      "width": 442.5009765625,
+      "height": 97.60000000000002
+    },
+    "selected": {
+      "type": "sz_g2d_on_group_click",
+      "text": "Quando clicar/tocar num sprite do grupo esconderijos chamá-lo de escolhido fazer Deixar o sprite escolhido com 0 % de visibilidade",
+      "width": 639.7822113037109,
+      "height": 199
+    },
+    "highlightText": "Somar 1 em variável achados",
+    "scale": 1.6
+  },
+  {
+    "key": "nave",
+    "clip": {
+      "x": 300,
+      "y": 200,
+      "width": 1173,
+      "height": 543
+    },
+    "highlight": {
+      "x": 83.4853515625,
+      "y": 399.65802001953125,
+      "width": 402.01633848070554,
+      "height": 91.99675253120654
+    },
+    "selected": {
+      "type": "sz_g2d_on_group_overlap",
+      "text": "Para cada colisão entre os grupos tiros e asteroides chamar os sprites de tiro e asteroide fazer Tirar o sprite tiro do grupo tiros",
+      "width": 775.7882537841797,
+      "height": 358
+    },
+    "highlightText": "Somar 1 em variável pontos",
+    "scale": 1.5081434841181394
+  },
+  {
+    "key": "dino",
+    "clip": {
+      "x": 300,
+      "y": 200,
+      "width": 863,
+      "height": 565
+    },
+    "highlight": {
+      "x": 182.54742431640625,
+      "y": 161.60000610351562,
+      "width": 676.7718017578126,
+      "height": 272
+    },
+    "selected": {
+      "type": "sz_g2d_every_seconds",
+      "text": "A cada 5 segundos fazer Se o estado do jogo é jogando ? então Se valor da variável velocidade > -9 então Somar -1 em variável velocidade adicionar senão se senão se adicionar senão senão adicionar senão se senão se adicionar senão senão",
+      "width": 537.0745239257812,
+      "height": 351
+    },
+    "highlightText": "Se valor da variável velocidade > -9 então Somar -1 em variável velocidade adicionar senão se senão se adicionar senão senão",
+    "scale": 1.6
+  }
+]

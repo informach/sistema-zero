@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Tiros saem da nave, sobem, têm som e são retirados do grupo ao sair da tela.
 - Seções: 7. Vídeos: 7.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 O evento é ensinado no próprio projeto. Duas experiências cobrem informações invisíveis: ler a posição no disparo e retirar objetos que não aparecem mais.
@@ -31,6 +33,10 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Sua vez! Compare Criar um tiro em Quando acontecer e em Enquanto estiver rodando. No primeiro teste, espere parar e só depois clique em Apertar a tecla. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-tecla-e-repeticao-avatar-01. Professora até “e ninguém clicou em Apertar a tecla.”. Antes: Deixar o primeiro teste terminar sem tiros e apontar 0 vezes na peça. Debinha: “Ela está esperando eu apertar a tecla!”. Retomada da professora: “Isso mesmo. Agora eu clico em Apertar a tecla.”. Depois: Clicar em Apertar a tecla depois da resposta e continuar a comparação com a repetição.
+
 **Experiência existente:** `once-vs-always`. Coloque Criar um tiro em Quando acontecer. Clique em Começar o jogo e espere o teste parar, sem clicar em Apertar a tecla. Observe o contador de tiros. Depois clique em Apertar a tecla e observe de novo. Leve Criar um tiro para Enquanto estiver rodando. Clique em Começar o jogo e espere o teste parar. Compare com o primeiro teste. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Faça o tiro acompanhar a nave
@@ -40,6 +46,10 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 **Blocos na página:** video-escrito-e-lido → fala-escrito-e-lido → experiencia-escrito-e-lido.
 
 **Zappy na página (não gravar):** Sua vez! Atire de dois lugares com cada opção de x e depois ligue Marcas da caixa e atire de novo. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-escrito-e-lido-avatar-01. Professora até “Para acertar, é preciso olhar o relógio na hora.”. Antes: Concluir os disparos com o número fixo, com a nave em 640 e o tiro distante; terminar a comparação com o relógio. Debinha: “Como o tiro descobre onde a nave está agora?”. Retomada da professora: “Agora eu troco para O centro x da nave e clico em Atirar.”. Depois: Trocar para O centro x da nave e testar o disparo em 640 e em 200.
 
 **Experiência existente:** `fixed-vs-read`. Com O número 400, atire, mude x da nave e atire de novo. Repita com O centro x da nave. Depois ligue Marcas da caixa e atire mais uma vez, mantendo O centro x da nave. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
@@ -51,6 +61,10 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Sua vez! Compare -9 e 9 em velocidade para baixo, avançando os quadros e olhando o y. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-direcao-do-tiro-avatar-01. Professora até “na tela, y menor fica mais para cima.”. Antes: Avançar com -9 e mostrar o tiro subindo, com os valores de y à vista. Debinha: “E se eu tirar o sinal de menos?”. Retomada da professora: “Agora eu troco velocidade para baixo para 9 e avanço outros quadros, e o y aumenta 9 em cada quadro: o tiro desce.”. Depois: Trocar para 9 e mostrar a descida antes de explicar a diferença.
+
 **Experiência existente:** `velocity`. Na experiência, mantenha velocidade para o lado em 0. Coloque velocidade para baixo em -9 e clique em Avançar 1 quadro algumas vezes. Observe o tiro e o y. Troque velocidade para baixo para 9 e avance outros quadros. Compare a direção e o y nos dois testes. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Monte o disparo da barra de espaço
@@ -60,6 +74,16 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 **Blocos na página:** video-criar-tiro → fala-criar-tiro.
 
 **Zappy na página (não gravar):** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-criar-tiro-avatar-01. Professora até “Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “O grupo dos tiros está pronto!”. Retomada da professora: “Agora o disparo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-criar-tiro-avatar-02. Professora até “Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Vou poder atirar quando eu apertar espaço!”. Retomada da professora: “O tiro nasce dentro desse evento: deixe à vista o espaço vazio dentro de Quando apertar a tecla.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-criar-tiro-avatar-03. Professora até “Agora o lugar de onde o tiro sai: o x vai ler a posição da nave. Deixe à vista o número do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E a altura de onde sai o tiro?”. Retomada da professora: “Faça o mesmo com o y: deixe à vista o número do campo y do tiro.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-criar-tiro-avatar-04. Professora até “Por último, o som. Deixe à vista o encaixe logo abaixo de Criar tiro, ainda dentro da tecla. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte logo abaixo de Criar tiro. No menu, escolha tiro grande.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “O disparo também vai ter som!”. Retomada da professora: “Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites tiros.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -78,6 +102,12 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-tiros-voam-avatar-01. Professora até “Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Já tem movimento. Falta desenhar!”. Retomada da professora: “Deixe à vista o encaixe logo abaixo do movimento dos tiros.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-tiros-voam-avatar-02. Professora até “Olha só: o tiro sai da nave e sobe!”. Antes: Esperar o tiro aparecer e subir, depois interromper os controles para a fala. Debinha: “O tiro saiu da nave!”. Retomada da professora: “Depois, mova a nave para outro lugar e atire de novo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Mova o grupo tiros a cada quadro.
@@ -91,6 +121,10 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Sua vez! Deixe dois tiros saírem com a limpeza desligada, depois ligue a regra e compare o grupo. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-tiro-fora-da-tela-avatar-01. Professora até “É como a lista de convidados de uma festa: se um convidado vai embora, o nome dele continua na lista. Só sai da lista se alguém riscar.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Como eu tiro os que já foram embora?”. Retomada da professora: “Agora eu ligo Tirar do grupo quem sair da tela.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Experiência existente:** `cleanup`. Use Tempo para soltar o tempo se estiver parado. Com Tirar do grupo quem sair da tela desligado, deixe dois tiros saírem e observe o grupo. Depois ligue a regra, deixe o tempo passar novamente e compare. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 7. Retire os tiros que saíram
@@ -100,6 +134,12 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 **Blocos na página:** video-faxina → fala-faxina → projeto.
 
 **Zappy na página (não gravar):** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-faxina-avatar-01. Professora até “Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Qual grupo eu escolho aqui?”. Retomada da professora: “No grupo, escolha tiros.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-faxina-avatar-02. Professora até “Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Vou conferir se os tiros continuam saindo da nave!”. Retomada da professora: “Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 

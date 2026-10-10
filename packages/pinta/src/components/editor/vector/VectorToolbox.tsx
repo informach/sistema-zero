@@ -1,7 +1,7 @@
 /**
  * Caixa de ferramentas do editor VETORIAL, com a MESMA anatomia da caixa do
- * pixel (a criança não estranha ao trocar de estilo): espessuras do traço
- * FIXAS no topo, ferramentas em DUAS colunas rolando no meio e os dois slots
+ * pixel (a criança não estranha ao trocar de estilo): ferramentas em DUAS
+ * colunas rolando no meio e os dois slots
  * de cor (preenchimento na frente, contorno atrás) FIXOS no pé, com o botão
  * de trocar. Clicar num slot escolhe QUEM recebe a próxima cor da paleta.
  *
@@ -33,7 +33,7 @@ import { TOOL_GRID } from '../toolGrid'
 import { useScrollMore } from '../useScrollMore'
 import { useVectorEditor, type VectorColorChannel } from './VectorEditorScope'
 import { VectorInsertAssetDialog } from './VectorInsertAssetDialog'
-import { formatStrokeWidth, gradientCss, STROKE_WIDTHS, strokeDotSize, TOOLS } from './vectorTools'
+import { gradientCss, TOOLS } from './vectorTools'
 
 export function VectorToolbox({
   orientation = 'vertical',
@@ -47,7 +47,7 @@ export function VectorToolbox({
   const showGuides = useSession((state) => state.showGuides)
   const guidesLocked = useSession((state) => state.guidesLocked)
   const guideCount = useSession((state) => state.guides.length)
-  const { tool, setTool, zoomToFit, style, applyStyle } = useVectorEditor()
+  const { tool, setTool, zoomToFit } = useVectorEditor()
   const assetId = useEditor((state) => state.asset.id)
   const allowTools = useToolCuration()
   const [insertOpen, setInsertOpen] = useState(false)
@@ -66,32 +66,6 @@ export function VectorToolbox({
   ) : (
     <span aria-hidden="true" className="mx-1 h-8 w-0.5 shrink-0 rounded bg-pin-border" />
   )
-
-  // Os degraus vêm de `STROKE_WIDTHS` (fonte única com o slider de Aparência).
-  // `active` é igualdade ESTRITA de propósito: um traço antigo de 8 não acende o
-  // "3" (mentiria), ele só não acende nada.
-  const strokeWidths = STROKE_WIDTHS.map((width) => {
-    const label = `${COPY.vector.strokeWidth}: ${formatStrokeWidth(width)}`
-    const dot = strokeDotSize(width)
-    return (
-      <IconButton
-        key={width}
-        tone="quiet"
-        active={style.stroke?.width === width}
-        aria-label={label}
-        aria-pressed={style.stroke?.width === width}
-        title={label}
-        // Sem contorno? Escolher uma espessura LIGA o contorno (preto default).
-        onClick={() => applyStyle({ stroke: { color: style.stroke?.color ?? '#000000', width } })}
-      >
-        <span
-          aria-hidden="true"
-          className="rounded-full bg-current"
-          style={{ width: dot, height: dot }}
-        />
-      </IconButton>
-    )
-  })
 
   const drawNodes = filterTools(TOOLS, allowTools).map((entry) => (
     <ToolButton
@@ -196,7 +170,6 @@ export function VectorToolbox({
   // Grupo vazio SOME junto com o divisor dele — senão a caixa curada fica com traços separando nada.
   const groups: Array<{ name: string; nodes: JSX.Element[] }> = [
     { name: 'draw', nodes: drawNodes },
-    ...(vertical ? [] : [{ name: 'stroke', nodes: strokeWidths }]),
     { name: 'extra', nodes: extraNodes },
   ].filter((group) => group.nodes.length > 0)
 
@@ -230,9 +203,8 @@ export function VectorToolbox({
   }
 
   /**
-   * Caixa vertical (mesma régua da do pixel): espessuras FIXAS no topo,
-   * ferramentas em duas colunas rolando no meio e os dois slots de cor FIXOS
-   * no pé — os extremos fixos garantem que as cores nunca saem da vista.
+   * Caixa vertical: ferramentas em duas colunas rolando e os dois slots de cor
+   * FIXOS no pé, para as cores nunca saírem da vista.
    * O `max-h-full` é o que faz o teto valer (senão a caixa cresce até o
    * conteúdo e quem rola é a coluna, levando as cores para baixo da vista);
    * quem estica com a linha do palco é a coluna de fora, não esta caixa.
@@ -244,8 +216,6 @@ export function VectorToolbox({
       aria-orientation={orientation}
       className="flex max-h-full min-h-0 shrink-0 flex-col gap-2 px-1 py-2"
     >
-      <div className={`shrink-0 ${TOOL_GRID}`}>{strokeWidths}</div>
-      {divider}
       <div className="relative flex min-h-0 flex-1 flex-col">
         <div
           ref={middleRef}

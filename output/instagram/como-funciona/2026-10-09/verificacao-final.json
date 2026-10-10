@@ -1,0 +1,71 @@
+{
+  "passed": true,
+  "files": [
+    {
+      "file": "01-a-chave-do-farol.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 200164,
+      "sha256": "1a65efa5ba854b66063ddec74037c13ea5c875d2a8b91adb04df714b17358b04"
+    },
+    {
+      "file": "02-primeiro-experimentar.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 170181,
+      "sha256": "973c2c69dab7b06187eacfb39787cc5304db7c183823eee92dc3406d9a3b21d2"
+    },
+    {
+      "file": "03-montar-e-testar.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 209119,
+      "sha256": "ce0ab52d068a41174ffa23f2e3005c9f668228b4d750a33b54aa60fb00e810c8"
+    },
+    {
+      "file": "04-buscar-a-chave-e-acender.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 162109,
+      "sha256": "e471a2aaf91d45148bed93c73564df926a7fb21226e9a48594a9f46f9f5e42a7"
+    },
+    {
+      "file": "05-escolher-o-visual.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 198705,
+      "sha256": "dd7dd92b3f0d206be441eb5c3fa839cf20285be7ace7963c47dc5ee881166adf"
+    },
+    {
+      "file": "06-uma-escolha-para-mostrar.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 961642,
+      "sha256": "9db420e089b5f82d225a93a39498654ae79d89f83d9ce18f47eac66fb9596274"
+    },
+    {
+      "file": "07-aulas-gravadas-no-computador.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 150747,
+      "sha256": "78adf099f18fdaf429edd3f9bbd094d70867cedbe35beb9d20456aeaa0dd9ba6"
+    },
+    {
+      "file": "08-pagamento-e-acesso.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 141902,
+      "sha256": "2e8d2f9980220d19914d3fa36571c410f9f4ba2ccf3d8e9c5c2b1bdc057dcd79"
+    },
+    {
+      "file": "09-conhecer-o-desafio.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 958963,
+      "sha256": "1992e0fef564e97c0c4da0f94fe3197b5884cc0dd14152e04c7905aefb4fbb9e"
+    }
+  ],
+  "copyMatchesSource": true,
+  "visualReview": "Nove telas conferidas na folha de contato; CF03 e CF09 também em tamanho integral.",
+  "output": "C:\\Users\\tocha\\projects\\sistema-zero\\docs\\marketing\\kids\\comunidade-dos-criadores\\instagram\\producao\\destaques\\como-funciona"
+}

@@ -6,10 +6,18 @@ import type {
   LearningManifest,
   SectionIntent,
 } from '../../../packages/core/src/learning'
+import {
+  orientacaoAvatares,
+  type ParticipacaoAvatar,
+  palavrasDoVideo,
+  planoAvatar,
+  roteiroComAvatar,
+} from './avatares-video'
 import { ORDEM_MEU_JEITO, projetoMeuJeito } from './meu-jeito-etapas'
 
 type Content = Extract<LearningManifest['blocks'][number], { content: unknown }>['content']
 export interface SecaoMeuJeito {
+  avatar?: ParticipacaoAvatar | ParticipacaoAvatar[]
   key: string
   title: string
   bridge: string
@@ -129,6 +137,7 @@ export function telaSecao(s: SecaoMeuJeito): string {
   return `Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. ${s.screen}${meme}${chamados} No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.`
 }
 export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
+  const index = ORDEM_MEU_JEITO.indexOf(lesson.slug)
   const blocks: LearningManifest['blocks'] = []
   const sections: LearningManifest['sections'] = []
   for (const s of lesson.sections) {
@@ -142,7 +151,7 @@ export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
     if (s.videoKey) {
       blocks.push({
         key: s.videoKey,
-        plannedVideo: `Título: ${s.title}\n\nRegravar nas ferramentas atuais. ${telaSecao(s)}\n\nFala completa em meu-jeito-${lesson.slug}.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.`,
+        plannedVideo: `Título: ${s.title}\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. ${telaSecao(s)}\n\n${planoAvatar(s, falasSecao(s), index)}\n\nFala completa em meu-jeito-${lesson.slug}.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações.`,
       })
       blockKeys.push(s.videoKey)
       required.push(s.videoKey)
@@ -214,6 +223,8 @@ function roteiro(lesson: AulaMeuJeito, index: number) {
     '',
     `Entrada: ${lesson.entry} Saída: ${lesson.outcome}`,
     '',
+    orientacaoAvatares(index),
+    '',
     'Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.',
     '',
     'Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.',
@@ -230,12 +241,14 @@ function roteiro(lesson: AulaMeuJeito, index: number) {
       lines.push(
         `### Clipe \`${s.videoKey}\` · ${s.title}`,
         '',
-        `**Estimativa de gravação:** aproximadamente ${Math.ceil(speech.join(' ').split(/\s+/).length / 130)} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.`,
+        `**Estimativa de gravação:** aproximadamente ${Math.ceil(palavrasDoVideo(s, speech) / 130)} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.`,
         '',
-        `**Na tela:** ${telaSecao(s)} ${s.externalTool ? 'Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.' : ''}`.trimEnd(),
-        '',
-        '**Narração:**',
-        `> "${speech.join('\n>\n> ')}"`,
+        roteiroComAvatar(
+          s,
+          speech,
+          `${telaSecao(s)} ${s.externalTool ? 'Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.' : ''}`.trimEnd(),
+          index,
+        ),
         '',
       )
     }
@@ -260,6 +273,8 @@ function proposta(lesson: AulaMeuJeito, index: number, m: LearningManifest) {
     `- Resultado: ${lesson.outcome}`,
     `- Seções: ${lesson.sections.length}. Vídeos: ${lesson.sections.filter((s) => s.videoKey).length}.`,
     '',
+    orientacaoAvatares(index),
+    '',
     '## Diagnóstico e decisão',
     '',
     lesson.reason,
@@ -282,6 +297,8 @@ function proposta(lesson: AulaMeuJeito, index: number, m: LearningManifest) {
       `**Blocos na página:** ${m.sections[i]!.blockKeys.join(' → ')}.`,
       '',
     )
+    if (s.avatar)
+      lines.push(`**Participação no vídeo:** ${planoAvatar(s, falasSecao(s), index)}`, '')
     if (s.activity)
       lines.push(
         `**Experiência existente:** \`${s.activity.activity.type === 'experimentation' ? s.activity.activity.scene : s.activity.activity.type}\`. ${s.activity.instructions} Sem palpite, pistas ou pergunta final.`,

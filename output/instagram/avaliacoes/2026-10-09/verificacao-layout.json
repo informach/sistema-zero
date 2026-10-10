@@ -1,0 +1,705 @@
+{
+  "passed": true,
+  "stories": 12,
+  "alternatingChildrenParents": true,
+  "format": "1080x1920",
+  "checks": [
+    {
+      "id": "AV01",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "O que contam\nsobre as aulas.",
+          "x": 72,
+          "y": 283,
+          "width": 943,
+          "height": 228.78125,
+          "right": 1015,
+          "bottom": 511.78125
+        },
+        {
+          "text": "Aqui a gente reúne os relatos sobre as aulas.\n\nVocê pode conhecer o que as pessoas acharam antes de escolher uma atividade para seu filho.",
+          "x": 52,
+          "y": 1210,
+          "width": 976,
+          "height": 252.5625,
+          "right": 1028,
+          "bottom": 1462.5625
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV02",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Rafael\nAluno\nRelato sobre o\nDesafio do Primeiro Jogo.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 284.78125,
+          "right": 830,
+          "bottom": 562.78125
+        },
+        {
+          "text": "No fim eu peguei o link e mandei pro meu amigo jogar.",
+          "x": 120,
+          "y": 868,
+          "width": 840,
+          "height": 312,
+          "right": 960,
+          "bottom": 1180
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV08",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Daniel\nPai do Rafael\nOrganizar as ideias.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 239.234375,
+          "right": 830,
+          "bottom": 517.234375
+        },
+        {
+          "text": "Foi um curso que trouxe pro Rafa uma questão de se pensar, de se organizar, tanto na lógica, na matemática.",
+          "x": 120,
+          "y": 835,
+          "width": 840,
+          "height": 312,
+          "right": 960,
+          "bottom": 1147
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV03",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Débora\nAluna\nRelato sobre o\nDesafio do Primeiro Jogo.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 283.78125,
+          "right": 830,
+          "bottom": 561.78125
+        },
+        {
+          "text": "Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo.\n\nNo último dia chamei a minha mãe pra ver o meu jogo.",
+          "x": 120,
+          "y": 833,
+          "width": 840,
+          "height": 460.125,
+          "right": 960,
+          "bottom": 1293.125
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV10",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Flávia\nMãe do Fernando\nFazer por conta própria.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 239.234375,
+          "right": 830,
+          "bottom": 517.234375
+        },
+        {
+          "text": "No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.",
+          "x": 120,
+          "y": 843,
+          "width": 840,
+          "height": 422.5,
+          "right": 960,
+          "bottom": 1265.5
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV07",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Jeffrey\nAluno\nRelato sobre criar jogos.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 239.234375,
+          "right": 830,
+          "bottom": 517.234375
+        },
+        {
+          "text": "Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.",
+          "x": 120,
+          "y": 830,
+          "width": 840,
+          "height": 338,
+          "right": 960,
+          "bottom": 1168
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV09",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Harle\nPai do Jeffrey\nMais responsabilidade.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 239.234375,
+          "right": 830,
+          "bottom": 517.234375
+        },
+        {
+          "text": "Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer.\n\nEle ficou mais responsável com as coisas dele.",
+          "x": 120,
+          "y": 823,
+          "width": 840,
+          "height": 468,
+          "right": 960,
+          "bottom": 1291
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV04",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "André\nAluno\nRelato sobre o\nDesafio do Primeiro Jogo.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 283.78125,
+          "right": 830,
+          "bottom": 561.78125
+        },
+        {
+          "text": "Eu já jogava um monte, agora eu faço os meus jogos.\n\nEsse foi o primeiro e já quero fazer um maior.",
+          "x": 120,
+          "y": 843,
+          "width": 840,
+          "height": 422.5,
+          "right": 960,
+          "bottom": 1265.5
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV11",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Daniel\nPai do Rafael\nTer ideias para o jogo.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 239.234375,
+          "right": 830,
+          "bottom": 517.234375
+        },
+        {
+          "text": "Vai criando, vai sendo mais criativo.\n\n‘Eu quero mudar isso aqui no jogo.’",
+          "x": 120,
+          "y": 843,
+          "width": 840,
+          "height": 428.984375,
+          "right": 960,
+          "bottom": 1271.984375
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV06",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Fernando\nAluno\nRelato sobre criar jogos.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 239.234375,
+          "right": 830,
+          "bottom": 517.234375
+        },
+        {
+          "text": "Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.",
+          "x": 120,
+          "y": 830,
+          "width": 840,
+          "height": 338,
+          "right": 960,
+          "bottom": 1168
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV12",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true,
+        "cleanQuote": true,
+        "styledQuotes": true,
+        "noInlineClosingQuote": true,
+        "quoteDecorationSpace": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Flávia\nMãe do Fernando\nUsar a tela para criar.",
+          "x": 78,
+          "y": 278,
+          "width": 752,
+          "height": 239.234375,
+          "right": 830,
+          "bottom": 517.234375
+        },
+        {
+          "text": "O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada.\n\nO curso incentivou ele a desenvolver, a programar, não a jogar.",
+          "x": 120,
+          "y": 823,
+          "width": 840,
+          "height": 536.8125,
+          "right": 960,
+          "bottom": 1359.8125
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    },
+    {
+      "id": "AV05",
+      "passed": true,
+      "tests": {
+        "dimensions": true,
+        "inside": true,
+        "images": true,
+        "quote": true,
+        "quoteFits": true,
+        "author": true,
+        "role": true,
+        "faces": true,
+        "introGap": true,
+        "noTextOverflow": true
+      },
+      "checked": [
+        {
+          "text": "AVALIAÇÕES",
+          "x": 72,
+          "y": 170,
+          "width": 251.25,
+          "height": 52,
+          "right": 323.25,
+          "bottom": 222
+        },
+        {
+          "text": "Conheça A Chave\ndo Farol.",
+          "x": 72,
+          "y": 263,
+          "width": 943,
+          "height": 202.78125,
+          "right": 1015,
+          "bottom": 465.78125
+        },
+        {
+          "text": "A Chave do Farol é o jogo que seu filho aprende a construir no Desafio. No botão, veja como são as aulas, o que está incluído e quanto custa.",
+          "x": 78,
+          "y": 1244,
+          "width": 924,
+          "height": 158.390625,
+          "right": 1002,
+          "bottom": 1402.390625
+        },
+        {
+          "text": "Ver A Chave do Farol",
+          "x": 236,
+          "y": 1548,
+          "width": 608,
+          "height": 100,
+          "right": 844,
+          "bottom": 1648
+        },
+        {
+          "text": "Helena e Júlio · Comunidade dos Criadores",
+          "x": 72,
+          "y": 1690,
+          "width": 936,
+          "height": 67,
+          "right": 1008,
+          "bottom": 1757
+        }
+      ]
+    }
+  ]
+}

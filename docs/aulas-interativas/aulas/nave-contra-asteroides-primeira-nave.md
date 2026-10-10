@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Tela 800 × 480 e nave visível em x 400, y 410, ainda parada.
 - Seções: 9. Vídeos: 9.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A primeira aula conserva jogo pronto e caderno, mas termina com a nave construída e visível. Preparação, coordenadas, criação e desenho ganham experiências e montagens curtas antes do envio.
@@ -50,6 +52,10 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 
 **Zappy na página (não gravar):** Sua vez! Faça os dois testes e fique de olho no contador Ações feitas. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-uma-vez-e-sempre-avatar-01. Professora até “quando o jogo começa.”. Antes: Concluir o teste em Ao iniciar com Ações feitas em 1 e a nave parada. Debinha: “E para ela continuar andando?”. Retomada da professora: “Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo.”. Depois: Mover a peça para Enquanto estiver rodando, soltar e começar o novo teste.
+
 **Experiência existente:** `once-vs-always`. Nesta experiência, coloque Mover a nave um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a nave e o contador Ações feitas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a nave e o contador nas duas tentativas. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Prepare a tela do jogo
@@ -59,6 +65,12 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 **Blocos na página:** video-montar-areas-tela → fala-montar-areas-e-tela.
 
 **Zappy na página (não gravar):** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-montar-areas-tela-avatar-01. Professora até “Agora deixe à vista outro lugar vazio, ao lado de Ao iniciar. Ainda em Áreas do projeto, pegue Enquanto estiver rodando e solte nesse lugar, com um pouco de distância entre as duas áreas.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “A preparação fica separada do que acontece durante a partida!”. Retomada da professora: “A tela do jogo só precisa ser preparada uma vez, quando o jogo começa.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-montar-areas-tela-avatar-02. Professora até “Agora olhe a prévia: a tela do jogo aparece lisa, porque ainda não tem nada desenhado nela.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “A tela está pronta para receber o jogo!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -84,6 +96,10 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 
 **Zappy na página (não gravar):** Sua vez! Crie a nave, mostre a nave na tela e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-criar-e-mostrar-avatar-01. Professora até “e a tela do jogo é o palco.”. Antes: Concluir a criação nos bastidores e a comparação com o teatro; manter a tela do jogo vazia. Debinha: “Quero ver essa nave na tela!”. Retomada da professora: “Agora eu clico em Mostrar a nave na tela.”. Depois: Clicar em Mostrar a nave na tela e comparar a mesma nave nos dois lugares.
+
 **Experiência existente:** `world`. Nesta experiência, clique em Criar a nave. Compare os bastidores com a tela do jogo. Depois clique em Mostrar a nave na tela e compare os dois lugares novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 7. Crie a nave nos bastidores
@@ -93,6 +109,10 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 **Blocos na página:** video-criar-nave → fala-criar-nave.
 
 **Zappy na página (não gravar):** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-criar-nave-avatar-01. Professora até “Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora eu posso escolher onde a minha nave começa!”. Retomada da professora: “Repare: o bloco já chega com o nome nave.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -107,6 +127,12 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 
 **Zappy na página (não gravar):** Sua vez! Compare desenhar só no começo, a cada quadro e com a limpeza ligada, avançando os quadros em cada teste. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-desenho-por-quadro-avatar-01. Professora até “Olha aqui: Desenhar a nave está em Só no começo. Eu clico em Avançar 1 quadro, e, na faixa, o x da nave muda de 10 para 54. Mas tá vendo? A imagem continua igual. É que o jogo desenhou a nave só no começo, por isso a imagem não acompanhou o x.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “A nave já foi para outro lugar, e eu nem vi!”. Retomada da professora: “Agora eu troco para A cada quadro e avanço alguns quadros.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-desenho-por-quadro-avatar-02. Professora até “Agora eu troco para A cada quadro e avanço alguns quadros. Olha só: a nave aparece no lugar novo, mas as naves velhas continuam na tela e formam um rastro. Isso acontece porque o jogo desenha de novo, mas não apaga o que já estava lá.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E como apaga esse rastro?”. Retomada da professora: “Por último, eu ligo Limpar a tela antes e avanço mais quadros.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Experiência existente:** `draw-loop`. Na experiência, deixe Desenhar a nave em Só no começo. Clique em Avançar 1 quadro algumas vezes. Compare a imagem com o x mostrado na faixa. Troque para A cada quadro e avance alguns quadros novamente. Por último, ligue Limpar a tela antes e avance mais quadros. Compare os três jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 9. Mostre a nave a cada quadro
@@ -116,6 +142,12 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 **Blocos na página:** video-motor-e-nave → fala-motor-e-nave → projeto.
 
 **Zappy na página (não gravar):** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-motor-e-nave-avatar-01. Professora até “Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadro do jogo. Arraste para dentro de Enquanto estiver rodando e solte quando aparecer o encaixe. Esse bloco repete o que está dentro dele em cada quadro, enquanto o jogo continua.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora falta dizer o que ele vai desenhar!”. Retomada da professora: “O desenho da nave vai dentro dessa repetição: deixe à vista o espaço de dentro de A cada quadro do jogo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-motor-e-nave-avatar-02. Professora até “porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar.”. Antes: Concluir o desenho e mostrar a nave parada perto da parte de baixo da tela. Debinha: “A minha nave apareceu!”. Retomada da professora: “E a sua, apareceu também? Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar está Criar nave, e dentro de Enquanto estiver rodando está A cada quadro do jogo, com Desenhar o sprite nave dentro dele.”. Depois: Manter a nave visível e apontar os blocos durante a conferência condicional; seguir para verificar e enviar.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 

@@ -1,0 +1,9 @@
+# Avaliações · produção de 09/10/2026
+
+Doze PNGs em `finais-beneficios`, 1080 × 1920. Dez cartelas de relatos entre abertura e convite, alternando cinco crianças e cinco trechos dos responsáveis. Daniel tem duas cartelas, sobre organização e criatividade; Harle fala de responsabilidade; Flávia tem duas, sobre independência e uso da tela para criar. A abertura reúne os oito retratos. Cópias finais em `docs/marketing/kids/comunidade-dos-criadores/instagram/producao/destaques/avaliacoes`.
+
+Os cinco novos vídeos foram transcritos com faster-whisper small e os trechos selecionados conferidos com medium. O manifesto e `fontes-dos-relatos.txt` registram fontes e segundos de cada recorte. `fontes/` guarda WAVs, transcrições completas, trechos conferidos e quadros extraídos. Pontuação ajustada para leitura; as cartelas não exibem reticências ou colchetes, conforme orientação do usuário. As palavras e o sentido foram mantidos, e cada recorte permanece registrado com os segundos de origem. As aspas de abertura e fechamento usam o mesmo estilo gráfico. Os relatos não foram reescritos para seguir a voz comercial. As versões anteriores da seleção ficam em `historico/antes-beneficios` e `finais-ampliados`.
+
+Os retratos dos responsáveis são quadros dos próprios vídeos, diagramados com recorte circular. Não houve geração de rostos ou depoimentos. Fernando e Jeffrey usam as fotos fornecidas pelo usuário; Rafael, Débora e André usam as fotos identificadas na oferta.
+
+`novos-relatos.json` contém os trechos atuais, com temas, fontes e recortes. `ampliar-avaliacoes.py` prepara `montar-stories.mjs`, que monta HTML/CSS e manifesto; `renderizar-e-conferir.mjs` exporta PNGs e verifica copy, margens, formato, oito rostos na abertura, espaço para cada citação e alternância entre crianças e responsáveis. `conferencia-beneficios.png` reúne a sequência. `publicacao.txt` indica o sticker da imagem 12.

@@ -32,7 +32,7 @@ Encurtar a fala não permite omitir passos. Na montagem, conduzir a criança at�
 5. Pedir para arrastar até o lugar já visível e soltar quando aparecer o encaixe.
 6. Dizer qual campo mudar, o valor e o que manter.
 7. Pedir o teste concreto logo depois de montar e dizer o resultado esperado da construção. Não listar os blocos antes do teste: quando o resultado aparece, o teste já conferiu.
-8. Só depois do teste, e uma vez só, a conferência como caminho da correção, com gatilho genérico: "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: … Depois de corrigir, teste de novo." Não acrescentar um caso de erro que repete um item da lista; um aviso a mais só entra quando diz o que a lista não cobre. Sem teste visível (uma variável sem mostrador), "Confira se ficou assim:" vem logo depois da montagem, porque é a única conferência.
+8. Só depois do teste, e uma vez só, a conferência como caminho da correção, com gatilho genérico: "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: … Depois de corrigir, teste de novo." Não acrescentar um caso de erro que repete um item da lista; um aviso a mais só entra quando diz o que a lista não cobre. Sem teste visível (uma variável sem mostrador), "Confira se ficou assim:" vem logo depois da montagem, porque é a única conferência.
 9. Dizer como terminar, incluindo confirmação de envio quando necessária.
 
 A ordem dos passos 2 a 5 não é opcional. Com o bloco preso no mouse, a criança não consegue mover o espaço dos blocos para procurar o destino.
@@ -120,13 +120,13 @@ questionários ou mudar as experiências só para encurtar a fala.
 - Usar "você", verbos simples e frases que soem naturais em voz alta. Toda fala conversa com quem faz a aula, como alguém ao lado dela: "o seu Mapa da Aventura", "o seu jogo", "Sua vez!". Nada de frase impessoal que só descreve.
 - Três vozes (Diretrizes, seção 6): "você" para o que é da pessoa, o que ela faz e o que ela conquista, com as ações no imperativo; "a gente" e "vamos" para pensar junto e convidar; "eu" só quando o narrador demonstra. Evitar o "nós" de sala de aula ("Hoje nós vamos aprender…") e dizer "o seu jogo", não "o nosso jogo".
 - A fala é uma conversa contínua, não uma lista de frases soltas: cada frase se liga à anterior ("então", "por isso", "mas", "é que", "agora que"; num curso com o bloco Se, "por isso" ou "ou seja" no lugar de "então", que é o nome de uma parte do bloco), todo resultado vem com o porquê ("Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele") e a explicação diz o que é cada coisa no próprio jogo ("O toque é a ação, e a reação que a gente quer é o esconderijo ficar invisível"). Evitar sequências curtas e secas como "Nada acontece. O toque ainda não tem uma reação. Vamos ligar uma." (Diretrizes, seção 6).
-- O que já vem pronto não vira frase solta na montagem ("O jardim e os personagens já estão preparados"): a criança vê o que já está no projeto. Só citar o que vem pronto quando ajuda a ação, com o papel que tem ali ("Olha aqui: nessa área já tem o bloco… É ele que percebe quando alguém toca num esconderijo"). O reconhecimento do que veio pronto fica na comemoração (Diretrizes, seção 3).
+- O preparo do cenário, dos personagens e das regras iniciais fica nas notas da equipe. Na fala e no caderno, comemorar a ação da criança e o resultado, sem ressalvas sobre o que veio pronto. Só citar um elemento existente quando orienta a ação, explicando seu papel ("Olha aqui: nessa área já tem o bloco… É ele que percebe quando alguém toca num esconderijo"). Ver Diretrizes, seção 3, ajuste de 10/10/2026.
 - Chamar a atenção nos momentos que importam: "Olha aqui:" ao mostrar um lugar, um bloco ou o primeiro gesto da demonstração; "Olha só:" quando aparece um resultado; "Repare:" num detalhe que a pessoa precisa notar; "Tá vendo?" logo depois do teste da retomada. Um chamado por momento importante, variando as expressões; sem repetir "bora", "capricha" ou parabéns a cada gesto (Diretrizes, seção 6).
 - O que é opcional vira convite, nunca negação: "Se quiser, você pode ler aqui mesmo. E, se preferir, também pode baixar para guardar." Não dizer o que a pessoa não precisa fazer; uma proibição que evita um erro continua direta ("Não coloque um encontro dentro do outro").
 - Evitar perguntas que escondem um pedido. "Teste os dois jeitos" é mais claro que
   "Como será que essa ideia funciona no nosso jardim?".
 - Cada "aqui" precisa de um apontamento visível. Cada "isso" precisa de um referente claro.
-- Nomear a conquista concreta, com honestidade sobre o que veio preparado.
+- Nomear a conquista concreta: o que a pessoa fez e o resultado, sem atribuir a ela passos que não realizou.
 - Sem travessões, linguagem comercial ou convite para convencer um responsável.
 - Não chamar quem assiste de "criança" ou "aluno". Falar diretamente com "você".
 - Termos técnicos entram só quando ajudam a tarefa. Não fazer uma lista de vocabulário no fecho.
@@ -162,25 +162,57 @@ para quem prepara a aula; o manifesto define o conteúdo importável; o roteiro 
 literal. Os três precisam concordar. Se houver gerador do manifesto, atualizar também o gerador.
 
 Registrar também a **ponte do Zappy na página (não gravar)** depois de cada vídeo. Ela liga
-o vídeo à tarefa seguinte e deve coincidir com o diálogo do manifesto. Nas seções de
-contexto ou consulta, encaminhar a continuação sem inventar uma atividade obrigatória.
+o vídeo à tarefa seguinte e deve coincidir com o diálogo do manifesto. Zappy não tem fala dentro
+do vídeo: sua presença no meme ou na interface é visual. O recurso Ouvir da página continua
+independente da gravação. Nas seções de contexto ou consulta, encaminhar a continuação sem
+inventar uma atividade obrigatória.
+
+No início do roteiro, registrar quem conduz, qual avatar participa e o estado da produção
+(planejado, gravação informada ou edição conferida). Usar **Professora:** ou **Professor:** para
+a condução e **Debinha (avatar):** ou **Dedé (avatar):** para a criança. Manter a mesma criança nas
+partes de uma aula e alternar na próxima; não é obrigatório ter participação em cada vídeo.
+O rótulo **Narração:** continua aceito nos roteiros antigos com uma só voz, mas não deve misturar
+falantes. As escolhas de linguagem “você”, “a gente” e “eu” valem para a conversa; não são nomes
+dos personagens.
 
 Separar sempre a nota de produção da fala, com uma linha em branco:
 
 ```markdown
 **Na tela:** mostrar o jogo pronto. No "Olha aqui", tocar em UM esconderijo só; não revelar os outros.
 
-**Narração:**
+**Professora:**
 
 > “Você vai construir um jogo chamado Cadê Todo Mundo. Esta é a versão pronta, para você ver como
 > o jogo funciona antes de montar o seu. Olha aqui: quando eu toco num esconderijo, ele some e
-> aparece quem estava atrás. Agora é a sua vez: jogue até encontrar os três personagens. Quando
-> terminar, clique em Próxima parte.”
+> aparece quem estava atrás. E o número de Achados mudou para 1, porque eu encontrei um personagem.”
+
+**Na tela:** Debinha entra sem cobrir os dois esconderijos que faltam. Não revelar quem está atrás deles.
+
+**Debinha (avatar):**
+
+> “E os outros dois?”
+
+**Na tela:** Debinha sai antes da resposta. Manter os dois esconderijos fechados.
+
+**Professora:**
+
+> “Esses eu deixo para você descobrir.”
 ```
 
-Cada nota de tela tem sua narração correspondente. Um vídeo pode conter vários pares.
+Cada nota de tela tem sua fala correspondente, com o nome de quem fala. Um vídeo pode conter
+vários pares; marcar a entrada do avatar antes da fala dele e a saída antes da retomada da
+professora. Não sobrepor vozes, cobrir controles ou antecipar o gesto que responde à pergunta.
+Distribuir as entradas pelos trechos longos, depois de concluir cada gesto. Na fala de
+entendimento, trazer um exemplo ou uma consequência da ideia; não apenas repetir a professora.
+Uma reação breve pode comemorar o teste. Quando houver “Funcionou?”, a resposta “Agora sim!”
+vem depois da pergunta. Usar a quantidade que a conversa pede, sem cota por vídeo.
 Instruções para quem grava não são falas da aula. Não usar o campo plannedVideo do manifesto
 como substituto do roteiro completo.
+
+Quando os vídeos já estiverem gravados, registrar as âncoras literais de edição, preservando a
+fala existente. Uma pergunta transferida para o avatar sai da fala da professora. Não presumir
+edição ou publicação concluída pelo fato de o roteiro estar atualizado. Os exemplos para próximas
+aulas e as inserções confirmadas ficam em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md).
 
 Registrar também as seções sem vídeo: no quiz, escrever **Zappy na página (não gravar)** e a fala literal antes das perguntas, sem notas de cena ou narração de um vídeo inexistente.
 
@@ -190,7 +222,9 @@ cabeçalhos "## Seção N. Título" e "### Clipe `chave`" exigidos pelo validado
 
 Estimar o tempo pela fala em voz alta, incluindo os gestos, sem acrescentar teoria para atingir
 uma duração mínima. A demonstração do jogo pronto pode durar 30 a 40 segundos; uma montagem precisa de tempo
-para cada encaixe. Não acelerar a demonstração para caber numa duração arbitrária.
+para cada encaixe. Incluir as participações dos avatares na medição final e identificar os alvos
+anteriores quando a inserção for feita depois da gravação. Não acelerar a demonstração para caber
+numa duração arbitrária.
 
 Nas seções com ferramenta externa, manter a autoconferência visual: pedir que a pessoa compare
 um resultado funcional ou legível. O vídeo assistido não prova sozinho que o trabalho está
@@ -209,6 +243,7 @@ correto. A liberdade de cor e detalhes continua livre.
 - A experiência permite observar, sem esconder ações obrigatórias?
 - A fala corresponde ao projeto, aos controles e aos critérios de conclusão reais?
 - As notas de tela e narrações estão pareadas e a leitura soa natural?
+- Quem fala está identificado? A entrada do avatar contribui para a conversa e a professora responde antes de seguir? Zappy está separado como fala da página?
 - Proposta, gerador, manifesto, roteiro e falas do Zappy concordam?
 - Os tutoriais retirados têm destino no Como Fazer?
 

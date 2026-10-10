@@ -2,32 +2,32 @@
 
 **Revisão: 08/10/2026.** Este é o único calendário de execução. O ciclo ainda não começou. **T0** é a primeira publicação efetiva, após conferir materiais e destinos. Usar quatro semanas relativas, com **três posts e três dias de stories por semana**. Datas e horários entram aqui quando a produção os definir; não recuperar datas antigas acumulando posts.
 
-O ciclo contém **12 posts: sete Reels e cinco carrosséis**. F01, F02 e F03 têm copy integral em [Fixados](02-fixados.md); F04 a F12 estão abaixo. Há **12 sequências de stories, com 62 telas**: 53 têm copy integral em [Destaques](01-destaques.md) e nove telas novas estão neste arquivo. As sequências indicam exatamente quais textos publicar e em que ordem; não são pedidos de adaptação.
+O ciclo contém **12 posts: cinco Reels e sete carrosséis**. F01, F02 e F03 têm copy integral em [Fixados](02-fixados.md); F04 a F12 estão abaixo. Há **12 sequências de stories, com 70 telas**: 61 têm copy integral em [Destaques](01-destaques.md) e nove telas novas estão neste arquivo. As sequências indicam exatamente quais textos publicar e em que ordem; não são pedidos de adaptação.
 
 ## Calendário
 
-Cada linha é uma ocasião de publicação dentro da semana. A referência de capacidade é três dias distintos por semana, ajustados pela equipe. Estado de todas as peças: **copy preparada, produção e publicação pendentes**.
+Cada linha é uma ocasião de publicação dentro da semana. A referência de capacidade é três dias distintos por semana, ajustados pela equipe. Os três fixados têm PNGs, legendas e instruções nas pastas de produção; a publicação permanece pendente. Conferir o estado de produção das demais peças antes de agendar.
 
 | Semana / ocasião | Post | Formato e objetivo | Stories do dia | Destino principal |
 | --- | --- | --- | --- | --- |
-| 1 / 1, T0 | F01 · O primeiro jogo do seu filho | Reel; apresentar projeto e método | S01 · Como funciona, nove telas | Desafio |
+| 1 / 1, T0 | F01 · O primeiro jogo do seu filho | Carrossel 4:5; apresentar projeto, método e personalização | S01 · Como funciona, nove telas | Desafio |
 | 1 / 2 | F10 · A chave mudou de lugar | Reel; mostrar uma escolha e seu efeito | S02 · Sobre nós, sete telas | Desafio |
 | 1 / 3 | F03 · Como começar pelo Desafio | Carrossel; explicar formato e acesso | S03 · Dúvidas sobre o começo, seis telas | Desafio |
-| 2 / 1 | F02 · Alunos em atividade | Reel; participação real nas atividades | S04 · Avaliações, cinco telas | Desafio |
+| 2 / 1 | F02 · Alunos em atividade | Carrossel 4:5; imagens provisórias dos cinco alunos | S04 · Avaliações, doze telas | Desafio |
 | 2 / 2 | F05 · O personagem ainda não anda | Carrossel; experiência, montagem e teste | S05 · Pausar para construir, três telas novas | Desafio |
 | 2 / 3 | F09 · A porta confere a chave | Reel; comparar duas respostas | S06 · Dúvidas sobre a compra, quatro telas | Desafio |
 | 3 / 1 | F06 · O mesmo jogo, outras escolhas | Reel; personalização com artes disponíveis | S07 · Farol e Cadê Todo Mundo?, quatro telas | Desafio e Comunidade |
-| 3 / 2 | F04 · Uma partida em família | Reel; convite para conhecer uma escolha | S08 · Alunos e Nave Contra Asteroides, oito telas | Desafio e Comunidade |
+| 3 / 2 | F04 · Uma partida em família | Reel; convite para conhecer uma escolha | S08 · Alunos e Nave Contra Asteroides, nove telas neste lote | Desafio e Comunidade |
 | 3 / 3 | F08 · O que vem pronto e o que ele programa | Carrossel; esclarecer autoria | S09 · Compartilhamento e Corre Dino, sete telas | Desafio em F08; Comunidade em S09 |
 | 4 / 1 | F07 · O jogo lembra da chave | Carrossel; conectar coleta e memória | S10 · Escolher o caminho, três telas novas | Desafio |
 | 4 / 2 | F11 · Um começo que cabe na rotina | Carrossel; apoiar decisão | S11 · Próximos passos, três telas | Comunidade e Desafio, conforme cada tela |
 | 4 / 3 | F12 · Depois do primeiro jogo | Reel; continuidade opcional | S12 · Da experiência ao próximo passo, três telas novas | Comunidade |
 
-S01 apresenta o percurso em nove telas, S02 conta a origem da Comunidade em sete, e S03 reúne seis dúvidas iniciais. Na terceira semana, os quatro projetos entram em blocos completos distribuídos entre S07, S08 e S09, junto dos vídeos de alunos e das dúvidas de compartilhamento. Cada projeto recebe duas cartelas: uma montagem com dois momentos da partida, pelo menos um em andamento, seguida de um recorte dos blocos no Estúdio com as habilidades praticadas. Esses dias têm quatro, oito e sete telas, respectivamente; os demais têm três a cinco. Cada bloco tem sua identificação e destino próprios. Esta é também a formação inicial dos destaques, não um calendário adicional. Cada sequência é salva no destaque indicado abaixo.
+S01 apresenta o percurso em nove telas, S02 conta a origem da Comunidade em sete, e S03 reúne seis dúvidas iniciais. Na terceira semana, os quatro projetos entram em blocos completos distribuídos entre S07, S08 e S09, junto dos vídeos de alunos e das dúvidas de compartilhamento. Cada projeto recebe duas cartelas: uma montagem com dois momentos da partida, pelo menos um em andamento, seguida de um recorte dos blocos no Estúdio com as habilidades praticadas. Esses dias têm quatro, nove e sete telas, respectivamente; Avaliações tem doze telas. As demais sequências mantêm as quantidades indicadas no calendário. Cada bloco tem sua identificação e destino próprios. Esta é também a formação inicial dos destaques, não um calendário adicional. Cada sequência é salva no destaque indicado abaixo.
 
 **Ordem viva dos destaques:** atualizações podem trazer Alunos, Avaliações, Projetos ou Dúvidas para a frente. Aceitar essa mudança; não republicar stories só para reposicionar Como funciona ou Sobre nós. Os fixados orientam a chegada, e as peças remetem aos destaques pelo nome. A posição não é requisito de publicação.
 
-**IDs preservados:** F08 agora explica autoria; F09 mostra a condição da porta; F12 apresenta continuidade. Os antigos assuntos de ferramentas e postos ficaram no histórico e não têm peças adicionais neste ciclo. F02B é uma alternativa completa em Fixados, usada no lugar de F02 somente se a equipe adiar a montagem dos vídeos de alunos.
+**IDs preservados:** F08 agora explica autoria; F09 mostra a condição da porta; F12 apresenta continuidade. Os antigos assuntos de ferramentas e postos ficaram no histórico e não têm peças adicionais neste ciclo. F01, F02 e F03 são os três carrosséis 4:5; F02 inclui os cinco alunos. A antiga alternativa F02B permanece apenas no histórico de produção.
 
 ## Como ler os roteiros
 
@@ -463,7 +463,7 @@ As sequências S01 a S12 são as publicações dos três dias semanais, incluind
 
 ### S04 · Avaliações
 
-**Cinco stories, em ordem:** AV01 → AV02 → AV03 → AV04 → AV05. **Copy integral:** [Avaliações](01-destaques.md#avaliações). **Salvar:** Avaliações. **Link:** AV05, L0. Manter os nomes e a identificação de Débora e André como filhos de Helena e Júlio.
+**Doze stories, em ordem:** AV01 → AV02 → AV08 → AV03 → AV10 → AV07 → AV09 → AV04 → AV11 → AV06 → AV12 → AV05. **Copy integral:** [Avaliações](01-destaques.md#avaliações). **Salvar:** Avaliações. **Link:** AV05, L0, no arquivo 12. As cinco crianças alternam com cinco cartelas de responsáveis: duas de Daniel, uma de Harle e duas de Flávia. Os relatos mostram organização, criatividade, responsabilidade, independência e uso da tela para criar. A abertura reúne oito pessoas. Manter as falas, os temas e os contextos do guia. Não colocar reticências ou colchetes nas cartelas; consultar os recortes no arquivo de fontes. As duas aspas recebem o mesmo estilo gráfico.
 
 ### S05 · Pausar para construir
 
@@ -491,7 +491,7 @@ As sequências S01 a S12 são as publicações dos três dias semanais, incluind
 
 ### S06 · Dúvidas sobre a compra
 
-**Quatro stories, em ordem:** DU07 → DU08 → DU09 → DU10. **Copy integral:** [Dúvidas](01-destaques.md#du07--o-pagamento-se-repete). **Salvar:** Dúvidas. **Links:** DU07 e DU10, L0. Preservar pagamento único, início do prazo e distinção entre garantia e acesso.
+**Quatro stories, em ordem:** DU07 → DU08 → DU09 → DU10. **Copy integral:** [Dúvidas](01-destaques.md#du07--o-desafio-é-uma-assinatura). **Salvar:** Dúvidas. **Links:** DU07 e DU10, L0. Preservar pagamento único, início do prazo e distinção entre garantia e acesso.
 
 ### S07 · Farol e Cadê Todo Mundo?
 
@@ -499,13 +499,13 @@ As sequências S01 a S12 são as publicações dos três dias semanais, incluind
 
 ### S08 · Alunos e Nave Contra Asteroides
 
-**Oito stories, em dois blocos completos:** AL01 → AL02 → AL03 → AL04 → AL05 → AL06; depois PJ05 → PJ06. **Copy integral:** [Alunos](01-destaques.md#alunos) e [Nave Contra Asteroides](01-destaques.md#pj05--nave-contra-asteroides-o-jogo-que-a-criança-constrói).
+**Nove stories neste lote, em dois blocos completos:** AL01 → AL02 → AL03 → AL04 → AL05 → AL07 → AL06; depois PJ05 → PJ06. **Copy integral:** [Alunos](01-destaques.md#alunos) e [Nave Contra Asteroides](01-destaques.md#pj05--nave-contra-asteroides-o-jogo-que-a-criança-constrói).
 
-**Salvar:** AL01 a AL06 em Alunos; PJ05 e PJ06 em Projetos. **Links:** AL06 para o Desafio, L0; PJ06 para a Comunidade, L5. A seleção inicial traz vídeos de Rafael, Jeffrey, Débora e André com legendas variadas conforme as ações mostradas; a abertura não enumera os participantes, e novos registros podem entrar no destaque ao longo do tempo. As duas cartelas da nave mostram uma cena em andamento com nave, tiro e asteroides e a vitória na partida, seguidos de um recorte da regra que soma pontos ao acertar um asteroide, com identificação de demonstração da equipe.
+**Salvar:** AL01, AL02, AL03, AL04, AL05, AL07 e AL06 em Alunos; PJ05 e PJ06 em Projetos. **Links:** AL06 para o Desafio, L0; PJ06 para a Comunidade, L5. A produção atual usa imagens provisórias de Rafael, Jeffrey, Débora, André e Fernando, geradas com suas referências a pedido do responsável, com legendas diferentes para cada atividade. Substituir essas cenas pelos vídeos reais posteriormente, conferindo se cada legenda corresponde à ação filmada. A abertura reúne as cinco fotos, sem enumerar participantes na copy, e novos registros podem entrar no destaque ao longo do tempo. As duas cartelas da nave mostram uma cena em andamento com nave, tiro e asteroides e a vitória na partida, seguidos de um recorte da regra que soma pontos ao acertar um asteroide, com identificação de demonstração da equipe.
 
 ### S09 · Compartilhamento e Corre Dino
 
-**Sete stories, em dois blocos completos:** DU11 → DU12 → DU13 → DU14 → DU15; depois PJ07 → PJ08. **Copy integral:** [Dúvidas](01-destaques.md#du11--ele-precisa-desenhar-os-personagens) e [Corre Dino](01-destaques.md#pj07--corre-dino-o-jogo-que-a-criança-constrói).
+**Sete stories, em dois blocos completos:** DU11 → DU12 → DU13 → DU14 → DU15; depois PJ07 → PJ08. **Copy integral:** [Dúvidas](01-destaques.md#du11--no-desafio-ele-precisa-desenhar) e [Corre Dino](01-destaques.md#pj07--corre-dino-o-jogo-que-a-criança-constrói).
 
 **Salvar:** DU11 a DU15 em Dúvidas; PJ07 e PJ08 em Projetos. **Link:** PJ08 para a Comunidade, L5. As respostas preservam a diferença entre perfil oculto e link público. O bloco do Dino mostra o salto sobre um cacto durante a corrida e a tela de fim, seguidos de um recorte da regra que limita a dificuldade. A copy explica a prática de observar, comparar e ajustar. O curso pertence à Comunidade, com contratação separada do Desafio avulso.
 

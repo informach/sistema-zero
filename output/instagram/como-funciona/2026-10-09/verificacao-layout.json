@@ -1,0 +1,301 @@
+{
+  "stories": [
+    {
+      "id": "CF01",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1290,
+        "width": 924,
+        "height": 309.9375,
+        "bottom": 1599.9375,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 495,
+        "width": 976,
+        "height": 773.59375,
+        "bottom": 1268.59375,
+        "right": 1028
+      },
+      "sticker": null,
+      "passed": true
+    },
+    {
+      "id": "CF02",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1150,
+        "width": 924,
+        "height": 335.953125,
+        "bottom": 1485.953125,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 585,
+        "width": 976,
+        "height": 493.1875,
+        "bottom": 1078.1875,
+        "right": 1028
+      },
+      "sticker": null,
+      "passed": true
+    },
+    {
+      "id": "CF03",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1210,
+        "width": 924,
+        "height": 322.984375,
+        "bottom": 1532.984375,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 535,
+        "width": 976,
+        "height": 609.546875,
+        "bottom": 1144.546875,
+        "right": 1028
+      },
+      "sticker": null,
+      "passed": true
+    },
+    {
+      "id": "CF04",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1150,
+        "width": 924,
+        "height": 273.5625,
+        "bottom": 1423.5625,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 585,
+        "width": 976,
+        "height": 493.1875,
+        "bottom": 1078.1875,
+        "right": 1028
+      },
+      "sticker": null,
+      "passed": true
+    },
+    {
+      "id": "CF05",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1240,
+        "width": 924,
+        "height": 367.125,
+        "bottom": 1607.125,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 510,
+        "width": 976,
+        "height": 620.1875,
+        "bottom": 1130.1875,
+        "right": 1028
+      },
+      "sticker": null,
+      "passed": true
+    },
+    {
+      "id": "CF06",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1220,
+        "width": 924,
+        "height": 375,
+        "bottom": 1595,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 510,
+        "width": 976,
+        "height": 650,
+        "bottom": 1160,
+        "right": 1028
+      },
+      "sticker": null,
+      "passed": true
+    },
+    {
+      "id": "CF07",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1240,
+        "width": 924,
+        "height": 375,
+        "bottom": 1615,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 530,
+        "width": 976,
+        "height": 611.59375,
+        "bottom": 1141.59375,
+        "right": 1028
+      },
+      "sticker": null,
+      "passed": true
+    },
+    {
+      "id": "CF08",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1150,
+        "width": 924,
+        "height": 475.65625,
+        "bottom": 1625.65625,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 530,
+        "width": 976,
+        "height": 450.3125,
+        "bottom": 980.3125,
+        "right": 1028
+      },
+      "sticker": null,
+      "passed": true
+    },
+    {
+      "id": "CF09",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "titleBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true
+      },
+      "copy": {
+        "x": 78,
+        "y": 1130,
+        "width": 924,
+        "height": 359.34375,
+        "bottom": 1489.34375,
+        "right": 1002
+      },
+      "visual": {
+        "x": 52,
+        "y": 510,
+        "width": 976,
+        "height": 555,
+        "bottom": 1065,
+        "right": 1028
+      },
+      "sticker": {
+        "x": 204,
+        "y": 1588,
+        "width": 672,
+        "height": 100,
+        "bottom": 1688,
+        "right": 876
+      },
+      "passed": true
+    }
+  ],
+  "total": 9,
+  "passed": true
+}

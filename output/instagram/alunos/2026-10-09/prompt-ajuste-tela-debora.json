@@ -1,0 +1,9 @@
+{
+  "id": "AL04",
+  "file": "AL04-debora-personalizando-v2.png",
+  "refs": [
+    "C:/Users/tocha/projects/sistema-zero/output/instagram/alunos/2026-10-09/cenas-provisorias/AL04-debora-personalizando.png",
+    "C:/Users/tocha/projects/sistema-zero/output/instagram/como-funciona/2026-10-09/capturas/05-personalizado.png"
+  ],
+  "prompt": "Use case: precise-object-edit. Image 1 is the edit target, the already generated provisional scene of Débora at a laptop. Image 2 is the actual personalized A Chave do Farol game and the exact supporting content to insert. Change ONLY the emitting screen content of the laptop in image 1. Replace the invented character-choice controls and space game with the REAL complete colorful game from image 2, respecting perspective, aspect ratio, display bevel and natural screen lighting. If needed letterbox slightly inside the physical screen to keep original aspect. The scene now shows Débora viewing the look she chose for her game: the nighttime island, robot player, colorful lighthouse and matching scenery from reference 2. Do not invent controls or modify game characters. KEEP Débora's exact face, age, pink glasses, hair, eyes, skin, head position, expression, hand positions, shirt, laptop body, desk, objects, lighting and framing UNCHANGED. Do not generate another child. No new text overlays or labels. Keep square dimensions. Preserve all image pixels outside the display as closely as possible."
+}

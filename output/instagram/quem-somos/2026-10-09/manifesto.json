@@ -1,0 +1,48 @@
+{
+  "format": "1080x1920 PNG",
+  "finalDirectory": "C:\\Users\\tocha\\projects\\sistema-zero\\docs\\marketing\\kids\\comunidade-dos-criadores\\instagram\\producao\\destaques\\quem-somos",
+  "stories": [
+    {
+      "id": "SN01",
+      "file": "01-helena-e-julio.png",
+      "title": "Helena e Júlio",
+      "copy": "Somos Helena e Júlio, pais do André e da Débora.\n\nNós dois somos formados em Sistemas de Informação e trabalhamos com programação."
+    },
+    {
+      "id": "SN02",
+      "file": "02-tempo-para-criar.png",
+      "title": "Uma parte do tempo para criar",
+      "copy": "O André sempre gostou muito de jogar e de assistir a vídeos de jogos.\n\nA gente decidiu aproveitar esse interesse: passamos a usar uma parte do tempo que ele já ficava na tela para ensiná-lo a criar seus próprios jogos."
+    },
+    {
+      "id": "SN03",
+      "file": "03-interesse-por-aprender.png",
+      "title": "Aprender fazendo os próprios jogos",
+      "copy": "Para fazer um jogo funcionar, é preciso pensar no que vem primeiro, testar e ajustar quando algo dá errado.\n\nFoi nesse processo que vimos o André se interessar cada vez mais por aprender. Depois, chamava a gente para jogar e contava como tinha feito."
+    },
+    {
+      "id": "SN04",
+      "file": "04-mudancas-na-escola.png",
+      "title": "O que percebemos no André",
+      "copy": "Nesse período, a gente também percebeu mudanças na escola. O André passou a se envolver mais nas aulas e a se concentrar melhor. As notas também melhoraram.\n\nDesde o segundo ano do ensino fundamental, ele tem ficado entre os cinco primeiros da turma e, na maioria das vezes, em primeiro lugar.\n\nEsse reconhecimento é de uma dessas conquistas."
+    },
+    {
+      "id": "SN05",
+      "file": "05-medalhas-do-andre.png",
+      "title": "André, nosso filho.",
+      "copy": "Ele também conquistou medalhas em olimpíadas de matemática."
+    },
+    {
+      "id": "SN06",
+      "file": "06-origem-da-comunidade.png",
+      "title": "Da nossa casa para outras famílias",
+      "copy": "Essa experiência nos deu vontade de ajudar outras famílias a aproveitar uma parte do tempo de tela para aprender criando.\n\nFoi assim que nasceu a Comunidade dos Criadores."
+    },
+    {
+      "id": "SN07",
+      "file": "07-aulas-que-preparamos.png",
+      "title": "As aulas que a gente prepara",
+      "copy": "Hoje, somos nós que preparamos as aulas, usando o que sabemos de programação para ensinar as crianças a fazer seus jogos.\n\nNo destaque Como funciona, você conhece melhor esse trabalho."
+    }
+  ]
+}

@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Gravidade e controles de pulo, com impulso de referência 14.
 - Seções: 6. Vídeos: 5.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Gravidade e impulso são observados antes de cada montagem. Não é preciso programar primeiro um pulo sem gravidade para fabricar um defeito. O quiz retoma preparação, desenho, gravidade e impulso depois dos testes.
@@ -28,6 +30,10 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 **Blocos na página:** video-gravidade-modelo → fala-gravidade-modelo → experiencia-gravidade.
 
 **Zappy na página (não gravar):** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-gravidade-modelo-avatar-01. Professora até “A experiência para o tempo com ele lá no alto.”. Antes: Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto. Debinha: “E agora? Como ele volta para o chão?”. Retomada da professora: “Com o Dino no ar, eu ligo a Gravidade ao Dino.”. Depois: Ligar o fio da Gravidade com o Dino no ar e acompanhar a subida, a parada e a queda.
 
 **Experiência existente:** `gravity`. Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -61,6 +67,14 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 **Blocos na página:** video-comando-de-pulo → fala-comando-de-pulo.
 
 **Zappy na página (não gravar):** Agora dê os controles de pulo ao seu Dino! Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-comando-de-pulo-avatar-01. Professora até “Olha só: ele pula e volta para o chão!”. Antes: Esperar o Dino completar o salto e pousar antes da entrada. Debinha: “Foi! Ele pulou!”. Retomada da professora: “Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-comando-de-pulo-avatar-02. Professora até “porque o mesmo bloco já cuida dos três controles.”. Antes: Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso. Debinha: “Já consegui pular dos três jeitos!”. Retomada da professora: “Agora vamos conferir mais duas coisas. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Depois: Retomar a explicação do toque embaixo e testar os dois toques durante o mesmo salto.
+
+ID video-comando-de-pulo-avatar-03. Professora até “Agora teste! Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão! Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Dá para pular de novo lá no alto?”. Retomada da professora: “Agora toque duas vezes na barra de espaço durante o mesmo salto.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

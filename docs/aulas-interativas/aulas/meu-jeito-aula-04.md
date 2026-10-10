@@ -8,6 +8,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 - Resultado: Arte asteroide em vetor, 64 × 64, com corpo arredondado e crateras.
 - Seções: 6. Vídeos: 6.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno são comparados antes da pintura. Construir a forma, suavizar pontos e acrescentar crateras tornam-se aplicações separadas.
@@ -27,6 +29,10 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 **Tarefa / Zappy na página:** Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-preenchimento-contorno → fala-preenchimento-contorno → experiencia-cores.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-preenchimento-contorno-avatar-01. Professora até “por dentro dela aparece o xadrez do fundo.”. Antes: Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista. Dedé: “Cadê a cor de dentro?”. Retomada da professora: “É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.”. Depois: Apontar o fundo visível enquanto explica a transparência; retomar o preenchimento no momento previsto.
 
 **Experiência existente:** `fill-stroke`. Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões. Sem palpite, pistas ou pergunta final.
 
@@ -59,6 +65,10 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 **Tarefa / Zappy na página:** Agora acrescente crateras à sua pedra! Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-crateras → fala-crateras.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-crateras-avatar-01. Professora até “a forma desenhada por último fica na frente.”. Antes: Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada. Dedé: “Quero uma cratera grande e outra pequena!”. Retomada da professora: “Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar.”. Depois: Copiar a cratera, mover e redimensionar a cópia pelas alças; conferir que todas ficam dentro da pedra.
 
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
