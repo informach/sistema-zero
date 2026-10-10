@@ -89,7 +89,12 @@ const criticalFiles = [
   'lib/pensa-capabilities.ts',
   'components/kids/room/coords.ts',
   'components/kids/room/placement.ts',
-  'server/parent-gate-token.ts',
+  // O portão de senha antigo (`parent-gate-token.ts`) saiu com o acesso infantil (10/10/2026);
+  // no lugar dele, a regra da área dos pais e o caminho da criança até o servidor.
+  'server/parent-gate.ts',
+  'server/family-access.ts',
+  'lib/study-access-client.ts',
+  'lib/entry-destination.ts',
 ]
 const missingCritical = criticalFiles.filter(
   (file) => !reachableSources.has(resolve(sourceRoot, file)),
