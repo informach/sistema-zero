@@ -5,7 +5,7 @@
 **Descrição curta:** Monte um jogo de procurar personagens escondidos.
 
 **Descrição:** Faça os esconderijos sumirem com um toque e conte os personagens encontrados.
-O jardim já está preparado. Você monta as regras com blocos e testa até achar todo mundo.
+Você monta as regras com blocos e testa até achar todo mundo.
 
 ## Módulo 1: Minha primeira busca
 
@@ -68,8 +68,9 @@ Hoje são dez seções com vídeo, todas com ponte (incluindo **Deixe o jogo com
 05/10/2026), mais a seção do quiz, que não tem vídeo e começa pela fala do Zappy.
 O [quiz único antes do certificado](proposta-quizzes-cursos-curtos-2026-10-03.md) integra o manifesto e o caderno: três perguntas, fala inicial do Zappy e nenhum vídeo na seção de revisão.
 
-O jardim e os personagens já vêm preparados. A narração reconhece que a criança programou
-a reação ao toque e a contagem. O certificado encerra o curso sem oferta comercial.
+Para a equipe: o jardim e os personagens já vêm preparados. Essa informação fica nas notas
+de produção; a narração comemora a reação ao toque, a contagem e o jogo funcionando.
+O certificado encerra o curso sem oferta comercial.
 
 ## Caderno
 
@@ -147,7 +148,7 @@ A pedido do responsável, todas as falas passaram a conversar com a criança e a
 - **Seu Mapa da Aventura** (na época, Seu Caderno do Aluno): saiu o "Não precisa baixar nem imprimir", que a criança entendia como uma ordem para não baixar. O vídeo agora diz "Olha aqui: este é o seu Mapa da Aventura!" e oferece as duas escolhas: ler aqui mesmo ou clicar em **Baixar** para guardar o mapa e consultar onde quiser. O Zappy da seção, a página 2 do caderno e o tutorial **Como abrir o Mapa da Aventura e os materiais**, no Como Fazer, seguem a mesma ideia.
 - **Narração:** os momentos que importam ganharam um chamado para a tela: "Olha aqui" ao mostrar um lugar ou bloco, "Olha só" quando aparece um resultado, "Repare" num detalhe (o número Achados, o nome que já vem no bloco) e "Tá vendo?" depois do teste da retomada.
 - **Conversa contínua (segunda rodada do mesmo dia):** as falas deixaram de ser frases soltas lidas em sequência. Cada frase se liga à anterior, cada resultado vem com o porquê e a experiência do toque diz com clareza que o toque é a ação e que a reação é o arbusto ficar invisível. A retomada da Aula 1 passou de "Primeiro, toque num esconderijo. Nada acontece: o toque ainda não tem uma reação. Vamos ligar uma." para "Primeiro, toque num esconderijo do seu jogo. Tá vendo? Não acontece nada, porque o toque ainda não tem nenhuma reação ligada a ele…".
-- **O que já vem pronto:** saiu da montagem da Aula 1 a frase solta "O jardim e os personagens já estão preparados", e a mensagem de vitória da Aula 2 deixou de ser apresentada como "já estava preparada": a fala diz que quem a faz aparecer é a contagem montada pela criança. O reconhecimento do que veio pronto fica no certificado ("O jardim e os personagens já vieram prontos, mas olha só o que você programou…").
+- **O que já vem pronto:** saiu da montagem da Aula 1 a frase solta "O jardim e os personagens já estão preparados", e a mensagem de vitória da Aula 2 deixou de ser apresentada como "já estava preparada": a fala diz que quem a faz aparecer é a contagem montada pela criança. Ajuste de 10/10/2026: também saiu do certificado a ressalva sobre o que veio pronto. A celebração mostra as regras programadas e o jogo funcionando; o preparo dos desenhos fica nas notas da equipe. A descrição do curso e as páginas 2 e 6 do Mapa da Aventura seguem essa mesma direção. A revisão das falas da Aula 2 não encontrou ressalvas desse tipo; a orientação sobre o resumo preenchido foi mantida porque explica o que fazer ao publicar.
 - **Três vozes:** "você" para o que é da criança e o que ela faz, "a gente" para pensar junto e convidar, "eu" só na demonstração (regra registrada nas Diretrizes). "No nosso jogo" virou "No seu jogo" na experiência do toque e na montagem da Aula 2; na experiência do Achados, em que o jogo da criança ainda não conta, ficou "Aqui no jardim é parecido".
 - **Durações:** com as explicações, alguns vídeos ficaram um pouco mais longos: abertura 35 a 45 s, caderno 25 a 35 s, experiência do toque 70 a 90 s, retomada da Aula 2 25 a 35 s, experiência do Achados 75 a 95 s e certificado 20 a 30 s.
 - **Pontes do Zappy:** começam convidando ("Sua vez!", "Agora…!", "Hora de…!") e falam do jogo da criança ("Seus personagens já aparecem, mas Achados ainda fica em zero").

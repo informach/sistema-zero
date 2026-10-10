@@ -33,7 +33,9 @@ studio-aulas sem comprovar que esse formato existe e foi solicitado.
 5. Termine com a ação real: Próxima seção, envio com confirmação ou Concluir aula.
 6. Escreva como se falasse com uma pessoa: "você", verbos simples, sem travessões.
    Não repetir elogios, perguntas retóricas, agenda ou promessas da próxima aula.
-7. Reconheça o que veio preparado e o que a pessoa programou, sem exagerar sua autoria.
+7. Comemore o que a pessoa fez e o resultado, sem exagerar sua autoria. O preparo do cenário,
+   dos desenhos e das regras iniciais fica nas notas da equipe; não vira ressalva na comemoração
+   nem no caderno. Cite um elemento existente só quando seu papel ajuda a executar a ação.
 
 ## Aula e Como Fazer
 

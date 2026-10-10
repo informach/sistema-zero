@@ -23,7 +23,10 @@ A conclusão desta seção exige assistir ao vídeo e pegar o certificado.
 A revisão de 29/09/2026 segue o encerramento da Aula 1 já gravada: a última fala é a ação
 de saída. A comemoração vem antes de pegar o certificado; a narração termina em **Concluir fase**.
 
-A fala reconhece o que foi programado e comemora com "Parabéns pelo seu jogo!". Debinha entra,
+A fala comemora as duas regras e o resultado: "Você terminou o Cadê Todo Mundo! Olha só o que você
+programou: o toque que faz cada personagem aparecer e a contagem dos achados. São essas regras
+que fazem a busca funcionar!". O preparo do jardim e dos desenhos fica nas notas da equipe,
+sem ressalva na comemoração. A professora diz "Parabéns pelo seu jogo!". Debinha entra,
 diz **“Eu consegui!”** e sai (ID **CERTP2-D01**). A professora retoma com **Pegar meu certificado**
 e, após o download, **Concluir fase**. A participação vem antes desses comandos; não acrescentar
 uma despedida depois da saída. A referência anterior à inserção é de 20 a 30 segundos; medir a

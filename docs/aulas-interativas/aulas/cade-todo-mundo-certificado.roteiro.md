@@ -4,7 +4,7 @@ Um vídeo, somente na celebração. **Produção em 10/10/2026:** roteiro atuali
 
 **Quem fala:** **Professora** conduz o encerramento; **Debinha (avatar)** comemora dentro do vídeo; **Zappy na página (não gravar)** orienta na plataforma, fora do vídeo. Marcar a entrada e a saída da Debinha sem sobrepor vozes ou cobrir o jogo e os botões. [Direção dos avatares](../AVATARES-NOS-VIDEOS.md).
 
-Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras, cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). O que já veio pronto aparece na comemoração, junto do que a pessoa programou (Diretrizes, seção 6, revisão de 06/10/2026).
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras, cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). A comemoração destaca o que a pessoa programou e o resultado no jogo. O preparo dos desenhos é informação interna de produção (Diretrizes, seção 3, revisão de 10/10/2026).
 
 ## Como o seu jardim funciona
 
@@ -22,7 +22,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Você terminou o Cadê Todo Mundo! O jardim e os personagens já vieram prontos, mas olha só o que você programou: o toque que faz cada personagem aparecer e a contagem dos achados. São essas regras que fazem a busca funcionar!
+> “Você terminou o Cadê Todo Mundo! Olha só o que você programou: o toque que faz cada personagem aparecer e a contagem dos achados. São essas regras que fazem a busca funcionar!
 >
 > Parabéns pelo seu jogo!”
 
