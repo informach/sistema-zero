@@ -1,7 +1,6 @@
 import {
   isRecord,
   isSceneAction,
-  LIGHTHOUSE_POSITION,
   type SceneAction,
   type SceneId,
   sceneFrameRate,
@@ -16,6 +15,7 @@ import {
   type MatchScreen,
   type SceneStart,
   type SceneState,
+  semGruposNoPadrao,
 } from './state'
 
 /**
@@ -260,25 +260,19 @@ function chunks(json: string): string[] {
   return out
 }
 
-/** Cactos viram tuplas: um objeto por cacto multiplicava o tamanho do checkpoint por três. */
 /**
- * ⚠️⚠️ O lugar da chave (`keyPosition`, 06/10/2026) só sai do padrão na `lighthouse-position`.
- * Nas outras cenas ele é sempre o de fábrica, e a leitura o devolve (`hydrateSceneState` completa o
- * GRUPO ausente). Guardado em todo retrato, ele somava ~53 bytes por retrato: a `coordinates`, com
- * o estado e quatro retratos do Desfazer, passou de 31.839 para 32.104 bytes e estourou o teto de
- * `MAX_LEARNING_STATE_BYTES` (32.000). A gravação voltava 400 e a criança via "Esta experiência
- * mudou." no quarto gesto.
+ * Cactos viram tuplas: um objeto por cacto multiplicava o tamanho do checkpoint por três.
+ *
+ * ⚠️⚠️ E só os grupos fora do padrão vão gravados (`semGruposNoPadrao`, 10/10/2026): o retrato inteiro
+ * de todas as cenas, com os quatro do Desfazer, passava do teto de `MAX_LEARNING_STATE_BYTES` no
+ * quarto gesto (a `coordinates` em 06/10 e a `found-counter` do Cadê em 10/10), e a criança via
+ * "Esta experiência mudou." sem conseguir concluir. A leitura devolve o grupo ausente
+ * (`hydrateSceneState`).
  */
-const chaveNoPadrao = ({ keyPosition: k }: SceneState) =>
-  k.before === null && k.x === LIGHTHOUSE_POSITION.start.x && k.y === LIGHTHOUSE_POSITION.start.y
-const pack = (s: SceneState) => {
-  const { keyPosition, ...resto } = s
-  return {
-    ...resto,
-    ...(chaveNoPadrao(s) ? {} : { keyPosition }),
-    crowd: { ...s.crowd, cacti: s.crowd.cacti.map((c) => [c.id, c.x, c.velocity]) },
-  }
-}
+const pack = (s: SceneState) => ({
+  ...semGruposNoPadrao(s),
+  crowd: { ...s.crowd, cacti: s.crowd.cacti.map((c) => [c.id, c.x, c.velocity]) },
+})
 const unpack = (key: string, value: unknown) =>
   key === 'cacti' &&
   Array.isArray(value) &&
