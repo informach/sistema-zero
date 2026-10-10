@@ -1,6 +1,6 @@
 # Roteiro falado: Cadê Todo Mundo? | Aula 2
 
-Um vídeo por seção. **Produção em 10/10/2026:** roteiro atualizado com nove participações do **Dedé**, distribuídas pelos cinco vídeos, alternando com a Debinha da Aula 1. A gravação e a edição desta versão ainda não foram confirmadas. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo são referências anteriores às inserções; medir a versão final com as falas e os gestos, sem acelerar.
+Um vídeo por seção. **Produção em 10/10/2026:** roteiro atualizado com nove participações do **Dedé**, distribuídas pelos cinco vídeos, alternando com a Debinha da Aula 1. A gravação e a edição desta versão ainda não foram confirmadas. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo foram revistas em 10/10/2026 e já contam as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a versão final sem acelerar.
 
 **Quem fala:** **Professora** conduz a explicação; **Dedé (avatar)** participa dentro do vídeo; **Zappy na página (não gravar)** é o diálogo da plataforma. Zappy pode aparecer visualmente no meme ou na interface, mas não tem voz dentro do vídeo. O recurso Ouvir da página continua independente da gravação.
 
@@ -110,7 +110,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!”
 
-**Na tela:** **A2P3-D02** · Dedé entra somente depois de Achados mostrar 1. Manter o número e o primeiro personagem visíveis.
+**Na tela:** **A2P3-R01** · Dedé entra somente depois de Achados mostrar 1. Manter o número e o primeiro personagem visíveis.
 
 **Dedé (avatar):**
 
@@ -122,7 +122,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.”
 
-**Na tela:** **A2P3-D03** · Dedé olha para o lugar do último esconderijo. A contagem permanece em 3; esperar a pergunta antes de tocar outra vez.
+**Na tela:** **A2P3-R02** · Dedé olha para o lugar do último esconderijo. A contagem permanece em 3; esperar a pergunta antes de tocar outra vez.
 
 **Dedé (avatar):**
 
@@ -148,7 +148,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## 4. Deixe o jogo com a sua cara
 
-**Duração alvo:** 2 a 3 minutos, incluindo a galeria do Mapa, os gestos e o teste.
+**Duração alvo:** 3 a 4 minutos, incluindo a galeria do Mapa, os gestos e o teste.
 
 **Na tela:** começar pela revelação: no "A surpresa chegou", abrir o Mapa da Aventura na página **A surpresa do final** e, no "Olha quem mais pode brincar de se esconder", mostrar a galeria inteira, com os sete bichos e os seis esconderijos, por alguns segundos. Manter essa página aberta durante a entrada do Dedé.
 
@@ -172,11 +172,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.”
 
-**Na tela:** **A2P4-D02** · Dedé entra depois da troca do bichinho, antes de escolher o esconderijo. A pedra é a escolha dele, não uma exigência para quem assiste.
+**Na tela:** **A2P4-R01** · Dedé entra depois da troca do bichinho, antes de escolher o esconderijo. O toco é a escolha dele e o exemplo da demonstração, não uma exigência para quem assiste.
 
 **Dedé (avatar):**
 
-> “Meu gato vai se esconder atrás de uma pedra!”
+> “Meu gato vai se esconder atrás de um toco!”
 
 **Na tela:** Dedé sai. Explicar como trocar o esconderijo e manter as opções livres.
 
@@ -186,7 +186,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.”
 
-**Na tela:** **A2P4-D03** · Mostrar o bichinho e o esconderijo novos nas posições anteriores. Dedé entra depois de terminar a troca, sem cobrir o jogo.
+**Na tela:** **A2P4-R02** · Mostrar o bichinho e o esconderijo novos nas posições anteriores. Dedé entra depois de terminar a troca, sem cobrir o jogo.
 
 **Dedé (avatar):**
 
@@ -240,7 +240,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Clique em Copiar link de jogar e mande esse link para eles. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.
+> “Clique em Copiar link de jogar e mande esse link para a sua família e os seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.
 >
 > Depois de copiar o link, clique em Fechar e, por fim, em Concluir fase.”
 

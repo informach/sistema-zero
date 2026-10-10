@@ -1,6 +1,6 @@
 # Roteiro falado: Cadê Todo Mundo? | Certificado
 
-Um vídeo, somente na celebração. **Produção em 10/10/2026:** roteiro atualizado com uma participação breve da **Debinha**, depois do Dedé na Aula 2. A gravação e a edição desta versão ainda não foram confirmadas. A duração abaixo é a referência anterior à inserção; medir o vídeo final com a pausa e os gestos, sem acelerar.
+Um vídeo, somente na celebração. **Produção em 10/10/2026:** roteiro atualizado com uma participação breve da **Debinha**, depois do Dedé na Aula 2. A gravação e a edição desta versão ainda não foram confirmadas. A duração abaixo foi revista em 10/10/2026 e já conta a inserção; medir o vídeo final com a pausa e os gestos, sem acelerar.
 
 **Quem fala:** **Professora** conduz o encerramento; **Debinha (avatar)** comemora dentro do vídeo; **Zappy na página (não gravar)** orienta na plataforma, fora do vídeo. Marcar a entrada e a saída da Debinha sem sobrepor vozes ou cobrir o jogo e os botões. [Direção dos avatares](../AVATARES-NOS-VIDEOS.md).
 

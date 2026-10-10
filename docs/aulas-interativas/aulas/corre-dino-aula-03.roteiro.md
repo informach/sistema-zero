@@ -135,7 +135,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Já consegui pular dos três jeitos!”
 
-**Na tela:** Debinha sai antes da resposta. Retomar a explicação do toque embaixo e testar os dois toques durante o mesmo salto. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Debinha sai antes da resposta. Retomar com o toque embaixo: tocar perto do chão junto da fala e mostrar o Dino se abaixando em vez de pular. Terminar o toque embaixo com o Dino no chão. Não começar o salto com dois toques antes da pergunta.
 
 **Professora:**
 
@@ -149,11 +149,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Dá para pular de novo lá no alto?”
 
-**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Debinha sai antes da resposta. Só então tocar duas vezes na barra de espaço durante o mesmo salto e manter à vista que o segundo toque não faz o Dino pular de novo no ar.
 
 **Professora:**
 
-> “Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.
+> “Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino. Depois de corrigir, teste de novo.
 >

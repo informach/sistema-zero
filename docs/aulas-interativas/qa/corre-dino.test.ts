@@ -15,6 +15,7 @@ import {
   stepExperiment,
 } from '../../../packages/core/src/learning/scene'
 import { evaluateStudioSectionProject } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
+import { participacoes } from './avatares-video'
 import { etapasDino, ORDEM_DINO, projetoDino } from './corre-dino-etapas'
 import { type Block, courseProjects } from './corre-dino-projetos-qa'
 import { problemasPedagogicos } from './diretrizes-pedagogicas'
@@ -23,10 +24,42 @@ import {
   ehExperiencia,
   falasSecao,
   gerarManifestoDino,
+  type SecaoDino,
   SUA_VEZ,
   telaSecao,
 } from './gerar-corre-dino'
 import { concordanciasErradas, PALAVRAS_DA_ESCOLA } from './palavras-da-escola'
+
+/**
+ * O que também se ouve no vídeo e fica fora de `falasSecao`: a fala da criança (Debinha ou Dedé)
+ * e a resposta curta da professora antes de retomar. Passam pelos mesmos guardas da narração
+ * (revisão de 10/10/2026: "Já colocamos a explosão e a tremida!" escapou porque só `falasSecao`
+ * era conferida e porque o guarda do "nós" não olhava o verbo).
+ */
+const vozesDoAvatar = (section: SecaoDino): string[] =>
+  participacoes(section).flatMap((p) => (p.reply ? [p.speech, p.reply] : [p.speech]))
+
+/**
+ * O "nós" escondido no verbo ("colocamos", "fizemos", "conseguimos", "achávamos"). "Vamos" fica,
+ * porque é o convite da voz "a gente / vamos" (Diretrizes, seção 6); os outros são nomes e
+ * adjetivos que só terminam igual.
+ */
+const NAO_E_NOS = new Set(['vamos', 'ramos', 'próximos', 'últimos', 'mínimos', 'máximos'])
+const primeiraDoPlural = (texto: string): string[] =>
+  [...texto.matchAll(/(?<!\p{L})\p{L}+(?:amos|emos|imos)(?!\p{L})/giu)]
+    .map((m) => m[0])
+    .filter((palavra) => !NAO_E_NOS.has(palavra.toLowerCase()))
+/** "A gente fez", "a gente já colocou": a autoria do jogo é de quem faz a fase, na voz "você". */
+const A_GENTE_FEZ = /\ba gente\s+(?:já\s+)?(?:fez|pôs|\p{L}+(?:ou|eu|iu))(?!\p{L})/iu
+/**
+ * "Clique em" nos botões e "toque" no jogo, nunca "aperte" (Diretrizes, seção 6). O verbo só
+ * aparece dentro de rótulos reais: o bloco Quando apertar…, os botões das experiências e as frases
+ * que a criança escreve no jogo (a dica da abertura e a descrição para o leitor de tela).
+ */
+const ROTULOS_COM_APERTAR =
+  /Quando apertar (?:Espaço|a tecla|qualquer tecla ou tocar na tela)|Apertar (?:Espaço|Enter|a tecla)|Aperte qualquer tecla ou toque (?:na tela para começar|para jogar de novo)|pule os cactos apertando espaço/g
+const apertarForaDosRotulos = (texto: string): string[] =>
+  texto.replace(ROTULOS_COM_APERTAR, '').match(/(?<!\p{L})apert\p{L}*/giu) ?? []
 
 const stages = etapasDino()
 const manifests = ORDEM_DINO.map((slug) => {
@@ -163,6 +196,7 @@ test('a criança lê aventura: falas, Zappy e Mapa da Aventura sem palavras da e
         section.title,
         section.bridge,
         ...falasSecao(section),
+        ...vozesDoAvatar(section),
         ...(section.caderno ?? []),
         ...(section.checks ?? []).map((check) => check.label),
       ]) {
@@ -208,7 +242,8 @@ test('experiências: o conceito primeiro, a demonstração na primeira pessoa e 
         section.key === 'descricao' ? 'Escute o que acontece' : 'Olha aqui: ',
       )
       expect(falas.at(-1)).toBe(SUA_VEZ)
-      const demonstracao = falas.slice(0, -1).join(' ')
+      // A criança e a resposta da professora entram no vídeo antes de "Agora é a sua vez".
+      const demonstracao = [...falas.slice(0, -1), ...vozesDoAvatar(section)].join(' ')
       expect(demonstracao, section.key).not.toMatch(ordemParaQuemAssiste)
       expect(demonstracao, section.key).toMatch(/\beu\b/)
       expect(demonstracao).not.toContain('Vou te mostrar')
@@ -235,7 +270,9 @@ test('jogo pronto: um exemplo só, na primeira pessoa, e a vez passa no fim', ()
     'Antes de montar o seu, vamos ver como ele funciona nesta versão pronta.',
   )
   expect(falas[1]).toStartWith('Olha aqui: ')
-  expect(falas.slice(0, -1).join(' ')).not.toMatch(ordemParaQuemAssiste)
+  expect([...falas.slice(0, -1), ...vozesDoAvatar(abertura)].join(' ')).not.toMatch(
+    ordemParaQuemAssiste,
+  )
   expect(falas.at(-1)).toStartWith('Agora é a sua vez: jogue')
   expect(falas.at(-1)).toEndWith('Quando terminar, clique em Próxima parte.')
   expect(abertura.caderno?.join(' ')).toContain('Clique na área do jogo para começar.')
@@ -244,7 +281,9 @@ test('jogo pronto: um exemplo só, na primeira pessoa, e a vez passa no fim', ()
 test('montagens seguem no imperativo e a publicação comemora com o link', () => {
   for (const aula of aulasDino)
     for (const section of aula.sections) {
-      expect(falasSecao(section).join(' ')).not.toMatch(/mexa e veja/i)
+      expect([...falasSecao(section), ...vozesDoAvatar(section)].join(' ')).not.toMatch(
+        /mexa e veja/i,
+      )
       if (!section.checks?.length) continue
       expect(section.caderno, section.key).toBeUndefined()
       expect(falasSecao(section)).not.toContain(SUA_VEZ)
@@ -270,10 +309,18 @@ test('falas conversam: ponte com convite e saída, retomada no jogo e sem "entã
       const id = `${aula.slug}/${section.key}`
       const ponte = section.bridge
       expect(ponte, id).toMatch(/(?:Próxima parte|Concluir fase)\.$/)
-      for (const fala of [ponte, ...falasSecao(section), ...(section.caderno ?? [])]) {
+      for (const fala of [
+        ponte,
+        ...falasSecao(section),
+        ...vozesDoAvatar(section),
+        ...(section.caderno ?? []),
+      ]) {
         expect(fala, id).not.toMatch(/(?:^|[.!?,;:]\s*)então\b/i)
         expect(fala, id).not.toMatch(/\b(?:nós|nosso|nossa|montamos)\b/i)
+        expect(primeiraDoPlural(fala), id).toEqual([])
+        expect(fala, id).not.toMatch(A_GENTE_FEZ)
         expect(fala, id).not.toContain('—')
+        expect(apertarForaDosRotulos(fala), id).toEqual([])
       }
       // O mapa segue o modelo aprovado do Cadê: apresenta o mapa e termina na saída.
       if (section.materials) continue
@@ -363,7 +410,12 @@ test('falas citam os rótulos que a criança vê', () => {
   for (const aula of aulasDino)
     for (const section of aula.sections) {
       const id = `${aula.slug}/${section.key}`
-      const texto = [section.bridge, ...falasSecao(section), ...(section.caderno ?? [])].join(' ')
+      const texto = [
+        section.bridge,
+        ...falasSecao(section),
+        ...vozesDoAvatar(section),
+        ...(section.caderno ?? []),
+      ].join(' ')
       expect(texto, id).not.toMatch(/\+ ao lado de senão(?! se)/)
       expect(texto, id).not.toMatch(/um número entre|mínimo \d|máximo \d/)
       expect(texto, id).not.toContain('Conta matemática')

@@ -2,6 +2,8 @@
 
 **Avatares nos vídeos, 10/10/2026:** as 8 aulas receberam 38 participações de Debinha e Dedé, alternando por aula, com Debinha na primeira. Os roteiros distinguem Professora, avatar e Zappy na página; trazem entrada, saída e retomada, mantendo o passo a passo. As falas e âncoras estão na fonte `qa/meu-jeito.conteudo.json`, e os três documentos são gerados juntos. Gravação e edição desta versão ainda não confirmadas. [Direção e ordem dos avatares](AVATARES-NOS-VIDEOS.md).
 
+**Ajustes da revisão das falas, 10/10/2026:** na Fase 3, Debinha pergunta o que acontece se o fogo 2 ficar maior que o tracejado, em vez de chamar o desenho anterior de guia. Nas Fases 6 e 8, Dedé diz a conclusão que o "Por isso" da professora continua, e a pergunta do nome da folha fica só na montagem da folha. O guarda do curso confere também a fala do avatar e a resposta da professora a ele.
+
 **Revisão de continuidade da conversa, 07/10/2026:** preparar a folha da nave termina no próximo passo que falta; a observação das pedras começa voltando à prévia e iniciando a partida. Fonte, roteiros, manifestos e Mapa da Aventura (33 páginas) atualizados. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
 
 **Título:** O Jogo do Meu Jeito

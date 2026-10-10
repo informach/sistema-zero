@@ -230,13 +230,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Debinha (avatar):**
 
-> “Agora eu posso escolher onde a minha nave começa!”
+> “Esse bloco tem um monte de campos!”
 
-**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Debinha sai antes da resposta. Depois da saída, apontar os campos do bloco Criar nave junto da resposta: nome, x e y, largura e altura. Manter os valores de fábrica até a professora pedir a troca de x e y.
 
 **Professora:**
 
-> “Repare: o bloco já chega com o nome nave. É por esse nome que os outros blocos vão encontrar a sua nave, por isso mantenha. Para a nave ficar perto da parte de baixo da tela, troque o x para 400 e o y para 410, e clique fora de cada campo para confirmar.
+> “Cada campo diz uma coisa da nave: o nome, o lugar na tela e o tamanho. Repare: o bloco já chega com o nome nave. É por esse nome que os outros blocos vão encontrar a sua nave, por isso mantenha. Para a nave ficar perto da parte de baixo da tela, troque o x para 400 e o y para 410, e clique fora de cada campo para confirmar.
 >
 > A largura 54 e a altura 62 definem o tamanho da nave e já vêm certas: é só manter. E, se quiser, escolha as cores do corpo e das asas nos quadradinhos do bloco.
 >

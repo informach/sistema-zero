@@ -2,6 +2,8 @@
 
 **Avatares nos vídeos, 10/10/2026:** as 9 aulas receberam 78 participações de Debinha e Dedé, alternando por aula, com Debinha na primeira. Os roteiros distinguem Professora, avatar e Zappy na página; trazem entrada, saída e retomada, mantendo o passo a passo. As falas e âncoras estão na fonte `qa/nave-contra-asteroides.conteudo.json`, e os três documentos são gerados juntos. Gravação e edição desta versão ainda não confirmadas. [Direção e ordem dos avatares](AVATARES-NOS-VIDEOS.md).
 
+**Ajustes da revisão das falas, 10/10/2026:** a comemoração da Fase 9 nomeia o que a pessoa programou e o resultado no jogo, sem ressalva sobre os desenhos que já vêm nos blocos; a primeira página do Mapa da Aventura também perdeu essa ressalva (Diretrizes, seção 3). O PDF precisa ser gerado de novo. Na Fase 1, Debinha não promete mais escolher onde a nave começa: a montagem confere x 400 e y 410. As falas dos avatares e a comparação da campainha deixaram de usar "apertar". Na Fase 9, a reação ao compartilhamento passou para depois de Seu jogo está no Mural!, e o "Funcionou?" volta a vir logo depois dos testes e da comemoração. O guarda do curso confere também a fala do avatar e a resposta da professora a ele.
+
 **Revisão de continuidade da conversa, 07/10/2026:** os testes vêm antes de comentar seus resultados; som, desaparecimento da tela e retirada do grupo têm falas distintas. A publicação espera a confirmação antes da comemoração. Fonte, roteiros, manifestos e Mapa da Aventura (39 páginas) atualizados. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
 
 **Título do curso:** Nave Contra Asteroides

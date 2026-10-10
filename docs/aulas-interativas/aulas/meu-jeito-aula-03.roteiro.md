@@ -106,13 +106,13 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Debinha (avatar):**
 
-> “Posso usar o desenho anterior como guia!”
+> “E se o fogo 2 ficar maior que o tracejado?”
 
 **Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis.
 
 **Professora:**
 
-> “Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Olha só: agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”
+> “Vamos ver. Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Olha só: agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”
 
 **ID de edição:** `video-fantasma-avatar-02`.
 

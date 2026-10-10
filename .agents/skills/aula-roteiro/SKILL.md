@@ -10,6 +10,8 @@ A criança precisa saber o que fazer agora. Uma fala acolhedora pode ser direta 
 
 ## Fontes atuais
 
+- Leia docs/aulas-interativas/DIRETRIZES-PEDAGOGICAS.md inteiro antes de criar, revisar ou
+  adaptar qualquer curso. Ele é a referência única e prevalece sobre esta lista.
 - Leia docs/aulas-interativas/BRIEFING.md e ESPEC-ROTEIRO.md.
 - Para uma aula existente, leia o trio de proposta, manifesto e roteiro em
   docs/aulas-interativas/aulas/. Confira se há gerador em docs/aulas-interativas/qa/.
@@ -28,9 +30,11 @@ studio-aulas sem comprovar que esse formato existe e foi solicitado.
 2. Mantenha o passo a passo completo: caminho da paleta, bloco, encaixe, campo, valor e teste.
    Não peça para adivinhar uma peça nem use "faça como eu fiz" no lugar da instrução.
 3. Explique a palavra nova brevemente quando ela for necessária. Analogias são opcionais.
-4. Na experiência, diga como executar os testes necessários. Não faça a experiência pela
-   criança nem conte todos os resultados. Pistas ajudam, mas não escondem passos obrigatórios.
-5. Termine com a ação real: Próxima seção, envio com confirmação ou Concluir aula.
+4. O vídeo da experiência é uma demonstração: o narrador faz os testes na primeira pessoa e só
+   no fim passa a vez (DIRETRIZES). As instruções da própria experiência dizem à criança como
+   executar os testes, sem contar todos os resultados. Pistas não escondem passos obrigatórios.
+5. Termine com a ação real, com o rótulo da tela: Próxima parte, envio com confirmação ou
+   Concluir fase.
 6. Escreva como se falasse com uma pessoa: "você", verbos simples, sem travessões.
    Não repetir elogios, perguntas retóricas, agenda ou promessas da próxima aula.
 7. Comemore o que a pessoa fez e o resultado, sem exagerar sua autoria. O preparo do cenário,

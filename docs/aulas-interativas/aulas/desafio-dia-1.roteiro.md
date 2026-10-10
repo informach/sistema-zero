@@ -2,7 +2,7 @@
 
 **Vozes e produção · 10/10/2026:** **Professora** conduz; **Debinha (avatar)** participa em 8 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
 
-**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações são referências para ensaio, incluindo as novas falas; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações foram revistas em 10/10/2026 com as novas falas: cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 Seis seções, seis vídeos. Como na Aula 1 do Cadê Todo Mundo?, o dia começa pelo jogo pronto e pelo caderno. Depois, cada ideia tem sua seção: uma experiência mostra o conceito e a montagem seguinte o aplica no jogo (a cada quadro e o limite da tela). Até 05/10/2026, as duas primeiras seções formavam a aula separada de introdução, e as três ideias ficavam num só vídeo de montagem.
 
@@ -20,7 +20,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-intro-farol` · Seu primeiro jogo: A Chave do Farol
 
-**Duração alvo:** 50 a 65 segundos.
+**Duração alvo:** 70 a 90 segundos.
 
 **Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. Manter a cena parada durante a pergunta da Debinha.
 
@@ -76,7 +76,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d1-quadro` · Como o personagem anda
 
-**Duração alvo:** 70 a 90 segundos.
+**Duração alvo:** 90 a 110 segundos.
 
 **Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o x fica igual; no "Tá vendo?", manter o x à vista), ligar a seta e avançar alguns quadros (o x sobe). Não clicar em Rodar antes da pergunta. No "Olha a regra do movimento", apontar a regra com o movimento dentro de A cada quadro do jogo. **Meme na comparação:** na frase do desenho animado, um bloquinho folheado (flipbook) em que o personagem dá um passinho em cada folha. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
@@ -112,7 +112,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d1-andar` · Faça o personagem andar
 
-**Duração alvo:** 3 a 4 minutos, incluindo encaixes, teste e verificação. Não acelerar os encaixes para caber na estimativa.
+**Duração alvo:** 4 a 5 minutos, incluindo encaixes, teste e verificação. Não acelerar os encaixes para caber na estimativa.
 
 **Na tela:** abrir o projeto inicial da seção. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no jogo (sem setas na tela; no "Tá vendo?", manter o personagem parado à vista), depois a lembrança da experiência e o anúncio da montagem. Apresentar os comandos como bloquinhos; no "Olha aqui: neste menu", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois deixar à vista o fim da área **Ao iniciar**, com os blocos preparados; se for preciso, arrastar um espaço vazio entre os blocos. Só então abrir **Jogo 2D → Controles → Teclado, ações e toque**, arrastar **Ativar controles clássicos** até o fim de **Ao iniciar** e selecionar só as quatro direções. A Pré-visualização atualiza sozinha; aguardar a atualização sem recomendar Atualizar a cada encaixe.
 

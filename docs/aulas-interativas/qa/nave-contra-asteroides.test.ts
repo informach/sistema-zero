@@ -16,8 +16,14 @@ import {
 import { evaluateStudioSectionProject } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
 import { exampleHarness } from '../../../packages/studio/src/official-extensions/game-2d/__tests__/examplePlaythroughHarness'
 import { asteroidsExample } from '../../../packages/studio/src/official-extensions/game-2d/examples/arcade'
+import { participacoes } from './avatares-video'
 import { problemasPedagogicos } from './diretrizes-pedagogicas'
-import { aulasNave, falasSecao, gerarManifestoNave } from './gerar-nave-contra-asteroides'
+import {
+  aulasNave,
+  falasSecao,
+  gerarManifestoNave,
+  type SecaoNave,
+} from './gerar-nave-contra-asteroides'
 import { etapasNave, ORDEM_NAVE, projetoNave } from './nave-contra-asteroides-etapas'
 import { courseProjects } from './nave-contra-asteroides-projetos-qa'
 
@@ -171,8 +177,18 @@ test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez
   expect(experiencias).toBe(19)
 })
 
+/**
+ * O que a criança ouve no vídeo além da professora: a fala do avatar e a resposta curta da
+ * professora a ele (`reply`). Os guardas de fala valem para esses trechos também (revisão de
+ * 10/10/2026: "apertar" tinha passado só na voz do avatar).
+ */
+const falasDosAvatares = (s: SecaoNave): string[] =>
+  participacoes(s).flatMap((a) => [a.speech, ...(a.reply ? [a.reply] : [])])
+
 test('falas para a criança: sem o nome interno da seção e com a publicação comemorada', () => {
-  const falas = aulasNave.flatMap((a) => a.sections.flatMap((s) => [s.bridge, ...falasSecao(s)]))
+  const falas = aulasNave.flatMap((a) =>
+    a.sections.flatMap((s) => [s.bridge, ...falasSecao(s), ...falasDosAvatares(s)]),
+  )
   expect(falas.filter((f) => /mexa e veja/i.test(f))).toEqual([])
   const publicacao = aulasNave.flatMap((a) => a.sections).filter((s) => s.publish)
   expect(publicacao).toHaveLength(1)
@@ -316,19 +332,33 @@ test('mapa e rótulos: o Mapa não aponta para o vídeo e o som do disparo é ti
   expect(falas.match(/arrastar um espaço vazio entre os blocos/g)).toHaveLength(2)
 })
 
+/**
+ * "Clique em" nos botões e "toque em" no jogo, nunca "aperte" nem "apertar" (Diretrizes, seção 6).
+ * Só ficam de fora os rótulos que a criança lê na tela: o bloco Quando apertar a tecla, os botões
+ * Apertar a tecla e Apertar Enter das experiências e a dica "Aperte Enter para…", que ela mesma
+ * escreve no jogo. Com maiúscula, como na tela: "eu apertar a tecla" na fala continua barrado.
+ */
+const ROTULOS_COM_APERTAR =
+  /\bQuando apertar a tecla\b|\bApertar (?:a tecla|Enter)\b|\bAperte Enter para\b/g
+const APERTAR = /\bapert(?:e|em|o|a|am|ar|ando|ou|ei)\b/gi
+// Três vozes (Diretrizes, seção 6): "a gente" e "o seu jogo", nunca o "nós" de sala de aula.
+const NOS_DE_SALA = /\b(?:nós|nosso|nossa|nossos|nossas|montamos)\b/i
+
 test('conversa: sem "então" de ligação, sem "aperte" e sem troque e volte na entrega (06/10/2026)', () => {
   for (const aula of aulasNave)
     for (const s of aula.sections) {
       const id = `${aula.slug}/${s.key}`
+      // A fala do avatar e a resposta da professora a ele também são ouvidas (10/10/2026).
       const falas = [
         s.bridge,
         ...falasSecao(s),
+        ...falasDosAvatares(s),
         ...(s.questions ?? []).flatMap((q) => [q.prompt, ...q.choices.map((c) => c.label)]),
       ].join(' ')
       // "então" só como o encaixe do bloco Se: "dentro do então", "no então desse senão se".
       expect(falas.match(/(?<!\b(?:do|no|o|desse|dessa)\s)\bent[ãa]o\b/gi), id).toBeNull()
-      // "Aperte Enter para…" é o texto que a própria criança escreve na tela do jogo.
-      expect(falas.match(/\bapert(?:e|o)\b(?! Enter para)/gi), id).toBeNull()
+      expect(falas.replace(ROTULOS_COM_APERTAR, '').match(APERTAR), id).toBeNull()
+      expect(falas, id).not.toMatch(NOS_DE_SALA)
       expect(falas, id).not.toContain('—')
     }
   // Achado M1: a entrega da chuva de pedras não manda trocar 40 por 80 e voltar.

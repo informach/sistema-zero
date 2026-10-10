@@ -32,7 +32,7 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 **Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
-ID video-copia-publicada-avatar-01. Professora até “Para ela ver o desenho novo, você manda outra foto.”. Antes: Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul. Dedé: “E para mostrar a versão rosa do jogo?”. Retomada da professora: “Por isso, eu clico em Publicar de novo.”. Depois: Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira.
+ID video-copia-publicada-avatar-01. Professora até “Para ela ver o desenho novo, você manda outra foto.”. Antes: Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul. Dedé: “Ah! Para a família ver a nave rosa, tem que publicar de novo!”. Retomada da professora: “Por isso, eu clico em Publicar de novo.”. Depois: Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira.
 
 **Experiência existente:** `published-copy`. Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo. Sem palpite, pistas ou pergunta final.
 

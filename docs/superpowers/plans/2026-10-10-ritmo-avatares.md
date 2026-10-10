@@ -22,6 +22,8 @@
 - [x] Revisar os roteiros e propostas do Cadê e Farol, sincronizar as direções em seus geradores e regenerar manifestos.
 - [x] Atualizar a direção pedagógica, a skill espelhada e o inventário de entradas; registrar os cortes exatos da Aula 1.
 - [x] Rodar `bun test docs/aulas-interativas/qa`, `python docs/aulas-interativas/validar-roteiros.py`, `bun docs/aulas-interativas/qa/validar-manifestos.ts`, `bun docs/como-fazer/validar.ts` e Biome dos arquivos alterados.
-- [ ] Conferir preservação dos manifestos fora de `plannedVideo`, commit e push em staging; aguardar CI, conferir staging, promover o PR e verificar produção.
+- [x] Conferir preservação dos manifestos fora de `plannedVideo`, commit e push em staging; aguardar CI, conferir staging, promover o PR e verificar produção. Feito: `41a7af50e` entrou em staging e chegou à main pelo PR #197 (`5ba95785e`, 10/10/2026). A mudança é só de documentos; não há serviço a conferir em produção.
 
 Validação local: 204 testes passaram; 37 roteiros (203 clipes), 37 manifestos e 42 tutoriais conferidos. Comparação dos manifestos preserva todo o conteúdo fora de plannedVideo; comparação das fontes preserva todo o conteúdo fora de avatar. Nos roteiros manuais, a fala da professora foi conservada, com apenas a ponte Vamos ver. na Aula 2. A revisão de edição da Aula 1 está em docs/aulas-interativas/edicao-cade-aula-1-reacoes.md.
+
+Achados do review posterior, corrigidos em 10/10/2026: o gerador do Farol monta o plano de cada vídeo na ordem de corte e confere essa ordem no roteiro; os alvos de duração do Farol e do Cadê passaram a contar as falas novas; a regra da celebração chegou ao Farol; as inserções da Aula 2 do Cadê passaram à série R; e a resposta a A1P3-D01 perde "Por isso," na edição. O registro está em docs/aulas-interativas/modulos-desafio-primeiro-jogo.md e docs/aulas-interativas/modulos-cade-todo-mundo.md.

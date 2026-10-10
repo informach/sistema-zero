@@ -17,7 +17,7 @@ Dedé comemora as regras que fez funcionar antes da orientação de emissão. O 
 | --- | --- |
 | FCP2-D01 | “Eu fiz o jogo funcionar!” |
 
-As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 ## Triagem dos conceitos
 
@@ -32,7 +32,7 @@ A revisão final tem quatro perguntas em seção própria, antes da celebração
 
 ## Diagnóstico do desenho atual
 
-A seção obrigatória de apresentação comercial já foi retirada. A celebração distingue a autoria das regras dos desenhos e do movimento do barco preparado. A emissão usa o bloco existente. A revisão de 04/10 mantém as quatro perguntas e troca somente a pergunta de memória por um diagnóstico de coleta. O id novo `q-memoria-coleta` evita atribuir respostas antigas de `q2` ao novo enunciado. Preservar as outras perguntas e a estrutura de emissão.
+A seção obrigatória de apresentação comercial já foi retirada. A celebração nomeia as regras que a criança programou e o jogo funcionando. Desde o ajuste de 10/10/2026 (Diretrizes, seção 3), o preparo do cenário, dos desenhos e do barco fica nas notas da equipe, sem ressalva na fala: saiu "Os desenhos e o barco já vieram prontos, mas olha só o que você programou…", e a fala passou a "Você terminou A Chave do Farol! Olha só o que você programou…". A emissão usa o bloco existente. A revisão de 04/10 mantém as quatro perguntas e troca somente a pergunta de memória por um diagnóstico de coleta. O id novo `q-memoria-coleta` evita atribuir respostas antigas de `q2` ao novo enunciado. Preservar as outras perguntas e a estrutura de emissão.
 
 A gravação precisa usar uma conta sem emissão anterior para mostrar **Pegar meu certificado**. Quem já emitiu encontra **Baixar certificado (PDF)**; conferir o caso de retorno sem simular nova emissão.
 

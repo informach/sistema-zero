@@ -18,7 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy apertando a campainha de uma porta, com a legenda "apertou, tocou"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy tocando a campainha de uma porta, com a legenda "chegou, tocou"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Deixar o primeiro teste terminar sem tiros e apontar 0 vezes na peça.
 
@@ -34,13 +34,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Debinha (avatar):**
 
-> “Ela está esperando eu apertar a tecla!”
+> “Ah! Sem a tecla, o tiro não nasce!”
 
 **Na tela:** Debinha sai antes da resposta. Clicar em Apertar a tecla depois da resposta e continuar a comparação com a repetição.
 
 **Professora:**
 
-> “Isso mesmo. Agora eu clico em Apertar a tecla. Olha só: na mesma hora, nasce um tiro, e a peça mostra 1 vez, porque a tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém apertar o botão.
+> “Isso mesmo. Agora eu clico em Apertar a tecla. Olha só: na mesma hora, nasce um tiro, e a peça mostra 1 vez, porque a tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém chegar e tocar.
 >
 > Por último, eu levo Criar um tiro para Enquanto estiver rodando e clico em Começar o jogo. Nascem tiros sem parar, um em cada quadro, e o teste termina com 5 tiros, mesmo sem ninguém clicar em Apertar a tecla. Por isso, no seu jogo, Criar tiro vai ficar dentro de Quando acontecer, esperando a barra de espaço.
 >
@@ -165,7 +165,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Debinha (avatar):**
 
-> “Vou poder atirar quando eu apertar espaço!”
+> “Vou poder atirar com a barra de espaço!”
 
 **Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 

@@ -22,13 +22,21 @@ Esta é a situação atual de autoria: textos e direções aplicados; gravação
 ainda não confirmadas. Medir a duração final com as novas falas, sem acelerar os gestos. As
 âncoras e as falas dos avatares estão em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
+**Ajustes de 10/10/2026, depois da revisão de ritmo:**
+
+- **Celebração sem ressalva** (Diretrizes, seção 3, como no Cadê Todo Mundo?): o vídeo do certificado passou de "Os desenhos e o barco já vieram prontos, mas olha só o que você programou…" para "Você terminou A Chave do Farol! Olha só o que você programou…"; a primeira página do Mapa da Aventura trocou "O cenário, os desenhos e o movimento do barco já vêm preparados." por "Neste jogo, o barco só chega quando o farol acende."; e a descrição do curso perdeu a mesma frase. O preparo da arte e do barco fica nas notas da equipe. PDF regerado, com 27 páginas.
+- **Plano de edição na ordem de corte:** o gerador monta o `plannedVideo` com as participações na ordem do roteiro, D e R intercaladas, e para a geração se a ordem ou um trecho citado divergir do roteiro. O nome do roteiro voltou a ficar sozinho em "Roteiro falado", e a frase sobre a criança só aparece nos vídeos com avatar.
+- **Durações com as falas novas:** cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala. Mudaram `video-intro-farol` (de 50 a 65 s para 70 a 90 s), `video-d1-quadro` (de 70 a 90 s para 90 a 110 s), `video-d1-andar` (de 3 a 4 min para 4 a 5 min), `video-d2-contexto` (de 90 a 110 s para 120 a 140 s), `video-d2-recolher` e `video-d2-guardar` (de 2 a 3 min para 3 a 4 min) e `video-d3-sem-chave` (de 3 a 4 min para 5 a 6 min).
+
+No Admin: atualizar a descrição do curso, importar os quatro manifestos e substituir o anexo do Mapa da Aventura.
+
 **Revisão de continuidade da conversa, 07/10/2026:** a abertura anuncia a surpresa sem pedir segredo; o encerramento do Dia 2 reconhece o que a criança programou e retoma a promessa numa fala ligada ao envio. Propostas, roteiros e gerador dos manifestos atualizados. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
 
 **Título do curso:** Desafio do Primeiro Jogo · A Chave do Farol
 
 **Descrição curta:** Programe sua primeira aventura: encontre a chave e acenda o farol para guiar um barco.
 
-**Descrição:** Conheça a aventura jogando uma versão pronta. Depois, em três dias, programe as regras do seu jogo: faça o personagem andar pelo mapa, recolher a chave e abrir a porta do farol quando estiver com ela. O cenário, os desenhos e o movimento do barco já vêm preparados. Você constrói as regras que ligam esses momentos, escolhe os personagens e o cenário, troca os objetos, escreve os avisos e decide onde fica a chave. Depois de testar, aprende a publicar seu jogo no Mural. Tudo acontece dentro das fases, inclusive o Estúdio.
+**Descrição:** Conheça a aventura jogando uma versão pronta. Depois, em três dias, programe as regras do seu jogo: faça o personagem andar pelo mapa, recolher a chave e abrir a porta do farol quando estiver com ela. Você constrói as regras que ligam esses momentos, escolhe os personagens e o cenário, troca os objetos, escreve os avisos e decide onde fica a chave. Depois de testar, aprende a publicar seu jogo no Mural. Tudo acontece dentro das fases, inclusive o Estúdio.
 
 Revisão de 03/10/2026: aplicação do formato testado no Cadê Todo Mundo. Contexto pertinente antes de cada tarefa, instruções completas, menos navegação obrigatória, verificação antes do envio e publicação orientada.
 

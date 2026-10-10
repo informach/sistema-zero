@@ -26,7 +26,7 @@ As participações distinguem a chave sumir, a informação ficar guardada e o a
 | F2P3-D01 | “Como eu vejo se o jogo guardou a chave?” |
 | F2P4-D01 | “Agora quem joga vai saber para onde ir!” |
 
-As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 ## Triagem dos conceitos
 
@@ -103,9 +103,9 @@ A verificação é cumulativa em cada montagem: a seção 2 confere o movimento 
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d2-contexto` | Demonstração explicada da memória | Retomada e nova experiência | 90 a 110 s | Regravar |
-| `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 2 a 3 min | Gravar |
-| `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 2 a 3 min | Gravar |
+| `video-d2-contexto` | Demonstração explicada da memória | Retomada e nova experiência | 120 a 140 s | Regravar |
+| `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 3 a 4 min | Gravar |
+| `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 3 a 4 min | Gravar |
 | `video-d2-programar` | Aviso, teste e envio (o aviso com as palavras da criança fica para o Dia 3) | Mesmo projeto | 2 a 3 min | Regravar |
 
 **Personalização de 06/10/2026:** os projetos recebem o catálogo ampliado de imagens, com nomes reconhecíveis. Os sprites continuam `personagem`, `chave`, `farol` e `barco`; os passos e os critérios de coleta usam esses nomes e não dependem do desenho escolhido. A escolha de velocidade saiu do Dia 1; o movimento preparado permanece em 3.

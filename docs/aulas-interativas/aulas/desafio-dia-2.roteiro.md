@@ -2,7 +2,7 @@
 
 **Vozes e produção · 10/10/2026:** **Professora** conduz; **Dedé (avatar)** participa em 6 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
 
-**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações são referências para ensaio, incluindo as novas falas; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações foram revistas em 10/10/2026 com as novas falas: cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 Quatro seções, quatro vídeos: a experiência da memória e, depois, uma montagem para cada ideia, sempre no mesmo projeto (recolher a chave, guardar a coleta e avisar quem joga). As seções 2 e 3 verificam sem enviar; a seção 4 verifica e envia. Retomar o projeto enviado no Dia 1; o projeto preparado do Dia 2 só é a alternativa quando não houver envio anterior. Não reconstruir nem substituir um projeto já feito pela pessoa. O vídeo da experiência é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas. Cada montagem tem tempo para os encaixes.
 
@@ -14,7 +14,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d2-contexto` · O jogo guardou a chave?
 
-**Duração alvo:** 90 a 110 segundos.
+**Duração alvo:** 120 a 140 segundos.
 
 **Na tela:** mostrar brevemente, no projeto do fim do Dia 1, o personagem passando pela chave sem pegá-la. Depois abrir a experiência `collect-and-remember` e demonstrar a coleta com Guardar a coleta desligado, no ritmo da fala, deixando ver a chave sumir e o aviso mudar, enquanto `temChave` continua falso. No "Repare neste nome aqui", apontar o mostrador `temChave`; no "tá vendo?", manter `temChave` em falso à vista. **Meme na comparação:** na frase do bloquinho, o personagem anotando "peguei a chave ✔" num bloquinho; ao lado, o mesmo personagem sem anotar, com cara de "esqueci…". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
@@ -56,7 +56,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d2-recolher` · Recolha a chave
 
-**Duração alvo:** 2 a 3 minutos, incluindo encaixes, teste e verificação.
+**Duração alvo:** 3 a 4 minutos, incluindo encaixes, teste e verificação.
 
 **Na tela:** abrir o projeto da pessoa. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema (levar o personagem até a chave e, no "Tá vendo?", mostrar que ele passa por ela sem efeito), depois a lembrança e o anúncio. Em cada encaixe, primeiro deixar o destino à vista; só então abrir a categoria e pegar o bloco. O projeto ainda não tem a área **Quando acontecer**: deixar à vista um lugar sem blocos ao lado das áreas, abrir **Áreas do projeto**, pegar **Quando acontecer** e soltar nesse lugar. Se for preciso abrir espaço, arrastar um espaço vazio entre os blocos; na fala, "lugar sem blocos" é o destino e "espaço vazio" é só o ponto de onde se arrasta. Depois abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite ... começar a encostar no sprite ...** e soltar dentro da área nova. Escolher `personagem` no primeiro nome e `chave` no segundo.
 
@@ -84,7 +84,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Se eu só passar perto da chave, não vale!"
 
-**Na tela:** Dedé sai. Mostrar o espaço da ação dentro do encontro antes de buscar Destruir o sprite. com o espaço vazio do evento à vista, abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, soltar dentro do evento e escolher `chave`.
+**Na tela:** Dedé sai. Mostrar o espaço da ação dentro do encontro antes de buscar Destruir o sprite. Com o espaço vazio do evento à vista, abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, soltar dentro do evento e escolher `chave`.
 
 **Professora:**
 
@@ -128,7 +128,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d2-guardar` · Guarde que a chave foi encontrada
 
-**Duração alvo:** 2 a 3 minutos, incluindo encaixes e verificação.
+**Duração alvo:** 3 a 4 minutos, incluindo encaixes e verificação.
 
 **Na tela:** mostrar o fim da área **Ao iniciar**, logo abaixo de **Ativar controles clássicos**. Abrir **Programação → Variáveis**, pegar **Criar variável ... com valor ...** e soltar ali. Trocar o nome para `temChave` e clicar fora do campo. Abrir **Programação → Lógica & Se**, pegar o bloco **verdadeiro** (no catálogo, Verdadeiro ou falso; na tela, só o menu), soltar sobre o número do bloco e escolher **falso** no menu.
 
@@ -156,7 +156,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Ah! Na partida nova eu tenho que buscar a chave outra vez!"
 
-**Na tela:** Dedé sai. Mostrar o encontro que vai mudar a informação depois da coleta. deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Escolher `temChave`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**.
+**Na tela:** Dedé sai. Mostrar o encontro que vai mudar a informação depois da coleta. Deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Escolher `temChave`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**.
 
 **Professora:**
 

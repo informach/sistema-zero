@@ -42,7 +42,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Isso. Vamos começar para ver o que muda. Por último, eu clico em Toque para começar, na tela da experiência. Olha só: o estado vira jogando, e as pedras voltam a nascer. Aqui, o começo por toque já veio pronto, mas, no seu jogo, você vai programar o Enter para começar a partida.
+> “Isso. Vamos começar para ver o que muda. Por último, eu clico em Toque para começar, na tela da experiência. Olha só: o estado vira jogando, e as pedras voltam a nascer. Aqui, a partida começa com um toque, mas, no seu jogo, você vai programar o Enter para começar a partida.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
 
@@ -57,7 +57,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Direção geral do clipe:** Começar pela retomada: abrir o jogo e, no "Tá vendo?", mostrar as pedras caindo desde o começo. A pergunta x > 0 do Se é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos antes de encaixar a pergunta nova; conferir antes da gravação onde fica a lixeira. O bloco de estado inicial entra depois de criar os ramos, para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. No "Olha aqui", apontar os dois + da linha de baixo do Se e clicar no que fica antes de senão se. Não colocar o relógio de 40 quadros dentro do quadro principal. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
-**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Parar com a sequência inteira solta fora de A cada quadro do jogo.
 
 **Professora:**
 
@@ -75,7 +75,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “A sequência saiu inteira, sem apagar nada!”
 
-**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Dedé sai antes da resposta. Depois da saída, mostrar A cada quadro do jogo vazio. Parar com jogando escolhido ao lado de Se.
 
 **Professora:**
 
@@ -93,7 +93,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Posso ficar na abertura sem perder uma vida!”
 
-**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Dedé sai antes da resposta. Depois da saída, devolver a sequência ao então junto da fala. Parar com inicio ao lado de senão se.
 
 **Professora:**
 
@@ -111,7 +111,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Quem chegar ao meu jogo vai ver essa tela primeiro!”
 
-**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Dedé sai antes da resposta. Depois da saída, mostrar o espaço do então desse senão se. Parar com Mostrar tela preenchido à vista.
 
 **Professora:**
 
@@ -127,7 +127,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E como o jogo começa nessa tela?”
 
-**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Manter a abertura real à vista. A tecla Enter ainda não inicia a partida nesta parte.
+**Na tela:** Dedé sai antes da resposta. Depois da saída, mostrar o fim de Ao iniciar. Manter a abertura real à vista. A tecla Enter ainda não inicia a partida nesta parte.
 
 **Professora:**
 
@@ -143,7 +143,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “A abertura apareceu!”
 
-**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Dedé sai antes da resposta. Depois da saída, seguir para a conferência dos blocos.
 
 **Professora:**
 
@@ -283,7 +283,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Dedé (avatar):**
 
-> “E se eu apertar Enter no meio da partida?”
+> “E se eu tocar em Enter no meio da partida?”
 
 **Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 

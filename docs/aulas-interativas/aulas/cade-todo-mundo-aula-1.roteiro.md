@@ -1,6 +1,6 @@
 # Roteiro falado: Cadê Todo Mundo? | Aula 1
 
-Um vídeo por seção. **Status em 10/10/2026:** a responsável informou que os quatro vídeos-base já foram gravados. Este roteiro organiza oito inserções da **Debinha**, confirmada como a criança desta aula: as seis informadas e duas novas na parte 4. Preservar a fala gravada da professora; conferir os pontos de corte no material original. As durações abaixo são referências anteriores às inserções, não tempos medidos da montagem final.
+Um vídeo por seção. **Status em 10/10/2026:** a responsável informou que os quatro vídeos-base já foram gravados. Este roteiro organiza oito inserções da **Debinha**, confirmada como a criança desta aula: as seis informadas e duas novas na parte 4. Na parte 3, a edição corta duas palavras do áudio gravado (A1P3-D01). Preservar a fala gravada da professora; conferir os pontos de corte no material original. As durações abaixo foram revistas em 10/10/2026 e já contam as inserções: cobrem a fala estimada a 137 palavras por minuto e, na montagem, os gestos sem fala. São alvos para a montagem, não tempos medidos.
 
 **Quem fala:** **Professora** é a voz que conduz a explicação; **Debinha (avatar)** é a participação dentro do vídeo; **Zappy na página (não gravar)** é o diálogo da plataforma, fora da gravação. O Zappy não ganha voz no meio do vídeo. Quando aparece no meme ou na interface capturada, sua presença é visual. O botão Ouvir da plataforma continua independente da edição do vídeo.
 
@@ -52,7 +52,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## 2. Seu Mapa da Aventura
 
-**Duração alvo:** 25 a 35 segundos.
+**Duração alvo:** 35 a 45 segundos.
 
 **Na tela:** mostrar a capa e a página de orientação do Mapa da Aventura, o caderno real. No "Olha aqui", apontar o mapa. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
 
@@ -100,11 +100,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E como eu faço essa ligação?”
 
-**Na tela:** Debinha sai. Só então a professora demonstra o clique em Ligar a reação ao toque e toca novamente no arbusto.
+**Na tela:** Debinha sai. Na edição, cortar "Por isso," do áudio gravado e retomar em "eu clico": a pergunta pede o como, e a resposta é a demonstração ([corte A1P3-D01](../edicao-cade-aula-1-reacoes.md)). Só então a professora demonstra o clique em Ligar a reação ao toque e toca novamente no arbusto.
 
 **Professora:**
 
-> “Por isso, eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível.
+> “Eu clico em Ligar a reação ao toque e toco no arbusto de novo. Olha só: agora sim ele fica invisível, e dá para ver o coelho que estava atrás! Então essa é a reação que eu liguei ao toque: o arbusto ficar invisível.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
 
@@ -114,7 +114,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## 4. Faça alguém aparecer
 
-**Duração alvo:** 3 a 4 minutos, incluindo os gestos de montagem e teste.
+**Duração alvo:** 4 a 5 minutos, incluindo os gestos de montagem e teste.
 
 **Na tela:** abrir o Estúdio incorporado com o projeto inicial. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo na Pré-visualização e, no "Tá vendo?", mostrar que nada acontece. Depois da lembrança da experiência, apresentar os comandos como bloquinhos; no "Olha aqui: neste menu", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio entre os blocos se ela começar fora da tela, e, no "Olha aqui: nessa área", enquadrar o evento do grupo **esconderijos**, ainda vazio. Deixar à vista o espaço ao lado de **fazer** antes de abrir a categoria na paleta. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.
 

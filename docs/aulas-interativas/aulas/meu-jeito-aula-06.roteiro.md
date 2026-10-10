@@ -56,7 +56,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Dedé (avatar):**
 
-> “Que nome eu dou para a folha?”
+> “A folha não pode se chamar nave também!”
 
 **Na tela:** Dedé sai antes da resposta. Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite.
 

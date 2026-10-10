@@ -33,7 +33,7 @@ alternar na seguinte. Os roteiros separam a professora, o avatar e as falas do Z
 
 | Aula | Avatar e participações | Estado da produção |
 | --- | --- | --- |
-| Aula 1 | Debinha: oito entradas nos quatro vídeos (duas novas na parte 4) | Gravação base informada; pontos de edição registrados |
+| Aula 1 | Debinha: oito entradas nos quatro vídeos (duas novas na parte 4), mais o corte de “Por isso,” na parte 3 | Gravação base informada; pontos de edição registrados |
 | Aula 2 | Dedé: nove entradas distribuídas pelos cinco vídeos | Aplicado ao roteiro; gravação e edição não confirmadas |
 | Certificado | Debinha: “Eu consegui!” na celebração | Aplicado ao roteiro; gravação e edição não confirmadas |
 
@@ -43,10 +43,27 @@ e a conferência passa a começar com “Se algo não funcionou no seu jogo…�
 O quiz continua sem vídeo. Zappy não fala dentro dos vídeos; as pontes e o recurso Ouvir ficam
 na página. Se aparecer no meme ou na interface capturada, sua presença é visual.
 
-Os tempos antigos são referências para produção; conferir a duração final com as participações.
+Os tempos dos roteiros foram revistos em 10/10/2026 e já contam as participações; conferir a duração final na montagem, sem acelerar.
 As orientações históricas de regravação abaixo não substituem o estado atual da tabela. Não
 regravar os quatro vídeos da Aula 1 apenas por causa das marcações. As falas e os IDs de edição
 estão em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md) e nos roteiros de cada aula.
+
+## Ajustes de 10/10/2026 e pendências de produção
+
+Ajustes depois da revisão de ritmo, aplicados aos roteiros, propostas, gerador e manifestos:
+
+- **Celebração sem ressalva** (Diretrizes, seção 3): o certificado comemora as regras programadas e o jogo funcionando, sem dizer que o jardim e os desenhos vieram prontos. A descrição do curso e as páginas 2 e 6 do Mapa da Aventura seguem a mesma regra, e o PDF do repositório foi regerado com essa mudança.
+- **Falas do Dedé na Aula 2:** em A2P4-R01, “Meu gato vai se esconder atrás de uma pedra!” virou “Meu gato vai se esconder atrás de um toco!”, a mesma escolha da demonstração. Em A2P5-D01, a resposta “mande esse link para eles” virou “mande esse link para a sua família e os seus amigos”, porque o “eles” tinha perdido o antecedente.
+- **Corte na Aula 1:** a resposta a A1P3-D01 perde o “Por isso,” na edição, sem nova locução ([corte registrado](edicao-cade-aula-1-reacoes.md)).
+- **IDs de edição:** o manifesto da Aula 1 passou a citar as seis entradas originais pelo ID, na ordem de corte. As inserções da revisão de ritmo usam a série R nas duas aulas: A2P3-D02, A2P3-D03, A2P4-D02 e A2P4-D03 viraram A2P3-R01, A2P3-R02, A2P4-R01 e A2P4-R02 ([regra dos IDs](AVATARES-NOS-VIDEOS.md#ids-de-edição)).
+- **Durações com as participações:** Seu Mapa da Aventura, de 25 a 35 s para 35 a 45 s; Faça alguém aparecer, de 3 a 4 min para 4 a 5 min; Deixe o jogo com a sua cara, de 2 a 3 min para 3 a 4 min. Os outros alvos já cobriam a fala estimada a 137 palavras por minuto.
+
+**Pendências de produção:**
+
+1. **Trocar o PDF anexado no Admin.** O **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf** foi regerado em 10/10/2026 com a regra da celebração; a versão anterior ainda traz, nas páginas 2 e 6, a ressalva sobre o que veio pronto. Substituir o anexo do bloco **caderno** (Aula 1, **Seu Mapa da Aventura**) por esse PDF, preservando o bloco e o histórico, antes de editar o vídeo do Mapa.
+2. Atualizar a descrição do curso no Admin com o texto do topo deste documento.
+3. Importar os três manifestos, conferindo as chaves e os vídeos já vinculados.
+4. Editar a Aula 1 com as oito entradas da Debinha e o corte da parte 3; gravar e editar a Aula 2 e o certificado com as participações.
 
 ## Conteúdo e continuidade
 
@@ -84,7 +101,7 @@ Arquivo: **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**. Fonte editável:
 **bun docs/aulas-interativas/recursos/cade-todo-mundo/gerar-caderno.ts**.
 
 A Aula 2 mantém **retireBlockKeys: ['caderno']** para o molde anterior, mas não recebe outro PDF.
-O PDF atualizado tem sete páginas: capa, visão geral, duas montagens, personalização, publicação e revisão com certificado. A página 5 mostra os sete bichos e os seis esconderijos, com os desenhos e nomes do jogo; a publicação fica na página 6 e a revisão com certificado na 7. A galeria é gerada a partir de **JARDIM_BICHOS**, **JARDIM_ESCONDERIJOS** e **jardimSvg**, as mesmas fontes do projeto. Os desenhos dos blocos usam suas cores oficiais. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
+O PDF atualizado tem sete páginas: capa, visão geral, duas montagens, personalização, publicação e revisão com certificado. A página 5 mostra os sete bichos e os seis esconderijos, com os desenhos e nomes do jogo; a publicação fica na página 6 e a revisão com certificado na 7. A galeria é gerada a partir de **JARDIM_BICHOS**, **JARDIM_ESCONDERIJOS** e **jardimSvg**, as mesmas fontes do projeto. Os desenhos dos blocos usam suas cores oficiais. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. O PDF de 10/10/2026 ainda precisa substituir o anexo atual (ver **Pendências de produção**, acima). Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
 Como folhear e baixar está no tutorial de materiais.
 
 ## Configuração que deve ser preservada

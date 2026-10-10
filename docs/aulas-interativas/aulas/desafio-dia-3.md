@@ -34,7 +34,7 @@ A montagem da resposta com chave tem três entradas: no problema inicial, depois
 | F3P7-D01 | “Eu tenho que escolher um desses três lugares?” |
 | F3P8-D01 | “Quero mandar o jogo para os meus amigos!” |
 
-As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 ## Triagem dos conceitos
 
@@ -173,7 +173,7 @@ Retomar x/y da experiência. Em **Ao iniciar → Criar sprite chave**, editar so
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
 | `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 60 a 75 s | Regravar |
-| `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 3 a 4 min | Gravar |
+| `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 5 a 6 min | Gravar |
 | `video-d3-decisao` | Completar então, testar o jogo e enviar | Roteiro revisado | 4 a 5 min, sem acelerar os percursos | Regravar |
 | `video-d3-personalizar` | Revelar a surpresa do final; trocar personagem, barco, chave, o par do farol e cenário; testar e verificar | Mesmo projeto enviado | 3 a 4 min | Regravar |
 | `video-d3-farol-mensagens` | Escrever os quatro avisos e testar | Mesmo projeto enviado | 90 a 120 s | Gravar |

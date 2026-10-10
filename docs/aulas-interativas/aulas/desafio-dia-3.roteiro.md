@@ -2,7 +2,7 @@
 
 **Vozes e produção · 10/10/2026:** **Professora** conduz; **Debinha (avatar)** participa em 14 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
 
-**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações são referências para ensaio, incluindo as novas falas; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações foram revistas em 10/10/2026 com as novas falas: cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 Oito seções: experiência com a porta, resposta sem chave, resposta com chave, escolha das imagens (com o par do farol), avisos, experiência de posição, posição da chave e publicação. Manter o projeto enviado no Dia 2 e o mesmo Estúdio em todas as montagens e personalizações. A experiência de posição é separada e não modifica o projeto. A verificação intermediária não pede envio; a seção decisao recebe a entrega única do dia. Ajustar as durações no ensaio, sem acelerar encaixes, percursos ou a espera do barco. Não atribuir à pessoa a arte ou a animação preparada.
 
@@ -48,7 +48,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Vídeo `video-d3-sem-chave` · Avise quando faltar a chave
 
-**Duração alvo:** 3 a 4 minutos, incluindo encaixes, teste e verificação.
+**Duração alvo:** 5 a 6 minutos, incluindo encaixes, teste e verificação.
 
 **Na tela:** retomar o projeto da pessoa. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema (levar o personagem até o farol e, no "Tá vendo?", mostrar que nada acontece), depois a lembrança e o anúncio. Em cada encaixe, primeiro deixar o destino à vista; só então abrir a categoria e pegar o bloco. Mostrar o encontro com a chave já montado e o espaço abaixo dele, na área **Quando acontecer**; se for preciso, arrastar um espaço vazio entre os blocos. Abrir **Jogo 2D → Colisões → Encostar e bloquear**, pegar **Quando o sprite começar a encostar no sprite**, soltar abaixo do encontro com a chave e configurar `personagem` e `farol`.
 
@@ -72,7 +72,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Agora o jogo vai perceber quando eu chegar ao farol!"
 
-**Na tela:** Debinha sai. Mostrar o espaço dentro do novo encontro antes de montar a pergunta. com o espaço vazio do novo evento à vista, abrir **Programação → Lógica & Se** e soltar **Se** dentro dele. A pergunta `x > 0` do **Se** é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos e deixar à vista o lugar vazio ao lado de **Se**. Só então abrir **Programação → Valores**, pegar **valor da variável**, soltar nesse lugar e escolher `temChave`. Conferir antes da gravação onde fica a lixeira.
+**Na tela:** Debinha sai. Mostrar o espaço dentro do novo encontro antes de montar a pergunta. Com o espaço vazio do novo evento à vista, abrir **Programação → Lógica & Se** e soltar **Se** dentro dele. A pergunta `x > 0` do **Se** é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos e deixar à vista o lugar vazio ao lado de **Se**. Só então abrir **Programação → Valores**, pegar **valor da variável**, soltar nesse lugar e escolher `temChave`. Conferir antes da gravação onde fica a lixeira.
 
 **Professora:**
 
@@ -294,7 +294,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Se eu misturar os modelos, o farol muda de tipo quando acende!"
 
-**Na tela:** Debinha sai. Passar para a escolha do cenário depois de a criança sair. em **Enquanto estiver rodando**, deixar à vista **A cada quadro do jogo** e **Desenhar o cenário praia-tropical**. Abrir a lista no nome do cenário e escolher **noite-na-ilha**. Mostrar o cenário completo, com ponte, terra e mar nas mesmas posições.
+**Na tela:** Debinha sai. Passar para a escolha do cenário depois de a criança sair. Em **Enquanto estiver rodando**, deixar à vista **A cada quadro do jogo** e **Desenhar o cenário praia-tropical**. Abrir a lista no nome do cenário e escolher **noite-na-ilha**. Mostrar o cenário completo, com ponte, terra e mar nas mesmas posições.
 
 **Professora:**
 
