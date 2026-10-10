@@ -33,16 +33,12 @@ import {
   toggleCornerMask,
   withRectCorners,
 } from '../../vector/rectCorners'
+import { DEFAULT_STROKE_WIDTH } from '../../vector/shapes'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import { AlignCenter, AlignLeft, AlignRight, SquareRoundCorner } from '../ui/icons'
 import { Panel, type PanelDisclosure, usePanelLook } from '../ui/Panel'
 import { useVectorEditor } from './vector/VectorEditorScope'
-import {
-  formatStrokeWidth,
-  gradientCss,
-  STROKE_WIDTHS,
-  strokeWidthIndex,
-} from './vector/vectorTools'
+import { formatStrokeWidth, gradientCss } from './vector/vectorTools'
 
 /**
  * A grade 2x2 dos cantos, na ordem VISUAL (cima-esquerda, cima-direita, baixo-esquerda,
@@ -86,6 +82,7 @@ export function VectorPropertiesPanel({
     setPolygonSides,
     setStarTips,
   } = useVectorEditor()
+  const strokeWidth = style.stroke?.width ?? DEFAULT_STROKE_WIDTH
   const single = selected.length === 1
   const singleShape = single ? (selected[0] ?? null) : null
   const selectedRect = singleShape?.type === 'rect' ? singleShape : null
@@ -157,21 +154,25 @@ export function VectorPropertiesPanel({
         </Button>
 
         <label className="mt-3 block text-sm font-bold text-pin-muted">
-          {COPY.vector.strokeWidth}
+          <span className="flex items-center justify-between gap-2">
+            {COPY.vector.strokeWidth}
+            <span aria-hidden="true" className="tabular-nums text-pin-text">
+              {formatStrokeWidth(strokeWidth)}
+            </span>
+          </span>
           <input
             type="range"
             name="vector-stroke-width"
-            min={0}
-            max={STROKE_WIDTHS.length - 1}
-            step={1}
-            // Degrau que alcança a espessura; legado 4/6/8 cai no ÚLTIMO (antes
-            // caía no primeiro, mostrando o traço mais fino para um grosso).
-            value={strokeWidthIndex(style.stroke?.width ?? 2)}
-            // O valor acessível é a espessura REAL ("8" no legado), não o índice.
-            aria-valuetext={formatStrokeWidth(style.stroke?.width ?? 2)}
+            aria-label={COPY.vector.strokeWidth}
+            min={0.5}
+            max={10}
+            step={0.5}
+            // Só a posição do controle é limitada; selecionar um legado não altera a forma.
+            value={Math.min(10, Math.max(0.5, strokeWidth))}
+            aria-valuetext={formatStrokeWidth(strokeWidth)}
             disabled={style.stroke === null}
             onChange={(event) => {
-              const width = STROKE_WIDTHS[Number(event.target.value)] ?? 2
+              const width = Number(event.target.value)
               applyStyle({ stroke: { color: style.stroke?.color ?? '#000000', width } })
             }}
             className="mt-1 w-full accent-pin-accent"

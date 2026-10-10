@@ -19,9 +19,11 @@ export interface ShapeStyle {
   opacity: number
 }
 
+export const DEFAULT_STROKE_WIDTH = 1
+
 export const DEFAULT_STYLE: ShapeStyle = {
   fill: '#78dc52',
-  stroke: { color: '#000000', width: 2 },
+  stroke: { color: '#000000', width: DEFAULT_STROKE_WIDTH },
   opacity: 1,
 }
 
@@ -75,7 +77,7 @@ export function makeLine(a: Vec2, b: Vec2, style: ShapeStyle): VectorShape {
   // Linha sem stroke seria invisível — garante um traço (cor sólida; degradê no
   // fill não vira cor de contorno).
   const fallback = typeof style.fill === 'string' && style.fill !== 'none' ? style.fill : '#000000'
-  const stroke = style.stroke ?? { color: fallback, width: 2 }
+  const stroke = style.stroke ?? { color: fallback, width: DEFAULT_STROKE_WIDTH }
   return { ...base({ ...style, stroke }), type: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y }
 }
 
