@@ -120,8 +120,9 @@ export function makePolygonFromPoints(points: Vec2[], style: ShapeStyle): Vector
 }
 
 export function makePath(d: string, style: ShapeStyle): VectorShape {
-  // Pincel: traço aberto — SEM preenchimento por default (o `d` não fecha).
-  const stroke = style.stroke ?? { color: '#000000', width: 3 }
+  // Pincel: traço aberto — SEM preenchimento por default (o `d` não fecha). Sem contorno escolhido,
+  // o traço sai preto na espessura PADRÃO, a mesma que o painel mostra (era 3 com o painel em 1).
+  const stroke = style.stroke ?? { color: '#000000', width: DEFAULT_STROKE_WIDTH }
   return { ...base({ fill: 'none', stroke, opacity: style.opacity }), type: 'path', d }
 }
 

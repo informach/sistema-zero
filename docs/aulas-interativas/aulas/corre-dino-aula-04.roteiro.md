@@ -130,7 +130,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Dedé (avatar):**
 
-> “O meu ainda está sem som.”
+> “No meu, o segundo toque também fez som!”
 
 **Na tela:** Dedé sai antes da resposta. Apontar o evento e o efeito na conferência; mostrar também o clique que libera o áudio, se necessário.
 

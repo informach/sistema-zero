@@ -29,7 +29,7 @@ que fazem a busca funcionar!". O preparo do jardim e dos desenhos fica nas notas
 sem ressalva na comemoração. A professora diz "Parabéns pelo seu jogo!". Debinha entra,
 diz **“Eu consegui!”** e sai (ID **CERTP2-D01**). A professora retoma com **Pegar meu certificado**
 e, após o download, **Concluir fase**. A participação vem antes desses comandos; não acrescentar
-uma despedida depois da saída. A referência anterior à inserção é de 20 a 30 segundos; medir a
+uma despedida depois da saída. O alvo, já com a inserção, é de 20 a 30 segundos; medir a
 versão final com a reação e os gestos, sem acelerar. Não repetir as duas aulas nem ensinar a
 procurar pastas ou baixar de novo. Esses detalhes ficam no tutorial **Como pegar seu certificado**.
 

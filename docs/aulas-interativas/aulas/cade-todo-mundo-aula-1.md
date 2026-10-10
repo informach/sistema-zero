@@ -55,12 +55,13 @@ exemplos com Dedé na Aula 2 estão em [Avatares nos vídeos](../AVATARES-NOS-VI
 | Seção | Vídeo | O que fazer | Conclusão |
 | --- | --- | --- | --- |
 | Bem-vindo ao jardim | 40 a 55 s | jogar a versão pronta e encontrar os três personagens | vídeo e três achados |
-| Seu Mapa da Aventura | 25 a 35 s | conhecer o mapa e seguir; ler aqui mesmo ou baixar, se quiser | vídeo |
+| Seu Mapa da Aventura | 35 a 45 s | conhecer o mapa e seguir; ler aqui mesmo ou baixar, se quiser | vídeo |
 | O que um toque faz? | 70 a 90 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
-| Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
+| Faça alguém aparecer | 4 a 5 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
 
-Os tempos da tabela são os alvos anteriores às inserções. Medir a duração final com as falas da
-Debinha e os gestos, sem acelerar a montagem. Não aumentar os vídeos de apresentação para atingir
+Os tempos da tabela foram revistos em 10/10/2026 e já contam as falas da Debinha: cobrem a fala
+estimada a 137 palavras por minuto e, na montagem, os gestos sem fala. Medir a duração final sem
+acelerar a montagem. Não aumentar os vídeos de apresentação para atingir
 uma duração mínima.
 
 ## Orientação por seção
@@ -163,7 +164,7 @@ locais continuam como moldes de autoria.
 
 O roteiro tem 8 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
 
-Somente a parte 4 mudou nesta rodada: duas inserções entre trechos do áudio já gravado. As partes 1, 2 e 3 continuam iguais. “Funcionou?” vem antes de “Agora sim!”. [Cortes exatos](../edicao-cade-aula-1-reacoes.md).
+A parte 4 recebeu duas inserções entre trechos do áudio já gravado. Na parte 3, a resposta a A1P3-D01 perde o "Por isso," na edição: a pergunta "E como eu faço essa ligação?" pede o como, e a resposta passa a começar pela demonstração ("eu clico em Ligar a reação ao toque…"). Nenhuma fala é regravada; as partes 1 e 2 continuam iguais. “Funcionou?” vem antes de “Agora sim!”. [Cortes exatos](../edicao-cade-aula-1-reacoes.md).
 
 | Entrada | Depois da professora | Criança | Retomada da professora |
 | --- | --- | --- | --- |

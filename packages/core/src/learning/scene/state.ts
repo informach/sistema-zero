@@ -1682,25 +1682,21 @@ const KEY_POSITION_PADRAO: SceneLighthousePosition = {
 }
 
 /**
- * ⚠️⚠️ O retrato guardado vira um estado COMPLETO antes de o validador olhar para ele.
+ * Os grupos de estado que a leitura completa quando o retrato não os traz, cada um com o seu padrão
+ * de fábrica. Uma lista só para os dois lados: `hydrateSceneState` devolve o grupo ausente e
+ * `semGruposNoPadrao` deixa de gravar o grupo que está igual ao padrão.
  *
- * O estado da cena vai serializado inteiro no checkpoint e a leitura confere campo a campo
- * (`isSceneState`). Aqui o GRUPO que não veio recebe o padrão de fábrica — um retrato gravado por
- * uma cena que ainda não tinha aquele assunto abre como a cena de fábrica abre, em vez de ser
- * recusado inteiro.
- *
- * ⚠️⚠️ UMA regra, e ela para no grupo: o que o retrato TRAZ vale como veio, inteiro. Campo faltando
- * DENTRO de um grupo presente não é completado com o valor de fábrica — o retrato é inválido, e
- * quem chama o trata como ausente (a cena recomeça limpa). Preencher campo a campo fabricava estado
- * incoerente e meta FALSA: um `drive` sem âncora voltava com `anchorX: 60` ao lado de `x: 120`, e o
- * primeiro passo do relógio fechava "a posição mudou sozinha" com a velocidade em ZERO, escrevendo
- * "o x foi de 60 para 120" numa conclusão que ninguém andou. E a régua era incoerente: cinco grupos
- * (`match`, `speed`, `flight`, `sound`, `crowd`) nunca estiveram nesta lista, então neles o campo
- * faltando já recusava o retrato. Agora recusa em todos.
+ * ⚠️⚠️ Desde 10/10/2026 a lista e os padrões fazem parte do FORMATO GRAVADO (full review do retrato
+ * enxuto):
+ * - um grupo NUNCA sai da lista: o retrato que o omitiu deixaria de ser lido, e o members trata isso
+ *   como sessão inexistente (toda criança recomeçaria a cena em silêncio);
+ * - mudar o VALOR de um padrão muda o que as sessões guardadas leem naquele grupo, no estado e nos
+ *   retratos do Desfazer (antes o valor gravado ficava como estava). Mude sabendo disso;
+ * - acrescentar um CAMPO a um padrão segue a régua do grupo: o retrato que omitiu o grupo ganha o
+ *   padrão novo inteiro, e o que trouxe o grupo sem o campo continua inválido.
  */
-export function hydrateSceneState(value: unknown): unknown {
-  if (!isRecord(value)) return value
-  const grupos = [
+function gruposComPadrao() {
+  return [
     ['lighthouse', LIGHTHOUSE_PADRAO],
     ['collection', COLLECTION_PADRAO],
     ['walk', WALK_PADRAO],
@@ -1747,8 +1743,72 @@ export function hydrateSceneState(value: unknown): unknown {
     ['light', LIGHT_PADRAO],
     ['clock', CLOCK_PADRAO],
   ] as const
+}
+
+/** O valor como o JSON o grava, com as chaves em ordem: dois grupos iguais dão o mesmo texto. */
+function jsonEstavel(valor: unknown): string {
+  if (Array.isArray(valor)) return `[${valor.map((v) => jsonEstavel(v ?? null)).join(',')}]`
+  if (isRecord(valor))
+    return `{${Object.keys(valor)
+      .filter((k) => valor[k] !== undefined)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${jsonEstavel(valor[k])}`)
+      .join(',')}}`
+  return JSON.stringify(valor) ?? 'null'
+}
+
+/**
+ * ⚠️⚠️ O retrato SEM os grupos que estão no padrão de fábrica (bug de 10/10/2026).
+ *
+ * O estado de todas as cenas tem a mesma forma, com um grupo por assunto, e cada cena só mexe em um
+ * ou dois deles. Gravado inteiro, cada retrato pesava ~6,4 KB, e o estado com os quatro retratos do
+ * Desfazer abria a 30.787 bytes, a 1,2 KB do teto de `MAX_LEARNING_STATE_BYTES` (32.000). No quarto
+ * gesto da `found-counter` (Cadê Todo Mundo, aula 2) a gravação passou do teto, o servidor voltou 400
+ * e a criança via "Esta experiência mudou." sem nunca concluir a parte. O conserto anterior (só a
+ * `keyPosition`, 06/10) tirava 53 bytes de cada retrato; este tira todo grupo que a leitura devolve
+ * igual, e vale para todas as cenas e para todo assunto novo que entrar na lista.
+ *
+ * ⚠️ Compatível nos dois sentidos: o leitor ANTERIOR também completa os grupos ausentes, então um
+ * serviço que ainda não recebeu esta versão lê o retrato enxuto; e o retrato inteiro, gravado antes,
+ * continua sendo lido como sempre.
+ */
+export function semGruposNoPadrao(state: SceneState): Partial<SceneState> {
+  const saida: Record<string, unknown> = { ...state }
+  for (const [nome, texto] of textosDosPadroes())
+    if (jsonEstavel(saida[nome]) === texto) delete saida[nome]
+  return saida as Partial<SceneState>
+}
+
+/** O texto de cada padrão, montado uma vez: cada gravação compara cinco retratos com os 45. */
+let textosGuardados: ReadonlyArray<readonly [string, string]> | null = null
+function textosDosPadroes(): ReadonlyArray<readonly [string, string]> {
+  textosGuardados ??= gruposComPadrao().map(
+    ([nome, padrao]) => [nome, jsonEstavel(padrao)] as const,
+  )
+  return textosGuardados
+}
+
+/**
+ * ⚠️⚠️ O retrato guardado vira um estado COMPLETO antes de o validador olhar para ele.
+ *
+ * O checkpoint leva só os grupos fora do padrão (`semGruposNoPadrao`) e a leitura confere campo a
+ * campo (`isSceneState`). Aqui o GRUPO que não veio recebe o padrão de fábrica: é o que devolve os
+ * grupos omitidos na gravação, e o que faz um retrato gravado por uma cena que ainda não tinha
+ * aquele assunto abrir como a cena de fábrica abre, em vez de ser recusado inteiro.
+ *
+ * ⚠️⚠️ UMA regra, e ela para no grupo: o que o retrato TRAZ vale como veio, inteiro. Campo faltando
+ * DENTRO de um grupo presente não é completado com o valor de fábrica — o retrato é inválido, e
+ * quem chama o trata como ausente (a cena recomeça limpa). Preencher campo a campo fabricava estado
+ * incoerente e meta FALSA: um `drive` sem âncora voltava com `anchorX: 60` ao lado de `x: 120`, e o
+ * primeiro passo do relógio fechava "a posição mudou sozinha" com a velocidade em ZERO, escrevendo
+ * "o x foi de 60 para 120" numa conclusão que ninguém andou. E a régua era incoerente: cinco grupos
+ * (`match`, `speed`, `flight`, `sound`, `crowd`) nunca estiveram nesta lista, então neles o campo
+ * faltando já recusava o retrato. Agora recusa em todos.
+ */
+export function hydrateSceneState(value: unknown): unknown {
+  if (!isRecord(value)) return value
   const saida: Record<string, unknown> = { ...value }
-  for (const [nome, padrao] of grupos) {
+  for (const [nome, padrao] of gruposComPadrao()) {
     const guardado = saida[nome]
     if (isRecord(guardado)) continue
     // ⚠️ Cópia PROFUNDA dos arrays: a rasa deixava `BRAINS_PADRAO.states`, `GRID_PADRAO.rows` e

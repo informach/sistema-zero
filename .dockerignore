@@ -23,3 +23,7 @@ secrets
 .claude
 .idea
 .DS_Store
+
+# Material de produção (PDFs dos cursos, Instagram, áudios dos relatos): nenhum serviço lê, e ele
+# não pode entrar nas imagens (full review de 10/10/2026: ~350 MB e áudio de depoimentos de pais).
+output

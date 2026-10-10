@@ -1,5 +1,5 @@
 /** Regenera os manifestos e o inventário do Desafio do farol. Não importa nem publica aulas. */
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { FAROL_LAYOUT } from '../../../packages/studio/src/arte/farol-assets'
 import {
@@ -18,10 +18,98 @@ import { farol } from './quizzes-cursos-curtos'
 
 const DIR = resolve(import.meta.dir, '../aulas')
 const CURSO = 'desafio-primeiro-jogo'
-const video = (key: string, title: string, script: string, direction: string) => ({
-  key,
-  plannedVideo: `Título: ${title}\n\n${direction}\n\nRoteiro falado: ${script}. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; a criança entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.`,
+
+/**
+ * Uma participação do avatar (AVATARES-NOS-VIDEOS.md): `depois` é o trecho literal da professora
+ * logo antes do corte, e `retoma`, o começo literal da resposta dela depois da saída do avatar.
+ * O ID termina em -D nas entradas da primeira aplicação e em -R nas da revisão de ritmo.
+ */
+interface Entrada {
+  id: string
+  depois: string
+  fala: string
+  retoma: string
+}
+/** As participações de um vídeo, NA ORDEM DE CORTE do roteiro (a geração confere essa ordem). */
+interface Participacoes {
+  nome: 'Debinha' | 'Dedé'
+  entradas: Entrada[]
+}
+const entrada = (id: string, depois: string, fala: string, retoma: string): Entrada => ({
+  id,
+  depois,
+  fala,
+  retoma,
 })
+
+const roteiros = new Map<string, string>()
+/** O trecho do vídeo no roteiro, com cada fala de vários parágrafos numa linha só. */
+function trechoDoVideo(script: string, key: string) {
+  let texto = roteiros.get(script)
+  if (texto === undefined) {
+    // No Windows, a cópia de trabalho pode vir com CRLF; o repositório guarda LF.
+    texto = readFileSync(resolve(DIR, script), 'utf8').replaceAll('\r\n', '\n')
+    roteiros.set(script, texto)
+  }
+  const titulo = texto.indexOf(`### Vídeo \`${key}\``)
+  if (titulo < 0) throw new Error(`${script}: o vídeo ${key} não está no roteiro`)
+  const corpo = texto.slice(texto.indexOf('\n', titulo))
+  const fim = corpo.search(/^##+ /m)
+  return (fim < 0 ? corpo : corpo.slice(0, fim)).replaceAll('\n>\n> ', ' ')
+}
+
+/**
+ * Confere no roteiro a ordem de corte e cada trecho literal, para o plano de edição não divergir
+ * da gravação: se uma entrada mudar de lugar ou uma âncora mudar de texto, a geração para.
+ */
+function conferirParticipacoes(script: string, key: string, { nome, entradas }: Participacoes) {
+  const trecho = trechoDoVideo(script, key)
+  const ordem = [...trecho.matchAll(/^\*\*Na tela:\*\* \*\*([A-Z0-9]+-[DR]\d{2})\*\*/gm)].map(
+    (m) => m[1],
+  )
+  const esperada = entradas.map((e) => e.id)
+  if (ordem.join() !== esperada.join())
+    throw new Error(`${script}/${key}: ordem de corte ${ordem.join()} ≠ ${esperada.join()}`)
+  if (
+    (trecho.match(new RegExp(`\\*\\*${nome} \\(avatar\\):\\*\\*`, 'g')) ?? []).length !==
+    ordem.length
+  )
+    throw new Error(`${script}/${key}: cada entrada precisa de uma fala de ${nome}`)
+  for (const e of entradas)
+    for (const literal of [e.depois, e.fala, e.retoma])
+      if (!trecho.includes(literal))
+        throw new Error(`${script}/${key}: ${e.id} cita um trecho ausente do roteiro: ${literal}`)
+}
+
+function textoParticipacoes({ nome, entradas }: Participacoes) {
+  const lista = entradas.map(
+    (e) =>
+      `${e.id}, depois de "${e.depois}", ${nome} diz "${e.fala}"; a professora retoma "${e.retoma}".`,
+  )
+  const ritmo = entradas.some((e) => e.id.includes('-R'))
+    ? ' As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora.'
+    : ''
+  return `Participações de ${nome}, na ordem de corte: ${lista.join(' ')}${ritmo} Concluir o gesto antes de ${nome} entrar e manter o resultado à vista; marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.`
+}
+
+/** O vídeo planejado: título, direção (com as participações, se houver) e o roteiro falado. */
+const video = (
+  key: string,
+  title: string,
+  script: string,
+  direction: string,
+  avatar?: Participacoes,
+) => {
+  if (avatar) conferirParticipacoes(script, key, avatar)
+  const direcao = avatar ? `${direction} ${textoParticipacoes(avatar)}` : direction
+  const vozes = avatar
+    ? `A professora conduz; ${avatar.nome} entra, fala e sai nos pontos do roteiro. `
+    : ''
+  return {
+    key,
+    plannedVideo: `Título: ${title}\n\n${direcao}\n\nRoteiro falado: ${script}. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. ${vozes}Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com ${avatar ? 'as participações e ' : ''}os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam.`,
+  }
+}
 const fala = (key: string, text: string) => ({
   key,
   content: { kind: 'dialogue', pose: 'speaking', text },
@@ -107,7 +195,18 @@ const aberturaBlocks = [
     'video-intro-farol',
     'Seu primeiro jogo: A Chave do Farol',
     'desafio-dia-1.roteiro.md',
-    'Anunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (E tem uma coisa esperando por você lá no fim desta aventura: uma surpresa para deixar o jogo do seu jeito.); só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito. Participações de Debinha: F1P1-D01, depois de "o personagem precisa pegar a chave e levar até lá.", Debinha diz "E como eu levo o personagem até a chave?"; a professora retoma "Olha aqui: quando eu seguro a seta da tela para a direita". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+    'Anunciar o jogo que será programado e o contexto do barco e do farol apagado. Demonstração na primeira pessoa com um gesto só (Olha aqui: quando eu seguro a seta da tela para a direita…), sem resolver o percurso. Antes de passar a vez, plantar a surpresa do final, sem dizer o que é (E tem uma coisa esperando por você lá no fim desta aventura: uma surpresa para deixar o jogo do seu jeito.); só no fim passar a vez: jogar até o farol acender e o barco chegar. Não fazer tour de interface. A participação permite avançar; vencer não é requisito.',
+    {
+      nome: 'Debinha',
+      entradas: [
+        entrada(
+          'F1P1-D01',
+          'o personagem precisa pegar a chave e levar até lá.',
+          'E como eu levo o personagem até a chave?',
+          'Olha aqui: quando eu seguro a seta da tela para a direita',
+        ),
+      ],
+    },
   ),
   fala(
     'ponte-intro-farol',
@@ -237,7 +336,18 @@ const dia1 = {
       'video-d1-quadro',
       'Como o personagem anda',
       'desafio-dia-1.roteiro.md',
-      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o x fica igual) e com a seta (o x sobe), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima parte. Participações de Debinha: F1P3-D01, depois de "por isso acontece de novo em todo quadro.", Debinha diz "E se eu clicar em Rodar?"; a professora retoma "Vamos ver. Quando eu clico em Rodar,". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: o jogo é como um desenho animado, quadro a quadro. Fazer cada gesto no ritmo da fala, sem a seta (o x fica igual) e com a seta (o x sobe), depois Rodar, nomeando o que aconteceu e por quê. Terminar com Agora é a sua vez e Próxima parte.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F1P3-D01',
+            'por isso acontece de novo em todo quadro.',
+            'E se eu clicar em Rodar?',
+            'Vamos ver. Quando eu clico em Rodar,',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d1-quadro',
@@ -252,8 +362,31 @@ const dia1 = {
     video(
       'video-d1-andar',
       'Faça o personagem andar',
-      'desafio-dia-1.roteiro.md Revisão de ritmo em 10/10/2026: Entrada F1P4-R01: após "Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.", Debinha diz "Quero fazer as setas funcionarem!". Retomar a professora em "As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.". Entrada F1P4-R02: após "Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!", Debinha diz "Foi! Agora ele anda!". Retomar a professora em "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.',
-      'Começar pela retomada, curta e nesta ordem: o problema no jogo (não há setas na tela e o personagem fica parado), a lembrança da experiência (com a seta segurada, ele andava a cada quadro) e o anúncio da montagem. Antes de pedir para encontrar Ao iniciar, apresentar os comandos e os bloquinhos com a fala: "Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo." Apontar a paleta no "Olha aqui: neste menu", sem pegar nenhum bloco ainda. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário praia-tropical, com velocidade 3. Testar as setas, Verificar esta parte, Salvo e Próxima parte, sem envio. Participações de Debinha: F1P4-D01, depois de "as setas de cima, de baixo, da esquerda e da direita aparecem na tela!", Debinha diz "As setas apareceram, mas ele ainda não anda!"; a professora retoma "É que as setas sozinhas ainda não movem ninguém.". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'desafio-dia-1.roteiro.md',
+      'Começar pela retomada, curta e nesta ordem: o problema no jogo (não há setas na tela e o personagem fica parado), a lembrança da experiência (com a seta segurada, ele andava a cada quadro) e o anúncio da montagem. Antes de pedir para encontrar Ao iniciar, apresentar os comandos e os bloquinhos com a fala: "Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo." Apontar a paleta no "Olha aqui: neste menu", sem pegar nenhum bloco ainda. No projeto inicial, guiar com o destino à vista: controles com só as quatro direções no fim de Ao iniciar e o movimento dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário praia-tropical, com velocidade 3. Testar as setas, Verificar esta parte, Salvo e Próxima parte, sem envio.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F1P4-R01',
+            'Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.',
+            'Quero fazer as setas funcionarem!',
+            'As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.',
+          ),
+          entrada(
+            'F1P4-D01',
+            'as setas de cima, de baixo, da esquerda e da direita aparecem na tela!',
+            'As setas apareceram, mas ele ainda não anda!',
+            'É que as setas sozinhas ainda não movem ninguém.',
+          ),
+          entrada(
+            'F1P4-R02',
+            'Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!',
+            'Foi! Agora ele anda!',
+            'Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d1-andar',
@@ -263,7 +396,18 @@ const dia1 = {
       'video-d1-limite',
       'Até onde ele pode ir?',
       'desafio-dia-1.roteiro.md',
-      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado. Terminar com Agora é a sua vez e Próxima parte. Participações de Debinha: F1P5-D01, depois de "porque nada segura ele dentro da janela.", Debinha diz "Como eu faço ele parar na borda?"; a professora retoma "Agora eu clico em Recomeçar,". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: a tela é uma janela, e o limite, uma parede invisível. Rodar sem o limite até o personagem sair e depois com Manter dentro da tela ligado. Terminar com Agora é a sua vez e Próxima parte.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F1P5-D01',
+            'porque nada segura ele dentro da janela.',
+            'Como eu faço ele parar na borda?',
+            'Agora eu clico em Recomeçar,',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d1-limite',
@@ -278,8 +422,25 @@ const dia1 = {
     video(
       'video-d1-borda',
       'Mantenha o personagem na tela',
-      'desafio-dia-1.roteiro.md Revisão de ritmo em 10/10/2026: Entrada F1P6-R01: após "Agora teste as quatro direções até chegar às beiradas. Repare: o personagem tem que ficar sempre inteiro na tela.", Debinha diz "Agora posso segurar a seta que ele não vai embora!". Retomar a professora em "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.',
-      'Começar pela retomada, curta e nesta ordem: o problema no jogo (o personagem sai pela beirada, porque ainda não há limite), a lembrança da experiência (com Manter dentro da tela ligado, ele parava na borda) e o anúncio colado ao primeiro passo. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo. Testar as quatro beiradas, Verificar esta parte, Objetivo cumprido!, Salvo, envio com confirmação e Concluir fase. Participações de Debinha: F1P6-D01, depois de "Agora a gente vai pôr esse limite no seu jogo!", Debinha diz "E onde eu coloco esse limite?"; a professora retoma "Esse limite precisa ser conferido em todo quadro,". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'desafio-dia-1.roteiro.md',
+      'Começar pela retomada, curta e nesta ordem: o problema no jogo (o personagem sai pela beirada, porque ainda não há limite), a lembrança da experiência (com Manter dentro da tela ligado, ele parava na borda) e o anúncio colado ao primeiro passo. Depois deixar à vista o bloco de movimento e encaixar Manter o sprite dentro da tela logo abaixo. Testar as quatro beiradas, Verificar esta parte, Objetivo cumprido!, Salvo, envio com confirmação e Concluir fase.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F1P6-D01',
+            'Agora a gente vai pôr esse limite no seu jogo!',
+            'E onde eu coloco esse limite?',
+            'Esse limite precisa ser conferido em todo quadro,',
+          ),
+          entrada(
+            'F1P6-R01',
+            'Agora teste as quatro direções até chegar às beiradas. Repare: o personagem tem que ficar sempre inteiro na tela.',
+            'Agora posso segurar a seta que ele não vai embora!',
+            'Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d1-borda',
@@ -339,7 +500,18 @@ const dia2 = {
       'video-d2-contexto',
       'O jogo guardou a chave?',
       'desafio-dia-2.roteiro.md',
-      'Situar a coleta que falta. Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: encostar na chave é um evento, e guardar é como anotar num bloquinho. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima parte. Participações de Dedé: F2P1-D01, depois de "temChave continua falso.", Dedé diz "Mas a chave sumiu. Por que ainda está falso?"; a professora retoma "É que tirar a chave do chão não guarda essa informação.". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'Situar a coleta que falta. Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: encostar na chave é um evento, e guardar é como anotar num bloquinho. Mostrar a coleta sem memória, o recomeço, Guardar a coleta ligado, o afastamento e o recomeço, nomeando temChave em cada um. Terminar com Agora é a sua vez e Próxima parte.',
+      {
+        nome: 'Dedé',
+        entradas: [
+          entrada(
+            'F2P1-D01',
+            'temChave continua falso.',
+            'Mas a chave sumiu. Por que ainda está falso?',
+            'É que tirar a chave do chão não guarda essa informação.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d2-contexto',
@@ -361,8 +533,25 @@ const dia2 = {
     video(
       'video-d2-recolher',
       'Recolha a chave',
-      'desafio-dia-2.roteiro.md Revisão de ritmo em 10/10/2026: Entrada F2P2-R01: após "No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.", Dedé diz "Se eu só passar perto da chave, não vale!". Retomar a professora em "Agora vem a ação: tirar a chave do chão. Ela vai dentro desse encontro. Deixe à vista o espaço vazio dentro dele.". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.',
-      'Começar pela retomada, curta e nesta ordem: o problema no jogo (o personagem passa pela chave e nada acontece, porque o jogo não sabe o que fazer nesse encontro), a lembrança da experiência (ao encostar, a chave saía do chão) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar o encontro personagem/chave dentro dela e Destruir o sprite chave dentro dele. Testar a chave sumindo e voltando com Atualizar. Verificar esta parte, Salvo e Próxima parte, sem envio. Participações de Dedé: F2P2-D01, depois de "Arraste para o espaço vazio dentro do encontro e escolha chave.", Dedé diz "A chave some para sempre?"; a professora retoma "Aqui, destruir só tira a chave desta partida.". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'desafio-dia-2.roteiro.md',
+      'Começar pela retomada, curta e nesta ordem: o problema no jogo (o personagem passa pela chave e nada acontece, porque o jogo não sabe o que fazer nesse encontro), a lembrança da experiência (ao encostar, a chave saía do chão) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 1, que ainda não tem a área Quando acontecer: criá-la por Áreas do projeto e, com o destino à vista, montar o encontro personagem/chave dentro dela e Destruir o sprite chave dentro dele. Testar a chave sumindo e voltando com Atualizar. Verificar esta parte, Salvo e Próxima parte, sem envio.',
+      {
+        nome: 'Dedé',
+        entradas: [
+          entrada(
+            'F2P2-R01',
+            'No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.',
+            'Se eu só passar perto da chave, não vale!',
+            'Agora vem a ação: tirar a chave do chão. Ela vai dentro desse encontro. Deixe à vista o espaço vazio dentro dele.',
+          ),
+          entrada(
+            'F2P2-D01',
+            'Arraste para o espaço vazio dentro do encontro e escolha chave.',
+            'A chave some para sempre?',
+            'Aqui, destruir só tira a chave desta partida.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d2-recolher',
@@ -371,8 +560,25 @@ const dia2 = {
     video(
       'video-d2-guardar',
       'Guarde que a chave foi encontrada',
-      'desafio-dia-2.roteiro.md Revisão de ritmo em 10/10/2026: Entrada F2P3-R01: após "Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.", Dedé diz "Ah! Na partida nova eu tenho que buscar a chave outra vez!". Retomar a professora em "Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.',
-      'Começar pela retomada, curta: como o efeito não aparece no jogo, só a lembrança (com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso; o jogo está assim) e o anúncio colado ao primeiro passo. Criar temChave começando em falso no fim de Ao iniciar e mudar para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite. Verificar esta parte, Salvo e Próxima parte, sem envio. Participações de Dedé: F2P3-D01, depois de "Alterar temChave para verdadeiro.", Dedé diz "Como eu vejo se o jogo guardou a chave?"; a professora retoma "No jogo, você ainda não consegue ver temChave,". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'desafio-dia-2.roteiro.md',
+      'Começar pela retomada, curta: como o efeito não aparece no jogo, só a lembrança (com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso; o jogo está assim) e o anúncio colado ao primeiro passo. Criar temChave começando em falso no fim de Ao iniciar e mudar para verdadeiro dentro do encontro, logo abaixo de Destruir o sprite. Verificar esta parte, Salvo e Próxima parte, sem envio.',
+      {
+        nome: 'Dedé',
+        entradas: [
+          entrada(
+            'F2P3-R01',
+            'Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.',
+            'Ah! Na partida nova eu tenho que buscar a chave outra vez!',
+            'Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.',
+          ),
+          entrada(
+            'F2P3-D01',
+            'Alterar temChave para verdadeiro.',
+            'Como eu vejo se o jogo guardou a chave?',
+            'No jogo, você ainda não consegue ver temChave,',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d2-guardar',
@@ -382,7 +588,18 @@ const dia2 = {
       'video-d2-programar',
       'Avise quem está jogando',
       'desafio-dia-2.roteiro.md',
-      'Começar pela retomada, curta e nesta ordem: o problema no jogo (a chave some, mas a mensagem continua a inicial), a lembrança da experiência (o aviso mudava) e o anúncio colado ao primeiro passo. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo e envio confirmado. Antes de Concluir fase, reconhecer a conquista com Pronto, você programou a coleta da chave e o aviso do seu jogo! e lembrar a surpresa uma vez só, sem mostrar nada dela (E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.). Terminar em Concluir fase. Participações de Dedé: F2P4-D01, depois de "Você pegou a chave! Agora vá ao farol.", Dedé diz "Agora quem joga vai saber para onde ir!"; a professora retoma "Vamos conferir no jogo! Leve o personagem até a chave.". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'Começar pela retomada, curta e nesta ordem: o problema no jogo (a chave some, mas a mensagem continua a inicial), a lembrança da experiência (o aviso mudava) e o anúncio colado ao primeiro passo. Mudar o aviso dentro do encontro, logo abaixo de temChave, com o texto de coleta. Testar, verificar inclusive o movimento anterior, Salvo e envio confirmado. Antes de Concluir fase, reconhecer a conquista com Pronto, você programou a coleta da chave e o aviso do seu jogo! e lembrar a surpresa uma vez só, sem mostrar nada dela (E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.). Terminar em Concluir fase.',
+      {
+        nome: 'Dedé',
+        entradas: [
+          entrada(
+            'F2P4-D01',
+            'Você pegou a chave! Agora vá ao farol.',
+            'Agora quem joga vai saber para onde ir!',
+            'Vamos conferir no jogo! Leve o personagem até a chave.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d2-programar',
@@ -442,7 +659,18 @@ const dia3 = {
       'video-d3-condicao',
       'Quando a porta pode abrir?',
       'desafio-dia-3.roteiro.md',
-      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: condição é a pergunta que a porta confere, como a porta de casa que só abre com a chave. Testar a porta sem a chave (senão) e com a chave (então), nomeando temChave. Terminar com Agora é a sua vez e Próxima parte. Participações de Debinha: F3P1-D01, depois de "por isso a porta escolhe a resposta senão e avisa que falta a chave.", Debinha diz "E se eu trouxer a chave agora?"; a professora retoma "Vamos ver. Agora eu clico em Levar a chave". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'Abrir com o conceito (Esta é uma experiência para a gente entender…) e demonstrar na primeira pessoa (Olha aqui:…; o narrador faz os testes e só no fim passa a vez), explicando enquanto faz: condição é a pergunta que a porta confere, como a porta de casa que só abre com a chave. Testar a porta sem a chave (senão) e com a chave (então), nomeando temChave. Terminar com Agora é a sua vez e Próxima parte.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F3P1-D01',
+            'por isso a porta escolhe a resposta senão e avisa que falta a chave.',
+            'E se eu trouxer a chave agora?',
+            'Vamos ver. Agora eu clico em Levar a chave',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d3-condicao',
@@ -468,8 +696,31 @@ const dia3 = {
     video(
       'video-d3-sem-chave',
       'Avise quando faltar a chave',
-      'desafio-dia-3.roteiro.md Revisão de ritmo em 10/10/2026: Entrada F3P2-R01: após "No primeiro nome, escolha personagem e, no segundo, escolha farol.", Debinha diz "Agora o jogo vai perceber quando eu chegar ao farol!". Retomar a professora em "Dentro desse encontro, o farol vai fazer a mesma pergunta da porta. Por isso, deixe à vista o espaço vazio dentro do encontro com o farol.". Entrada F3P2-R02: após "Vá ao farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta senão funcionando!", Debinha diz "Não adiantou correr direto para o farol. Preciso da chave!". Retomar a professora em "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro de senão está o aviso de que falta a chave. Depois de corrigir, teste de novo.". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.',
-      'Começar pela retomada, curta e nesta ordem: o problema no jogo (o personagem chega ao farol e nada acontece), a lembrança da experiência (a porta conferia temChave) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 2, guiar evento separado personagem/farol, Se consultando temChave e aviso em senão. Explicitar então ainda vazio. Testar sem chave, Verificar esta parte, corrigir pendências, esperar Salvo e Próxima parte. Não enviar nesta etapa intermediária. Participações de Debinha: F3P2-D01, depois de "o jogo confere se temChave é verdadeiro.", Debinha diz "E onde eu escrevo que falta a chave?"; a professora retoma "Esse aviso vai no espaço do senão.". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'desafio-dia-3.roteiro.md',
+      'Começar pela retomada, curta e nesta ordem: o problema no jogo (o personagem chega ao farol e nada acontece), a lembrança da experiência (a porta conferia temChave) e o anúncio colado ao primeiro passo. No projeto enviado no Dia 2, guiar evento separado personagem/farol, Se consultando temChave e aviso em senão. Explicitar então ainda vazio. Testar sem chave, Verificar esta parte, corrigir pendências, esperar Salvo e Próxima parte. Não enviar nesta etapa intermediária.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F3P2-R01',
+            'No primeiro nome, escolha personagem e, no segundo, escolha farol.',
+            'Agora o jogo vai perceber quando eu chegar ao farol!',
+            'Dentro desse encontro, o farol vai fazer a mesma pergunta da porta. Por isso, deixe à vista o espaço vazio dentro do encontro com o farol.',
+          ),
+          entrada(
+            'F3P2-D01',
+            'o jogo confere se temChave é verdadeiro.',
+            'E onde eu escrevo que falta a chave?',
+            'Esse aviso vai no espaço do senão.',
+          ),
+          entrada(
+            'F3P2-R02',
+            'Vá ao farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta senão funcionando!',
+            'Não adiantou correr direto para o farol. Preciso da chave!',
+            'Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro de senão está o aviso de que falta a chave. Depois de corrigir, teste de novo.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d3-sem-chave',
@@ -478,8 +729,31 @@ const dia3 = {
     video(
       'video-d3-decisao',
       'Acenda o farol com a chave',
-      'desafio-dia-3.roteiro.md Revisão de ritmo em 10/10/2026: Entrada F3P3-R01: após "Escolha o sprite farol e a imagem farol listrado aceso.", Debinha diz "Com a chave, vou conseguir chamar o barco e acender a luz!". Retomar a professora em "Por último, falta avisar quem está jogando. O aviso vai logo abaixo da troca de imagem, ainda dentro de então. Deixe esse lugar à vista.". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.',
-      'Começar pela retomada, curta e nesta ordem: o problema no jogo (com a chave, a luz não acende, porque o espaço do então está vazio), a lembrança da experiência (com temChave verdadeiro, a porta acendia o farol) e o anúncio colado ao primeiro passo. Continuar no mesmo Se e projeto da seção anterior. Completar então com ganhou, imagem e aviso. Testar sem chave, buscar e voltar na mesma partida, depois reiniciar e conferir sem chave. Verificação cumulativa, Salvo, envio único com confirmação e Próxima parte. Participações de Debinha: F3P3-D01, depois de "Tá vendo? A luz não acende.", Debinha diz "Mas eu trouxe a chave!"; a professora retoma "É que o espaço do então está vazio.". F3P3-D02, depois de "Espere o barco chegar.", Debinha diz "E se eu quiser jogar de novo?"; a professora retoma "Clique em Atualizar de novo.". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'desafio-dia-3.roteiro.md',
+      'Começar pela retomada, curta e nesta ordem: o problema no jogo (com a chave, a luz não acende, porque o espaço do então está vazio), a lembrança da experiência (com temChave verdadeiro, a porta acendia o farol) e o anúncio colado ao primeiro passo. Continuar no mesmo Se e projeto da seção anterior. Completar então com ganhou, imagem e aviso. Testar sem chave, buscar e voltar na mesma partida, depois reiniciar e conferir sem chave. Verificação cumulativa, Salvo, envio único com confirmação e Próxima parte.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F3P3-D01',
+            'Tá vendo? A luz não acende.',
+            'Mas eu trouxe a chave!',
+            'É que o espaço do então está vazio.',
+          ),
+          entrada(
+            'F3P3-R01',
+            'Escolha o sprite farol e a imagem farol listrado aceso.',
+            'Com a chave, vou conseguir chamar o barco e acender a luz!',
+            'Por último, falta avisar quem está jogando. O aviso vai logo abaixo da troca de imagem, ainda dentro de então. Deixe esse lugar à vista.',
+          ),
+          entrada(
+            'F3P3-D02',
+            'Espere o barco chegar.',
+            'E se eu quiser jogar de novo?',
+            'Clique em Atualizar de novo.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d3-decisao',
@@ -488,8 +762,31 @@ const dia3 = {
     video(
       'video-d3-personalizar',
       'Deixe o jogo com a sua cara',
-      'desafio-dia-3.roteiro.md Revisão de ritmo em 10/10/2026: Entrada F3P4-R01: após "Agora encontre Quando acontecer e o encontro do personagem com o farol. Dentro do então do Se está Trocar imagem do sprite farol para. Clique no nome da imagem e escolha o mesmo modelo, aceso: farol de pedra aceso. Repare: de pedra nos dois lugares, apagado no começo e aceso na resposta com chave.", Debinha diz "Se eu misturar os modelos, o farol muda de tipo quando acende!". Retomar a professora em "Falta o lugar onde a história acontece. Em Enquanto estiver rodando, dentro de A cada quadro do jogo, clique em praia tropical, no bloco Desenhar o cenário. Olha só: eu vou usar noite na ilha. A ponte e o mar continuam no mesmo lugar.". Entrada F3P4-R02: após "Agora teste a sua combinação! Clique em Atualizar e vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!", Debinha diz "Uhu! Minha aventura de pirata está funcionando!". Retomar a professora em "Agora a aventura tem a sua cara, e é com essa cara que o seu jogo vai para o Mural.". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.',
-      'Revelar a surpresa plantada na abertura do Dia 1: começar com Sua missão deu certo! E a surpresa chegou: olha quantas versões essa aventura pode ter, mostrar duas versões completas já montadas rodando (robo, lancha, chave-prateada, farol-colorido e ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira e costa-rochosa), perguntar Que combinação você vai criar? e só então mostrar as galerias do Mapa da Aventura (A surpresa do final); depois voltar ao Estúdio, no projeto enviado. Uma ideia só: trocar cada imagem por outra do mesmo tipo, pelos nomes da galeria do Mapa. No projeto enviado, em Ao iniciar, trocar a imagem de Criar sprite personagem, barco e chave; o farol em par, o modelo apagado no Criar sprite farol e o mesmo modelo aceso no Trocar imagem do sprite farol, dentro de então; o cenário em Desenhar o cenário, dentro de A cada quadro do jogo. Demonstrar pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha, mantendo nomes dos sprites, posição, largura e altura. Testar sem a chave e com a chave na mesma partida e dizer que é com essa cara que o jogo vai para o Mural; conferir uma vez só, depois do teste. Verificar esta parte, Salvo e Próxima parte. As escolhas ficam no jogo e não viram critério. Participações de Debinha: F3P4-D01, depois de "E o que você escolher fica no jogo.", Debinha diz "Quero fazer uma aventura de pirata!"; a professora retoma "Vamos começar pelo personagem.". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'desafio-dia-3.roteiro.md',
+      'Revelar a surpresa plantada na abertura do Dia 1: começar com Sua missão deu certo! E a surpresa chegou: olha quantas versões essa aventura pode ter, mostrar duas versões completas já montadas rodando (robo, lancha, chave-prateada, farol-colorido e ilha-nevada; mergulhador, veleiro, chave-dourada, farol-de-madeira e costa-rochosa), perguntar Que combinação você vai criar? e só então mostrar as galerias do Mapa da Aventura (A surpresa do final); depois voltar ao Estúdio, no projeto enviado. Uma ideia só: trocar cada imagem por outra do mesmo tipo, pelos nomes da galeria do Mapa. No projeto enviado, em Ao iniciar, trocar a imagem de Criar sprite personagem, barco e chave; o farol em par, o modelo apagado no Criar sprite farol e o mesmo modelo aceso no Trocar imagem do sprite farol, dentro de então; o cenário em Desenhar o cenário, dentro de A cada quadro do jogo. Demonstrar pirata, barco-pirata, chave-de-estrela, farol-de-pedra e noite-na-ilha, mantendo nomes dos sprites, posição, largura e altura. Testar sem a chave e com a chave na mesma partida e dizer que é com essa cara que o jogo vai para o Mural; conferir uma vez só, depois do teste. Verificar esta parte, Salvo e Próxima parte. As escolhas ficam no jogo e não viram critério.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F3P4-D01',
+            'E o que você escolher fica no jogo.',
+            'Quero fazer uma aventura de pirata!',
+            'Vamos começar pelo personagem.',
+          ),
+          entrada(
+            'F3P4-R01',
+            'Agora encontre Quando acontecer e o encontro do personagem com o farol. Dentro do então do Se está Trocar imagem do sprite farol para. Clique no nome da imagem e escolha o mesmo modelo, aceso: farol de pedra aceso. Repare: de pedra nos dois lugares, apagado no começo e aceso na resposta com chave.',
+            'Se eu misturar os modelos, o farol muda de tipo quando acende!',
+            'Falta o lugar onde a história acontece. Em Enquanto estiver rodando, dentro de A cada quadro do jogo, clique em praia tropical, no bloco Desenhar o cenário. Olha só: eu vou usar noite na ilha. A ponte e o mar continuam no mesmo lugar.',
+          ),
+          entrada(
+            'F3P4-R02',
+            'Agora teste a sua combinação! Clique em Atualizar e vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!',
+            'Uhu! Minha aventura de pirata está funcionando!',
+            'Agora a aventura tem a sua cara, e é com essa cara que o seu jogo vai para o Mural.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d3-personalizar',
@@ -509,7 +806,18 @@ const dia3 = {
       'video-d3-posicao',
       'Como escolher um lugar para a chave',
       'desafio-dia-3.roteiro.md',
-      'Demonstrar na primeira pessoa a experiência lighthouse-position: observar x211/y53, mudar só Posição horizontal x para 160, depois só Posição vertical y para 250. Explicar enquanto faz: x leva para os lados, y para cima e para baixo; números maiores levam à direita e para baixo. Manter o outro valor visível, mostrar que tamanho e desenho não mudam. Só no fim passar a vez para repetir os dois testes; terminar em Próxima parte. Participações de Debinha: F3P6-D01, depois de "um número menor leva para a esquerda, e um maior leva para a direita.", Debinha diz "E para subir ou descer?"; a professora retoma "A gente muda o y. Agora eu deixo o x em 160". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'Demonstrar na primeira pessoa a experiência lighthouse-position: observar x211/y53, mudar só Posição horizontal x para 160, depois só Posição vertical y para 250. Explicar enquanto faz: x leva para os lados, y para cima e para baixo; números maiores levam à direita e para baixo. Manter o outro valor visível, mostrar que tamanho e desenho não mudam. Só no fim passar a vez para repetir os dois testes; terminar em Próxima parte.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F3P6-D01',
+            'um número menor leva para a esquerda, e um maior leva para a direita.',
+            'E para subir ou descer?',
+            'A gente muda o y. Agora eu deixo o x em 160',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d3-posicao',
@@ -536,8 +844,25 @@ const dia3 = {
     video(
       'video-d3-posicionar-chave',
       'Escolha onde fica a chave',
-      'desafio-dia-3.roteiro.md Revisão de ritmo em 10/10/2026: Entrada F3P7-R01: após "Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar.", Debinha diz "Mudei o caminho, mas a missão continua a mesma!". Retomar a professora em "Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte.". Concluir o gesto antes da criança entrar; manter o resultado à vista e sair antes do próximo gesto. As novas falas mostram uma consequência, fazem uma pergunta ou reagem ao teste. Preservar a voz da professora e os passos completos. Conferir durações com as novas entradas, sem acelerar a demonstração.',
-      'Retomar a experiência de x/y e mostrar a chave no jogo. Em Ao iniciar, no Criar sprite chave, trocar só x/y, mantendo nome, imagem, largura e altura. Oferecer pontos do Mapa: perto da trilha 211/53, na parte de baixo 160/250 e perto da ponte 280/160. Testar se a chave está inteira e visível, alcançável, separada do personagem e da porta, sem esconder sob árvores ou objetos; testar sem chave, coleta, volta ao farol e reinício. Se o lugar não funciona, escolher um ponto sugerido. As escolhas não viram critério. Esperar Salvo e terminar em Próxima parte. Participações de Debinha: F3P7-D01, depois de "ou perto da ponte, com x 280 e y 160.", Debinha diz "Eu tenho que escolher um desses três lugares?"; a professora retoma "Você pode escolher um deles ou experimentar outro.". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'desafio-dia-3.roteiro.md',
+      'Retomar a experiência de x/y e mostrar a chave no jogo. Em Ao iniciar, no Criar sprite chave, trocar só x/y, mantendo nome, imagem, largura e altura. Oferecer pontos do Mapa: perto da trilha 211/53, na parte de baixo 160/250 e perto da ponte 280/160. Testar se a chave está inteira e visível, alcançável, separada do personagem e da porta, sem esconder sob árvores ou objetos; testar sem chave, coleta, volta ao farol e reinício. Se o lugar não funciona, escolher um ponto sugerido. As escolhas não viram critério. Esperar Salvo e terminar em Próxima parte.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F3P7-D01',
+            'ou perto da ponte, com x 280 e y 160.',
+            'Eu tenho que escolher um desses três lugares?',
+            'Você pode escolher um deles ou experimentar outro.',
+          ),
+          entrada(
+            'F3P7-R01',
+            'Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar.',
+            'Mudei o caminho, mas a missão continua a mesma!',
+            'Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte.',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d3-posicionar-chave',
@@ -547,7 +872,18 @@ const dia3 = {
       'video-d3-fecho',
       'Publique seu jogo',
       'desafio-dia-3.roteiro.md',
-      'Usar o mesmo projeto da seção anterior. Compartilhar, manter o resumo (na aula o título vem do curso e não aparece), Gerar capa, conferir, Publicar e comemorar com a criança (Seu jogo está no Mural! Agora a família e os amigos podem jogar), Copiar link de jogar e convidar a mandar para a família e os amigos, com ajuda de um adulto se precisar, Fechar e Concluir fase. Outra capa fica no Como Fazer. Participações de Debinha: F3P8-D01, depois de "Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.", Debinha diz "Quero mandar o jogo para os meus amigos!"; a professora retoma "Para isso, clique em Copiar link de jogar". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'Usar o mesmo projeto da seção anterior. Compartilhar, manter o resumo (na aula o título vem do curso e não aparece), Gerar capa, conferir, Publicar e comemorar com a criança (Seu jogo está no Mural! Agora a família e os amigos podem jogar), Copiar link de jogar e convidar a mandar para a família e os amigos, com ajuda de um adulto se precisar, Fechar e Concluir fase. Outra capa fica no Como Fazer.',
+      {
+        nome: 'Debinha',
+        entradas: [
+          entrada(
+            'F3P8-D01',
+            'Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.',
+            'Quero mandar o jogo para os meus amigos!',
+            'Para isso, clique em Copiar link de jogar',
+          ),
+        ],
+      },
     ),
     fala(
       'ponte-d3-publicar',
@@ -671,7 +1007,18 @@ const certificado = {
       'video-certificado-farol',
       'Comemore sua criação',
       'desafio-certificado.roteiro.md',
-      'Reconhecer movimento, coleta e decisão programados pela criança. Mostrar Pegar meu certificado e encerrar em Concluir fase. Não incluir pitch comercial. Participações de Dedé: FCP2-D01, depois de "São essas regras que fazem o seu jogo funcionar, e quem montou foi você!", Dedé diz "Eu fiz o jogo funcionar!"; a professora retoma "Parabéns pelo seu jogo! Agora clique em Pegar meu certificado". Marcar entrada e saída sem cobrir controles; a resposta e o próximo gesto vêm depois da saída do avatar.',
+      'Comemorar o movimento, a coleta e a decisão programados pela criança com a fala: "Você terminou A Chave do Farol! Olha só o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você!". O preparo do cenário, dos desenhos e do barco é informação interna da equipe, sem ressalva na comemoração. Mostrar Pegar meu certificado e encerrar em Concluir fase. Não incluir pitch comercial.',
+      {
+        nome: 'Dedé',
+        entradas: [
+          entrada(
+            'FCP2-D01',
+            'São essas regras que fazem o seu jogo funcionar, e quem montou foi você!',
+            'Eu fiz o jogo funcionar!',
+            'Parabéns pelo seu jogo! Agora clique em Pegar meu certificado',
+          ),
+        ],
+      },
     ),
     fala(
       'fala-certificado',

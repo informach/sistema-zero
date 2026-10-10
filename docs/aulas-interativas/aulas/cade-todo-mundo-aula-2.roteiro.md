@@ -1,6 +1,6 @@
 # Roteiro falado: Cadê Todo Mundo? | Aula 2
 
-Um vídeo por seção. **Produção em 10/10/2026:** roteiro atualizado com nove participações do **Dedé**, distribuídas pelos cinco vídeos, alternando com a Debinha da Aula 1. A gravação e a edição desta versão ainda não foram confirmadas. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo são referências anteriores às inserções; medir a versão final com as falas e os gestos, sem acelerar.
+Um vídeo por seção. **Produção em 10/10/2026:** roteiro atualizado com nove participações do **Dedé**, distribuídas pelos cinco vídeos, alternando com a Debinha da Aula 1. A gravação e a edição desta versão ainda não foram confirmadas. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo foram revistas em 10/10/2026 e já contam as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a versão final sem acelerar.
 
 **Quem fala:** **Professora** conduz a explicação; **Dedé (avatar)** participa dentro do vídeo; **Zappy na página (não gravar)** é o diálogo da plataforma. Zappy pode aparecer visualmente no meme ou na interface, mas não tem voz dentro do vídeo. O recurso Ouvir da página continua independente da gravação.
 
@@ -110,7 +110,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!”
 
-**Na tela:** **A2P3-D02** · Dedé entra somente depois de Achados mostrar 1. Manter o número e o primeiro personagem visíveis.
+**Na tela:** **A2P3-R01** · Dedé entra somente depois de Achados mostrar 1. Manter o número e o primeiro personagem visíveis.
 
 **Dedé (avatar):**
 
@@ -122,7 +122,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.”
 
-**Na tela:** **A2P3-D03** · Dedé olha para o lugar do último esconderijo. A contagem permanece em 3; esperar a pergunta antes de tocar outra vez.
+**Na tela:** **A2P3-R02** · Dedé olha para o lugar do último esconderijo. A contagem permanece em 3; esperar a pergunta antes de tocar outra vez.
 
 **Dedé (avatar):**
 
@@ -148,7 +148,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ## 4. Deixe o jogo com a sua cara
 
-**Duração alvo:** 2 a 3 minutos, incluindo a galeria do Mapa, os gestos e o teste.
+**Duração alvo:** 4 a 5 minutos, incluindo a galeria do Mapa, os gestos, as trocas e o teste.
 
 **Na tela:** começar pela revelação: no "A surpresa chegou", abrir o Mapa da Aventura na página **A surpresa do final** e, no "Olha quem mais pode brincar de se esconder", mostrar a galeria inteira, com os sete bichos e os seis esconderijos, por alguns segundos. Manter essa página aberta durante a entrada do Dedé.
 
@@ -162,7 +162,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Eu quero escolher o gato!”
 
-**Na tela:** Dedé sai; a professora responde ainda com a galeria à vista e depois volta aos blocos. O gato é a escolha do Dedé e o exemplo da demonstração, não uma escolha obrigatória para quem assiste. Depois voltar ao mesmo Estúdio e trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso. Apontar os blocos **Criar sprite**. Num bloco que cria um bicho, apontar o fim do bloco: depois de **com imagem** está o nome da imagem, **coelho**. Clicar nesse nome, mostrar a lista que se abre com as imagens do jogo e o nome de cada uma (sem título; rolar a lista se for preciso) e clicar em **gato**. Fazer o mesmo num bloco que cria um esconderijo: clicar em **arbusto** e escolher **toco**. Mostrar que o gato e o toco ficaram no mesmo lugar e do mesmo tamanho. Depois trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for preciso, e, dentro do bloco **Se**, o bloco **Escrever** com a frase **Você achou todo mundo!** Clicar no texto e trocar por uma frase curta. Olhar o jardim antes de testar. Testar encontrando todo mundo de novo e mostrar a mensagem nova. Apontar **Próxima parte**.
+**Na tela:** Dedé sai; a professora responde ainda com a galeria à vista e depois volta aos blocos. O gato é a escolha do Dedé e o exemplo da demonstração, não uma escolha obrigatória para quem assiste. Depois voltar ao mesmo Estúdio e trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso. Apontar os blocos **Criar sprite**. Num bloco que cria um bicho, apontar o fim do bloco: depois de **com imagem** está o nome da imagem, **coelho**. Clicar nesse nome, mostrar a lista que se abre com as imagens do jogo e o nome de cada uma (sem título; rolar a lista se for preciso) e clicar em **gato**. Fazer o mesmo num bloco que cria um esconderijo: clicar em **arbusto** e escolher **toco**. Mostrar que o gato e o toco ficaram no mesmo lugar e do mesmo tamanho. Trocar também os outros bichos e esconderijos, em ritmo rápido. Depois trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for preciso, e, dentro do bloco **Se**, o bloco **Escrever** com a frase **Você achou todo mundo!** Clicar no texto e trocar por uma frase curta. Olhar o jardim antes de testar. Testar encontrando todo mundo de novo e mostrar a mensagem nova. Apontar **Próxima parte**.
 
 **Professora:**
 
@@ -172,11 +172,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.”
 
-**Na tela:** **A2P4-D02** · Dedé entra depois da troca do bichinho, antes de escolher o esconderijo. A pedra é a escolha dele, não uma exigência para quem assiste.
+**Na tela:** **A2P4-R01** · Dedé entra depois da troca do bichinho, antes de escolher o esconderijo. O toco é a escolha dele e o exemplo da demonstração, não uma exigência para quem assiste.
 
 **Dedé (avatar):**
 
-> “Meu gato vai se esconder atrás de uma pedra!”
+> “Meu gato vai se esconder atrás de um toco!”
 
 **Na tela:** Dedé sai. Explicar como trocar o esconderijo e manter as opções livres.
 
@@ -184,27 +184,29 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.
 >
-> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.”
+> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.
+>
+> Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.”
 
-**Na tela:** **A2P4-D03** · Mostrar o bichinho e o esconderijo novos nas posições anteriores. Dedé entra depois de terminar a troca, sem cobrir o jogo.
+**Na tela:** **A2P4-R02** · Trocar também os outros bichos e esconderijos, em ritmo rápido; as escolhas da demonstração são livres e não viram exigência para quem assiste. Mostrar os bichos e os esconderijos novos nas posições anteriores. Dedé entra depois de terminar as trocas, sem cobrir o jogo.
 
 **Dedé (avatar):**
 
-> “Troquei os desenhos e não precisei arrumar tudo de novo!”
+> “Troquei os desenhos e o meu jogo ficou do jeito que eu queria!”
 
 **Na tela:** Dedé sai. Deixar a combinação visível antes de começar a editar a mensagem.
 
 **Professora:**
 
-> “Agora vamos mudar a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.
+> “Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.
 >
 > Antes de testar, dê uma olhada no jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a imagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo.
 >
-> Agora teste: encontre todo mundo de novo. Vão aparecer os bichos que você escolheu, atrás dos esconderijos que você escolheu, e no fim a sua mensagem! Se a frase passar da tela, deixe a frase mais curta e teste de novo.
+> Agora teste: encontre todo mundo de novo. Os bichos vão aparecer atrás dos esconderijos, do jeito que você deixou, e no fim vem a mensagem! Se a frase passar da tela, deixe a frase mais curta e teste de novo.
 >
 > Agora o jogo tem a sua cara, e é com essa cara que ele vai para o Mural. Quando terminar, clique em Próxima parte.”
 
-**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
+**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
 
 **Conferência de produção:** é a revelação da surpresa plantada no vídeo de abertura da Aula 1 e lembrada no fim dela (decisão do responsável, 07/10/2026): a fala diz que a surpresa chegou e apresenta a galeria do Mapa como a turma nova que pode brincar de se esconder (decisão do responsável, 07/10/2026: cada curso revela o que tem de próprio). Não chamar de surpresa nenhuma outra coisa do curso. É também a seção de mexa e veja da Aula 2: vem depois do envio e antes de publicar, para o jogo publicado ter a cara da criança. As mudanças ficam no jogo; nada aqui vira critério, e a seção conclui pelo vídeo. O bloco é Criar sprite ___ em x ___ y ___ largura ___ altura ___ com imagem ___. No fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem num campo, e não um desenho: clicar no nome abre a lista com as miniaturas e o nome de cada imagem; com 14 imagens, a lista rola. Embaixo da lista há um campo para digitar um nome e o botão OK; não usar na gravação. Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém x e y, o canto de cima do sprite. No projeto novo, todos os bichos têm a caixa 72 × 87 e todos os esconderijos 161 × 144, então trocar bicho por bicho ou esconderijo por esconderijo não muda tamanho nem lugar. O erro provável é escolher uma imagem do outro tipo: um esconderijo no bloco de um bicho fica grande e aparece antes do toque; um bicho no bloco de um esconderijo fica pequeno e deixa o bicho de trás à vista. A correção da fala resolve: escolhendo de novo uma imagem do tipo certo, o tamanho volta. Os sprites se chamam bicho1, bicho2, bicho3 e esconderijo1, esconderijo2, esconderijo3 nos projetos novos. Projetos salvos antes de 05/10/2026 recebem as imagens novas ao abrir (o Estúdio da aula acrescenta as imagens do curso que faltam, sem trocar as que já existem), mas guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Neles, como o Estúdio ajusta o tamanho à imagem nova mantendo o canto de cima, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo que o antigo. A fala serve aos dois porque cita nomes de imagens, que existem nos dois, e não nomes de sprites. A mensagem é o texto do bloco Escrever ___ em x ___ y ___, dentro do Se de A cada quadro do jogo; frase curta para caber na tela.
 
@@ -216,7 +218,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Agora chegou a hora de publicar o seu jogo, com os bichos que você escolheu, para a sua família e os seus amigos jogarem!
+> “Agora chegou a hora de publicar o seu jogo, do jeito que você deixou, para a sua família e os seus amigos jogarem!
 >
 > Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma setinha para cima. Repare que o resumo do projeto já vem preenchido, então pode deixar como está.
 >
@@ -240,7 +242,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Clique em Copiar link de jogar e mande esse link para eles. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.
+> “Clique em Copiar link de jogar e mande esse link para a sua família e os seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar.
 >
 > Depois de copiar o link, clique em Fechar e, por fim, em Concluir fase.”
 

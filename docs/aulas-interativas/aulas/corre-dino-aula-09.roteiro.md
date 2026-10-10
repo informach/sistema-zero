@@ -183,7 +183,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “O som vem antes de mostrar a tela de fim?”
 
-**Na tela:** Debinha sai antes da resposta. Apontar o lugar antes de Mudar o estado do jogo para fim e montar os três efeitos na ordem narrada. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Debinha sai antes da resposta. Apontar o lugar antes de Mudar o estado do jogo para fim e montar a explosão e, depois, Tremer a tela, na ordem narrada. Manter à vista a explosão e Tremer a tela, antes da mudança de estado. Não pegar o som antes da reação.
 
 **Professora:**
 
@@ -197,13 +197,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Debinha (avatar):**
 
-> “Já colocamos a explosão e a tremida!”
+> “Já coloquei a explosão e a tremida!”
 
-**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Debinha sai antes da resposta. Só então encaixar Tocar efeito com derrota e testar a batida, deixando ouvir o som. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
-> “Deixe à vista o espaço entre Tremer a tela e a mudança de estado. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito, solte ali e escolha derrota.
+> “Agora só falta o som. Deixe à vista o espaço entre Tremer a tela e a mudança de estado. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito, solte ali e escolha derrota.
 >
 > Agora comece e deixe uma batida acontecer. Olha só: o cacto explode, a tela treme, o som toca e aparece a tela de fim! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro da colisão, a ordem é explodir o cacto, tremer a tela em 8, tocar o efeito derrota e, por último, mudar o estado para fim. Depois de corrigir, teste de novo.
 >

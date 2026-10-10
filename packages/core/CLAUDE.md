@@ -93,7 +93,7 @@ Deploy, ordem dos serviços (members ANTES de kids e community) e manifestos a i
 | `voz.ts` | A voz do Zappy: `chaveDeVoz`/`textoFalado` (a chave do dicionário É o texto falado), `SceneVozes`/`isSceneVozes`, `filaDeVoz` (tudo ou nada por fala), `falaDoPalpite`, `falaDaInstrucao`, `falaDaPergunta` e `textosFalaveisDaCena` (o que o gerador do admin grava). ⚠⚠ Mora aqui porque gerador e player precisam produzir a MESMA string — duas cópias que divirjam dão áudio que o player nunca encontra |
 | `voz-quiz.ts` | A voz do Zappy no QUIZ: `falaDaPerguntaDoQuiz` (enunciado + "Letra A: …", com `letraDaAlternativa`), `falaDaExplicacaoDoQuiz`, `textoDoMarkdownParaFala`, `falasDoQuiz` (o que o admin grava), `isQuizVozes` (até 60), `vozesPublicasDoQuiz` (⚠⚠ o GET leva SÓ as perguntas: a explicação é gabarito) e `audioDaExplicacao` (que o `gradeLearningQuiz` devolve como `explanationAudioUrl` na correção) |
 | `audio-url.ts` | `isSceneAudioUrl` (módulo próprio só para o `voz.ts` usá-la sem fechar ciclo com o `index.ts`) |
-| `session.ts` | As sessões (`stepExperiment`, `stepDemonstration`, `SESSION_LIMITS`), o pacote guardado (`pack*`, `read*Session`), os segmentos (`apply*Segment`, `SceneConflictError`) e `sceneEmitsSound` |
+| `session.ts` | A sessão da experimentação (`stepExperiment`, `SESSION_LIMITS`), o pacote guardado (`packExperiment`, `readExperimentSession`, só com os grupos fora do padrão), os segmentos (`applyExperimentSegment`, `SceneConflictError`) e `sceneEmitsSound` |
 | `index.ts` | As duas atividades, `isSceneSetup`, `isSceneScript`, `sceneStart`, `sceneTargets`, `sceneScript`, `sceneModelFor`, `sceneHintsFor` e a leitura tolerante (`sceneSetupGoals`, `sceneUnknownSetupGoals`, `sceneActivityForReading`) |
 | `learning/index.ts` | O bloco: `isInteractiveBlock`, a projeção pública (`publicInteractiveBlock`, `PUBLIC_ACTIVITY_FIELDS`, `isPublicInteractiveBlock`), `blockPrediction`/`blockCheckpoint`, `learningHints`, `evaluateLearning`, `PERGUNTA_MUDOU` |
 
@@ -132,8 +132,10 @@ de gesto compartilhados, em `tests/fixtures/exploration-paths.ts`.
   editor do admin.
 - **Campo novo no estado.** Todos os passos:
   1. o tipo em `SceneState` e o padrão em `initialScene`;
-  2. `hydrateSceneState`: GRUPO novo entra na lista de padrões (é o que deixa um retrato gravado antes de a
-     cena ter aquele assunto abrir como a de fábrica). ⚠️⚠️ A régua para no grupo: CAMPO faltando dentro de
+  2. `hydrateSceneState`: GRUPO novo entra na lista de padrões, `gruposComPadrao()` (é o que deixa um retrato
+     gravado antes de a cena ter aquele assunto abrir como a de fábrica, e é o que tira o grupo no padrão do
+     retrato gravado: fora da lista, ele vai inteiro em todo retrato de TODA cena e encosta no teto do
+     servidor). ⚠️⚠️ A régua para no grupo: CAMPO faltando dentro de
      um grupo presente NÃO é completado, o retrato é inválido e quem chama o trata como ausente. Preencher
      campo a campo fabricava estado incoerente e meta falsa (um `drive` sem âncora fechava "a posição mudou
      sozinha" com a velocidade em zero);
@@ -500,11 +502,22 @@ A regra de cada meta está no motor, comentada. Aqui fica o que costuma pegar qu
 
 ### Leitura do que está guardado, e deploy
 
-- O retrato guardado passa pela hidratação antes do validador: `readExperimentSession`/
-  `readDemonstrationSession` chamam `hydrateSceneState` (o GRUPO ausente recebe o padrão de fábrica; o grupo
-  presente vale como veio, inteiro) e só então `isSceneState` confere campo a campo. É robustez contra
-  retrato truncado, não ponte de versão. A cena vai gravada no pacote, e retrato de outra cena é recusado
+- O retrato guardado passa pela hidratação antes do validador: `readExperimentSession` chama
+  `hydrateSceneState` (o GRUPO ausente recebe o padrão de fábrica; o grupo presente vale como veio, inteiro) e
+  só então `isSceneState` confere campo a campo. Desde 10/10/2026 todo checkpoint DEPENDE dela: os grupos no
+  padrão nem são gravados (bullet abaixo). A cena vai gravada no pacote, e retrato de outra cena é recusado
   (as cenas dividem ids de meta).
+- ⚠️⚠️ **O retrato grava só os grupos FORA do padrão** (`semGruposNoPadrao`, 10/10/2026). Inteiro, o estado
+  de todas as cenas com os quatro retratos do Desfazer abria a 1,2 KB do teto de `MAX_LEARNING_STATE_BYTES`
+  (32.000): no quarto gesto da `found-counter` (Cadê, aula 2) a gravação passou, o servidor voltou 400 e a
+  criança via "Esta experiência mudou." sem nunca concluir. Hoje o caminho de descoberta de cada cena (o do
+  fixture) fica abaixo da METADE do teto, e `retrato-enxuto.test.ts` reprova quem passar; num passeio
+  aleatório de 1.500 gestos o pior caso medido foi ~15,3 KB (`fixed-vs-read`). ⚠️⚠️ A lista
+  `gruposComPadrao()` e os padrões viraram FORMATO GRAVADO: grupo nunca sai da lista (o retrato que o omitiu
+  deixaria de ser lido) e mudar o valor de um padrão muda o que as sessões guardadas leem. O leitor anterior também completa o
+  grupo ausente, então não há ordem de deploy, mas os DOIS lados precisam da versão: o members grava o
+  retrato, e o player o ECOA na tentativa (`controller.answers()`), que passa pelo mesmo teto. Members,
+  community-kids e community.
 - ⚠️⚠️ **Retrato incompleto é INVÁLIDO, e quem chama o trata como ausente** (17/09/2026): no members, a
   linha guardada que não hidrata vale como sessão inexistente — a cena recomeça limpa e a gravação nova
   substitui a linha. Antes ela virava 409 em toda gravação daquele bloco, para sempre.

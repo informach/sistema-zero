@@ -36,11 +36,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Eu achei que sair da tela já tirava o cacto do jogo!”
 
-**Na tela:** Dedé sai antes da resposta. Ligar a regra e acompanhar os números até ficarem iguais.
+**Na tela:** Dedé sai antes da resposta. Manter a prateleira Fora da tela, no grupo, à vista durante a resposta; depois, ligar a regra e acompanhar os números até ficarem iguais.
 
 **Professora:**
 
-> “Tem, sim. Vamos tirar do grupo os que já saíram. Depois que dois cactos saem, a chave abre. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.
+> “Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que dois cactos saem, a chave abre. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.
 >
 > É como uma mochila de passeio: o brinquedo que você não usa mais continua lá dentro, pesando, até alguém tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos.
 >
@@ -71,7 +71,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Onde essa regra entra?”
 
-**Na tela:** Dedé sai antes da resposta. Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Dedé sai antes da resposta. Localizar o fim do quadro, depois do desenho dos cactos, encaixar Tirar do grupo quem sair da tela, escolher cactos e trocar sprite por cacto. Manter à vista o bloco encaixado no fim do quadro, com cactos e cacto. Não começar a conferência antes da reação.
 
 **Professora:**
 
@@ -85,9 +85,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Dedé (avatar):**
 
-> “Se um cacto sair da tela, ele sai da lista também!”
+> “Se um cacto sair da tela, ele sai do grupo também!”
 
-**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Dedé sai antes da resposta. Só então apontar a conferência e deixar alguns cactos atravessarem a tela. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 

@@ -31,7 +31,7 @@ O vídeo do Mapa da Aventura continua só com a professora. As participações a
 | F1P5-D01 | “Como eu faço ele parar na borda?” |
 | F1P6-D01 | “E onde eu coloco esse limite?” |
 
-As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 ## Triagem dos conceitos
 
@@ -135,10 +135,10 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, e a surpresa do final plantada | Versão pronta | 50 a 65 s | Regravar |
+| `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, e a surpresa do final plantada | Versão pronta | 70 a 90 s | Regravar |
 | `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 25 a 35 s | Regravar |
-| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 70 a 90 s | Gravar |
-| `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 3 a 4 min | Gravar |
+| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 90 a 110 s | Gravar |
+| `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 4 a 5 min | Gravar |
 | `video-d1-limite` | Experiência: sem e com o limite | Cena nova | 50 a 65 s | Gravar |
 | `video-d1-borda` | Borda no jogo, limite, testes e entrega | Mesmo projeto | 2 a 3 min | Regravar |
 

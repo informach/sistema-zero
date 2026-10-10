@@ -174,7 +174,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
-**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Soltar a floresta entre a limpeza e o desenho do Dino e deixar a prévia à vista, com a floresta já passando na velocidade 4 que vem no bloco. Não mudar o número antes da pergunta.
 
 **Professora:**
 
@@ -190,13 +190,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Dedé (avatar):**
 
-> “Agora falta fazer a floresta andar!”
+> “A floresta já está andando! Dá para ela andar mais rápido?”
 
-**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Dedé sai antes da resposta. Só então trocar a velocidade de 4 para 5, no ritmo da próxima fala. Manter livres o campo, os encaixes e o resultado do teste.
 
 **Professora:**
 
-> “Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada quadro, e é ele que faz o Dino parecer correr pela floresta.
+> “Dá, sim. Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada quadro, e é ele que faz o Dino parecer correr pela floresta.
 >
 > Agora olhe a área do jogo: a floresta passa atrás do Dino! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela, depois Desenhar fundo de floresta, com velocidade 5, e, por último, Desenhar o sprite dino, com uma floresta só. Depois de corrigir, teste de novo.
 >

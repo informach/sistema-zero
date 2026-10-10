@@ -987,6 +987,35 @@ describe('UI vetorial (F5)', () => {
     expect(stage.querySelector('ellipse[stroke-width="10"]')).toBeTruthy()
   })
 
+  it('arrastar a espessura ou a opacidade grava UM desfazer pelo arrasto inteiro', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    const espessura = screen.getByLabelText(COPY.vector.strokeWidth) as HTMLInputElement
+    fireEvent.pointerDown(espessura, { isPrimary: true, pointerId: 7 })
+    for (const value of ['1.5', '4', '7.5', '10'])
+      fireEvent.change(espessura, { target: { value } })
+    fireEvent.pointerUp(document, { pointerId: 7 })
+    expect(stage.querySelector('rect[stroke-width="10"]')).toBeTruthy()
+
+    const opacidade = document.querySelector<HTMLInputElement>('input[name="vector-opacity"]')
+    if (!opacidade) throw new Error('controle de opacidade esperado')
+    fireEvent.pointerDown(opacidade, { isPrimary: true, pointerId: 8 })
+    for (const value of ['90', '70', '50']) fireEvent.change(opacidade, { target: { value } })
+    fireEvent.pointerUp(document, { pointerId: 8 })
+    expect(stage.querySelector('rect[opacity="0.5"]')).toBeTruthy()
+
+    const desfazer = () =>
+      fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    desfazer()
+    expect(stage.querySelector('rect[stroke-width="10"]:not([opacity="0.5"])')).toBeTruthy()
+    desfazer()
+    expect(stage.querySelector('rect[stroke-width="1"]')).toBeTruthy()
+    fireEvent.click(screen.getAllByRole('button', { name: /^Refazer/ })[0] as HTMLElement)
+    expect(stage.querySelector('rect[stroke-width="10"]')).toBeTruthy()
+  })
+
   it.each([8, 64])('espessura antiga de %s permanece intacta ao selecionar', async (width) => {
     const stage = await openWithShapes([
       {

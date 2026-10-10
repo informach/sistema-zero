@@ -13,8 +13,15 @@ import {
   sceneStart,
   stepExperiment,
 } from '../../../packages/core/src/learning/scene'
+import { participacoes } from './avatares-video'
 import { conteudoBloco, problemasPedagogicos, temEntregaExterna } from './diretrizes-pedagogicas'
-import { aulasMeuJeito, falasSecao, gerarManifestoMeuJeito, telaSecao } from './gerar-meu-jeito'
+import {
+  aulasMeuJeito,
+  falasSecao,
+  gerarManifestoMeuJeito,
+  type SecaoMeuJeito,
+  telaSecao,
+} from './gerar-meu-jeito'
 import { etapasMeuJeito, projetoMeuJeito } from './meu-jeito-etapas'
 import { courseProjects } from './meu-jeito-projetos-qa'
 import { GUIA_PESSOA } from './palavras-da-escola'
@@ -348,6 +355,22 @@ const ESCOLA_E_TAREFA =
  * pessoa é barrada pela régua comum `GUIA_PESSOA` (`palavras-da-escola.ts`).
  */
 const GUIA_QUE_NAO_E_PESSOA = /\b(?:a|uma|da|na|pela|essa|esta)\s+guia\b|\bcomo guia\b/i
+/**
+ * "Clique em" nos botões e "toque em" no jogo, nunca "aperte" nem "apertar" (Diretrizes, seção 6).
+ * Só ficam de fora os rótulos que a criança lê na tela, com maiúscula, como na tela: o bloco Quando
+ * apertar a tecla e a dica "Aperte Enter para…", que ela mesma escreve no jogo.
+ */
+const ROTULOS_COM_APERTAR = /\bQuando apertar a tecla\b|\bAperte Enter para\b/g
+const APERTAR = /\bapert(?:e|em|o|a|am|ar|ando|ou|ei)\b/i
+// Três vozes (Diretrizes, seção 6): "a gente" e "o seu jogo", nunca o "nós" de sala de aula.
+const NOS_DE_SALA = /\b(?:nós|nosso|nossa|nossos|nossas|montamos)\b/i
+/**
+ * O que a criança ouve no vídeo além da professora: a fala do avatar e a resposta curta da
+ * professora a ele (`reply`). Os guardas de fala valem para esses trechos também (revisão de
+ * 10/10/2026: "como guia" tinha passado só na voz do avatar).
+ */
+const falasDosAvatares = (s: SecaoMeuJeito): string[] =>
+  participacoes(s).flatMap((a) => [a.speech, ...(a.reply ? [a.reply] : [])])
 const textos = (valor: unknown): string[] =>
   typeof valor === 'string'
     ? [valor]
@@ -365,6 +388,8 @@ test('o que a criança vê e ouve fala de aventura, fase, parte e Mapa da Aventu
         s.bridge,
         ...falasSecao(s),
         ...falasSecao(s, 'mapa'),
+        // A fala do avatar e a resposta da professora a ele também são ouvidas (10/10/2026).
+        ...falasDosAvatares(s),
         ...textos(s.activity),
         ...textos(s.questions),
         s.meme ?? '',
@@ -378,6 +403,8 @@ test('o que a criança vê e ouve fala de aventura, fase, parte e Mapa da Aventu
       // O curso encaixa blocos dentro do Se jogando: "então" não faz papel de ligação na fala.
       expect(texto, lesson.slug).not.toMatch(/\bentão\b/i)
       expect(texto, lesson.slug).not.toMatch(/—|\baperte\b/i)
+      expect(texto.replace(ROTULOS_COM_APERTAR, ''), lesson.slug).not.toMatch(APERTAR)
+      expect(texto, lesson.slug).not.toMatch(NOS_DE_SALA)
     }
   }
   // Envio pela galeria: os rótulos novos, na ordem em que aparecem na tela (a janela da galeria,

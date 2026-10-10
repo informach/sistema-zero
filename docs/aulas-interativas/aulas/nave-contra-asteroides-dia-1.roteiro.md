@@ -288,11 +288,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Ué, cadê a nave?”
 
-**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Dedé sai antes da resposta. Depois da saída, apontar as estrelas por cima da nave junto do Olha só, antes de mover o bloco. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
-> “Olhe o que ficou por cima dela. Olha só: as estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você viu na experiência. Mas o bloco da nave continua no projeto, e é só mudar a ordem.
+> “Olha só: as estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você viu na experiência. Mas o bloco da nave continua no projeto, e é só mudar a ordem.
 >
 > Solte qualquer peça que estiver segurando e deixe Limpar a tela à vista. Depois, arraste o bloco das estrelas e solte logo abaixo de Limpar a tela, antes do movimento. Agora a nave aparece de novo, na frente das estrelas, porque as estrelas passaram a ser desenhadas antes dela.”
 

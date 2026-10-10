@@ -77,7 +77,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Onde eu coloco o bloco que soma?”
 
-**Na tela:** Dedé sai antes da resposta. Localizar o fim da colisão e mostrar onde a soma entra; depois montar o placar fora da colisão. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Dedé sai antes da resposta. Localizar o fim da colisão, mostrar onde a soma entra e soltar Somar em variável nesse lugar. Depois, deixar à vista o encaixe logo depois da colisão, sem pegar o placar antes da próxima entrada. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 

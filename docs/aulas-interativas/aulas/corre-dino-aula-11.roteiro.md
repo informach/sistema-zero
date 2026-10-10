@@ -235,7 +235,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Esse número vai mudar a cada partida?”
 
-**Na tela:** Debinha sai antes da resposta. Localizar o subtítulo e mostrar a montagem de juntar texto com a leitura de pontos no meio. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+**Na tela:** Debinha sai antes da resposta. Localizar o subtítulo, trocar pelo juntar texto, criar as três entradas e preencher só a primeira, com Você fez. Manter à vista o juntar texto com Você fez na primeira entrada e os outros dois números ainda no lugar. Não pegar o valor da variável antes da pergunta.
 
 **Professora:**
 
@@ -253,11 +253,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E o número dos pontos vai no meio?”
 
-**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+**Na tela:** Debinha sai antes da resposta. Só então soltar o valor da variável pontos no número do meio, completar a última entrada e testar a tela de fim. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Professora:**
 
-> “Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em cima do número do meio e escolha pontos.
+> “Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em cima do número do meio e escolha pontos.
 >
 > Por último, deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte em cima do último número. Apague Olá e escreva um espaço no começo, seguido de: pontos. Tente bater essa marca!
 >

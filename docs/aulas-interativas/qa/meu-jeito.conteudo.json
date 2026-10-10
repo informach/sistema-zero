@@ -712,9 +712,10 @@
         "avatar": [
           {
             "after": "Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.",
-            "speech": "Posso usar o desenho anterior como guia!",
+            "speech": "E se o fogo 2 ficar maior que o tracejado?",
             "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+            "reply": "Vamos ver."
           },
           {
             "after": "agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.",
@@ -1489,7 +1490,7 @@
           },
           {
             "after": "cada um precisa de um nome só dele.",
-            "speech": "Que nome eu dou para a folha?",
+            "speech": "A folha não pode se chamar nave também!",
             "beforeScreen": "Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível.",
             "afterScreen": "Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite."
           }
@@ -2107,7 +2108,7 @@
         "meme": "na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda \"a foto guarda aquele momento\".",
         "avatar": {
           "after": "Para ela ver o desenho novo, você manda outra foto.",
-          "speech": "E para mostrar a versão rosa do jogo?",
+          "speech": "Ah! Para a família ver a nave rosa, tem que publicar de novo!",
           "beforeScreen": "Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul.",
           "afterScreen": "Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira."
         }

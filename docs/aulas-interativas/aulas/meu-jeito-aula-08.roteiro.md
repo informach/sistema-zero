@@ -42,7 +42,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Dedé (avatar):**
 
-> “E para mostrar a versão rosa do jogo?”
+> “Ah! Para a família ver a nave rosa, tem que publicar de novo!”
 
 **Na tela:** Dedé sai antes da resposta. Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira.
 

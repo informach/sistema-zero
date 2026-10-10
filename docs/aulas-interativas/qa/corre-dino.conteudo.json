@@ -789,9 +789,10 @@
         "avatar": [
           {
             "after": "O lugar da floresta é entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Deixe esse espaço à vista. Depois, abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.",
-            "speech": "Agora falta fazer a floresta andar!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+            "speech": "A floresta já está andando! Dá para ela andar mais rápido?",
+            "beforeScreen": "Soltar a floresta entre a limpeza e o desenho do Dino e deixar a prévia à vista, com a floresta já passando na velocidade 4 que vem no bloco. Não mudar o número antes da pergunta.",
+            "afterScreen": "Só então trocar a velocidade de 4 para 5, no ritmo da próxima fala. Manter livres o campo, os encaixes e o resultado do teste.",
+            "reply": "Dá, sim."
           }
         ]
       },
@@ -1261,14 +1262,15 @@
             "after": "porque o mesmo bloco já cuida dos três controles.",
             "speech": "Já consegui pular dos três jeitos!",
             "beforeScreen": "Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso.",
-            "afterScreen": "Retomar a explicação do toque embaixo e testar os dois toques durante o mesmo salto.",
+            "afterScreen": "Retomar com o toque embaixo: tocar perto do chão junto da fala e mostrar o Dino se abaixando em vez de pular.",
             "reply": "Agora vamos conferir mais duas coisas."
           },
           {
             "after": "Agora teste! Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão! Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.",
             "speech": "Dá para pular de novo lá no alto?",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+            "beforeScreen": "Terminar o toque embaixo com o Dino no chão. Não começar o salto com dois toques antes da pergunta.",
+            "afterScreen": "Só então tocar duas vezes na barra de espaço durante o mesmo salto e manter à vista que o segundo toque não faz o Dino pular de novo no ar.",
+            "reply": "Vamos ver."
           }
         ]
       },
@@ -1655,7 +1657,7 @@
           },
           {
             "after": "porque o som está ligado ao pulo, e não à tecla.",
-            "speech": "O meu ainda está sem som.",
+            "speech": "No meu, o segundo toque também fez som!",
             "beforeScreen": "Concluir os testes sem sobrepor vozes ao som; esperar o Dino pousar.",
             "afterScreen": "Apontar o evento e o efeito na conferência; mostrar também o clique que libera o áudio, se necessário.",
             "reply": "Vamos conferir onde o som ficou."
@@ -2349,8 +2351,8 @@
           "after": "Por isso o grupo tem mais cactos do que a tela.",
           "speech": "Eu achei que sair da tela já tirava o cacto do jogo!",
           "beforeScreen": "Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave.",
-          "afterScreen": "Ligar a regra e acompanhar os números até ficarem iguais.",
-          "reply": "Tem, sim. Vamos tirar do grupo os que já saíram."
+          "afterScreen": "Manter a prateleira Fora da tela, no grupo, à vista durante a resposta; depois, ligar a regra e acompanhar os números até ficarem iguais.",
+          "reply": "Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra."
         }
       },
       {
@@ -2416,13 +2418,13 @@
             "after": "Agora a gente vai colocar a regra que tira esses cactos de lá!",
             "speech": "Onde essa regra entra?",
             "beforeScreen": "Retomar a experiência com o projeto aberto, sem pegar blocos ainda.",
-            "afterScreen": "Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa."
+            "afterScreen": "Localizar o fim do quadro, depois do desenho dos cactos, encaixar Tirar do grupo quem sair da tela, escolher cactos e trocar sprite por cacto."
           },
           {
             "after": "Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.",
-            "speech": "Se um cacto sair da tela, ele sai da lista também!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+            "speech": "Se um cacto sair da tela, ele sai do grupo também!",
+            "beforeScreen": "Manter à vista o bloco encaixado no fim do quadro, com cactos e cacto. Não começar a conferência antes da reação.",
+            "afterScreen": "Só então apontar a conferência e deixar alguns cactos atravessarem a tela. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -3985,13 +3987,14 @@
             "after": "Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela.",
             "speech": "O som vem antes de mostrar a tela de fim?",
             "beforeScreen": "Retomar a regra da batida com os blocos à vista, sem inserir efeitos ainda.",
-            "afterScreen": "Apontar o lugar antes de Mudar o estado do jogo para fim e montar os três efeitos na ordem narrada."
+            "afterScreen": "Apontar o lugar antes de Mudar o estado do jogo para fim e montar a explosão e, depois, Tremer a tela, na ordem narrada."
           },
           {
             "after": "Agora deixe à vista o espaço entre a explosão e a mudança de estado. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela e solte nesse espaço. Ele já chega com intensidade 8: mantenha.",
-            "speech": "Já colocamos a explosão e a tremida!",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+            "speech": "Já coloquei a explosão e a tremida!",
+            "beforeScreen": "Manter à vista a explosão e Tremer a tela, antes da mudança de estado. Não pegar o som antes da reação.",
+            "afterScreen": "Só então encaixar Tocar efeito com derrota e testar a batida, deixando ouvir o som. Manter livres os campos, os encaixes e o resultado do teste.",
+            "reply": "Agora só falta o som."
           }
         ]
       },
@@ -5034,14 +5037,15 @@
             "after": "para mostrar quantos pontos você fez na partida.",
             "speech": "Esse número vai mudar a cada partida?",
             "beforeScreen": "Deixar a tela de fim sem o resultado visível e retomar o placar que já existe.",
-            "afterScreen": "Localizar o subtítulo e mostrar a montagem de juntar texto com a leitura de pontos no meio.",
+            "afterScreen": "Localizar o subtítulo, trocar pelo juntar texto, criar as três entradas e preencher só a primeira, com Você fez.",
             "reply": "Vai mostrar os pontos daquela partida."
           },
           {
             "after": "Deixe à vista a primeira entrada. Ainda em Programação e Valores, pegue o bloco de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.",
             "speech": "E o número dos pontos vai no meio?",
-            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
-            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+            "beforeScreen": "Manter à vista o juntar texto com Você fez na primeira entrada e os outros dois números ainda no lugar. Não pegar o valor da variável antes da pergunta.",
+            "afterScreen": "Só então soltar o valor da variável pontos no número do meio, completar a última entrada e testar a tela de fim. Manter livres os campos, os encaixes e o resultado do teste.",
+            "reply": "Vai, sim."
           }
         ]
       },

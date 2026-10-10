@@ -2,13 +2,13 @@
 
 **Vozes e produção · 10/10/2026:** **Professora** conduz; **Dedé (avatar)** participa em 1 entrada marcada para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
 
-**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações são referências para ensaio, incluindo as novas falas; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações foram revistas em 10/10/2026 com as novas falas: cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
 **Continuidade da personalização:** mostrar o projeto com as escolhas da criança, quando disponível. A conquista é programar as regras e escolher a aparência, as mensagens e o lugar da chave; as artes continuam preparadas. Preservar a emissão e as quatro perguntas existentes.
 
 Duas seções: quiz sem vídeo e celebração com um vídeo curto e o bloco de certificado existente. Não acrescentar oferta, tour ou pedido para chamar um responsável para assistir a uma apresentação comercial. A emissão continua sendo a ação de conclusão, junto do vídeo.
 
-Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras, cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). O que já veio pronto aparece na comemoração, junto do que a pessoa programou (Diretrizes, seção 6, revisão de 06/10/2026).
+Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras, cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). A comemoração destaca o que a pessoa programou e o resultado no jogo. O preparo do cenário, dos desenhos e do barco é informação interna de produção (Diretrizes, seção 3, revisão de 10/10/2026).
 
 ## Seção 1. As regras da sua aventura
 
@@ -28,7 +28,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> "Você terminou A Chave do Farol! Os desenhos e o barco já vieram prontos, mas olha só o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você!"
+> "Você terminou A Chave do Farol! Olha só o que você programou: o personagem que anda, o jogo que guarda a chave e o farol que confere se ela foi encontrada. São essas regras que fazem o seu jogo funcionar, e quem montou foi você!"
 
 **Na tela:** **FCP2-D01** · Dedé entra para comemorar as regras montadas, sem atribuir a si os desenhos ou o movimento preparado do barco. Não mostrar um certificado emitido antes do clique.
 
