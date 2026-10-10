@@ -338,9 +338,9 @@ describe('painel de aparelhos na área dos pais', () => {
       expect(((await screen.findByLabelText('Código para copiar')) as HTMLInputElement).value).toBe(
         'ABCDE-FGHJK',
       )
-      expect((screen.getByLabelText('Endereço da plataforma') as HTMLInputElement).value).toBe(
-        'kids.sistemazero.com.br',
-      )
+      expect(
+        ((await screen.findByLabelText('Endereço da plataforma')) as HTMLInputElement).value,
+      ).toBe('kids.sistemazero.com.br')
       expect(screen.getByText(/Depois de usar o código, o acesso dura pelo prazo/)).toBeTruthy()
       // Ainda não entrou: o painel diz e o código fica.
       fireEvent.click(screen.getByRole('button', { name: 'Conferir se a criança já entrou' }))

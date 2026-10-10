@@ -3,7 +3,7 @@
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
 import { Button } from '@sistemazero/ui/button'
 import { CheckCircle2, Copy } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { formatAccessEnd } from '@/lib/study-access-view'
 import { StudentAreaButton } from './student-area-button'
 
@@ -41,9 +41,11 @@ export function AccessCodeResult({
   onCheck: () => void
   onCopyFailed: () => void
 }) {
-  const [origin, setOrigin] = useState('')
+  // ⚠️ Lido na primeira renderização, e não num efeito: o resultado só existe depois de um
+  // clique (nunca no HTML do servidor), e com o efeito o endereço chegava um quadro depois do
+  // código (o CI carregado pegava a tela sem ele, 10/10/2026).
+  const [origin] = useState(() => (typeof window === 'undefined' ? '' : window.location.origin))
   const [copied, setCopied] = useState<'code' | 'address' | null>(null)
-  useEffect(() => setOrigin(window.location.origin), [])
   // Só um endereço de verdade (http/https) vira texto para copiar.
   const address = /^https?:\/\//.test(origin) ? origin.replace(/^https?:\/\//, '') : ''
   async function copy(kind: 'code' | 'address') {
