@@ -6,6 +6,7 @@ import { Dialog } from '@sistemazero/ui/dialog'
 import { LogOut, ShieldCheck, User, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
@@ -234,30 +235,42 @@ export function UserMenu({
           </button>
         </div>
       ) : null}
-      <Dialog
-        open={confirmLogout}
-        onClose={() => {
-          if (!busy) setConfirmLogout(false)
-        }}
-        title={user.act ? 'Encerrar sessão de suporte?' : 'Sair deste aparelho?'}
-        footer={
-          // Pílulas de 44px: a criança decide aqui se sai deste aparelho.
-          <div className="flex flex-wrap justify-end gap-2 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-4">
-            <Button variant="secondary" disabled={busy} onClick={() => setConfirmLogout(false)}>
-              Continuar aqui
-            </Button>
-            <Button disabled={busy} onClick={() => void leave('/login', true)}>
-              {user.act ? 'Encerrar suporte' : 'Sair deste aparelho'}
-            </Button>
-          </div>
-        }
-      >
-        <p>
-          {user.act
-            ? 'Os acessos da família neste aparelho continuam como estavam.'
-            : 'Para entrar de novo com seu perfil, você vai precisar de outro código do responsável. Seu progresso fica guardado.'}
-        </p>
-      </Dialog>
+      {/* ⚠️ No `<body>`, por portal (10/10/2026): montado aqui dentro, o diálogo herdava o
+          empilhamento do menu (barra lateral ou de cima) e ficava POR BAIXO do rodapé fixo da
+          aula. Só existe aberto, então nunca vai ao HTML do servidor. */}
+      {confirmLogout
+        ? createPortal(
+            <Dialog
+              open={confirmLogout}
+              onClose={() => {
+                if (!busy) setConfirmLogout(false)
+              }}
+              title={user.act ? 'Encerrar sessão de suporte?' : 'Sair deste aparelho?'}
+              footer={
+                // Pílulas de 44px: a criança decide aqui se sai deste aparelho.
+                <div className="flex flex-wrap justify-end gap-2 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-4">
+                  <Button
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => setConfirmLogout(false)}
+                  >
+                    Continuar aqui
+                  </Button>
+                  <Button disabled={busy} onClick={() => void leave('/login', true)}>
+                    {user.act ? 'Encerrar suporte' : 'Sair deste aparelho'}
+                  </Button>
+                </div>
+              }
+            >
+              <p>
+                {user.act
+                  ? 'Os acessos da família neste aparelho continuam como estavam.'
+                  : 'Para entrar de novo com seu perfil, você vai precisar de outro código do responsável. Seu progresso fica guardado.'}
+              </p>
+            </Dialog>,
+            document.body,
+          )
+        : null}
     </div>
   )
 }
