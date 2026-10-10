@@ -74,7 +74,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 3 a 4 minutos, incluindo montagem, testes e envio.
 
-**Na tela:** mostrar o projeto da criança no Estúdio incorporado. Se não houver projeto salvo, usar a retomada prevista no manifesto. Começar com três esconderijos fechados e **Achados: 0**. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo e, no "Tá vendo?", mostrar que o personagem aparece, mas Achados continua em zero. Depois trazer à vista o evento, arrastando um espaço vazio entre os blocos se for preciso, e deixar à vista a regra de visibilidade que já está dentro dele antes de abrir a paleta. O bloco Somar nasce com 1 e contador.
+**Na tela:** mostrar o projeto da criança no Estúdio incorporado. Se não houver projeto salvo, usar a retomada prevista no manifesto. Começar com três esconderijos fechados e **Achados: 0**. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo e, no "Tá vendo?", mostrar que o personagem aparece, mas Achados continua em zero. Depois trazer à vista a área Quando acontecer, arrastando um espaço vazio entre os blocos se for preciso. Apontar a área primeiro e o bloco Quando clicar ou tocar dentro dela em seguida, acompanhando cada frase. Deixar à vista a regra de visibilidade que já está dentro desse bloco antes de abrir a paleta. O bloco Somar nasce com 1 e contador.
 
 **Professora:**
 
@@ -82,7 +82,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito!
 >
-> Para começar, encontre na área Quando acontecer o bloco Quando clicar ou tocar num sprite do grupo esconderijos. Se ele não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.
+> Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar num sprite do grupo esconderijos.
 >
 > Repare que dentro dele já está o bloco da Fase 1, Deixar o sprite escolhido com 0% de visibilidade.”
 

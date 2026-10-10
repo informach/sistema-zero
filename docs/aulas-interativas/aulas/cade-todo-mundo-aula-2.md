@@ -87,8 +87,12 @@ Começar pela retomada, curta (umas 50 palavras) e nesta ordem: primeiro o probl
 num esconderijo do próprio jogo (o personagem aparece, mas Achados continua em zero, porque o jogo
 ainda não conta); depois a lembrança da experiência da seção anterior (cada personagem encontrado
 somava um em Achados); por fim, o convite uma vez só, colado ao primeiro passo ("Agora a gente vai
-fazer o seu jogo contar do mesmo jeito!"). A retomada não repete a explicação da variável. Com a
-ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Somar ___ em variável ___**,
+fazer o seu jogo contar do mesmo jeito!"). A retomada não repete a explicação da variável.
+Separar a procura da área da identificação do bloco, apontando cada um no ritmo da fala:
+"Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço
+vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar
+num sprite do grupo esconderijos." Só então mostrar a ação de visibilidade dentro dele.
+Com a ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Somar ___ em variável ___**,
 que nasce com **1** e **contador**, logo abaixo dela. Manter **1** e trocar **contador** por
 **achados**. A verificação da entrega também confere a regra da Aula 1.
 
