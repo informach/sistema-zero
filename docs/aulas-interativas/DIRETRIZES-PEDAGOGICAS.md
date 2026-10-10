@@ -266,14 +266,14 @@ orientação permanece como **Zappy na página (não gravar)**, inclusive com o 
 plataforma. A regra de um vídeo e um diálogo externo por seção trata dos blocos da página; as
 participações de Debinha e Dedé são trechos do vídeo, não novos blocos de diálogo.
 
-Decisão do responsável em 10/10/2026. As seis inserções da Aula 1, as cinco da Aula 2 e a comemoração
+Decisão do responsável em 10/10/2026. As oito inserções da Aula 1, as nove da Aula 2 e a comemoração
 do certificado estão em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md) e nos respectivos roteiros.
 O documento distingue gravação informada, texto preparado e edição a conferir.
 
 Aplicação à **Chave do Farol**, também em 10/10/2026: Debinha no Dia 1, Dedé no Dia 2, Debinha no
 Dia 3 e Dedé no certificado. São 29 participações; os vídeos do Mapa e dos quatro avisos continuam
-sem intervenção. A montagem da resposta com chave recebe duas entradas, antes da montagem e antes
-do reinício. As falas variam entre dúvida, descoberta e comemoração, mantendo os passos completos
+sem intervenção. A montagem da resposta com chave recebe três entradas: no problema inicial, depois de
+configurar a luz e antes do reinício. As falas variam entre dúvida, descoberta e comemoração, mantendo os passos completos
 e “então” somente como nome do espaço do bloco Se. Roteiros, propostas e direções dos manifestos
 atualizados; gravação e edição desta versão ainda não confirmadas.
 
