@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Limpeza do grupo a cada quadro, com o intervalo original 1,4 segundo preservado.
 - Seções: 4. Vídeos: 3.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A experiência torna visível o conteúdo do grupo. O medidor temporário e a criação acelerada, depois retirados no desenho antigo, deixam de ser desvios obrigatórios. A montagem atua diretamente sobre a limpeza, com o mesmo programa final.
@@ -29,6 +31,8 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 
 **Zappy na página (não gravar):** Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-visivel-guardado-avatar-01. Professora até “Por isso o grupo tem mais cactos do que a tela.”. Antes da entrada: Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave. Dedé entra, com os gestos parados, e fala: “Tem cacto guardado mesmo depois de sair!”. Dedé sai antes da resposta. Retomada da professora: “Tem, sim. Vamos tirar do grupo os que já saíram. Depois que dois cactos saem, a chave abre. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.”. Na retomada: Ligar a regra e acompanhar os números até ficarem iguais. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `cleanup`. Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Retire do grupo quem já saiu
@@ -38,6 +42,8 @@ A experiência torna visível o conteúdo do grupo. O medidor temporário e a cr
 **Blocos na página:** video-faxina → fala-faxina.
 
 **Zappy na página (não gravar):** Agora tire do grupo os cactos que já saíram! Coloque Tirar do grupo quem sair da tela depois do desenho dos cactos e mantenha o relógio em 1.4. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** ID video-faxina-avatar-01. Professora até “Agora a gente vai colocar a regra que tira esses cactos de lá!”. Antes da entrada: Retomar a experiência com o projeto aberto, sem pegar blocos ainda. Dedé entra, com os gestos parados, e fala: “Onde essa regra entra?”. Dedé sai antes da resposta. Retomada da professora: “A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos. Depois, abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte depois do desenho dos cactos. Escolha cactos.”. Na retomada: Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

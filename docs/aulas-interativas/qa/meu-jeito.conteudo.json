@@ -85,7 +85,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-tema-e-regra",
-        "meme": "na frase do pega-pega, o Zappy com fantasia de pirata e o Zappy com fantasia de astronauta correndo no mesmo pega-pega, com a legenda \"fantasia nova, mesma brincadeira\"."
+        "meme": "na frase do pega-pega, o Zappy com fantasia de pirata e o Zappy com fantasia de astronauta correndo no mesmo pega-pega, com a legenda \"fantasia nova, mesma brincadeira\".",
+        "avatar": {
+          "after": "a lista Regras do jogo é a brincadeira.",
+          "speech": "E se eu mudar uma dessas regras?",
+          "beforeScreen": "Testar os temas, voltar para Nave no espaço e concluir a comparação com as fantasias.",
+          "afterScreen": "Desligar a regra da tecla e testar Atirar somente quando a professora anunciar esse teste."
+        }
       },
       {
         "key": "copias",
@@ -119,7 +125,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experiencia-copia",
-        "meme": "na frase do gibi, o Zappy copiando a nave de um gibi numa folha e pintando a cópia de rosa, enquanto a nave do gibi continua azul, com a legenda \"a cópia é sua\"."
+        "meme": "na frase do gibi, o Zappy copiando a nave de um gibi numa folha e pintando a cópia de rosa, enquanto a nave do gibi continua azul, com a legenda \"a cópia é sua\".",
+        "avatar": {
+          "after": "Ou seja, o arquivo virou um projeto no Estúdio.",
+          "speech": "Se eu mudar essa cópia, o outro jogo muda também?",
+          "beforeScreen": "Concluir Exportar e Importar na experiência; mostrar as duas naves ainda azuis.",
+          "afterScreen": "Mudar só a cor da nave do Estúdio para rosa e comparar com a nave azul do jogo da fase."
+        }
       },
       {
         "key": "exportar",
@@ -362,7 +374,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-espelho",
-        "meme": "na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda \"um pingo, dois lados\"."
+        "meme": "na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda \"um pingo, dois lados\".",
+        "avatar": {
+          "after": "e a dobra é a linha do meio.",
+          "speech": "E esse espelho de cima e de baixo?",
+          "beforeScreen": "Concluir o teste do Espelho lado a lado e a comparação com a folha dobrada; apontar o outro controle sem ligá-lo ainda.",
+          "afterScreen": "Desligar o espelho lateral, ligar só o vertical e pintar a ponta; depois comparar o comportamento do Balde."
+        }
       },
       {
         "key": "contorno",
@@ -392,7 +410,14 @@
           "Para conferir, afaste a imagem e veja se você reconhece a nave pequena, porque no jogo ela aparece pequena."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": {
+          "after": "Agora pinte o corpo da sua nave.",
+          "speech": "Eu quero uma nave roxa!",
+          "beforeScreen": "Mostrar o contorno ainda sem preenchimento e o espaço do motor livre.",
+          "afterScreen": "Usar roxo como escolha do exemplo, mantendo a liberdade de quem assiste; demonstrar preenchimento, correção de abertura, cabine e conferência.",
+          "reply": "Pode ser roxa, sim."
+        }
       },
       {
         "key": "luz",
@@ -427,7 +452,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experiencia-luz",
-        "meme": "na frase da bola no quintal, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda \"lado do sol: claro · outro lado: escuro\"."
+        "meme": "na frase da bola no quintal, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda \"lado do sol: claro · outro lado: escuro\".",
+        "avatar": {
+          "after": "É isso que A sombra e a luz desenha.",
+          "speech": "E se a luz vier do outro lado?",
+          "beforeScreen": "Concluir a comparação com a bola no quintal e manter o sol à esquerda.",
+          "afterScreen": "Ligar luz e sombra e mover o sol para a direita; mostrar os tons trocando de lado."
+        }
       },
       {
         "key": "volume",
@@ -566,7 +597,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experiencia-quadros",
-        "meme": "na frase do livrinho, o Zappy folheando um livrinho em que a nave aparece com o fogo pequeno numa página e grande na outra, com a legenda \"páginas rápidas viram movimento\"."
+        "meme": "na frase do livrinho, o Zappy folheando um livrinho em que a nave aparece com o fogo pequeno numa página e grande na outra, com a legenda \"páginas rápidas viram movimento\".",
+        "avatar": {
+          "after": "a Velocidade diz quantas páginas passam por segundo.",
+          "speech": "E se os dois desenhos forem iguais?",
+          "beforeScreen": "Comparar as velocidades 2 e 8, parar a Prévia e concluir a comparação com o livrinho.",
+          "afterScreen": "Ligar a Prévia e tornar o quadro 2 igual ao 1 só depois da pergunta."
+        }
       },
       {
         "key": "primeiro-fogo",
@@ -615,7 +652,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experiencia-fantasma",
-        "meme": "na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\"."
+        "meme": "na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\".",
+        "avatar": {
+          "after": "agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.",
+          "speech": "Assim eu vejo os dois fogos ao mesmo tempo!",
+          "beforeScreen": "Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis.",
+          "afterScreen": "Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta."
+        }
       },
       {
         "key": "segundo-fogo",
@@ -830,7 +873,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experiencia-cores",
-        "meme": "na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda \"linha: Contorno · dentro: Preenchimento\"."
+        "meme": "na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda \"linha: Contorno · dentro: Preenchimento\".",
+        "avatar": {
+          "after": "por dentro dela aparece o xadrez do fundo.",
+          "speech": "Cadê a cor de dentro?",
+          "beforeScreen": "Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista.",
+          "afterScreen": "Apontar o fundo visível enquanto explica a transparência; retomar o preenchimento no momento previsto."
+        }
       },
       {
         "key": "novo-asteroide",
@@ -885,7 +934,14 @@
           "Para conferir, veja se todas as crateras ficaram dentro do corpo e com tamanhos que você consiga distinguir."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": {
+          "after": "a forma desenhada por último fica na frente.",
+          "speech": "Quero uma cratera grande e outra pequena!",
+          "beforeScreen": "Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada.",
+          "afterScreen": "Copiar a cratera, mover e redimensionar a cópia pelas alças; conferir que todas ficam dentro da pedra.",
+          "reply": "Você pode variar os tamanhos."
+        }
       },
       {
         "key": "entrega",
@@ -1033,7 +1089,14 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-camadas",
-        "meme": "na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda \"a de cima fica na frente\"."
+        "meme": "na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda \"a de cima fica na frente\".",
+        "avatar": {
+          "after": "Na lista Camadas, a chama está em cima, e a pedra está embaixo.",
+          "speech": "A chama está escondendo a minha pedra!",
+          "beforeScreen": "Mostrar a chama na frente e a ordem inicial na lista, sem mover nenhuma camada ainda.",
+          "afterScreen": "Trazer a pedra uma camada para a frente e mostrar o resultado antes de explicar a ordem.",
+          "reply": "Vamos trazer a pedra para a frente."
+        }
       },
       {
         "key": "chama",
@@ -1061,7 +1124,13 @@
           "Depois confira a ordem: a pedra e as crateras ficam na frente, e o miolo claro aparece sobre a chama maior, porque ele está acima dela na lista Camadas. Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com a chama. Por último, confira se as duas chamas cabem inteiras no quadro."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": {
+          "after": "porque ele está acima dela na lista Camadas.",
+          "speech": "O meu miolo claro está atrás da chama maior.",
+          "beforeScreen": "Concluir a cópia e o ajuste do miolo e apontar a ordem desejada na lista Camadas; não apagar formas nem fabricar um erro para representar a dificuldade do avatar.",
+          "afterScreen": "Mostrar os botões para mover a camada e conferir se as duas chamas cabem inteiras no quadro."
+        }
       },
       {
         "key": "mudanca-pequena",
@@ -1102,7 +1171,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-tanto-que-muda",
-        "meme": "na frase da bola, o Zappy girando uma bola na ponta do dedo: a bola fica no lugar enquanto os desenhos dela andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\"."
+        "meme": "na frase da bola, o Zappy girando uma bola na ponta do dedo: a bola fica no lugar enquanto os desenhos dela andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\".",
+        "avatar": {
+          "after": "Na pedra, essa mudança pequena é O tanto que a cratera anda.",
+          "speech": "E se eu mover a pedra inteira?",
+          "beforeScreen": "Concluir a animação com só as crateras mudando e a comparação com a bola.",
+          "afterScreen": "Mudar o deslocamento da pedra inteira para 10 e mostrar o pulo de um lado para o outro."
+        }
       },
       {
         "key": "quadro-pedra",
@@ -1316,7 +1391,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-nomes",
-        "meme": "na frase do time, o Zappy de técnico, com apito, chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\"."
+        "meme": "na frase do time, o Zappy de técnico, com apito, chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\".",
+        "avatar": {
+          "after": "cada um precisa de um nome só dele.",
+          "speech": "Que nome eu dou para a folha?",
+          "beforeScreen": "Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível.",
+          "afterScreen": "Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite."
+        }
       },
       {
         "key": "trazer-artes",
@@ -1367,7 +1448,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-recorte",
-        "meme": "na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\"."
+        "meme": "na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\".",
+        "avatar": {
+          "after": "São esses dois quadros que vão se revezar na animação.",
+          "speech": "Posso deixar a nave maior no jogo sem mudar o recorte?",
+          "beforeScreen": "Concluir o recorte correto de 32 e comparar os quadros 1 e 2.",
+          "afterScreen": "Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32."
+        }
       },
       {
         "key": "trocar-nave",
@@ -1415,7 +1502,13 @@
           "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1, a 8 fps, logo abaixo de Carregar folha de quadros folha-nave. Depois de corrigir, teste de novo. E, se voando não aparecer na lista, confira se a animação ficou guardada no Pinta e se a imagem foi trazida ao projeto antes de escolher de novo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": {
+          "after": "do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.",
+          "speech": "No Pinta era um e dois. Por que aqui é zero e um?",
+          "beforeScreen": "Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números.",
+          "afterScreen": "Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação."
+        }
       },
       {
         "key": "entrega",
@@ -1582,7 +1675,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experimento-dois-relogios"
+        "activityKey": "experimento-dois-relogios",
+        "avatar": {
+          "after": "cada uma trocou de desenho 8 vezes por segundo.",
+          "speech": "Dá para nascer menos pedra e o desenho trocar mais rápido?",
+          "beforeScreen": "Parar o Tempo após o primeiro teste, com os dois controles e os contadores à vista.",
+          "afterScreen": "Mudar nascimento para 40 e desenhos por segundo para 16; recomeçar e comparar os dois efeitos."
+        }
       },
       {
         "key": "folha-pedra",
@@ -1613,7 +1712,13 @@
           "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, dentro do Se jogando do A cada 40 quadros, com grupo asteroides, nome asteroide, imagem asteroide e o sorteio no x, e os outros blocos ligados. O grupo junta todas as pedras, e o nome é de cada pedra que nasce. Depois de corrigir, teste de novo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": {
+          "after": "porque o sorteio continua no x.",
+          "speech": "A minha pedra ficou espremida!",
+          "beforeScreen": "Concluir a troca do criador e mostrar a folha inteira espremida no teste, sem corrigir o recorte antes da hora.",
+          "afterScreen": "Apontar a folha inteira espremida e explicar que falta ligar a animação. Depois retomar a conferência do criador e a autoconferência, mantendo a animação para a próxima parte."
+        }
       },
       {
         "key": "animar-pedra",
@@ -1857,7 +1962,13 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-copia-publicada",
-        "meme": "na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda \"a foto guarda aquele momento\"."
+        "meme": "na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda \"a foto guarda aquele momento\".",
+        "avatar": {
+          "after": "Para ela ver o desenho novo, você manda outra foto.",
+          "speech": "E para mostrar a versão rosa do jogo?",
+          "beforeScreen": "Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul.",
+          "afterScreen": "Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira."
+        }
       },
       {
         "key": "teste-completo",
@@ -1887,7 +1998,13 @@
           "Se preferir guardar o jogo por enquanto, você pode seguir para o quiz e depois enviar o jogo pela galeria. E, se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão, porque o cartão antigo continua com a versão anterior, como na experiência."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": {
+          "after": "Teste uma partida e volte à aba do Estúdio.",
+          "speech": "Como eu mando o jogo para a minha família?",
+          "beforeScreen": "Esperar Publicado!, abrir e testar a versão publicada e voltar ao Estúdio; não copiar o link antes da pergunta.",
+          "afterScreen": "Clicar em Copiar link e mostrar Link copiado!; manter a orientação de pedir ajuda a um adulto, se precisar."
+        }
       },
       {
         "key": "revisao",

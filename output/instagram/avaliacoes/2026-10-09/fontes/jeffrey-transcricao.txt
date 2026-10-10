@@ -1,0 +1,59 @@
+[0.00–6.00] E eu gostei bastante do curso, do programa, com diversos kids.
+[6.00–11.00] Foi bem divertido fazer os jogos que a professora me ensinou,
+[11.00–16.00] me dando a habilidade de conseguir fazer suas próprias jogos.
+[16.00–23.72] Isso é muito bom aprender sobre isso.
+[23.72–28.72] Um exemplo de um jogo que eu criei foi esse aqui, o A Vector's Peak.
+[28.72–40.21] É o jogo que eu criei em um dos moldos do Coço, peraí que o jogo tem 2kg.
+[40.21–48.93] Agujo, você está bem ter feito um jogo parecido, um jogo inspirado no Super Mario.
+[48.93–52.93] É como um personagem de 1kg.
+[52.93–62.70] E aqui é a batata final, ao contra o chefe, um moldos.
+[62.70–68.70] O seu objetivo é pesar na cabeça dele, enquanto ele não se desvombra.
+[68.70–93.46] O que eu mais gostei foi o processo de como é desenvolver o jogo.
+[93.46–101.10] Cada etapa é importante para garantir que o seu jogo funcione.
+[101.10–113.10] Eu gosto bastante de produzir os meus jogos, porque é uma forma de expressar as minhas ideias que eu posso mostrar o que eu penso.
+[113.10–120.10] Eu gosto bastante de desenvolver os meus próprios jogos. Eu digo que vale a pena fazer esse curso.
+[120.10–125.10] É muito bom você ir aprender. Você pode, você vai, você acredita.
+[125.10–129.10] Vocês vão gostar de produzir os seus próprios jogos.
+[129.10–136.02] Bem, agora o último jogo que eu não devo ter feito no curso, na verdade foi o primeiro,
+[136.02–137.02] Zappeword.
+[137.02–143.66] Eu já começo aqui quando perguntando o nome do seu personagem que você pode escrever,
+[143.66–152.04] ver qualquer nome que você quiser que aparece, e aí o jogo começa, você é o D10, esse
+[152.04–163.54] personagem aqui que tá andando aqui, assim, o nosso pessoal, o mundo inteiro tá
+[163.54–172.54] Esse aqui é o Zap. Aqui a gente descobre a história. O Dr. Watt acabou de gerar da cor da cidade.
+[172.54–176.54] Aí a gente tem que ir até o laboratório dele pra resolver esse problema.
+[176.54–181.54] E esse aqui, esse bicho aqui é o Bug. Se você encostar nele, ele lança umas bombas,
+[181.54–184.54] e se você encostar nele, você acaba tomando dano.
+[184.54–189.54] E tem até panemítico pra completar o jogo. Aqui está o Dr. Watt.
+[189.54–197.72] E ele fala que precisa de ajuda, a gente precisa coletar esses itens pra conseguir derrotar o
+[197.72–203.80] bank com o nosso cheiro do personagem e a gente precisa coletar os pacotes de cores pra trazer
+[203.80–212.28] a cor de volta. Aqui embaixo fica a nossa barra de inventário, onde fica o nosso item e após
+[212.28–215.28] a gente coletar o item a lição já pode ser completa.
+[215.28–236.72] Esperei que eu tomei o game over, porque o jogo é um pouco difícil,
+[236.72–240.72] por causa do limite de os passos que a gente pode andar.
+[240.72–245.72] Vou pegar aqui um item, e daí a gente...
+[245.72–248.72] E daí, se a gente esperar o bot...
+[248.72–252.72] Eu digo, ele passa, a gente pode começar a tirar,
+[252.72–256.72] a gente já tira, e também pode destruir os cheiros dele
+[256.72–260.72] usando essa bolinha para der lança.
+[260.72–266.72] E depois que a gente conseguir derrotar o bug, é só reciclar esses macotes de cores
+[266.72–269.72] e as cores que nós só voltávamos normal.
+[269.72–272.72] E pronto, esse foi o meu jogo.
+[272.72–285.22] Outro exemplo de jogo que eu fiz foi o jogo Spaceball.
+[285.22–289.22] Aqui é a cutscene inicial do jogo de Spaceball.
+[289.22–291.22] Vou contar a história do jogo.
+[291.22–320.76] E aí depois que a gente é apresentado a Cutscene, a gente pode começar o jogo de verdade.
+[320.76–331.13] É basicamente um jogo estilo POM, em que você tem que repater, ter a bola do adversário.
+[331.13–337.46] É de quem conseguir a maior pontuação ganhar.
+[337.46–344.41] E uma coisa que eu queria dizer era sobre um jogo que eu mesmo criei.
+[344.41–351.41] Não é do curso, mas eu usei, conforme o que eu aprendi com a professora Helena,
+[351.41–355.41] que é um jogo que eu chamei de Death Reference Show.
+[355.41–364.41] É um... Eu criei esse jogo, inspirando em um outro jogo, como ele dizia Paul Farry.
+[364.41–371.41] Assim, a ideia do jogo, é uma ideia de um jogo de terro sem o lado fofinho.
+[371.41–388.41] Assim, eu criei todos os personagens, tudo praticamente tudo, agora tá com as programinhas que eu ainda tô corrigindo, mas como podem ver é um jogo que também tá em uma espécie de vila, e esses são os personagens principais.
+[388.41–396.81] A Espenho Pássaro, Ginny Girafa, Perniel Bisouro, Marca Taupeira e Sélia Acobra.
+[396.81–403.22] E esse aqui é o meu personagem, que no caso sou eu mesmo.
+[403.22–406.02] Aqui está rolando a introdução inicial.
+[406.02–413.82] E depois eu vou estar desenvolvendo o jogo, mas o jogo vai ter vários minigames que você vai ter.
+[413.82–415.82] Toda uma história de fundo.
+[415.82–420.02] Vou abandonar ao mesmo tempo no mundo do jogo e no mundo real.
+[420.02–424.02] Ainda estou desenvolvendo, mas está ficando bom.

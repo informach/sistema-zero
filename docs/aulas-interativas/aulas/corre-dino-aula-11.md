@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Variável pontos em 0, mostrador, um ponto por segundo somente jogando e resultado na tela de fim.
 - Seções: 8. Vídeos: 7.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das experiências pertinentes. A frase final reaplica a leitura da variável já observada no mostrador; juntar textos organiza os três trechos da mensagem. O quiz retoma as causas da contagem.
@@ -29,6 +31,8 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 **Blocos na página:** video-guardar-mudar-mostrar → fala-guardar-mudar-mostrar → experiencia-variavel.
 
 **Zappy na página (não gravar):** Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-guardar-mudar-mostrar-avatar-01. Professora até “O jogo mudou o valor sem desenhar o placar.”. Antes da entrada: Somar duas vezes com Mostrar placar desligado; comparar a caixa pontos com a tela sem número. Debinha entra, com os gestos parados, e fala: “O jogo já contou dois. Falta mostrar!”. Debinha sai antes da resposta. Retomada da professora: “Isso mesmo. Quando eu ligo Mostrar placar, a tela mostra 2, o mesmo número da caixa. Eu clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Mostrar só lê o que está guardado.”. Na retomada: Ligar Mostrar placar e somar mais uma vez com a caixa e a tela à vista. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `variable`. Na experiência, coloque o número guardado em 1 e depois em 0. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado. Ligue Mostrar placar. Compare o que aparece na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -64,6 +68,8 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 **Zappy na página (não gravar):** Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-quando-o-placar-cresce-avatar-01. Professora até “o placar já sobe, antes de alguém jogar.”. Antes da entrada: Testar a soma por quadro e depois em Solto, ainda na abertura; manter o placar à vista. Debinha entra, com os gestos parados, e fala: “Eu quero contar só durante a corrida!”. Debinha sai antes da resposta. Retomada da professora: “Agora eu levo Somar ponto para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?. Na tela de início, o placar fica em 0, porque a pergunta responde não. Eu clico em Próxima tela até Jogando, e os pontos sobem, um por segundo. Clico em Próxima tela até Fim, e o placar para no valor que tinha.”. Na retomada: Levar a soma ao relógio de 1 segundo dentro da condição e testar início, partida e fim. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `score`. Na experiência, coloque Somar ponto em A cada quadro do jogo e deixe Tempo passar um segundo. Observe o placar. Deixe Somar ponto solto, fora do relógio e da condição. Na tela de início, deixe passar mais um segundo e observe. Leve Somar ponto para dentro de o estado do jogo é jogando ?, no relógio de um segundo. Ainda no início, deixe Tempo passar. Clique em Próxima tela até Jogando e observe os pontos crescerem. Depois clique em Próxima tela até Fim e deixe passar mais tempo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 5. Some um ponto por segundo de partida
@@ -86,6 +92,8 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 **Blocos na página:** video-frase-da-tela-de-fim → fala-frase-da-tela-de-fim.
 
 **Zappy na página (não gravar):** Agora mostre os pontos na tela de fim! Troque o subtítulo da tela de fim por um juntar texto com texto, valor de pontos e texto. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** ID video-frase-da-tela-de-fim-avatar-01. Professora até “para mostrar quantos pontos você fez na partida.”. Antes da entrada: Deixar a tela de fim sem o resultado visível e retomar o placar que já existe. Debinha entra, com os gestos parados, e fala: “Esse número vai mudar a cada partida?”. Debinha sai antes da resposta. Retomada da professora: “Vai mostrar os pontos daquela partida. Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro. Depois, abra Programação e depois Valores, pegue o bloco juntar texto e solte em cima desse subtítulo, para ele tomar o lugar do texto antigo.”. Na retomada: Localizar o subtítulo e mostrar a montagem de juntar texto com a leitura de pontos no meio. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

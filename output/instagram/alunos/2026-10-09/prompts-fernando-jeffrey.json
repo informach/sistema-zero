@@ -1,0 +1,23 @@
+{
+  "mode": "image_gen integrada",
+  "scenes": [
+    {
+      "id": "AL03",
+      "file": "AL03-jeffrey-explorando.png",
+      "refs": [
+        "C:/Users/tocha/Downloads/jeffrey.png",
+        "C:/Users/tocha/projects/sistema-zero/packages/funnel/public/img/desafio-primeiro-jogo/plataforma-estudio.webp"
+      ],
+      "prompt": "Use case: photorealistic-natural, identity preserving. Generate ONE SQUARE 1:1 provisional contextual image for an Instagram student layout. Reference 1 identifies Jeffrey, the older boy with black rectangular glasses, short straight dark hair swept to one side, black over-ear headphones and a red athletic shirt. Keep his exact face shape, age, skin tone, glasses, eyes, nose, mouth and natural proportions. Do not replace him with a generic model or another student. Reference 2 shows the actual visual game programming studio; use only its editor region, not the marketing heading. Show Jeffrey exploring a small change in his game at a home desktop computer, one hand on mouse and the other at the keyboard, looking attentively at the result on screen. Clear recognizable three-quarter frontal face and visible oblique screen facing him with colorful blocks and small space-game preview. Keep the black headphones and plain red casual shirt. Natural modest Brazilian home workspace and soft daylight; realistic hands, hair and skin. Medium shot including face, hands, keyboard, mouse and display, 8% breathing space around head. This is newly generated provisional artwork requested by the owner, to be replaced later by activity footage. No other people, subtitles, YouTube overlay, branding, corner inset, caption, medals, testimonial quotation, invented achievement, watermark or giant code wall. Single photographic scene; no collage."
+    },
+    {
+      "id": "AL07",
+      "file": "AL07-fernando-mostrando.png",
+      "refs": [
+        "C:/Users/tocha/Downloads/fernando.png",
+        "C:/Users/tocha/projects/sistema-zero/output/instagram/projetos/2026-10-09/capturas/farol-final.png"
+      ],
+      "prompt": "Use case: photorealistic-natural, identity preserving. Generate ONE SQUARE 1:1 provisional contextual image for an Instagram student layout. Reference 1 identifies Fernando, the younger boy with short dark curly hair, round full cheeks, medium skin, no glasses and a light gray shirt. Preserve his exact recognizable facial structure, hairline, eyes, nose, mouth, child age and body shape; do not substitute another boy. Reference 2 is the actual game A Chave do Farol and informs the content of the computer display. Show Fernando at a modest home computer desk showing a part of his game: he turns slightly toward the viewer with a natural engaged expression and one hand gently gesturing toward the screen, the other hand resting near the mouse. His face must be clearly recognizable, not exaggerated, not giving thumbs up or celebrating. On screen show the actual flat 2D coast game with red-and-white lighthouse lit and boat at the coast, in physically realistic monitor perspective. A plain light gray casual shirt. Camera in three-quarter front view showing face, natural hands and enough display to see the game. Soft daylight and ordinary warm home interior, real skin and hair detail. All head inside image, 8% breathing room. Newly generated provisional art requested by the owner, not documentary classroom evidence. No text overlays, promotional quote, subtitles, video-call inset, other people, watermarks, achievement badges or staged celebration."
+    }
+  ]
+}

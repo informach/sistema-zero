@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Nascimento com x de 500 a 560 e vx igual a -5 menos um número de 0 a 1.
 - Seções: 4. Vídeos: 4.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 O sorteio vem antes das duas aplicações. A experiência mostra posições, repetições e as contas de velocidade. Lugar e velocidade têm montagens separadas. A fala não promete partidas sempre diferentes: números podem repetir.
@@ -28,6 +30,8 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 **Blocos na página:** video-sorteio-tira-na-hora → fala-sorteio-tira-na-hora → experiencia-random.
 
 **Zappy na página (não gravar):** Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-sorteio-tira-na-hora-avatar-01. Professora até “Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.”. Antes da entrada: Sortear até aparecer uma repetição e apontar a marca na régua; não avançar para as velocidades. Dedé entra, com os gestos parados, e fala: “Ué, saiu o mesmo lugar outra vez!”. Dedé sai antes da resposta. Retomada da professora: “Pode acontecer num sorteio. Todos ficam entre 500 e 560, depois da borda 480, fora da tela. O sorteio respeita os limites, e um lugar pode repetir.”. Na retomada: Continuar explicando os limites e a repetição; depois demonstrar o sorteio das velocidades. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `random`. Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem. Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -52,6 +56,8 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 **Blocos na página:** video-velocidade-propria → fala-velocidade-propria.
 
 **Zappy na página (não gravar):** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** ID video-velocidade-propria-avatar-01. Professora até “Agora a gente vai sortear a velocidade também!”. Antes da entrada: Comparar os cactos ainda com vx -5 e retomar a experiência das raias. Dedé entra, com os gestos parados, e fala: “Quero ver uns cactos mais rápidos que os outros!”. Dedé sai antes da resposta. Retomada da professora: “Vamos preparar essa diferença no bloco que cria cada cacto. Deixe à vista o campo vx, com -5, no bloco que cria os cactos. Depois, abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5.”. Na retomada: Localizar vx e montar a conta e o sorteio antes de comparar os cactos. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro marco original.
 - Seções: 9. Vídeos: 8.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiências usam o cenário da nave e preparam a regra antes dos blocos. A limpeza retoma a comparação já feita na primeira aula.
@@ -31,6 +33,8 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 **Zappy na página (não gravar):** Sua vez! Compare a seta solta e a seta segurada e depois as velocidades 3 e 1, avançando um quadro por vez. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-seta-e-velocidade-avatar-01. Professora até “A velocidade é o tamanho do passo da nave em cada quadro.”. Antes da entrada: Mostrar os três avanços com velocidade 3 e deixar x em 217. Dedé entra, com os gestos parados, e fala: “Quero testar um passo menor.”. Dedé sai antes da resposta. Retomada da professora: “Depois, eu clico em Recomeçar, escolho Velocidade 1 e avanço de novo. Agora o x vai de 208 para 209, depois 210. O passo ficou menor, por isso a nave anda mais devagar. No seu jogo, você vai usar velocidade 7, um passo maior.”. Na retomada: Recomeçar e testar velocidade 1, com os números e a nave à vista. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `lighthouse-walk`. Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta, escolha Velocidade 3 e avance alguns quadros, um de cada vez. Clique em Recomeçar, escolha Velocidade 1 e avance outros quadros com a seta ligada. Compare quanto o x muda em cada passo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Faça a nave responder às setas
@@ -53,6 +57,8 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 **Zappy na página (não gravar):** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-limpeza-avatar-01. Professora até “Agora a gente vai limpar a tela do seu jogo!”. Antes da entrada: Mostrar o rastro e retomar a experiência, antes de pegar o bloco de limpeza. Dedé entra, com os gestos parados, e fala: “Isso vai apagar a minha nave?”. Dedé sai antes da resposta. Retomada da professora: “Só o desenho anterior. A nave continua no jogo e vai ser desenhada de novo. A limpeza tem que acontecer no começo de cada quadro, antes de tudo. Por isso, deixe à vista o primeiro encaixe de A cada quadro do jogo, logo acima do bloco de movimento.”. Na retomada: Localizar o começo do quadro e montar Limpar a tela; confirmar no teste que só o desenho anterior é apagado. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Limpe a tela antes de mover e desenhar a nave.
@@ -64,6 +70,8 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 **Blocos na página:** video-limite-da-tela → fala-limite-da-tela → experiencia-limite-da-tela.
 
 **Zappy na página (não gravar):** Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-limite-da-tela-avatar-01. Professora até “mesmo depois da borda.”. Antes da entrada: Deixar a nave sair inteira da tela com a regra do limite desligada. Dedé entra, com os gestos parados, e fala: “Minha nave foi embora!”. Dedé sai antes da resposta. Retomada da professora: “Vamos colocar um limite para ela ficar na tela. Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: a nave anda até a borda e para ali, inteira na tela, com o x em 416. É que, em cada quadro, depois de mover, o jogo confere a borda e segura a nave do lado de dentro. No seu jogo, Manter o sprite dentro da tela vai ficar logo depois do movimento.”. Na retomada: Recomeçar, ligar Manter dentro da tela e repetir o movimento até a borda. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `lighthouse-walk`. Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Observe a nave chegar à borda e continuar até sair da tela. Clique em Recomeçar, ligue Manter dentro da tela e mantenha a seta ligada. Clique em Rodar e compare o que acontece na borda. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 

@@ -1,6 +1,8 @@
 # Roteiro falado: Cadê Todo Mundo? | Certificado
 
-Um vídeo. O conteúdo precisa ser regravado antes de substituir o vídeo publicado.
+Um vídeo, somente na celebração. **Produção em 10/10/2026:** roteiro atualizado com uma participação breve da **Debinha**, depois do Dedé na Aula 2. A gravação e a edição desta versão ainda não foram confirmadas. A duração abaixo é a referência anterior à inserção; medir o vídeo final com a pausa e os gestos, sem acelerar.
+
+**Quem fala:** **Professora** conduz o encerramento; **Debinha (avatar)** comemora dentro do vídeo; **Zappy na página (não gravar)** orienta na plataforma, fora do vídeo. Marcar a entrada e a saída da Debinha sem sobrepor vozes ou cobrir o jogo e os botões. [Direção dos avatares](../AVATARES-NOS-VIDEOS.md).
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras, cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). O que já veio pronto aparece na comemoração, junto do que a pessoa programou (Diretrizes, seção 6, revisão de 06/10/2026).
 
@@ -16,16 +18,26 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 20 a 30 segundos.
 
-**Na tela:** no "Olha só", mostrar o resultado do jogo, com os três personagens encontrados. Depois, o botão **Pegar meu certificado**. Apontar para ele sem fazer um tour do PDF ou da pasta de downloads. Mostrar o botão **Concluir fase** no encerramento.
+**Na tela:** no "Olha só", mostrar o resultado do jogo, com os três personagens encontrados. Manter esse resultado durante a comemoração, antes da entrada da Debinha.
 
-**Narração:**
+**Professora:**
 
 > “Você terminou o Cadê Todo Mundo! O jardim e os personagens já vieram prontos, mas olha só o que você programou: o toque que faz cada personagem aparecer e a contagem dos achados. São essas regras que fazem a busca funcionar!
 >
-> Parabéns pelo seu jogo!
->
-> Agora clique em Pegar meu certificado para guardar essa conquista. Quando o certificado baixar, clique em Concluir fase.”
+> Parabéns pelo seu jogo!”
 
-**Zappy abaixo do vídeo:** “Parabéns, você terminou o seu jogo! Agora clique em Pegar meu certificado para guardar essa conquista e, quando ele baixar, clique em Concluir fase.”
+**Na tela:** **CERTP2-D01** · Debinha entra para comemorar, mantendo os três personagens encontrados à vista. Não mostrar um certificado emitido antes do clique.
+
+**Debinha (avatar):**
+
+> “Eu consegui!”
+
+**Na tela:** Debinha sai; a professora aponta Pegar meu certificado e depois Concluir fase. Não fazer um tour do PDF ou da pasta de downloads. A comemoração termina antes dos comandos de saída; não acrescentar uma despedida depois deles.
+
+**Professora:**
+
+> “Agora clique em Pegar meu certificado para guardar essa conquista. Quando o certificado baixar, clique em Concluir fase.”
+
+**Zappy na página (não gravar):** “Parabéns, você terminou o seu jogo! Agora clique em Pegar meu certificado para guardar essa conquista e, quando ele baixar, clique em Concluir fase.”
 
 **Conferência de produção:** a conclusão exige vídeo e certificado. Para quem já emitiu, o botão muda para **Baixar certificado (PDF)**; essa ajuda fica no Como Fazer. Não atribuir à criança o cenário e os personagens preparados. Sem venda, ofertas ou pedido para convencer um responsável.

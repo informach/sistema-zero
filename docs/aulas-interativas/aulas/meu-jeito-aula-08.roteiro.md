@@ -6,6 +6,8 @@ Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise 
 
 Entrada: Jogo com as duas artes animadas e regras preservadas. Saída: Jogo testado e entregue pela galeria; publicação no Mural opcional.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
 Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
@@ -20,22 +22,38 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do projeto com a nave azul e do Mural vazio: clicar em Publicar e mostrar o cartão Publicação 1 azul. Em Cor da nave no seu projeto, escolher rosa e mostrar o projeto rosa e a Publicação 1 azul. Clicar em Publicar de novo e mostrar a Publicação 2 rosa ao lado da Publicação 1 azul, com a nota da bancada. Meme na comparação: na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda "a foto guarda aquele momento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do projeto com a nave azul e do Mural vazio: clicar em Publicar e mostrar o cartão Publicação 1 azul. Em Cor da nave no seu projeto, escolher rosa e mostrar o projeto rosa e a Publicação 1 azul. Clicar em Publicar de novo e mostrar a Publicação 2 rosa ao lado da Publicação 1 azul, com a nota da bancada. Meme na comparação: na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda "a foto guarda aquele momento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender o que é publicar um jogo no Mural. Esta bancada é um treino: nada daqui vai para o Mural de verdade.
+**ID de edição:** `video-copia-publicada-avatar-01`.
+
+**Na tela:** Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul.
+
+**Professora:**
+
+> “Esta é uma experiência para a gente entender o que é publicar um jogo no Mural. Esta bancada é um treino: nada daqui vai para o Mural de verdade.
 >
 > Olha aqui: na esquerda está o seu projeto, com a nave azul, e na direita, a versão no Mural, ainda sem nada publicado. Quando eu clico em Publicar, aparece o cartão Publicação 1, com a nave azul, e as duas telas mostram a mesma nave.
 >
 > Agora, em Cor da nave no seu projeto, eu escolho rosa. Tá vendo? A nave do projeto fica rosa, e a Publicação 1 continua azul, porque publicar guardou uma cópia daquele momento, e o projeto continua seu para mexer.
 >
-> Sabe quando você manda a foto de um desenho para alguém da família? Se depois você pinta mais o desenho, a foto que a pessoa recebeu continua igual. Para ela ver o desenho novo, você manda outra foto.
->
-> Por isso, eu clico em Publicar de novo. Repare: aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Ou seja, cada publicação é um cartão novo, e o anterior fica no Mural.
+> Sabe quando você manda a foto de um desenho para alguém da família? Se depois você pinta mais o desenho, a foto que a pessoa recebeu continua igual. Para ela ver o desenho novo, você manda outra foto.”
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “E para mostrar a versão rosa do jogo?”
+
+**Na tela:** Dedé sai antes da resposta. Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira.
+
+**Professora:**
+
+> “Por isso, eu clico em Publicar de novo. Repare: aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Ou seja, cada publicação é um cartão novo, e o anterior fica no Mural.
 >
 > Mais adiante, publicar o seu jogo de verdade vai ser uma escolha sua.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Publique, mude a cor do projeto e publique de novo. Quando terminar, clique em Próxima parte.
 
@@ -47,8 +65,9 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
-**Narração:**
-> "Lembra da experiência da parte anterior? Cada publicação guardou o jogo do jeito que ele estava naquele momento. Por isso, agora a gente vai testar o seu jogo inteiro, antes de você decidir se quer publicar.
+**Professora:**
+
+> “Lembra da experiência da parte anterior? Cada publicação guardou o jogo do jeito que ele estava naquele momento. Por isso, agora a gente vai testar o seu jogo inteiro, antes de você decidir se quer publicar.
 >
 > Clique em Abrir meu Estúdio nesta parte e retome o seu jogo. Clique na prévia e toque na tecla Enter para começar. Mova a nave para os lados, atire e acerte uma pedra. Confira se os pontos mudam e se as duas animações aparecem.
 >
@@ -56,7 +75,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > Se alguma regra falhar, volte à fase em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. Se precisar de ajuda, clique em Preciso de ajuda, aqui na fase, e conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste de novo.
 >
-> Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
+> Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora jogue o seu jogo do começo ao reinício! Teste a partida completa no mesmo cartão, com as suas duas artes. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
@@ -66,18 +86,34 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Agora vem uma escolha sua: publicar o seu jogo no Mural. Se quiser mostrar o seu jogo para a família e os amigos, deixe o jogo salvo e clique em Compartilhar, no alto do Estúdio. Confira o título. O resumo pode já vir escrito, por isso leia e deixe do seu jeito, contando como jogar. Depois clique em Gerar capa e confira se a imagem mostra o seu jogo. Com título, resumo e capa prontos, clique em Publicar.
+**ID de edição:** `video-compartilhar-avatar-01`.
+
+**Na tela:** Esperar Publicado!, abrir e testar a versão publicada e voltar ao Estúdio; não copiar o link antes da pergunta.
+
+**Professora:**
+
+> “Agora vem uma escolha sua: publicar o seu jogo no Mural. Se quiser mostrar o seu jogo para a família e os amigos, deixe o jogo salvo e clique em Compartilhar, no alto do Estúdio. Confira o título. O resumo pode já vir escrito, por isso leia e deixe do seu jeito, contando como jogar. Depois clique em Gerar capa e confira se a imagem mostra o seu jogo. Com título, resumo e capa prontos, clique em Publicar.
 >
-> Espere aparecer Publicado!, com a frase Seu projeto já está no Mural dos Criadores. Que conquista! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Abrir o jogo, e a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio.
->
-> Depois clique em Copiar link. Olha só: o botão muda para Link copiado! Mande o link para a sua família e os seus amigos, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.
+> Espere aparecer Publicado!, com a frase Seu projeto já está no Mural dos Criadores. Que conquista! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Abrir o jogo, e a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio.”
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Como eu mando o jogo para a minha família?”
+
+**Na tela:** Dedé sai antes da resposta. Clicar em Copiar link e mostrar Link copiado!; manter a orientação de pedir ajuda a um adulto, se precisar.
+
+**Professora:**
+
+> “Depois clique em Copiar link. Olha só: o botão muda para Link copiado! Mande o link para a sua família e os seus amigos, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.
 >
 > Se preferir guardar o jogo por enquanto, você pode seguir para o quiz e depois enviar o jogo pela galeria. E, se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão, porque o cartão antigo continua com a versão anterior, como na experiência.
 >
-> Pause aqui se você escolheu publicar. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois de clicar em Fechar, volte a esta aba e clique em Próxima parte."
+> Pause aqui se você escolheu publicar. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois de clicar em Fechar, volte a esta aba e clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora, se quiser, publique o seu jogo no Mural e mande o link para a família e os amigos! Você pode seguir mesmo sem publicar. Quando terminar, volte a esta aba e clique em Próxima parte.
 
@@ -95,13 +131,15 @@ Sem vídeo nem ferramenta. O quiz vem imediatamente depois do Zappy. Correção 
 
 **Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
-**Narração:**
-> "Hora de enviar o seu jogo do seu jeito! Antes, confira no seu jogo: as duas artes aparecem inteiras e animadas, e uma partida completa termina e recomeça direitinho. Publicar e escrever um recado ficam à sua escolha. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da fase só mostra o que já está guardado na sua conta.
+**Professora:**
+
+> “Hora de enviar o seu jogo do seu jeito! Antes, confira no seu jogo: as duas artes aparecem inteiras e animadas, e uma partida completa termina e recomeça direitinho. Publicar e escrever um recado ficam à sua escolha. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da fase só mostra o que já está guardado na sua conta.
 >
 > Agora volte para a aba da fase e clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!
 >
-> Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir fase."
+> Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir fase.”
+
 
 **Zappy na página (não gravar):** Hora de enviar o seu jogo do seu jeito! Confira se uma partida completa termina e recomeça direitinho. Depois clique em Escolher no Estúdio, selecione o cartão do seu jogo e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.

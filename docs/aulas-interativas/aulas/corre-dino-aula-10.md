@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Área do Dino em 80% como referência, desenho tamanho 64; contorno de teste retirado.
 - Seções: 5. Vídeos: 5.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A aula retoma o contato observado antes da colisão e compara agora a porcentagem da área. O contorno temporário é instrumento para conferir o ajuste, não uma regra nova. A escolha entre 70 e 85% continua permitida.
@@ -28,6 +30,8 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 **Blocos na página:** video-caixa-decide → fala-caixa-decide → experiencia-hitbox.
 
 **Zappy na página (não gravar):** Sua vez! Mude só a área com o cacto parado e, depois, compare a batida com a área em 40%. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-caixa-decide-avatar-01. Professora até “a área pega um pedaço vazio em volta do desenho.”. Antes da entrada: Mostrar BATEU! com a área em 100% e o vão entre os desenhos. Dedé entra, com os gestos parados, e fala: “Dá para diminuir só essa área?”. Dedé sai antes da resposta. Retomada da professora: “Sem mudar a distância, eu diminuo Tamanho da área do Dino para 80%. O BATEU some. O Dino continua do mesmo tamanho; só a área ficou menor.”. Na retomada: Diminuir a área para 80% sem mudar a distância; comparar com 40% só no momento narrado. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `hitbox`. Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU! Observe os desenhos nesse momento. Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -64,6 +68,8 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 **Blocos na página:** video-retirar-contorno → fala-retirar-contorno.
 
 **Zappy na página (não gravar):** Agora retire o contorno de teste! Tire só Mostrar a caixa de colisão do sprite e deixe o ajuste da área em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** ID video-retirar-contorno-avatar-01. Professora até “Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.”. Antes da entrada: Mostrar a área já ajustada e os blocos encaixados, antes de arrastar qualquer um. Dedé entra, com os gestos parados, e fala: “Como eu tiro só o contorno?”. Dedé sai antes da resposta. Retomada da professora: “Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando. Se você puxar esse bloco, os blocos de baixo saem junto, porque estão encaixados nele. Por isso, primeiro arraste o bloco que vem logo abaixo do contorno para um espaço livre, levando o resto da sequência. Depois, arraste o contorno para a lixeira e encaixe a sequência de volta, logo abaixo do desenho do Dino.”. Na retomada: Separar primeiro a sequência de baixo, retirar o contorno e encaixar a sequência novamente. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

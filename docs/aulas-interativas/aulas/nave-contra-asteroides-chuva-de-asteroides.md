@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Asteroides nascem a cada 40 quadros, caem e saem do grupo; tiros ainda atravessam as pedras.
 - Seções: 5. Vídeos: 5.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Separa criar obstáculos de programar a colisão. Intervalo e sorteio são observados diretamente no jogo que a pessoa acabou de montar.
@@ -29,6 +31,8 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 **Blocos na página:** video-intervalo-das-pedras → fala-intervalo-das-pedras → experiencia-relogio.
 
 **Zappy na página (não gravar):** Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-intervalo-das-pedras-avatar-01. Professora até “porque o relógio espera 40 quadros antes de criar a próxima.”. Antes da entrada: Concluir o teste de 40 quadros, com espaços entre as pedras. Dedé entra, com os gestos parados, e fala: “Se eu diminuir a espera, a pedra cai mais rápido?”. Dedé sai antes da resposta. Retomada da professora: “Vamos comparar. Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas das outras, mas repare: cada pedra desce o mesmo tanto, 180 em 60 quadros, igual antes. Ou seja, o intervalo muda quantas pedras nascem, e não a velocidade de cada uma. No seu jogo, o relógio vai criar uma pedra a cada 40 quadros.”. Na retomada: Trocar para 20 quadros e comparar quantidade e distância percorrida; manter a velocidade igual nos dois testes. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `spawn`. Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
@@ -53,6 +57,8 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 **Blocos na página:** video-posicao-sorteada → fala-posicao-sorteada → experiencia-sorteio.
 
 **Zappy na página (não gravar):** Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-posicao-sorteada-avatar-01. Professora até “e o mesmo número pode sair de novo.”. Antes da entrada: Fazer os sorteios e mostrar a pedra acima da borda, sem iniciar o tempo ainda. Dedé entra, com os gestos parados, e fala: “Mas a pedra está fora da tela!”. Dedé sai antes da resposta. Retomada da professora: “A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e olha só: ela desce e entra caindo pela borda de cima. Assim, ninguém vê a pedra aparecer do nada. No seu jogo, o x do asteroide vai ser sorteado, e o y vai começar em -30, acima da tela.”. Na retomada: Apontar a posição inicial e clicar em Tempo só quando a professora anunciar o gesto. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `random`. Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 

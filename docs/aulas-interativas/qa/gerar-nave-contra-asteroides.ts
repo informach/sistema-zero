@@ -8,9 +8,17 @@ import type {
 } from '../../../packages/core/src/learning'
 import type { SectionProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import { SERVER_BLOCK_CATALOG } from '../../../packages/studio/src/blockly/blockCatalog'
+import {
+  orientacaoAvatares,
+  type ParticipacaoAvatar,
+  palavrasDoVideo,
+  planoAvatar,
+  roteiroComAvatar,
+} from './avatares-video'
 import { etapasNave, ORDEM_NAVE, projetoNave } from './nave-contra-asteroides-etapas'
 
 export interface SecaoNave {
+  avatar?: ParticipacaoAvatar
   key: string
   title: string
   bridge: string
@@ -117,7 +125,7 @@ export function gerarManifestoNave(lesson: AulaNave, index: number): LearningMan
     if (s.videoKey) {
       blocks.push({
         key: s.videoKey,
-        plannedVideo: `Título: ${s.title}\n\nRegravar no Estúdio atual. ${s.screen}\n\nFala completa em ${CURSO}-${lesson.slug}.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.`,
+        plannedVideo: `Título: ${s.title}\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. ${s.screen}\n\n${planoAvatar(s, falasSecao(s), index)}\n\nFala completa em ${CURSO}-${lesson.slug}.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes.`,
       })
       blockKeys.push(s.videoKey)
       required.push(s.videoKey)
@@ -216,7 +224,9 @@ function roteiro(lesson: AulaNave, index: number) {
     '',
     `Entrada: ${lesson.entry} Saída: ${lesson.outcome}`,
     '',
-    `${index === 0 ? 'Começar com o projeto vazio preparado para esta aula.' : 'Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo.'} Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.`,
+    orientacaoAvatares(index),
+    '',
+    `${index === 0 ? 'Começar com o projeto vazio preparado para esta aula.' : 'Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo.'} Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.`,
     '',
     // Três vozes e conversa contínua (Diretrizes, seção 6, revisão de 06/10/2026).
     'Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando ("Sua vez!", "Agora…!", "Hora de…!") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Tá vendo?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").',
@@ -226,17 +236,19 @@ function roteiro(lesson: AulaNave, index: number) {
     lines.push(`## Seção ${i + 1}. ${s.title}`, '')
     if (s.videoKey) {
       const speech = falasSecao(s)
-      const words = speech.join(' ').split(/\s+/).length
+      const words = palavrasDoVideo(s, speech)
       const voice = Math.ceil(words / 130)
       lines.push(
         `### Clipe \`${s.videoKey}\` · ${s.title}`,
         '',
         `**Estimativa de gravação:** aproximadamente ${voice} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.`,
         '',
-        `**Na tela:** ${s.screen} ${s.checks?.length ? 'Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
-        '',
-        '**Narração:**',
-        `> "${speech.join('\n>\n> ')}"`,
+        roteiroComAvatar(
+          s,
+          speech,
+          `${s.screen} ${s.checks?.length ? 'Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
+          index,
+        ),
         '',
       )
     }
@@ -260,6 +272,8 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
     `- Estado de entrada: ${lesson.entry}`,
     `- Resultado da aula: ${lesson.outcome}`,
     `- Seções: ${lesson.sections.length}. Vídeos: ${lesson.sections.filter((s) => s.videoKey).length}.`,
+    '',
+    orientacaoAvatares(index),
     '',
     '## Diagnóstico e decisão',
     '',
@@ -285,6 +299,8 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       `**Zappy na página (não gravar):** ${s.bridge}`,
       '',
     )
+    if (s.avatar)
+      lines.push(`**Participação no vídeo:** ${planoAvatar(s, falasSecao(s), index)}`, '')
     if (s.activity)
       lines.push(
         `**Experiência existente:** \`${s.activity.activity.type === 'experimentation' ? s.activity.activity.scene : s.activity.activity.type}\`. ${s.activity.instructions} Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.`,

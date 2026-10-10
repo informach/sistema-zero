@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.
 - Seções: 4. Vídeos: 4.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida. Os finais ficam para a aula seguinte.
@@ -29,6 +31,8 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 **Blocos na página:** video-estado-do-jogo → fala-estado-do-jogo → experiencia-estado.
 
 **Zappy na página (não gravar):** Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-estado-do-jogo-avatar-01. Professora até “todo mundo espera o sinal de largada, e ninguém sai correndo antes.”. Antes da entrada: Deixar passar quatro segundos na abertura, com a peça dentro do Se e o contador esperando. Dedé entra, com os gestos parados, e fala: “Agora as pedras estão esperando a partida!”. Dedé sai antes da resposta. Retomada da professora: “Isso. Vamos começar para ver o que muda. Por último, eu clico em Toque para começar, na tela da experiência. Olha só: o estado vira jogando, e as pedras voltam a nascer. Aqui, o começo por toque já veio pronto, mas, no seu jogo, você vai programar o Enter para começar a partida.”. Na retomada: Começar por toque na experiência e distinguir esse começo pronto do Enter que será programado no projeto. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `game-state`. Use Tempo para soltar o tempo se estiver parado. Na abertura, deixe Criar asteroide fora de Se o estado do jogo é jogando e observe o tempo e as pedras. Mova para dentro do Se e observe de novo sem começar. Depois toque na tela para começar e compare. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
@@ -55,6 +59,8 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 **Blocos na página:** video-relogio-e-tiro → fala-relogio-e-tiro.
 
 **Zappy na página (não gravar):** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-relogio-e-tiro-avatar-01. Professora até “porque o Se responde não enquanto o jogo está em inicio.”. Antes da entrada: Concluir a montagem e o teste sem som na abertura, sem concluir nada pela ausência de pedras na imagem. Dedé entra, com os gestos parados, e fala: “E como eu confiro se as pedras também esperam?”. Dedé sai antes da resposta. Retomada da professora: “Para isso, a gente precisa olhar os blocos. Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas. Por isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está o Se jogando, com o criador de asteroides no então. E, dentro do evento da barra de espaço, está outro Se jogando, com Criar tiro e Tocar efeito no então.”. Na retomada: Voltar aos blocos e conferir o Se jogando no relógio e no evento da barra de espaço. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

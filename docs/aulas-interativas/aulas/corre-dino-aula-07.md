@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Estado inicial inicio; movimento, desenho do Dino e cactos, limpeza e nascimento protegidos por jogando.
 - Seções: 5. Vídeos: 5.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A experiência antecede a criação do estado. A montagem separa as regras de cada quadro do relógio de nascimento e testa jogando antes de devolver inicio. Esta aula entrega a espera; a interface de começo é construída na aula seguinte.
@@ -28,6 +30,8 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 **Blocos na página:** video-condicao → fala-condicao → experiencia-condicao.
 
 **Zappy na página (não gravar):** Sua vez! Compare a tela de início e a partida, com Criar cacto fora e dentro de Se o estado do jogo é jogando. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-condicao-avatar-01. Professora até “O relógio cria cactos sem perguntar nada.”. Antes da entrada: Deixar nascer um cacto na abertura, com Criar cacto fora do Se. Debinha entra, com os gestos parados, e fala: “Mas eu nem comecei a jogar!”. Debinha sai antes da resposta. Retomada da professora: “Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Na tela de início, eu deixo passar três segundos. O relógio continua tocando, mas os nascimentos ficam em 0. A pergunta responde não, porque o estado ainda é inicio.”. Na retomada: Mover a peça para dentro do Se jogando, soltar e repetir os testes antes e depois de começar. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `game-state`. Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto. Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador. Depois clique em Toque para começar e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -70,6 +74,8 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 **Blocos na página:** video-relogio → fala-relogio.
 
 **Zappy na página (não gravar):** Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** ID video-relogio-avatar-01. Professora até “mesmo ainda sem uma tela de abertura desenhada.”. Antes da entrada: Concluir o teste em jogando e voltar para inicio antes da entrada; mostrar apenas a floresta passando. Debinha entra, com os gestos parados, e fala: “A floresta continua passando, mas os cactos esperam!”. Debinha sai antes da resposta. Retomada da professora: “Isso mesmo. Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”. Na retomada: Manter inicio e seguir para a verificação, o salvamento e a próxima parte. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

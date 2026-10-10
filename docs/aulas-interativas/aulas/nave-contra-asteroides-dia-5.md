@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Jogo completo original: alvo 26, vitória, derrota, retorno à abertura e nova partida.
 - Seções: 6. Vídeos: 5.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Amplia a abertura já testada. As regras de final e o reinício são construídos em etapas distintas; a publicação tem instruções completas.
@@ -60,6 +62,8 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 **Zappy na página (não gravar):** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-reiniciar-avatar-01. Professora até “Se ninguém arruma as peças, a partida nova já começa bagunçada.”. Antes da entrada: Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com o tabuleiro. Debinha entra, com os gestos parados, e fala: “Eu quero recomeçar com tudo arrumado!”. Debinha sai antes da resposta. Retomada da professora: “Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. Olha só: a abertura volta, e a pista fica vazia. Clico outra vez, e a partida começa com a pista limpa, porque Reiniciar o jogo faz de novo a preparação de Ao iniciar. No seu jogo, o Enter vai reiniciar o jogo quando a partida terminar.”. Na retomada: Trocar para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `restart`. Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Faça Enter preparar outra partida
@@ -91,6 +95,8 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 **Blocos na página:** video-ciclo-completo → fala-entrega → projeto.
 
 **Zappy na página (não gravar):** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.
+
+**Participação no vídeo:** ID video-ciclo-completo-avatar-01. Professora até “e foi você quem programou como eles participam do jogo.”. Antes da entrada: Concluir os testes dos dois finais e do reinício antes da entrada; mostrar o jogo construído. Debinha entra, com os gestos parados, e fala: “Quero chamar alguém para jogar o meu!”. Debinha sai antes da resposta. Retomada da professora: “Depois do envio, você pode compartilhar o seu jogo. Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.”. Na retomada: Fazer a verificação e o envio antes de apresentar Compartilhar e Copiar link de jogar como opções. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 

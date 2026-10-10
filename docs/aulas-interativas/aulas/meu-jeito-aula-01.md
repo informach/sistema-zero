@@ -8,6 +8,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 - Resultado: Cópia do próprio jogo aberta, nomeada e salva na conta do Estúdio.
 - Seções: 7. Vídeos: 7.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A antiga abertura exigia um projeto vazio e a falta artificial de extensão antes de copiar o jogo. A nova sequência mostra o resultado, separa aparência de regras e experimenta cópia antes da transferência real. A extensão já acompanha o projeto importado.
@@ -44,6 +46,8 @@ Anexar `output/pdf/meu-jeito-caderno.pdf`, que a criança conhece como Mapa da A
 
 **Blocos na página:** video-aparencia-e-regras → fala-aparencia-e-regras → experimento-tema-e-regra.
 
+**Participação no vídeo:** ID video-aparencia-e-regras-avatar-01. Professora até “a lista Regras do jogo é a brincadeira.”. Antes da entrada: Testar os temas, voltar para Nave no espaço e concluir a comparação com as fantasias. Debinha entra, com os gestos parados, e fala: “E se eu mudar uma dessas regras?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu mudo uma regra. Eu clico em Regra: a tecla atira, e ela fica desligada. Na lista, essa regra fica apagada. Quando eu clico em Atirar, não sai tiro nenhum. Tá vendo? É que a regra que faz a tecla atirar está desligada, e a frase embaixo do jogo avisa isso. Ou seja, trocar o tema mudou só os desenhos, mas desligar uma regra mudou o que o jogo faz. Depois eu clico de novo e ligo a regra.”. Na retomada: Desligar a regra da tecla e testar Atirar somente quando a professora anunciar esse teste. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `same-rules-new-skin`. Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo. Sem palpite, pistas ou pergunta final.
 
 ### Seção 4. Veja o que uma cópia guarda
@@ -51,6 +55,8 @@ Anexar `output/pdf/meu-jeito-caderno.pdf`, que a criança conhece como Mapa da A
 **Tarefa / Zappy na página:** Sua vez! Faça a cópia e mude a cor só de um lado. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-copias → fala-copias → experiencia-copia.
+
+**Participação no vídeo:** ID video-copias-avatar-01. Professora até “Ou seja, o arquivo virou um projeto no Estúdio.”. Antes da entrada: Concluir Exportar e Importar na experiência; mostrar as duas naves ainda azuis. Debinha entra, com os gestos parados, e fala: “Se eu mudar essa cópia, o outro jogo muda também?”. Debinha sai antes da resposta. Retomada da professora: “Agora, em Cor da nave no Estúdio, eu escolho rosa. Olha só: a nave do Estúdio fica rosa, e a nave do jogo da fase continua azul. É que, depois da cópia, cada um segue o seu caminho, por isso mudar um lado não muda o outro.”. Na retomada: Mudar só a cor da nave do Estúdio para rosa e comparar com a nave azul do jogo da fase. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `copy-vs-original`. Clique em Exportar e observe o arquivo e o jogo da fase. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados. Sem palpite, pistas ou pergunta final.
 

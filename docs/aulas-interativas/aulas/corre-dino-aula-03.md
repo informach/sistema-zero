@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Gravidade e controles de pulo, com impulso de referência 14.
 - Seções: 6. Vídeos: 5.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Gravidade e impulso são observados antes de cada montagem. Não é preciso programar primeiro um pulo sem gravidade para fabricar um defeito. O quiz retoma preparação, desenho, gravidade e impulso depois dos testes.
@@ -28,6 +30,8 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 **Blocos na página:** video-gravidade-modelo → fala-gravidade-modelo → experiencia-gravidade.
 
 **Zappy na página (não gravar):** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-gravidade-modelo-avatar-01. Professora até “A experiência para o tempo com ele lá no alto.”. Antes da entrada: Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto. Debinha entra, com os gestos parados, e fala: “E agora? Como ele volta para o chão?”. Debinha sai antes da resposta. Retomada da professora: “Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouquinho, cada vez mais devagar, para e cai até o chão. A gravidade puxa o Dino para baixo um pouco em cada quadro.”. Na retomada: Ligar o fio da Gravidade com o Dino no ar e acompanhar a subida, a parada e a queda. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `gravity`. Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -61,6 +65,8 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 **Blocos na página:** video-comando-de-pulo → fala-comando-de-pulo.
 
 **Zappy na página (não gravar):** Agora dê os controles de pulo ao seu Dino! Coloque Controlar o dinossauro entre a gravidade e o desenho, com força do pulo 14, e teste espaço, seta para cima e um toque na parte de cima da tela. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** ID video-comando-de-pulo-avatar-01. Professora até “porque o mesmo bloco já cuida dos três controles.”. Antes da entrada: Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso. Debinha entra, com os gestos parados, e fala: “Já consegui pular dos três jeitos!”. Debinha sai antes da resposta. Retomada da professora: “Agora vamos conferir mais duas coisas. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Na retomada: Retomar a explicação do toque embaixo e testar os dois toques durante o mesmo salto. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

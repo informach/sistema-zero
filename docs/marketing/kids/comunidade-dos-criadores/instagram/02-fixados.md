@@ -1,251 +1,330 @@
-# Fixados: roteiros e copy completos
+# Fixados: carrosséis 4:5 com copy completa
 
-**Revisão: 08/10/2026.** Três peças orientam quem chega: **F01 · O primeiro jogo do seu filho**, **F02 · Alunos em atividade** e **F03 · Como começar pelo Desafio**. A ordem dos destaques é dinâmica; estes posts mantêm encontráveis a apresentação, os vídeos de alunos e as condições do primeiro passo.
+**Revisão: 09/10/2026.** Os três fixados são carrosséis de **1080 × 1350 pixels (4:5)**, conforme orientação do responsável. F01 apresenta o primeiro jogo, F02 apresenta os alunos e F03 explica como começar. Fazem parte do mesmo calendário de 12 posts; não são publicações adicionais.
 
-F01 a F03 também pertencem ao [calendário de 12 posts](03-postagens.md#calendário). Não duplicar suas copies no calendário. Público: responsáveis por crianças de 9 a 14 anos. A bio abre a página inicial, LB; o botão Desafio do Primeiro Jogo leva à oferta L0. Nos Reels, cada fala abaixo é integral; legendas na imagem acompanham a fala literalmente. Notas de cena não entram na publicação. Durações são referências de edição, subordinadas à compreensão.
+Todas as frases destinadas às artes estão nos blocos de citação de cada slide. Títulos, textos, destaques visuais e chamadas entram na imagem. As notas de cena são internas. As legendas completas acompanham cada carrossel. O destino é sempre a página da bio (LB), seguida do botão **Desafio do Primeiro Jogo**, que abre a oferta (L0).
+
+**Direção visual:** manter azul, branco e amarelo dos destaques; redesenhar o conteúdo para 4:5. Capas independentes e reconhecíveis, texto grande, margens generosas, sequência numerada e uma ideia por slide. Conforme orientação do usuário, as capturas dos três fixados não levam o rótulo Demonstração da equipe. A origem das imagens permanece registrada nas notas de produção. F01 acrescenta a personalização no slide 7, depois do jogo funcionar e antes do convite final. Os carrosséis encaminham para a bio; não desenhar um sticker como se fosse clicável.
+
+**Imagens dos alunos:** este lote reaproveita as cenas provisórias geradas com as referências de Rafael, Jeffrey, Débora, André e Fernando, autorizadas para Alunos. A identificação é nome e Aluno/Aluna, sem parentesco. A legenda de F02 informa a origem gerada das imagens; elas não são gravações das atividades. Ao substituir pelas mídias reais, conferir se as frases correspondem às ações mostradas e atualizar a última frase da legenda. Não inventar depoimentos ou resultados.
+
+**Como começar:** os nove slides de F03 têm cenas geradas com referências da família e do produto. Capa: Débora descobrindo o Farol no notebook, com o rosto e o jogo em destaque. Faixa etária: André e Débora juntos. Equipamento: mãos no mouse e teclado. Aula gravada: André pausando o vídeo. Ajuda: Débora escrevendo pela aula. Prazo: calendário e atividade. Após o prazo: jogar sem abrir a edição. Garantia: Helena acompanhando Débora. Convite: Júlio conversando com André. As telas dentro das cenas são composições baseadas nas capturas, não capturas novas da plataforma. Manter essa origem nas notas internas e no texto alternativo. Não usar cartelas que repitam o texto no lugar de imagens.
+
+**Produção:** [Pasta dos três carrosséis](producao/fixados/). Cada subpasta contém os PNGs numerados, a legenda completa, o texto alternativo de cada slide e as orientações de publicação. A versão anterior em Reels e a alternativa F02B estão preservadas na cópia de trabalho de 09/10/2026; não fazem parte da execução atual.
 
 ## F01 · O primeiro jogo do seu filho
 
-**Formato:** Reel, cerca de 50 a 70 segundos. **Objetivo:** tornar o Desafio concreto e mostrar experiência, montagem e teste da mesma regra. **Destino:** bio LB → botão Desafio do Primeiro Jogo → oferta L0. **Prova:** captura atual do Farol e da aula; demonstração da equipe, não registro de aluno.
-
-**Capa:**
-
-> O primeiro jogo do seu filho
->
-> Conheça A Chave do Farol
-
-### Cena 1 · Uma regra visível
-
-**Imagem:** personagem chega sem chave; mostrar a busca e a volta com chave. Deixar tempo para ver a luz acender e o barco chegar à costa. **Sobreposição:** A chave faz a diferença. **Rótulo constante nas capturas:** Demonstração da equipe.
-
-**Fala:**
-
-> Eu chego ao farol sem a chave, e a luz fica apagada. Vou buscar a chave e volto. Agora a luz acende e ajuda o barco a chegar à costa.
-
-### Cena 2 · A ideia antes dos blocos
-
-**Imagem:** experiência da porta, com comparação dos dois estados. **Sobreposição:** Primeiro, experimentar.
-
-**Fala:**
-
-> No Desafio do Primeiro Jogo, seu filho aprende a fazer esse jogo funcionar. Antes de ensinar cada parte, a aula deixa ele experimentar. Na parte do farol, por exemplo, ele compara o que acontece com a chave e sem ela.
-
-### Cena 3 · Montagem e teste
-
-**Imagem:** trecho da montagem da condição, transição explícita para o teste com e sem chave. Não fazer o recorte parecer uma aula completa de encaixe. **Sobreposições, nessa ordem:** A aula mostra cada passo. / Jogar para ver se funcionou.
-
-**Fala:**
-
-> Depois, a aula ensina a encaixar blocos na tela para dizer ao jogo o que fazer. Seu filho monta essa parte e joga para conferir se a luz só acende quando ele traz a chave.
-
-### Cena 4 · O primeiro passo
-
-**Imagem:** casal e projeto. **Sobreposição:** Conheça o Desafio no link da bio.
-
-**Fala:**
-
-> Além de acender o farol, ele aprende a fazer o personagem andar e pegar a chave. Para conhecer as aulas, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-### Legenda completa
-
-> Seu filho aprende a criar um jogo em que precisa buscar uma chave, acender um farol e ajudar um barco a chegar à costa.
->
-> No Desafio do Primeiro Jogo, ele começa jogando uma versão pronta para conhecer a aventura. Depois, aprende cada parte: experimenta o que acontece, acompanha a explicação e monta no próprio jogo. Ao jogar de novo, confere se funcionou.
->
-> Os desenhos, o cenário e o movimento do barco já vêm preparados. Seu filho aprende a fazer o personagem andar, pegar a chave e acender o farol.
->
-> As aulas são gravadas, para crianças de 9 a 14 anos. O curso precisa de computador com internet, mouse e teclado. Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento.
->
-> Abra o link da bio e escolha Desafio do Primeiro Jogo para ver as aulas e o preço. As imagens deste vídeo são uma demonstração da equipe.
-
-**Conferência de produção:** a condição da porta pertence à terceira etapa de programação, depois de movimento e coleta. Não anunciar essa cena como primeira aula. Não cortar a transição de experiência para montagem.
-
-## F02 · Alunos em atividade
-
-**Formato:** Reel de cerca de 50 a 75 segundos, ajustado aos registros. **Objetivo:** mostrar crianças fazendo atividades e permitir que o responsável perceba sua participação e suas reações. **Destino:** bio LB → botão Desafio do Primeiro Jogo → oferta L0. **Material:** vídeos reais de Rafael, Jeffrey, Débora e André, indicados pelo usuário. Débora e André são filhos de Helena e Júlio.
-
-Os depoimentos ficam no destaque Avaliações. Este fixado usa vídeos de atividade. Não é necessário transformar o curso de cada registro no assunto principal, nem declarar que os quatro estão fazendo o Farol. Usar os trechos reais sem pedir que a criança encene entusiasmo ou diga uma fala comercial.
-
-**Capa:**
-
-> Alunos em atividade
->
-> Veja um pouco das aulas na Comunidade dos Criadores
-
-### Cena 1 · Conhecer quem participa
-
-**Imagem:** casal. **Sobreposição:** Alunos na Comunidade dos Criadores.
-
-**Fala:**
-
-> Aqui você vê as crianças fazendo as aulas da Comunidade dos Criadores. Acompanhe um pouco de como elas montam os jogos, fazem escolhas e colocam suas ideias para funcionar.
-
-### Cena 2 · Rafael
-
-**Imagem:** um trecho contínuo do Rafael aprendendo um passo da programação. Som do registro, sem fala comercial roteirizada. **Texto completo sobreposto:**
-
-> Rafael aprendendo a fazer uma parte do jogo funcionar.
-
-### Cena 3 · Jeffrey
-
-**Imagem:** um trecho contínuo do Jeffrey explorando uma escolha e seu efeito. Som do registro, sem fala comercial roteirizada. **Texto completo sobreposto:**
-
-> Jeffrey explorando o que muda quando faz uma escolha.
-
-### Cena 4 · Débora
-
-**Imagem:** um trecho contínuo da Débora personalizando o projeto. Som do registro, sem fala comercial roteirizada. **Texto completo sobreposto:**
-
-> Débora dando o seu jeito ao jogo.
->
-> Filha de Helena e Júlio.
-
-### Cena 5 · André
-
-**Imagem:** um trecho contínuo do André testando a criação. Som do registro, sem fala comercial roteirizada. **Texto completo sobreposto:**
-
-> André jogando para conferir o que acabou de fazer.
->
-> Filho de Helena e Júlio.
-
-### Cena 6 · O primeiro passo para outra família
-
-**Imagem:** casal; no fecho, Farol com o rótulo Demonstração da equipe. **Sobreposição:** Conheça o Desafio do Primeiro Jogo.
-
-**Fala:**
-
-> Seu filho pode começar criando A Chave do Farol, com a ajuda das aulas. Para conhecer o jogo e como o curso funciona, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-### Legenda completa
-
-> Aqui estão Rafael, Jeffrey, Débora e André fazendo atividades na Comunidade dos Criadores. Cada vídeo mostra uma parte do que acontece durante a aula. Débora e André são nossos filhos.
->
-> No destaque Alunos, a gente reúne esses vídeos e acrescenta novos registros. Em Avaliações, você encontra os relatos sobre as aulas.
->
-> Para conhecer uma primeira atividade para seu filho, abra o link da bio e escolha Desafio do Primeiro Jogo. Ele ensina a construir A Chave do Farol, com aulas gravadas para crianças de 9 a 14 anos, no computador.
-
-**Conferência de produção:** manter cada aluno identificável como um registro separado. Preservar o contexto real e eventual apoio visível. Não transformar um sorriso em prova de resultado pedagógico ou garantia de interesse de toda criança. O curso não precisa virar chamada, mas o vídeo deve corresponder à ação descrita: aprender, explorar, personalizar ou testar. A apresentação do Cadê no catálogo de Projetos não cria uma campanha de entrada para ele.
-
-### F02B · Alternativa integral: bastidor da equipe
-
-Usar somente se a equipe decidir adiar a montagem dos vídeos de alunos. Substitui F02 naquele espaço do calendário e como post fixado; não é um 13º post nem um quarto fixado. Se F02B não for usado, F02 continua sendo o fixado. Esta alternativa mostra o bastidor da equipe e remete a Como funciona; não deve ser apresentada como registro de Alunos ou Avaliações.
-
-**Capa:**
-
-> Primeiro, entender o que acontece
->
-> Como a gente prepara uma aula do Farol
-
-**Formato:** Reel de 40 a 60 segundos. **Destino:** L0 pela bio. **Rótulo nas capturas:** Demonstração da equipe.
-
-**Cena 1. Imagem:** casal com experiência da porta. **Sobreposição:** Primeiro, entender o jogo. **Fala:**
-
-> Ao preparar esta aula, a gente quer que seu filho entenda por que o farol só acende depois que o personagem pega a chave.
-
-**Cena 2. Imagem:** comparar os dois estados na experiência. **Sobreposição:** Experimentar e observar. **Fala:**
-
-> Por isso, ele começa experimentando: chega à porta com a chave e sem ela. Compara as duas situações e vê quando a luz acende.
-
-**Cena 3. Imagem:** mostrar montagem da condição e teste. **Sobreposição:** Montar e ver se funciona. **Fala:**
-
-> Depois, a aula ensina a montar essa parte do jogo. Seu filho encaixa os blocos na tela e joga das duas formas para conferir se fez funcionar.
-
-**Cena 4. Imagem:** casal. **Sobreposição:** Conheça o Desafio no link da bio. **Fala:**
-
-> É assim que ele vai construindo A Chave do Farol, uma parte de cada vez. Para conhecer as aulas, abra o link da bio e escolha Desafio do Primeiro Jogo.
-
-**Legenda completa:**
-
-> A gente começa pela cena que a criança consegue ver: sem a chave, o farol fica apagado; com a chave, ele acende.
->
-> Seu filho experimenta as duas situações antes de aprender a fazer isso no próprio jogo. Depois, a aula mostra os passos, e ele joga para conferir o que montou.
->
-> Este vídeo mostra a equipe preparando uma aula de A Chave do Farol. O Desafio do Primeiro Jogo é para crianças de 9 a 14 anos, com aulas gravadas e atividades no computador.
->
-> Abra o link da bio e escolha Desafio do Primeiro Jogo para ver as aulas e o preço.
-
-## F03 · Como começar pelo Desafio
-
-**Formato:** carrossel de oito slides. **Objetivo:** permitir ao responsável conferir adequação, apoio e contratação. **Destino:** L0 pela bio. **Visual:** cartelas legíveis, casal e capturas atuais; imagens da equipe identificadas.
+**Formato:** carrossel de 8 slides, 4:5. **Objetivo:** Apresentar A Chave do Farol, mostrando experimentar, montar, testar e personalizar o jogo. **Destino:** bio LB → botão Desafio do Primeiro Jogo → oferta L0.
 
 ### Slide 1 · Capa
 
-> Seu filho pode começar criando A Chave do Farol.
+> O primeiro jogo do seu filho.
 >
-> Veja como são as aulas do Desafio do Primeiro Jogo e o que vocês precisam para começar.
+> Conheça A Chave do Farol, o jogo que ele aprende a construir no Desafio do Primeiro Jogo.
 
-**Cena:** Farol como demonstração da equipe.
+**Cena:** Captura real do Farol aceso, com o personagem e o barco visíveis.
 
-### Slide 2 · A atividade
+### Slide 2 · Uma chave faz a diferença.
 
-> No jogo, ele precisa pegar uma chave e acender o farol para ajudar um barco a chegar.
+> Uma chave faz a diferença.
 >
-> As aulas mostram como fazer o personagem andar, pegar a chave e acender a luz. Seu filho monta uma parte de cada vez e joga para ver se funcionou.
+> Sem a chave, o farol continua apagado. Com ela, a luz acende e ajuda o barco a chegar à costa.
 
-**Cena:** três recortes do mesmo projeto, sem atribuir o barco à programação da criança.
+**Rótulos das imagens:**
 
-### Slide 3 · Idade e equipamento
-
-> O Desafio é para crianças de 9 a 14 anos.
+> Sem a chave
 >
-> Seu filho precisa conseguir ler e usar computador com internet, mouse e teclado. Antes de comprar, confiram quando ele poderá usar esse computador.
+> Com a chave
 
-**Cena:** computador em uso pela equipe.
+**Cena:** Duas capturas da mesma experiência: porta sem chave e porta com chave.
 
-### Slide 4 · O formato
+### Slide 3 · Primeiro, ele experimenta.
 
-> As aulas são gravadas, e vocês escolhem o horário de estudar.
+> Primeiro, ele experimenta.
 >
-> Seu filho pode pausar o vídeo para fazer cada passo e voltar à explicação quando precisar. Na primeira aula, vale ficar por perto para ver como ele acompanha.
-
-**Cena:** vídeo pausado junto da atividade.
-
-### Slide 5 · Quando surge uma dúvida
-
-> Se ele ficar com dúvida, pode assistir ao trecho de novo e comparar com o que fez.
+> Antes de montar a parte do farol, seu filho testa a porta com a chave e sem ela.
 >
-> Também pode escrever para a equipe pelo botão “Preciso de ajuda”. A resposta chega por mensagem e pode levar um tempo.
+> Assim, vê o que precisa acontecer no jogo.
 
-**Cena:** orientação e caminho de ajuda, sem conversa inventada.
+**Cena:** Experiência interativa da porta sem chave; não apresentar como primeira aula do curso.
 
-### Slide 6 · O acesso
+### Slide 4 · Depois, ele monta.
 
-> Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento.
+> Depois, ele monta.
 >
-> Nesse período, seu filho faz as aulas, monta o jogo e pode publicá-lo no Mural, o espaço para compartilhar e jogar as criações da comunidade.
+> Os comandos do jogo aparecem em bloquinhos. A aula mostra quais escolher e como encaixar para fazer a luz acender só quando o personagem trouxer a chave.
 
-**Cena:** cartela; não exibir preço de catálogo desatualizado.
+**Cena:** Recorte real dos blocos da condição que confere a chave; não inventar blocos.
 
-### Slide 7 · Depois do Desafio
+### Slide 5 · E joga para conferir.
 
-> Depois dos 30 dias, as aulas deixam de estar disponíveis por essa compra. Seu filho ainda pode ver e jogar no Mural.
+> E joga para conferir.
 >
-> O Desafio não vira uma assinatura. Se vocês quiserem outros cursos, podem conhecer os planos da Comunidade dos Criadores.
-
-**Cena:** cartela com o fim dos 30 dias e a opção de conhecer a Comunidade, sem seta de cobrança automática.
-
-### Slide 8 · Próximo passo
-
-> Mostre A Chave do Farol ao seu filho e conversem sobre a ideia de criar esse jogo.
+> Seu filho testa as duas situações no jogo que montou.
 >
-> No link da bio, escolha Desafio do Primeiro Jogo para ver o preço e o que está incluído. O destaque Dúvidas também explica o acesso, a ajuda e a garantia.
+> Se a luz não funcionar como ele esperava, pode rever o passo e ajustar.
 
-**Cena:** casal e projeto; convite dirigido ao adulto.
+**Cena:** Jogo em andamento com farol aceso; o texto explica a verificação, sem fingir registro de um aluno.
+
+### Slide 6 · Uma parte de cada vez.
+
+> Uma parte de cada vez.
+>
+> O cenário, os desenhos e o movimento do barco já vêm preparados.
+>
+> Seu filho se concentra em fazer o personagem andar, pegar a chave e acender o farol.
+
+**Cena:** Visão completa do jogo para distinguir o material preparado das regras que a criança monta.
+
+### Slide 7 · Agora, ele escolhe o visual.
+
+> Agora, ele escolhe o visual.
+>
+> Depois de entender as regras e fazer o jogo funcionar, seu filho pode personalizar a aventura.
+>
+> Ele escolhe entre opções de cenários, personagens, barcos, chaves e faróis.
+
+**Cena:** Captura real de uma versão personalizada do Farol, com cenário noturno, personagem robô e outro modelo de farol. Mostrar o jogo inteiro, preservando o personagem e o cenário. As opções correspondem ao catálogo do Dia 3.
+
+### Slide 8 · Conheça as aulas antes de escolher.
+
+> Conheça as aulas antes de escolher.
+>
+> Abra o link da bio e escolha Desafio do Primeiro Jogo.
+>
+> Veja a aventura com seu filho e conversem sobre a ideia de criar esse jogo.
+
+**Chamada:**
+
+> Link da bio → Desafio do Primeiro Jogo
+
+**Cena:** Cena de Helena e Júlio já produzida para Quem somos; texto dirige o convite ao responsável.
 
 ### Legenda completa
 
-> No Desafio do Primeiro Jogo, seu filho aprende a construir A Chave do Farol com a ajuda das aulas. Ele precisa conseguir ler e usar mouse e teclado. O curso é para crianças de 9 a 14 anos, no computador com internet.
+> No Desafio do Primeiro Jogo, seu filho aprende a construir A Chave do Farol. Ele faz o personagem andar, pegar a chave e acender a luz para ajudar o barco a chegar à costa.
 >
-> As aulas são gravadas. Ele pode pausar para fazer a atividade e rever um trecho. Se precisar falar com a equipe, pode mandar uma mensagem pela aula; a resposta pode levar um tempo.
+> A aula começa pela ideia que ele pode experimentar. Depois, mostra como montar os comandos em bloquinhos. Seu filho joga para conferir o que fez e ajusta quando precisa.
 >
-> Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento. Isso inclui as aulas, o espaço de montar o jogo e o Mural, onde pode publicar, jogar e comentar.
+> O cenário, os desenhos e o movimento do barco já vêm preparados. A criança aprende a montar as regras com a ajuda das aulas.
 >
-> A garantia é de sete dias corridos a partir da compra. O pedido de devolução do dinheiro segue o canal e as regras dos termos, disponíveis na oferta.
+> Depois de entender as regras e fazer o jogo funcionar, seu filho pode personalizar a aventura. Ele escolhe entre opções de cenários, personagens, barcos, chaves e faróis.
 >
-> Para conhecer outros cursos depois, vocês podem escolher a assinatura da Comunidade, paga separadamente. A compra do Desafio não vira assinatura.
+> As explicações são gravadas, e o curso precisa de computador com internet, mouse e teclado. Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento.
+>
+> Abra o link da bio e escolha Desafio do Primeiro Jogo para ver as aulas, o valor e o que está incluído.
+
+## F02 · Alunos em atividade
+
+**Formato:** carrossel de 7 slides, 4:5. **Objetivo:** Apresentar os alunos e as ações de aprender, personalizar e testar; versão provisória com imagens já autorizadas. **Destino:** bio LB → botão Desafio do Primeiro Jogo → oferta L0.
+
+### Slide 1 · Capa
+
+> Alunos em atividade.
+>
+> Na Comunidade dos Criadores, a criança monta, faz escolhas e testa o próprio jogo.
+
+**Cena:** Montagem com as cinco cenas provisórias de Rafael, Jeffrey, Débora, André e Fernando.
+
+### Slide 2 · Rafael
+
+> Rafael
+>
+> Rafael aprendendo a fazer uma parte do jogo funcionar.
+
+**Identificação:**
+
+> Aluno
+
+**Cena:** Cena provisória gerada com a referência do Rafael, montando no computador.
+
+### Slide 3 · Jeffrey
+
+> Jeffrey
+>
+> Jeffrey explorando o que muda quando faz uma escolha.
+
+**Identificação:**
+
+> Aluno
+
+**Cena:** Cena provisória gerada com a foto fornecida do Jeffrey, explorando o jogo no computador.
+
+### Slide 4 · Débora
+
+> Débora
+>
+> Débora dando o seu jeito ao jogo.
+
+**Identificação:**
+
+> Aluna
+
+**Cena:** Cena provisória da Débora vendo o Farol com as escolhas de aparência.
+
+### Slide 5 · André
+
+> André
+>
+> André jogando para conferir o que acabou de fazer.
+
+**Identificação:**
+
+> Aluno
+
+**Cena:** Cena provisória do André usando o teclado para testar o Farol.
+
+### Slide 6 · Fernando
+
+> Fernando
+>
+> Fernando mostrando o que fez no jogo.
+
+**Identificação:**
+
+> Aluno
+
+**Cena:** Cena provisória gerada com a foto fornecida do Fernando, mostrando uma parte do jogo.
+
+### Slide 7 · Seu filho também pode começar.
+
+> Seu filho também pode começar.
+>
+> No link da bio, escolha Desafio do Primeiro Jogo.
+>
+> Ele aprende a construir A Chave do Farol, uma parte de cada vez, com a ajuda das aulas.
+
+**Chamada:**
+
+> Link da bio → Desafio do Primeiro Jogo
+
+**Cena:** Captura real do Farol; convite ao responsável, sem atribuir promessa de resultado aos alunos.
+
+### Legenda completa
+
+> Conheça Rafael, Jeffrey, Débora, André e Fernando, alunos da Comunidade dos Criadores.
+>
+> Durante as aulas, as crianças aprendem a montar partes do jogo, fazer escolhas e jogar para conferir o que criaram. Cada atividade dá uma oportunidade de colocar uma ideia para funcionar.
+>
+> Para conhecer uma primeira atividade para seu filho, abra o link da bio e escolha Desafio do Primeiro Jogo. As aulas ensinam a construir A Chave do Farol no computador.
+>
+> Esta versão usa imagens geradas a partir das fotos dos alunos. Os vídeos das atividades serão incluídos depois.
+
+## F03 · Como começar pelo Desafio
+
+**Formato:** carrossel de 9 slides, 4:5. **Objetivo:** Ajudar o responsável a conferir idade, equipamento, formato, ajuda e condições da compra. **Destino:** bio LB → botão Desafio do Primeiro Jogo → oferta L0.
+
+### Slide 1 · Capa
+
+> Como seu filho pode começar a criar jogos.
+>
+> Conheça o Desafio do Primeiro Jogo e veja o que vocês precisam para começar.
+
+**Cena:** Débora usando o mouse e olhando com curiosidade para o Farol no notebook. Rosto e jogo aparecem com destaque. Cena gerada com as referências da criança e do jogo; não é um registro documental.
+
+### Slide 2 · Pensado para crianças de 9 a 14 anos.
+
+> Pensado para crianças de 9 a 14 anos.
+>
+> A proposta é aprender a criar jogos, fazendo cada vez mais por conta própria.
+>
+> Crianças mais novas podem fazer com um responsável. Quem é mais velho também pode participar, se tiver interesse em criar jogos.
+
+**Cena:** André e Débora sentados juntos diante de um notebook com o jogo do Farol. Os rostos e a interação dos irmãos dão contexto à faixa etária. Cena gerada com referências; não é um registro documental. Telas inseridas nas cenas são composições baseadas nas capturas do produto, não novas capturas da plataforma.
+
+### Slide 3 · No computador, fica mais fácil montar.
+
+> No computador, fica mais fácil montar.
+>
+> Seu filho precisa de computador ou notebook com internet, mouse e teclado.
+>
+> A tela maior ajuda a enxergar a aula e os blocos. O mouse facilita encaixar os comandos; o teclado permite testar os movimentos.
+
+**Cena:** Detalhe das mãos usando mouse e teclado, com os blocos do Farol no monitor. O enquadramento mostra o equipamento em uso e o espaço para montar. Cena gerada com referências; não é um registro documental. Telas inseridas nas cenas são composições baseadas nas capturas do produto, não novas capturas da plataforma.
+
+### Slide 4 · A aula acompanha o ritmo dele.
+
+> A aula acompanha o ritmo dele.
+>
+> Como as aulas são gravadas, seu filho pode pausar para montar e voltar à explicação quando precisar.
+>
+> Vocês escolhem o horário de estudar.
+
+**Cena:** André com a mão no mouse, diante do vídeo pausado e da atividade do Farol lado a lado. O controle de reprodução fica visível na tela. Cena gerada com referências; não é um registro documental. Telas inseridas nas cenas são composições baseadas nas capturas do produto, não novas capturas da plataforma.
+
+### Slide 5 · Quando aparece uma dúvida.
+
+> Quando aparece uma dúvida.
+>
+> Seu filho pode rever o trecho da aula e comparar com o que montou.
+>
+> Pelo botão “Preciso de ajuda”, ele escreve para a equipe. A resposta chega por mensagem nos Recados e fica guardada para consultar depois.
+
+**Cena:** Débora digitando no campo de ajuda da aula. Mostrar o campo vazio e o botão de envio, sem inventar perguntas, respostas ou atendimento ao vivo. Cena gerada com referências; não é um registro documental. Telas inseridas nas cenas são composições baseadas nas capturas do produto, não novas capturas da plataforma.
+
+### Slide 6 · Pagamento único. 30 dias de acesso.
+
+> Pagamento único.
+> 30 dias de acesso.
+>
+> O acesso começa quando o pagamento é aprovado.
+>
+> Nesse período, seu filho assiste às aulas, monta o jogo e usa o Mural, o espaço para publicar, jogar e comentar as criações da comunidade.
+
+**Cena:** Notebook com o Farol, calendário de trinta dias e caderno sobre a mesa. A cena representa organizar um período para fazer as atividades, sem contagem regressiva. Cena gerada com referências; não é um registro documental. Telas inseridas nas cenas são composições baseadas nas capturas do produto, não novas capturas da plataforma.
+
+### Slide 7 · Depois dos 30 dias.
+
+> Depois dos 30 dias.
+>
+> Seu filho ainda pode ver e jogar no Mural. O projeto fica guardado, mas as aulas e a edição deixam de estar disponíveis por essa compra.
+>
+> O Desafio não vira assinatura. Para continuar criando, vocês podem conhecer os planos da Comunidade.
+
+**Cena:** André jogando o Farol no navegador, usando o teclado. Mostrar apenas o jogo publicado, sem aulas ou edição abertas, em coerência com o acesso após o prazo. Cena gerada com referências; não é um registro documental. Telas inseridas nas cenas são composições baseadas nas capturas do produto, não novas capturas da plataforma.
+
+### Slide 8 · Sete dias de garantia.
+
+> Sete dias de garantia.
+>
+> Você tem sete dias corridos a partir da compra para pedir o dinheiro de volta, pelo canal indicado nos termos.
+>
+> Nesse período, vocês podem conhecer as aulas e ver como seu filho acompanha a proposta.
+
+**Cena:** Helena ao lado de Débora, observando a filha usar o computador. A criança controla a atividade enquanto a mãe conhece a proposta com ela. Cena gerada com referências; não é um registro documental. Telas inseridas nas cenas são composições baseadas nas capturas do produto, não novas capturas da plataforma.
+
+### Slide 9 · Conversem sobre o primeiro jogo.
+
+> Conversem sobre o primeiro jogo.
+>
+> Mostre A Chave do Farol ao seu filho.
+>
+> No link da bio, escolha Desafio do Primeiro Jogo para ver o preço e o que está incluído. O destaque Dúvidas também explica o acesso, a ajuda e a garantia.
+
+**Chamada:**
+
+> Link da bio → Desafio do Primeiro Jogo
+
+**Cena:** Júlio e André conversando diante do notebook com o Farol. O gesto e os olhares representam conhecer o jogo juntos antes de decidir. Cena gerada com referências; não é um registro documental. Telas inseridas nas cenas são composições baseadas nas capturas do produto, não novas capturas da plataforma.
+
+### Legenda completa
+
+> O Desafio do Primeiro Jogo é uma forma de conhecer as aulas da Comunidade dos Criadores. Seu filho aprende a construir A Chave do Farol, com explicações gravadas e atividades no computador.
+>
+> A proposta foi pensada para crianças de 9 a 14 anos. Crianças mais novas podem fazer com um responsável; quem é mais velho também pode participar, se tiver interesse em criar jogos.
+>
+> É preciso computador ou notebook com internet, mouse e teclado. Seu filho pode pausar a aula para fazer a atividade e rever uma explicação. Nas primeiras aulas, fique por perto para perceber de que ajuda ele precisa.
+>
+> Se surgir uma dúvida, ele pode escrever para a equipe pela aula. A resposta chega por mensagem nos Recados, onde a conversa fica guardada.
+>
+> Você paga uma vez e tem 30 dias de acesso a partir da aprovação do pagamento. Isso inclui as aulas, o espaço de montar o jogo e o Mural para publicar, jogar e comentar. Depois desse prazo, o projeto fica guardado e ele ainda pode ver e jogar no Mural; as aulas e a edição dependem de um novo acesso.
+>
+> A garantia é de sete dias corridos a partir da compra. O pedido de devolução segue o canal e as condições dos termos disponíveis na oferta.
+>
+> A compra do Desafio não vira assinatura. A Comunidade é uma opção de continuidade contratada separadamente.
 >
 > Abra o link da bio e escolha Desafio do Primeiro Jogo. Veja o jogo com seu filho antes de decidir.
 
-**Conferência final dos fixados:** capa e legenda precisam continuar verdadeiras quando vistas isoladamente. F01 apresenta o produto; F02 mostra alunos em atividade, com identificação e vínculos familiares, ou dá lugar a F02B com o bastidor da equipe; F03 explica o contrato atual. Conferir no aplicativo quais posts estão fixados depois de publicar. Destaques são acessados pelo nome, sem prometer posição permanente.
+**Conferência final:** imagens e copy legíveis em 4:5; títulos e legendas coerentes quando vistos sozinhos; aulas gravadas, equipamento, ajuda, prazo e garantia conforme a oferta; identificação dos alunos sem parentesco; nenhuma imagem gerada descrita como registro real. Conferir os três posts no perfil depois da publicação.
 
 [Guia e bio](README.md) · [Destaques](01-destaques.md) · [Calendário](03-postagens.md)

@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Três vidas, dano de uma vida, proteção de 45 quadros e corações na tela; jogo ainda sem encerramento.
 - Seções: 6. Vídeos: 5.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montagem própria; a comparação da proteção prepara a colisão da nave. Um quiz e o teste final retomam acertos, erros e batidas.
@@ -29,6 +31,8 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 **Blocos na página:** video-vidas-no-comeco → fala-vidas-no-comeco → experiencia-uma-vez.
 
 **Zappy na página (não gravar):** Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-vidas-no-comeco-avatar-01. Professora até “as batidas conseguiram tirar.”. Antes da entrada: Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3. Debinha entra, com os gestos parados, e fala: “E se eu der as vidas o tempo todo?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. Repare: a batida apaga um coração, mas, no quadro seguinte, as vidas voltam para 3. No fim do teste, aparece Vidas: 2, porque a última batida foi bem no último quadro. Ou seja, a peça devolve as vidas o tempo todo, e a nave nunca perderia. Por isso, no seu jogo, as vidas vão ser dadas em Ao iniciar.”. Na retomada: Levar a peça para Enquanto estiver rodando e mostrar o resultado real, inclusive Vidas: 2 no último quadro. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `once-vs-always`. Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
@@ -52,6 +56,8 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 **Blocos na página:** video-protecao → fala-respiro → experiencia-protecao.
 
 **Zappy na página (não gravar):** Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-protecao-avatar-01. Professora até “só a primeira batida tirou vida.”. Antes da entrada: Concluir as três batidas com proteção de 45 quadros; manter os corações e o tempo restante à vista. Debinha entra, com os gestos parados, e fala: “E quando esse tempinho de proteção acabar?”. Debinha sai antes da resposta. Retomada da professora: “Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida, e, na batida do quadro 10, restam 6 quadros, por isso a vida não cai. Mas, no quadro 30, a proteção já acabou, e olha só: essa batida tira outra vida. A proteção é um respiro com prazo. No seu jogo, a batida vai dar 45 quadros de proteção.”. Na retomada: Voltar ao começo, escolher 15 quadros e mostrar a terceira batida tirando vida. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `invincibility`. Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 

@@ -1,5 +1,27 @@
 # Módulos do Desafio do Primeiro Jogo
 
+**Vozes dos vídeos, 10/10/2026:** aplicado o mesmo raciocínio do Cadê Todo Mundo? aos roteiros da
+Chave do Farol. A professora conduz e o avatar entra, fala e sai em momentos ligados à explicação.
+Zappy fica como fala da página, com o recurso Ouvir; memes e capturas da interface mostram o
+mascote sem voz dentro do vídeo.
+
+| Aula | Avatar | Entradas |
+| --- | --- | --- |
+| Dia 1 | Debinha | 5; o Mapa continua só com a professora |
+| Dia 2 | Dedé | 4; coleta, memória e aviso têm funções distintas |
+| Dia 3 | Debinha | 8; duas na montagem com chave, nenhuma no vídeo dos quatro avisos |
+| Certificado | Dedé | 1 comemoração; quiz sem vídeo |
+
+Os roteiros identificam quem fala, os pontos de entrada e saída e a resposta da professora.
+As perguntas vêm antes do gesto que responde; os passos de montagem continuam completos.
+As conferências dos resultados usam “Se algo não funcionou no seu jogo…”. Os 20 títulos de
+seção, os 19 vídeos, os projetos e os critérios de conclusão permanecem. O caderno continua
+ensinando os mesmos passos; as participações pertencem ao vídeo.
+
+Esta é a situação atual de autoria: textos e direções aplicados; gravação, edição e publicação
+ainda não confirmadas. Medir a duração final com as novas falas, sem acelerar os gestos. As
+âncoras e as falas dos avatares estão em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md#chave-do-farol).
+
 **Revisão de continuidade da conversa, 07/10/2026:** a abertura anuncia a surpresa sem pedir segredo; o encerramento do Dia 2 reconhece o que a criança programou e retoma a promessa numa fala ligada ao envio. Propostas, roteiros e gerador dos manifestos atualizados. [Trechos e conferências](qa/revisao-conversa-2026-10-07.md).
 
 **Título do curso:** Desafio do Primeiro Jogo · A Chave do Farol

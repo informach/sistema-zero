@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Tela 800 × 480 e nave visível em x 400, y 410, ainda parada.
 - Seções: 9. Vídeos: 9.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A primeira aula conserva jogo pronto e caderno, mas termina com a nave construída e visível. Preparação, coordenadas, criação e desenho ganham experiências e montagens curtas antes do envio.
@@ -50,6 +52,8 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 
 **Zappy na página (não gravar):** Sua vez! Faça os dois testes e fique de olho no contador Ações feitas. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-uma-vez-e-sempre-avatar-01. Professora até “quando o jogo começa.”. Antes da entrada: Concluir o teste em Ao iniciar com Ações feitas em 1 e a nave parada. Debinha entra, com os gestos parados, e fala: “E para ela continuar andando?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. Olha só: a nave anda, anda, anda e sai da tela, e o contador chega a 24. Isso acontece porque Enquanto estiver rodando repete a ação o tempo todo, enquanto o jogo roda.”. Na retomada: Mover a peça para Enquanto estiver rodando, soltar e começar o novo teste. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `once-vs-always`. Nesta experiência, coloque Mover a nave um pouquinho em Ao iniciar. Clique em Começar o jogo e espere o teste parar. Observe a nave e o contador Ações feitas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo e espere esse teste parar também. Compare a nave e o contador nas duas tentativas. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 4. Prepare a tela do jogo
@@ -84,6 +88,8 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 
 **Zappy na página (não gravar):** Sua vez! Crie a nave, mostre a nave na tela e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-criar-e-mostrar-avatar-01. Professora até “e a tela do jogo é o palco.”. Antes da entrada: Concluir a criação nos bastidores e a comparação com o teatro; manter a tela do jogo vazia. Debinha entra, com os gestos parados, e fala: “Quero ver essa nave na tela!”. Debinha sai antes da resposta. Retomada da professora: “Agora eu clico em Mostrar a nave na tela. Olha só: a mesma nave aparece na tela do jogo. Mostrar não cria outra nave: desenha a nave que já existia. No seu projeto, um bloco vai criar a nave, e outro vai desenhar a nave na tela.”. Na retomada: Clicar em Mostrar a nave na tela e comparar a mesma nave nos dois lugares. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `world`. Nesta experiência, clique em Criar a nave. Compare os bastidores com a tela do jogo. Depois clique em Mostrar a nave na tela e compare os dois lugares novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 7. Crie a nave nos bastidores
@@ -116,6 +122,8 @@ Anexar somente `output/pdf/nave-contra-asteroides-caderno.pdf` ao bloco caderno,
 **Blocos na página:** video-motor-e-nave → fala-motor-e-nave → projeto.
 
 **Zappy na página (não gravar):** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
+
+**Participação no vídeo:** ID video-motor-e-nave-avatar-01. Professora até “porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar.”. Antes da entrada: Concluir o desenho e mostrar a nave parada perto da parte de baixo da tela. Debinha entra, com os gestos parados, e fala: “A minha nave apareceu!”. Debinha sai antes da resposta. Retomada da professora: “E a sua, apareceu também? Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar está Criar nave, e dentro de Enquanto estiver rodando está A cada quadro do jogo, com Desenhar o sprite nave dentro dele. Depois de corrigir, teste de novo.”. Na retomada: Manter a nave visível e apontar os blocos durante a conferência condicional; seguir para verificar e enviar. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 

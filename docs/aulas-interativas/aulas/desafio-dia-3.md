@@ -17,6 +17,25 @@
 
 **Uma ideia por seção na personalização, 06/10/2026 (decisão da dona):** o par do farol saiu de `farol-mensagens` e foi para `personalizar`, que passou a ser a única parte de troca de imagens (personagem, barco, chave, farol e cenário). `farol-mensagens` ficou só com os quatro avisos, numa parte curta (90 a 120 s), e mudou de título para **Escreva seus avisos**; a chave da seção e as dos blocos continuam as mesmas, para preservar os identificadores no Admin. Em `personalizar`, a verificação confere só que a imagem dentro de então é um farol aceso (qualquer um dos quatro modelos, ou o antigo `farol-aceso`), para o jogo publicado continuar acendendo; nenhuma escolha de modelo vira critério. Os vídeos ficaram enxutos, com a conferência uma vez só, depois do teste. O tempo de vídeo entre o envio e a publicação caiu de cerca de 9 a 12,5 minutos para cerca de 7,5 a 10,5 minutos, e o do dia inteiro, de 18 a 24 minutos para 16,5 a 22,5 minutos.
 
+## Vozes e produção · 10/10/2026
+
+**Debinha** participa em 8 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-3.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+
+A montagem da resposta com chave tem duas entradas, antes de montar e antes de reiniciar a partida. O vídeo dos quatro avisos continua só com a professora. As escolhas de imagens, frases e posição continuam livres.
+
+| Entrada | Fala de Debinha |
+| --- | --- |
+| F3P1-D01 | “E se eu trouxer a chave agora?” |
+| F3P2-D01 | “E onde eu escrevo que falta a chave?” |
+| F3P3-D01 | “Mas eu trouxe a chave!” |
+| F3P3-D02 | “E se eu quiser jogar de novo?” |
+| F3P4-D01 | “Quero fazer uma aventura de pirata!” |
+| F3P6-D01 | “E para subir ou descer?” |
+| F3P7-D01 | “Eu tenho que escolher um desses três lugares?” |
+| F3P8-D01 | “Quero mandar o jogo para os meus amigos!” |
+
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |

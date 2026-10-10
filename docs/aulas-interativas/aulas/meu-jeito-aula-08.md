@@ -8,6 +8,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 - Resultado: Jogo testado e entregue pela galeria; publicação no Mural opcional.
 - Seções: 5. Vídeos: 4.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A revisão de aparência e regras já foi feita antes das alterações, na aula 1. O encerramento testa o percurso inteiro, explica a cópia publicada e permite entregar sem obrigar publicação ou recado. Saem o passeio pelo site e a tarefa de criar outro projeto.
@@ -28,6 +30,8 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 **Blocos na página:** video-copia-publicada → fala-copia-publicada → experimento-copia-publicada.
 
+**Participação no vídeo:** ID video-copia-publicada-avatar-01. Professora até “Para ela ver o desenho novo, você manda outra foto.”. Antes da entrada: Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul. Dedé entra, com os gestos parados, e fala: “E para mostrar a versão rosa do jogo?”. Dedé sai antes da resposta. Retomada da professora: “Por isso, eu clico em Publicar de novo. Repare: aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Ou seja, cada publicação é um cartão novo, e o anterior fica no Mural.”. Na retomada: Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `published-copy`. Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo. Sem palpite, pistas ou pergunta final.
 
 ### Seção 2. Jogue do começo ao reinício
@@ -43,6 +47,8 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 **Tarefa / Zappy na página:** Agora, se quiser, publique o seu jogo no Mural e mande o link para a família e os amigos! Você pode seguir mesmo sem publicar. Quando terminar, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-compartilhar → fala-compartilhar.
+
+**Participação no vídeo:** ID video-compartilhar-avatar-01. Professora até “Teste uma partida e volte à aba do Estúdio.”. Antes da entrada: Esperar Publicado!, abrir e testar a versão publicada e voltar ao Estúdio; não copiar o link antes da pergunta. Dedé entra, com os gestos parados, e fala: “Como eu mando o jogo para a minha família?”. Dedé sai antes da resposta. Retomada da professora: “Depois clique em Copiar link. Olha só: o botão muda para Link copiado! Mande o link para a sua família e os seus amigos, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.”. Na retomada: Clicar em Copiar link e mostrar Link copiado!; manter a orientação de pedir ajuda a um adulto, se precisar. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

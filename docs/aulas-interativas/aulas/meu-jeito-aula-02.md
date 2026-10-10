@@ -8,6 +8,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 - Resultado: Arte nave em pixel art, 32 × 32, com corpo, cabine, luz e sombra; espaço para o motor.
 - Seções: 8. Vídeos: 8.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; luz e sombra precedem o acabamento. O desenho continua autoral: medidas e nomes permitem a integração, sem impor cores ou uma silhueta única.
@@ -45,6 +47,8 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 **Blocos na página:** video-espelho → fala-espelho → experimento-espelho.
 
+**Participação no vídeo:** ID video-espelho-avatar-01. Professora até “e a dobra é a linha do meio.”. Antes da entrada: Concluir o teste do Espelho lado a lado e a comparação com a folha dobrada; apontar o outro controle sem ligá-lo ainda. Dedé entra, com os gestos parados, e fala: “E esse espelho de cima e de baixo?”. Dedé sai antes da resposta. Retomada da professora: “Depois eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Tá vendo? Agora a cópia da ponta aparece embaixo, de cabeça para baixo, porque é o espelho que está ligado que decide onde a cópia cai.”. Na retomada: Desligar o espelho lateral, ligar só o vertical e pintar a ponta; depois comparar o comportamento do Balde. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `symmetry`. Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas. Sem palpite, pistas ou pergunta final.
 
 ### Seção 4. Feche o contorno da nave
@@ -61,6 +65,8 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 **Blocos na página:** video-cores → fala-cores.
 
+**Participação no vídeo:** ID video-cores-avatar-01. Professora até “Agora pinte o corpo da sua nave.”. Antes da entrada: Mostrar o contorno ainda sem preenchimento e o espaço do motor livre. Dedé entra, com os gestos parados, e fala: “Eu quero uma nave roxa!”. Dedé sai antes da resposta. Retomada da professora: “Pode ser roxa, sim. Escolha uma cor, pegue Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo até a linha do contorno. Se ela escapar para fora, é porque ficou uma abertura: use Desfazer, feche a abertura com o Lápis e tente de novo.”. Na retomada: Usar roxo como escolha do exemplo, mantendo a liberdade de quem assiste; demonstrar preenchimento, correção de abertura, cabine e conferência. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 6. Mude o lado da luz
@@ -68,6 +74,8 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 **Tarefa / Zappy na página:** Sua vez! Ligue A sombra e a luz e mude o lado do sol. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-luz → fala-luz → experiencia-luz.
+
+**Participação no vídeo:** ID video-luz-avatar-01. Professora até “É isso que A sombra e a luz desenha.”. Antes da entrada: Concluir a comparação com a bola no quintal e manter o sol à esquerda. Dedé entra, com os gestos parados, e fala: “E se a luz vier do outro lado?”. Dedé sai antes da resposta. Retomada da professora: “Agora eu ligo de novo e mudo O sol para a direita. Repare: o azul mais claro passa para a direita, e o mais escuro vai para a esquerda, porque a luz e a sombra seguem o lado do sol.”. Na retomada: Ligar luz e sombra e mover o sol para a direita; mostrar os tons trocando de lado. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `shading`. Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros. Sem palpite, pistas ou pergunta final.
 

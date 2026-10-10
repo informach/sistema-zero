@@ -1,0 +1,12 @@
+# Avaliações
+
+Publicar as doze imagens na ordem dos arquivos.
+
+No story 12, adicionar um sticker de link sobre o botão amarelo:
+
+- Texto: **Ver A Chave do Farol**
+- Destino: https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=av05
+
+O botão desenhado no PNG indica a posição. É necessário adicionar o sticker no Instagram para que o link funcione.
+
+Cinco crianças e três responsáveis. São dez cartelas de relatos, alternando uma criança e um responsável. Daniel aparece em duas cartelas, sobre organização e criatividade; Harle fala de responsabilidade; Flávia aparece em duas, sobre independência e uso da tela para criar. A abertura reúne os oito rostos, e o convite é a imagem 12. Fotos das crianças obtidas das referências fornecidas e da oferta; retratos dos responsáveis extraídos dos vídeos originais. Os trechos foram conferidos por uma segunda transcrição. A pontuação foi ajustada para leitura. Conforme orientação do usuário, as cartelas não exibem reticências ou colchetes; os recortes permanecem documentados no arquivo de fontes. As aspas de abertura e fechamento usam o mesmo estilo, fora do texto. As palavras e o sentido foram mantidos. Nome, participação e tema acompanham cada relato. Os novos vídeos falam sobre criar jogos, fazer as aulas e mudanças percebidas pelas famílias; não atribuir esses relatos especificamente ao Farol. Fontes e segundos de cada recorte estão em fontes-dos-relatos.txt.

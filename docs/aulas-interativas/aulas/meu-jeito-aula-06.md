@@ -8,6 +8,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 - Resultado: Jogo com nave autoral animada e asteroides originais, mantendo as regras.
 - Seções: 7. Vídeos: 7.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganham resultados próprios. A troca do criador é feita numa mesma aplicação; não se transforma a exclusão do bloco em uma aula de erro fabricado. A folha entra no fim do Ao iniciar, como no programa de referência.
@@ -28,6 +30,8 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Blocos na página:** video-nomes → fala-nomes → experimento-nomes.
 
+**Participação no vídeo:** ID video-nomes-avatar-01. Professora até “cada um precisa de um nome só dele.”. Antes da entrada: Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível. Dedé entra, com os gestos parados, e fala: “Que nome eu dou para a folha?”. Dedé sai antes da resposta. Retomada da professora: “Por isso, eu escolho folha-nave. Olha só: os avisos somem, e a nave volta a voar na prévia, porque a folha ganhou um nome só dela, e a nave continua com o nome nave.”. Na retomada: Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `unique-names`. Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave. Sem palpite, pistas ou pergunta final.
 
 ### Seção 2. Traga seus desenhos para o projeto
@@ -43,6 +47,8 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 **Tarefa / Zappy na página:** Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-recorte → fala-recorte → experimento-recorte.
+
+**Participação no vídeo:** ID video-recorte-avatar-01. Professora até “São esses dois quadros que vão se revezar na animação.”. Antes da entrada: Concluir o recorte correto de 32 e comparar os quadros 1 e 2. Dedé entra, com os gestos parados, e fala: “Posso deixar a nave maior no jogo sem mudar o recorte?”. Dedé sai antes da resposta. Retomada da professora: “Agora eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o tamanho no jogo é outra escolha, por isso ele não muda o recorte da folha.”. Na retomada: Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `sheet-vs-sprite`. Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32. Sem palpite, pistas ou pergunta final.
 
@@ -67,6 +73,8 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 **Tarefa / Zappy na página:** Agora ligue a animação voando! Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-animar-nave → fala-animar-nave.
+
+**Participação no vídeo:** ID video-animar-nave-avatar-01. Professora até “do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”. Antes da entrada: Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números. Dedé entra, com os gestos parados, e fala: “No Pinta era um e dois. Por que aqui é zero e um?”. Dedé sai antes da resposta. Retomada da professora: “O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.”. Na retomada: Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

@@ -1,0 +1,193 @@
+[
+  {
+    "start": 52.0,
+    "end": 56.84,
+    "text": "Bom, ele é mais independente, porque meu tempo é bem apertado, no início eu acompanhei",
+    "words": [
+      {
+        "start": 52.0,
+        "end": 52.66,
+        "text": " Bom,"
+      },
+      {
+        "start": 52.82,
+        "end": 52.9,
+        "text": " ele"
+      },
+      {
+        "start": 52.9,
+        "end": 53.02,
+        "text": " é"
+      },
+      {
+        "start": 53.02,
+        "end": 53.26,
+        "text": " mais"
+      },
+      {
+        "start": 53.26,
+        "end": 53.94,
+        "text": " independente,"
+      },
+      {
+        "start": 54.34,
+        "end": 54.44,
+        "text": " porque"
+      },
+      {
+        "start": 54.44,
+        "end": 54.64,
+        "text": " meu"
+      },
+      {
+        "start": 54.64,
+        "end": 54.82,
+        "text": " tempo"
+      },
+      {
+        "start": 54.82,
+        "end": 54.94,
+        "text": " é"
+      },
+      {
+        "start": 54.94,
+        "end": 55.1,
+        "text": " bem"
+      },
+      {
+        "start": 55.1,
+        "end": 55.86,
+        "text": " apertado,"
+      },
+      {
+        "start": 56.14,
+        "end": 56.14,
+        "text": " no"
+      },
+      {
+        "start": 56.14,
+        "end": 56.32,
+        "text": " início"
+      },
+      {
+        "start": 56.32,
+        "end": 56.54,
+        "text": " eu"
+      },
+      {
+        "start": 56.54,
+        "end": 56.84,
+        "text": " acompanhei"
+      }
+    ]
+  },
+  {
+    "start": 56.84,
+    "end": 62.14,
+    "text": "mais, agora eu acompanho menos, ele faz o curso com total independência no momento.",
+    "words": [
+      {
+        "start": 56.84,
+        "end": 57.12,
+        "text": " mais,"
+      },
+      {
+        "start": 57.32,
+        "end": 57.480000000000004,
+        "text": " agora"
+      },
+      {
+        "start": 57.480000000000004,
+        "end": 57.62,
+        "text": " eu"
+      },
+      {
+        "start": 57.62,
+        "end": 58.06,
+        "text": " acompanho"
+      },
+      {
+        "start": 58.06,
+        "end": 58.5,
+        "text": " menos,"
+      },
+      {
+        "start": 58.92,
+        "end": 59.08,
+        "text": " ele"
+      },
+      {
+        "start": 59.08,
+        "end": 59.3,
+        "text": " faz"
+      },
+      {
+        "start": 59.3,
+        "end": 59.54,
+        "text": " o"
+      },
+      {
+        "start": 59.54,
+        "end": 59.84,
+        "text": " curso"
+      },
+      {
+        "start": 59.84,
+        "end": 60.3,
+        "text": " com"
+      },
+      {
+        "start": 60.3,
+        "end": 60.56,
+        "text": " total"
+      },
+      {
+        "start": 60.56,
+        "end": 61.32,
+        "text": " independência"
+      },
+      {
+        "start": 61.32,
+        "end": 61.519999999999996,
+        "text": " no"
+      },
+      {
+        "start": 61.519999999999996,
+        "end": 62.14,
+        "text": " momento."
+      }
+    ]
+  },
+  {
+    "start": 62.94,
+    "end": 63.980000000000004,
+    "text": "Acho muito bacana o curso.",
+    "words": [
+      {
+        "start": 62.94,
+        "end": 63.06,
+        "text": " Acho"
+      },
+      {
+        "start": 63.06,
+        "end": 63.36,
+        "text": " muito"
+      },
+      {
+        "start": 63.36,
+        "end": 63.88,
+        "text": " bacana"
+      },
+      {
+        "start": 63.88,
+        "end": 63.980000000000004,
+        "text": " o"
+      },
+      {
+        "start": 63.980000000000004,
+        "end": 63.980000000000004,
+        "text": " curso."
+      }
+    ]
+  }
+]

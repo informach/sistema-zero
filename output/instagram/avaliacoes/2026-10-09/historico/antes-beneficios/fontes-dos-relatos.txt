@@ -1,0 +1,37 @@
+AVALIAÇÕES · FONTES DOS RELATOS
+
+Rafael, Débora e André: falas já presentes na oferta e confirmadas pelo usuário para o Desafio do Primeiro Jogo. Fonte histórica: c3c142e8f^, packages/funnel/src/components/funnel/oferta/DesafioOfertaBody.astro, seção DEPOIMENTOS. Retratos: packages/funnel/public/img/desafio-primeiro-jogo/depo-{rafael,debora,andre}.webp.
+
+Os segundos abaixo localizam os trechos contínuos escolhidos. Ajustes: maiúscula inicial, pontuação e aspas de uma fala dentro de outra. Não foram inseridas palavras ou resultados. Transcrição completa: faster-whisper small; conferência dos trechos: medium, com marcação de palavras. Arquivos de trabalho: output/instagram/avaliacoes/2026-10-09/fontes.
+
+AV08 · Daniel · Pai do Rafael
+Vídeo: C:\Users\tocha\Downloads\Isso trouxe para o meu filho organização, lógica e criatividade _ Daniel, PCD.mp4
+Trecho: 60.16s–68.78s
+Fala: O Rafa ficou bastante empolgado com o curso. Acabava uma aula e ele vinha contar: “Aprendi isso aqui”, e me mostrava no computador.
+Retrato: daniel-12s.png (00:12)
+
+AV07 · Jeffrey · Aluno
+Vídeo: C:\Users\tocha\Downloads\Ele conseguiu se expressar com isso _ Jeffrey, PCD.mp4
+Trecho: 101.42s–109.34s
+Fala: Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.
+Retrato: foto de referência fornecida pelo usuário: jeffrey.png
+
+AV09 · Harle · Pai do Jeffrey
+Vídeo: C:\Users\tocha\Downloads\Meu filho autista superou todas as expectativas _ Harle, PCD.mp4
+Trecho: 69.48s–77.28s
+Fala: Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer.
+Retrato: harle-60s.png (01:00)
+
+AV06 · Fernando · Aluno
+Vídeo: C:\Users\tocha\Downloads\Eu me sinto muito feliz fazendo isso _ Fernando, PCD.mp4
+Trecho: 0.00s–8.14s
+Fala: Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.
+Retrato: foto de referência fornecida pelo usuário: fernando.png
+
+AV10 · Flávia · Mãe do Fernando
+Vídeo: C:\Users\tocha\Downloads\Isso não incentivou meu filho a jogar, mas a desenvolver _ Flávia, PCD.mp4
+Trecho: 56.14s–62.14s
+Fala: No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.
+Retrato: flavia-60s.png (01:00)
+
+Daniel: entusiasmo e iniciativa de mostrar o que aprendeu. Harle: iniciativa de acompanhar as atividades. Flávia: mudança no acompanhamento necessário. Cada fala se refere à experiência daquela família. Os títulos dos vídeos não foram usados como promessa da Comunidade.

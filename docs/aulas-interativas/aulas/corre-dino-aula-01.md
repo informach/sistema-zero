@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Tela 480 × 270, borda 4 e Dino criado em (110, 150), tamanho 64, ainda sem desenho.
 - Seções: 10. Vídeos: 10.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A abertura e o caderno ficam junto da primeira construção. Preparação, tamanho, coordenadas e criação têm experiências antes da aplicação. O Dino invisível é explicado como resultado da criação sem desenho, sem suspense obrigatório para a aula seguinte.
@@ -97,6 +99,8 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 
 **Zappy na página (não gravar):** Sua vez! Mude só o x, depois só o y, e termine com o Dino em x 0 e y 0. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-coordenadas-avatar-01. Professora até “O x conta de um lado para o outro.”. Antes da entrada: Mostrar o Dino indo para a direita ao aumentar somente x, com y ainda em 150. Debinha entra, com os gestos parados, e fala: “E para fazer ele descer?”. Debinha sai antes da resposta. Retomada da professora: “Quando eu aumento só o y, para 200, o Dino desce. Isso pode surpreender: no jogo, y maior leva para baixo, porque o y conta a partir do alto da tela.”. Na retomada: Aumentar somente y para 200 e acompanhar a descida; continuar os testes com os dois números. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `coordinates`. Nesta experiência, aumente o x sem mudar o y e observe o Dino. Depois aumente o y sem mudar o x e compare as direções. Por último, coloque x em 0 e y em 0. Observe onde fica essa posição. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 8. Compare criar e mostrar
@@ -106,6 +110,8 @@ Anexar somente `output/pdf/corre-dino-caderno.pdf` ao bloco caderno. Ler, baixar
 **Blocos na página:** video-criar-e-mostrar → fala-criar-e-mostrar → descoberta.
 
 **Zappy na página (não gravar):** Sua vez! Clique em Criar o Dino, depois em Mostrar o Dino na tela, e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-criar-e-mostrar-avatar-01. Professora até “Ele só não foi desenhado.”. Antes da entrada: Clicar em Criar o Dino e deixar os bastidores ocupados e a tela vazia à vista. Debinha entra, com os gestos parados, e fala: “Como eu faço ele aparecer?”. Debinha sai antes da resposta. Retomada da professora: “Quando eu clico em Mostrar o Dino na tela, o mesmo Dino aparece na tela do jogo. Mostrar não cria outro Dino: desenha aquele que já estava nos bastidores.”. Na retomada: Clicar em Mostrar o Dino na tela só depois da pergunta e comparar os dois lugares. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `world`. Clique em Criar o Dino. Compare os bastidores com a tela do jogo. Depois clique em Mostrar o Dino na tela e compare os dois lugares novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 

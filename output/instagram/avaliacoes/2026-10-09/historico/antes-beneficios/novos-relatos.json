@@ -1,0 +1,67 @@
+[
+  {
+    "id": "AV06",
+    "name": "Fernando",
+    "role": "Aluno",
+    "photo": "fernando",
+    "context": "Relato sobre criar jogos.",
+    "quote": "Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Eu me sinto muito feliz fazendo isso _ Fernando, PCD.mp4",
+    "sourceStart": 0,
+    "sourceEnd": 8.14,
+    "type": "quote",
+    "quoteMarkup": "Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar."
+  },
+  {
+    "id": "AV07",
+    "name": "Jeffrey",
+    "role": "Aluno",
+    "photo": "jeffrey",
+    "context": "Relato sobre criar jogos.",
+    "quote": "Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Ele conseguiu se expressar com isso _ Jeffrey, PCD.mp4",
+    "sourceStart": 101.42,
+    "sourceEnd": 109.34,
+    "type": "quote",
+    "quoteMarkup": "Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias."
+  },
+  {
+    "id": "AV08",
+    "name": "Daniel",
+    "role": "Pai do Rafael",
+    "photo": "daniel",
+    "context": "Relato sobre as aulas.",
+    "quote": "O Rafa ficou bastante empolgado com o curso. Acabava uma aula e ele vinha contar: “Aprendi isso aqui”, e me mostrava no computador.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Isso trouxe para o meu filho organização, lógica e criatividade _ Daniel, PCD.mp4",
+    "sourceStart": 60.16,
+    "sourceEnd": 68.78,
+    "type": "quote",
+    "quoteMarkup": "O Rafa ficou bastante empolgado com o curso. Acabava uma aula e ele vinha contar: “Aprendi isso aqui”, e me mostrava no computador."
+  },
+  {
+    "id": "AV09",
+    "name": "Harle",
+    "role": "Pai do Jeffrey",
+    "photo": "harle",
+    "context": "Relato sobre as aulas.",
+    "quote": "Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Meu filho autista superou todas as expectativas _ Harle, PCD.mp4",
+    "sourceStart": 69.48,
+    "sourceEnd": 77.28,
+    "type": "quote",
+    "quoteMarkup": "Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer."
+  },
+  {
+    "id": "AV10",
+    "name": "Flávia",
+    "role": "Mãe do Fernando",
+    "photo": "flavia",
+    "context": "Relato sobre as aulas.",
+    "quote": "No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.",
+    "sourceFile": "C:\\Users\\tocha\\Downloads\\Isso não incentivou meu filho a jogar, mas a desenvolver _ Flávia, PCD.mp4",
+    "sourceStart": 56.14,
+    "sourceEnd": 62.14,
+    "type": "quote",
+    "quoteMarkup": "No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento."
+  }
+]

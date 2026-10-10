@@ -1,0 +1,1378 @@
+{
+  "passed": true,
+  "slides": 24,
+  "format": "1080x1350",
+  "checks": [
+    {
+      "id": "F01-01",
+      "type": "cover",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 223.59375,
+          "right": 1008,
+          "bottom": 371.59375
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 401.59375,
+          "width": 936,
+          "height": 102.375,
+          "right": 1008,
+          "bottom": 503.96875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 533.96875,
+          "width": 936,
+          "height": 686.03125,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F01-02",
+      "type": "compare",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 101.390625,
+          "right": 1008,
+          "bottom": 249.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 279.390625,
+          "width": 936,
+          "height": 101.375,
+          "right": 1008,
+          "bottom": 380.765625
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 410.765625,
+          "width": 936,
+          "height": 809.234375,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F01-03",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 101.390625,
+          "right": 1008,
+          "bottom": 249.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 279.390625,
+          "width": 936,
+          "height": 172.0625,
+          "right": 1008,
+          "bottom": 451.453125
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 481.453125,
+          "width": 936,
+          "height": 738.546875,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F01-04",
+      "type": "code",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 101.390625,
+          "right": 1008,
+          "bottom": 249.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 279.390625,
+          "width": 936,
+          "height": 152.0625,
+          "right": 1008,
+          "bottom": 431.453125
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 461.453125,
+          "width": 936,
+          "height": 758.546875,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F01-05",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 101.390625,
+          "right": 1008,
+          "bottom": 249.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 279.390625,
+          "width": 936,
+          "height": 172.0625,
+          "right": 1008,
+          "bottom": 451.453125
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 481.453125,
+          "width": 936,
+          "height": 738.546875,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F01-06",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 101.390625,
+          "right": 1008,
+          "bottom": 249.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 279.390625,
+          "width": 936,
+          "height": 222.75,
+          "right": 1008,
+          "bottom": 502.140625
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 532.140625,
+          "width": 936,
+          "height": 687.859375,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F01-07",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 101.390625,
+          "right": 1008,
+          "bottom": 249.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 279.390625,
+          "width": 936,
+          "height": 222.75,
+          "right": 1008,
+          "bottom": 502.140625
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 532.140625,
+          "width": 936,
+          "height": 687.859375,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F01-08",
+      "type": "cover",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 223.59375,
+          "right": 1008,
+          "bottom": 371.59375
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 401.59375,
+          "width": 936,
+          "height": 173.5625,
+          "right": 1008,
+          "bottom": 575.15625
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 605.15625,
+          "width": 936,
+          "height": 510.34375,
+          "right": 1008,
+          "bottom": 1115.5
+        },
+        {
+          "class": "cta",
+          "x": 72,
+          "y": 1145.5,
+          "width": 936,
+          "height": 74.5,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F02-01",
+      "type": "cover",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 111.796875,
+          "right": 1008,
+          "bottom": 259.796875
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 289.796875,
+          "width": 936,
+          "height": 102.375,
+          "right": 1008,
+          "bottom": 392.171875
+        },
+        {
+          "class": "visual gallery five",
+          "x": 72,
+          "y": 422.171875,
+          "width": 936,
+          "height": 797.828125,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F02-02",
+      "type": "student",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 155.1875,
+          "right": 1008,
+          "bottom": 303.1875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 327.1875,
+          "width": 936,
+          "height": 757.03125,
+          "right": 1008,
+          "bottom": 1084.21875
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 1108.21875,
+          "width": 936,
+          "height": 111.78125,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F02-03",
+      "type": "student",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 155.1875,
+          "right": 1008,
+          "bottom": 303.1875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 327.1875,
+          "width": 936,
+          "height": 757.03125,
+          "right": 1008,
+          "bottom": 1084.21875
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 1108.21875,
+          "width": 936,
+          "height": 111.78125,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F02-04",
+      "type": "student",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 155.1875,
+          "right": 1008,
+          "bottom": 303.1875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 327.1875,
+          "width": 936,
+          "height": 812.921875,
+          "right": 1008,
+          "bottom": 1140.109375
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 1164.109375,
+          "width": 936,
+          "height": 55.890625,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F02-05",
+      "type": "student",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 155.1875,
+          "right": 1008,
+          "bottom": 303.1875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 327.1875,
+          "width": 936,
+          "height": 757.03125,
+          "right": 1008,
+          "bottom": 1084.21875
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 1108.21875,
+          "width": 936,
+          "height": 111.78125,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F02-06",
+      "type": "student",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 155.1875,
+          "right": 1008,
+          "bottom": 303.1875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 327.1875,
+          "width": 936,
+          "height": 812.921875,
+          "right": 1008,
+          "bottom": 1140.109375
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 1164.109375,
+          "width": 936,
+          "height": 55.890625,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F02-07",
+      "type": "cover",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 223.59375,
+          "right": 1008,
+          "bottom": 371.59375
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 401.59375,
+          "width": 936,
+          "height": 173.5625,
+          "right": 1008,
+          "bottom": 575.15625
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 605.15625,
+          "width": 936,
+          "height": 510.34375,
+          "right": 1008,
+          "bottom": 1115.5
+        },
+        {
+          "class": "cta",
+          "x": 72,
+          "y": 1145.5,
+          "width": 936,
+          "height": 74.5,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-01",
+      "type": "cover",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 223.59375,
+          "right": 1008,
+          "bottom": 371.59375
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 395.59375,
+          "width": 936,
+          "height": 93.59375,
+          "right": 1008,
+          "bottom": 489.1875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 513.1875,
+          "width": 936,
+          "height": 706.8125,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-02",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 176.78125,
+          "right": 1008,
+          "bottom": 324.78125
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 348.78125,
+          "width": 936,
+          "height": 249.984375,
+          "right": 1008,
+          "bottom": 598.765625
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 622.765625,
+          "width": 936,
+          "height": 597.234375,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-03",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 176.78125,
+          "right": 1008,
+          "bottom": 324.78125
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 348.78125,
+          "width": 936,
+          "height": 249.984375,
+          "right": 1008,
+          "bottom": 598.765625
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 622.765625,
+          "width": 936,
+          "height": 597.234375,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-04",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 176.78125,
+          "right": 1008,
+          "bottom": 324.78125
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 348.78125,
+          "width": 936,
+          "height": 156.390625,
+          "right": 1008,
+          "bottom": 505.171875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 529.171875,
+          "width": 936,
+          "height": 690.828125,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-05",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 88.390625,
+          "right": 1008,
+          "bottom": 236.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 260.390625,
+          "width": 936,
+          "height": 249.984375,
+          "right": 1008,
+          "bottom": 510.375
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 534.375,
+          "width": 936,
+          "height": 685.625,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-06",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 176.78125,
+          "right": 1008,
+          "bottom": 324.78125
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 348.78125,
+          "width": 936,
+          "height": 203.1875,
+          "right": 1008,
+          "bottom": 551.96875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 575.96875,
+          "width": 936,
+          "height": 644.03125,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-07",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 88.390625,
+          "right": 1008,
+          "bottom": 236.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 260.390625,
+          "width": 936,
+          "height": 249.984375,
+          "right": 1008,
+          "bottom": 510.375
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 534.375,
+          "width": 936,
+          "height": 685.625,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-08",
+      "type": "photo",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 88.390625,
+          "right": 1008,
+          "bottom": 236.390625
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 260.390625,
+          "width": 936,
+          "height": 203.1875,
+          "right": 1008,
+          "bottom": 463.578125
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 487.578125,
+          "width": 936,
+          "height": 732.421875,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    },
+    {
+      "id": "F03-09",
+      "type": "cover",
+      "passed": true,
+      "tests": {
+        "noDemoLabel": true,
+        "dimensions": true,
+        "title": true,
+        "copy": true,
+        "role": true,
+        "images": true,
+        "inside": true,
+        "separation": true,
+        "footerClear": true,
+        "legibleMedia": true,
+        "noTextOverflow": true
+      },
+      "parts": [
+        {
+          "class": "heading",
+          "x": 72,
+          "y": 148,
+          "width": 936,
+          "height": 176.78125,
+          "right": 1008,
+          "bottom": 324.78125
+        },
+        {
+          "class": "copy",
+          "x": 72,
+          "y": 348.78125,
+          "width": 936,
+          "height": 203.1875,
+          "right": 1008,
+          "bottom": 551.96875
+        },
+        {
+          "class": "visual",
+          "x": 72,
+          "y": 575.96875,
+          "width": 936,
+          "height": 545.53125,
+          "right": 1008,
+          "bottom": 1121.5
+        },
+        {
+          "class": "cta",
+          "x": 72,
+          "y": 1145.5,
+          "width": 936,
+          "height": 74.5,
+          "right": 1008,
+          "bottom": 1220
+        }
+      ],
+      "footer": {
+        "x": 72,
+        "y": 1279.40625,
+        "width": 936,
+        "height": 27.59375,
+        "right": 1008,
+        "bottom": 1307
+      },
+      "overflow": []
+    }
+  ]
+}

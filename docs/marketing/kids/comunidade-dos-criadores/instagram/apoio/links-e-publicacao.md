@@ -45,10 +45,10 @@ Os demais stories não levam link, salvo o que seus roteiros já especificam. A 
 ## Aplicação em ordem
 
 1. Conferir oferta, conta e acesso do Desafio: Farol, idade, computador, formato gravado, pagamento único e 30 dias contados da aprovação. A Comunidade é outro contrato. Não usar privilégios administrativos como prova do acesso do comprador.
-2. Separar captações reais do produto e do casal. Os três relatos escritos estão transcritos nos guias; o usuário autorizou o uso, confirmou o teste do Farol pelas crianças e identificou Débora e André como seus filhos. Essa informação deve permanecer junto das falas.
+2. Separar captações reais do produto e do casal. Os relatos de oito pessoas estão distribuídos em dez cartelas no guia de Avaliações, com origem dos cinco novos vídeos em producao/destaques/avaliacoes/fontes-dos-relatos.txt. O usuário confirmou o teste do Farol por Rafael, Débora e André. Fernando e Jeffrey falam sobre criar jogos. As cinco cartelas dos responsáveis abordam organização, criatividade, responsabilidade, independência e uso da tela para criar. Os temas são percepções sobre os próprios filhos, sem atribuição específica ao Farol. Apresentar as falas sem reticências ou colchetes nas cartelas; manter os recortes no arquivo de fontes. Identificar nome, Aluno/Aluna ou relação do responsável com a criança, e contexto do relato.
 3. Produzir conforme os roteiros completos. Reaproveitar capturas mantendo autoria, contexto e rótulo de demonstração. Os assets são arquivos de produção; este documento não declara que vídeos ou artes já tenham sido renderizados.
 4. Conferir oferta e links completos em celular, incluindo o destino depois de tocar e a posição de chegada na seção de planos. Não presumir publicação remota a partir do código local. A conferência de navegação não exige realizar compra nem enviar mensagens.
-5. Aplicar bio, nome do link e materiais no Instagram quando a equipe executar a publicação. Usar os três dias semanais do calendário para formar os destaques e publicar os posts. Fixar F01, F02 e F03 depois de publicados. Se a equipe usar a alternativa F02B, fixá-la no lugar de F02, mantendo três fixados. Conferir a apresentação no perfil.
+5. Aplicar bio, nome do link e materiais no Instagram quando a equipe executar a publicação. Usar os três dias semanais do calendário para formar os destaques e publicar os posts. Fixar F01, F02 e F03 depois de publicados. Os três são carrosséis 4:5, com 24 imagens no total. Conferir a apresentação no perfil.
 6. Deixar a ordem dos destaques acompanhar as atualizações. Projetos, Alunos, Avaliações e Dúvidas podem vir para a frente; Como funciona e Sobre nós podem ficar ao final. Usar nomes reconhecíveis e os fixados como orientação, sem publicar conteúdo vazio para reorganizar posições.
 7. Registrar URL ou ID real, data, versão e arquivo final de cada peça no fluxo existente. Revisão editorial, material produzido, agendamento e publicação são estados diferentes.
 
@@ -58,9 +58,9 @@ Os demais stories não levam link, salvo o que seus roteiros já especificam. A 
 | --- | --- | --- |
 | Como funciona | Mudança no percurso ou na forma de aprender | Preservar a apresentação inicial completa; retirar explicações superadas |
 | Projetos | Novo projeto acrescentado à Comunidade ou mudança relevante em um projeto existente | Manter duas cartelas por projeto: dois momentos da partida, com pelo menos um em andamento, e recorte dos blocos ligado às habilidades; ampliar o catálogo com copy completa; Farol identificado como primeiro projeto; links conforme o acesso |
-| Alunos | Novo vídeo autorizado de uma criança fazendo atividades | Acrescentar o registro mantendo a abertura sem lista de nomes ou quantidade fixa; escrever a legenda completa conforme a ação e identificar a criança e eventual vínculo com os criadores |
+| Alunos | Novo vídeo autorizado de uma criança fazendo atividades | Acrescentar o registro mantendo a abertura sem lista de nomes ou quantidade fixa; escrever a legenda completa conforme a ação e identificar pelo nome e por Aluno ou Aluna |
 | Dúvidas | Pergunta recorrente ou mudança de condição | Resposta direta; substituir condições antigas em vez de acumular versões conflitantes |
-| Avaliações | Novo relato autorizado de criança, adulto ou responsável | Palavras literais, atribuição, vínculo familiar quando houver e contexto confirmado |
+| Avaliações | Novo relato autorizado de criança, adulto ou responsável | Palavras literais, nome, identificação como aluno, aluna, pai, mãe ou responsável e contexto confirmado |
 | Sobre nós | Mudança relevante na apresentação do casal | História verdadeira e conexão com a preparação das aulas |
 
 Revisar o conjunto quando o volume dificultar encontrar a resposta. Não prometer “primeiro destaque” ou “último destaque” na copy; indicar o nome. Uma nova resposta exige texto final antes de entrar na produção, não apenas um tema no calendário.
@@ -85,8 +85,8 @@ Essas respostas são para uso manual quando a pergunta existir. Se for informar 
 - A imagem mostra o que a fala explica. Ao apresentar uma ideia nova, mostrar a criança experimentando antes de montar no jogo e jogando depois para conferir.
 - Fica claro o que já vem pronto, o que a criança aprende a fazer e o que ela pode escolher para o jogo ficar do jeito dela.
 - A fala acompanha o estado visível. “Verificar esta parte” é o rótulo infantil atual; o recurso confere os critérios configurados, não todo problema possível.
-- As legendas de Alunos variam conforme a ação visível: aprender, explorar, personalizar e testar. Evitar repetir a mesma frase trocando apenas o nome.
-- Gravações da equipe estão identificadas. Relatos mantêm as palavras escolhidas; Débora e André aparecem como filhos de Helena e Júlio.
+- As legendas de Alunos variam conforme a ação visível: aprender, explorar, personalizar, testar e mostrar o que fez. Evitar repetir a mesma frase trocando apenas o nome.
+- Gravações da equipe estão identificadas. Relatos mantêm as palavras escolhidas e identificam o nome, se quem fala é aluno, aluna, pai, mãe ou responsável, e a experiência.
 - Projetos apresenta Farol, Cadê Todo Mundo?, Nave Contra Asteroides e Corre Dino. O Cadê aparece como parte do catálogo; sua campanha de entrada permanece presencial. Os links e as condições não apresentam os demais cursos ou ferramentas livres como incluídos na compra avulsa do Desafio.
 - Idade, equipamento, formato, prazo e contratação correspondem à oferta. Garantia não vira teste gratuito nem aumenta o acesso.
 - As cartelas de Projetos mostram dois momentos reais da mesma partida, com pelo menos uma imagem do jogo em andamento, e um trecho legível de blocos ligado à habilidade descrita. Não usar só telas de abertura e encerramento; conferir se os rótulos correspondem às capturas. No Farol, o final tem farol aceso e barco já na costa.

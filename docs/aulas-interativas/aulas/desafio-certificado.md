@@ -7,6 +7,18 @@
 - Seções na entrada deste review: 2 · Seções finais: 2.
 - Clipes na entrada deste review: 1 · Clipes finais: 1.
 
+## Vozes e produção · 10/10/2026
+
+**Dedé** participa em 1 entrada, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-certificado.roteiro.md) identifica **Professora**, **Dedé (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+
+Dedé comemora as regras que fez funcionar antes da orientação de emissão. O quiz permanece sem vídeo ou avatar. Não acrescentar convite comercial nem fala depois de Concluir fase.
+
+| Entrada | Fala de Dedé |
+| --- | --- |
+| FCP2-D01 | “Eu fiz o jogo funcionar!” |
+
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |

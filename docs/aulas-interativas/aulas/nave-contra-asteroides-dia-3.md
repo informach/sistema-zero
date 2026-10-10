@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Cada colisão retira somente o tiro e o asteroide envolvidos, com explosão e som.
 - Seções: 4. Vídeos: 3.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimento, sorteio e pontuação.
@@ -29,6 +31,8 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 
 **Zappy na página (não gravar):** Sua vez! Compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-apelidos-avatar-01. Professora até “o grupo inteiro quer dizer todos os objetos do grupo.”. Antes da entrada: Concluir a colisão com os grupos inteiros e deixar os dois contadores em zero. Debinha entra, com os gestos parados, e fala: “Sumiram todas! Eu só acertei uma.”. Debinha sai antes da resposta. Retomada da professora: “Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o time inteiro continua jogando.”. Na retomada: Explicar a comparação com a queimada, voltar ao começo e escolher os apelidos antes de testar novamente. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `collision-pair`. Teste a colisão com tiros e asteroides, os grupos inteiros. Volte ao começo e repita com tiro e asteroide, os apelidos. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Programe o acerto
@@ -38,6 +42,8 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 **Blocos na página:** video-colisao → fala-colisao.
 
 **Zappy na página (não gravar):** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-colisao-avatar-01. Professora até “aparece a explosão e os outros continuam!”. Antes da entrada: Concluir a montagem e o teste; deixar os outros tiros e pedras continuarem no jogo. Debinha entra, com os gestos parados, e fala: “Agora só saiu a pedra que eu acertei!”. Debinha sai antes da resposta. Retomada da professora: “Isso! O tiro que acertou também sai. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo está a colisão entre tiros e asteroides, e dentro dela estão Tirar o sprite tiro do grupo tiros, Tirar o sprite asteroide do grupo asteroides, Soltar explosão no sprite asteroide e Tocar efeito explosão, nessa ordem. Depois de corrigir, teste de novo.”. Na retomada: Conferir a sequência completa para quem não obteve esse resultado e seguir a saída da parte. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

@@ -116,7 +116,13 @@
             }
           }
         },
-        "activityKey": "experiencia-areas"
+        "activityKey": "experiencia-areas",
+        "avatar": {
+          "after": "quando o jogo começa.",
+          "speech": "E para ela continuar andando?",
+          "beforeScreen": "Concluir o teste em Ao iniciar com Ações feitas em 1 e a nave parada.",
+          "afterScreen": "Mover a peça para Enquanto estiver rodando, soltar e começar o novo teste."
+        }
       },
       {
         "key": "montar-areas-e-tela",
@@ -256,7 +262,13 @@
             "cenario": "nave"
           }
         },
-        "activityKey": "experiencia-criar-mostrar"
+        "activityKey": "experiencia-criar-mostrar",
+        "avatar": {
+          "after": "e a tela do jogo é o palco.",
+          "speech": "Quero ver essa nave na tela!",
+          "beforeScreen": "Concluir a criação nos bastidores e a comparação com o teatro; manter a tela do jogo vazia.",
+          "afterScreen": "Clicar em Mostrar a nave na tela e comparar a mesma nave nos dois lugares."
+        }
       },
       {
         "key": "criar-nave",
@@ -422,7 +434,14 @@
         ],
         "final": true,
         "videoKey": "video-motor-e-nave",
-        "kind": "delivery"
+        "kind": "delivery",
+        "avatar": {
+          "after": "porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar.",
+          "speech": "A minha nave apareceu!",
+          "beforeScreen": "Concluir o desenho e mostrar a nave parada perto da parte de baixo da tela.",
+          "afterScreen": "Manter a nave visível e apontar os blocos durante a conferência condicional; seguir para verificar e enviar.",
+          "reply": "E a sua, apareceu também?"
+        }
       }
     ],
     "legacyKeys": [],
@@ -487,6 +506,12 @@
               "goals": ["still-without-arrow", "moves-each-frame", "step-speed-3", "step-speed-1"]
             }
           }
+        },
+        "avatar": {
+          "after": "A velocidade é o tamanho do passo da nave em cada quadro.",
+          "speech": "Quero testar um passo menor.",
+          "beforeScreen": "Mostrar os três avanços com velocidade 3 e deixar x em 217.",
+          "afterScreen": "Recomeçar e testar velocidade 1, com os números e a nave à vista."
         }
       },
       {
@@ -554,7 +579,14 @@
         ],
         "final": false,
         "videoKey": "video-limpeza",
-        "kind": "practice"
+        "kind": "practice",
+        "avatar": {
+          "after": "Agora a gente vai limpar a tela do seu jogo!",
+          "speech": "Isso vai apagar a minha nave?",
+          "beforeScreen": "Mostrar o rastro e retomar a experiência, antes de pegar o bloco de limpeza.",
+          "afterScreen": "Localizar o começo do quadro e montar Limpar a tela; confirmar no teste que só o desenho anterior é apagado.",
+          "reply": "Só o desenho anterior. A nave continua no jogo e vai ser desenhada de novo."
+        }
       },
       {
         "key": "limite-da-tela",
@@ -585,6 +617,13 @@
               "goals": ["left-the-screen", "stayed-inside"]
             }
           }
+        },
+        "avatar": {
+          "after": "mesmo depois da borda.",
+          "speech": "Minha nave foi embora!",
+          "beforeScreen": "Deixar a nave sair inteira da tela com a regra do limite desligada.",
+          "afterScreen": "Recomeçar, ligar Manter dentro da tela e repetir o movimento até a borda.",
+          "reply": "Vamos colocar um limite para ela ficar na tela."
         }
       },
       {
@@ -1067,7 +1106,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-tres-areas"
+        "activityKey": "experiencia-tres-areas",
+        "avatar": {
+          "after": "e ninguém clicou em Apertar a tecla.",
+          "speech": "Ela está esperando eu apertar a tecla!",
+          "beforeScreen": "Deixar o primeiro teste terminar sem tiros e apontar 0 vezes na peça.",
+          "afterScreen": "Clicar em Apertar a tecla depois da resposta e continuar a comparação com a repetição.",
+          "reply": "Isso mesmo."
+        }
       },
       {
         "key": "escrito-e-lido",
@@ -1102,7 +1148,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-escrito-e-lido"
+        "activityKey": "experiencia-escrito-e-lido",
+        "avatar": {
+          "after": "Para acertar, é preciso olhar o relógio na hora.",
+          "speech": "Como o tiro descobre onde a nave está agora?",
+          "beforeScreen": "Concluir os disparos com o número fixo, com a nave em 640 e o tiro distante; terminar a comparação com o relógio.",
+          "afterScreen": "Trocar para O centro x da nave e testar o disparo em 640 e em 200."
+        }
       },
       {
         "key": "direcao-do-tiro",
@@ -1155,7 +1207,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-direcao"
+        "activityKey": "experiencia-direcao",
+        "avatar": {
+          "after": "na tela, y menor fica mais para cima.",
+          "speech": "E se eu tirar o sinal de menos?",
+          "beforeScreen": "Avançar com -9 e mostrar o tiro subindo, com os valores de y à vista.",
+          "afterScreen": "Trocar para 9 e mostrar a descida antes de explicar a diferença."
+        }
       },
       {
         "key": "criar-tiro",
@@ -1686,7 +1744,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-relogio"
+        "activityKey": "experiencia-relogio",
+        "avatar": {
+          "after": "porque o relógio espera 40 quadros antes de criar a próxima.",
+          "speech": "Se eu diminuir a espera, a pedra cai mais rápido?",
+          "beforeScreen": "Concluir o teste de 40 quadros, com espaços entre as pedras.",
+          "afterScreen": "Trocar para 20 quadros e comparar quantidade e distância percorrida; manter a velocidade igual nos dois testes.",
+          "reply": "Vamos comparar."
+        }
       },
       {
         "key": "relogio",
@@ -1784,7 +1849,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-sorteio"
+        "activityKey": "experiencia-sorteio",
+        "avatar": {
+          "after": "e o mesmo número pode sair de novo.",
+          "speech": "Mas a pedra está fora da tela!",
+          "beforeScreen": "Fazer os sorteios e mostrar a pedra acima da borda, sem iniciar o tempo ainda.",
+          "afterScreen": "Apontar a posição inicial e clicar em Tempo só quando a professora anunciar o gesto."
+        }
       },
       {
         "key": "asteroide",
@@ -2076,7 +2147,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-trombada"
+        "activityKey": "experiencia-trombada",
+        "avatar": {
+          "after": "o grupo inteiro quer dizer todos os objetos do grupo.",
+          "speech": "Sumiram todas! Eu só acertei uma.",
+          "beforeScreen": "Concluir a colisão com os grupos inteiros e deixar os dois contadores em zero.",
+          "afterScreen": "Explicar a comparação com a queimada, voltar ao começo e escolher os apelidos antes de testar novamente."
+        }
       },
       {
         "key": "colisao",
@@ -2200,7 +2277,14 @@
         ],
         "final": false,
         "videoKey": "video-colisao",
-        "kind": "practice"
+        "kind": "practice",
+        "avatar": {
+          "after": "aparece a explosão e os outros continuam!",
+          "speech": "Agora só saiu a pedra que eu acertei!",
+          "beforeScreen": "Concluir a montagem e o teste; deixar os outros tiros e pedras continuarem no jogo.",
+          "afterScreen": "Conferir a sequência completa para quem não obteve esse resultado e seguir a saída da parte.",
+          "reply": "Isso! O tiro que acertou também sai."
+        }
       },
       {
         "key": "quiz-final",
@@ -2673,7 +2757,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-variavel"
+        "activityKey": "experiencia-variavel",
+        "avatar": {
+          "after": "O placar do estádio só mostra o que já foi anotado.",
+          "speech": "Como eu mostro os pontos que já estão guardados?",
+          "beforeScreen": "Somar dois pontos com o placar desligado e concluir a comparação com o bloquinho.",
+          "afterScreen": "Ligar Mostrar placar e comparar o valor da tela com o valor guardado."
+        }
       },
       {
         "key": "placar",
@@ -2776,7 +2866,13 @@
         ],
         "final": true,
         "videoKey": "video-pontos-e-placar",
-        "kind": "delivery"
+        "kind": "delivery",
+        "avatar": {
+          "after": "O valor já vem em 0: mantenha, porque cada partida começa sem pontos.",
+          "speech": "Onde eu coloco o bloco que soma?",
+          "beforeScreen": "Concluir Criar variável pontos com valor 0 em Ao iniciar; soltar o mouse antes da entrada.",
+          "afterScreen": "Localizar o fim da colisão e mostrar onde a soma entra; depois montar o placar fora da colisão."
+        }
       }
     ],
     "legacyKeys": [],
@@ -2867,7 +2963,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-uma-vez"
+        "activityKey": "experiencia-uma-vez",
+        "avatar": {
+          "after": "as batidas conseguiram tirar.",
+          "speech": "E se eu der as vidas o tempo todo?",
+          "beforeScreen": "Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3.",
+          "afterScreen": "Levar a peça para Enquanto estiver rodando e mostrar o resultado real, inclusive Vidas: 2 no último quadro."
+        }
       },
       {
         "key": "vidas",
@@ -2966,7 +3068,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-protecao"
+        "activityKey": "experiencia-protecao",
+        "avatar": {
+          "after": "só a primeira batida tirou vida.",
+          "speech": "E quando esse tempinho de proteção acabar?",
+          "beforeScreen": "Concluir as três batidas com proteção de 45 quadros; manter os corações e o tempo restante à vista.",
+          "afterScreen": "Voltar ao começo, escolher 15 quadros e mostrar a terceira batida tirando vida."
+        }
       },
       {
         "key": "batida",
@@ -3572,7 +3680,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-estado"
+        "activityKey": "experiencia-estado",
+        "avatar": {
+          "after": "todo mundo espera o sinal de largada, e ninguém sai correndo antes.",
+          "speech": "Agora as pedras estão esperando a partida!",
+          "beforeScreen": "Deixar passar quatro segundos na abertura, com a peça dentro do Se e o contador esperando.",
+          "afterScreen": "Começar por toque na experiência e distinguir esse começo pronto do Enter que será programado no projeto.",
+          "reply": "Isso. Vamos começar para ver o que muda."
+        }
       },
       {
         "key": "embrulhar",
@@ -3850,7 +3965,14 @@
         ],
         "final": false,
         "videoKey": "video-relogio-e-tiro",
-        "kind": "practice"
+        "kind": "practice",
+        "avatar": {
+          "after": "porque o Se responde não enquanto o jogo está em inicio.",
+          "speech": "E como eu confiro se as pedras também esperam?",
+          "beforeScreen": "Concluir a montagem e o teste sem som na abertura, sem concluir nada pela ausência de pedras na imagem.",
+          "afterScreen": "Voltar aos blocos e conferir o Se jogando no relógio e no evento da barra de espaço.",
+          "reply": "Para isso, a gente precisa olhar os blocos."
+        }
       },
       {
         "key": "enter",
@@ -4505,7 +4627,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-reiniciar"
+        "activityKey": "experiencia-reiniciar",
+        "avatar": {
+          "after": "Se ninguém arruma as peças, a partida nova já começa bagunçada.",
+          "speech": "Eu quero recomeçar com tudo arrumado!",
+          "beforeScreen": "Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com o tabuleiro.",
+          "afterScreen": "Trocar para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa."
+        }
       },
       {
         "key": "enter",
@@ -5276,7 +5404,14 @@
         "final": true,
         "videoKey": "video-ciclo-completo",
         "kind": "delivery",
-        "publish": true
+        "publish": true,
+        "avatar": {
+          "after": "e foi você quem programou como eles participam do jogo.",
+          "speech": "Quero chamar alguém para jogar o meu!",
+          "beforeScreen": "Concluir os testes dos dois finais e do reinício antes da entrada; mostrar o jogo construído.",
+          "afterScreen": "Fazer a verificação e o envio antes de apresentar Compartilhar e Copiar link de jogar como opções.",
+          "reply": "Depois do envio, você pode compartilhar o seu jogo."
+        }
       }
     ],
     "legacyKeys": [

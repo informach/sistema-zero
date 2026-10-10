@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Grupo cactos, nascimento a cada 1,4 segundo em x 560, tamanho 44 e vx -5; movimento e desenho em cada quadro.
 - Seções: 6. Vídeos: 6.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 O intervalo e a direção da velocidade são observados antes dos blocos. Grupo e relógio são preparados numa seção; criação e depois atualização e desenho têm montagens próprias. A avalanche fica na experiência, sem exigir montar e desmontar uma regra errada no projeto.
@@ -29,6 +31,8 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 **Blocos na página:** video-espaco-e-tempo → fala-espaco-e-tempo → experiencia-ritmo.
 
 **Zappy na página (não gravar):** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-espaco-e-tempo-avatar-01. Professora até “Eles formam uma parede, e o Dino não teria como pular.”. Antes da entrada: Deixar o tempo parado com a parede de cactos visível. Debinha entra, com os gestos parados, e fala: “Como eu deixo um espaço entre eles?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e nascem só dois cactos, com espaço entre eles. O relógio cria um cacto a cada 1,4 segundo, e não em todo quadro.”. Na retomada: Mover Criar cacto para o relógio de 1,4 s; deixar os dois nascimentos acontecerem no tempo real. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `spawn`. Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -53,6 +57,8 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 **Zappy na página (não gravar):** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-numero-negativo-avatar-01. Professora até “Em cada quadro, o jogo soma a velocidade ao x.”. Antes da entrada: Mostrar o cacto avançando para a direita com velocidade 5 e o x na faixa. Debinha entra, com os gestos parados, e fala: “E se eu quiser que o cacto vá para o outro lado?”. Debinha sai antes da resposta. Retomada da professora: “Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda. O sinal de menos inverte a direção.”. Na retomada: Trocar para -5 e avançar os quadros; depois testar as duas velocidades em zero. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `velocity`. Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 4. Crie os cactos no relógio
@@ -76,6 +82,8 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 **Blocos na página:** video-mover-e-desenhar → fala-mover-e-desenhar.
 
 **Zappy na página (não gravar):** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** ID video-mover-e-desenhar-avatar-01. Professora até “Depois de corrigir, teste de novo.”. Antes da entrada: Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras. Debinha entra, com os gestos parados, e fala: “O cacto passou pelo meu Dino!”. Debinha sai antes da resposta. Retomada da professora: “Neste ponto, isso pode acontecer. Agora pule um deles. Se um cacto atravessar o Dino, tudo bem, porque a batida ainda não foi programada.”. Na retomada: Retomar o teste de pulo e a explicação de que a batida ainda não foi programada. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

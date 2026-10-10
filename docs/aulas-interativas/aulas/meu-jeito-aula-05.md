@@ -8,6 +8,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 - Resultado: Nave e asteroide animados, guardados na galeria do Pinta.
 - Seções: 8. Vídeos: 7.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mudança é experimentado antes do segundo quadro. O nome girando identifica a animação; não promete uma rotação completa que os dois desenhos não fazem.
@@ -28,6 +30,8 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 **Blocos na página:** video-camadas → fala-camadas → experimento-camadas.
 
+**Participação no vídeo:** ID video-camadas-avatar-01. Professora até “Na lista Camadas, a chama está em cima, e a pedra está embaixo.”. Antes da entrada: Mostrar a chama na frente e a ordem inicial na lista, sem mover nenhuma camada ainda. Debinha entra, com os gestos parados, e fala: “A chama está escondendo a minha pedra!”. Debinha sai antes da resposta. Retomada da professora: “Vamos trazer a pedra para a frente. Quando eu clico em Uma camada para a frente, na linha da pedra, olha só: a pedra sobe na lista e aparece na frente da chama, sem nada cobrindo. Nenhuma forma foi apagada, porque o que mudou foi só a ordem.”. Na retomada: Trazer a pedra uma camada para a frente e mostrar o resultado antes de explicar a ordem. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `layers`. Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista. Sem palpite, pistas ou pergunta final.
 
 ### Seção 2. Desenhe fogo atrás da pedra
@@ -44,6 +48,8 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 **Blocos na página:** video-miolo-fogo → fala-miolo-fogo.
 
+**Participação no vídeo:** ID video-miolo-fogo-avatar-01. Professora até “porque ele está acima dela na lista Camadas.”. Antes da entrada: Concluir a cópia e o ajuste do miolo e apontar a ordem desejada na lista Camadas; não apagar formas nem fabricar um erro para representar a dificuldade do avatar. Debinha entra, com os gestos parados, e fala: “O meu miolo claro está atrás da chama maior.”. Debinha sai antes da resposta. Retomada da professora: “Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com a chama. Por último, confira se as duas chamas cabem inteiras no quadro.”. Na retomada: Mostrar os botões para mover a camada e conferir se as duas chamas cabem inteiras no quadro. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 4. Compare mudanças entre quadros
@@ -51,6 +57,8 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 **Tarefa / Zappy na página:** Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-mudanca-pequena → fala-mudanca-pequena → experimento-tanto-que-muda.
+
+**Participação no vídeo:** ID video-mudanca-pequena-avatar-01. Professora até “Na pedra, essa mudança pequena é O tanto que a cratera anda.”. Antes da entrada: Concluir a animação com só as crateras mudando e a comparação com a bola. Debinha entra, com os gestos parados, e fala: “E se eu mover a pedra inteira?”. Debinha sai antes da resposta. Retomada da professora: “Depois eu coloco O tanto que a pedra inteira anda em 10, e no quadro 2 a pedra toda muda de lugar. Tá vendo? Na Prévia, o desenho pula de um lado para o outro, em vez de rolar, porque uma mudança grande demais vira pulo.”. Na retomada: Mudar o deslocamento da pedra inteira para 10 e mostrar o pulo de um lado para o outro. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `motion-amount`. Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0 e olhe a Prévia tocar por um instante. Se ela estiver parada, clique em Tocar a Prévia. Deixe a pedra em 0 e coloque a cratera em 4; olhe outra vez. Depois coloque a pedra inteira em 10 e compare a Prévia. Sem palpite, pistas ou pergunta final.
 

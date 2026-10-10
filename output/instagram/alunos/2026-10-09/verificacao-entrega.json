@@ -1,0 +1,121 @@
+{
+  "passed": true,
+  "completeStories": 7,
+  "transparentOverlays": 5,
+  "files": [
+    {
+      "file": "01-alunos-na-comunidade.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "0bb35b63ff0c028580bebcbf782dee83eb80677eb5e850c52a46bbdd1a8760b7"
+    },
+    {
+      "file": "02-rafael-aprendendo.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "9f92ec1ae960f75603b1ee4129bfb5639ce941560b0ee81ae068c17b30f20192"
+    },
+    {
+      "file": "03-jeffrey-explorando.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "4fe080341f83b27f375e20ee43f355cfd71443da0e2a272e024b2e190e6bb545"
+    },
+    {
+      "file": "04-debora-personalizando.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "f35fd6e6036d9dc52d659432a1877b6847d308d3e4997f13cd00f79653c695d4"
+    },
+    {
+      "file": "05-andre-testando.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "1ea16adfcc5ea3431495620d4f9143a85a23147c9ce071b5174ac65496b7ab28"
+    },
+    {
+      "file": "06-fernando-mostrando.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "dc6cf5256a6213a62a2162e76057c0627aa32bf8afe82389076c969f01354964"
+    },
+    {
+      "file": "07-conhecer-o-desafio.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "e2ccc1d00839b099ceb50a5aed21ac5f19f0160686e8fac6b2a56a10e33b85e2"
+    },
+    {
+      "file": "molduras\\02-rafael-moldura.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "676e42276a849abb560f1f9b13cb9de839c2c4506152e52988cd6464e38b2b99"
+    },
+    {
+      "file": "molduras\\03-jeffrey-moldura.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "156dac4b9bc46fabe9b65c43af13fa4af75811e431566f6825b92e1eee6d8d7c"
+    },
+    {
+      "file": "molduras\\04-debora-moldura.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "f02a611da82b1c8614cb30fcf2faa3be53c6131ec94febd1d296b86bff34da79"
+    },
+    {
+      "file": "molduras\\05-andre-moldura.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "55704d020eb69d0407ea83a20e34ad15a61f30c81a8797e9d620dbbf287793fc"
+    },
+    {
+      "file": "molduras\\06-fernando-moldura.png",
+      "matches": true,
+      "size": {
+        "width": 1080,
+        "height": 1920
+      },
+      "sha256": "01baadaaa8d047d4bc4175f0e74f1c6ae043a312e1d5cc375d23fb974b1bdd62"
+    },
+    {
+      "file": "publicacao.txt",
+      "matches": true,
+      "size": null,
+      "sha256": "647d4f1e66ad7cbe2380c053cf8b9f32ed34efe35896fe4cdfc16824645cbe82"
+    }
+  ]
+}

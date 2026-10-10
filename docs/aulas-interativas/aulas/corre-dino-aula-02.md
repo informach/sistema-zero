@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Dino desenhado a cada quadro, floresta em velocidade 5, limpeza e descrição acessível; borda provisória retirada.
 - Seções: 9. Vídeos: 9.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de uma vez e sempre já aconteceu antes de Ao iniciar. A descrição para o leitor de tela, presente no projeto canônico, agora tem experiência e instrução explícitas.
@@ -53,6 +55,8 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 
 **Zappy na página (não gravar):** Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
+**Participação no vídeo:** ID video-limpeza-avatar-01. Professora até “cada desenho novo cai em cima do velho.”. Antes da entrada: Aproximar a sombra que escurece, antes de pegar qualquer bloco. Dedé entra, com os gestos parados, e fala: “Como eu tiro essa sombra escura?”. Dedé sai antes da resposta. Retomada da professora: “É isso que a gente vai resolver. Lembra da experiência da primeira parte desta fase? Com Limpar a tela antes, ficava um Dino só. Agora a gente vai colocar essa limpeza!”. Na retomada: Retomar a experiência e montar a limpeza antes do desenho, com todos os encaixes e testes. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - Limpe a tela antes de desenhar o Dino.
@@ -64,6 +68,8 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 **Blocos na página:** video-camadas → fala-camadas → experiencia-camadas.
 
 **Zappy na página (não gravar):** Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-camadas-avatar-01. Professora até “Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.”. Antes da entrada: Mostrar a floresta cobrindo quase todo o Dino; manter a ordem inicial. Dedé entra, com os gestos parados, e fala: “Como eu trago o Dino para a frente?”. Dedé sai antes da resposta. Retomada da professora: “Quando eu coloco o Dino depois da Floresta, ele aparece inteiro, sem nada na frente. Ninguém foi apagado: só a ordem mudou.”. Na retomada: Trocar o Dino para depois da Floresta e deixar o resultado aparecer antes da explicação. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `layers`. Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela. Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -102,6 +108,8 @@ O desenho, a limpeza e as camadas ganham montagens separadas. A explicação de 
 **Blocos na página:** video-descricao → fala-descricao → experiencia-descricao.
 
 **Zappy na página (não gravar):** Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-descricao-avatar-01. Professora até “O programa não vê o desenho, por isso não tem como contar o que acontece.”. Antes da entrada: Deixar a leitura do campo vazio terminar antes da entrada; não sobrepor as vozes. Dedé entra, com os gestos parados, e fala: “A gente pode escrever como se joga!”. Dedé sai antes da resposta. Retomada da professora: “Pode, sim. Agora eu escrevo Corra com o dino e pule os cactos apertando espaço e clico em Ouvir a tela de novo. Ele lê a frase inteira, e as marcas mostram que ela diz o que fazer e como jogar.”. Na retomada: Escrever a descrição e ouvir a leitura inteira sem voz do avatar nem da professora por cima. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `screen-reader`. Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente. Compare o que foi lido antes e depois da frase. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 

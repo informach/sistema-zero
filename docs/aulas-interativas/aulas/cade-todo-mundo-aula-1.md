@@ -33,6 +33,23 @@ que você tocar.") e a ponte da experiência do toque passou a terminar em "Quan
 Próxima parte.". No Mapa da Aventura, a página da Fase 1 deixou de inverter ação e reação: o toque
 é a ação, e a reação ligada a ele é o esconderijo ficar invisível.
 
+## Vozes e estado da produção
+
+Em 10/10/2026, o responsável informou que os quatro vídeos da professora já estão gravados e
+confirmou **Debinha** como o avatar desta aula. O roteiro agora identifica as seis participações
+informadas: duas na abertura, uma no mapa, uma na experiência e duas na montagem. Cada entrada
+tem um ID de edição, a fala literal e a saída antes de a professora continuar. “E os outros dois?”
+passa para a Debinha; não repetir a pergunta na voz da professora.
+
+Usar **Professora**, **Debinha (avatar)** e **Zappy na página (não gravar)** para distinguir as
+vozes. O Zappy não fala dentro dos vídeos; suas instruções ficam na página, com o recurso Ouvir
+da plataforma. Se aparecer no meme ou na interface filmada, sua presença é visual.
+
+Preservar o áudio já gravado e localizar as inserções pelas âncoras do
+[roteiro completo](cade-todo-mundo-aula-1.roteiro.md). A edição final e a publicação ainda precisam
+ser conferidas; não presumir que foram concluídas. As regras para os próximos roteiros e os
+exemplos com Dedé na Aula 2 estão em [Avatares nos vídeos](../AVATARES-NOS-VIDEOS.md).
+
 ## Sequência
 
 | Seção | Vídeo | O que fazer | Conclusão |
@@ -42,8 +59,9 @@ Próxima parte.". No Mapa da Aventura, a página da Fase 1 deixou de inverter a�
 | O que um toque faz? | 70 a 90 s | tocar com a reação desligada, ligar e tocar novamente; comparar | vídeo e duas metas |
 | Faça alguém aparecer | 3 a 4 min | encaixar a visibilidade no evento, testar, verificar a etapa e enviar | vídeo, verificação aprovada e envio |
 
-A duração da prática inclui os gestos, sem acelerar a montagem. Não aumentar os vídeos de
-apresentação para atingir uma duração mínima.
+Os tempos da tabela são os alvos anteriores às inserções. Medir a duração final com as falas da
+Debinha e os gestos, sem acelerar a montagem. Não aumentar os vídeos de apresentação para atingir
+uma duração mínima.
 
 ## Orientação por seção
 
@@ -71,7 +89,7 @@ quiser. A fala não diz que a criança não precisa baixar ou imprimir: ela ente
 para não fazer (ajuste do responsável, 06/10/2026). Encaminhar diretamente para a próxima seção.
 Apenas este bloco recebe o PDF; a Aula 2 continua usando a mesma referência.
 
-**Zappy abaixo do vídeo:** “Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.”
+**Zappy na página (não gravar):** “Este é o seu Mapa da Aventura! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.”
 
 ### O que um toque faz?
 
@@ -85,7 +103,7 @@ invisível com o coelho atrás ("Olha só: agora sim…"), dizendo que essa é a
 Tudo numa conversa contínua, sem frases soltas. Terminar em "Agora é a sua vez": a criança repete
 os dois testes, e a experiência cobra as metas.
 
-Na frase das cócegas, um meme ilustrado nosso por 2 a 3 segundos. Não esconder os passos
+Na frase das cócegas, um meme ilustrado nosso por 2 a 3 segundos, com Zappy apenas visual, sem voz. Não esconder os passos
 obrigatórios nas pistas. Manter a experiência existente, sem palpite ou pergunta final. A fala
 não inclui campainha, tour de controles ou retorno à seção do caderno.
 
@@ -110,7 +128,7 @@ ensinar o caminho **Jogo 2D > Sprites > Aparência** e o bloco de visibilidade, 
 **0**.
 
 A prévia atualiza automaticamente. Pedir o toque em dois esconderijos e conferir a revelação.
-Se não funcionar, conferir encaixe, sprite e valor. **Achados** ainda fica em zero nesta aula.
+Depois do teste, iniciar a conferência com "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim:", seguida do encaixe, sprite e valor. Essa abertura deixa claro quando a criança deve conferir. **Achados** ainda fica em zero nesta aula.
 
 Após o teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e verificar
 novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar **Enviar
@@ -129,12 +147,14 @@ passo do download ficam na biblioteca Como Fazer; a fala do caderno só aponta o
 [REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md](../REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
 A biblioteca é consulta, sem pré-requisito ou seção extra.
 
-## Conferência antes de regravar
+## Conferência da edição
 
 Conferir rótulos e encaixes no Estúdio incorporado, largura estreita e larga, atualização da
-prévia, verificação da etapa, envio e avanço. Manter mouse, toque e teclado nas experiências existentes. Anexar o
-caderno real antes da gravação; não substituir o anexo pela lista vazia do molde editorial.
+prévia, verificação da etapa, envio e avanço. Manter mouse, toque e teclado nas experiências existentes. Conferir o
+caderno real anexado e a sua presença na captura; não substituir o anexo pela lista vazia do molde editorial.
 
 O ensaio da abertura deve comprovar que a criança reconhece o jogo a construir, começa a jogar
-sem explicação adicional e sabe como seguir. As novas falas precisam ser regravadas antes de
-substituir os vídeos atuais. Os manifestos locais continuam como moldes de autoria.
+sem explicação adicional e sabe como seguir. Conferir as seis entradas da Debinha na versão
+editada, sem sobrepor vozes nem cobrir os controles. A gravação base foi informada como concluída;
+avaliar uma fala complementar somente se a edição revelar uma lacuna concreta. Os manifestos
+locais continuam como moldes de autoria.

@@ -1,0 +1,16 @@
+{
+  "dinoAction": {
+    "score": 2,
+    "dinoY": 16.799999999999926,
+    "cactus": [
+      {
+        "x": 158,
+        "y": 170
+      }
+    ]
+  },
+  "dinoFinal": {
+    "score": 4,
+    "finished": true
+  }
+}

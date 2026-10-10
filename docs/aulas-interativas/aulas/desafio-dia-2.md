@@ -13,6 +13,21 @@
 
 **Full review de 06/10/2026:** "então" saiu de todas as falas como palavra de ligação (no Farol inteiro ele é o nome de um espaço do bloco Se); no lugar ficaram "por isso", "para o jogo responder" ou duas frases. A abertura da experiência ganhou o porquê ("Para o jogo saber que a chave foi pega, ele precisa guardar essa informação") e o evento passou a ser "uma coisa que acontece no jogo". Na criação da área **Quando acontecer**, o destino virou "um lugar sem blocos, ao lado das áreas", para não se confundir com o "espaço vazio" que se arrasta para abrir lugar. A ponte da experiência termina em "Quando terminar, clique em Próxima parte.". Seções, blocos e critérios não mudaram.
 
+## Vozes e produção · 10/10/2026
+
+**Dedé** participa em 4 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-2.roteiro.md) identifica **Professora**, **Dedé (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+
+As participações distinguem a chave sumir, a informação ficar guardada e o aviso orientar quem joga. Não mostrar temChave no jogo como se existisse um mostrador; ele pertence à experiência separada.
+
+| Entrada | Fala de Dedé |
+| --- | --- |
+| F2P1-D01 | “Mas a chave sumiu. Por que ainda está falso?” |
+| F2P2-D01 | “A chave some para sempre?” |
+| F2P3-D01 | “Como eu vejo se o jogo guardou a chave?” |
+| F2P4-D01 | “Agora quem joga vai saber para onde ir!” |
+
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |

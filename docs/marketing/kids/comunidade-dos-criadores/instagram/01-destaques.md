@@ -1,6 +1,6 @@
 # Destaques: copy completa por story
 
-**Revisão: 08/10/2026.** Direção e bio no [guia principal](README.md). Os seis destaques são **Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós**. A ordem é viva: uma atualização pode trazer o destaque para a frente. Como funciona e Sobre nós podem ficar ao final; os fixados orientam quem chega. São **53 telas na seleção inicial**, numeradas abaixo; os blocos entram pelo [calendário único](03-postagens.md#calendário).
+**Revisão: 09/10/2026.** Direção e bio no [guia principal](README.md). Os seis destaques são **Como funciona, Projetos, Alunos, Dúvidas, Avaliações e Sobre nós**. A ordem é viva: uma atualização pode trazer o destaque para a frente. Como funciona e Sobre nós podem ficar ao final; os fixados orientam quem chega. São **61 telas na seleção inicial**, numeradas abaixo; os blocos entram pelo [calendário único](03-postagens.md#calendário).
 
 ## Como produzir estas telas
 
@@ -11,6 +11,8 @@ Links L0 e L5 e o destino da bio, LB, estão em [Links e publicação](apoio/lin
 ## Como funciona
 
 **Função:** contar o primeiro passo antes de detalhar ferramentas ou planos. Nove telas: formato e condições foram separados para preservar a leitura.
+
+**Artes estáticas:** as nove telas estão em [produção do destaque Como funciona](producao/destaques/como-funciona). Cada PNG contém a copy completa; as cenas do jogo usam capturas do Farol e de seus blocos. Na CF06, a cena da família no computador acompanha a conversa sobre as escolhas da criança. Adicionar o sticker de link à CF09 conforme `publicacao.txt`.
 
 ### CF01 · O jogo e a regra
 
@@ -52,7 +54,7 @@ Links L0 e L5 e o destino da bio, LB, estão em [Links e publicação](apoio/lin
 
 **Cartela. Título:** Aulas gravadas, no computador.
 
-> O Desafio é para crianças de 9 a 14 anos e precisa de computador com internet, mouse e teclado. As aulas são gravadas: seu filho pode pausar para fazer cada passo e voltar ao vídeo quando precisar.
+> O Desafio foi pensado para crianças de 9 a 14 anos e precisa de computador com internet, mouse e teclado. As aulas são gravadas: seu filho pode pausar para fazer cada passo e voltar ao vídeo quando precisar.
 
 ### CF08 · Acesso e pagamento
 
@@ -71,6 +73,8 @@ Links L0 e L5 e o destino da bio, LB, estão em [Links e publicação](apoio/lin
 **Função:** apresentar todos os projetos da Comunidade dos Criadores e ampliar o destaque a cada novo projeto. O catálogo inicial confirmado pelo responsável inclui **A Chave do Farol, Cadê Todo Mundo?, Nave Contra Asteroides e Corre Dino**. O Farol abre a apresentação, identificado como o primeiro projeto pelo Desafio do Primeiro Jogo. A sequência de exposição não estabelece uma ordem obrigatória de cursos.
 
 **Formato fixo: dois stories por projeto, oito telas no catálogo inicial.** São cartelas estáticas, com toda a copy escrita abaixo. O primeiro story apresenta o jogo por duas imagens; o segundo mostra um trecho dos blocos no Estúdio e explica as habilidades praticadas nessa construção.
+
+**Artes prontas:** os oito PNGs estão em [produção do destaque Projetos](producao/destaques/projetos), na ordem PJ01–PJ08. As capturas mostram os jogos completos e os blocos reais do Estúdio. Adicionar os stickers nas telas PJ02, PJ04, PJ06 e PJ08 conforme `publicacao.txt`.
 
 ### Composição das duas telas
 
@@ -209,45 +213,49 @@ Fontes: [Farol](../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md),
 
 ## Alunos
 
-**Função:** mostrar crianças fazendo cursos e atividades da Comunidade, com suas reações e participação reais. **Alunos é um destaque vivo**, que recebe novos stories conforme novos registros forem selecionados. A seleção inicial indicada pelo responsável tem quatro vídeos, nesta ordem: **Rafael, Jeffrey, Débora e André**. Esses nomes orientam o primeiro lote de produção; a abertura apresenta a atividade, sem anunciar uma lista ou quantidade fixa de crianças. O foco é o envolvimento na atividade, não explicar o curso ou repetir um depoimento. Avaliações é o lugar dos relatos.
+**Função:** mostrar crianças fazendo cursos e atividades da Comunidade, com suas reações e participação reais. **Alunos é um destaque vivo**, que recebe novos stories conforme novos registros forem selecionados. A seleção atual indicada pelo responsável reúne **Rafael, Jeffrey, Débora, André e Fernando**. Esses nomes orientam o primeiro lote de produção; a abertura apresenta a atividade, sem anunciar uma lista ou quantidade fixa de crianças. O foco é o envolvimento na atividade, não explicar o curso ou repetir um depoimento. Avaliações é o lugar dos relatos.
 
-Escolher em cada vídeo um trecho contínuo, legível e com tempo para perceber a criança participando. Preservar reações espontâneas; não exigir sorriso, elogio ou uma fala comercial. O nome do curso não precisa ser uma chamada na arte. Não atribuir todos os registros ao Farol nem misturar crianças como uma única trajetória. A apresentação do Cadê Todo Mundo? no catálogo de Projetos não muda a entrada principal pelo Desafio. Débora e André são filhos de Helena e Júlio; o vínculo aparece junto de cada vídeo.
+Escolher em cada vídeo um trecho contínuo, legível e com tempo para perceber a criança participando. Preservar reações espontâneas; não exigir sorriso, elogio ou uma fala comercial. O nome do curso não precisa ser uma chamada na arte. Não atribuir todos os registros ao Farol nem misturar crianças como uma única trajetória. A apresentação do Cadê Todo Mundo? no catálogo de Projetos não muda a entrada principal pelo Desafio. Na arte, identificar cada participante pelo nome e por **Aluno** ou **Aluna**, seguindo a identificação simples adotada nas avaliações, sem acrescentar parentesco com os fundadores.
 
-**Variação das legendas:** cada vídeo destaca uma ação diferente: Rafael aprendendo, Jeffrey explorando, Débora mudando o jogo do jeito dela e André jogando para conferir o que fez. Selecionar nos vídeos os momentos que correspondem a essas ações. Se o registro mostrar outra ação, escrever uma legenda igualmente específica e fiel ao que aparece; não encenar o comportamento para sustentar a frase.
+**Variação das legendas:** cada vídeo destaca uma ação diferente: Rafael aprendendo, Jeffrey explorando, Débora mudando o jogo do jeito dela, André jogando para conferir o que fez e Fernando mostrando a criação. Selecionar nos vídeos os momentos que correspondem a essas ações. Se o registro mostrar outra ação, escrever uma legenda igualmente específica e fiel ao que aparece; não encenar o comportamento para sustentar a frase.
+
+**Produção atual — 09/10/2026:** a pedido do responsável, este lote usa imagens provisórias geradas com as referências de Rafael, Jeffrey, Débora, André e Fernando, para substituir depois pelos vídeos. São sete stories: AL01 → AL02 → AL03 → AL04 → AL05 → AL07 → AL06. As fotos de Jeffrey e Fernando foram fornecidas na ampliação do lote. As cenas geradas representam as atividades previstas; não são registros das aulas. Os PNGs completos e as cinco molduras transparentes para receber os vídeos ficam em [Produção · Alunos](producao/destaques/alunos/). A abertura reúne as fotos dos cinco alunos, e o convite mostra o jogo. A copy permanece integral nas artes, sem lista fixa de alunos na abertura.
 
 ### AL01 · Crianças em atividade
 
-**Vídeo do casal. Sobreposição:** Alunos na Comunidade dos Criadores.
+**Cartela com as fotos de Rafael, Jeffrey, Débora, André e Fernando. Título:** Alunos na Comunidade dos Criadores.
 
 > Aqui você vê as crianças fazendo as aulas da Comunidade dos Criadores. Acompanhe um pouco de como elas montam os jogos, fazem escolhas e colocam suas ideias para funcionar.
 
 ### AL02 · Rafael
 
-**Vídeo real do Rafael aprendendo um passo da programação.** Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+**Vídeo real do Rafael aprendendo um passo da programação. Identificação:** Rafael · Aluno. Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
 
 > Rafael aprendendo a fazer uma parte do jogo funcionar.
 
 ### AL03 · Jeffrey
 
-**Vídeo real do Jeffrey explorando uma escolha e observando seu efeito.** Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+**Vídeo real do Jeffrey explorando uma escolha e observando seu efeito. Identificação:** Jeffrey · Aluno. Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
 
 > Jeffrey explorando o que muda quando faz uma escolha.
 
 ### AL04 · Débora
 
-**Vídeo real da Débora personalizando uma parte do projeto.** Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+**Vídeo real da Débora personalizando uma parte do projeto. Identificação:** Débora · Aluna. Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
 
 > Débora dando o seu jeito ao jogo.
->
-> Filha de Helena e Júlio.
 
 ### AL05 · André
 
-**Vídeo real do André testando sua criação.** Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+**Vídeo real do André testando sua criação. Identificação:** André · Aluno. Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
 
 > André jogando para conferir o que acabou de fazer.
->
-> Filho de Helena e Júlio.
+
+### AL07 · Fernando
+
+**Vídeo real do Fernando mostrando uma parte da criação. Identificação:** Fernando · Aluno. Preservar o registro original, sem narração comercial acrescentada. **Texto completo sobreposto:**
+
+> Fernando mostrando o que fez no jogo.
 
 ### AL06 · Conhecer um primeiro passo
 
@@ -257,127 +265,177 @@ Escolher em cada vídeo um trecho contínuo, legível e com tempo para perceber 
 
 ### Como acrescentar novos alunos
 
-Manter a abertura AL01: ela apresenta o destaque e continua válida quando novas crianças entram. Acrescentar os novos vídeos com os próximos IDs AL disponíveis, sem substituir os primeiros registros nem regravar a abertura para enumerar participantes. As seis telas AL01 a AL06 formam apenas o lote inicial; AL06 é o convite desse lote e não impede novos vídeos depois dele.
+Manter a abertura AL01: ela apresenta o destaque e continua válida quando novas crianças entram. Acrescentar os novos vídeos com os próximos IDs AL disponíveis, sem substituir os primeiros registros nem regravar a abertura para enumerar participantes. As sete telas AL01 a AL07 formam o lote atual, com AL07 antes do convite AL06. AL06 não impede novos vídeos depois dele; os IDs permanecem estáveis quando novos alunos entram.
 
-Cada novo story mostra um registro real de uma criança em atividade, com nome e uma legenda completa que descreva a ação visível. Variar a abordagem conforme o trecho selecionado: aprender, explorar, personalizar, testar ou outra ação observável. Escrever a copy a partir do vídeo, antes de produzir a tela. Manter a identificação de vínculo com os criadores junto ao registro, quando houver, como já previsto para Débora e André. Registrar a nova peça no calendário; incluir destino em Links e publicação apenas se houver sticker.
+Cada novo story mostra um registro real de uma criança em atividade, com nome, identificação como Aluno ou Aluna e uma legenda completa que descreva a ação visível. Variar a abordagem conforme o trecho selecionado: aprender, explorar, personalizar, testar ou outra ação observável. Escrever a copy a partir do vídeo, antes de produzir a tela. Registrar a nova peça no calendário; incluir destino em Links e publicação apenas se houver sticker.
 
 ## Dúvidas
 
 **Função:** responder antes da compra. Dezoito cartelas, distribuídas em quatro blocos no calendário. O título de cada tela entra na arte junto da resposta. Não há fala adicional.
 
-### DU01 · Para qual idade é o Desafio?
+**Direção das respostas:** responder à pergunta com uma informação que ajude a família a decidir e explicar o benefício concreto quando ele acrescentar algo. Cada resposta tem um assunto: não repetir em várias telas conselhos genéricos para acompanhar a primeira aula, conhecer a proposta ou escolher um horário. Na pergunta sobre idade, explicar o público para quem a Comunidade foi pensada, a intenção de desenvolver autonomia e a participação fora da faixa principal. Equipamento, formato e ajuda tratam da experiência na Comunidade; prazo, pagamento, garantia e conteúdo do curso nomeiam o Desafio. Preservar condições de compra, alcance da ajuda e visibilidade dos jogos. Cortar repetições e frases vagas, sem forçar uma vantagem para cada condição.
 
-> Para crianças de 9 a 14 anos. As aulas ensinam programação desde o começo. Seu filho precisa conseguir ler e usar mouse e teclado. Vale estar junto na primeira aula para ver de que ajuda ele precisa.
+### DU01 · Para qual idade é a Comunidade?
+
+> A Comunidade, incluindo o Desafio, foi pensada para crianças de 9 a 14 anos aprenderem a criar jogos com autonomia. Crianças mais novas podem fazer acompanhadas dos pais ou de um responsável. Quem é mais velho também pode participar, se tiver interesse em aprender a criar jogos.
 
 ### DU02 · Dá para fazer no celular?
 
-> Para fazer o curso, seu filho precisa de computador ou notebook com internet, mouse e teclado. Pelo celular, você pode conhecer as aulas e o jogo antes de comprar.
+> Para criar os jogos, é preciso um computador ou notebook com internet, mouse e teclado. A tela maior ajuda seu filho a enxergar a aula e os blocos. O mouse facilita encaixar os comandos; o teclado permite testar os movimentos do personagem.
 
 ### DU03 · As aulas são ao vivo?
 
-> As aulas são gravadas. Vocês escolhem o horário, e seu filho pode pausar o vídeo para fazer cada passo ou assistir de novo. Não há um professor ao vivo durante a atividade.
+> As aulas são gravadas, então seu filho pode pausar para montar, rever uma parte difícil e testar antes de seguir. Ele avança no tempo de que precisa para praticar, no horário que cabe na rotina de vocês.
 
 ### DU04 · Como ele recebe ajuda?
 
-> Ele pode rever o vídeo e comparar o que fez com a explicação. Se ainda tiver dúvida, usa o botão “Preciso de ajuda” para escrever à equipe. A resposta chega por mensagem na área Recados e pode levar um tempo.
+> Na aula, o botão “Preciso de ajuda” envia a dúvida à equipe. A resposta chega por mensagem nos Recados e fica guardada para consultar depois. Enquanto espera, seu filho pode rever o trecho do vídeo e comparar com o que montou.
 
 **Cena de apoio opcional:** rodapé real da aula, sem enviar mensagem para produzir a captura. O botão infantil atual é “Verificar esta parte”.
 
 ### DU05 · Preciso acompanhar o tempo todo?
 
-> Isso varia de criança para criança. No começo, ajude seu filho a entrar na conta e abrir a aula. Observe como ele acompanha o vídeo e faz a atividade. A partir daí, vocês vão descobrindo quando ele precisa de companhia.
+> Acompanhe as primeiras atividades e observe quando seu filho precisa de ajuda. As aulas mostram cada passo para que ele vá fazendo mais por conta própria. Você pode participar pedindo que ele mostre o jogo e explique o que fez; não precisa saber programar.
 
-### DU06 · Precisa terminar em três dias?
+### DU06 · Precisa terminar o Desafio em três dias?
 
-> Não. Vocês têm 30 dias de acesso a partir da aprovação do pagamento e podem dividir as aulas nesse período. Seu filho precisa de tempo para assistir, montar e jogar para conferir o que fez.
+> Não. No Desafio, vocês têm 30 dias de acesso a partir da aprovação do pagamento. As aulas podem ser divididas nesse período, reservando tempo para montar, jogar e ajustar o projeto antes de continuar.
 
-### DU07 · O pagamento se repete?
+### DU07 · O Desafio é uma assinatura?
 
-> Você paga uma vez pelo Desafio. Não há nova cobrança automática quando o acesso termina. No botão, confira o preço e as formas de pagamento.
+> Não. Você paga uma vez pelo Desafio e conhece as aulas antes de decidir se quer continuar. Ao fim dos 30 dias de acesso, não há nova cobrança. A Comunidade é uma assinatura contratada separadamente. No botão, veja o valor e as formas de pagamento.
 
 **Sticker:** Ver valor e condições → L0, origem du07.
 
-### DU08 · O que está incluído nos 30 dias?
+### DU08 · O que está incluído no Desafio?
 
-> As aulas de A Chave do Farol e o espaço para montar o jogo. Seu filho também pode publicá-lo no Mural, onde pode jogar as criações dos colegas, comentar e reagir. Outros cursos e ferramentas fazem parte da assinatura da Comunidade.
+> O Desafio inclui as aulas de A Chave do Farol, o espaço para montar o jogo e 30 dias de Mural completo. Ali, seu filho pode publicar seu jogo, jogar criações dos colegas, comentar e reagir. Outros cursos e ferramentas pertencem à assinatura da Comunidade.
 
-### DU09 · O que acontece depois dos 30 dias?
+### DU09 · O que muda depois dos 30 dias do Desafio?
 
-> As aulas e a edição do jogo deixam de estar disponíveis por essa compra. Seu filho ainda pode ver e jogar no Mural, mas não publicar, comentar ou reagir. Os projetos ficam guardados na conta; para voltar a estudar ou editar, é preciso ter um acesso que inclua essas atividades.
+> As aulas e a edição do jogo deixam de estar disponíveis, mas o projeto fica guardado. Seu filho ainda pode ver e jogar no Mural, sem publicar, comentar ou reagir. Para voltar às aulas e à edição, vocês precisam de um novo acesso que inclua essas atividades.
 
-### DU10 · Como funciona a garantia?
+### DU10 · Como funciona a garantia do Desafio?
 
-> Você tem sete dias corridos, a partir da compra, para pedir o dinheiro de volta pelo canal indicado nos termos. A garantia não acrescenta dias aos 30 dias de acesso. No botão, confira as regras da garantia e como fazer o pedido.
+> Você tem sete dias corridos a partir da compra para pedir o dinheiro de volta, pelo canal indicado nos termos. Nesse período, pode conhecer as aulas e observar como seu filho acompanha a proposta. A garantia não amplia os 30 dias de acesso. No botão, veja como solicitar.
 
 **Sticker:** Consultar condições → L0, origem du10.
 
-### DU11 · Ele precisa desenhar os personagens?
+### DU11 · No Desafio, ele precisa desenhar?
 
-> Não. O cenário e os desenhos vêm prontos. Seu filho aprende a fazer o personagem andar, pegar a chave e acender o farol. Depois, escolhe entre os desenhos disponíveis e escreve as mensagens do jogo. O Desafio não é um curso de desenho.
+> Não. No Desafio, o cenário e os desenhos vêm prontos para seu filho se concentrar em fazer o jogo funcionar: mover o personagem, pegar a chave e acender o farol. Ele também escolhe entre os desenhos disponíveis e escreve as mensagens para personalizar o jogo.
 
-### DU12 · O jogo é feito no Roblox ou Minecraft?
+### DU12 · O Desafio ensina Roblox ou Minecraft?
 
-> O jogo é feito no Estúdio do Sistema Zero, o espaço de criação que abre junto da aula. Ali, seu filho encaixa blocos para dizer ao jogo o que fazer. Mostre A Chave do Farol a ele antes de escolher o curso.
+> O Desafio ensina a criar no Estúdio do Sistema Zero, que abre junto da aula. Seu filho encaixa blocos, as peças que dizem ao jogo o que fazer. A explicação fica ao lado, então ele pode acompanhar, montar e testar no mesmo espaço.
 
 ### DU13 · Quem pode abrir o jogo publicado?
 
-> Qualquer pessoa que tenha o link pode abrir o jogo. Para jogar, o aparelho precisa ter os controles que ele usa, como teclado. Combine com seu filho para quem vocês vão mandar o link.
+> Qualquer pessoa que receber o link pode jogar, usando um aparelho com os controles necessários, como teclado. Seu filho pode mostrar o que criou para amigos e familiares. Como o link é público, combinem com quem vão compartilhar.
 
 ### DU14 · Esconder o perfil torna o link privado?
 
-> Não. Você controla se os colegas podem ver o perfil do seu filho; no começo, essa opção fica desligada. Mas o jogo publicado tem um link público. Quem receber esse link pode abrir o jogo, mesmo com o perfil escondido.
+> Não. O perfil começa escondido dos colegas, e você escolhe quando torná-lo visível. O jogo publicado tem um link público separado: quem receber esse link pode abri-lo, mesmo com o perfil escondido.
 
 ### DU15 · O link continua depois do curso?
 
-> O fim do acesso às aulas não apaga o jogo publicado. O link continua funcionando enquanto a publicação estiver disponível. Se ela for retirada por vocês ou pela equipe, ou ficar indisponível, o link pode deixar de abrir o jogo.
+> Sim. Seu filho pode continuar mostrando o jogo depois que o acesso às aulas terminar, enquanto a publicação estiver disponível. Se vocês ou a equipe retirarem o jogo, ou se ele ficar indisponível, o link pode deixar de funcionar.
 
 ### DU16 · Como ele pode continuar depois do Desafio?
 
-> Se vocês quiserem outros cursos, podem assinar a Comunidade dos Criadores. Seu filho continua na mesma conta, com os jogos que já fez. As ferramentas de criação vão sendo liberadas conforme ele avança nas atividades. No botão, veja os cursos, os planos e como funciona a cobrança.
+> Vocês podem assinar a Comunidade e seguir com outros cursos, na mesma conta e com os projetos guardados. As ferramentas de criação vão sendo liberadas conforme seu filho avança nas atividades. No botão, veja os cursos, os planos e a cobrança.
 
 **Sticker:** Conhecer a Comunidade → L5, origem du16.
 
 ### DU17 · Posso começar direto pela Comunidade?
 
-> Pode. A assinatura da Comunidade já inclui o Desafio enquanto estiver ativa. Comprar o Desafio separado é uma opção para conhecer as aulas primeiro. Se vocês já são assinantes, usem a conta que têm para abrir o curso.
+> Pode. A assinatura da Comunidade inclui o Desafio enquanto estiver ativa. Assim, seu filho pode começar pelo primeiro jogo e seguir pelos outros cursos. Comprar só o Desafio permite conhecer as aulas antes de escolher a assinatura. Se já assinam a Comunidade, usem a mesma conta.
 
 **Sticker:** Ver os planos → L5, origem du17.
 
-### DU18 · Como escolher esse primeiro passo?
+### DU18 · Como saber se meu filho tem interesse?
 
-> Mostre A Chave do Farol ao seu filho e conversem sobre a ideia de criar esse jogo. Confiram também o computador e um horário para começar. No botão, você vê as aulas, o preço e o que está incluído antes de decidir.
+> Mostre A Chave do Farol e converse sobre a ideia de criar um jogo assim. Observe se seu filho tem vontade de aprender a fazer o personagem andar, pegar a chave e acender o farol. No botão, vocês conhecem as aulas, o preço e o que está incluído no Desafio.
 
 **Sticker:** Conhecer o Desafio → L0, origem du18.
 
 ## Avaliações
 
-**Função:** reunir relatos de crianças, adultos e responsáveis sobre suas experiências. A primeira seleção contém os três relatos infantis já autorizados pelo responsável em 08/10/2026. Relatos de adultos ou responsáveis entram quando houver a fala real, com copy final própria; não criar frases para representar pessoas ainda não ouvidas. Os textos foram localizados no histórico Git c3c142e8f^, arquivo packages/funnel/src/components/funnel/oferta/DesafioOfertaBody.astro, seção DEPOIMENTOS. Durante esta revisão, o usuário confirmou que as três crianças também testaram o Farol e reafirmaram as falas. Esse esclarecimento atualiza o contexto de uso: a copy pública não menciona uma experiência anterior.
+**Função:** reunir relatos de crianças, adultos e responsáveis sobre suas experiências. A seleção atual reúne oito pessoas em dez cartelas de relatos. As cinco crianças alternam com os responsáveis. Daniel, pai do Rafael, aparece em duas telas sobre organização e criatividade; Harle, pai do Jeffrey, fala de responsabilidade; Flávia, mãe do Fernando, aparece em duas telas sobre independência e uso da tela para criar. As relações familiares foram identificadas pelo usuário. Cada cartela traz uma ideia principal e o trecho que a sustenta, com espaço para leitura.
 
-Do Rafael, usar o trecho literal sobre compartilhar o link, que não menciona a nave. Débora e André são filhos de Helena e Júlio, conforme confirmação do usuário; identificar o vínculo junto de cada fala. Nesta seleção, os relatos são das crianças. Futuras falas de adultos e responsáveis terão sua autoria identificada corretamente. Não acrescentar estrelas, nota média, idade, compra comprovada ou resultado típico. As cartelas com nomes dispensam fotografias e filmagens nesta versão. “No último dia” é parte da fala de Débora, não uma promessa de conclusão em prazo fixo.
+**Produção — 09/10/2026:** doze stories, em ordem: AV01 → AV02 → AV08 → AV03 → AV10 → AV07 → AV09 → AV04 → AV11 → AV06 → AV12 → AV05. A primeira imagem reúne os oito rostos; a última convida a conhecer o Farol. Os IDs do roteiro permanecem estáveis, e os nomes dos arquivos de 01 a 12 indicam a ordem de publicação. [PNGs e orientações](producao/destaques/avaliacoes/). As fotos dos responsáveis foram extraídas dos vídeos enviados pelo usuário, preservando sua aparência. As referências de Fernando e Jeffrey também foram fornecidas pelo usuário.
+
+**Falas e contexto:** os relatos de Rafael, Débora e André foram localizados no histórico Git c3c142e8f^, arquivo packages/funnel/src/components/funnel/oferta/DesafioOfertaBody.astro, seção DEPOIMENTOS. O usuário confirmou que as três crianças também testaram o Farol e reafirmaram suas falas. Os cinco novos vídeos foram transcritos, e os trechos selecionados passaram por uma segunda transcrição. Os arquivos, segundos de cada recorte e imagens de origem estão em [Fontes dos relatos](producao/destaques/avaliacoes/fontes-dos-relatos.txt). A pontuação foi ajustada para leitura. Conforme orientação do usuário, os recortes são apresentados sem reticências ou colchetes nas cartelas, preservando as palavras e o sentido. Os segundos de cada recorte permanecem no arquivo de fontes. As aspas de abertura e fechamento recebem o mesmo estilo gráfico, fora do texto. Nos relatos dos responsáveis, a linha abaixo do vínculo identifica o tema; ela é editorial e fica fora das aspas. Os vídeos não confirmam especificamente uma experiência com o Farol. A percepção dos pais sobre lógica, matemática, criatividade e responsabilidade permanece atribuída aos próprios filhos.
+
+**Identificação:** nome, Aluno/Aluna ou relação do responsável com a criança, e contexto do relato. André e Débora aparecem como alunos, conforme orientação do usuário. Os resultados são experiências de quem fala. Não acrescentar estrelas, nota média, idade, compra comprovada ou resultado típico. “No último dia” é parte da fala de Débora, não uma promessa de conclusão em prazo fixo. Os títulos dos arquivos de vídeo são referências internas; não viram chamadas nem promessas de resultado.
 
 ### AV01 · Apresentação dos relatos
 
 **Cartela. Título:** O que contam sobre as aulas.
 
+**Cena:** montagem com os rostos de Rafael, Daniel, Débora, Jeffrey, Harle, André, Fernando e Flávia. O texto não fixa nomes nem quantidade, para continuar válido com novos relatos.
+
 > Aqui a gente reúne os relatos sobre as aulas. Você pode conhecer o que as pessoas acharam antes de escolher uma atividade para seu filho.
 
 ### AV02 · Rafael
 
-**Cartela. Identificação completa:** Rafael · Relato sobre o Desafio do Primeiro Jogo.
+**Cartela. Identificação completa:** Rafael · Aluno · Relato sobre o Desafio do Primeiro Jogo.
 
 > “No fim eu peguei o link e mandei pro meu amigo jogar.”
 
+### AV08 · Daniel
+
+**Cartela. Identificação completa:** Daniel · Pai do Rafael · Organizar as ideias.
+
+> “Foi um curso que trouxe pro Rafa uma questão de se pensar, de se organizar, tanto na lógica, na matemática.”
+
 ### AV03 · Débora
 
-**Cartela. Identificação completa:** Débora, filha de Helena e Júlio · Relato sobre o Desafio do Primeiro Jogo.
+**Cartela. Identificação completa:** Débora · Aluna · Relato sobre o Desafio do Primeiro Jogo.
 
 > “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.”
 
+### AV10 · Flávia
+
+**Cartela. Identificação completa:** Flávia · Mãe do Fernando · Fazer por conta própria.
+
+> “No início eu acompanhei mais, agora eu acompanho menos. Ele faz o curso com total independência no momento.”
+
+### AV07 · Jeffrey
+
+**Cartela. Identificação completa:** Jeffrey · Aluno · Relato sobre criar jogos.
+
+> “Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.”
+
+### AV09 · Harle
+
+**Cartela. Identificação completa:** Harle · Pai do Jeffrey · Mais responsabilidade.
+
+> “Começou a ter a sua regra de todo dia ir lá olhar, ver o que que tem no curso pra ele fazer. Ele ficou mais responsável com as coisas dele.”
+
 ### AV04 · André
 
-**Cartela. Identificação completa:** André, filho de Helena e Júlio · Relato sobre o Desafio do Primeiro Jogo.
+**Cartela. Identificação completa:** André · Aluno · Relato sobre o Desafio do Primeiro Jogo.
 
 > “Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um maior.”
+
+### AV11 · Daniel
+
+**Cartela. Identificação completa:** Daniel · Pai do Rafael · Ter ideias para o jogo.
+
+> “Vai criando, vai sendo mais criativo. ‘Eu quero mudar isso aqui no jogo.’”
+
+### AV06 · Fernando
+
+**Cartela. Identificação completa:** Fernando · Aluno · Relato sobre criar jogos.
+
+> “Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.”
+
+### AV12 · Flávia
+
+**Cartela. Identificação completa:** Flávia · Mãe do Fernando · Usar a tela para criar.
+
+> “O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada. O curso incentivou ele a desenvolver, a programar, não a jogar.”
 
 ### AV05 · Conhecer o projeto
 

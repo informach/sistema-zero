@@ -6,7 +6,9 @@ Fonte: `qa/nave-contra-asteroides.conteudo.json`. Gerado por `qa/gerar-nave-cont
 
 Entrada: Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro marco original. Saída: Tiros saem da nave, sobem, têm som e são retirados do grupo ao sair da tela.
 
-Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando ("Sua vez!", "Agora…!", "Hora de…!") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Tá vendo?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").
 
@@ -16,18 +18,34 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy apertando a campainha de uma porta, com a legenda "apertou, tocou"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy apertando a campainha de uma porta, com a legenda "apertou, tocou"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Esta é a mesma experiência da primeira fase, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.
+**ID de edição:** `video-tecla-e-repeticao-avatar-01`.
+
+**Na tela:** Deixar o primeiro teste terminar sem tiros e apontar 0 vezes na peça.
+
+**Professora:**
+
+> “Esta é a mesma experiência da primeira fase, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.
 >
-> Olha aqui: eu coloco Criar um tiro em Quando acontecer e clico em Começar o jogo. O jogo roda e o teste para, mas tá vendo? Nenhum tiro nasce, e a peça mostra 0 vezes. É que Quando acontecer espera um acontecimento, e ninguém clicou em Apertar a tecla.
->
-> Agora eu clico em Apertar a tecla. Olha só: na mesma hora, nasce um tiro, e a peça mostra 1 vez, porque a tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém apertar o botão.
+> Olha aqui: eu coloco Criar um tiro em Quando acontecer e clico em Começar o jogo. O jogo roda e o teste para, mas tá vendo? Nenhum tiro nasce, e a peça mostra 0 vezes. É que Quando acontecer espera um acontecimento, e ninguém clicou em Apertar a tecla.”
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Ela está esperando eu apertar a tecla!”
+
+**Na tela:** Debinha sai antes da resposta. Clicar em Apertar a tecla depois da resposta e continuar a comparação com a repetição.
+
+**Professora:**
+
+> “Isso mesmo. Agora eu clico em Apertar a tecla. Olha só: na mesma hora, nasce um tiro, e a peça mostra 1 vez, porque a tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém apertar o botão.
 >
 > Por último, eu levo Criar um tiro para Enquanto estiver rodando e clico em Começar o jogo. Nascem tiros sem parar, um em cada quadro, e o teste termina com 5 tiros, mesmo sem ninguém clicar em Apertar a tecla. Por isso, no seu jogo, Criar tiro vai ficar dentro de Quando acontecer, esperando a barra de espaço.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Compare Criar um tiro em Quando acontecer e em Enquanto estiver rodando. No primeiro teste, espere parar e só depois clique em Apertar a tecla. Quando terminar, clique em Próxima parte.
 
@@ -35,22 +53,38 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Clipe `video-escrito-e-lido` · Faça o tiro acompanhar a nave
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy conferindo o relógio de pulso antes de responder, com a legenda "ler na hora"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy conferindo o relógio de pulso antes de responder, com a legenda "ler na hora"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender a diferença entre um número escrito e um número lido na hora. É isso que faz o tiro nascer na nave, mesmo quando ela muda de lugar.
+**ID de edição:** `video-escrito-e-lido-avatar-01`.
+
+**Na tela:** Concluir os disparos com o número fixo, com a nave em 640 e o tiro distante; terminar a comparação com o relógio.
+
+**Professora:**
+
+> “Esta é uma experiência para a gente entender a diferença entre um número escrito e um número lido na hora. É isso que faz o tiro nascer na nave, mesmo quando ela muda de lugar.
 >
 > Olha aqui: em De onde vem o x do tiro, está escolhido O número 400, e a nave está em x 400. Eu clico em Atirar, e o tiro nasce em 400, bem na nave. Agora eu mudo x da nave para 640 e atiro de novo. Tá vendo? O tiro nasce em 400 outra vez, longe da nave, porque o número escrito não muda quando a nave anda.
 >
-> É como responder que horas são sempre com o mesmo horário, sem olhar o relógio: às vezes você acerta, mas quase sempre erra. Para acertar, é preciso olhar o relógio na hora.
->
-> Agora eu troco para O centro x da nave e clico em Atirar. Olha só: o tiro nasce em 640, onde a nave está. Mudo a nave para 200 e atiro, e o tiro nasce em 200. É que agora o jogo lê a posição da nave na hora do disparo.
+> É como responder que horas são sempre com o mesmo horário, sem olhar o relógio: às vezes você acerta, mas quase sempre erra. Para acertar, é preciso olhar o relógio na hora.”
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Como o tiro descobre onde a nave está agora?”
+
+**Na tela:** Debinha sai antes da resposta. Trocar para O centro x da nave e testar o disparo em 640 e em 200.
+
+**Professora:**
+
+> “Agora eu troco para O centro x da nave e clico em Atirar. Olha só: o tiro nasce em 640, onde a nave está. Mudo a nave para 200 e atiro, e o tiro nasce em 200. É que agora o jogo lê a posição da nave na hora do disparo.
 >
 > Por último, eu ligo Marcas da caixa e atiro mais uma vez. Repare nas marcas: elas mostram a caixa da nave e a linha do centro x, e o tiro sai do meio da caixa, na borda de cima. No seu jogo, o campo x do tiro vai ler o centro x da nave.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Atire de dois lugares com cada opção de x e depois ligue Marcas da caixa e atire de novo. Quando terminar, clique em Próxima parte.
 
@@ -60,16 +94,32 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender como a velocidade decide para onde o tiro vai depois de nascer. Aqui, a velocidade para o lado fica em 0, e o tiro não anda para os lados.
+**ID de edição:** `video-direcao-do-tiro-avatar-01`.
+
+**Na tela:** Avançar com -9 e mostrar o tiro subindo, com os valores de y à vista.
+
+**Professora:**
+
+> “Esta é uma experiência para a gente entender como a velocidade decide para onde o tiro vai depois de nascer. Aqui, a velocidade para o lado fica em 0, e o tiro não anda para os lados.
 >
-> Olha aqui: eu coloco velocidade para baixo em -9 e clico em Avançar 1 quadro algumas vezes. Tá vendo? O y vai de 135 para 126, depois 117, depois 108, e o tiro sobe. É que, em cada quadro, o jogo soma a velocidade ao y. Somar um número negativo diminui o y, e, na tela, y menor fica mais para cima.
+> Olha aqui: eu coloco velocidade para baixo em -9 e clico em Avançar 1 quadro algumas vezes. Tá vendo? O y vai de 135 para 126, depois 117, depois 108, e o tiro sobe. É que, em cada quadro, o jogo soma a velocidade ao y. Somar um número negativo diminui o y, e, na tela, y menor fica mais para cima.”
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “E se eu tirar o sinal de menos?”
+
+**Na tela:** Debinha sai antes da resposta. Trocar para 9 e mostrar a descida antes de explicar a diferença.
+
+**Professora:**
+
+> “Agora eu troco velocidade para baixo para 9 e avanço outros quadros, e o y aumenta 9 em cada quadro: o tiro desce. O tamanho do número é o mesmo, mas o sinal de menos mudou a direção. No seu jogo, o tiro vai usar vy -9 para subir na direção das pedras.
 >
-> Agora eu troco velocidade para baixo para 9 e avanço outros quadros, e o y aumenta 9 em cada quadro: o tiro desce. O tamanho do número é o mesmo, mas o sinal de menos mudou a direção. No seu jogo, o tiro vai usar vy -9 para subir na direção das pedras.
->
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Compare -9 e 9 em velocidade para baixo, avançando os quadros e olhando o y. Quando terminar, clique em Próxima parte.
 
@@ -81,8 +131,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no "Tá vendo?", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
-**Narração:**
-> "Clique no seu jogo e toque na barra de espaço. Tá vendo? Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.
+**Professora:**
+
+> “Clique no seu jogo e toque na barra de espaço. Tá vendo? Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.
 >
 > Lembra das três experiências desta fase? O tiro esperava a tecla, nascia na nave e subia. Agora a gente vai montar esse disparo no seu jogo!
 >
@@ -108,7 +159,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > O tiro ainda não aparece na tela, porque o jogo ainda não move nem desenha o grupo tiros. Isso vem na próxima parte.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora faça a sua nave atirar! Crie o grupo tiros, monte o disparo da barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
@@ -120,8 +172,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
-**Narração:**
-> "Clique na área do seu jogo e toque na barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.
+**Professora:**
+
+> “Clique na área do seu jogo e toque na barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.
 >
 > Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
 >
@@ -133,7 +186,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora faça os tiros voarem! Mova e desenhe o grupo tiros em cada quadro, atire de dois lugares e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
@@ -145,8 +199,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Começar no estado inicial. Clicar em Tempo e deixar os tiros saírem pela borda de cima, mostrando a prateleira Fora da tela, no grupo encher e o número no grupo crescer. A chave Tirar do grupo quem sair da tela só abre depois da saída de dois tiros. Ligar a chave e deixar o tempo passar (se o tempo estiver parado, clicar em Tempo), mostrando a prateleira vazia, Removidos do grupo e o número no grupo igual ao da tela. Meme na comparação: na frase da lista de convidados, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy na porta de uma festa, com uma prancheta, riscando da lista de convidados um tiro que saiu pela porta, com a legenda "saiu da tela, sai da lista"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender o que acontece com um tiro que sai da tela. Aqui dá para ver a tela do jogo e, ao lado, os bastidores do grupo tiros.
+**Professora:**
+
+> “Esta é uma experiência para a gente entender o que acontece com um tiro que sai da tela. Aqui dá para ver a tela do jogo e, ao lado, os bastidores do grupo tiros.
 >
 > Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os tiros sobem e saem pela borda de cima, e, na tela, eles somem. Mas tá vendo? Nos bastidores, cada tiro que saiu vai para a prateleira Fora da tela, no grupo, e o número no grupo só cresce, enquanto na tela continuam poucos tiros. Ou seja, sair da tela não tira o tiro do grupo.
 >
@@ -154,7 +209,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora eu ligo Tirar do grupo quem sair da tela. Olha só: a prateleira fica vazia, aparece Removidos do grupo, e o número no grupo fica igual ao número na tela. É que a regra risca da lista quem saiu da tela. No seu jogo, esse mesmo bloco vai limpar o grupo dos tiros.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Deixe dois tiros saírem com a limpeza desligada, depois ligue a regra e compare o grupo. Quando terminar, clique em Próxima parte.
 
@@ -166,8 +222,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Começar pela retomada: atirar algumas vezes e, no "Tá vendo?", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
-**Narração:**
-> "Clique no seu jogo e atire. Tá vendo? Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo.
+**Professora:**
+
+> “Clique no seu jogo e atire. Tá vendo? Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo.
 >
 > Lembra da experiência da parte anterior? Ligada, a regra tirava do grupo quem saía da tela. Agora a gente vai pôr essa regra no seu jogo!
 >
@@ -181,6 +238,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase.”
+
 
 **Zappy na página (não gravar):** Agora limpe o grupo dos tiros! Coloque a limpeza entre mover e desenhar os tiros, teste os disparos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.

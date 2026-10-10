@@ -24,19 +24,23 @@ def regua_da_escola():
 ESCOLA = regua_da_escola()
 
 
-RÓTULO_DE_FALA = re.compile(r'^\*\*(?:Narração|Zappy abaixo do vídeo|Zappy na página \(não gravar\)):\*\*(.*)$')
+PAPEL_NO_VIDEO = r'(?:Narração|Professora?|(?:Debinha|Dedé) \(avatar\))'
+RÓTULO_VIDEO = re.compile(rf'^\*\*{PAPEL_NO_VIDEO}:\*\*(.*)$', re.MULTILINE)
+RÓTULO_DE_FALA = re.compile(
+    rf'^\*\*(?:{PAPEL_NO_VIDEO}|Zappy abaixo do vídeo|Zappy na página \(não gravar\)):\*\*(.*)$'
+)
 
 
-def falas_cade(body):
-    """Narração e Zappy de um roteiro do Cadê, que usa aspas curvas e blocos sem cabeçalho de clipe.
+def extrair_falas(body, rotulos=RÓTULO_DE_FALA):
+    """Extrai os turnos de fala, incluindo professora e avatares, sem ler notas de produção.
 
-    A citação da narração vem depois de uma linha em branco; a fala acaba na primeira linha
-    que não é citação nem branca (a próxima nota, como "**Na tela:**").
+    Aceita citação com ou sem linha em branco após o rótulo, além de fala na mesma linha
+    usada pelo Zappy. A fala acaba na próxima nota, como "**Na tela:**".
     """
     partes = []
     dentro = False
     for linha in body.splitlines():
-        rotulo = RÓTULO_DE_FALA.match(linha)
+        rotulo = rotulos.match(linha)
         if rotulo:
             dentro = True
             partes.append(rotulo.group(1))
@@ -66,14 +70,14 @@ def audit(manifest_path):
             body = script[heading.end():headings[index + 1].start() if index + 1 < len(headings) else len(script)]
             section = manifest['sections'][index] if index < len(manifest['sections']) else None
             if section and not any(key in video_keys for key in section['blockKeys']):
-                if '**Zappy na página (não gravar):**' not in body or '**Narração:**' in body or '**Na tela:**' in body:
+                if '**Zappy na página (não gravar):**' not in body or RÓTULO_VIDEO.search(body) or '**Na tela:**' in body:
                     errors.append(f'{script_path.name}/seção {index + 1}: seção sem vídeo precisa de fala na página, sem gravação')
                 continue
-            if '**Na tela:**' not in body or '> “' not in body:
+            if '**Na tela:**' not in body or '> “' not in body or not RÓTULO_VIDEO.search(body):
                 errors.append(f'{script_path.name}/seção {index + 1}: direção de tela ou fala ausente')
         for index, heading in enumerate(headings):
             body = script[heading.end():headings[index + 1].start() if index + 1 < len(headings) else len(script)]
-            escola = ESCOLA.search(falas_cade(body))
+            escola = ESCOLA.search(extrair_falas(body))
             if escola:
                 errors.append(f'{script_path.name}/seção {index + 1}: palavra da escola na fala: {escola.group(0)}')
         return errors, (script_path.name, len(expected), len(expected), [])
@@ -93,27 +97,26 @@ def audit(manifest_path):
         key = match.group(1)
         body = script[match.end():spans[i+1].start() if i+1 < len(spans) else len(script)]
         notes = len(re.findall(r'^\*\*Na tela:\*\*', body, re.MULTILINE))
-        narrations = len(re.findall(r'^\*\*Narração:\*\*$', body, re.MULTILINE))
+        narrations = len(RÓTULO_VIDEO.findall(body))
         if notes != narrations or not notes:
-            errors.append(f'{script_path.name}/{key}: Na tela={notes}, Narração={narrations}')
-        if re.search(r'^\*\*Na tela:\*\*.*\n\*\*Narração:\*\*', body, re.MULTILINE):
+            errors.append(f'{script_path.name}/{key}: Na tela={notes}, turnos de fala={narrations}')
+        if re.search(rf'^\*\*Na tela:\*\*.*\n\*\*{PAPEL_NO_VIDEO}:\*\*', body, re.MULTILINE):
             errors.append(f'{script_path.name}/{key}: falta linha em branco entre par')
-        for speech_block in re.finditer(r'^\*\*Narração:\*\*\n((?:>[^\n]*\n?)+)', body, re.MULTILINE):
+        speech_blocks = list(re.finditer(
+            rf'^\*\*{PAPEL_NO_VIDEO}:\*\*[ \t]*\n(?:[ \t]*\n)*((?:>[^\n]*\n?)+)',
+            body, re.MULTILINE,
+        ))
+        for speech_block in speech_blocks:
             lines = speech_block.group(1).strip().splitlines()
-            if not lines or not lines[0].startswith('> "') or not lines[-1].endswith('"'):
+            quoted = lines and any(
+                lines[0].startswith(f'> {opening}') and lines[-1].endswith(closing)
+                for opening, closing in [('"', '"'), ('“', '”')]
+            )
+            if not quoted:
                 errors.append(f'{script_path.name}/{key}: citação de fala malformada')
-        if len(re.findall(r'^\*\*Narração:\*\*\n>', body, re.MULTILINE)) != narrations:
+        if len(speech_blocks) != narrations:
             errors.append(f'{script_path.name}/{key}: fala sem citação')
-        spoken_parts = []
-        in_speech = False
-        for line in body.splitlines():
-            if line == '**Narração:**':
-                in_speech = True
-            elif in_speech and (line.startswith('> ') or line == '>'):
-                spoken_parts.append(line[2:])
-            else:
-                in_speech = False
-        spoken = ' '.join(spoken_parts)
+        spoken = extrair_falas(body, RÓTULO_VIDEO)
         count = len(WORD.findall(re.sub(r'[*_`]', '', spoken)))
         declared = re.search(r'\*\*Palavras:\*\* (\d+)', body)
         if declared and int(declared.group(1)) != count:

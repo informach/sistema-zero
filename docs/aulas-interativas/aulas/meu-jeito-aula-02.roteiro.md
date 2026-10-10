@@ -6,6 +6,8 @@ Fonte: `qa/meu-jeito.conteudo.json`. Gerado por `qa/gerar-meu-jeito.ts`. Revise 
 
 Entrada: Cópia do jogo salva no Estúdio. Saída: Arte nave em pixel art, 32 × 32, com corpo, cabine, luz e sombra; espaço para o motor.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 Retomar o trabalho do aluno na ferramenta externa. Não substituir por um modelo. Mostrar caminhos, campos, formas e encaixes sem cortes. A prévia do Estúdio é automática. A ponte do Zappy é texto na página; não entra na narração. As conferências do desenho são visuais, sem aprovação automática por assistir ao vídeo.
 
 Nas experiências, o vídeo é uma demonstração: a primeira frase diz o conceito, o narrador faz os testes na primeira pessoa a partir de "Olha aqui:", explica por que cada resultado aconteceu e só no fim passa a vez. Nas aplicações no Pinta e no Estúdio, a fala segue no imperativo, para fazer junto.
@@ -22,8 +24,9 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo. Meme na comparação: na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda "de longe: redonda · de perto: degraus". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender a diferença entre um desenho em pixel e um desenho em vetor.
+**Professora:**
+
+> “Esta é uma experiência para a gente entender a diferença entre um desenho em pixel e um desenho em vetor.
 >
 > Olha aqui: com Aproximar em 1 vez, a pedra de pixel e a pedra de vetor parecem a mesma pedra. Mas, quando eu aumento Aproximar até 4, as bordas ficam diferentes: a pedra de pixel mostra degraus, e a de vetor continua lisa.
 >
@@ -35,7 +38,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > Daqui a pouco, você vai desenhar a sua nave em Pixel art, quadradinho por quadradinho. E, na fase 4, a sua pedra vai ser em Vetor, feita com pontos.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Aproxime as duas pedras e compare as bordas. Quando terminar, clique em Próxima parte.
 
@@ -47,8 +51,9 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
-**Narração:**
-> "Lembra da experiência da parte anterior? De perto, a pedra de pixel mostrava os degraus dos quadradinhos. Agora a gente vai desenhar a sua nave desse jeito, em Pixel art, por isso você vai pintar quadradinho por quadradinho.
+**Professora:**
+
+> “Lembra da experiência da parte anterior? De perto, a pedra de pixel mostrava os degraus dos quadradinhos. Agora a gente vai desenhar a sua nave desse jeito, em Pixel art, por isso você vai pintar quadradinho por quadradinho.
 >
 > Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.
 >
@@ -56,7 +61,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > Por último, deixe as quatro linhas de baixo da grade livres, porque elas vão ser o lugar do fogo do motor. O contorno fica para depois: antes, você vai experimentar o espelho na próxima parte.
 >
-> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
+> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora prepare o desenho da sua nave! Crie uma arte de personagem em Pixel art, tamanho Médio, chamada nave. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
@@ -66,24 +72,40 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho. Meme na comparação: na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda "um pingo, dois lados". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho. Meme na comparação: na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda "um pingo, dois lados". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender o que o espelho faz com cada traço.
+**ID de edição:** `video-espelho-avatar-01`.
+
+**Na tela:** Concluir o teste do Espelho lado a lado e a comparação com a folha dobrada; apontar o outro controle sem ligá-lo ainda.
+
+**Professora:**
+
+> “Esta é uma experiência para a gente entender o que o espelho faz com cada traço.
 >
 > Olha aqui: com os dois espelhos desligados, eu clico em Pintar a asa. Aparece uma asa só, do lado esquerdo da nave, onde eu pintei.
 >
 > Agora eu ligo só o Espelho lado a lado, e aparece uma linha marcada como meio. Quando eu clico em Pintar a asa de novo, olha só: uma cópia da asa surge do outro lado dessa linha. Um traço meu virou dois, porque o espelho copia cada traço para o outro lado da linha do meio.
 >
-> Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.
->
-> Depois eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Tá vendo? Agora a cópia da ponta aparece embaixo, de cabeça para baixo, porque é o espelho que está ligado que decide onde a cópia cai.
+> Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.”
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “E esse espelho de cima e de baixo?”
+
+**Na tela:** Dedé sai antes da resposta. Desligar o espelho lateral, ligar só o vertical e pintar a ponta; depois comparar o comportamento do Balde.
+
+**Professora:**
+
+> “Depois eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Tá vendo? Agora a cópia da ponta aparece embaixo, de cabeça para baixo, porque é o espelho que está ligado que decide onde a cópia cai.
 >
 > Por último, eu deixo só o Espelho lado a lado ligado e clico em Balde de tinta: encher a asa. Repare: o Balde enche só a asa esquerda. O espelho continua ligado, mas não copia a tinta do Balde.
 >
 > Daqui a pouco, quando você desenhar o contorno da nave, o espelho vai fazer o outro lado. E, para pintar com o Balde, você vai clicar dentro de cada asa.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Pinte com cada espelho e veja onde a cópia aparece. Quando terminar, clique em Próxima parte.
 
@@ -95,8 +117,9 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
-**Narração:**
-> "Lembra da experiência da parte anterior? Com o Espelho lado a lado ligado, cada traço seu virou dois. Agora a gente vai usar esse espelho no contorno da sua nave, por isso você só vai desenhar uma metade.
+**Professora:**
+
+> “Lembra da experiência da parte anterior? Com o Espelho lado a lado ligado, cada traço seu virou dois. Agora a gente vai usar esse espelho no contorno da sua nave, por isso você só vai desenhar uma metade.
 >
 > Escolha uma cor escura para o contorno e ligue Espelho lado a lado. Depois escolha Linha e arraste pequenos trechos para desenhar metade da ponta, a lateral e uma asa. Olha só: o espelho desenha o outro lado sozinho. A largura e o formato são escolha sua.
 >
@@ -104,7 +127,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > Quando terminar, desligue o espelho e confira se a nave cabe na grade e se o espaço do motor continua livre.
 >
-> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
+> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora desenhe o contorno da sua nave! Com o Espelho lado a lado ligado, faça um corpo com duas asas e deixe quatro linhas livres embaixo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
@@ -114,10 +138,27 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Agora pinte o corpo da sua nave. Escolha uma cor, pegue Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo até a linha do contorno. Se ela escapar para fora, é porque ficou uma abertura: use Desfazer, feche a abertura com o Lápis e tente de novo.
+**ID de edição:** `video-cores-avatar-01`.
+
+**Na tela:** Mostrar o contorno ainda sem preenchimento e o espaço do motor livre.
+
+**Professora:**
+
+> “Agora pinte o corpo da sua nave.”
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Eu quero uma nave roxa!”
+
+**Na tela:** Dedé sai antes da resposta. Usar roxo como escolha do exemplo, mantendo a liberdade de quem assiste; demonstrar preenchimento, correção de abertura, cabine e conferência.
+
+**Professora:**
+
+> “Pode ser roxa, sim. Escolha uma cor, pegue Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo até a linha do contorno. Se ela escapar para fora, é porque ficou uma abertura: use Desfazer, feche a abertura com o Lápis e tente de novo.
 >
 > Se as asas ficaram separadas do corpo, clique dentro de cada uma também, porque o Balde enche só a parte fechada em que você clicou.
 >
@@ -125,7 +166,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > Para conferir, afaste a imagem e veja se você reconhece a nave pequena, porque no jogo ela aparece pequena.
 >
-> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
+> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora pinte o corpo e a cabine da sua nave! Preencha a nave com o Balde e desenhe uma cabine dentro do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
@@ -135,22 +177,38 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da bola no quintal, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda "lado do sol: claro · outro lado: escuro". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da bola no quintal, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda "lado do sol: claro · outro lado: escuro". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender como a luz e a sombra deixam um desenho redondo.
+**ID de edição:** `video-luz-avatar-01`.
+
+**Na tela:** Concluir a comparação com a bola no quintal e manter o sol à esquerda.
+
+**Professora:**
+
+> “Esta é uma experiência para a gente entender como a luz e a sombra deixam um desenho redondo.
 >
 > Olha aqui: a bola começa com um tom de azul só, e o sol está na esquerda. Quando eu ligo A sombra e a luz, a bola ganha três tons de azul, um mais claro perto do sol e um mais escuro do outro lado. Agora ela parece redonda, porque o claro e o escuro mostram de que lado vem a luz.
 >
 > Quando eu desligo, a bola volta a ter um tom só e fica chapada, como um adesivo.
 >
-> Sabe uma bola no quintal, num dia de sol? O lado virado para o sol fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.
->
-> Agora eu ligo de novo e mudo O sol para a direita. Repare: o azul mais claro passa para a direita, e o mais escuro vai para a esquerda, porque a luz e a sombra seguem o lado do sol.
+> Sabe uma bola no quintal, num dia de sol? O lado virado para o sol fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.”
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “E se a luz vier do outro lado?”
+
+**Na tela:** Dedé sai antes da resposta. Ligar luz e sombra e mover o sol para a direita; mostrar os tons trocando de lado.
+
+**Professora:**
+
+> “Agora eu ligo de novo e mudo O sol para a direita. Repare: o azul mais claro passa para a direita, e o mais escuro vai para a esquerda, porque a luz e a sombra seguem o lado do sol.
 >
 > Daqui a pouco, na sua nave, você vai escolher de que lado vem a luz: um tom mais claro desse lado e um mais escuro do lado oposto.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Ligue A sombra e a luz e mude o lado do sol. Quando terminar, clique em Próxima parte.
 
@@ -162,14 +220,16 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
-**Narração:**
-> "Olhe a sua nave. Tá vendo? Ela parece chapada, porque cada parte tem uma cor só. Lembra da experiência da parte anterior? A bola ganhou um lado claro e outro escuro e pareceu redonda. Agora a gente vai fazer isso na sua nave!
+**Professora:**
+
+> “Olhe a sua nave. Tá vendo? Ela parece chapada, porque cada parte tem uma cor só. Lembra da experiência da parte anterior? A bola ganhou um lado claro e outro escuro e pareceu redonda. Agora a gente vai fazer isso na sua nave!
 >
 > Primeiro, decida de qual lado vem a luz. Escolha um tom mais claro da cor do corpo e pinte com o Lápis uma faixa pequena desse lado. Depois escolha um tom mais escuro e pinte o lado oposto, e, se quiser, faça o mesmo na cabine. As cores são suas: use a sua paleta, mesmo que ela seja bem diferente das cores do exemplo.
 >
 > Olha só: com o claro de um lado e o escuro do outro, a sua nave começa a parecer redonda. Se no seu desenho não ficou assim, confira: os tons aparecem de perto e de longe, o contorno continua fechado e a luz vem do mesmo lado no corpo e na cabine.
 >
-> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte."
+> Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora dê luz e sombra à sua nave! Escolha um lado para a luz e pinte um tom claro desse lado e um escuro do outro. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
@@ -181,13 +241,15 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
 
-**Narração:**
-> "Hora de enviar a sua nave! Antes, confira na sua nave: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis, espaço livre embaixo e a luz vindo de um lado só. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.
+**Professora:**
+
+> “Hora de enviar a sua nave! Antes, confira na sua nave: a arte se chama nave, tem 32 por 32, corpo e cabine legíveis, espaço livre embaixo e a luz vindo de um lado só. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Pinta, porque a galeria da fase só mostra o que já está guardado na sua conta.
 >
 > Agora volte para a aba da fase e clique em Escolher no Pinta. Na janela Minhas criações do Pinta, selecione a sua nave. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.
 >
 > Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!
 >
-> Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase."
+> Esse envio guarda uma cópia deste momento, e você continua criando no Pinta. Por último, clique em Concluir fase.”
+
 
 **Zappy na página (não gravar):** Hora de enviar a sua nave! Confira se a arte se chama nave e tem 32 por 32. Depois clique em Escolher no Pinta, selecione a nave e clique em Enviar (1). Quando aparecer Recebido!, clique em Concluir fase.

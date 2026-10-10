@@ -1,12 +1,16 @@
 # Roteiro de gravação · A Chave do Farol · Dia 1
 
+**Vozes e produção · 10/10/2026:** **Professora** conduz; **Debinha (avatar)** participa em 5 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
+
+**Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações são referências para ensaio, incluindo as novas falas; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+
 Seis seções, seis vídeos. Como na Aula 1 do Cadê Todo Mundo?, o dia começa pelo jogo pronto e pelo caderno. Depois, cada ideia tem sua seção: uma experiência mostra o conceito e a montagem seguinte o aplica no jogo (a cada quadro e o limite da tela). Até 05/10/2026, as duas primeiras seções formavam a aula separada de introdução, e as três ideias ficavam num só vídeo de montagem.
 
 - **Seções 1 e 2:** o jogo pronto é uma atividade separada do projeto que a pessoa vai construir. Não gravar uma partida resolvida, tour da plataforma nem tutorial do leitor. Conferir o PDF anexado antes de gravar a seção 2.
 - **Seções 3 e 5:** a mesma experiência `lighthouse-walk`, com metas diferentes. O vídeo é uma demonstração: o narrador faz cada gesto na primeira pessoa e explica; só no fim passa a vez, e a pessoa repete os testes na experiência, que cobra as metas.
 - **Seções 4 e 6:** o mesmo projeto. O cenário, os desenhos, o desenho de cada quadro e a regra do barco já vêm preparados; o projeto inicial ainda não tem controles nem movimento. A seção 4 verifica sem enviar, e a seção 6 verifica e envia. O movimento permanece em 3; a escolha de velocidade saiu do curso em 06/10/2026. Mostrar cada gesto no ritmo da fala, com pausa para acompanhar. Não fazer outra demonstração do jogo completo nem tour de abas, divisória ou ampliação.
 
-Só a narração é falada; o botão atual se chama **Próxima parte**, e a última seção termina em **Concluir fase**.
+O botão atual se chama **Próxima parte**, e a última seção termina em **Concluir fase**.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" não serve de palavra de ligação: é o nome de um espaço do bloco Se. O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).
 
@@ -18,14 +22,25 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 50 a 65 segundos.
 
-**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. No "Olha aqui", segurar a seta da tela para a direita por um instante e deixar ver o personagem andar um pouco; parar antes da chave. Não percorrer o caminho nem mostrar o barco chegando. No "E tem uma coisa esperando por você", falar olhando para a câmera, com entusiasmo e naturalidade, sem mostrar nada da personalização. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** título A Chave do Farol e cena inicial do jogo pronto, com as quatro setas visíveis. Apontar o personagem, a chave e o farol apagado quando forem citados. Manter a cena parada durante a pergunta da Debinha.
 
-**Narração:**
+**Professora:**
+
 > "Oi! Neste desafio, você vai programar o jogo A Chave do Farol. Antes de montar o seu, você vai jogar a versão pronta, para ver como o jogo funciona.
 >
-> A história é assim: um barco precisa chegar à costa, mas o farol está apagado, e sem a luz do farol o barco não consegue chegar. Para acender o farol, o personagem precisa pegar a chave e levar até lá.
->
-> Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também dá para clicar dentro do jogo e usar as setas do teclado.
+> A história é assim: um barco precisa chegar à costa, mas o farol está apagado, e sem a luz do farol o barco não consegue chegar. Para acender o farol, o personagem precisa pegar a chave e levar até lá."
+
+**Na tela:** **F1P1-D01** · Debinha entra com o personagem e uma seta visíveis; ainda não mover o personagem.
+
+**Debinha (avatar):**
+
+> "E como eu levo o personagem até a chave?"
+
+**Na tela:** Debinha sai. Demonstrar somente um pequeno movimento na seta, no ritmo da resposta. Não revelar o percurso nem mostrar o barco chegando. No anúncio da surpresa, falar olhando para a câmera, com entusiasmo, sem mostrar a personalização. Depois passar a vez; o convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+
+**Professora:**
+
+> "Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também dá para clicar dentro do jogo e usar as setas do teclado.
 >
 > Já o caminho até a chave e depois até o farol, esse eu deixo para você descobrir.
 >
@@ -45,7 +60,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** capa e uma página de montagem do Mapa da Aventura, o caderno anexado a `materiais-farol`. No "Olha aqui", apontar o mapa. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Não apresentar um mapa como material adicional nem simular arquivo disponível se o PDF ainda não estiver anexado. No fim, apontar **Próxima parte**.
 
-**Narração:**
+**Professora:**
+
 > "Olha aqui: este é o seu Mapa da Aventura! Nele estão os passos para montar o seu jogo nos três dias, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer algum passo, é só voltar aqui e abrir o mapa.
 >
 > Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o mapa e consultar onde quiser.
@@ -62,18 +78,29 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 70 a 90 segundos.
 
-**Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o x fica igual; no "Tá vendo?", manter o x à vista), ligar a seta e avançar alguns quadros (o x sobe), depois Rodar. No "Olha a regra do movimento", apontar a regra com o movimento dentro de A cada quadro do jogo. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase do desenho animado, um bloquinho folheado (flipbook) em que o personagem dá um passinho em cada folha. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+**Na tela:** mostrar a experiência `lighthouse-walk` com a seta desligada. Fazer cada gesto no ritmo da fala: Avançar 1 quadro sem a seta (o x fica igual; no "Tá vendo?", manter o x à vista), ligar a seta e avançar alguns quadros (o x sobe). Não clicar em Rodar antes da pergunta. No "Olha a regra do movimento", apontar a regra com o movimento dentro de A cada quadro do jogo. **Meme na comparação:** na frase do desenho animado, um bloquinho folheado (flipbook) em que o personagem dá um passinho em cada folha. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
 
-**Narração:**
+**Professora:**
+
 > "Esta é uma experiência para a gente entender os quadros do jogo e como o personagem anda.
 >
 > Sabe desenho animado? Ele é feito de muitas imagens, uma depois da outra, passando bem rápido. O jogo funciona do mesmo jeito: mostra muitas imagens por segundo, e cada imagem é um quadro. E repare neste x aqui: ele mostra onde o personagem está.
 >
 > Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. Tá vendo? O x não muda, porque, sem a seta, o personagem fica parado.
 >
-> Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. Repare que, a cada quadro, o x aumenta um pouco. É assim que ele anda: um passinho em cada quadro. E sabe por quê? Olha a regra do movimento: ela fica dentro de A cada quadro do jogo, por isso acontece de novo em todo quadro.
->
-> Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela, e, para ver tudo de novo, eu clico em Recomeçar.
+> Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. Repare que, a cada quadro, o x aumenta um pouco. É assim que ele anda: um passinho em cada quadro. E sabe por quê? Olha a regra do movimento: ela fica dentro de A cada quadro do jogo, por isso acontece de novo em todo quadro."
+
+**Na tela:** **F1P3-D01** · Debinha entra depois dos avanços quadro a quadro. Manter o botão Rodar livre, sem acioná-lo ainda.
+
+**Debinha (avatar):**
+
+> "E se eu clicar em Rodar?"
+
+**Na tela:** Debinha sai. Clicar em Rodar durante a resposta, mostrar os quadros em sequência e a saída da tela. Depois demonstrar Recomeçar e passar a vez.
+
+**Professora:**
+
+> "Vamos ver. Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela, e, para ver tudo de novo, eu clico em Recomeçar.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
@@ -89,7 +116,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** abrir o projeto inicial da seção. Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no jogo (sem setas na tela; no "Tá vendo?", manter o personagem parado à vista), depois a lembrança da experiência e o anúncio da montagem. Apresentar os comandos como bloquinhos; no "Olha aqui: neste menu", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois deixar à vista o fim da área **Ao iniciar**, com os blocos preparados; se for preciso, arrastar um espaço vazio entre os blocos. Só então abrir **Jogo 2D → Controles → Teclado, ações e toque**, arrastar **Ativar controles clássicos** até o fim de **Ao iniciar** e selecionar só as quatro direções. A Pré-visualização atualiza sozinha; aguardar a atualização sem recomendar Atualizar a cada encaixe.
 
-**Narração:**
+**Professora:**
+
 > "Aqui no seu jogo, não tem seta na tela. Tá vendo? O personagem fica parado, porque faltam as setas e o movimento.
 >
 > Lembra da experiência da parte anterior? Com a seta segurada, ele andava a cada quadro. Agora a gente vai pôr as setas e o movimento no seu jogo!
@@ -104,10 +132,17 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > No menu desse bloco, escolha só as quatro direções e espere o jogo atualizar. Repare: as setas de cima, de baixo, da esquerda e da direita aparecem na tela!"
 
-**Na tela:** deixar à vista, na área **Enquanto estiver rodando**, o bloco **A cada quadro do jogo** e o **Desenhar o cenário praia-tropical** dentro dele. Só então abrir **Jogo 2D → Movimento → Movimentos prontos**, pegar **Mover sprite em 4 direções com setas, velocidade** e soltar logo depois de **Desenhar o cenário praia-tropical**, antes dos blocos preparados do barco. Escolher `personagem` e manter a velocidade `3`.
+**Na tela:** **F1P4-D01** · Com apenas os controles montados, demonstrar brevemente uma seta sem deslocamento. Debinha entra sem cobrir as setas ou o personagem; ainda não há bloco de movimento.
 
-**Narração:**
-> "Só que as setas sozinhas ainda não movem ninguém. A gente precisa dizer para o jogo quem elas vão mover, e esse alguém é o personagem. No jogo, o personagem é um sprite, que é um objeto do jogo que você pode programar.
+**Debinha (avatar):**
+
+> "As setas apareceram, mas ele ainda não anda!"
+
+**Na tela:** Debinha sai. Deixar à vista, na área **Enquanto estiver rodando**, o bloco **A cada quadro do jogo** e o **Desenhar o cenário praia-tropical** dentro dele. Só então abrir **Jogo 2D → Movimento → Movimentos prontos**, pegar **Mover sprite em 4 direções com setas, velocidade** e soltar logo depois de **Desenhar o cenário praia-tropical**, antes dos blocos preparados do barco. Escolher `personagem` e manter a velocidade `3`.
+
+**Professora:**
+
+> "É que as setas sozinhas ainda não movem ninguém. A gente precisa dizer para o jogo quem elas vão mover, e esse alguém é o personagem. No jogo, o personagem é um sprite, que é um objeto do jogo que você pode programar.
 >
 > E, como você viu na experiência, o movimento tem que acontecer em todo quadro. Por isso, ele vai dentro do bloco A cada quadro do jogo, que fica na área Enquanto estiver rodando. Encontre esse bloco e deixe à vista o Desenhar o cenário praia tropical, que está lá dentro.
 >
@@ -119,10 +154,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** testar uma seta da tela. No computador, clicar dentro do jogo e testar uma seta do teclado. Pausar para a pessoa testar. Depois clicar em **Verificar esta parte**, mostrar o resultado real, esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
 
-**Narração:**
+**Professora:**
+
 > "Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!
 >
-> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.
+> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
@@ -138,16 +174,27 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Duração alvo:** 50 a 65 segundos.
 
-**Na tela:** mostrar a mesma experiência com **Manter dentro da tela** desligado. Ligar a seta e Rodar até o personagem sair pela borda; no "Tá vendo?", deixar ver a saída. Clicar em **Recomeçar**, ligar o limite e Rodar de novo, mostrando o personagem parado inteiro na borda. No fim, apontar a experiência para a pessoa repetir. **Meme na comparação:** na frase da parede invisível, o personagem fazendo mímica com as mãos espalmadas numa parede invisível na borda da tela. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+**Na tela:** mostrar a mesma experiência com **Manter dentro da tela** desligado. Ligar a seta e Rodar até o personagem sair pela borda; no "Tá vendo?", deixar ver a saída. Não recomeçar nem ligar o limite antes da pergunta da Debinha.
 
-**Narração:**
+**Professora:**
+
 > "Esta é a mesma experiência, mas agora é para a gente entender o limite da tela.
 >
 > A tela do jogo é como uma janela: tudo o que passa da borda some de vista.
 >
-> Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela.
->
-> Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda e fica inteiro na tela! É que Manter dentro da tela funciona como uma parede invisível na borda da janela.
+> Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela."
+
+**Na tela:** **F1P5-D01** · Debinha entra depois que o personagem sai pela borda, sem encobrir o controle Manter dentro da tela.
+
+**Debinha (avatar):**
+
+> "Como eu faço ele parar na borda?"
+
+**Na tela:** Debinha sai. Só agora recomeçar, ligar o limite e rodar de novo. Mostrar a parada na borda e depois passar a vez. **Meme na comparação:** na frase da parede invisível, o personagem fazendo mímica com as mãos espalmadas numa parede invisível na borda da tela. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência; a narração explica sozinha.
+
+**Professora:**
+
+> "Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: dessa vez ele para na borda e fica inteiro na tela! É que Manter dentro da tela funciona como uma parede invisível na borda da janela.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
 
@@ -163,14 +210,22 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no projeto (levar o personagem até uma beirada e segurar a seta até parte dele sair da tela; no "Tá vendo?", manter essa parte à vista), depois a lembrança e o anúncio. Pausar para a pessoa testar.
 
-**Narração:**
+**Professora:**
+
 > "Aqui no seu jogo, segure uma seta até chegar à beirada. Tá vendo? Parte dele sai da tela, porque ainda não há limite.
 >
 > Lembra da experiência da parte anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo!"
 
-**Na tela:** deixar à vista o bloco de movimento dentro de **A cada quadro do jogo**. Só então abrir **Jogo 2D → Movimento → Bordas e rebatidas**, pegar **Manter o sprite dentro da tela** e soltar logo abaixo do bloco de movimento. Escolher `personagem`; este bloco só tem o seletor de sprite. Testar as quatro bordas com o dispositivo disponível.
+**Na tela:** **F1P6-D01** · Debinha entra após a retomada, antes de abrir a paleta; o bloco de movimento fica visível.
 
-**Narração:**
+**Debinha (avatar):**
+
+> "E onde eu coloco esse limite?"
+
+**Na tela:** Debinha sai. Deixar à vista o bloco de movimento dentro de **A cada quadro do jogo**. Só então abrir **Jogo 2D → Movimento → Bordas e rebatidas**, pegar **Manter o sprite dentro da tela** e soltar logo abaixo do bloco de movimento. Escolher `personagem`; este bloco só tem o seletor de sprite. Testar as quatro bordas com o dispositivo disponível.
+
+**Professora:**
+
 > "Esse limite precisa ser conferido em todo quadro, logo depois que o personagem anda. Por isso, o limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. Deixe esse lugar à vista.
 >
 > Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela.
@@ -179,11 +234,12 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora teste as quatro direções até chegar às beiradas. Repare: o personagem tem que ficar sempre inteiro na tela.
 >
-> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo."
+> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo."
 
 **Na tela:** clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Em caso de pendência, enquadrar o item a corrigir e verificar de novo. Esperar **Salvo**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar o envio. Apontar **Concluir fase**.
 
-**Narração:**
+**Professora:**
+
 > "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
 > Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.

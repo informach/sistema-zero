@@ -1,0 +1,14 @@
+{
+  "mode": "Ferramenta integrada image_gen",
+  "id": "F03-01-capa-debora",
+  "file": "01-debora-descobrindo-farol.png",
+  "refs": [
+    "C:/Users/tocha/Downloads/FotosHelenaJulio/WhatsApp Image 2026-10-09 at 08.36.33 (1).jpeg",
+    "C:/Users/tocha/projects/sistema-zero/output/instagram/projetos/2026-10-09/capturas/farol-inicio.png"
+  ],
+  "prompt": "Use case: photorealistic-natural with identity preservation. Generate ONE landscape 3:2 contextual photograph for the image area of an Instagram carousel cover about a child beginning to create games. IMAGE 1 is the identity reference: Débora is ONLY the older girl wearing pink/mauve glasses, short curly brown hair, with a gentle round face. Do NOT include the baby or any other person. Preserve her exact recognizable facial features, age, proportions, skin tone, eyes, nose, lips, distinctive glasses and hair. IMAGE 2 is a supporting screen insert: the actual A Chave do Farol game, preserve its flat 2D graphics, red and white lighthouse, gold key, sandy path, coast and small character. Scene: Débora alone at a simple Brazilian home desk, beginning to discover the lighthouse game on a notebook computer with a separate mouse. One hand naturally on the mouse, the other resting next to the keyboard. She is looking with curiosity and a small delighted smile at the game, not at the camera. Three-quarter front/side environmental portrait: her face is large and well lit on the left half, the laptop screen on the right half, angled physically toward her while still visible to camera. Both face and entire game screen are central and clearly readable at small carousel size. Use plain soft-blue casual shirt, no uniform logos. Warm gentle daylight, believable home, natural skin texture, uncluttered desk. Frame whole head and hair, hands and laptop with breathing room; keep all important content within central 90% of image. No adults, siblings, toys, baby, medals, certificates, futuristic gamer equipment, extra limbs, pointing gestures, floating icons or invented UI panels. No titles, captions, text outside the game, decorative wall slogans, labels, watermarks or sales seals. The output is only the photograph; the carousel text will be added separately. This is an authorized generated contextual scene, not documentary footage.",
+  "copy": {
+    "title": "Como seu filho pode começar a criar jogos.",
+    "body": "Conheça o Desafio do Primeiro Jogo e veja o que vocês precisam para começar."
+  }
+}

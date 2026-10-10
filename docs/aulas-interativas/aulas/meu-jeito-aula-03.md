@@ -8,6 +8,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 - Resultado: Nave com animação voando de dois quadros a 8 quadros por segundo.
 - Seções: 7. Vídeos: 6.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O segundo quadro muda só o motor. A revisão formativa fica separada da galeria.
@@ -28,6 +30,8 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 **Blocos na página:** video-quadros → fala-quadros → experiencia-quadros.
 
+**Participação no vídeo:** ID video-quadros-avatar-01. Professora até “a Velocidade diz quantas páginas passam por segundo.”. Antes da entrada: Comparar as velocidades 2 e 8, parar a Prévia e concluir a comparação com o livrinho. Debinha entra, com os gestos parados, e fala: “E se os dois desenhos forem iguais?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. Repare: a Prévia continua trocando 8 quadros por segundo, mas o fogo parou de pulsar, porque os dois desenhos ficaram iguais. Ou seja, sem diferença entre os quadros, não há movimento.”. Na retomada: Ligar a Prévia e tornar o quadro 2 igual ao 1 só depois da pergunta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `frames`. Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo. Sem palpite, pistas ou pergunta final.
 
 ### Seção 2. Desenhe o primeiro fogo
@@ -43,6 +47,8 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 **Tarefa / Zappy na página:** Sua vez! Use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-fantasma → fala-fantasma → experiencia-fantasma.
+
+**Participação no vídeo:** ID video-fantasma-avatar-01. Professora até “agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”. Antes da entrada: Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis. Debinha entra, com os gestos parados, e fala: “Assim eu vejo os dois fogos ao mesmo tempo!”. Debinha sai antes da resposta. Retomada da professora: “E o Fantasma não entra na animação, porque ele só ajuda a comparar.”. Na retomada: Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `onion-skin`. Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro. Sem palpite, pistas ou pergunta final.
 

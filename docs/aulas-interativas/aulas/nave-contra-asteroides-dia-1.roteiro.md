@@ -6,7 +6,9 @@ Fonte: `qa/nave-contra-asteroides.conteudo.json`. Gerado por `qa/gerar-nave-cont
 
 Entrada: Tela 800 × 480 e nave visível em x 400, y 410, ainda parada. Saída: Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro marco original.
 
-Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Só a narração é gravada; a ponte do Zappy é texto da página.
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
+Retomar o projeto enviado na aula anterior. O projeto inicial é alternativa quando não houver envio, nunca substituição do trabalho salvo. Mostrar caminhos, campos e encaixes sem cortes. A prévia do Estúdio é automática. Gravar as falas marcadas como Professora e avatar; a ponte do Zappy é texto da página.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" é o encaixe do bloco Se e não aparece como palavra de ligação. A ponte do Zappy começa convidando ("Sua vez!", "Agora…!", "Hora de…!") e termina na ação de saída. Cada montagem que aplica uma experiência começa por uma retomada curta, nesta ordem: o teste no próprio jogo ("Tá vendo?", com o porquê), a lembrança da experiência numa frase e o anúncio, uma vez só, colado ao primeiro passo. Depois de montar, a criança testa direto; a lista dos blocos entra uma vez só, depois do teste ("Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: …").
 
@@ -16,18 +18,34 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda "Velocidade 3 · Velocidade 1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Direção geral do clipe:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda "Velocidade 3 · Velocidade 1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender a velocidade: quanto a nave anda em cada quadro. A regra aqui é a mesma que você vai montar: a cada quadro do jogo, mover a nave com as setas.
+**ID de edição:** `video-seta-e-velocidade-avatar-01`.
+
+**Na tela:** Mostrar os três avanços com velocidade 3 e deixar x em 217.
+
+**Professora:**
+
+> “Esta é uma experiência para a gente entender a velocidade: quanto a nave anda em cada quadro. A regra aqui é a mesma que você vai montar: a cada quadro do jogo, mover a nave com as setas.
 >
 > Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. Tá vendo? O x continua 208, e a nave fica parada, porque, em cada quadro, o jogo confere a seta, e a seta está solta.
 >
-> Agora eu ligo a seta, deixo Velocidade 3 e avanço um quadro de cada vez. Repare no x: ele vai para 211, depois 214, depois 217, ou seja, cada quadro soma 3. É como o tamanho do passo quando você anda: passo grande leva mais longe. A velocidade é o tamanho do passo da nave em cada quadro.
+> Agora eu ligo a seta, deixo Velocidade 3 e avanço um quadro de cada vez. Repare no x: ele vai para 211, depois 214, depois 217, ou seja, cada quadro soma 3. É como o tamanho do passo quando você anda: passo grande leva mais longe. A velocidade é o tamanho do passo da nave em cada quadro.”
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Quero testar um passo menor.”
+
+**Na tela:** Dedé sai antes da resposta. Recomeçar e testar velocidade 1, com os números e a nave à vista.
+
+**Professora:**
+
+> “Depois, eu clico em Recomeçar, escolho Velocidade 1 e avanço de novo. Agora o x vai de 208 para 209, depois 210. O passo ficou menor, por isso a nave anda mais devagar. No seu jogo, você vai usar velocidade 7, um passo maior.
 >
-> Depois, eu clico em Recomeçar, escolho Velocidade 1 e avanço de novo. Agora o x vai de 208 para 209, depois 210. O passo ficou menor, por isso a nave anda mais devagar. No seu jogo, você vai usar velocidade 7, um passo maior.
->
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Compare a seta solta e a seta segurada e depois as velocidades 3 e 1, avançando um quadro por vez. Quando terminar, clique em Próxima parte.
 
@@ -39,8 +57,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, segurar uma seta e, no "Tá vendo?", manter a nave parada à vista. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
-**Narração:**
-> "Clique no seu jogo e segure uma seta. Tá vendo? A nave fica parada, porque ainda não tem a regra das setas.
+**Professora:**
+
+> “Clique no seu jogo e segure uma seta. Tá vendo? A nave fica parada, porque ainda não tem a regra das setas.
 >
 > Lembra da experiência da parte anterior? A nave só andava com a seta segurada, e a velocidade decidia o passo. Agora a gente vai pôr essa regra no seu jogo!
 >
@@ -54,7 +73,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Mover o sprite nave com as setas, com velocidade 7, e logo abaixo vem Desenhar o sprite nave. E clique na área do jogo antes de segurar a seta, porque é assim que o jogo recebe as teclas. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
@@ -64,14 +84,29 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no "Tá vendo?", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no "Tá vendo?", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Clique no seu jogo e segure uma seta. Tá vendo? Fica um rastro de naves, porque nada apaga o desenho de antes.
+**ID de edição:** `video-limpeza-avatar-01`.
+
+**Na tela:** Mostrar o rastro e retomar a experiência, antes de pegar o bloco de limpeza.
+
+**Professora:**
+
+> “Clique no seu jogo e segure uma seta. Tá vendo? Fica um rastro de naves, porque nada apaga o desenho de antes.
 >
-> Lembra da experiência do desenho a cada quadro, na primeira fase? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!
->
-> A limpeza tem que acontecer no começo de cada quadro, antes de tudo. Por isso, deixe à vista o primeiro encaixe de A cada quadro do jogo, logo acima do bloco de movimento.
+> Lembra da experiência do desenho a cada quadro, na primeira fase? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!”
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Isso vai apagar a minha nave?”
+
+**Na tela:** Dedé sai antes da resposta. Localizar o começo do quadro e montar Limpar a tela; confirmar no teste que só o desenho anterior é apagado.
+
+**Professora:**
+
+> “Só o desenho anterior. A nave continua no jogo e vai ser desenhada de novo. A limpeza tem que acontecer no começo de cada quadro, antes de tudo. Por isso, deixe à vista o primeiro encaixe de A cada quadro do jogo, logo acima do bloco de movimento.
 >
 > Agora abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, e pegue o bloco Limpar a tela. Arraste e solte no começo de A cada quadro do jogo, logo acima do movimento, quando aparecer o encaixe.
 >
@@ -79,7 +114,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Mover o sprite nave com as setas e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
@@ -89,16 +125,32 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Direção geral do clipe:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
 
-**Narração:**
-> "Esta é a mesma experiência da primeira parte desta fase, agora para a gente entender o limite da tela.
+**ID de edição:** `video-limite-da-tela-avatar-01`.
+
+**Na tela:** Deixar a nave sair inteira da tela com a regra do limite desligada.
+
+**Professora:**
+
+> “Esta é a mesma experiência da primeira parte desta fase, agora para a gente entender o limite da tela.
 >
-> Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? A nave anda, chega à borda e continua até sair inteira da tela, porque, sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.
+> Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? A nave anda, chega à borda e continua até sair inteira da tela, porque, sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.”
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Minha nave foi embora!”
+
+**Na tela:** Dedé sai antes da resposta. Recomeçar, ligar Manter dentro da tela e repetir o movimento até a borda.
+
+**Professora:**
+
+> “Vamos colocar um limite para ela ficar na tela. Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: a nave anda até a borda e para ali, inteira na tela, com o x em 416. É que, em cada quadro, depois de mover, o jogo confere a borda e segura a nave do lado de dentro. No seu jogo, Manter o sprite dentro da tela vai ficar logo depois do movimento.
 >
-> Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. Olha só: a nave anda até a borda e para ali, inteira na tela, com o x em 416. É que, em cada quadro, depois de mover, o jogo confere a borda e segura a nave do lado de dentro. No seu jogo, Manter o sprite dentro da tela vai ficar logo depois do movimento.
->
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte.
 
@@ -110,8 +162,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Começar pela retomada, antes de qualquer bloco: segurar uma seta até a nave passar da borda e, no "Tá vendo?", manter a saída à vista. Depois deixar à vista o espaço entre o movimento e o desenho, montar o limite e repetir os dois testes. Conferir o sprite escolhido no bloco de limite. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
-**Narração:**
-> "Clique no seu jogo e segure uma seta até a borda. Tá vendo? A nave sai da tela, porque ainda não tem limite.
+**Professora:**
+
+> “Clique no seu jogo e segure uma seta até a borda. Tá vendo? A nave sai da tela, porque ainda não tem limite.
 >
 > Lembra da experiência da parte anterior? Com Manter dentro da tela ligado, a nave parava inteira na borda. Agora a gente vai pôr esse limite no seu jogo!
 >
@@ -125,7 +178,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Mover o sprite nave com as setas, Manter o sprite nave dentro da tela e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
@@ -137,8 +191,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedacinho da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase de pintar no papel, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy pintando um céu estrelado por cima do desenho de uma nave, com a legenda "quem vem por último fica por cima"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
 
-**Narração:**
-> "Esta é uma experiência para a gente entender por que a ordem dos desenhos muda o que aparece na tela.
+**Professora:**
+
+> “Esta é uma experiência para a gente entender por que a ordem dos desenhos muda o que aparece na tela.
 >
 > Olha aqui: na lista A ordem de desenhar, a nave está em 1º a desenhar, e o fundo de estrelas, em 2º. Tá vendo? Só aparece um pedacinho da nave, porque o fundo foi desenhado por cima dela. É como pintar no papel: se você desenha a nave e depois pinta o céu por cima, o céu cobre a nave.
 >
@@ -146,7 +201,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Eu troco a ordem de novo, e a nave volta para trás das estrelas, sem nada apagado: só a ordem mudou. Por último, deixo o fundo antes da nave outra vez, e a nave aparece. No seu jogo, o desenho das estrelas vai ficar antes do desenho da nave.
 >
-> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte."
+> Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Sua vez! Troque a ordem do fundo e da nave, compare a tela e termine com o fundo antes da nave. Quando terminar, clique em Próxima parte.
 
@@ -158,8 +214,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Na tela:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar o fundo liso. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
-**Narração:**
-> "Olhe o fundo do seu jogo. Tá vendo? Ele é liso, porque o jogo ainda não desenha nenhuma estrela.
+**Professora:**
+
+> “Olhe o fundo do seu jogo. Tá vendo? Ele é liso, porque o jogo ainda não desenha nenhuma estrela.
 >
 > Lembra da experiência da parte anterior? O fundo desenhado antes da nave ficava atrás dela, e a nave aparecia inteira. Agora a gente vai pôr um céu de estrelas no seu jogo!
 >
@@ -177,7 +234,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Desenhar fundo de estrelas, Mover o sprite nave com as setas, Manter o sprite nave dentro da tela e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+
 
 **Zappy na página (não gravar):** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte.
 
@@ -195,11 +253,13 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 **Na tela:** Conferir a sequência e os testes, depois demonstrar a verificação e a confirmação de envio. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
 
-**Narração:**
-> "Agora teste a sua nave antes de enviar. Clique na área do jogo e leve a nave até cada borda: ela tem que parar inteira na tela e continuar na frente das estrelas, porque o limite e a ordem dos desenhos estão funcionando juntos.
+**Professora:**
+
+> “Agora teste a sua nave antes de enviar. Clique na área do jogo e leve a nave até cada borda: ela tem que parar inteira na tela e continuar na frente das estrelas, porque o limite e a ordem dos desenhos estão funcionando juntos.
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a sequência começa em Limpar a tela e termina em Desenhar o sprite nave, e os três blocos da nave usam o nome nave. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase."
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase.”
+
 
 **Zappy na página (não gravar):** Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.

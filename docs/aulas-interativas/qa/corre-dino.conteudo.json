@@ -280,7 +280,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-coordenadas"
+        "activityKey": "experiencia-coordenadas",
+        "avatar": {
+          "after": "O x conta de um lado para o outro.",
+          "speech": "E para fazer ele descer?",
+          "beforeScreen": "Mostrar o Dino indo para a direita ao aumentar somente x, com y ainda em 150.",
+          "afterScreen": "Aumentar somente y para 200 e acompanhar a descida; continuar os testes com os dois números."
+        }
       },
       {
         "key": "criar-e-mostrar",
@@ -315,7 +321,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "descoberta"
+        "activityKey": "descoberta",
+        "avatar": {
+          "after": "Ele só não foi desenhado.",
+          "speech": "Como eu faço ele aparecer?",
+          "beforeScreen": "Clicar em Criar o Dino e deixar os bastidores ocupados e a tela vazia à vista.",
+          "afterScreen": "Clicar em Mostrar o Dino na tela só depois da pergunta e comparar os dois lugares."
+        }
       },
       {
         "key": "criar-dino",
@@ -616,7 +628,14 @@
               "beforeBlock": "sz_g2d_draw_sprite"
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "cada desenho novo cai em cima do velho.",
+          "speech": "Como eu tiro essa sombra escura?",
+          "beforeScreen": "Aproximar a sombra que escurece, antes de pegar qualquer bloco.",
+          "afterScreen": "Retomar a experiência e montar a limpeza antes do desenho, com todos os encaixes e testes.",
+          "reply": "É isso que a gente vai resolver."
+        }
       },
       {
         "key": "camadas",
@@ -651,7 +670,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-camadas"
+        "activityKey": "experiencia-camadas",
+        "avatar": {
+          "after": "Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.",
+          "speech": "Como eu trago o Dino para a frente?",
+          "beforeScreen": "Mostrar a floresta cobrindo quase todo o Dino; manter a ordem inicial.",
+          "afterScreen": "Trocar o Dino para depois da Floresta e deixar o resultado aparecer antes da explicação."
+        }
       },
       {
         "key": "ordem-certa",
@@ -786,7 +811,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-descricao"
+        "activityKey": "experiencia-descricao",
+        "avatar": {
+          "after": "O programa não vê o desenho, por isso não tem como contar o que acontece.",
+          "speech": "A gente pode escrever como se joga!",
+          "beforeScreen": "Deixar a leitura do campo vazio terminar antes da entrada; não sobrepor as vozes.",
+          "afterScreen": "Escrever a descrição e ouvir a leitura inteira sem voz do avatar nem da professora por cima.",
+          "reply": "Pode, sim."
+        }
       },
       {
         "key": "descrever-jogo",
@@ -1011,7 +1043,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-gravidade"
+        "activityKey": "experiencia-gravidade",
+        "avatar": {
+          "after": "A experiência para o tempo com ele lá no alto.",
+          "speech": "E agora? Como ele volta para o chão?",
+          "beforeScreen": "Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto.",
+          "afterScreen": "Ligar o fio da Gravidade com o Dino no ar e acompanhar a subida, a parada e a queda."
+        }
       },
       {
         "key": "aplicar-gravidade",
@@ -1149,7 +1187,14 @@
               "beforeBlock": "sz_g2d_draw_sprite"
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "porque o mesmo bloco já cuida dos três controles.",
+          "speech": "Já consegui pular dos três jeitos!",
+          "beforeScreen": "Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso.",
+          "afterScreen": "Retomar a explicação do toque embaixo e testar os dois toques durante o mesmo salto.",
+          "reply": "Agora vamos conferir mais duas coisas."
+        }
       },
       {
         "key": "revisao",
@@ -1456,7 +1501,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-dedo-e-pulo"
+        "activityKey": "experiencia-dedo-e-pulo",
+        "avatar": {
+          "after": "porque esse pulo não veio da tecla Espaço.",
+          "speech": "Eu quero que todo pulo tenha som!",
+          "beforeScreen": "Concluir o teste por tecla e o teste por toque; deixar os contadores à vista e o Dino pousado.",
+          "afterScreen": "Levar Tocar efeito para Quando o Dino pular, soltar a peça e repetir os testes.",
+          "reply": "Vamos ligar o som ao pulo."
+        }
       },
       {
         "key": "som-no-pulo",
@@ -1511,7 +1563,14 @@
               "count": 0
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "porque o som está ligado ao pulo, e não à tecla.",
+          "speech": "O meu ainda está sem som.",
+          "beforeScreen": "Concluir os testes sem sobrepor vozes ao som; esperar o Dino pousar.",
+          "afterScreen": "Apontar o evento e o efeito na conferência; mostrar também o clique que libera o áudio, se necessário.",
+          "reply": "Vamos conferir onde o som ficou."
+        }
       },
       {
         "key": "entrega",
@@ -1701,7 +1760,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-ritmo"
+        "activityKey": "experiencia-ritmo",
+        "avatar": {
+          "after": "Eles formam uma parede, e o Dino não teria como pular.",
+          "speech": "Como eu deixo um espaço entre eles?",
+          "beforeScreen": "Deixar o tempo parado com a parede de cactos visível.",
+          "afterScreen": "Mover Criar cacto para o relógio de 1,4 s; deixar os dois nascimentos acontecerem no tempo real."
+        }
       },
       {
         "key": "grupo-e-relogio",
@@ -1781,7 +1846,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-velocidade"
+        "activityKey": "experiencia-velocidade",
+        "avatar": {
+          "after": "Em cada quadro, o jogo soma a velocidade ao x.",
+          "speech": "E se eu quiser que o cacto vá para o outro lado?",
+          "beforeScreen": "Mostrar o cacto avançando para a direita com velocidade 5 e o x na faixa.",
+          "afterScreen": "Trocar para -5 e avançar os quadros; depois testar as duas velocidades em zero."
+        }
       },
       {
         "key": "criar-cactos",
@@ -1902,7 +1973,14 @@
               "beforeBlock": "sz_g2d_update_group"
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "Depois de corrigir, teste de novo.",
+          "speech": "O cacto passou pelo meu Dino!",
+          "beforeScreen": "Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras.",
+          "afterScreen": "Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.",
+          "reply": "Neste ponto, isso pode acontecer."
+        }
       },
       {
         "key": "entrega",
@@ -2152,7 +2230,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-visivel-guardado"
+        "activityKey": "experiencia-visivel-guardado",
+        "avatar": {
+          "after": "Por isso o grupo tem mais cactos do que a tela.",
+          "speech": "Tem cacto guardado mesmo depois de sair!",
+          "beforeScreen": "Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave.",
+          "afterScreen": "Ligar a regra e acompanhar os números até ficarem iguais.",
+          "reply": "Tem, sim. Vamos tirar do grupo os que já saíram."
+        }
       },
       {
         "key": "faxina",
@@ -2211,7 +2296,13 @@
               "count": 0
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "Agora a gente vai colocar a regra que tira esses cactos de lá!",
+          "speech": "Onde essa regra entra?",
+          "beforeScreen": "Retomar a experiência com o projeto aberto, sem pegar blocos ainda.",
+          "afterScreen": "Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa."
+        }
       },
       {
         "key": "revisao",
@@ -2445,7 +2536,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-condicao"
+        "activityKey": "experiencia-condicao",
+        "avatar": {
+          "after": "O relógio cria cactos sem perguntar nada.",
+          "speech": "Mas eu nem comecei a jogar!",
+          "beforeScreen": "Deixar nascer um cacto na abertura, com Criar cacto fora do Se.",
+          "afterScreen": "Mover a peça para dentro do Se jogando, soltar e repetir os testes antes e depois de começar.",
+          "reply": "Vamos fazer os cactos esperarem a partida."
+        }
       },
       {
         "key": "estado-inicio",
@@ -2749,7 +2847,14 @@
               }
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "mesmo ainda sem uma tela de abertura desenhada.",
+          "speech": "A floresta continua passando, mas os cactos esperam!",
+          "beforeScreen": "Concluir o teste em jogando e voltar para inicio antes da entrada; mostrar apenas a floresta passando.",
+          "afterScreen": "Manter inicio e seguir para a verificação, o salvamento e a próxima parte.",
+          "reply": "Isso mesmo."
+        }
       },
       {
         "key": "entrega",
@@ -3185,7 +3290,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-convite"
+        "activityKey": "experiencia-convite",
+        "avatar": {
+          "after": "Quando eu clico em Apertar Enter, a partida começa.",
+          "speech": "E quem quiser começar pelo toque?",
+          "beforeScreen": "Terminar o teste com Enter; não trocar o evento antes da pergunta.",
+          "afterScreen": "Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes."
+        }
       },
       {
         "key": "entrada-ampla",
@@ -3273,7 +3384,13 @@
               }
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.",
+          "speech": "Mas eu também uso uma tecla para pular!",
+          "beforeScreen": "Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio.",
+          "afterScreen": "Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas."
+        }
       },
       {
         "key": "entrega",
@@ -3490,7 +3607,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-contato"
+        "activityKey": "experiencia-contato",
+        "avatar": {
+          "after": "Mas os desenhos ainda têm um espacinho entre eles.",
+          "speech": "Ué, nem encostou no desenho!",
+          "beforeScreen": "Aproximar até BATEU! e apontar o vão entre os desenhos e as áreas que se tocam.",
+          "afterScreen": "Manter as áreas pontilhadas à vista enquanto explica como a batida é decidida."
+        }
       },
       {
         "key": "batida-acaba-partida",
@@ -3641,7 +3764,13 @@
               "beforeBlock": "sz_g2d_set_scene"
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela.",
+          "speech": "O som vem antes de mostrar a tela de fim?",
+          "beforeScreen": "Retomar a regra da batida com os blocos à vista, sem inserir efeitos ainda.",
+          "afterScreen": "Apontar o lugar antes de Mudar o estado do jogo para fim e montar os três efeitos na ordem narrada."
+        }
       },
       {
         "key": "trocar-nao-limpa",
@@ -3677,7 +3806,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-restart"
+        "activityKey": "experiencia-restart",
+        "avatar": {
+          "after": "Ele não arruma a pista.",
+          "speech": "Eu comecei de novo e já perdi!",
+          "beforeScreen": "Concluir a segunda partida com os cactos antigos e deixar a batida visível.",
+          "afterScreen": "Trocar a ação para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa.",
+          "reply": "É porque os cactos da outra partida ficaram ali."
+        }
       },
       {
         "key": "caminho-de-volta",
@@ -4075,7 +4211,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-hitbox"
+        "activityKey": "experiencia-hitbox",
+        "avatar": {
+          "after": "a área pega um pedaço vazio em volta do desenho.",
+          "speech": "Dá para diminuir só essa área?",
+          "beforeScreen": "Mostrar BATEU! com a área em 100% e o vão entre os desenhos.",
+          "afterScreen": "Diminuir a área para 80% sem mudar a distância; comparar com 40% só no momento narrado."
+        }
       },
       {
         "key": "ligar-raio-x",
@@ -4208,7 +4350,13 @@
               }
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.",
+          "speech": "Como eu tiro só o contorno?",
+          "beforeScreen": "Mostrar a área já ajustada e os blocos encaixados, antes de arrastar qualquer um.",
+          "afterScreen": "Separar primeiro a sequência de baixo, retirar o contorno e encaixar a sequência novamente."
+        }
       },
       {
         "key": "entrega",
@@ -4346,7 +4494,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-variavel"
+        "activityKey": "experiencia-variavel",
+        "avatar": {
+          "after": "O jogo mudou o valor sem desenhar o placar.",
+          "speech": "O jogo já contou dois. Falta mostrar!",
+          "beforeScreen": "Somar duas vezes com Mostrar placar desligado; comparar a caixa pontos com a tela sem número.",
+          "afterScreen": "Ligar Mostrar placar e somar mais uma vez com a caixa e a tela à vista.",
+          "reply": "Isso mesmo."
+        }
       },
       {
         "key": "caixinha-dos-pontos",
@@ -4464,7 +4619,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-score"
+        "activityKey": "experiencia-score",
+        "avatar": {
+          "after": "o placar já sobe, antes de alguém jogar.",
+          "speech": "Eu quero contar só durante a corrida!",
+          "beforeScreen": "Testar a soma por quadro e depois em Solto, ainda na abertura; manter o placar à vista.",
+          "afterScreen": "Levar a soma ao relógio de 1 segundo dentro da condição e testar início, partida e fim."
+        }
       },
       {
         "key": "relogio-dos-pontos",
@@ -4590,7 +4751,14 @@
               }
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "para mostrar quantos pontos você fez na partida.",
+          "speech": "Esse número vai mudar a cada partida?",
+          "beforeScreen": "Deixar a tela de fim sem o resultado visível e retomar o placar que já existe.",
+          "afterScreen": "Localizar o subtítulo e mostrar a montagem de juntar texto com a leitura de pontos no meio.",
+          "reply": "Vai mostrar os pontos daquela partida."
+        }
       },
       {
         "key": "revisao",
@@ -4909,7 +5077,14 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-random"
+        "activityKey": "experiencia-random",
+        "avatar": {
+          "after": "Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.",
+          "speech": "Ué, saiu o mesmo lugar outra vez!",
+          "beforeScreen": "Sortear até aparecer uma repetição e apontar a marca na régua; não avançar para as velocidades.",
+          "afterScreen": "Continuar explicando os limites e a repetição; depois demonstrar o sorteio das velocidades.",
+          "reply": "Pode acontecer num sorteio."
+        }
       },
       {
         "key": "lugar-diferente",
@@ -5067,7 +5242,14 @@
               "count": 1
             }
           }
-        ]
+        ],
+        "avatar": {
+          "after": "Agora a gente vai sortear a velocidade também!",
+          "speech": "Quero ver uns cactos mais rápidos que os outros!",
+          "beforeScreen": "Comparar os cactos ainda com vx -5 e retomar a experiência das raias.",
+          "afterScreen": "Localizar vx e montar a conta e o sorteio antes de comparar os cactos.",
+          "reply": "Vamos preparar essa diferença no bloco que cria cada cacto."
+        }
       },
       {
         "key": "entrega",
@@ -5263,7 +5445,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-number-line"
+        "activityKey": "experiencia-number-line",
+        "avatar": {
+          "after": "No seu jogo, velocidade mais para a esquerda é cacto mais rápido.",
+          "speech": "Qual é maior: menos cinco ou menos nove?",
+          "beforeScreen": "Mostrar os três passos de -5 a -8 na régua, sem antecipar a comparação.",
+          "afterScreen": "Voltar ao começo, escolher > e comparar -5 e -9 com a posição dos números à vista."
+        }
       },
       {
         "key": "o-que-o-freio-segura",
@@ -5306,7 +5494,13 @@
           },
           "semPerguntaFinal": true
         },
-        "activityKey": "experiencia-aceleracao"
+        "activityKey": "experiencia-aceleracao",
+        "avatar": {
+          "after": "Os cactos que já nasceram não trocam de número: cada um guarda a velocidade que recebeu ao nascer.",
+          "speech": "Com a base em menos nove, pode nascer um cacto mais rápido?",
+          "beforeScreen": "Passar cinco intervalos com a condição ligada; deixar a base em -9 e os números dos cactos visíveis.",
+          "afterScreen": "Continuar até nascer um cacto -10 e explicar a diferença entre a base e o sorteio."
+        }
       },
       {
         "key": "numero-que-manda",
@@ -5862,7 +6056,14 @@
           }
         ],
         "final": true,
-        "publish": true
+        "publish": true,
+        "avatar": {
+          "after": "as regras que fazem essas partes funcionarem juntas!",
+          "speech": "Agora eu quero mostrar a minha corrida!",
+          "beforeScreen": "Concluir todos os testes de partida, derrota, reinício e controles, com o jogo construído à vista.",
+          "afterScreen": "Seguir primeiro a verificação e o envio; mostrar a publicação opcional apenas depois da confirmação.",
+          "reply": "Você pode! Primeiro vamos conferir e enviar o seu projeto."
+        }
       }
     ],
     "legacyKeys": [

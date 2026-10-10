@@ -1,0 +1,117 @@
+{
+  "format": "1080x1920 PNG",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/01-destaques.md",
+  "finalDirectory": "C:\\Users\\tocha\\projects\\sistema-zero\\docs\\marketing\\kids\\comunidade-dos-criadores\\instagram\\producao\\destaques\\como-funciona",
+  "stories": [
+    {
+      "id": "CF01",
+      "file": "01-a-chave-do-farol.png",
+      "title": "A Chave do Farol.",
+      "copy": "Neste jogo, o personagem precisa pegar uma chave para acender o farol e ajudar um barco a chegar à costa. No Desafio do Primeiro Jogo, seu filho aprende, passo a passo, a fazer essa aventura funcionar.",
+      "paragraphs": [
+        "Neste jogo, o personagem precisa pegar uma chave para acender o farol e ajudar um barco a chegar à costa.",
+        "No Desafio do Primeiro Jogo, seu filho aprende, passo a passo, a fazer essa aventura funcionar."
+      ],
+      "kind": "hero"
+    },
+    {
+      "id": "CF02",
+      "file": "02-primeiro-experimentar.png",
+      "title": "Primeiro, experimentar.",
+      "copy": "Antes de ensinar a fazer o farol acender, a aula deixa seu filho experimentar. Ele chega à porta com a chave e sem ela. Assim, vê o que muda e entende por que precisa buscá-la.",
+      "paragraphs": [
+        "Antes de ensinar a fazer o farol acender, a aula deixa seu filho experimentar.",
+        "Ele chega à porta com a chave e sem ela. Assim, vê o que muda e entende por que precisa buscá-la."
+      ],
+      "kind": "compare"
+    },
+    {
+      "id": "CF03",
+      "file": "03-montar-e-testar.png",
+      "title": "Montar e ver se funciona.",
+      "copy": "Depois, a aula mostra como encaixar blocos na tela para dizer ao jogo o que fazer. Seu filho monta essa parte e joga das duas formas, com a chave e sem ela, para conferir se funcionou.",
+      "paragraphs": [
+        "Depois, a aula mostra como encaixar blocos na tela para dizer ao jogo o que fazer.",
+        "Seu filho monta essa parte e joga das duas formas, com a chave e sem ela, para conferir se funcionou."
+      ],
+      "kind": "blocks"
+    },
+    {
+      "id": "CF04",
+      "file": "04-buscar-a-chave-e-acender.png",
+      "title": "Buscar a chave e acender o farol.",
+      "copy": "Para chegar até aí, ele já aprendeu a fazer o personagem andar e pegar a chave. Agora junta essas partes: vai buscar a chave, leva até o farol e vê a luz acender.",
+      "paragraphs": [
+        "Para chegar até aí, ele já aprendeu a fazer o personagem andar e pegar a chave.",
+        "Agora junta essas partes: vai buscar a chave, leva até o farol e vê a luz acender."
+      ],
+      "kind": "compare"
+    },
+    {
+      "id": "CF05",
+      "file": "05-escolher-o-visual.png",
+      "title": "Escolher o visual do jogo.",
+      "copy": "Os desenhos já vêm prontos para ele começar a aprender programação. Depois, seu filho escolhe o personagem e o cenário entre as opções da aula. Também escreve as mensagens que vão aparecer no jogo.",
+      "paragraphs": [
+        "Os desenhos já vêm prontos para ele começar a aprender programação.",
+        "Depois, seu filho escolhe o personagem e o cenário entre as opções da aula. Também escreve as mensagens que vão aparecer no jogo."
+      ],
+      "kind": "custom"
+    },
+    {
+      "id": "CF06",
+      "file": "06-uma-escolha-para-mostrar.png",
+      "title": "Uma escolha para mostrar.",
+      "copy": "Quando o jogo estiver pronto, você pode jogar com ele. Se a chave estiver num lugar diferente, peça que conte por que a colocou ali. Ele tem uma escolha dele para mostrar, e vocês têm um assunto para conversar.",
+      "paragraphs": [
+        "Quando o jogo estiver pronto, você pode jogar com ele.",
+        "Se a chave estiver num lugar diferente, peça que conte por que a colocou ali. Ele tem uma escolha dele para mostrar, e vocês têm um assunto para conversar."
+      ],
+      "kind": "photo"
+    },
+    {
+      "id": "CF07",
+      "file": "07-aulas-gravadas-no-computador.png",
+      "title": "Aulas gravadas, no computador.",
+      "copy": "O Desafio foi pensado para crianças de 9 a 14 anos e precisa de computador com internet, mouse e teclado. As aulas são gravadas: seu filho pode pausar para fazer cada passo e voltar ao vídeo quando precisar.",
+      "paragraphs": [
+        "O Desafio foi pensado para crianças de 9 a 14 anos e precisa de computador com internet, mouse e teclado.",
+        "As aulas são gravadas: seu filho pode pausar para fazer cada passo e voltar ao vídeo quando precisar."
+      ],
+      "kind": "study"
+    },
+    {
+      "id": "CF08",
+      "file": "08-pagamento-e-acesso.png",
+      "title": "Pagamento único, 30 dias de acesso.",
+      "copy": "Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento. Nesse tempo, seu filho faz as aulas, monta o jogo e pode compartilhá-lo no Mural, onde outras pessoas podem jogar. A compra não vira uma assinatura.",
+      "paragraphs": [
+        "Você paga uma vez e tem 30 dias de acesso, contados da aprovação do pagamento.",
+        "Nesse tempo, seu filho faz as aulas, monta o jogo e pode compartilhá-lo no Mural, onde outras pessoas podem jogar.",
+        "A compra não vira uma assinatura."
+      ],
+      "kind": "access"
+    },
+    {
+      "id": "CF09",
+      "file": "09-conhecer-o-desafio.png",
+      "title": "Conheça o Desafio do Primeiro Jogo.",
+      "copy": "No botão, veja o jogo, as aulas e o valor do Desafio. É um começo para vocês conhecerem a proposta na prática. Se quiserem outros cursos depois, podem escolher a assinatura da Comunidade dos Criadores, paga separadamente.",
+      "paragraphs": [
+        "No botão, veja o jogo, as aulas e o valor do Desafio. É um começo para vocês conhecerem a proposta na prática.",
+        "Se quiserem outros cursos depois, podem escolher a assinatura da Comunidade dos Criadores, paga separadamente."
+      ],
+      "kind": "cta",
+      "sticker": {
+        "label": "Conhecer o Desafio",
+        "url": "https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=cf09",
+        "bounds": {
+          "x": 204,
+          "y": 1588,
+          "width": 672,
+          "height": 100
+        }
+      }
+    }
+  ]
+}

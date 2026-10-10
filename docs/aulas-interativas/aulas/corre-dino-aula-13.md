@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Base velocidade começa em -5, diminui a cada 5 segundos até -9, com variação de 0 a 1; descrição dos três controles e publicação opcional.
 - Seções: 8. Vídeos: 7.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A régua prepara a comparação de números negativos. A experiência de aceleração vem antes da mudança da base e do relógio. Guardar a base, preparar o relógio e limitar a soma são montagens separadas. O fechamento testa e publica o próprio jogo; a visita ao modo Ponte, indisponível neste curso, foi retirada.
@@ -30,6 +32,8 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 
 **Zappy na página (não gravar):** Sua vez! Compare os sinais da pergunta e acompanhe o marcador na régua, de -5 até -9. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-regua-negativos-avatar-01. Professora até “No seu jogo, velocidade mais para a esquerda é cacto mais rápido.”. Antes da entrada: Mostrar os três passos de -5 a -8 na régua, sem antecipar a comparação. Debinha entra, com os gestos parados, e fala: “Qual é maior: menos cinco ou menos nove?”. Debinha sai antes da resposta. Retomada da professora: “Eu clico em Voltar ao começo e escolho o sinal maior que, o símbolo >. Com o marcador em -5, a pergunta -5 > -9 responde sim. Na régua, -5 fica à direita do -9, ou seja, é maior. Quando eu mudo valor da base para -9, a resposta vira não, porque -9 não é maior que ele mesmo.”. Na retomada: Voltar ao começo, escolher > e comparar -5 e -9 com a posição dos números à vista. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `number-line`. Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >. Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta. Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 2. Compare a base com cada cacto
@@ -39,6 +43,8 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 **Blocos na página:** video-o-que-o-freio-segura → fala-o-que-o-freio-segura → experiencia-aceleracao.
 
 **Zappy na página (não gravar):** Sua vez! Compare a base com os cactos novos e os antigos e, depois, desligue a condição e avance. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-o-que-o-freio-segura-avatar-01. Professora até “Os cactos que já nasceram não trocam de número: cada um guarda a velocidade que recebeu ao nascer.”. Antes da entrada: Passar cinco intervalos com a condição ligada; deixar a base em -9 e os números dos cactos visíveis. Debinha entra, com os gestos parados, e fala: “Com a base em menos nove, pode nascer um cacto mais rápido?”. Debinha sai antes da resposta. Retomada da professora: “Com a base parada em -9, eu continuo clicando até nascer um cacto com -10. A base é -9, mas o sorteio tirou mais 1. A condição segura a base, e não o sorteio.”. Na retomada: Continuar até nascer um cacto -10 e explicar a diferença entre a base e o sorteio. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `acceleration`. Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram. Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base. Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -110,6 +116,8 @@ A régua prepara a comparação de números negativos. A experiência de acelera
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
 **Zappy na página (não gravar):** Hora de testar e enviar o seu Corre, Dino! Teste a corrida inteira, clique em Verificar esta parte e depois em Enviar meu projeto, confirmando em Enviar. Se quiser, mostre o seu jogo no Mural e, por último, clique em Concluir fase.
+
+**Participação no vídeo:** ID video-entrega-avatar-01. Professora até “as regras que fazem essas partes funcionarem juntas!”. Antes da entrada: Concluir todos os testes de partida, derrota, reinício e controles, com o jogo construído à vista. Debinha entra, com os gestos parados, e fala: “Agora eu quero mostrar a minha corrida!”. Debinha sai antes da resposta. Retomada da professora: “Você pode! Primeiro vamos conferir e enviar o seu projeto. Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.”. Na retomada: Seguir primeiro a verificação e o envio; mostrar a publicação opcional apenas depois da confirmação. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio em Enviar meu projeto confirmado em Enviar.
 

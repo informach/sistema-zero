@@ -1,0 +1,167 @@
+{
+  "format": "1080x1920 PNG",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/01-destaques.md",
+  "finalDirectory": "C:\\Users\\tocha\\projects\\sistema-zero\\docs\\marketing\\kids\\comunidade-dos-criadores\\instagram\\producao\\destaques\\projetos",
+  "stories": [
+    {
+      "id": "PJ01",
+      "file": "01-farol-o-jogo.png",
+      "kind": "game",
+      "key": "farol",
+      "title": "A Chave do Farol · Primeiro projeto pelo Desafio.",
+      "project": "A Chave do Farol",
+      "subtitle": "Primeiro projeto pelo Desafio.",
+      "copy": "Seu filho aprende a fazer o personagem buscar uma chave e acender o farol para ajudar um barco a chegar à costa. As aulas mostram cada passo desse primeiro jogo.",
+      "paragraphs": [
+        "Seu filho aprende a fazer o personagem buscar uma chave e acender o farol para ajudar um barco a chegar à costa.",
+        "As aulas mostram cada passo desse primeiro jogo."
+      ],
+      "labels": ["Começo da partida", "Final da partida"]
+    },
+    {
+      "id": "PJ02",
+      "file": "02-farol-ordem-dos-passos.png",
+      "kind": "skill",
+      "key": "farol",
+      "title": "A Chave do Farol · Pensar na ordem dos passos.",
+      "project": "A Chave do Farol",
+      "subtitle": "Pensar na ordem dos passos.",
+      "copy": "Ele aprende a colocar os passos na ordem certa: pegar a chave antes de acender o farol. Depois, joga com e sem a chave para conferir se o jogo faz o que ele programou.",
+      "paragraphs": [
+        "Ele aprende a colocar os passos na ordem certa: pegar a chave antes de acender o farol.",
+        "Depois, joga com e sem a chave para conferir se o jogo faz o que ele programou."
+      ],
+      "callout": "Com a chave, o farol acende.",
+      "sticker": {
+        "label": "Conhecer o Desafio",
+        "url": "https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=pj02",
+        "bounds": {
+          "x": 180,
+          "y": 1640,
+          "width": 720,
+          "height": 96
+        }
+      }
+    },
+    {
+      "id": "PJ03",
+      "file": "03-cade-todo-mundo-o-jogo.png",
+      "kind": "game",
+      "key": "cade",
+      "title": "Cadê Todo Mundo? · Um jogo de encontrar personagens.",
+      "project": "Cadê Todo Mundo?",
+      "subtitle": "Um jogo de encontrar personagens.",
+      "copy": "Seu filho monta um jogo de procurar três personagens. O jardim e os desenhos vêm prontos. Nas aulas, ele aprende a fazer cada personagem aparecer quando alguém toca no esconderijo.",
+      "paragraphs": [
+        "Seu filho monta um jogo de procurar três personagens.",
+        "O jardim e os desenhos vêm prontos. Nas aulas, ele aprende a fazer cada personagem aparecer quando alguém toca no esconderijo."
+      ],
+      "labels": ["Começo da partida", "Final da partida"]
+    },
+    {
+      "id": "PJ04",
+      "file": "04-cade-todo-mundo-contagem.png",
+      "kind": "skill",
+      "key": "cade",
+      "title": "Cadê Todo Mundo? · Conferir a contagem.",
+      "project": "Cadê Todo Mundo?",
+      "subtitle": "Conferir a contagem.",
+      "copy": "Seu filho faz o jogo contar cada personagem encontrado. Depois, toca nos esconderijos para conferir a conta. Assim, aprende a ligar o que acontece na tela à mudança no placar.",
+      "paragraphs": [
+        "Seu filho faz o jogo contar cada personagem encontrado.",
+        "Depois, toca nos esconderijos para conferir a conta. Assim, aprende a ligar o que acontece na tela à mudança no placar."
+      ],
+      "callout": "Cada personagem encontrado soma um.",
+      "sticker": {
+        "label": "Conhecer a Comunidade",
+        "url": "https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=pj04#planos",
+        "bounds": {
+          "x": 180,
+          "y": 1640,
+          "width": 720,
+          "height": 96
+        }
+      }
+    },
+    {
+      "id": "PJ05",
+      "file": "05-nave-contra-asteroides-o-jogo.png",
+      "kind": "game",
+      "key": "nave",
+      "title": "Nave Contra Asteroides · Uma partida no espaço.",
+      "project": "Nave Contra Asteroides",
+      "subtitle": "Uma partida no espaço.",
+      "copy": "Com a ajuda das aulas, seu filho constrói um jogo de nave. Ele aprende a fazer a nave andar, atirar nos asteroides e ganhar pontos. Também prepara o fim da partida e o recomeço.",
+      "paragraphs": [
+        "Com a ajuda das aulas, seu filho constrói um jogo de nave.",
+        "Ele aprende a fazer a nave andar, atirar nos asteroides e ganhar pontos. Também prepara o fim da partida e o recomeço."
+      ],
+      "labels": ["Jogo em andamento", "Final da partida"]
+    },
+    {
+      "id": "PJ06",
+      "file": "06-nave-contra-asteroides-conferir.png",
+      "kind": "skill",
+      "key": "nave",
+      "title": "Nave Contra Asteroides · Conferir o que fez.",
+      "project": "Nave Contra Asteroides",
+      "subtitle": "Conferir o que fez.",
+      "copy": "Seu filho aprende a fazer cada acerto valer um ponto. Ao jogar, confere se o placar aumenta como deveria. É uma forma de aprender a conferir o próprio trabalho: a conta precisa acompanhar os acertos.",
+      "paragraphs": [
+        "Seu filho aprende a fazer cada acerto valer um ponto.",
+        "Ao jogar, confere se o placar aumenta como deveria. É uma forma de aprender a conferir o próprio trabalho: a conta precisa acompanhar os acertos."
+      ],
+      "callout": "Um acerto acrescenta um ponto.",
+      "sticker": {
+        "label": "Conhecer a Comunidade",
+        "url": "https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=pj06#planos",
+        "bounds": {
+          "x": 180,
+          "y": 1640,
+          "width": 720,
+          "height": 96
+        }
+      }
+    },
+    {
+      "id": "PJ07",
+      "file": "07-corre-dino-o-jogo.png",
+      "kind": "game",
+      "key": "dino",
+      "title": "Corre Dino · Uma corrida com obstáculos.",
+      "project": "Corre Dino",
+      "subtitle": "Uma corrida com obstáculos.",
+      "copy": "Seu filho cria um jogo em que o dinossauro pula cactos para seguir correndo. Com a ajuda das aulas, faz o placar contar pontos com o tempo e a corrida ficar mais difícil.",
+      "paragraphs": [
+        "Seu filho cria um jogo em que o dinossauro pula cactos para seguir correndo.",
+        "Com a ajuda das aulas, faz o placar contar pontos com o tempo e a corrida ficar mais difícil."
+      ],
+      "labels": ["Jogo em andamento", "Final da partida"]
+    },
+    {
+      "id": "PJ08",
+      "file": "08-corre-dino-comparar-e-ajustar.png",
+      "kind": "skill",
+      "key": "dino",
+      "title": "Corre Dino · Comparar tentativas e ajustar.",
+      "project": "Corre Dino",
+      "subtitle": "Comparar tentativas e ajustar.",
+      "copy": "A corrida vai ficando mais rápida, e seu filho aprende a colocar um limite nessa velocidade. Ele joga para ver como ficou e ajusta esse limite. Assim, pratica comparar tentativas e mudar o que fez.",
+      "paragraphs": [
+        "A corrida vai ficando mais rápida, e seu filho aprende a colocar um limite nessa velocidade.",
+        "Ele joga para ver como ficou e ajusta esse limite. Assim, pratica comparar tentativas e mudar o que fez."
+      ],
+      "callout": "A velocidade aumenta até este limite.",
+      "sticker": {
+        "label": "Conhecer a Comunidade",
+        "url": "https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta?utm_source=instagram&utm_medium=organic_social&utm_campaign=desafio_instagram_ciclo01&utm_content=pj08#planos",
+        "bounds": {
+          "x": 180,
+          "y": 1640,
+          "width": 720,
+          "height": 96
+        }
+      }
+    }
+  ]
+}

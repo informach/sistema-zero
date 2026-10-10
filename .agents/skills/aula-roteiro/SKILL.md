@@ -47,15 +47,18 @@ antes de jogar. Não colocar tour da interface nas notas de gravação do vídeo
 
 ## Entrega e conferência
 
-- Separar cada **Na tela:** da **Narração:** com linha em branco; fala em citação.
+- Separar cada **Na tela:** da fala com linha em branco; fala em citação. Quando houver avatar,
+  identificar **Professora/Professor**, **Debinha (avatar)** ou **Dedé (avatar)** e marcar entrada
+  e saída conforme ESPEC-ROTEIRO.md e AVATARES-NOS-VIDEOS.md. Zappy é fala da página, não do vídeo.
 - Preservar seções, experiências e critérios que funcionam quando a revisão é de linguagem.
 - Atualizar proposta, roteiro, manifesto e gerador juntos. Manter identificadores, projetos,
   mídia anexada e progresso. O molde local plannedVideo não substitui um vídeo publicado.
 - Rodar os validadores de manifesto, roteiro e tutoriais para os arquivos alterados.
   Usar os testes existentes do curso quando houver manifesto gerado.
 - Ler todas as falas em voz alta e conferir tarefa, passos, teste e saída.
-- Sinalizar a necessidade de nova gravação e ensaio com crianças. Não declarar que a
-  compreensão infantil foi validada só porque os arquivos passaram em testes.
+- Distinguir gravação informada, edição e publicação. Em vídeos já gravados, preservar a fala e
+  indicar pontos de inserção; só sinalizar gravação complementar se houver lacuna concreta.
+  Não declarar que a compreensão infantil foi validada só porque os arquivos passaram em testes.
 
 Esta é a cópia versionada da skill local .agents/skills/aula-roteiro/SKILL.md.
 Ao alterar a skill local, atualizar esta cópia para manter as diretrizes disponíveis no projeto.

@@ -17,6 +17,22 @@
 
 **Personalização ampliada, 06/10/2026:** as seções `tanto` e `velocidade` foram retiradas por decisão do responsável. Seus vídeos, pontes e experiência estão em `retireBlockKeys`. O movimento permanece em 3. A personalização se concentra no Dia 3: visuais, avisos e lugar da chave. As demais chaves e o progresso são preservados.
 
+## Vozes e produção · 10/10/2026
+
+**Debinha** participa em 5 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-1.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+
+O vídeo do Mapa da Aventura continua só com a professora. As participações ajudam a descobrir os controles, a repetição dos quadros e o limite da tela.
+
+| Entrada | Fala de Debinha |
+| --- | --- |
+| F1P1-D01 | “E como eu levo o personagem até a chave?” |
+| F1P3-D01 | “E se eu clicar em Rodar?” |
+| F1P4-D01 | “As setas apareceram, mas ele ainda não anda!” |
+| F1P5-D01 | “Como eu faço ele parar na borda?” |
+| F1P6-D01 | “E onde eu coloco esse limite?” |
+
+As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela são referências para ensaio com as participações, sem acelerar gestos. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
+
 ## Triagem dos conceitos
 
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |

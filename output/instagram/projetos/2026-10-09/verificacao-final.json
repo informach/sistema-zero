@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "files": [
+    {
+      "file": "01-farol-o-jogo.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 203885,
+      "sha256": "4c79382d44449d2e48fd537676ab71d615d8c6d1a76cb06dae0665570aa1ebf0"
+    },
+    {
+      "file": "02-farol-ordem-dos-passos.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 208507,
+      "sha256": "45ab289826370e406763229bffe595cf6bbfba19b60323de55ba44b70235cbfc"
+    },
+    {
+      "file": "03-cade-todo-mundo-o-jogo.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 178243,
+      "sha256": "8896cbeef31941bdca7da98e850c6b9974de83e5db953c6969637577ea35752d"
+    },
+    {
+      "file": "04-cade-todo-mundo-contagem.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 173526,
+      "sha256": "a1e15b9474083b7a99bd49677e43d8265d474446b9d57cbaf75c401b70e4e01b"
+    },
+    {
+      "file": "05-nave-contra-asteroides-o-jogo.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 154994,
+      "sha256": "0c534bea8537f2573d1b3e989120f4dedd299d6cbcf06d5d3ac53a0b990a4c91"
+    },
+    {
+      "file": "06-nave-contra-asteroides-conferir.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 198158,
+      "sha256": "5a56c71568fed276d1a57fe98ed2a53d83aae3921ce641ac318f8a0f1a37934b"
+    },
+    {
+      "file": "07-corre-dino-o-jogo.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 175953,
+      "sha256": "aeca007c3fb9c26bbb219c2ca5e1794d7ed885904186e7c3ea06d56974525777"
+    },
+    {
+      "file": "08-corre-dino-comparar-e-ajustar.png",
+      "width": 1080,
+      "height": 1920,
+      "bytes": 203813,
+      "sha256": "0ac1da3b04ab6ad1339e82bcdf22b75c91d3433df46b2cc376b812596eda34d2"
+    }
+  ],
+  "stickers": 4,
+  "visualReview": "Oito stories revistos na folha de contato; PJ01 e PJ08 também em tamanho integral.",
+  "directory": "C:\\Users\\tocha\\projects\\sistema-zero\\docs\\marketing\\kids\\comunidade-dos-criadores\\instagram\\producao\\destaques\\projetos"
+}

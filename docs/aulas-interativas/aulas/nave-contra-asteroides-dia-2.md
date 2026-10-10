@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Tiros saem da nave, sobem, têm som e são retirados do grupo ao sair da tela.
 - Seções: 7. Vídeos: 7.
 
+**Vozes e edição:** Professora conduz; Debinha é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 O evento é ensinado no próprio projeto. Duas experiências cobrem informações invisíveis: ler a posição no disparo e retirar objetos que não aparecem mais.
@@ -31,6 +33,8 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Sua vez! Compare Criar um tiro em Quando acontecer e em Enquanto estiver rodando. No primeiro teste, espere parar e só depois clique em Apertar a tecla. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-tecla-e-repeticao-avatar-01. Professora até “e ninguém clicou em Apertar a tecla.”. Antes da entrada: Deixar o primeiro teste terminar sem tiros e apontar 0 vezes na peça. Debinha entra, com os gestos parados, e fala: “Ela está esperando eu apertar a tecla!”. Debinha sai antes da resposta. Retomada da professora: “Isso mesmo. Agora eu clico em Apertar a tecla. Olha só: na mesma hora, nasce um tiro, e a peça mostra 1 vez, porque a tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém apertar o botão.”. Na retomada: Clicar em Apertar a tecla depois da resposta e continuar a comparação com a repetição. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `once-vs-always`. Coloque Criar um tiro em Quando acontecer. Clique em Começar o jogo e espere o teste parar, sem clicar em Apertar a tecla. Observe o contador de tiros. Depois clique em Apertar a tecla e observe de novo. Leve Criar um tiro para Enquanto estiver rodando. Clique em Começar o jogo e espere o teste parar. Compare com o primeiro teste. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Faça o tiro acompanhar a nave
@@ -41,6 +45,8 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 
 **Zappy na página (não gravar):** Sua vez! Atire de dois lugares com cada opção de x e depois ligue Marcas da caixa e atire de novo. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-escrito-e-lido-avatar-01. Professora até “Para acertar, é preciso olhar o relógio na hora.”. Antes da entrada: Concluir os disparos com o número fixo, com a nave em 640 e o tiro distante; terminar a comparação com o relógio. Debinha entra, com os gestos parados, e fala: “Como o tiro descobre onde a nave está agora?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu troco para O centro x da nave e clico em Atirar. Olha só: o tiro nasce em 640, onde a nave está. Mudo a nave para 200 e atiro, e o tiro nasce em 200. É que agora o jogo lê a posição da nave na hora do disparo.”. Na retomada: Trocar para O centro x da nave e testar o disparo em 640 e em 200. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `fixed-vs-read`. Com O número 400, atire, mude x da nave e atire de novo. Repita com O centro x da nave. Depois ligue Marcas da caixa e atire mais uma vez, mantendo O centro x da nave. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 3. Compare a direção do tiro
@@ -50,6 +56,8 @@ O evento é ensinado no próprio projeto. Duas experiências cobrem informaçõe
 **Blocos na página:** video-direcao-do-tiro → fala-direcao-do-tiro → experiencia-direcao.
 
 **Zappy na página (não gravar):** Sua vez! Compare -9 e 9 em velocidade para baixo, avançando os quadros e olhando o y. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** ID video-direcao-do-tiro-avatar-01. Professora até “na tela, y menor fica mais para cima.”. Antes da entrada: Avançar com -9 e mostrar o tiro subindo, com os valores de y à vista. Debinha entra, com os gestos parados, e fala: “E se eu tirar o sinal de menos?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu troco velocidade para baixo para 9 e avanço outros quadros, e o y aumenta 9 em cada quadro: o tiro desce. O tamanho do número é o mesmo, mas o sinal de menos mudou a direção. No seu jogo, o tiro vai usar vy -9 para subir na direção das pedras.”. Na retomada: Trocar para 9 e mostrar a descida antes de explicar a diferença. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Experiência existente:** `velocity`. Na experiência, mantenha velocidade para o lado em 0. Coloque velocidade para baixo em -9 e clique em Avançar 1 quadro algumas vezes. Observe o tiro e o y. Troque velocidade para baixo para 9 e avance outros quadros. Compare a direção e o y nos dois testes. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 

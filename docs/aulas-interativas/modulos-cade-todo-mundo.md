@@ -21,10 +21,32 @@ O curso já foi gravado e testado com duas crianças. A revisão de 27/09/2026 m
 das nove seções: tarefa imediata, passos completos e tutoriais de interface no Como Fazer.
 A revisão atual tem quatro seções na Aula 1, cinco na Aula 2 e duas no certificado: quiz e celebração. São onze seções e dez vídeos.
 
-Os arquivos plannedVideo dos manifestos são moldes de autoria. As novas falas precisam de
-novas gravações. Ao atualizar o Admin, reconciliar os blocos pelos identificadores e preservar
+Os arquivos plannedVideo dos manifestos são moldes de autoria. A situação atual de gravação
+está descrita abaixo, em **Debinha e Dedé nos vídeos**. Ao atualizar o Admin, reconciliar os blocos pelos identificadores e preservar
 vídeos, PDF, configuração do certificado, projetos e progresso existentes. Não importar
 um molde com vídeos planejados e materiais vazios por cima do conteúdo publicado.
+
+## Debinha e Dedé nos vídeos
+
+Aplicação de 10/10/2026, conforme a orientação do responsável: manter uma criança por aula e
+alternar na seguinte. Os roteiros separam a professora, o avatar e as falas do Zappy na página.
+
+| Aula | Avatar e participações | Estado da produção |
+| --- | --- | --- |
+| Aula 1 | Debinha: seis entradas nos quatro vídeos | Gravação base informada; pontos de edição registrados |
+| Aula 2 | Dedé: cinco entradas, uma em cada vídeo | Aplicado ao roteiro; gravação e edição não confirmadas |
+| Certificado | Debinha: “Eu consegui!” na celebração | Aplicado ao roteiro; gravação e edição não confirmadas |
+
+A professora responde às perguntas antes do próximo gesto. As notas de tela marcam entrada e
+saída, sem sobrepor vozes ou cobrir os controles. A contagem mantém o caminho completo dos blocos
+e a conferência passa a começar com “Se algo não funcionou no seu jogo…”, como na Aula 1.
+O quiz continua sem vídeo. Zappy não fala dentro dos vídeos; as pontes e o recurso Ouvir ficam
+na página. Se aparecer no meme ou na interface capturada, sua presença é visual.
+
+Os tempos antigos são referências para produção; conferir a duração final com as participações.
+As orientações históricas de regravação abaixo não substituem o estado atual da tabela. Não
+regravar os quatro vídeos da Aula 1 apenas por causa das marcações. As falas e os IDs de edição
+estão em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md) e nos roteiros de cada aula.
 
 ## Conteúdo e continuidade
 

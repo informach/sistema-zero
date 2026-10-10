@@ -8,6 +8,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 - Resultado da aula: Tela de início e um evento de qualquer tecla ou toque que muda inicio para jogando.
 - Seções: 4. Vídeos: 4.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 A condição da aula anterior é reaplicada ao ramo inicio. A experiência de controles vem antes do evento, e o evento final é montado diretamente. O convite escrito e os controles aceitos terminam coerentes.
@@ -41,6 +43,8 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 **Zappy na página (não gravar):** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-convite-avatar-01. Professora até “Quando eu clico em Apertar Enter, a partida começa.”. Antes da entrada: Terminar o teste com Enter; não trocar o evento antes da pergunta. Dedé entra, com os gestos parados, e fala: “E quem quiser começar pelo toque?”. Dedé sai antes da resposta. Retomada da professora: “Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco na tela de início, a partida começa. Volto ao início, clico em Apertar Enter, e ela começa também. Esse evento escuta os dois jeitos.”. Na retomada: Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `controls`. Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
 ### Seção 3. Ligue a entrada ao início da partida
@@ -50,6 +54,8 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 **Blocos na página:** video-entrada-ampla → fala-entrada-ampla.
 
 **Zappy na página (não gravar):** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** ID video-entrada-ampla-avatar-01. Professora até “pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”. Antes da entrada: Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio. Dedé entra, com os gestos parados, e fala: “Mas eu também uso uma tecla para pular!”. Dedé sai antes da resposta. Retomada da professora: “Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.”. Na retomada: Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

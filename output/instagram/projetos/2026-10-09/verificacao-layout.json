@@ -1,0 +1,433 @@
+{
+  "passed": true,
+  "stories": [
+    {
+      "id": "PJ01",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "naturalProportions": true,
+        "headingBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true,
+        "gameFramesEqual": true
+      },
+      "heading": {
+        "x": 72,
+        "y": 244,
+        "width": 948,
+        "height": 133.546875,
+        "bottom": 377.546875,
+        "right": 1020
+      },
+      "visual": {
+        "x": 52,
+        "y": 465,
+        "width": 976,
+        "height": 941.1875,
+        "bottom": 1406.1875,
+        "right": 1028
+      },
+      "copy": {
+        "x": 78,
+        "y": 1450,
+        "width": 924,
+        "height": 297.15625,
+        "bottom": 1747.15625,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1780,
+        "width": 936,
+        "height": 65,
+        "bottom": 1845,
+        "right": 1008
+      },
+      "link": null,
+      "passed": true
+    },
+    {
+      "id": "PJ02",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "naturalProportions": true,
+        "headingBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true,
+        "gameFramesEqual": true
+      },
+      "heading": {
+        "x": 72,
+        "y": 244,
+        "width": 948,
+        "height": 133.75,
+        "bottom": 377.75,
+        "right": 1020
+      },
+      "visual": {
+        "x": 52,
+        "y": 530,
+        "width": 976,
+        "height": 732.5625,
+        "bottom": 1262.5625,
+        "right": 1028
+      },
+      "copy": {
+        "x": 78,
+        "y": 1315,
+        "width": 924,
+        "height": 243.875,
+        "bottom": 1558.875,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1780,
+        "width": 936,
+        "height": 65,
+        "bottom": 1845,
+        "right": 1008
+      },
+      "link": {
+        "x": 180,
+        "y": 1640,
+        "width": 720,
+        "height": 96,
+        "bottom": 1736,
+        "right": 900
+      },
+      "passed": true
+    },
+    {
+      "id": "PJ03",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "naturalProportions": true,
+        "headingBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true,
+        "gameFramesEqual": true
+      },
+      "heading": {
+        "x": 72,
+        "y": 244,
+        "width": 948,
+        "height": 133.546875,
+        "bottom": 377.546875,
+        "right": 1020
+      },
+      "visual": {
+        "x": 52,
+        "y": 465,
+        "width": 976,
+        "height": 941.15625,
+        "bottom": 1406.15625,
+        "right": 1028
+      },
+      "copy": {
+        "x": 78,
+        "y": 1450,
+        "width": 924,
+        "height": 297.15625,
+        "bottom": 1747.15625,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1780,
+        "width": 936,
+        "height": 65,
+        "bottom": 1845,
+        "right": 1008
+      },
+      "link": null,
+      "passed": true
+    },
+    {
+      "id": "PJ04",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "naturalProportions": true,
+        "headingBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true,
+        "gameFramesEqual": true
+      },
+      "heading": {
+        "x": 72,
+        "y": 244,
+        "width": 948,
+        "height": 133.75,
+        "bottom": 377.75,
+        "right": 1020
+      },
+      "visual": {
+        "x": 52,
+        "y": 675,
+        "width": 976,
+        "height": 507.28125,
+        "bottom": 1182.28125,
+        "right": 1028
+      },
+      "copy": {
+        "x": 78,
+        "y": 1200,
+        "width": 924,
+        "height": 325.125,
+        "bottom": 1525.125,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1780,
+        "width": 936,
+        "height": 65,
+        "bottom": 1845,
+        "right": 1008
+      },
+      "link": {
+        "x": 180,
+        "y": 1640,
+        "width": 720,
+        "height": 96,
+        "bottom": 1736,
+        "right": 900
+      },
+      "passed": true
+    },
+    {
+      "id": "PJ05",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "naturalProportions": true,
+        "headingBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true,
+        "gameFramesEqual": true
+      },
+      "heading": {
+        "x": 72,
+        "y": 244,
+        "width": 948,
+        "height": 125.40625,
+        "bottom": 369.40625,
+        "right": 1020
+      },
+      "visual": {
+        "x": 52,
+        "y": 465,
+        "width": 976,
+        "height": 941.1875,
+        "bottom": 1406.1875,
+        "right": 1028
+      },
+      "copy": {
+        "x": 78,
+        "y": 1450,
+        "width": 924,
+        "height": 297.15625,
+        "bottom": 1747.15625,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1780,
+        "width": 936,
+        "height": 65,
+        "bottom": 1845,
+        "right": 1008
+      },
+      "link": null,
+      "passed": true
+    },
+    {
+      "id": "PJ06",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "naturalProportions": true,
+        "headingBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true,
+        "gameFramesEqual": true
+      },
+      "heading": {
+        "x": 72,
+        "y": 244,
+        "width": 948,
+        "height": 133.75,
+        "bottom": 377.75,
+        "right": 1020
+      },
+      "visual": {
+        "x": 52,
+        "y": 565,
+        "width": 976,
+        "height": 644.71875,
+        "bottom": 1209.71875,
+        "right": 1028
+      },
+      "copy": {
+        "x": 78,
+        "y": 1245,
+        "width": 924,
+        "height": 362.5,
+        "bottom": 1607.5,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1780,
+        "width": 936,
+        "height": 65,
+        "bottom": 1845,
+        "right": 1008
+      },
+      "link": {
+        "x": 180,
+        "y": 1640,
+        "width": 720,
+        "height": 96,
+        "bottom": 1736,
+        "right": 900
+      },
+      "passed": true
+    },
+    {
+      "id": "PJ07",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "naturalProportions": true,
+        "headingBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true,
+        "gameFramesEqual": true
+      },
+      "heading": {
+        "x": 72,
+        "y": 244,
+        "width": 948,
+        "height": 133.546875,
+        "bottom": 377.546875,
+        "right": 1020
+      },
+      "visual": {
+        "x": 52,
+        "y": 465,
+        "width": 976,
+        "height": 941.15625,
+        "bottom": 1406.15625,
+        "right": 1028
+      },
+      "copy": {
+        "x": 78,
+        "y": 1450,
+        "width": 924,
+        "height": 242.125,
+        "bottom": 1692.125,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1780,
+        "width": 936,
+        "height": 65,
+        "bottom": 1845,
+        "right": 1008
+      },
+      "link": null,
+      "passed": true
+    },
+    {
+      "id": "PJ08",
+      "checks": {
+        "copyMatches": true,
+        "titleMatches": true,
+        "dimensions": true,
+        "imagesLoaded": true,
+        "naturalProportions": true,
+        "headingBeforeVisual": true,
+        "visualBeforeCopy": true,
+        "copyBeforeFooter": true,
+        "stickerClear": true,
+        "insideSafeBounds": true,
+        "gameFramesEqual": true
+      },
+      "heading": {
+        "x": 72,
+        "y": 244,
+        "width": 948,
+        "height": 133.75,
+        "bottom": 377.75,
+        "right": 1020
+      },
+      "visual": {
+        "x": 52,
+        "y": 480,
+        "width": 976,
+        "height": 775.328125,
+        "bottom": 1255.328125,
+        "right": 1028
+      },
+      "copy": {
+        "x": 78,
+        "y": 1290,
+        "width": 924,
+        "height": 299.34375,
+        "bottom": 1589.34375,
+        "right": 1002
+      },
+      "footer": {
+        "x": 72,
+        "y": 1780,
+        "width": 936,
+        "height": 65,
+        "bottom": 1845,
+        "right": 1008
+      },
+      "link": {
+        "x": 180,
+        "y": 1640,
+        "width": 720,
+        "height": 96,
+        "bottom": 1736,
+        "right": 900
+      },
+      "passed": true
+    }
+  ]
+}

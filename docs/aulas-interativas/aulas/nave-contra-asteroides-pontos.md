@@ -8,6 +8,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 - Resultado da aula: Variável pontos começa em zero, aumenta somente no acerto e aparece no placar.
 - Seções: 2. Vídeos: 2.
 
+**Vozes e edição:** Professora conduz; Dedé é o avatar desta aula inteira. A criança entra, fala e sai nos pontos marcados, sem cobrir o jogo, os campos ou os encaixes. Não interromper um arraste de bloco. A professora retoma antes de passar a vez a quem assiste. Zappy não tem voz dentro do vídeo; seu diálogo e o botão Ouvir pertencem à página. Nos clipes sem participação marcada, fala só a professora. Gravação, edição e publicação desta versão não confirmadas. [Direção de produção](../AVATARES-NOS-VIDEOS.md).
+
 ## Diagnóstico e decisão
 
 Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um valor.
@@ -29,6 +31,8 @@ Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um
 
 **Zappy na página (não gravar):** Sua vez! Mude pontos com o placar desligado, depois ligue Mostrar placar e compare. Quando terminar, clique em Próxima parte.
 
+**Participação no vídeo:** ID video-variavel-avatar-01. Professora até “O placar do estádio só mostra o que já foi anotado.”. Antes da entrada: Somar dois pontos com o placar desligado e concluir a comparação com o bloquinho. Dedé entra, com os gestos parados, e fala: “Como eu mostro os pontos que já estão guardados?”. Dedé sai antes da resposta. Retomada da professora: “Agora eu ligo Mostrar placar. Olha só: a tela mostra Pontos: 2, o mesmo número guardado. Clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Guardar, mudar e mostrar são três coisas diferentes. No seu jogo, a soma vai acontecer em cada acerto, e o placar vai mostrar o valor de pontos.”. Na retomada: Ligar Mostrar placar e comparar o valor da tela com o valor guardado. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
 **Experiência existente:** `variable`. Mude pontos para 1 e volte para 0 com Mostrar placar desligado. Some 1 duas vezes e observe o número guardado. Ligue Mostrar placar, compare e some 1 novamente. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
 ### Seção 2. Some um ponto a cada acerto
@@ -38,6 +42,8 @@ Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um
 **Blocos na página:** video-pontos-e-placar → fala-placar → projeto.
 
 **Zappy na página (não gravar):** Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir fase.
+
+**Participação no vídeo:** ID video-pontos-e-placar-avatar-01. Professora até “O valor já vem em 0: mantenha, porque cada partida começa sem pontos.”. Antes da entrada: Concluir Criar variável pontos com valor 0 em Ao iniciar; soltar o mouse antes da entrada. Dedé entra, com os gestos parados, e fala: “Onde eu coloco o bloco que soma?”. Dedé sai antes da resposta. Retomada da professora: “O ponto só pode ser somado quando um tiro acerta uma pedra. Por isso, a soma vai dentro da colisão entre tiros e asteroides, no fim, logo depois de Tocar efeito explosão: deixe esse lugar à vista.”. Na retomada: Localizar o fim da colisão e mostrar onde a soma entra; depois montar o placar fora da colisão. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
 
