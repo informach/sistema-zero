@@ -881,3 +881,90 @@ describe('BFF das criações — respostas e sessão', () => {
     expect(list.status).toBe(200)
   })
 })
+
+describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
+  const BLOCO = '22222222-2222-4222-8222-222222222222'
+  const daFase = (tool: string) => ({ params: Promise.resolve({ tool, itemId: BLOCO }) })
+
+  test('reserva do `lesson-studio` repassa a impressão digital ao members', async () => {
+    const { routes, calls } = buildRoutes({
+      members: {
+        reserveCreationUpload: async (...args: unknown[]) => {
+          calls.reserveCreationUpload = [args]
+          return {
+            status: 200,
+            body: { revision: 1, formatVersion: 2, storageKey: 'main', bytes: 100, parts: [] },
+          }
+        },
+      },
+    })
+    const fingerprint = `v1:${'a'.repeat(64)}`
+    const res = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Meu jogo',
+        kind: 'classic',
+        itemUpdatedAt: '2026-10-10T12:00:00.000Z',
+        bytes: 100,
+        formatVersion: 2,
+        fingerprint,
+      }),
+      daFase('lesson-studio'),
+    )
+    expect(res.status).toBe(200)
+    const [tool, itemId, body] = calls.reserveCreationUpload?.[0] as [string, string, unknown]
+    expect(tool).toBe('lesson-studio')
+    expect(itemId).toBe(BLOCO)
+    expect(body).toMatchObject({ fingerprint })
+  })
+
+  test('impressão fora do formato é 400 antes do members', async () => {
+    const { routes, calls } = buildRoutes()
+    const res = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Meu jogo',
+        kind: 'classic',
+        itemUpdatedAt: '2026-10-10T12:00:00.000Z',
+        bytes: 100,
+        fingerprint: 'sha256:abc',
+      }),
+      daFase('lesson-studio'),
+    )
+    expect(res.status).toBe(400)
+    expect(calls.reserveCreationUpload).toBeUndefined()
+  })
+
+  test('o commit do `lesson-studio` confere o projeto como o do Estúdio; o `lesson-pinta` não', async () => {
+    const lidos: string[] = []
+    const { routes, calls } = buildRoutes({
+      storage: {
+        ...storage,
+        readJson: async (key: string) => {
+          lidos.push(key)
+          return { ...createEmptyProject('outro-id', 'Antigo') }
+        },
+      },
+    })
+    // O documento do R2 tem OUTRO id: o Estúdio da fase é recusado como o livre.
+    const recusado = await routes.creationsCommit.POST(
+      post({ revision: 1 }),
+      daFase('lesson-studio'),
+    )
+    expect(recusado.status).toBe(409)
+    expect(calls.commitCreationUpload).toBeUndefined()
+    expect(lidos).toEqual([`creations/user-1/lesson-studio/${BLOCO}/1.json.gz`])
+    const pinta = await routes.creationsCommit.POST(post({ revision: 1 }), daFase('lesson-pinta'))
+    expect(pinta.status).toBe(200)
+    expect(lidos).toHaveLength(1)
+  })
+
+  test('o download leva o relógio do servidor', async () => {
+    const { routes } = buildRoutes()
+    const antes = Date.now()
+    const res = await routes.creationsDownloadUrl.GET(
+      new Request('https://community.test/api'),
+      daFase('lesson-pinta'),
+    )
+    const body = (await res.json()) as { serverNow: string }
+    expect(Date.parse(body.serverNow)).toBeGreaterThanOrEqual(antes - 1000)
+  })
+})

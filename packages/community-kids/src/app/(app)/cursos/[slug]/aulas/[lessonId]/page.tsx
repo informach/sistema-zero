@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { journeyLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { KidsLockedLesson } from '@/components/kids/kids-locked-lesson'
+import { getEnv } from '@/lib/env'
 import type { LessonOutlineView } from '@/lib/types'
 import { computeAgeFromBirthDate } from '@/lib/user-display'
 import { getAvatarReadonly, getLesson, getMyCourse } from '@/server/members'
@@ -64,6 +65,11 @@ export default async function LessonPage({
       nextLessonHref={nextLessonHref}
       viewerWatermark={session?.id ? `Perfil ${session.id.slice(0, 8)}` : null}
       viewerId={session?.id ?? null}
+      // O rascunho da fase guardado na conta: desligado pelo interruptor de emergência e na
+      // sessão de suporte só leitura (o BFF recusaria as escritas de qualquer jeito).
+      lessonDraftsEnabled={
+        getEnv().LESSON_DRAFTS_ENABLED && session?.act?.mode !== 'readonly' && Boolean(session?.id)
+      }
       ratingViewer={{
         name: activeProfile?.name ?? session?.activeProfile?.name ?? null,
         age: computeAgeFromBirthDate(activeProfile?.birthDate),

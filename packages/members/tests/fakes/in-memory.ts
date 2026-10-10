@@ -1648,6 +1648,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           ? existing.passedAt
           : (submission.passedAt ?? null)
       existing.message = submission.message ?? null
+      existing.contentFingerprint = submission.contentFingerprint ?? null
     } else {
       this.submissions.push({
         ...submission,
@@ -1656,6 +1657,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         checkedAt: submission.checkedAt ?? null,
         passedAt: submission.passedAt ?? null,
         message: submission.message ?? null,
+        contentFingerprint: submission.contentFingerprint ?? null,
         previousProject: null,
         previousSubmittedAt: null,
       })
@@ -1684,6 +1686,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
     s.score = null
     s.results = null
     s.checkedAt = null
+    s.contentFingerprint = null
     return true
   }
 
@@ -1714,6 +1717,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         score: s.score ?? null,
         passed: s.passedAt != null,
         reviewedAt: s.reviewedAt ?? null,
+        contentFingerprint: s.contentFingerprint ?? null,
       })
     }
     return map

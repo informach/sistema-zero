@@ -103,8 +103,9 @@ export class GetLessonService {
       const state = studioSummaries.get(blockId)
       studioStates.set(blockId, {
         submitted: state != null,
-        // Data exata não é necessária ao gate/UI do aluno; o painel do professor a traz.
-        submittedAt: null,
+        // A data do envio entra na decisão de qual versão abrir (rascunho da conta × envio).
+        submittedAt: state?.submittedAt.toISOString() ?? null,
+        contentFingerprint: state?.contentFingerprint ?? null,
         lastScore: state?.score ?? null,
         passed: state?.passed ?? false,
         // O carimbo do professor vale para a entrega ATUAL: um reenvio depois

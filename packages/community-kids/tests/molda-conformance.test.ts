@@ -21,18 +21,30 @@ const read = (relative: string) => readFileSync(join(ROOT, relative), 'utf8')
 const MIGRATIONS = 'members/src/infrastructure/persistence/drizzle/migrations'
 
 describe('a tool `molda` no members (fonte)', () => {
-  test('é a ÚLTIMA da lista (o enum do Postgres só cresce no fim) e exige o produto `molda`', () => {
-    expect(CREATION_TOOLS).toEqual(['studio', 'pinta', 'molda'])
+  test('a lista só cresce no FIM (o enum do Postgres) e o Molda exige o produto `molda`', () => {
+    // `lesson-*` (10/10/2026): os rascunhos do Estúdio e do Pinta dentro da fase.
+    expect(CREATION_TOOLS).toEqual(['studio', 'pinta', 'molda', 'lesson-studio', 'lesson-pinta'])
     expect(CREATION_ACCESS_REF.molda).toBe('molda')
     expect(Object.keys(emptyCountByTool())).toEqual([...CREATION_TOOLS])
   })
 
-  test('schema, DTO e migration 0072 com ADD VALUE IF NOT EXISTS (no journal)', () => {
-    expect(read('members/src/infrastructure/persistence/drizzle/schema.ts')).toContain(
-      "members.enum('creation_tool', ['studio', 'pinta', 'molda'])",
+  test('schema, DTO e migrations 0072/0100 com ADD VALUE IF NOT EXISTS (no journal)', () => {
+    const schema = read('members/src/infrastructure/persistence/drizzle/schema.ts')
+    const enumText = /members\.enum\('creation_tool', \[([^\]]*)\]\)/.exec(schema)?.[1] ?? ''
+    expect(
+      enumText
+        .split(',')
+        .map((v) => v.trim().replace(/'/g, ''))
+        .filter(Boolean),
+    ).toEqual([...CREATION_TOOLS])
+    const dtos = read('members/src/interfaces/http/dtos.ts')
+    for (const tool of CREATION_TOOLS) expect(dtos).toContain(`t.Literal('${tool}')`)
+    const dosRascunhos = read(`${MIGRATIONS}/0100_lesson_draft_creation_tools.sql`)
+    expect(dosRascunhos).toContain(
+      `ALTER TYPE "members"."creation_tool" ADD VALUE IF NOT EXISTS 'lesson-studio';`,
     )
-    expect(read('members/src/interfaces/http/dtos.ts')).toContain(
-      "t.Union([t.Literal('studio'), t.Literal('pinta'), t.Literal('molda')])",
+    expect(dosRascunhos).toContain(
+      `ALTER TYPE "members"."creation_tool" ADD VALUE IF NOT EXISTS 'lesson-pinta';`,
     )
     const files = readdirSync(join(ROOT, MIGRATIONS)).filter((f) => f.endsWith('.sql'))
     const withMolda = files.filter((f) =>
@@ -63,26 +75,28 @@ describe('a tool `molda` no members (fonte)', () => {
       expect(source).toContain('emptyCountByTool()')
       expect(source).not.toContain('{ studio: 0, pinta: 0 }')
     }
-    // O DDL do teste de banco nasce com os três E adiciona o valor no banco compartilhado.
+    // O DDL do teste de banco nasce com os três E adiciona os valores no banco compartilhado.
     const dbTest = read('members/tests/db/creations.repository.test.ts')
     expect(dbTest).toContain("as enum ('studio', 'pinta', 'molda')")
-    expect(dbTest).toContain("add value if not exists 'molda'")
+    for (const tool of ['molda', 'lesson-studio', 'lesson-pinta'])
+      expect(dbTest).toContain(`add value if not exists '${tool}'`)
   })
 })
 
 describe('os espelhos fora do members', () => {
   test('core (chaves do R2), member-shell (BFF) e kids (fila) conhecem a tool', () => {
+    const uniao = CREATION_TOOLS.map((tool) => `'${tool}'`).join(' | ')
     expect(read('core/src/creations/storage-keys.ts')).toContain(
-      "export type CreationStorageTool = 'studio' | 'pinta' | 'molda'",
+      `export type CreationStorageTool = ${uniao}`,
     )
     expect(read('member-shell/src/routes/creations.ts')).toContain(
-      "z.enum(['studio', 'pinta', 'molda'])",
+      `z.enum([${CREATION_TOOLS.map((tool) => `'${tool}'`).join(', ')}])`,
     )
     expect(read('member-shell/src/lib/types.ts')).toContain(
-      "export type CreationToolView = 'studio' | 'pinta' | 'molda'",
+      `export type CreationToolView = ${uniao}`,
     )
     expect(read('community-kids/src/lib/creations-cloud.ts')).toContain(
-      "export type CreationTool = 'studio' | 'pinta' | 'molda'",
+      `export type CreationTool = ${uniao}`,
     )
   })
 

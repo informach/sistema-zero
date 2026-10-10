@@ -12,6 +12,44 @@
 > `quiz`. Sessões de cena só têm comandos e avaliação de experimentação; não há migração de
 > demonstrações antigas. Notas históricas abaixo sobre esses formatos não se aplicam.
 
+## Rascunho da fase guardado na conta + "envio em dia" (10/10/2026)
+
+Plano: `~/.claude/plans/wise-drifting-pelican.md` (resumo aqui). O rascunho do Estúdio e do Pinta
+DENTRO da fase sobe sozinho para a conta; o envio virou só a entrega à equipe.
+
+- **Dois tipos de criação novos**, `lesson-studio` e `lesson-pinta` (migration **0100**, só os
+  `ADD VALUE IF NOT EXISTS`, sozinhos por causa do 55P04), com `itemId` = id do BLOCO. Não são um
+  `kind` dos tipos antigos de propósito: vazariam para "Meus Jogos", para a galeria de entrega e
+  para o portão de produto. `LESSON_CREATION_TOOLS`/`isLessonCreationTool`; `isStudioFormatTool`
+  faz as regras de formato do Estúdio valerem também para `lesson-studio`. ⚠️ Contam na cota de
+  1 GB por perfil (risco aceito).
+- **Quem pode reservar** é `LessonDraftAccessService` (`application/creations/`), a régua da FASE e
+  não a da posse: aula publicada sem "Em breve", curso liberado à conta, aula destravada, bloco
+  numa parte já aberta, do tipo da ferramenta e fora da galeria. Cache de 60 s por
+  (conta, perfil, tipo, bloco). Só a RESERVA passa por ele; listar, baixar e apagar seguem abertos.
+  `CreationsService` recebe o serviço como 4º argumento e escolhe entre ele e `assertToolOwned`.
+- **Impressão do conteúdo** (migration **0101**, colunas `varchar(70)` nulas, `IF NOT EXISTS`):
+  `creations.pending_content_fingerprint` na reserva, promovida a `content_fingerprint` no commit;
+  `studio_submissions.content_fingerprint` gravada no envio (Estúdio e Pinta; nula na galeria).
+  Restaurar a versão anterior de um envio zera a impressão. `getDraftStates(userId, tool, itemIds)`
+  lê impressão e hora de cada rascunho num SELECT só. ⚠️ Os DDL dos `tests/db` precisam das colunas
+  em CADA arquivo (o banco de teste é compartilhado).
+- **O critério**: `SectionProgressionService` (8º argumento `drafts?`) junta envio e rascunho das
+  partes com `submissionUpToDate` e pergunta ao `submissionFreshness` do core; `outdated` vira a
+  pendência `submission-outdated`.
+- ⚠️⚠️ **Assentar só ao avançar** (`read(owner, lesson, {settle})`, `SectionSettle = 'all' |
+  {before}`): até aqui toda leitura gravava a parte concluída (até o progresso do vídeo) e a
+  congelava. Uma parte com o critério só é GRAVADA quando a criança navega para depois dela
+  (`learning.service` manda `{settle: {before: alvo}}`) ou conclui a fase (`mark-lesson-complete`
+  manda `'all'`); numa leitura passiva ela aparece concluída na tela e nada depois dela é gravado.
+  Sem isso, a última mudança ainda na fila do navegador deixaria a parte fechar sem o reenvio.
+  O player sobe o rascunho (`flushAll`) logo antes de navegar.
+- `get-lesson.service.ts` devolve `submittedAt` (ISO) e `contentFingerprint` do envio; os DTOs
+  (`CREATION_TOOL`, `fingerprint` na reserva e nos envios, `submissionUpToDate` no
+  `SectionCompletionSchema`) declaram tudo (o Elysia descarta o que não está no schema).
+- Testes: `tests/integration/lesson-drafts.test.ts` (acesso, impressão, critério, leitura passiva
+  não grava e navegação grava) e os DDL de `tests/db`.
+
 ## A cor do perfil — 17/09/2026
 
 O alternador de dois temas (`padrao` ⇄ `pink`) virou um CATÁLOGO de cores escolhido pela pessoa.

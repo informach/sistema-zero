@@ -28,6 +28,7 @@ import {
   ReserveCreationUploadService,
   resetToolOwnershipCacheForTests,
 } from '../src/application/creations/creations.service'
+import { LessonDraftAccessService } from '../src/application/creations/lesson-draft-access.service'
 import { AwardGamificationService } from '../src/application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from '../src/application/gamification/buy-streak-freeze.service'
 import { ChallengeAdminService } from '../src/application/gamification/challenge-admin.service'
@@ -344,6 +345,7 @@ export function buildApp(
     clock,
     new PlatformActionService(avatar, room, preferencesRepository),
     certificates,
+    creations,
   )
   const learning = new LearningService(
     learningRepository,
@@ -571,6 +573,7 @@ export function buildApp(
         creations,
         new AccessCheckService(entitlements, clock),
         clock,
+        new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression),
       ),
       commitUpload: new CommitCreationUploadService(creations, clock),
       getDownload: new GetCreationDownloadService(creations),

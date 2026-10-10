@@ -41,6 +41,13 @@ export interface SectionCompletion {
   materialItems?: { blockId: string; itemIds: string[] }[]
   projectChecks?: SectionProjectCheck[]
   platformAction?: PlatformAction
+  /**
+   * "Envio em dia" (10/10/2026): a parte só fecha quando o último envio do Estúdio ou do Pinta
+   * dela (o `workspaceBlockId`) é igual ao projeto de agora. Mexeu depois de enviar? A faixa pede
+   * "Enviar de novo". Opcional e só nas partes que a autora marca: a régua compara a impressão
+   * digital do rascunho guardado na conta com a do envio (ver `submissionFreshness`).
+   */
+  submissionUpToDate?: true
 }
 
 export interface SectionProgressRecord {
@@ -61,6 +68,7 @@ export type SectionPendingKind =
   | LessonRequirementReason
   | 'platform-action'
   | 'project-check'
+  | 'submission-outdated'
   | 'authoring'
   | 'locked'
   | 'lesson'
@@ -164,6 +172,7 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
   )
     return false
   if (v.platformAction !== undefined && !isPlatformAction(v.platformAction)) return false
+  if (v.submissionUpToDate !== undefined && v.submissionUpToDate !== true) return false
   if (v.materialItems !== undefined) {
     if (
       !Array.isArray(v.materialItems) ||
@@ -264,7 +273,12 @@ export function sectionCompletionIssues(
       add('Configure os critérios de conclusão desta seção.')
       return issues
     }
-    if (!c.blockIds.length && !c.projectChecks?.length && !c.platformAction)
+    if (
+      !c.blockIds.length &&
+      !c.projectChecks?.length &&
+      !c.platformAction &&
+      !c.submissionUpToDate
+    )
       add('Esta seção precisa de uma checagem ou objetivo verificável.')
     if (
       blocks.some(
@@ -411,6 +425,10 @@ export function sectionCompletionIssues(
       )
     )
       add('A verificação de projeto precisa de um Estúdio incorporado nesta seção.')
+    if (c.submissionUpToDate && !submissionUpToDateWorkspace(sections, blocks, s.id))
+      add(
+        'O envio em dia precisa de um Estúdio ou Pinta incorporado nesta seção, já entregue numa seção de entrega anterior.',
+      )
     for (const b of blocks) {
       if (!s.blockIds.includes(b.id) || !record(b.content)) continue
       if (
@@ -424,6 +442,57 @@ export function sectionCompletionIssues(
     }
     return issues
   })
+}
+
+/**
+ * O espaço de trabalho que o "envio em dia" confere: um Estúdio ou Pinta incorporado (não a
+ * galeria, que entrega trabalhos de fora da aula) cuja seção DONA é a de entrega do projeto e vem
+ * antes desta (ou é esta). Sem isso não há envio a conferir, e a parte nunca fecharia.
+ */
+export function submissionUpToDateWorkspace(
+  sections: readonly Pick<LessonSection, 'id' | 'intent' | 'blockIds' | 'workspaceBlockId'>[],
+  blocks: readonly { id: string; content: unknown }[],
+  sectionId: string,
+): { blockId: string; kind: 'studio' | 'pinta' } | null {
+  const index = sections.findIndex((section) => section.id === sectionId)
+  const blockId = sections[index]?.workspaceBlockId
+  if (!blockId) return null
+  const block = blocks.find((b) => b.id === blockId)
+  if (
+    !block ||
+    !record(block.content) ||
+    (block.content.kind !== 'studio' && block.content.kind !== 'pinta') ||
+    block.content.gallery ||
+    block.content.purpose === 'experiment'
+  )
+    return null
+  const owner = sections.findIndex((section) => section.blockIds.includes(blockId))
+  if (owner < 0 || owner > index || !isFinalProjectSection(sections, sections[owner]?.id ?? ''))
+    return null
+  return { blockId, kind: block.content.kind }
+}
+
+/** A comparação do "envio em dia", pura: o members só junta os dois lados e pergunta aqui. */
+export type SubmissionFreshness = 'missing' | 'outdated' | 'fresh'
+
+/**
+ * `missing` = nada enviado; `outdated` = o rascunho guardado na conta é DIFERENTE do envio e foi
+ * guardado DEPOIS dele (os dois relógios são do servidor); senão `fresh`.
+ *
+ * ⚠️ Faltando a impressão de qualquer lado (envio antigo, rascunho que nunca subiu, navegador sem
+ * `crypto.subtle`), a régua deixa passar: ela existe para lembrar a criança, nunca para prendê-la
+ * por uma informação que o sistema não tem.
+ */
+export function submissionFreshness(input: {
+  submission: { fingerprint: string | null; submittedAt: Date } | null
+  draft: { fingerprint: string | null; syncedAt: Date } | null
+}): SubmissionFreshness {
+  if (!input.submission) return 'missing'
+  const sent = input.submission.fingerprint
+  const draft = input.draft
+  if (!sent || !draft?.fingerprint) return 'fresh'
+  if (draft.fingerprint === sent) return 'fresh'
+  return draft.syncedAt.getTime() > input.submission.submittedAt.getTime() ? 'outdated' : 'fresh'
 }
 
 /** Completed milestones survive review. Only the first unfinished section is available. */

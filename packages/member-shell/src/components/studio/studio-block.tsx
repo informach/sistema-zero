@@ -6,6 +6,7 @@ import '@sistemazero/studio/styles.css'
 import type {
   Project,
   StudioHandle,
+  StudioPersistence,
   StudioProRuntimeAdapter,
   StudioShareAdapter,
   StudioShareResult,
@@ -16,7 +17,15 @@ import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { CheckCheck, CheckCircle2, Maximize2, Minimize2, RotateCcw, Send } from 'lucide-react'
+import {
+  ArrowLeftRight,
+  CheckCheck,
+  CheckCircle2,
+  Maximize2,
+  Minimize2,
+  RotateCcw,
+  Send,
+} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
@@ -24,12 +33,21 @@ import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
 import { resolveStudioLessonSeed } from '../../lib/studio-lesson-seed'
-import { lessonStudioProjectId } from '../../lib/studio-project-id'
+import { lessonStudioBackupProjectId, lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonCopy } from '../lesson-copy-context'
+import { LessonDraftStatus, useLessonDraftState } from '../lesson-draft-status'
 import { useLessonPlayer } from '../lesson-player-context'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
+import {
+  diskFingerprint,
+  keepRemoteAsOther,
+  prepareStudioLessonDraft,
+  type StudioDraftDeps,
+  studioDraftProducer,
+  swapOtherVersion,
+} from './lesson-studio-draft'
 import { SectionProjectCheck } from './section-project-check'
 
 // "Compartilhar" da AULA = UMA vez só. O projeto da aula tem começo/meio/fim: a
@@ -91,7 +109,8 @@ interface Props {
   fillHeight?: boolean
 }
 
-type StudioComponent = typeof import('@sistemazero/studio')['StudioLesson']
+type StudioModule = typeof import('@sistemazero/studio')
+type StudioComponent = StudioModule['StudioLesson']
 
 /**
  * Bloco Estúdio: renderiza o @sistemazero/studio pré-configurado pelo admin (versão
@@ -112,13 +131,42 @@ export function StudioBlockView({
   fillHeight,
 }: Props) {
   const player = useLessonPlayer()
-  const { estudio } = useLessonCopy()
+  const { estudio, rascunho } = useLessonCopy()
   const lessonId = player?.lessonId ?? ''
   // Id estável por bloco E por PERFIL (`viewerId`): irmãos no mesmo navegador não misturam o
   // rascunho. ⚠️ Charset seguro (sem `:`): id inválido vira ULID aleatório → perde tudo no refresh.
   const projectId = lessonStudioProjectId(blockId, player?.viewerId)
+  const backupId = lessonStudioBackupProjectId(projectId)
+  // O rascunho guardado na CONTA (10/10/2026): só com o app que fala com a nuvem (o Kids), com
+  // perfil e numa aula de verdade. Sem ele, o bloco segue só com o rascunho local, como sempre.
+  const draftChannel = player?.lessonDrafts?.studio
+  const channel =
+    draftChannel?.supported && player?.viewerId && player.lessonId ? draftChannel : null
+  const draftState = useLessonDraftState(channel)
 
   const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
+  const [studioMod, setStudioMod] = useState<StudioModule | null>(null)
+  // A "outra versão" guardada neste navegador (o conflito entre dois computadores).
+  const [hasOther, setHasOther] = useState(false)
+  const [otherOpen, setOtherOpen] = useState(false)
+  const [swapping, setSwapping] = useState(false)
+  const [otherNote, setOtherNote] = useState<string | null>(null)
+  // "Mudou depois do envio": a impressão do que foi enviado × a do projeto de agora.
+  const [sentFingerprint, setSentFingerprint] = useState<string | null>(
+    studioState?.contentFingerprint ?? null,
+  )
+  const [currentFingerprint, setCurrentFingerprint] = useState<string | null>(null)
+  const preparedFor = useRef<string | null>(null)
+  // O último envio (hora e impressão) entra na decisão de qual versão abrir. Num ref: a decisão
+  // roda uma vez por rascunho, e um reenvio não deve recarregar o editor.
+  const envioRef = useRef<{ at: number; fingerprint: string | null } | null>(null)
+  envioRef.current =
+    studioState?.submitted && studioState.submittedAt
+      ? {
+          at: Date.parse(studioState.submittedAt),
+          fingerprint: studioState.contentFingerprint ?? null,
+        }
+      : null
   const [seed, setSeed] = useState<Project | null>(null)
   const [seedLoadFailure, setSeedLoadFailure] = useState<{
     projectId: string
@@ -203,6 +251,40 @@ export function StudioBlockView({
 
   const handleRef = useRef<StudioHandle | null>(null)
 
+  const draftDeps = useMemo<StudioDraftDeps | null>(
+    () =>
+      studioMod && channel ? { studio: studioMod, channel, blockId, projectId, backupId } : null,
+    [studioMod, channel, blockId, projectId, backupId],
+  )
+  // Sobe o rascunho para a conta (o produtor relê o disco na hora da subida). Num ref porque o
+  // adaptador de persistência abaixo é criado UMA vez por editor.
+  const subirRascunho = useCallback(() => {
+    if (!draftDeps) return
+    draftDeps.channel.enqueue(
+      blockId,
+      studioDraftProducer(draftDeps, setCurrentFingerprint),
+      async (remote) => {
+        await keepRemoteAsOther(draftDeps, remote)
+        setHasOther(true)
+      },
+    )
+  }, [draftDeps, blockId])
+  const subirRef = useRef(subirRascunho)
+  subirRef.current = subirRascunho
+  // O salvamento LOCAL de sempre, e depois a subida. ⚠️ Espalha o adaptador local inteiro:
+  // `scopeIdentity`, `appliesSavesInCallOrder` e o `loadBlocksState` continuam valendo.
+  const persistence = useMemo<StudioPersistence>(() => {
+    if (!studioMod || !channel) return 'local'
+    const local = studioMod.createLocalPersistenceAdapter()
+    return {
+      ...local,
+      save: async (project) => {
+        await local.save(project)
+        subirRef.current()
+      },
+    }
+  }, [studioMod, channel])
+
   // Só uma fonte AUSENTE permite tentar a próxima. Uma falha de leitura ou de
   // conversão deve bloquear o editor, sem semear outro projeto por cima do trabalho.
   useEffect(() => {
@@ -218,11 +300,39 @@ export function StudioBlockView({
       // namespace caso o Estúdio Completo o tenha trocado numa visita anterior nesta sessão.
       mod.setStudioStorageNamespace('')
       setStudioLesson(() => mod.StudioLesson)
+      setStudioMod(mod)
       const readSavedProject = async (source: 'studio-submission' | 'studio-carryover') => {
         const result = await apiGet<{ project: unknown | null }>(
           `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/${source}`,
         )
         return result?.project ? { ...(result.project as Project), id: projectId } : null
+      }
+      // A versão da CONTA entra antes de o editor montar (uma vez por rascunho): depois disto a
+      // ordem de sempre, com o local primeiro, já abre a versão mais nova.
+      if (channel && preparedFor.current !== projectId) {
+        preparedFor.current = projectId
+        const deps = { studio: mod, channel, blockId, projectId, backupId }
+        try {
+          const preparo = await prepareStudioLessonDraft({
+            ...deps,
+            submission: envioRef.current,
+            readSubmission: () => readSavedProject('studio-submission'),
+          })
+          if (!active) return
+          setHasOther(preparo.other)
+          if (preparo.upload)
+            channel.enqueue(
+              blockId,
+              studioDraftProducer(deps, setCurrentFingerprint),
+              async (remote) => {
+                await keepRemoteAsOther(deps, remote)
+                setHasOther(true)
+              },
+            )
+          setCurrentFingerprint(await diskFingerprint(mod, projectId))
+        } catch (error) {
+          console.warn('[rascunho-da-fase] não deu para trazer a versão da conta', error)
+        }
       }
       const project = await resolveStudioLessonSeed({
         local: () => mod.createLocalPersistenceAdapter().load(projectId),
@@ -251,6 +361,8 @@ export function StudioBlockView({
     blockId,
     studioState?.submitted,
     seedLoadAttempt,
+    channel,
+    backupId,
   ])
 
   // "Expandir" é uma SOBREPOSIÇÃO em tela cheia por CSS (não a Fullscreen API nativa): a
@@ -293,6 +405,11 @@ export function StudioBlockView({
     setSubmitting(true)
     setError(null)
     try {
+      // "Envio em dia": a impressão do que vai é a do DISCO, a mesma régua do rascunho guardado
+      // na conta. Salva antes (o autosave é debounced) e manda o rascunho subir junto.
+      await handleRef.current?.save().catch(() => {})
+      const fingerprint = studioMod ? await diskFingerprint(studioMod, projectId) : null
+      if (channel) await channel.flush(4000).catch(() => {})
       // Resultado da auto-correção rodada no editor (correção híbrida): o servidor
       // RECALCULA a estrutura e registra estes p/ comportamento/teste/código.
       const run = handleRef.current?.getActivityResult() ?? null
@@ -308,8 +425,11 @@ export function StudioBlockView({
           project,
           ...(activity ? { results } : {}),
           ...(note ? { message: note } : {}),
+          ...(fingerprint ? { fingerprint } : {}),
         },
       )
+      setSentFingerprint(fingerprint)
+      setCurrentFingerprint(fingerprint)
       setSubmitted(true)
       setSubmittedAt(res.submittedAt)
       setReviewed(false) // entrega nova: o carimbo do professor não vale mais
@@ -331,7 +451,7 @@ export function StudioBlockView({
     } finally {
       setSubmitting(false)
     }
-  }, [lessonId, blockId, player, activity, message])
+  }, [lessonId, blockId, player, activity, message, studioMod, projectId, channel])
 
   // Abre a confirmação de "Trazer o que eu enviei" (item do menu ⋯ do Estúdio).
   // Estável (o Studio latcha este callback no mount).
@@ -379,12 +499,43 @@ export function StudioBlockView({
       setSeed(initial)
       setStudioVersion((version) => version + 1)
       setRestartOpen(false)
+      // O recomeço também vai para a conta (sem isso, outro computador traria o antigo).
+      subirRef.current()
     } catch {
       setRestartNote('Não consegui recomeçar agora. Seu projeto continua como estava.')
     } finally {
       setRestarting(false)
     }
   }, [content.initialProject, projectId])
+
+  // Troca o rascunho de agora com a "outra versão" guardada neste navegador.
+  const doSwap = useCallback(async () => {
+    const handle = handleRef.current
+    if (!draftDeps || !studioMod) return
+    setSwapping(true)
+    setOtherNote(null)
+    try {
+      await handle?.save()
+      const aberta = await swapOtherVersion(draftDeps)
+      if (!aberta) {
+        setHasOther(false)
+        setOtherOpen(false)
+        return
+      }
+      const project = await resolveStudioLessonSeed({
+        local: () => studioMod.createLocalPersistenceAdapter().load(projectId),
+        initial: { ...(content.initialProject as Project), id: projectId },
+      })
+      setSeed(project)
+      setStudioVersion((version) => version + 1)
+      setOtherOpen(false)
+      subirRef.current()
+    } catch {
+      setOtherNote(rascunho.outraVersaoFalhou)
+    } finally {
+      setSwapping(false)
+    }
+  }, [draftDeps, studioMod, projectId, content.initialProject, rascunho.outraVersaoFalhou])
 
   // O Studio LATCHA o adapter uma vez (memoizado por lessonId/blockId), mas `onShared` pode
   // mudar por render — lê via ref pra manter o adapter estável e ainda chamar o handler ATUAL.
@@ -456,6 +607,9 @@ export function StudioBlockView({
   }, [enableShare, lessonId, blockId, projectId, presetTitle, presetDescription, presetCoverUrl])
 
   const ready = StudioLesson !== null && seed?.id === projectId && !seedLoadFailed
+  const mudouDepoisDoEnvio = Boolean(
+    submitted && sentFingerprint && currentFingerprint && sentFingerprint !== currentFingerprint,
+  )
 
   return (
     <div
@@ -470,9 +624,26 @@ export function StudioBlockView({
       )}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="sz-display text-base">{estudio.titulo}</h3>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h3 className="sz-display text-base">{estudio.titulo}</h3>
+          <LessonDraftStatus state={draftState} />
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           <LessonVideoToggle expanded={expanded} size="sm" />
+          {hasOther ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setOtherNote(null)
+                setOtherOpen(true)
+              }}
+              disabled={!ready || swapping}
+            >
+              <ArrowLeftRight className="size-4" />
+              {rascunho.outraVersao}
+            </Button>
+          ) : null}
           <Button
             variant="outline"
             size="sm"
@@ -543,7 +714,6 @@ export function StudioBlockView({
             key={studioVersion}
             ref={handleRef}
             initialProject={seed as Project}
-            persistence="local"
             level={content.level}
             allowBlocks={content.allowBlocks}
             allowCategories={content.allowCategories}
@@ -569,6 +739,7 @@ export function StudioBlockView({
             }
             // Item ⋯ → "Trazer o que eu enviei" (só na aula; abre a confirmação).
             onCloudSync={lessonId ? openSync : undefined}
+            persistence={persistence}
             blockUnloadWhenDirty={false}
           />
         ) : seedLoadFailed ? (
@@ -610,6 +781,9 @@ export function StudioBlockView({
             <CheckCircle2 className="size-4" />
             {estudio.enviado(submittedAt ? new Date(submittedAt).toLocaleString('pt-BR') : null)}
           </p>
+          {mudouDepoisDoEnvio ? (
+            <p className="sz-lesson-draft-outdated text-sm font-medium">{rascunho.mudouProjeto}</p>
+          ) : null}
           {/* O professor carimbou "já conferi". Não é nota: é ele dizendo que viu. */}
           {reviewed ? (
             <p className="flex items-center gap-2 text-sm text-success">
@@ -704,6 +878,31 @@ export function StudioBlockView({
       >
         <p className="text-sm text-muted-foreground">{estudio.trazerExplica}</p>
         {syncNote ? <p className="mt-2 text-sm text-destructive">{syncNote}</p> : null}
+      </Dialog>
+
+      <Dialog
+        open={otherOpen}
+        onClose={() => setOtherOpen(false)}
+        title={rascunho.outraVersaoTitulo}
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setOtherOpen(false)}
+              disabled={swapping}
+            >
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={() => void doSwap()} disabled={swapping}>
+              {swapping ? <Spinner /> : <ArrowLeftRight className="size-4" />}
+              {rascunho.trazer}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">{rascunho.outraVersaoExplica}</p>
+        {otherNote ? <p className="mt-2 text-sm text-destructive">{otherNote}</p> : null}
       </Dialog>
 
       <Dialog

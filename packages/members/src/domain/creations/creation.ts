@@ -14,28 +14,56 @@
  */
 /**
  * ⚠️ O enum `creation_tool` do Postgres espelha esta lista (schema + migration): valor NOVO
- * entra sempre no FIM, com `ADD VALUE IF NOT EXISTS` numa migration própria (`0065`/`0072`).
+ * entra sempre no FIM, com `ADD VALUE IF NOT EXISTS` numa migration própria (`0065`/`0072`/`0100`).
  * `molda` (04/09/2026) = a oficina 3D (modelos `.glb`, texturas, céus `.hdr`).
+ * `lesson-studio`/`lesson-pinta` (10/10/2026) = o RASCUNHO do Estúdio e do Pinta DENTRO da fase,
+ * um item por bloco (`itemId` = id do bloco). Ferramentas à parte, e não um "kind" das livres:
+ * assim não entram em "Meus jogos", na galeria de entrega nem no portão de produto, e o acesso é
+ * conferido pela FASE (ver `LessonDraftAccessService`).
  */
-export const CREATION_TOOLS = ['studio', 'pinta', 'molda'] as const
+export const CREATION_TOOLS = ['studio', 'pinta', 'molda', 'lesson-studio', 'lesson-pinta'] as const
 export type CreationTool = (typeof CREATION_TOOLS)[number]
 
 export function isCreationTool(value: unknown): value is CreationTool {
   return typeof value === 'string' && (CREATION_TOOLS as readonly string[]).includes(value)
 }
 
+/** Os rascunhos da fase: acesso pela aula, não pela posse do produto. */
+export const LESSON_CREATION_TOOLS = ['lesson-studio', 'lesson-pinta'] as const
+export type LessonCreationTool = (typeof LESSON_CREATION_TOOLS)[number]
+export type ProductCreationTool = Exclude<CreationTool, LessonCreationTool>
+
+export function isLessonCreationTool(tool: CreationTool): tool is LessonCreationTool {
+  return (LESSON_CREATION_TOOLS as readonly string[]).includes(tool)
+}
+
+/** O bloco de aula de cada rascunho (o `kind` do `lesson_blocks`). */
+export const LESSON_CREATION_BLOCK_KIND: Readonly<Record<LessonCreationTool, 'studio' | 'pinta'>> =
+  {
+    'lesson-studio': 'studio',
+    'lesson-pinta': 'pinta',
+  }
+
+/**
+ * O documento é um projeto do Estúdio (formato versionado, manifesto conferido no commit): vale
+ * para o Estúdio Completo e para o Estúdio da fase.
+ */
+export function isStudioFormatTool(tool: CreationTool): boolean {
+  return tool === 'studio' || tool === 'lesson-studio'
+}
+
 /**
  * Posse exigida por ferramenta (as mesmas refs do catálogo que gateiam as páginas
  * `/estudio`, `/pinta` e `/molda` do kids e o gate de produto do Pensa).
  */
-export const CREATION_ACCESS_REF: Readonly<Record<CreationTool, string>> = {
+export const CREATION_ACCESS_REF: Readonly<Record<ProductCreationTool, string>> = {
   studio: 'estudio-completo',
   pinta: 'pinta',
   molda: 'molda',
 }
 
 /** Nome da ferramenta nos recados (403 de posse). */
-export const CREATION_TOOL_NAMES: Readonly<Record<CreationTool, string>> = {
+export const CREATION_TOOL_NAMES: Readonly<Record<ProductCreationTool, string>> = {
   studio: 'Estúdio Completo',
   pinta: 'Pinta',
   molda: 'Molda',
@@ -116,6 +144,11 @@ export interface CreationSummary {
   syncedAt: Date
   /** Presente somente no índice quando outro aparelho precisa aplicar esta exclusão. */
   deletedAt?: Date | null
+  /**
+   * Impressão digital do conteúdo da revisão corrente (`v1:<sha256>`, do navegador). Só os
+   * rascunhos da fase a mandam hoje; `null` = não veio.
+   */
+  contentFingerprint?: string | null
 }
 
 /** O que a reserva guarda até o commit (a lista NÃO vê nada disto). */
@@ -130,6 +163,8 @@ export interface CreationPendingUpload {
   thumb: string | null
   /** As partes que a revisão reservada referencia (todas, faltantes ou não). */
   parts: CreationPartRef[]
+  /** A impressão que o commit vai promover. */
+  contentFingerprint: string | null
 }
 
 /** A linha completa (o repositório e os serviços). */
@@ -166,6 +201,7 @@ export function toCreationSummary(record: CreationSummary): CreationSummary {
     syncedAt: record.syncedAt,
   }
   if (record.deletedAt) summary.deletedAt = record.deletedAt
+  if (record.contentFingerprint) summary.contentFingerprint = record.contentFingerprint
   return summary
 }
 
@@ -177,3 +213,10 @@ export function toCreationSummary(record: CreationSummary): CreationSummary {
  * ver `CreationPartRef.rev`).
  */
 export { creationPartStorageKey, creationStorageKey } from '@sistemazero/core/creations'
+
+/** O estado do rascunho da fase que o "envio em dia" lê (um por bloco). */
+export interface CreationDraftState {
+  itemId: string
+  fingerprint: string | null
+  syncedAt: Date
+}

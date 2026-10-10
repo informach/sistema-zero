@@ -118,6 +118,7 @@ describe.skipIf(!testDatabaseUrl)('restauração de entregas apagadas (Postgres 
       'message varchar(1000)',
       'reviewed_at timestamptz',
       'reviewed_by uuid',
+      'content_fingerprint varchar(70)',
     ]) {
       await conn.sql.unsafe(
         `alter table members.studio_submissions add column if not exists ${col}`,

@@ -45,6 +45,11 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     // O banco de tests/db é compartilhado e o enum pode ter nascido antes do `molda` (0072):
     // o mesmo `ADD VALUE IF NOT EXISTS` da migration, fora de transação (exigência do Postgres).
     await conn.sql.unsafe(`alter type members.creation_tool add value if not exists 'molda'`)
+    // Os rascunhos da fase (0100), pelo mesmo motivo.
+    await conn.sql.unsafe(
+      `alter type members.creation_tool add value if not exists 'lesson-studio'`,
+    )
+    await conn.sql.unsafe(`alter type members.creation_tool add value if not exists 'lesson-pinta'`)
     // O mesmo DDL da migration 0067. ⚠️ Recria do zero: o banco de tests/db é compartilhado
     // e a `user-data-purge.test.ts` cria esta MESMA tabela com um DDL mínimo (sem as
     // colunas `pending_*`); com `if not exists` o primeiro a rodar venceria e este teste
@@ -71,6 +76,8 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       pending_thumb text,
       parts jsonb not null default '[]'::jsonb,
       pending_parts jsonb,
+      content_fingerprint varchar(70),
+      pending_content_fingerprint varchar(70),
       bytes integer not null default 0,
       storage_ref text,
       thumb text,

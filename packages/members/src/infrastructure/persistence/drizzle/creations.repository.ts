@@ -2,11 +2,13 @@ import { randomUUID } from 'node:crypto'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { and, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
 import {
+  type CreationDraftState,
   type CreationPartRef,
   type CreationRecord,
   type CreationSummary,
   type CreationTool,
   emptyCountByTool,
+  isStudioFormatTool,
 } from '../../../domain/creations/creation'
 import {
   classifyPintaPaletteLibraryCreation,
@@ -40,7 +42,8 @@ type SummaryRow = Pick<
   | 'thumb'
   | 'syncedAt'
   | 'deletedAt'
->
+> &
+  Partial<Pick<Row, 'contentFingerprint'>>
 
 const toSummary = (row: SummaryRow): CreationSummary => {
   const summary: CreationSummary = {
@@ -56,6 +59,7 @@ const toSummary = (row: SummaryRow): CreationSummary => {
     syncedAt: row.syncedAt,
   }
   if (row.deletedAt) summary.deletedAt = row.deletedAt
+  if (row.contentFingerprint) summary.contentFingerprint = row.contentFingerprint
   return summary
 }
 
@@ -79,6 +83,7 @@ const toRecord = (row: Row): CreationRecord => ({
           itemUpdatedAt: row.pendingItemUpdatedAt,
           thumb: row.pendingThumb,
           parts: sanitizeParts(row.pendingParts),
+          contentFingerprint: row.pendingContentFingerprint,
         }
       : null,
   lastReservedRevision: row.lastReservedRevision,
@@ -233,6 +238,30 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     return usageWith(this.db, userId)
   }
 
+  async getDraftStates(
+    userId: string,
+    tool: CreationTool,
+    itemIds: readonly string[],
+  ): Promise<CreationDraftState[]> {
+    if (itemIds.length === 0) return []
+    const rows = await this.db
+      .select({
+        itemId: creations.itemId,
+        fingerprint: creations.contentFingerprint,
+        syncedAt: creations.syncedAt,
+      })
+      .from(creations)
+      .where(
+        and(
+          eq(creations.userId, userId),
+          eq(creations.tool, tool),
+          inArray(creations.itemId, [...itemIds]),
+          whereAliveCommitted(),
+        ),
+      )
+    return rows
+  }
+
   async reserveUpload(input: CreationUploadInput): Promise<CreationUploadReservation> {
     return this.db.transaction(async (tx) => {
       // A quota é por PERFIL. Serializa a fotografia preliminar da reserva com os
@@ -273,7 +302,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const formatVersion = input.formatVersion ?? 1
       // Sob o mesmo lock da reserva: uma aba velha não cancela um upload novo em voo.
       const requiredVersion = Math.max(
-        input.tool === 'studio' ? STUDIO_PROJECT_FORMAT_VERSION : 1,
+        isStudioFormatTool(input.tool) ? STUDIO_PROJECT_FORMAT_VERSION : 1,
         existing?.formatVersion ?? 1,
         existing?.pendingFormatVersion ?? 1,
       )
@@ -360,6 +389,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         pendingItemUpdatedAt: input.itemUpdatedAt,
         pendingThumb: input.thumb,
         pendingParts: resolved.all,
+        pendingContentFingerprint: input.contentFingerprint ?? null,
       }
       if (!existing) {
         // Linha nova: as colunas "vivas" recebem os mesmos valores só porque são NOT NULL —
@@ -483,7 +513,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // Defesa contra reservas legadas de um deploy misto; o corpo do commit não escolhe formato.
       const requiredVersion = Math.max(
         row.formatVersion,
-        input.tool === 'studio' ? STUDIO_PROJECT_FORMAT_VERSION : 1,
+        isStudioFormatTool(input.tool) ? STUDIO_PROJECT_FORMAT_VERSION : 1,
       )
       if (formatVersion < requiredVersion) {
         await tx
@@ -518,6 +548,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           itemUpdatedAt: row.pendingItemUpdatedAt,
           thumb: row.pendingThumb,
           parts: pendingParts,
+          contentFingerprint: row.pendingContentFingerprint,
           ...clearPending(),
           // Item na lixeira que voltou a ser editado ressuscita — AGORA, com o blob no lugar.
           deletedAt: null,
@@ -644,6 +675,7 @@ function clearPending() {
     pendingKind: null,
     pendingItemUpdatedAt: null,
     pendingThumb: null,
+    pendingContentFingerprint: null,
   }
 }
 

@@ -209,6 +209,52 @@ export async function buildStudioCloudSnapshot(
   }
 }
 
+/**
+ * Resolve o que desceu num `Project` completo: manifesto → monta `program + assets` (as partes
+ * que este aparelho já tem, `localAssets`, não são baixadas; as outras descem com o hash
+ * conferido); blob antigo (o `Project` inteiro) passa direto. Exportada para o rascunho da fase
+ * (`lesson-draft-cloud.ts`), que monta o projeto do mesmo jeito.
+ */
+export async function resolveStudioCloudDocument(
+  downloaded: CloudDownload,
+  localAssets: readonly unknown[] | (() => Promise<readonly unknown[]>),
+): Promise<unknown> {
+  const raw = JSON.parse(downloaded.json) as unknown
+  if (!isStudioPartsManifest(raw)) return raw
+  const local = new Map<string, unknown>()
+  if (hashSupported()) {
+    const daqui = typeof localAssets === 'function' ? await localAssets() : localAssets
+    await Promise.all(
+      daqui.map(async (asset) => {
+        local.set(await sha256Hex(canonicalJson(asset)), asset)
+      }),
+    )
+  }
+  const missing = [...new Set(raw.assets)].filter((hash) => !local.has(hash))
+  const fetched = new Map<string, unknown>()
+  await perfSpanAsync(
+    'kids:studio:parts',
+    async () => {
+      let cursor = 0
+      const worker = async () => {
+        while (cursor < missing.length) {
+          const hash = missing[cursor] as string
+          cursor += 1
+          fetched.set(hash, JSON.parse(await downloaded.fetchPart(hash)) as unknown)
+        }
+      }
+      await Promise.all(
+        Array.from({ length: Math.min(PART_FETCH_CONCURRENCY, missing.length) }, worker),
+      )
+    },
+    { total: raw.assets.length, fetched: missing.length },
+  )
+  return {
+    ...raw.program,
+    assets: raw.assets.map((hash) => local.get(hash) ?? fetched.get(hash)),
+  }
+}
+
 const FIRST_LOAD_BUDGET_MS = 6000
 /**
  * Prazo de CADA PÁGINA da lista da nuvem, não da lista inteira: desde que a capa viaja
@@ -311,42 +357,14 @@ export function createStudioCloudSync(options: {
    * o hash conferido); blob antigo (o `Project` inteiro) passa direto.
    */
   async function resolveCloudProject(downloaded: CloudDownload, itemId: string): Promise<unknown> {
-    const raw = JSON.parse(downloaded.json) as unknown
-    if (!isStudioPartsManifest(raw)) return raw
-    const local = new Map<string, unknown>()
-    if (hashSupported() && studio.loadProjectAssetsSnapshotForCloud) {
-      const mine = await studio
-        .loadProjectAssetsSnapshotForCloud(itemId, { namespace: options.viewerId })
-        .catch(() => [] as unknown[])
-      await Promise.all(
-        mine.map(async (asset) => {
-          local.set(await sha256Hex(canonicalJson(asset)), asset)
-        }),
-      )
-    }
-    const missing = [...new Set(raw.assets)].filter((hash) => !local.has(hash))
-    const fetched = new Map<string, unknown>()
-    await perfSpanAsync(
-      'kids:studio:parts',
-      async () => {
-        let cursor = 0
-        const worker = async () => {
-          while (cursor < missing.length) {
-            const hash = missing[cursor] as string
-            cursor += 1
-            fetched.set(hash, JSON.parse(await downloaded.fetchPart(hash)) as unknown)
-          }
-        }
-        await Promise.all(
-          Array.from({ length: Math.min(PART_FETCH_CONCURRENCY, missing.length) }, worker),
-        )
-      },
-      { total: raw.assets.length, fetched: missing.length },
+    // Os assets daqui só são lidos quando o que desceu é um manifesto (blob antigo passa direto).
+    return resolveStudioCloudDocument(downloaded, async () =>
+      hashSupported() && studio.loadProjectAssetsSnapshotForCloud
+        ? await studio
+            .loadProjectAssetsSnapshotForCloud(itemId, { namespace: options.viewerId })
+            .catch(() => [] as unknown[])
+        : [],
     )
-    return {
-      ...raw.program,
-      assets: raw.assets.map((hash) => local.get(hash) ?? fetched.get(hash)),
-    }
   }
 
   function enqueue(id: string, flags: { thumbOnly?: boolean } = {}): void {

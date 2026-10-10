@@ -12,14 +12,23 @@
  * armazenamento ainda está vazio — e aí a ordem é entrega → cadeia → desenho do professor.
  */
 
+import { pintaContentFingerprint } from '@sistemazero/core/creations'
 import { pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { CheckCheck, CheckCircle2, Download, Maximize2, Minimize2, Send } from 'lucide-react'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  ArrowLeftRight,
+  CheckCheck,
+  CheckCircle2,
+  Download,
+  Maximize2,
+  Minimize2,
+  Send,
+} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
@@ -28,8 +37,17 @@ import { resolvePintaSeed } from '../../lib/pinta-seed'
 import { preparePintaSubmission } from '../../lib/pinta-submission'
 import type { PintaBlock, PintaStateView, PintaSubmissionResultView } from '../../lib/types'
 import { useLessonCopy } from '../lesson-copy-context'
+import { LessonDraftStatus, useLessonDraftState } from '../lesson-draft-status'
 import { useLessonPlayer } from '../lesson-player-context'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
+import {
+  keepRemoteDrawingAsOther,
+  type PintaDraftDeps,
+  pintaDraftProducer,
+  preparePintaLessonDraft,
+  swapOtherDrawing,
+  withDraftUpload,
+} from './lesson-pinta-draft'
 import { loadPintaLessonModule, type PintaLessonModule } from './pinta-loader'
 
 /** O módulo do Pinta é carregado só no client (IndexedDB/canvas não existem no SSR). */
@@ -64,8 +82,14 @@ export function PintaBlockView({
   fillHeight?: boolean
 }) {
   const player = useLessonPlayer()
-  const { pinta } = useLessonCopy()
+  const { pinta, rascunho } = useLessonCopy()
   const lessonId = player?.lessonId ?? ''
+  // O rascunho guardado na CONTA (10/10/2026), como no Estúdio da fase: só com o app que fala
+  // com a nuvem (o Kids), com perfil e numa aula de verdade.
+  const draftChannel = player?.lessonDrafts?.pinta
+  const channel =
+    draftChannel?.supported && player?.viewerId && player.lessonId ? draftChannel : null
+  const draftState = useLessonDraftState(channel)
 
   const [mod, setMod] = useState<PintaLessonModule | null>(null)
   const [persistence, setPersistence] = useState<PintaPersistence | null>(null)
@@ -80,8 +104,33 @@ export function PintaBlockView({
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [expanded, setExpanded] = useState(() => expandedByBlock.get(blockId) ?? false)
+  // Trocar pela "outra versão" remonta o editor com o desenho novo.
+  const [pintaVersion, setPintaVersion] = useState(0)
+  const [draftDeps, setDraftDeps] = useState<PintaDraftDeps | null>(null)
+  const [hasOther, setHasOther] = useState(false)
+  const [otherOpen, setOtherOpen] = useState(false)
+  const [swapping, setSwapping] = useState(false)
+  const [otherNote, setOtherNote] = useState<string | null>(null)
+  const [sentFingerprint, setSentFingerprint] = useState<string | null>(
+    pintaState?.contentFingerprint ?? null,
+  )
+  const [currentFingerprint, setCurrentFingerprint] = useState<string | null>(null)
 
   const handleRef = useRef<PintaHandle | null>(null)
+  // A subida do rascunho, num ref: o banco embrulhado é criado uma vez, na carga.
+  const subirRef = useRef<() => void>(() => {})
+  const subirRascunho = useCallback(() => {
+    if (!draftDeps) return
+    draftDeps.channel.enqueue(
+      blockId,
+      pintaDraftProducer(draftDeps, setCurrentFingerprint),
+      async (remote) => {
+        await keepRemoteDrawingAsOther(draftDeps, remote)
+        setHasOther(true)
+      },
+    )
+  }, [draftDeps, blockId])
+  subirRef.current = subirRascunho
 
   // As demais dependências (desenho inicial, estado da entrega, aula, perfil) são a SEMENTE:
   // re-executar com elas re-hidrataria o editor por cima do que a criança está desenhando.
@@ -102,9 +151,21 @@ export function PintaBlockView({
       }
       const loaded = result.module
       if (!active) return
-      const store = loaded.createPintaPersistence({
+      const base = loaded.createPintaPersistence({
         namespace: draftNamespace(blockId, player?.viewerId ?? undefined),
       })
+      // Com a nuvem, cada salvamento do bloco também sobe para a conta.
+      const store = channel ? withDraftUpload(base, () => subirRef.current()) : base
+      const deps: PintaDraftDeps | null = channel
+        ? {
+            channel,
+            blockId,
+            store: base,
+            backup: loaded.createPintaPersistence({
+              namespace: `${draftNamespace(blockId, player?.viewerId ?? undefined)}-outra`,
+            }),
+          }
+        : null
 
       // A ordem (entrega → cadeia → desenho do professor) é PURA e vive em `lib/pinta-seed`;
       // aqui só ligamos os fios. Sem `lessonId` não há o que buscar: fica o do professor.
@@ -112,16 +173,53 @@ export function PintaBlockView({
       const buscar = (rota: string) => async () =>
         (await apiGet<{ asset: unknown | null }>(`${bloco}/${rota}`).catch(() => null))?.asset ??
         null
-      const seed = await resolvePintaSeed({
-        initialAsset: content.initialAsset,
-        chain: content.chain,
-        submitted: Boolean(lessonId) && Boolean(pintaState?.submitted),
-        loadSubmission: buscar('pinta-submission'),
-        loadCarryover: lessonId ? buscar('pinta-carryover') : async () => null,
-        aborted: () => !active,
-      })
+      // A versão da CONTA entra antes de o editor montar; sem nada guardado em lugar nenhum,
+      // segue a ordem de sempre.
+      let daConta: unknown | null = null
+      if (deps) {
+        try {
+          const enviado =
+            pintaState?.submitted && pintaState.submittedAt
+              ? {
+                  at: Date.parse(pintaState.submittedAt),
+                  fingerprint: pintaState.contentFingerprint ?? null,
+                }
+              : null
+          const preparo = await preparePintaLessonDraft({
+            ...deps,
+            submission: enviado,
+            readSubmission: buscar('pinta-submission'),
+          })
+          if (!active) return
+          daConta = preparo.seed
+          setHasOther(preparo.other)
+          if (preparo.upload)
+            channel?.enqueue(
+              blockId,
+              pintaDraftProducer(deps, setCurrentFingerprint),
+              async (remote) => {
+                await keepRemoteDrawingAsOther(deps, remote)
+                setHasOther(true)
+              },
+            )
+          if (daConta) setCurrentFingerprint(await pintaContentFingerprint(daConta))
+        } catch (error) {
+          console.warn('[rascunho-da-fase] não deu para trazer o desenho da conta', error)
+        }
+      }
+      const seed =
+        daConta ??
+        (await resolvePintaSeed({
+          initialAsset: content.initialAsset,
+          chain: content.chain,
+          submitted: Boolean(lessonId) && Boolean(pintaState?.submitted),
+          loadSubmission: buscar('pinta-submission'),
+          loadCarryover: lessonId ? buscar('pinta-carryover') : async () => null,
+          aborted: () => !active,
+        }))
 
       if (!active) return
+      setDraftDeps(deps)
       setPersistence(() => store)
       setInitialAsset(seed)
       setMod(loaded)
@@ -165,12 +263,21 @@ export function PintaBlockView({
         setError('Não consegui salvar os últimos traços. Tente de novo antes de enviar.')
         return
       }
+      // "Envio em dia": a impressão do desenho enviado, a mesma régua do rascunho da conta.
+      const fingerprint = await pintaContentFingerprint(prepared.asset)
+      if (channel) await channel.flush(4000).catch(() => {})
       const note = message.trim()
       const res = await apiSend<PintaSubmissionResultView>(
         `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/pinta-submission`,
         'POST',
-        { asset: prepared.asset, ...(note ? { message: note } : {}) },
+        {
+          asset: prepared.asset,
+          ...(note ? { message: note } : {}),
+          ...(fingerprint ? { fingerprint } : {}),
+        },
       )
+      setSentFingerprint(fingerprint)
+      setCurrentFingerprint(fingerprint)
       setSubmitted(true)
       setSubmittedAt(res.submittedAt)
       setReviewed(false) // entrega nova: o carimbo do professor não vale mais
@@ -186,7 +293,41 @@ export function PintaBlockView({
     } finally {
       setSubmitting(false)
     }
-  }, [lessonId, blockId, player, message])
+  }, [lessonId, blockId, player, message, channel])
+
+  // Troca o desenho de agora com a "outra versão" guardada neste navegador.
+  const doSwap = useCallback(async () => {
+    if (!draftDeps) return
+    setSwapping(true)
+    setOtherNote(null)
+    try {
+      await handleRef.current?.save()
+      const aberto = await swapOtherDrawing(draftDeps)
+      if (!aberto) {
+        setHasOther(false)
+        setOtherOpen(false)
+        return
+      }
+      setInitialAsset(aberto)
+      setPintaVersion((version) => version + 1)
+      setOtherOpen(false)
+      subirRef.current()
+    } catch {
+      setOtherNote(rascunho.outraVersaoFalhou)
+    } finally {
+      setSwapping(false)
+    }
+  }, [draftDeps, rascunho.outraVersaoFalhou])
+  const mudouDepoisDoEnvio = useMemo(
+    () =>
+      Boolean(
+        submitted &&
+          sentFingerprint &&
+          currentFingerprint &&
+          sentFingerprint !== currentFingerprint,
+      ),
+    [submitted, sentFingerprint, currentFingerprint],
+  )
 
   /**
    * "Baixar o desenho": gera o `.pinta.json` de UM desenho — o MESMO envelope que a galeria do
@@ -217,7 +358,24 @@ export function PintaBlockView({
       )}
     >
       <div className="flex flex-wrap items-center justify-end gap-2">
+        <span className="mr-auto">
+          <LessonDraftStatus state={draftState} />
+        </span>
         <LessonVideoToggle expanded={expanded} size="sm" />
+        {hasOther ? (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setOtherNote(null)
+              setOtherOpen(true)
+            }}
+            disabled={!ready || swapping}
+          >
+            <ArrowLeftRight className="size-4" />
+            {rascunho.outraVersao}
+          </Button>
+        ) : null}
         <Button variant="outline" size="sm" onClick={download} disabled={!ready}>
           <Download className="size-4" />
           Baixar o desenho
@@ -266,6 +424,7 @@ export function PintaBlockView({
           </div>
         ) : ready && PintaLesson && persistence ? (
           <PintaLesson
+            key={pintaVersion}
             handleRef={handleRef}
             initialAsset={initialAsset as Parameters<PintaComponent>[0]['initialAsset']}
             persistence={persistence}
@@ -286,6 +445,9 @@ export function PintaBlockView({
             <CheckCircle2 className="size-4" />
             {pinta.enviado(submittedAt ? new Date(submittedAt).toLocaleString('pt-BR') : null)}
           </p>
+          {mudouDepoisDoEnvio ? (
+            <p className="sz-lesson-draft-outdated text-sm font-medium">{rascunho.mudouDesenho}</p>
+          ) : null}
           {reviewed ? (
             <p className="flex items-center gap-2 text-sm text-success">
               <CheckCheck className="size-4" />
@@ -300,6 +462,31 @@ export function PintaBlockView({
             : pinta.paraConcluir}
         </p>
       )}
+
+      <Dialog
+        open={otherOpen}
+        onClose={() => setOtherOpen(false)}
+        title={rascunho.outraVersaoTitulo}
+        footer={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setOtherOpen(false)}
+              disabled={swapping}
+            >
+              Cancelar
+            </Button>
+            <Button size="sm" onClick={() => void doSwap()} disabled={swapping}>
+              {swapping ? <Spinner /> : <ArrowLeftRight className="size-4" />}
+              {rascunho.trazer}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted-foreground">{rascunho.outraVersaoExplica}</p>
+        {otherNote ? <p className="mt-2 text-sm text-destructive">{otherNote}</p> : null}
+      </Dialog>
 
       <Dialog
         open={confirmOpen}

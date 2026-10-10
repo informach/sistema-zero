@@ -695,6 +695,10 @@ describe('o que falta para seguir, na voz da aventura', () => {
       amostra: 'Confira o objetivo desta parte no seu projeto',
       de: 'members/src/application/learning/section-progression.service.ts',
     },
+    'submission-outdated': {
+      amostra: 'Você mudou o projeto depois de enviar. Envie de novo',
+      de: 'members/src/application/learning/section-progression.service.ts',
+    },
     lesson: {
       fora: 'o texto é do próprio app (o `completionMessage` do player e o `secoes.pronta`), que o guarda acima já varre',
     },

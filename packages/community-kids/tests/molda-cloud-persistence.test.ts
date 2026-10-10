@@ -303,6 +303,8 @@ function fakeCloud(remote: Map<string, { summary: CloudCreationSummary; json: st
       return [...remote.values()].map((r) => r.summary)
     },
     upload: async () => ({ revision: 1 }),
+    // O rascunho da fase consulta sem baixar; estas filas não usam.
+    peek: async () => null,
     download: async (itemId) => {
       const r = remote.get(itemId)
       return r

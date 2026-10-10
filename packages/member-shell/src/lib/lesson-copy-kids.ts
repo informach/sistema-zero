@@ -30,6 +30,11 @@ function itemPendente(item: SectionPendingItem): string {
       return 'Alcance a meta do projeto'
     case 'PINTA_GATE_NOT_SUBMITTED':
       return 'Envie o seu desenho'
+    // "Envio em dia": o rótulo do botão no Kids é "Enviar de novo" (Estúdio e Pinta).
+    case 'submission-outdated':
+      return /desenho/i.test(item.text)
+        ? 'Você mudou o desenho depois de enviar. Clique em Enviar de novo'
+        : 'Você mudou o projeto depois de enviar. Clique em Enviar de novo'
     case 'LESSON_COMING_SOON':
       return 'Espere a fase ficar pronta'
     case 'locked':
@@ -124,6 +129,7 @@ export const KIDS_LESSON_COPY: LessonCopy = {
     preparando: 'Esta parte ainda está sendo preparada',
     pronta: 'Tudo pronto nesta parte. Pode seguir!',
     prontaUltima: 'Tudo pronto nesta parte!',
+    confiraAntes: 'Antes de seguir, confira o que falta nesta parte.',
   },
   itemPendente,
   erroDoServidor,
@@ -183,6 +189,22 @@ export const KIDS_LESSON_COPY: LessonCopy = {
     continueDesenhando: 'Continue desenhando. Você envia o desenho no fim da fase.',
     vaiVer: 'A equipe vai ver o seu desenho do jeito que ele está agora.',
     vaiVerDeNovo: 'A equipe vai ver esta versão no lugar da anterior.',
+  },
+  rascunho: {
+    guardando: 'Guardando na sua conta…',
+    guardado: 'Guardado na sua conta',
+    offline: 'Sem internet. Está guardado neste aparelho',
+    erro: 'Não deu para guardar na conta agora',
+    mudouProjeto:
+      'Você mudou o projeto depois de enviar. Clique em Enviar de novo para a equipe ver a versão nova.',
+    mudouDesenho:
+      'Você mudou o desenho depois de enviar. Clique em Enviar de novo para a equipe ver a versão nova.',
+    outraVersao: 'Outra versão',
+    outraVersaoTitulo: 'Trazer a outra versão?',
+    outraVersaoExplica:
+      'Este computador guardou a outra versão, a que não abriu agora. Trazer troca as duas de lugar: a de agora fica guardada aqui, e você pode voltar para ela do mesmo jeito.',
+    trazer: 'Trazer',
+    outraVersaoFalhou: 'Não consegui trazer a outra versão agora. Tente de novo.',
   },
   galeria: {
     instrucaoPinta: 'Escolha os desenhos que você fez nesta fase e envie.',

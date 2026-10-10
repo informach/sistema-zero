@@ -701,6 +701,20 @@
       "when": 1791034382592,
       "tag": "0099_video_before_activity",
       "breakpoints": true
+    },
+    {
+      "idx": 100,
+      "version": "7",
+      "when": 1791666488890,
+      "tag": "0100_lesson_draft_creation_tools",
+      "breakpoints": true
+    },
+    {
+      "idx": 101,
+      "version": "7",
+      "when": 1791666505573,
+      "tag": "0101_content_fingerprints",
+      "breakpoints": true
     }
   ]
 }

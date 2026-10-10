@@ -929,6 +929,9 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
             resolveAccountId(headers),
             resolveStudentName(headers) || null,
+            'studio',
+            undefined,
+            body.fingerprint ?? null,
           )
         },
         { body: StudioSubmissionBody, params: StudioSubmissionParams },
@@ -967,6 +970,8 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             resolveAccountId(headers),
             resolveStudentName(headers) || null,
             'pinta',
+            undefined,
+            body.fingerprint ?? null,
           )
         },
         { body: PintaSubmissionBody, params: StudioSubmissionParams },

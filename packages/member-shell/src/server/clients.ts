@@ -1222,6 +1222,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       project: unknown,
       results?: unknown,
       message?: string,
+      fingerprint?: string,
     ): Promise<GatewayResponse<StudioSubmissionResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
@@ -1231,6 +1232,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
             project,
             ...(results === undefined ? {} : { results }),
             ...(message ? { message } : {}),
+            ...(fingerprint ? { fingerprint } : {}),
           },
         },
       )
@@ -1267,10 +1269,18 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       blockId: string,
       asset: unknown,
       message?: string,
+      fingerprint?: string,
     ): Promise<GatewayResponse<PintaSubmissionResultView>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/pinta-submission`,
-        { method: 'POST', body: { asset, ...(message ? { message } : {}) } },
+        {
+          method: 'POST',
+          body: {
+            asset,
+            ...(message ? { message } : {}),
+            ...(fingerprint ? { fingerprint } : {}),
+          },
+        },
       )
     },
 
@@ -1329,6 +1339,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         baseRevision?: number
         formatVersion?: number
         parts?: Array<{ hash: string; bytes?: number }>
+        fingerprint?: string
       },
     ): Promise<GatewayResponse<CreationUploadTicketView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/upload`, {

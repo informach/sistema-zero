@@ -671,6 +671,10 @@ function LessonSectionsContent({
     setNavigating(true)
     setError('')
     try {
+      // ⚠️ O rascunho do Estúdio/Pinta sobe ANTES de avançar: é ao avançar que o servidor grava as
+      // partes com "envio em dia", e ele precisa ver a última alteração (com teto: sem internet
+      // a navegação segue, e o critério compara com o que já estava na conta).
+      if (!preview) await player?.lessonDrafts?.flushAll(4000).catch(() => {})
       if (!preview)
         await apiSend(
           `/api/members/lessons/${encodeURIComponent(lesson.id)}/navigation`,
@@ -705,6 +709,12 @@ function LessonSectionsContent({
       if ((e as { code?: string } | null)?.code === 'VIEWER_CHANGED') {
         setError((e as { message?: string }).message ?? copy.secoes.perfilMudou)
         setRetryable(false)
+      } else if ((e as { code?: string } | null)?.code === 'SECTION_LOCKED') {
+        // A parte de agora ainda pede algo (o projeto mudou depois do envio, por exemplo): a
+        // leitura nova traz o motivo para a faixa do rodapé.
+        setError(copy.secoes.confiraAntes)
+        setRetryable(false)
+        player?.refreshAfterLearning?.()
       } else {
         setError(copy.secoes.erroAoAbrir)
         setRetryable(true)

@@ -14,19 +14,35 @@ import {
   type SectionProgressView,
   sectionCompletionIssues,
   sectionProgressView,
+  submissionFreshness,
+  submissionUpToDateWorkspace,
 } from '@sistemazero/core/learning'
 import type { LessonWithContent } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock, MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
 import { gradeStudioActivity } from '../../domain/course/studio-activity'
+import type { CreationDraftState } from '../../domain/creations/creation'
 import { LearningConflictError, SectionLockedError } from '../../domain/learning/learning.errors'
 import type { CertificateRepository } from '../../domain/ports/certificate-repository.port'
+import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
 import type { LearningOwner, LearningRepository } from '../../domain/ports/learning-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
 import type { PlatformActionService } from './platform-action.service'
+
+/**
+ * Quando uma parte com o critério "envio em dia" pode virar CONCLUÍDA de verdade (gravada).
+ *
+ * ⚠️ A parte concluída fica congelada, e a leitura grava em qualquer chamada (até no progresso do
+ * vídeo). Se a parte marcada fosse gravada numa leitura qualquer, a última alteração da criança,
+ * ainda na fila do navegador, nunca pediria o reenvio. Por isso ela só é gravada ao AVANÇAR
+ * (`before`: as partes antes da que a criança abre) ou ao concluir a fase (`all`), e o player manda
+ * o rascunho para a conta logo antes. Numa leitura passiva ela aparece concluída na tela (o botão
+ * de seguir acende), e nada depois dela é gravado.
+ */
+export type SectionSettle = 'all' | { before: string }
 
 export class SectionProgressionService {
   constructor(
@@ -37,7 +53,26 @@ export class SectionProgressionService {
     private readonly clock: () => Date,
     private readonly actions: PlatformActionService,
     private readonly certificates: CertificateRepository,
+    /** Os rascunhos da fase guardados na conta (o "envio em dia"). Sem eles, o critério deixa passar. */
+    private readonly drafts?: Pick<CreationsRepository, 'getDraftStates'>,
   ) {}
+
+  /** Impressão e hora do rascunho guardado de cada espaço de trabalho das partes marcadas. */
+  private async draftStates(
+    userId: string,
+    workspaces: ReadonlyArray<{ blockId: string; kind: 'studio' | 'pinta' }>,
+  ): Promise<Map<string, CreationDraftState>> {
+    const states = new Map<string, CreationDraftState>()
+    if (!this.drafts || workspaces.length === 0) return states
+    const studio = workspaces.filter((w) => w.kind === 'studio').map((w) => w.blockId)
+    const pinta = workspaces.filter((w) => w.kind === 'pinta').map((w) => w.blockId)
+    const found = await Promise.all([
+      studio.length ? this.drafts.getDraftStates(userId, 'lesson-studio', studio) : [],
+      pinta.length ? this.drafts.getDraftStates(userId, 'lesson-pinta', pinta) : [],
+    ])
+    for (const state of found.flat()) states.set(state.itemId, state)
+    return states
+  }
 
   private revision(section: LessonSection, lesson: LessonWithContent) {
     return createHash('md5')
@@ -79,6 +114,7 @@ export class SectionProgressionService {
   async read(
     owner: LearningOwner,
     lesson: LessonWithContent,
+    options: { settle?: SectionSettle } = {},
   ): Promise<SectionProgressView | undefined> {
     if (hasComingSoonBlock(lesson.blocks)) return undefined
     const structure = playbackLessonStructure(lesson, await this.repository.getStructure(lesson.id))
@@ -123,10 +159,27 @@ export class SectionProgressionService {
       : sectionCompletionIssues(structure.sections, lesson.blocks, {
           purpose: 'playback',
         })
+    const upToDateWorkspaces = new Map(
+      structure.sections.flatMap((section) => {
+        if (!section.completion?.submissionUpToDate || completed.has(section.id)) return []
+        const workspace = submissionUpToDateWorkspace(structure.sections, lesson.blocks, section.id)
+        return workspace ? [[section.id, workspace] as const] : []
+      }),
+    )
+    const drafts = await this.draftStates(owner.userId, [...upToDateWorkspaces.values()])
+    const settle = options.settle
+    const settleBefore =
+      settle === 'all'
+        ? structure.sections.length
+        : settle
+          ? structure.sections.findIndex((s) => s.id === settle.before)
+          : -1
     const pending = new Map<string, SectionPendingItem[]>()
     const newlyComplete: SectionProgressRecord[] = []
     let reachable = true
-    for (const section of structure.sections) {
+    // Depois de uma parte "envio em dia" que fechou só na tela, nada mais é gravado nesta leitura.
+    let persist = true
+    for (const [index, section] of structure.sections.entries()) {
       if (completed.has(section.id)) continue
       const revision = this.revision(section, lesson)
       const criteria = section.completion
@@ -176,7 +229,8 @@ export class SectionProgressionService {
         (!criteria ||
           (!criteria.blockIds.length &&
             !criteria.projectChecks?.length &&
-            !criteria.platformAction))
+            !criteria.platformAction &&
+            !criteria.submissionUpToDate))
       )
         missing.push({
           kind: 'authoring',
@@ -199,6 +253,30 @@ export class SectionProgressionService {
           kind: 'project-check',
           text: 'Confira o objetivo desta parte no seu projeto',
         })
+      const workspace = upToDateWorkspaces.get(section.id)
+      if (workspace) {
+        const sent = submissions.get(workspace.blockId)
+        const freshness = submissionFreshness({
+          submission: sent
+            ? { fingerprint: sent.contentFingerprint ?? null, submittedAt: sent.submittedAt }
+            : null,
+          draft: drafts.get(workspace.blockId) ?? null,
+        })
+        const trabalho = workspace.kind === 'studio' ? 'projeto' : 'desenho'
+        if (freshness === 'missing')
+          missing.push({
+            kind:
+              workspace.kind === 'studio'
+                ? 'STUDIO_GATE_NOT_SUBMITTED'
+                : 'PINTA_GATE_NOT_SUBMITTED',
+            text: `Envie seu ${trabalho} para o professor`,
+          })
+        else if (freshness === 'outdated')
+          missing.push({
+            kind: 'submission-outdated',
+            text: `Você mudou o ${trabalho} depois de enviar. Envie de novo`,
+          })
+      }
       missing.push(
         ...issues
           .filter((i) => i.sectionId === section.id)
@@ -207,12 +285,15 @@ export class SectionProgressionService {
       pending.set(section.id, missing)
       if (reachable && !missing.length) {
         completed.add(section.id)
-        newlyComplete.push({
-          sectionId: section.id,
-          revision,
-          completedAt: this.clock().toISOString(),
-          projectPassed: Boolean(criteria?.projectChecks?.length),
-        })
+        const settles = !workspace || index < settleBefore
+        if (persist && settles)
+          newlyComplete.push({
+            sectionId: section.id,
+            revision,
+            completedAt: this.clock().toISOString(),
+            projectPassed: Boolean(criteria?.projectChecks?.length),
+          })
+        if (!settles) persist = false
       } else reachable = false
     }
     // Persist validated evidence, never the current navigation position. CAS prevents stale publication writes.
@@ -232,8 +313,9 @@ export class SectionProgressionService {
     lesson: LessonWithContent,
     sectionId: string,
     privileged = false,
+    options: { settle?: SectionSettle } = {},
   ) {
-    const state = await this.read(owner, lesson)
+    const state = await this.read(owner, lesson, options)
     if (!state || privileged) return state
     const section = state.sections.find((s) => s.id === sectionId)
     if (!section) throw new LessonNotFoundError('Seção não encontrada')

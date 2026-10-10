@@ -32,10 +32,16 @@ import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fet
  * sessão já trocou de perfil (irmão que entrou no meio de um upload em voo).
  */
 
+import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { perfSpanAsync } from './perf'
 
-/** Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026). */
-export type CreationTool = 'studio' | 'pinta' | 'molda'
+export { canonicalJson, sha256Hex }
+
+/**
+ * Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026; `lesson-*` = o
+ * rascunho do Estúdio/Pinta dentro da fase, um item por bloco, 10/10/2026).
+ */
+export type CreationTool = 'studio' | 'pinta' | 'molda' | 'lesson-studio' | 'lesson-pinta'
 
 /** O `fetch` injetável (testes): só a assinatura de chamada, sem o `preconnect` do Bun. */
 export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
@@ -66,6 +72,8 @@ export interface CreationMeta {
    * Vai na reserva; base vencida = 409 `CREATION_STALE_BASE` (ver `onStale`).
    */
   baseRevision?: number
+  /** Impressão digital do conteúdo (rascunho da fase: o "envio em dia" a compara com o envio). */
+  fingerprint?: string | null
 }
 
 export interface CloudCreationSummary {
@@ -81,6 +89,8 @@ export interface CloudCreationSummary {
   syncedAt: number
   /** ms desde a época; presente somente quando o item é uma lápide remota. */
   deletedAt?: number | null
+  /** Impressão digital do conteúdo da revisão corrente (rascunhos da fase). */
+  contentFingerprint?: string | null
 }
 
 /**
@@ -142,6 +152,11 @@ export interface CreationsCloud {
    */
   upload(meta: CreationMeta, json: string, parts?: CloudPart[]): Promise<{ revision: number }>
   /**
+   * A revisão corrente SEM baixar o conteúdo (só o tíquete): `null` = não existe (404). `load()`
+   * baixa e descomprime com o MESMO tíquete. `serverNow` é o relógio do servidor (ms).
+   */
+  peek(itemId: string, options?: { signal?: AbortSignal }): Promise<CloudPeek | null>
+  /**
    * Baixa e descomprime a revisão corrente. `null` = não existe (404). Lança em falha de rede.
    * `parts` lista as partes da revisão (vazio no fio simples); `fetchPart(hash)` baixa UMA,
    * descomprime e CONFERE o hash (lança `CREATION_PART_CORRUPT` se não bate).
@@ -181,6 +196,13 @@ export interface CreationsCloud {
    * já foi gasta); `{ abort: true }` corta até ele (testes / troca brusca de perfil).
    */
   dispose(options?: { abort?: boolean }): void
+}
+
+/** O que `peek` devolve. */
+export interface CloudPeek {
+  summary: CloudCreationSummary
+  serverNow: number
+  load(): Promise<CloudDownload>
 }
 
 /** O que `download` devolve. */
@@ -300,34 +322,6 @@ export function hashSupported(): boolean {
   )
 }
 
-function sortKeysDeep(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortKeysDeep)
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const key of Object.keys(value as Record<string, unknown>).sort()) {
-      const inner = (value as Record<string, unknown>)[key]
-      if (inner !== undefined) out[key] = sortKeysDeep(inner)
-    }
-    return out
-  }
-  return value
-}
-
-/**
- * JSON canônico (chaves ordenadas em profundidade, `undefined` fora): é ISTO que se hasheia e
- * que sobe como parte — nunca o gzip (não é determinístico) nem só um campo (nome/metadados
- * diferentes colidiriam). Estável entre navegadores e entre leituras do IndexedDB.
- */
-export function canonicalJson(value: unknown): string {
-  return JSON.stringify(sortKeysDeep(value))
-}
-
-/** SHA-256 hex de um texto (UTF-8). Assíncrono: o navegador calcula fora da main thread. */
-export async function sha256Hex(text: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
-  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
-}
-
 /**
  * As mensagens de rede dos navegadores (Chrome "Failed to fetch", Firefox "NetworkError
  * when attempting to fetch resource.", Safari "Load failed" / "The network connection was
@@ -404,6 +398,7 @@ interface RawCloudSummary {
   thumb?: string | null
   syncedAt?: string
   deletedAt?: string | null
+  contentFingerprint?: string | null
 }
 
 interface CloudListPage {
@@ -425,6 +420,7 @@ function toSummary(raw: RawCloudSummary): CloudCreationSummary {
   }
   if (deletedAt !== undefined) summary.deletedAt = deletedAt
   if (raw.formatVersion !== undefined) summary.formatVersion = raw.formatVersion
+  if (raw.contentFingerprint) summary.contentFingerprint = raw.contentFingerprint
   return summary
 }
 
@@ -658,6 +654,7 @@ export function createCreationsCloud(options: {
         thumb: meta.thumb ?? null,
         ...(meta.formatVersion !== undefined ? { formatVersion: meta.formatVersion } : {}),
         ...(meta.baseRevision !== undefined ? { baseRevision: meta.baseRevision } : {}),
+        ...(meta.fingerprint ? { fingerprint: meta.fingerprint } : {}),
         ...(byHash.size > 0
           ? {
               parts: [...byHash.keys()].map((hash) => {
@@ -777,24 +774,58 @@ export function createCreationsCloud(options: {
     return gunzipToText(await response.arrayBuffer())
   }
 
+  interface DownloadTicket {
+    downloadUrl: string
+    revision: number
+    bytes: number
+    item: Parameters<typeof toSummary>[0]
+    parts?: Array<{ hash: string; bytes: number; url: string }>
+    /** ISO do relógio do servidor (BFF de 10/10/2026 em diante). */
+    serverNow?: string
+  }
+
+  async function fetchTicket(
+    itemId: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<DownloadTicket | null> {
+    try {
+      return await api<DownloadTicket>(`/${encodeURIComponent(itemId)}/download`, {
+        signal: options?.signal,
+      })
+    } catch (error) {
+      if ((error as CloudError).status === 404) return null
+      throw error
+    }
+  }
+
+  async function peek(
+    itemId: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<CloudPeek | null> {
+    if (!supported) return null
+    const ticket = await fetchTicket(itemId, options)
+    if (!ticket) return null
+    const serverNow = ticket.serverNow ? Date.parse(ticket.serverNow) : Number.NaN
+    return {
+      summary: toSummary(ticket.item),
+      serverNow: Number.isFinite(serverNow) ? serverNow : now(),
+      load: () => materialize(ticket, options),
+    }
+  }
+
   async function download(
     itemId: string,
     options?: { signal?: AbortSignal },
   ): Promise<CloudDownload | null> {
     if (!supported) return null
-    let ticket: {
-      downloadUrl: string
-      revision: number
-      bytes: number
-      item: Parameters<typeof toSummary>[0]
-      parts?: Array<{ hash: string; bytes: number; url: string }>
-    }
-    try {
-      ticket = await api(`/${encodeURIComponent(itemId)}/download`, { signal: options?.signal })
-    } catch (error) {
-      if ((error as CloudError).status === 404) return null
-      throw error
-    }
+    const ticket = await fetchTicket(itemId, options)
+    return ticket ? materialize(ticket, options) : null
+  }
+
+  async function materialize(
+    ticket: DownloadTicket,
+    options?: { signal?: AbortSignal },
+  ): Promise<CloudDownload> {
     const signal = options?.signal ? anySignal(abort.signal, options.signal) : abort.signal
     const json = await getBlobText(ticket.downloadUrl, signal)
     const partUrls = new Map((ticket.parts ?? []).map((part) => [part.hash, part]))
@@ -864,6 +895,7 @@ export function createCreationsCloud(options: {
             ...(snapshot.meta?.baseRevision !== undefined
               ? { baseRevision: snapshot.meta.baseRevision }
               : {}),
+            ...(snapshot.meta?.fingerprint ? { fingerprint: snapshot.meta.fingerprint } : {}),
           }
           const { revision } = await upload(meta, snapshot.json, snapshot.parts)
           // Um `enqueueRemove` do mesmo item chegou enquanto o upload voava? A lápide manda:
@@ -1086,6 +1118,7 @@ export function createCreationsCloud(options: {
     supported,
     list,
     upload,
+    peek,
     download,
     remove,
     enqueueUpload,

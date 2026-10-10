@@ -59,7 +59,8 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
       reviewed_at timestamptz,
       reviewed_by uuid,
       previous_project jsonb,
-      previous_submitted_at timestamptz
+      previous_submitted_at timestamptz,
+      content_fingerprint varchar(70)
     )`)
     for (const col of [
       'id uuid',
@@ -77,6 +78,7 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
       'reviewed_by uuid',
       'previous_project jsonb',
       'previous_submitted_at timestamptz',
+      'content_fingerprint varchar(70)',
     ]) {
       await conn.sql.unsafe(
         `alter table members.studio_submissions add column if not exists ${col}`,

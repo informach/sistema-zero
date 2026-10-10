@@ -45,6 +45,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       checkedAt: submission.checkedAt ?? null,
       passedAt: submission.passedAt ?? null,
       message: submission.message ?? null,
+      contentFingerprint: submission.contentFingerprint ?? null,
     }
 
     // ⭐ Backup de 1 passo: o SET do ON CONFLICT copia o projeto/data que estavam
@@ -136,6 +137,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
             checkedAt: values.checkedAt,
             passedAt: nextPassedAt,
             message: values.message,
+            contentFingerprint: values.contentFingerprint,
           },
         })
     })
@@ -153,6 +155,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         score: studioSubmissions.score,
         passedAt: studioSubmissions.passedAt,
         reviewedAt: studioSubmissions.reviewedAt,
+        contentFingerprint: studioSubmissions.contentFingerprint,
       })
       .from(studioSubmissions)
       .where(
@@ -165,6 +168,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         score: r.score ?? null,
         passed: r.passedAt != null,
         reviewedAt: r.reviewedAt ?? null,
+        contentFingerprint: r.contentFingerprint ?? null,
       })
     }
     return map
@@ -447,6 +451,8 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         score: null,
         results: null,
         checkedAt: null,
+        // A versão que volta não tem impressão conhecida: o "envio em dia" deixa passar.
+        contentFingerprint: null,
       })
       .where(
         and(

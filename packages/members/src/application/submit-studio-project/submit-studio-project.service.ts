@@ -101,7 +101,10 @@ export class SubmitStudioProjectService {
     kind: SubmissionBlockKind = 'studio',
     /** Only the authenticated gallery service can supply a validated immutable snapshot. */
     gallery?: { snapshot: GallerySubmission; projectForChecks: unknown; revision: string },
+    /** Impressão digital do conteúdo enviado ("envio em dia"); a galeria não tem. */
+    fingerprint: string | null = null,
   ): Promise<StudioSubmissionResultView> {
+    const contentFingerprint = gallery ? null : fingerprint
     const limits = SUBMISSION_LIMITS[kind]
     // Recado do aluno ao professor: trim → vazio vira null (não guarda " ").
     const note = message?.trim() ? message.trim() : null
@@ -200,6 +203,7 @@ export class SubmitStudioProjectService {
           project: submissionProject,
           submittedAt,
           message: note,
+          contentFingerprint,
         },
         { revision: block.contentRevision, galleryRequestId: gallery?.snapshot.requestId },
       )
@@ -253,6 +257,7 @@ export class SubmitStudioProjectService {
         checkedAt: submittedAt,
         passedAt,
         message: note,
+        contentFingerprint,
       },
       {
         preservePassedAt: true,

@@ -1,4 +1,5 @@
 import type {
+  CreationDraftState,
   CreationPartRef,
   CreationRecord,
   CreationSummary,
@@ -31,6 +32,8 @@ export interface CreationUploadInput {
   baseRevision?: number
   /** Ausente = formato legado (1); nunca pode rebaixar o formato corrente ou reservado. */
   formatVersion?: number
+  /** Impressão digital do conteúdo (`v1:<sha256>`), promovida no commit. */
+  contentFingerprint?: string | null
   now: Date
   /** Tetos conferidos DENTRO da mesma transação da reserva (atômico com o lock da linha). */
   limits: {
@@ -123,6 +126,15 @@ export interface CreationsRepository {
   /** Uma linha (inclusive apagada — quem decide é o serviço). `null` = não existe. */
   get(userId: string, tool: CreationTool, itemId: string): Promise<CreationRecord | null>
   usage(userId: string): Promise<CreationUsage>
+  /**
+   * Impressão e hora da última subida confirmada de cada item VIVO pedido (o "envio em dia" lê os
+   * rascunhos da fase). Item ausente, apagado ou nunca confirmado não volta.
+   */
+  getDraftStates(
+    userId: string,
+    tool: CreationTool,
+    itemIds: readonly string[],
+  ): Promise<CreationDraftState[]>
   /**
    * Reserva a PRÓXIMA revisão, sob lock da chave `(user, tool, item)`, conferindo a
    * quota dentro da mesma transação: cria a linha (revision 0, sem blob) se não existe,

@@ -121,6 +121,7 @@ export function sectionCompletionSummary(
       `Conferir ${c.projectChecks.length} objetivo${c.projectChecks.length === 1 ? '' : 's'}${project ? ` em ${lessonContentLabel(project)}` : ' no Estúdio'}`,
     )
   }
+  if (c.submissionUpToDate) labels.push('Envio em dia')
   return labels.join(' + ') || 'Falta definir o avanço'
 }
 

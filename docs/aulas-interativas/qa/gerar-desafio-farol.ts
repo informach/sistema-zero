@@ -134,6 +134,14 @@ const secao = (
   pendingMedia: [],
   completion: { version: 1, blockIds: required, ...(projectChecks ? { projectChecks } : {}) },
 })
+/**
+ * Envio em dia (10/10/2026): a parte só fecha quando o último envio é igual ao projeto de agora.
+ * Vai na ÚLTIMA parte que muda o jogo antes de publicar (ESPEC-MANIFESTO §6).
+ */
+const comEnvioEmDia = <S extends { completion: object }>(s: S) => ({
+  ...s,
+  completion: { ...s.completion, submissionUpToDate: true as const },
+})
 
 const studioBlocks = [
   'sz_frame_start',
@@ -845,7 +853,7 @@ const dia3 = {
       'video-d3-posicionar-chave',
       'Escolha onde fica a chave',
       'desafio-dia-3.roteiro.md',
-      'Retomar a experiência de x/y e mostrar a chave no jogo. Em Ao iniciar, no Criar sprite chave, trocar só x/y, mantendo nome, imagem, largura e altura. Oferecer pontos do Mapa: perto da trilha 211/53, na parte de baixo 160/250 e perto da ponte 280/160. Testar se a chave está inteira e visível, alcançável, separada do personagem e da porta, sem esconder sob árvores ou objetos; testar sem chave, coleta, volta ao farol e reinício. Se o lugar não funciona, escolher um ponto sugerido. As escolhas não viram critério. Esperar Salvo e terminar em Próxima parte.',
+      'Retomar a experiência de x/y e mostrar a chave no jogo. Em Ao iniciar, no Criar sprite chave, trocar só x/y, mantendo nome, imagem, largura e altura. Oferecer pontos do Mapa: perto da trilha 211/53, na parte de baixo 160/250 e perto da ponte 280/160. Testar se a chave está inteira e visível, alcançável, separada do personagem e da porta, sem esconder sob árvores ou objetos; testar sem chave, coleta, volta ao farol e reinício. Se o lugar não funciona, escolher um ponto sugerido. As escolhas não viram critério; o critério da parte é o envio em dia: esperar Salvo, clicar em Enviar de novo, confirmar em Reenviar e, quando o envio terminar, Próxima parte (sem mudança desde o envio, a parte fecha sem reenvio).',
       {
         nome: 'Debinha',
         entradas: [
@@ -859,14 +867,14 @@ const dia3 = {
             'F3P7-R01',
             'Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar.',
             'Mudei o caminho, mas a missão continua a mesma!',
-            'Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte.',
+            'Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Você mudou o jogo depois de enviar. Envie de novo, para a equipe ver a versão nova: espere aparecer Salvo, clique em Enviar de novo e confirme em Reenviar. Quando o envio terminar, clique em Próxima parte.',
           ),
         ],
       },
     ),
     fala(
       'ponte-d3-posicionar-chave',
-      'Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Depois clique em Próxima parte.',
+      'Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Mudou o jogo depois de enviar? Clique em Enviar de novo e confirme em Reenviar. Depois clique em Próxima parte.',
     ),
     video(
       'video-d3-fecho',
@@ -955,14 +963,18 @@ const dia3 = {
       ['video-d3-posicao', 'ponte-d3-posicao', 'experiencia-posicao'],
       ['video-d3-posicao', 'experiencia-posicao'],
     ),
-    secao(
-      'posicionar-chave',
-      'Escolha onde fica a chave',
-      'closing',
-      'Escolher uma posição visível e alcançável para a chave e testar o percurso completo.',
-      ['video-d3-posicionar-chave', 'ponte-d3-posicionar-chave'],
-      ['video-d3-posicionar-chave'],
-      'projeto',
+    // Envio em dia (10/10/2026): a última parte que muda o jogo antes de publicar. Personalizar,
+    // avisos e chave vêm depois da entrega em `decisao`; quem mudou algo reenvia antes de seguir.
+    comEnvioEmDia(
+      secao(
+        'posicionar-chave',
+        'Escolha onde fica a chave',
+        'closing',
+        'Escolher uma posição visível e alcançável para a chave, testar o percurso completo e reenviar o que mudou.',
+        ['video-d3-posicionar-chave', 'ponte-d3-posicionar-chave'],
+        ['video-d3-posicionar-chave'],
+        'projeto',
+      ),
     ),
     secao(
       'fecho',

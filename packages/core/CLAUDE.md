@@ -16,6 +16,33 @@ Guia operacional deste package. Leia antes de editar.
 > palpite, pistas e pergunta final continuam anexados à experimentação. Menções a
 > demonstração ou pergunta curta nas notas históricas abaixo não descrevem mais o contrato.
 
+## Impressão do conteúdo e "envio em dia" (10/10/2026)
+
+O rascunho do Estúdio e do Pinta da fase passou a subir sozinho para a conta, e o envio virou só a
+entrega à equipe. Duas peças do core sustentam isso:
+
+- **`creations/content-fingerprint.ts`**: `canonicalJson` (MOVIDO byte a byte do kids: os hashes das
+  partes já guardadas no R2 dependem dele; não "melhore" a ordenação), `sha256Hex`,
+  `CONTENT_FINGERPRINT_PATTERN` (`v1:<64 hex>`), `studioContentFingerprint` e
+  `pintaContentFingerprint`. A impressão é calculada no CLIENTE (rascunho e envio, pela mesma
+  função) e o servidor só a guarda como texto opaco. Estúdio: os três arquivos, `extraFiles`, a
+  árvore (Pro), os ids das extensões ordenados, o `kind` e os assets PRÓPRIOS (os de
+  `source: 'library'` ficam fora: o `completeLibraryAssets` acrescenta imagens novas do curso e
+  marcaria todo mundo como mudado). Pinta: o `pintaAssetToWire` sem id, nome e datas. Mover bloco e
+  renomear o projeto NÃO mudam a impressão. ⚠️ Mudou o que entra na conta? Suba o `v1`: impressões
+  de versões diferentes nunca são iguais, e a régua abaixo deixa passar quando falta um lado.
+- **`CreationStorageTool`** ganhou `lesson-studio` e `lesson-pinta` (o rascunho por BLOCO de aula).
+- **`SectionCompletion.submissionUpToDate?: true`** (`learning/section-progression.ts`): a parte só
+  fecha quando o último envio é igual ao projeto de agora. `submissionUpToDateWorkspace` diz qual
+  bloco ela confere (Estúdio ou Pinta incorporado, fora da galeria e do `purpose: 'experiment'`,
+  cuja seção DONA passa `isFinalProjectSection` e vem antes ou é esta); sem isso o
+  `sectionCompletionIssues` recusa publicar. `submissionFreshness({submission, draft})` é a régua
+  pura: `missing` (nada enviado), `outdated` (impressões diferentes E o rascunho guardado DEPOIS do
+  envio, os dois no relógio do servidor) ou `fresh`. ⚠️ Faltando a impressão de qualquer lado
+  (envio antigo, rascunho que nunca subiu), deixa passar: o critério lembra a criança, nunca a
+  prende por algo que o sistema não sabe. A pendência nova é `'submission-outdated'`.
+- Teste: `tests/submission-up-to-date.test.ts` (impressão, régua e autoria).
+
 ## O que é
 
 **Lib compartilhada, sem framework**: as utilidades de baixo nível que TODOS os backends do

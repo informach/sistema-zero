@@ -270,6 +270,15 @@ function extractStudioProject(raw: unknown): Record<string, unknown> | null {
 
 const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
+/**
+ * A impressão digital do conteúdo enviado ("envio em dia"). Só a FORMA é conferida; fora dela,
+ * fica de fora (o envio continua valendo, sem a conferência).
+ */
+function readFingerprint(raw: unknown): string | undefined {
+  const value = (raw as { fingerprint?: unknown } | null)?.fingerprint
+  return typeof value === 'string' && /^v1:[a-f0-9]{64}$/.test(value) ? value : undefined
+}
+
 /** Valida ids de path (perfil etc.) ANTES de tocar gateway/R2 — fail-fast e não
  * deixa um id forjado virar prefixo de chave no R2 (ex.: avatarSnapshot). */
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
@@ -1388,6 +1397,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         project,
         results,
         message,
+        readFingerprint(raw),
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -1428,7 +1438,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       if (!asset || typeof asset !== 'object') return invalidInput()
       const rawMessage = (raw as { message?: unknown })?.message
       const message = typeof rawMessage === 'string' ? rawMessage.slice(0, 1000) : undefined
-      const { status, body } = await members.submitPintaAsset(lessonId, blockId, asset, message)
+      const { status, body } = await members.submitPintaAsset(
+        lessonId,
+        blockId,
+        asset,
+        message,
+        readFingerprint(raw),
+      )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }

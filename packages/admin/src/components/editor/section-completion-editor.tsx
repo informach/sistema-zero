@@ -36,6 +36,7 @@ export function SectionCompletionEditor({
   allowBlocks,
   workspace,
   allowPlatformAction = true,
+  allowSubmissionUpToDate = false,
   onChange,
 }: {
   value: SectionCompletion
@@ -50,6 +51,8 @@ export function SectionCompletionEditor({
   allowBlocks?: string[]
   workspace?: unknown
   allowPlatformAction?: boolean
+  /** A seção trabalha num Estúdio ou Pinta incorporado (não a galeria): o "envio em dia" cabe. */
+  allowSubmissionUpToDate?: boolean
   onChange: (value: SectionCompletion) => void
 }) {
   const checks = value.projectChecks ?? []
@@ -313,6 +316,31 @@ export function SectionCompletionEditor({
           </div>
         </div>
       ))}
+      {(allowSubmissionUpToDate || value.submissionUpToDate) && !value.platformAction && (
+        <label className="flex items-start gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="mt-1"
+            checked={value.submissionUpToDate === true}
+            onChange={(event) => {
+              if (event.target.checked) {
+                onChange({ ...value, submissionUpToDate: true })
+                return
+              }
+              const { submissionUpToDate: _envio, ...criteria } = value
+              onChange(criteria)
+            }}
+          />
+          <span>
+            <span className="font-medium">Exigir envio em dia</span>
+            <span className="block text-muted-foreground">
+              O aluno só avança se o último envio for igual ao projeto de agora. Mudou depois de
+              enviar? Ele precisa enviar de novo. Vale quando o projeto já foi entregue numa seção
+              de entrega anterior.
+            </span>
+          </span>
+        </label>
+      )}
       {hasStudio && !value.platformAction && (
         <Button
           variant="outline"

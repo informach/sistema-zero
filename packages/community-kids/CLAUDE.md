@@ -12,6 +12,26 @@ O tutorial dos pais usa v3, o tutorial infantil conserva v2. O código da crian�
 
 Telas, revisão de 10/10/2026: toda falha de `studyRequest` passa por `studyErrorMessage` (só a frase de um `StudyRequestError` vai à tela; rede, tempo esgotado, HTML e 5xx viram "Não conseguimos conectar agora…"). Rótulos: "Código de acesso" é o da criança, "Código enviado ao seu e-mail" é o OTP do responsável. `/login` e `/perfis` mandam sessão de responsável para `/pais`; `/login` com sessão de aluno vai à área da criança. Destinos de entrada moram em `lib/entry-destination.ts` (o `next` adulto é respeitado; link de fase vira `/pais?aluno=`). A área dos pais lê as autorizações de cada criança no servidor (`server/family-access.ts`): o guia v3, o evento `access_prepared` e os avisos "Vence em breve"/"Vencido" seguem o estado real da família (`lib/study-access-view.ts`, cuja prévia de data é espelho do Auth travado em `tests/study-access-view.test.ts`). A criança não remove acessos do aparelho; isso é do responsável. A troca segura para a criança é o `StudentAreaButton`, nunca um link para `/perfis`.
 
+## Rascunho da fase guardado na conta (10/10/2026)
+
+A implementação do contrato `LessonDraftCloud` do member-shell (ver o CLAUDE.md de lá) mora em
+**`src/lib/lesson-draft-cloud.ts`**: duas filas `createCreationsCloud` (Estúdio 2 s, Pinta 1,5 s),
+marcas `sz:creations-synced:lesson-<tipo>:<perfil>` (`createStoredSyncedMarks`) e
+`lessonDraftCloudFor(viewerId)`, UMA nuvem por perfil e por aba, que sobrevive à troca de fase.
+Base vencida na subida (outro aparelho subiu antes) → o `onConflict` guarda a cópia da conta como a
+"outra versão", adota a revisão dela e sobe a daqui de novo.
+
+- `lib/creations-cloud.ts` ganhou `peek` (o bilhete sem baixar o blob), `fingerprint` na reserva,
+  `contentFingerprint` e `serverNow`; `canonicalJson`/`sha256Hex` vêm do core (reexportados). ⚠️
+  Fila falsa de teste precisa de `peek` (molda/pinta/studio cloud tests).
+- `lib/studio-cloud.ts`: `resolveStudioCloudDocument(baixado, assetsLocais | () => Promise)`
+  (a função adia a leitura dos assets locais).
+- `lesson-player-client.tsx` cria a nuvem por perfil e dá `flushAll` antes de concluir a fase; a
+  página da aula (`page.tsx`) liga só com `LESSON_DRAFTS_ENABLED`, sessão com id e fora do suporte
+  somente leitura.
+- Testes: `tests/lesson-draft-cloud.test.ts`, `molda-conformance.test.ts` (os CINCO tipos e a
+  migration 0100), `copy-vocabulario.test.ts`.
+
 ## Recados iniciados pelo professor e ajuda — 11/09/2026
 
 Avisos individuais/coletivos chegam em conversas privadas no mesmo Recados. O sino usa

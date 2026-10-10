@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import {
+  type CreationDraftState,
   type CreationPartRef,
   type CreationRecord,
   type CreationSummary,
@@ -37,6 +38,7 @@ const summaryOf = (row: CreationRecord): CreationSummary => {
     syncedAt: row.syncedAt,
   }
   if (row.deletedAt) summary.deletedAt = row.deletedAt
+  if (row.contentFingerprint) summary.contentFingerprint = row.contentFingerprint
   return summary
 }
 
@@ -102,6 +104,19 @@ export class InMemoryCreationsRepository implements CreationsRepository {
   async get(userId: string, tool: CreationTool, itemId: string): Promise<CreationRecord | null> {
     const row = this.rows.get(key(userId, tool, itemId))
     return row ? { ...row, pending: row.pending ? { ...row.pending } : null } : null
+  }
+
+  async getDraftStates(
+    userId: string,
+    tool: CreationTool,
+    itemIds: readonly string[],
+  ): Promise<CreationDraftState[]> {
+    return itemIds.flatMap((itemId) => {
+      const row = this.rows.get(key(userId, tool, itemId))
+      return row && aliveCommitted(row)
+        ? [{ itemId, fingerprint: row.contentFingerprint ?? null, syncedAt: row.syncedAt }]
+        : []
+    })
   }
 
   async usage(userId: string): Promise<CreationUsage> {
@@ -177,6 +192,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       itemUpdatedAt: input.itemUpdatedAt,
       thumb: input.thumb,
       parts: resolved.all,
+      contentFingerprint: input.contentFingerprint ?? null,
     }
     if (!existing) {
       this.rows.set(k, {
@@ -290,6 +306,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       itemUpdatedAt: existing.pending.itemUpdatedAt,
       thumb: existing.pending.thumb,
       parts: nextParts,
+      contentFingerprint: existing.pending.contentFingerprint,
       pending: null,
       deletedAt: null,
       syncedAt: input.now,

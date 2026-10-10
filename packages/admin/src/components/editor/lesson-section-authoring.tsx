@@ -491,6 +491,8 @@ export function LessonSectionAuthoring({
                   hasStudio={tools.some(
                     (b) => b.id === editing.workspaceBlockId && b.kind === 'studio',
                   )}
+                  // `tools` já são os Estúdios e Pintas incorporados (sem a galeria).
+                  allowSubmissionUpToDate={tools.some((b) => b.id === editing.workspaceBlockId)}
                   workspace={tools.find((b) => b.id === editing.workspaceBlockId)?.content}
                   allowBlocks={tools.flatMap((b) =>
                     b.id === editing.workspaceBlockId && b.content.kind === 'studio'

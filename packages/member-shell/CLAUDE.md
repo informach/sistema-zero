@@ -1,5 +1,46 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Rascunho da fase guardado na conta (10/10/2026)
+
+O Estúdio e o Pinta da FASE passam a guardar o rascunho na conta sozinhos (selo "Guardado na sua
+conta"), e o envio fica só como a entrega à equipe. Decisões da dona: Estúdio e Pinta juntos; em
+conflito entre dois aparelhos abre a versão MAIS NOVA e a outra fica guardada neste aparelho
+("Outra versão"); o critério "envio em dia" só nas partes que a autora marcar. Tudo é OPCIONAL no
+contexto: a comunidade adulta não liga nada disso.
+
+- **Contrato** em `lib/lesson-draft-cloud.ts` (`LessonDraftChannel`: `supported`, `mark`/`setMark`,
+  `peek` (o bilhete, sem baixar o blob), `enqueue(blockId, produce, onConflict?)`, `flush`,
+  `getState`/`subscribe`; `LessonDraftCloud {studio, pinta, flushAll}`). O kids implementa; o
+  player recebe por `LessonPlayerContextValue.lessonDrafts?`. Desligado por `LESSON_DRAFTS_ENABLED`
+  (padrão ligado, `lib/env.ts`) e em sessão de suporte somente leitura.
+- **Qual versão abre** é `lib/lesson-draft-seed.ts` (`decideLessonDraftSeed`, pura, testada em
+  `tests/lesson-draft-seed.test.ts`): local, conta, envio ou a ordem de sempre (`fallback`), com a
+  "outra" guardada quando os dois lados mudaram com conteúdos diferentes. ⚠️ O relógio que compara
+  é o do SERVIDOR (o local é corrigido pelo `serverNow` do `peek`), e um envio SEM impressão
+  (anterior a 10/10/2026) nunca passa por cima de um rascunho local. ⚠️⚠️ Isto SUBSTITUI o "o
+  rascunho local SEMPRE vence" da "Ordem de seed do editor" acima: a decisão roda ANTES de o editor
+  montar e só depois a ordem de sempre abre o que ficou no disco.
+- **Estúdio** (`components/studio/lesson-studio-draft.ts` + `studio-block.tsx`): a "outra" é o
+  projeto `lessonStudioBackupProjectId` (`…-outra`), gravado por `validateCloudProjectSnapshot` +
+  `replaceLocalProject` (o `restoreProjectFromCloud` recusa projeto aberto). A persistência do
+  editor é EMBRULHADA (salva e enfileira); o produtor relê o IndexedDB na hora
+  (`loadProjectSnapshotForCloud`) com `id` = o do BLOCO (o BFF confere). Enviar = salvar →
+  `flush(4000)` → impressão do disco → POST com `fingerprint`. Recomeçar enfileira.
+- **Pinta** (`components/pinta/lesson-pinta-draft.ts` + `pinta-block.tsx`): o banco do bloco É o
+  rascunho; a "outra" é um segundo banco, `aula-<bloco>-<perfil>-outra`. Trocar de versão remonta
+  o `<PintaLesson>` por `key`.
+- **"Outra versão"**: botão no cabeçalho do bloco, só quando existe uma guardada, com diálogo de
+  confirmação; troca as duas de lugar. **Selo** `components/lesson-draft-status.tsx`. **Aviso**
+  `rascunho.mudouProjeto`/`mudouDesenho` quando o projeto mudou depois do envio.
+- **`lesson-sections.tsx`**: `await lessonDrafts.flushAll(4000)` antes de navegar (o members só
+  ASSENTA a parte marcada na navegação); `SECTION_LOCKED` recarrega o progresso e mostra
+  `copy.secoes.confiraAntes`. O Kids diz `submission-outdated` com "Você mudou o projeto depois de
+  enviar. Clique em Enviar de novo" (`itemPendente`; ícone `RefreshCw` na faixa).
+- **BFF** (`routes/creations.ts`): tipos `lesson-studio`/`lesson-pinta` (`itemId` uuid), `fingerprint`
+  na reserva, a validação de projeto do Estúdio também para `lesson-studio` e `serverNow` no
+  download; `routes/index.ts` repassa a impressão do envio (`readFingerprint`). ⚠️ A `Tool` da rota
+  e o `CreationToolView` seguem ESPELHOS do enum do members (`molda-conformance` do kids trava os 5).
+
 ## Acesso infantil — correções do review (10/10/2026)
 
 - A conferência da sessão Kids (`validateKidsAccess`) vai ao Gateway ASSINADA como `member-shell`
