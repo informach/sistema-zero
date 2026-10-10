@@ -77,7 +77,7 @@ O fechamento ensina a publicar o mesmo jogo no Mural: Compartilhar, gerar capa, 
 comemorar, copiar o link de jogar para a família e os amigos, fechar e concluir a aula. A
 publicação é a tarefa ensinada, sem novo bloqueio técnico de conclusão. Trocar a capa fica no
 Como Fazer. Antes de
-publicar, **Deixe o jogo com a sua cara** ensina a trocar bichos, esconderijos e a mensagem do final.
+publicar, **Deixe o jogo com a sua cara** ensina a trocar bichos, esconderijos e a mensagem do final; cada troca é opcional, e o que a criança gostou pode ficar como está.
 
 Complemento de 03/10/2026: toda seção com vídeo tem uma ponte do Zappy logo após o vídeo.
 Caderno, retomada e publicação receberam as falas que faltavam, sem novos critérios de conclusão.

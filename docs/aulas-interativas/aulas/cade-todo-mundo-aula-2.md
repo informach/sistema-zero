@@ -125,11 +125,14 @@ Num bloco que cria um bicho, clicar nesse nome (por exemplo, **coelho**) para ab
 imagens do jogo e escolher outro bicho; se não achar, rolar a lista. Fazer o mesmo num bloco que
 cria um esconderijo (por exemplo, clicar em **arbusto** e escolher **toco**). Dizer que todos os
 bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também, por isso o
-desenho novo cabe certinho no lugar do antigo.
+desenho novo cabe certinho no lugar do antigo. Em seguida, pedir que a criança faça o mesmo nos
+outros blocos **Criar sprite**, trocando os bichos e os esconderijos que quiser; o que ela gostou
+pode ficar como está. Na demonstração, trocar os outros em ritmo rápido. O teste não supõe que
+tudo foi trocado: os bichos aparecem atrás dos esconderijos "do jeito que você deixou".
 
 Por último, trazer à vista a área **Enquanto estiver rodando**, arrastando um espaço vazio se for
-preciso, e, dentro do bloco **Se**, trocar o texto do bloco **Escrever** (**Você achou todo mundo!**)
-por uma frase curta da criança.
+preciso, e, dentro do bloco **Se**, mostrar como trocar o texto do bloco **Escrever** (**Você achou
+todo mundo!**) por uma frase curta. A troca é opcional: quem gostou da frase pode mantê-la.
 
 Antes do teste, a correção do erro provável: ao escolher outra imagem, o Estúdio ajusta largura e
 altura ao tamanho da imagem nova e mantém o canto de cima. Uma imagem do outro tipo muda o tamanho:
@@ -151,7 +154,7 @@ por tipo, com as imagens do jogo e os nomes exatos da lista. A criança pode con
 antes de trocar, seguindo os passos de personalização e o teste na mesma página. A publicação
 fica na página 6; a revisão e o certificado, na 7.
 
-**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite, e escreva a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
+**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
 
 ### Publique seu jogo
 
@@ -213,4 +216,4 @@ O roteiro tem 9 entradas ao todo. As novas falas abaixo distribuem perguntas, re
 | A2P3-R01 | “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!” | Dedé: “Agora sim! Já está contando!” | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” |
 | A2P3-R02 | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” | Dedé: “E se eu tocar aqui de novo?” | “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.” |
 | A2P4-R01 | “Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.” | Dedé: “Meu gato vai se esconder atrás de um toco!” | “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.” |
-| A2P4-R02 | “Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.” | Dedé: “Troquei os desenhos e não precisei arrumar tudo de novo!” | “Agora vamos mudar a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.” |
+| A2P4-R02 | “Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.” | Dedé: “Troquei os desenhos e o meu jogo ficou do jeito que eu queria!” | “Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.” |
