@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ROOM_GRID, ROOM_ITEM_INFO, ROOM_WALL_PALETTE } from '@/lib/room-catalog'

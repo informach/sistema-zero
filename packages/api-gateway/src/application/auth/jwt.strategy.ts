@@ -1,7 +1,11 @@
+import { parseKidsSessionClaim } from '@sistemazero/core/security'
 import { createRemoteJWKSet, type JWTPayload, type JWTVerifyGetKey, jwtVerify } from 'jose'
 import type { AuthStrategy } from './auth-strategy.port'
+import { kidsMayAccess } from './kids-access-policy'
 
 export interface JwtStrategyOptions {
+  /** Introspecção sem cache: revogação infantil e saída adulta valem imediatamente. */
+  validateKidsSession?: (token: string) => Promise<boolean>
   /** URL do JWKS remoto (RS256/ES…). O jose cuida do cache/rotação. */
   jwksUrl?: string
   /** Segredo simétrico (HS256) — compartilhado com o emissor (auth service). */
@@ -74,6 +78,57 @@ export function createJwtStrategy(opts: JwtStrategyOptions): AuthStrategy {
             code: 'INVALID_TOKEN',
             message: 'Token JWT sem subject (sub)',
           }
+        }
+        if (payload.pfl && !payload.kids && !payload.act)
+          return {
+            ok: false,
+            status: 401,
+            code: 'KIDS_LOGIN_REQUIRED',
+            message: 'Entre pelo novo acesso de aluno.',
+          }
+        if (payload.kids !== undefined) {
+          const kids = parseKidsSessionClaim(payload.kids)
+          if (!kids)
+            return {
+              ok: false,
+              status: 401,
+              code: 'INVALID_TOKEN',
+              message: 'Acesso encerrado ou vencido.',
+            }
+          // ⚠️ A política vem ANTES da ida ao Auth: pedido fora da área do público não custa
+          // uma introspecção (nem derruba o Auth num flood de rotas proibidas).
+          if (
+            !kidsMayAccess(
+              kids,
+              ctx.upstreamPath.split('?')[0] ?? ctx.url.pathname,
+              ctx.method,
+              payload.sub,
+            )
+          )
+            return {
+              ok: false,
+              status: 403,
+              code: 'KIDS_CONTEXT_FORBIDDEN',
+              message: 'Esta ação não pertence à sua área.',
+            }
+          let valid = false
+          try {
+            valid = (await opts.validateKidsSession?.(token)) ?? false
+          } catch {
+            return {
+              ok: false,
+              status: 503,
+              code: 'AUTH_UNAVAILABLE',
+              message: 'Não foi possível conferir o acesso agora. Tente novamente.',
+            }
+          }
+          if (!valid)
+            return {
+              ok: false,
+              status: 401,
+              code: 'INVALID_TOKEN',
+              message: 'Acesso encerrado ou vencido.',
+            }
         }
         return {
           ok: true,

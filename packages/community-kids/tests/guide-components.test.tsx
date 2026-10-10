@@ -4,7 +4,6 @@ import {
   GuideBalloon,
   GuideTargetItem,
   GuideWelcomeDialog,
-  ParentConcludeTarget,
 } from '../src/components/kids/parent-guide'
 import { ProfileForm } from '../src/components/kids/profile-management'
 import { childWelcomeSteps } from '../src/lib/guide'
@@ -56,20 +55,6 @@ describe('GuideWelcomeDialog — conteúdo infantil integrado ao modal real', ()
 })
 
 describe('alvos do guia dos pais — copy, clique e layout', () => {
-  it('perfil existente recebe orientação neutra e o Concluir continua acionável', () => {
-    const onConclude = mock(() => {})
-    render(<ParentConcludeTarget created={false} busy={false} onConclude={onConclude} />)
-
-    expect(screen.getByText(/toque em/i).textContent).not.toContain('Perfil criado!')
-    fireEvent.click(screen.getByRole('button', { name: 'Concluir' }))
-    expect(onConclude).toHaveBeenCalledTimes(1)
-  })
-
-  it('só celebra a criação quando ela aconteceu durante o guia', () => {
-    render(<ParentConcludeTarget created busy={false} onConclude={() => {}} />)
-    expect(screen.getByText(/Perfil criado!/)).toBeTruthy()
-  })
-
   it('o balão não aumenta a largura-base do tile na grade', () => {
     const { container } = render(
       <ul className="flex">

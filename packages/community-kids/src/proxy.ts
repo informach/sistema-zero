@@ -9,6 +9,7 @@ import { ACCESS_COOKIE, PALETTE_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
  * SEM `/compras` (não existe no kids — decisão da v1).
  */
 export const proxy = createMemberProxy({
+  kidsAccess: true,
   cookies: { accessCookie: ACCESS_COOKIE, refreshCookie: REFRESH_COOKIE },
   paletteCookie: PALETTE_COOKIE,
   // `/perfis` (grade estilo Netflix) exige sessão (conta OU perfil), mas é a rota
@@ -37,12 +38,12 @@ export const proxy = createMemberProxy({
     '/ranking',
     // "Como fazer" (biblioteca de ajuda): de todo perfil, mas só logado.
     '/como-fazer',
-    '/perfis',
+    '/pais',
+    '/responsavel',
   ],
   isRootProtected: true,
   // Conta logada SEM perfil selecionado (token sem `pfl`) → escolher um perfil
   // antes de entrar na área de aprender (estilo Netflix).
-  requireProfileSelectPath: '/perfis',
 })
 
 export const config = {

@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import type { PensaHostAdapter, PensaTransport } from '@sistemazero/pensa'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'

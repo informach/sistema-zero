@@ -10,51 +10,18 @@
  * storage com chave por profileId; só o resolver muda.
  */
 
-export type ParentGuideStep =
-  /** Grade sem perfil, fora da gestão → apontar o botão "Área dos pais". */
-  | 'welcome-area'
-  /** Gestão aberta, sem perfil, com vaga → apontar o "Adicionar". */
-  | 'plus'
-  /** Formulário de criação aberto → dica de preenchimento. */
-  | 'form'
-  /** Perfil antigo, ainda em gestão → orientar o "Concluir" sem fingir uma criação. */
-  | 'conclude'
-  /** Perfil realmente criado durante este fluxo → celebrar e apontar o "Concluir". */
-  | 'conclude-created'
-  /** Grade normal com perfil → apontar a bolinha ("é aqui que a criança entra"). */
-  | 'tile'
-
+export type ParentGuideStep = 'profile' | 'access' | 'ready'
 export interface ParentGuideInput {
   profilesCount: number
-  managing: boolean
-  /** O plano confirmou que a conta pode criar mais um perfil. */
   canCreateProfile: boolean
-  /** Uma criação retornou sucesso desde que a gestão foi aberta. */
-  profileCreated: boolean
-  /** O ProfileForm de CRIAÇÃO está aberto (early return da página). */
-  creatingOpen: boolean
-  /** O pai concluiu/pulou o guia (flag versionada `tour-complete`). */
+  accessReady: boolean
   dismissed: boolean
-  /** Sessão de PERFIL (criança trocando de irmão) — o guia é dos PAIS, nunca aparece. */
-  isProfileSession: boolean
 }
-
-/**
- * O próximo passo do guia dos pais, derivado do que a tela realmente mostra.
- * `null` = nada a guiar (fluxo completo, guia dispensado ou sessão da criança).
- */
+/** Criar um perfil não autoriza nenhum aparelho. O guia só conclui com uma autorização real. */
 export function resolveParentGuideStep(input: ParentGuideInput): ParentGuideStep | null {
-  if (input.isProfileSession) return null
-  // "Pular tutorial" e o arremate final são uma saída global: nenhum passo pode
-  // reaparecer só porque a conta ainda não tem perfil.
   if (input.dismissed) return null
-  if (input.creatingOpen) return 'form'
-  if (input.profilesCount === 0) {
-    if (!input.managing) return 'welcome-area'
-    return input.canCreateProfile ? 'plus' : null
-  }
-  if (!input.managing) return 'tile'
-  return input.profileCreated ? 'conclude-created' : 'conclude'
+  if (!input.profilesCount) return input.canCreateProfile ? 'profile' : null
+  return input.accessReady ? 'ready' : 'access'
 }
 
 // ---- Fase 2: o guia da CRIANÇA (home) ----
@@ -85,11 +52,14 @@ export type GuideWelcomeStepId =
   | 'criar'
   | 'mural'
   | 'ajuda'
+  | 'voltar'
   | `parent-${number}`
 
 export interface GuideWelcomeStep {
   id: GuideWelcomeStepId
   emoji: string
+  /** Título curto do passo, quando a tela mostra um (o guia dos pais em `/pais`). */
+  title?: string
   text: string
   /** Um link no fim da frase (o "Como fazer"): destino interno e o texto do link. */
   link?: { href: string; label: string }
@@ -169,6 +139,11 @@ export function childWelcomeSteps(input: ChildWelcomeInput): readonly GuideWelco
       text: 'Ficou com dúvida de como fazer alguma coisa? O passo a passo está no',
       link: { href: '/como-fazer', label: 'Como fazer' },
     },
+    {
+      id: 'voltar',
+      emoji: '👋',
+      text: 'Quando voltar, abra a comunidade neste mesmo navegador e escolha seu nome. Se o acesso vencer, peça ao responsável para renovar.',
+    },
   )
   return steps
 }
@@ -193,43 +168,31 @@ export function parentWelcomeSteps({
   profilesCount: number
   canCreateProfile: boolean
 }): readonly GuideWelcomeStep[] {
-  if (profilesCount === 0) {
-    return [
-      {
-        id: 'parent-1',
-        emoji: '1️⃣',
-        text: 'Toque em "Área dos pais" e digite a sua senha. É lá que você cria o primeiro perfil.',
-      },
-      {
-        id: 'parent-2',
-        emoji: '2️⃣',
-        text: 'Coloque o nome da criança. A data de nascimento é opcional, e você decide se o perfil aparece para outras crianças.',
-      },
-      {
-        id: 'parent-3',
-        emoji: '3️⃣',
-        text: 'Pronto! Na hora de entrar, é só tocar na bolinha com o nome dela.',
-      },
-    ]
-  }
-
+  // Os títulos e os nomes entre aspas são os rótulos REAIS da tela (`/pais` e o painel de
+  // aparelhos). Sem criança cadastrada, o primeiro passo é adicionar, não escolher.
   return [
     {
       id: 'parent-1',
       emoji: '1️⃣',
-      text: 'Escolha quem vai criar e toque na bolinha com o nome da criança.',
+      title: profilesCount > 0 ? '1. Escolha a criança' : '1. Adicione a criança',
+      text:
+        profilesCount > 0
+          ? 'Escolha o perfil que já existe. O progresso continua guardado.'
+          : canCreateProfile
+            ? 'Use "Adicionar criança" e coloque o nome dela. A data de nascimento é opcional.'
+            : 'Confira o acesso da família antes de adicionar um perfil.',
     },
     {
       id: 'parent-2',
       emoji: '2️⃣',
-      text: canCreateProfile
-        ? 'Na Área dos pais você pode editar, acompanhar o progresso e adicionar outro perfil.'
-        : 'Na Área dos pais você pode editar os perfis e acompanhar o progresso das crianças.',
+      title: '2. Autorize o aparelho',
+      text: 'Em "Acesso nos aparelhos", clique em "Autorizar aparelho". Escolha "Neste aparelho" ou "Em outro aparelho" e o prazo, e clique em "Autorizar este aparelho" ou "Gerar código".',
     },
     {
       id: 'parent-3',
       emoji: '3️⃣',
-      text: 'Quando terminar, toque em "Concluir" para voltar à escolha de perfis.',
+      title: '3. A criança entra',
+      text: 'No aparelho autorizado, a criança entra em "Eu sou aluno" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área do aluno".',
     },
   ]
 }
@@ -242,8 +205,9 @@ export function parentWelcomeSteps({
 
 /** Versão explícita: mudanças relevantes no roteiro podem reapresentar o guia com segurança. */
 export const GUIDE_VERSION = 'v2'
+export const PARENT_ACCESS_GUIDE_VERSION = 'v3'
 const guideKey = (audience: 'parent' | 'child', viewerId: string, flag: string) =>
-  `sz:kids:onboarding:${GUIDE_VERSION}:${audience}:${viewerId}:${flag}`
+  `sz:kids:onboarding:${audience === 'parent' ? PARENT_ACCESS_GUIDE_VERSION : GUIDE_VERSION}:${audience}:${viewerId}:${flag}`
 
 /** O modal de boas-vindas já foi concluído/fechado por esta conta neste navegador. */
 export const guideWelcomeSeenKey = (accountId: string) =>

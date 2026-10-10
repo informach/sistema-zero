@@ -97,7 +97,7 @@ async function readJson<T>(res: Response): Promise<T> {
 }
 
 /** POST público (sem Bearer) numa rota de auth do gateway — login/OTP/exchange. */
-async function publicAuthPost<T>(path: string, body: unknown): Promise<GatewayResponse<T>> {
+export async function publicAuthPost<T>(path: string, body: unknown): Promise<GatewayResponse<T>> {
   const env = getEnv()
   try {
     const res = await fetch(new URL(path, env.GATEWAY_URL), {
@@ -123,6 +123,39 @@ async function publicAuthPost<T>(path: string, body: unknown): Promise<GatewayRe
  * cookies de onde sai o Bearer e onde a rotação regrava os tokens).
  */
 export function createGatewayModule(session: SessionModule) {
+  async function authenticatedFetch(
+    path: string,
+    opts: CallOpts,
+    access: string | null,
+    readOnly = false,
+  ): Promise<Response> {
+    if (session.audience === 'kids') {
+      // ⚠️ Só a verificação LOCAL: o Gateway introspecta no Auth TODA chamada de sessão Kids
+      // (sem cache), então a revogação continua imediata e indisponibilidade dele volta como
+      // 503. Conferir aqui também dobrava as idas ao Auth por chamada. A prova da sessão do
+      // documento (`x-sz-session`) continua sendo daqui: o Gateway não a conhece.
+      const verdict = access ? await session.verifyAccessTokenLocally(access) : null
+      if (!verdict?.ok) return Response.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
+      const requestHeaders = await headers()
+      const expected = requestHeaders.get('x-sz-session')
+      if (
+        verdict.user.kids &&
+        ((expected && expected !== verdict.user.kids.sessionId) ||
+          (!readOnly &&
+            opts.method &&
+            opts.method !== 'GET' &&
+            expected !== verdict.user.kids.sessionId))
+      ) {
+        return Response.json(
+          {
+            error: { code: 'SESSION_CHANGED', message: 'O perfil mudou. Abra a página novamente.' },
+          },
+          { status: 409 },
+        )
+      }
+    }
+    return rawFetch(path, opts, access)
+  }
   /**
    * Rotação de tokens (gateway → auth /refresh) via `refreshTokens` (single-flight
    * em `globalThis` — compartilha a rotação com o proxy e com chamadas
@@ -163,10 +196,10 @@ export function createGatewayModule(session: SessionModule) {
     opts: CallOpts = {},
   ): Promise<GatewayResponse<T>> {
     const access = await session.getAccessToken()
-    let res = await rawFetch(path, opts, access)
+    let res = await authenticatedFetch(path, opts, access)
     if (res.status === 401) {
       const renewed = await tryRefresh()
-      if (renewed) res = await rawFetch(path, opts, renewed)
+      if (renewed) res = await authenticatedFetch(path, opts, renewed)
     }
     return { status: res.status, body: await readJson<T>(res) }
   }
@@ -184,7 +217,11 @@ export function createGatewayModule(session: SessionModule) {
     if (!refreshToken) return gatewayFetch(path, { method: 'POST', body })
     const request = (access: string | null) =>
       withCurrentRefreshToken(refreshToken, (current) =>
-        rawFetch(path, { method: 'POST', body: { ...body, refreshToken: current } }, access),
+        authenticatedFetch(
+          path,
+          { method: 'POST', body: { ...body, refreshToken: current } },
+          access,
+        ),
       )
     let res = await request(await session.getAccessToken())
     if (res.status === 401) {
@@ -205,7 +242,7 @@ export function createGatewayModule(session: SessionModule) {
     opts: CallOpts = {},
   ): Promise<GatewayResponse<T>> {
     const access = await session.getAccessToken()
-    const res = await rawFetch(path, opts, access)
+    const res = await authenticatedFetch(path, opts, access, true)
     return { status: res.status, body: await readJson<T>(res) }
   }
 
@@ -272,7 +309,11 @@ export function createGatewayModule(session: SessionModule) {
     email: string,
     password: string,
   ): Promise<GatewayResponse<{ user?: { role: string }; tokens?: AuthTokens; error?: unknown }>> {
-    return publicAuthPost('/auth/login', { email, password })
+    return publicAuthPost('/auth/login', {
+      email,
+      password,
+      ...(session.audience === 'kids' ? { platform: 'kids' } : {}),
+    })
   }
 
   /** Login por OTP (rota pública do gateway → auth). Verifica o código e devolve tokens. */
@@ -280,7 +321,11 @@ export function createGatewayModule(session: SessionModule) {
     email: string,
     code: string,
   ): Promise<GatewayResponse<{ user?: { role: string }; tokens?: AuthTokens; error?: unknown }>> {
-    return publicAuthPost('/auth/otp/verify', { email, code })
+    return publicAuthPost('/auth/otp/verify', {
+      email,
+      code,
+      ...(session.audience === 'kids' ? { platform: 'kids' } : {}),
+    })
   }
 
   /**

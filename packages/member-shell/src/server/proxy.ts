@@ -1,8 +1,10 @@
+import { parseKidsSessionClaim } from '@sistemazero/core/security'
 import { decodeJwt } from 'jose'
 import { type NextRequest, NextResponse } from 'next/server'
 import { expireCookieOptions, type SessionCookieNames } from '../lib/cookies'
 import { isSameOriginRequest, requiresOriginCheck } from '../lib/csrf'
 import { isProd } from '../lib/env'
+import { kidsBffRouteSkipsSessionProof, kidsMayUseBff } from '../lib/kids-bff-policy'
 import {
   decodePaletteCookie,
   encodePaletteCookie,
@@ -11,8 +13,10 @@ import {
 } from '../lib/palette-cookie'
 import { fetchPaletteOnce } from './palette'
 import { refreshTokens } from './refresh'
+import { hasLiveStudyDevice } from './study-device-probe'
 
 export interface MemberProxyConfig {
+  kidsAccess?: boolean
   /** Nomes dos cookies de sessão do app (mesmos do `createShell`). */
   cookies: SessionCookieNames
   /** Prefixos da área logada (ex.: `['/cursos', '/perfil', '/compras']`). */
@@ -70,10 +74,19 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
     const isProtected =
       (cfg.isRootProtected && pathname === '/') ||
       cfg.protectedPrefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`))
-    if (!isProtected) return NextResponse.next()
+    const isApi = pathname.startsWith('/api/')
+    if (
+      !isProtected &&
+      !(
+        cfg.kidsAccess &&
+        isApi &&
+        (req.cookies.get(refreshCookie)?.value || req.cookies.get(accessCookie)?.value)
+      )
+    )
+      return NextResponse.next()
 
     const refresh = req.cookies.get(refreshCookie)?.value
-    if (!refresh) return redirectToLogin(req)
+    if (!refresh && !isApi) return redirectWithoutSession(req)
 
     const currentAccess = req.cookies.get(accessCookie)?.value
     // O token VÁLIDO após esta etapa (do cookie ou recém-rotacionado) — alimenta o
@@ -85,18 +98,23 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
     // com o BFF — bundles separados, mesmo processo). Propaga a prova de origem
     // (rate limit por IP + auditoria do auth enxergam o aluno, não o host).
     if (isAccessExpired(currentAccess)) {
+      if (!refresh) return NextResponse.next()
       const result = await refreshTokens(refresh, forwardHeadersFrom(req))
       if (result === 'invalid') {
         // Sessão morta (refresh rejeitado) → limpa e manda logar de novo. A limpeza
         // usa `set('', maxAge: 0)` com os atributos da escrita — `delete()` pelado
         // (sem `Secure`) é REJEITADO pelo browser p/ `__Host-*` em prod e os cookies
         // mortos sobreviveriam (loop /login ⇄ / até expirarem).
-        const res = redirectToLogin(req)
+        const res = isApi ? NextResponse.next() : await redirectWithoutSession(req)
+        if (isApi) {
+          req.cookies.delete(accessCookie)
+          req.cookies.delete(refreshCookie)
+        }
         res.cookies.set(accessCookie, '', expireCookieOptions(isProd()))
         res.cookies.set(refreshCookie, '', expireCookieOptions(isProd()))
         // O espelho da cor é do dono da sessão morta — sai junto, como no logout.
         if (cfg.paletteCookie) res.cookies.set(cfg.paletteCookie, '', expireCookieOptions(isProd()))
-        return res
+        return isApi ? nextResponseWithCookies(req, res) : res
       }
       // Gateway/rede fora: degrada (páginas usam fallbacks) em vez de deslogar.
       if (result === 'unavailable') return NextResponse.next()
@@ -126,7 +144,53 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
     // trocava depois — o `padrão → pink` medido em todo F5 —, e existia uma chave extra só para
     // decidir "de quem é este valor". Com o dono dentro do cookie, quem reconcilia é o servidor,
     // e a correção de um irmão que acabou de entrar acontece ANTES do primeiro byte de HTML.
-    if (cfg.paletteCookie && !pathname.startsWith('/api/') && validAccess) {
+    let parentArea = false
+    if (cfg.kidsAccess && isApi && validAccess) {
+      const payload = decodeJwt(validAccess)
+      const kids = parseKidsSessionClaim(payload.kids)
+      // Também protege handlers S2S/HMAC, que não passam pelo fetch autenticado do Gateway.
+      // As entradas públicas e transições conferem seus próprios contratos no handler.
+      if (
+        kids &&
+        !pathname.startsWith('/api/auth/') &&
+        !pathname.startsWith('/api/study/') &&
+        !kidsBffRouteSkipsSessionProof(pathname, req.method)
+      ) {
+        const expected = req.headers.get('x-sz-session')
+        if (
+          (expected && expected !== kids.sessionId) ||
+          (requiresOriginCheck(req.method) && expected !== kids.sessionId)
+        ) {
+          return copyResponseCookies(
+            response,
+            NextResponse.json({ error: { code: 'SESSION_CHANGED' } }, { status: 409 }),
+          )
+        }
+      }
+      if (kids && !kidsMayUseBff(kids, pathname, req.method, payload.sub ?? '')) {
+        return copyResponseCookies(
+          response,
+          NextResponse.json({ error: { code: 'KIDS_CONTEXT_FORBIDDEN' } }, { status: 403 }),
+        )
+      }
+    }
+    if (cfg.kidsAccess && !isApi) {
+      const claims = validAccess ? decodeJwt(validAccess) : null
+      const kids = parseKidsSessionClaim(claims?.kids)
+      parentArea = isParentArea(pathname)
+      // ⚠️ Sessão antiga SEM contexto Kids (inclusive a de um responsável) vai para a
+      // ESCOLHA "Quem vai entrar?": mandá-la ao código da criança prendia o adulto ali.
+      if (!kids && !claims?.act) return copyResponseCookies(response, loginRedirect(req, '/login'))
+      if (kids && parentArea && kids.kind !== 'parent')
+        return copyResponseCookies(response, loginRedirect(req, '/login/responsavel'))
+      if (kids && !parentArea && kids.kind !== 'student') {
+        const url = req.nextUrl.clone()
+        url.pathname = '/pais'
+        url.search = ''
+        return copyResponseCookies(response, NextResponse.redirect(url))
+      }
+    }
+    if (cfg.paletteCookie && !parentArea && !pathname.startsWith('/api/') && validAccess) {
       const owner = subjectOf(validAccess)
       const mirror = decodePaletteCookie(req.cookies.get(cfg.paletteCookie)?.value, owner ?? '')
       if (owner && !mirror.known) {
@@ -166,6 +230,23 @@ export function createMemberProxy(cfg: MemberProxyConfig) {
     }
 
     return response
+  }
+
+  /**
+   * Página protegida SEM sessão válida. No Kids: a raiz vai para a escolha "Quem vai
+   * entrar?", a não ser que o navegador já seja de aluno com uma autorização viva (aí a
+   * entrada do aluno); a área dos pais vai para a entrada do responsável e as páginas de
+   * estudo para a do aluno, as duas com o `next` interno preservado.
+   */
+  async function redirectWithoutSession(req: NextRequest): Promise<NextResponse> {
+    if (!cfg.kidsAccess) return redirectToLogin(req)
+    const { pathname } = req.nextUrl
+    if (pathname === '/') {
+      const device = req.cookies.get(studyDeviceCookieOf(accessCookie))?.value
+      const student = await hasLiveStudyDevice(device, forwardHeadersFrom(req))
+      return loginRedirect(req, student ? '/login/aluno' : '/login')
+    }
+    return loginRedirect(req, isParentArea(pathname) ? '/login/responsavel' : '/login/aluno')
   }
 }
 
@@ -243,4 +324,26 @@ function redirectToLogin(req: NextRequest): NextResponse {
   const url = req.nextUrl.clone()
   url.pathname = '/login'
   return NextResponse.redirect(url)
+}
+
+function isParentArea(pathname: string): boolean {
+  return /^\/(pais|responsavel)(\/|$)/.test(pathname)
+}
+
+/**
+ * Redireciona a uma entrada do Kids levando o destino INTERNO em `next` (também na área dos
+ * pais, que antes perdia o destino). Quem consome o `next` confere de novo o público dele.
+ */
+function loginRedirect(req: NextRequest, target: string): NextResponse {
+  const url = req.nextUrl.clone()
+  const next = `${url.pathname}${url.search}`
+  url.pathname = target
+  url.search = ''
+  if (next !== '/' && next !== target) url.searchParams.set('next', next)
+  return NextResponse.redirect(url)
+}
+
+/** O cookie do aparelho mora ao lado do access (`<base>_access` → `<base>_device`). */
+function studyDeviceCookieOf(accessCookie: string): string {
+  return accessCookie.replace(/_access$/, '_device')
 }

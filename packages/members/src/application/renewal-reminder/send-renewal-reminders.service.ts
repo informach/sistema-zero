@@ -16,7 +16,7 @@ export interface RenewalReminderOptions {
   batchLimit?: number
   /** URL pública do FUNIL (base do link `/renovar?oferta=<slug>`). */
   funnelUrl: string
-  /** URL pública do app Kids (retomada direta do Desafio). */
+  /** URL pública do app Kids (Área dos pais nos avisos de vencimento do Desafio). */
   kidsUrl: string
 }
 
@@ -182,9 +182,11 @@ export class SendRenewalRemindersService {
           : first.messageKind === 'expiry_3d'
             ? 'challenge-expiry-3d'
             : 'challenge-expiry-7d'
+        // O aviso é do responsável: a Área dos pais mostra onde a criança parou e
+        // renova o acesso do computador. A fase em si abre no perfil da criança.
         const link = expired
           ? `${this.opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
-          : `${this.opts.kidsUrl}/cursos/${encodeURIComponent(first.courseRef)}`
+          : `${this.opts.kidsUrl}/pais`
 
         await this.messaging.sendEmail({
           templateKey,

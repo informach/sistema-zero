@@ -1,4 +1,5 @@
-import { isUserRole, type UserRole } from '../../domain/user/user.role'
+import { KIDS_IDENTITY_HEADERS } from '@sistemazero/core/security'
+import { isPrivilegedUserRole, isUserRole, type UserRole } from '../../domain/user/user.role'
 import { isUserStatus, type UserStatus } from '../../domain/user/user.status'
 
 /** Subconjunto do contexto Elysia necessário para resolver o IP de origem. */
@@ -32,15 +33,34 @@ export function resolveGatewayActor(
   return { id, role, status }
 }
 
+/** Contexto Kids que o GATEWAY injeta a partir da claim `kids` verificada. */
+export type GatewayKidsContext = { kind: 'parent'; authenticatedAt: number } | { kind: 'student' }
+
+/**
+ * Lê o contexto Kids dos headers de identidade do gateway (`x-auth-kids-*`, removidos da
+ * entrada como os `x-auth-user-*`; só valem depois do `requireInternalToken`). Ausente =
+ * sessão de outro produto (ou suporte), que NÃO ganha as exigências do Kids. ⚠️ Responsável
+ * com hora de login ilegível vale como login ANTIGO (0): a exigência de login recente falha
+ * fechada.
+ */
+export function resolveGatewayKidsContext(
+  headers: Record<string, string | undefined>,
+): GatewayKidsContext | null {
+  const kind = headers[KIDS_IDENTITY_HEADERS.context]?.trim()
+  if (kind === 'student') return { kind: 'student' }
+  if (kind !== 'parent') return null
+  const raw = headers[KIDS_IDENTITY_HEADERS.authTime]?.trim() ?? ''
+  const authenticatedAt = /^\d{1,12}$/.test(raw) ? Number(raw) : 0
+  return { kind: 'parent', authenticatedAt }
+}
+
 /**
  * Equipe interna (superadmin/admin/staff) — espelha o `isPrivilegedActor` do
  * members. Usada p/ liberar testes/verificação da plataforma à equipe (ex.: perfis
  * Kids ILIMITADOS), enquanto o `customer` segue limitado pelo plano.
  */
-const PRIVILEGED_ROLES = new Set<UserRole>(['superadmin', 'admin', 'staff'])
-
 export function isPrivilegedRole(role: UserRole): boolean {
-  return PRIVILEGED_ROLES.has(role)
+  return isPrivilegedUserRole(role)
 }
 
 /**

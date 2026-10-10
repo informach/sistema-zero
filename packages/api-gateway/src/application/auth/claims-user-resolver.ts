@@ -1,3 +1,4 @@
+import { parseKidsSessionClaim } from '@sistemazero/core/security'
 import type { AuthenticatedUser, UserResolver } from './authenticated-user'
 
 function str(value: unknown): string | undefined {
@@ -23,7 +24,13 @@ export function createClaimsUserResolver(): UserResolver {
       const lastName = str(claims.lastName)
       const role = str(claims.role)
       const status = str(claims.status)
-      if (!id || !email || !firstName || !lastName || !role || !status) return null
+      // ⚠️ O token do ALUNO do Kids não traz e-mail nem nome do responsável (o JWT fica no
+      // navegador da criança): a identidade dele é o perfil (`sub` + `pfl`). Sem contexto de
+      // aluno, faltar qualquer campo continua não resolvendo o usuário.
+      const kids = parseKidsSessionClaim(claims.kids)
+      const student = kids?.kind === 'student'
+      if (!id || !role || !status) return null
+      if (!student && (!email || !firstName || !lastName)) return null
 
       // Sessão de perfil: `pfl.accountId` = conta do responsável (vira x-auth-account-id);
       // `pfl.name` = nome da criança (vira x-auth-profile-name — nome de exibição confiável).
@@ -34,6 +41,7 @@ export function createClaimsUserResolver(): UserResolver {
       // Perfil PÚBLICO (opt-in dos pais — claim `pfl.pub`): vira x-auth-profile-public.
       // Definido (true/false) só em sessão de perfil; o hub o usa p/ decidir o link do autor.
       const profilePublic = pflObj ? pflObj.pub === true : undefined
+      if (student && !accountId) return null
 
       // Sessão de impersonação: `act.sub` = admin navegando como o usuário (vira
       // x-auth-impersonator-id — o upstream preserva o vínculo ao derivar sessões).
@@ -45,11 +53,13 @@ export function createClaimsUserResolver(): UserResolver {
 
       const user: AuthenticatedUser = {
         id,
-        email,
-        firstName,
-        lastName,
+        email: email ?? '',
+        firstName: firstName ?? '',
+        lastName: lastName ?? '',
         role,
         status,
+        ...(kids ? { kidsContext: kids.kind } : {}),
+        ...(kids?.kind === 'parent' ? { kidsAuthTime: kids.authenticatedAt } : {}),
         ...(str(claims.phone) ? { phone: str(claims.phone) } : {}),
         ...(str(claims.signupSource) ? { signupSource: str(claims.signupSource) } : {}),
         ...(accountId ? { accountId } : {}),

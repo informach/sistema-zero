@@ -27,6 +27,14 @@ export function sessionCookieNames(
   }
 }
 
+/**
+ * Cookie HttpOnly do APARELHO no Kids (`<base>_device`): o segredo que identifica este
+ * navegador nas autorizações de estudo. Separado da sessão ativa (sobrevive ao "Sair").
+ */
+export function studyDeviceCookieName(base: string, prod: boolean): string {
+  return prefixedCookieName(`${base}_device`, prod)
+}
+
 /** Par de nomes injetado no `createShell` (ver `sessionCookieNames`). */
 export interface SessionCookieNames {
   accessCookie: string

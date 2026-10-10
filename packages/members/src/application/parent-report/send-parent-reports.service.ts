@@ -183,7 +183,9 @@ export class SendParentReportsService {
             criancas,
             semana: weekLabel,
             resumo,
-            link: `${this.opts.kidsUrl ?? ''}/perfis`,
+            // O resumo é do responsável: o link abre a Área dos pais (sem sessão de
+            // responsável, o Kids leva à entrada dos responsáveis).
+            link: `${this.opts.kidsUrl ?? ''}/pais`,
           },
           // Dedupe do messaging: retry pós-crash entre enviar e marcar não duplica.
           idempotencyKey: `weekly-report:${accountId}:${weekKey}`,

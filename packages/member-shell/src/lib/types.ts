@@ -64,6 +64,7 @@ export interface ProfileClaim {
 }
 
 export interface SessionUser {
+  kids?: import('@sistemazero/core/security').KidsSessionClaim
   id: string
   email: string
   firstName: string

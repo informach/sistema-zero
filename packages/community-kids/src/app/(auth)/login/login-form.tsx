@@ -1,5 +1,9 @@
 'use client'
 
+import {
+  sessionFetch as fetch,
+  notifySessionChange,
+} from '@sistemazero/member-shell/lib/session-fetch'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
@@ -11,6 +15,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { AUTH_CARD, AUTH_TITLE } from '@/components/kids/auth-card'
+import { parentLoginDestination } from '@/lib/entry-destination'
 
 const emailSchema = z.string().email('E-mail inválido')
 
@@ -19,10 +24,6 @@ const ERROR_MESSAGES: Record<string, string> = {
   INVALID_OTP: 'Código inválido ou expirado.',
   INACTIVE: 'Conta inativa. Fale com o suporte.',
   INVALID_INPUT: 'Dados inválidos.',
-  // Conta convidada/comprada que ainda não definiu a senha: o login por código é
-  // bloqueado. A saída é criar a senha pelo link de 1º acesso (ou "esqueci a senha").
-  PASSWORD_NOT_SET:
-    'Você ainda não criou sua senha. Toque em "Esqueci minha senha" abaixo para criá-la agora.',
   TOO_MANY_ATTEMPTS: 'Muitas tentativas. Aguarde um minuto e tente novamente.',
   SERVICE_UNAVAILABLE: 'Serviço indisponível no momento. Tente novamente em instantes.',
 }
@@ -30,12 +31,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 type Mode = 'password' | 'otp'
 type Errors = { email?: string; password?: string; code?: string }
 
-/**
- * Login do aluno KIDS: por CÓDIGO (OTP por e-mail, passwordless) por PADRÃO — a
- * criança não precisa decorar senha, recebe o código no e-mail do responsável. O
- * toggle "Entrar com senha" segue disponível para os pais. (No community adulto o
- * padrão continua senha — login-form é POR APP.)
- */
+/** Entrada exclusiva do responsável por senha ou código enviado ao e-mail. */
 export function LoginForm() {
   const [mode, setMode] = useState<Mode>('otp')
   const [email, setEmail] = useState('')
@@ -44,12 +40,6 @@ export function LoginForm() {
   const [codeSent, setCodeSent] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
   const [loading, setLoading] = useState(false)
-  // E-mail cujo responsável ainda NÃO definiu a senha (o auth recusou o código
-  // com PASSWORD_NOT_SET): para ele a opção "entrar com código" some da tela —
-  // só senha (criada pelo "Esqueci minha senha") destrava. Trocar o e-mail
-  // libera o toggle de novo.
-  const [blockedEmail, setBlockedEmail] = useState<string | null>(null)
-  const codeBlocked = blockedEmail !== null && email.trim().toLowerCase() === blockedEmail
 
   function goHome() {
     // Navegação de DOCUMENTO de propósito: o login muda cookies HttpOnly e o
@@ -58,7 +48,10 @@ export function LoginForm() {
     // — vercel/next.js#54766; o aluno ficava preso no /login até um F5). O full
     // load garante que o servidor veja a sessão nova; `replace` tira o /login do
     // histórico (voltar não retorna ao form).
-    window.location.replace('/')
+    notifySessionChange()
+    // O `next` interno do link (área dos pais, ou a fase que a criança vai abrir depois) é
+    // conferido em `parentLoginDestination`; o resto cai na área dos pais.
+    window.location.replace(parentLoginDestination(window.location.search))
   }
 
   function setIssues(error: z.ZodError) {
@@ -135,15 +128,6 @@ export function LoginForm() {
       if (res.ok) return goHome()
       const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
       const errCode = data?.error?.code ?? ''
-      if (errCode === 'PASSWORD_NOT_SET') {
-        // Trava visual do gate: responsável sem senha não entra com código. A
-        // tela vira para o modo senha e a opção de código some para este e-mail
-        // (o caminho é criá-la pelo "Esqueci minha senha").
-        setBlockedEmail(email.trim().toLowerCase())
-        switchMode('password')
-        toast.error(ERROR_MESSAGES.PASSWORD_NOT_SET)
-        return
-      }
       toast.error(ERROR_MESSAGES[errCode] ?? 'Não foi possível entrar.')
     })
   }
@@ -159,9 +143,11 @@ export function LoginForm() {
   return (
     <Card className={AUTH_CARD}>
       <CardHeader>
-        <CardTitle className={AUTH_TITLE}>Entrar</CardTitle>
+        <CardTitle className={AUTH_TITLE}>Área dos pais</CardTitle>
         <CardDescription>
-          {mode === 'password' ? 'Acesse a sua conta.' : 'Receba um código de acesso por e-mail.'}
+          {mode === 'password'
+            ? 'Entre com o seu e-mail e sua senha.'
+            : 'Receba um código no e-mail do responsável.'}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -219,7 +205,7 @@ export function LoginForm() {
               />
             </Field>
             {codeSent ? (
-              <Field label="Código de acesso" htmlFor="code" error={errors.code}>
+              <Field label="Código enviado ao seu e-mail" htmlFor="code" error={errors.code}>
                 <Input
                   id="code"
                   inputMode="numeric"
@@ -241,7 +227,7 @@ export function LoginForm() {
                 type="button"
                 onClick={() => sendCode()}
                 disabled={loading}
-                className="text-center text-sm text-interactive hover:text-interactive-hover"
+                className="min-h-11 text-center text-sm text-interactive hover:text-interactive-hover"
               >
                 Reenviar código
               </button>
@@ -250,21 +236,30 @@ export function LoginForm() {
         )}
 
         <div className="mt-4 flex flex-col gap-2">
-          {mode === 'password' && codeBlocked ? null : (
+          {
             <button
               type="button"
               onClick={() => switchMode(mode === 'password' ? 'otp' : 'password')}
-              className="text-center text-sm text-interactive hover:text-interactive-hover"
+              className="min-h-11 text-center text-sm text-interactive hover:text-interactive-hover"
             >
               {mode === 'password' ? 'Entrar com código por e-mail' : 'Entrar com senha'}
             </button>
-          )}
+          }
           <p className="text-center text-sm text-muted-foreground">
-            <Link href="/esqueci-senha" className="text-interactive hover:text-interactive-hover">
+            <Link
+              href="/esqueci-senha"
+              className="inline-flex min-h-11 items-center text-interactive hover:text-interactive-hover"
+            >
               Esqueci minha senha
             </Link>
           </p>
         </div>
+        <Link
+          href="/login"
+          className="mt-3 flex min-h-11 items-center justify-center text-sm underline underline-offset-4"
+        >
+          Voltar à escolha de entrada
+        </Link>
       </CardContent>
     </Card>
   )

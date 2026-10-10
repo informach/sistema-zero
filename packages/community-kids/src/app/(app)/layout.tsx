@@ -10,6 +10,7 @@ import { KidsLessonCopy } from '@/components/kids/kids-lesson-copy'
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { PlatformRenovationNotice } from '@/components/kids/platform-renovation-notice'
+import { SessionBoundary } from '@/components/kids/session-boundary'
 import { actorLabel } from '@/lib/act'
 import { getEnv } from '@/lib/env'
 import { moldaLevelGain } from '@/lib/molda-level-gain'
@@ -150,7 +151,9 @@ async function CelebrationChrome({ session }: { session: Session }) {
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession()
-  if (!session) redirect('/login')
+  if (!session) redirect('/login/aluno')
+  if (session.kids?.kind === 'parent') redirect('/pais')
+  if (session.act && !session.activeProfile) redirect('/perfis')
 
   return (
     <PlatformRenovationNotice
@@ -159,6 +162,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       enabled={getEnv().KIDS_REFORM_NOTICE_ENABLED}
     >
       <div className="flex min-h-screen flex-col bg-background">
+        {session.kids ? (
+          <>
+            <meta name="sz-session" content={session.kids.sessionId} />
+            <SessionBoundary kind="student" />
+          </>
+        ) : null}
         <a
           href="#main-content"
           className="fixed top-3 left-3 z-[100] -translate-y-20 rounded-full bg-primary px-4 py-3 font-bold text-primary-foreground shadow-lg transition-transform focus-visible:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"

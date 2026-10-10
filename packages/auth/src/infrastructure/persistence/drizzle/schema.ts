@@ -1,9 +1,11 @@
+import type { KidsSessionClaim } from '@sistemazero/core/security'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
   date,
   index,
   integer,
+  jsonb,
   pgSchema,
   text,
   timestamp,
@@ -82,6 +84,7 @@ export const refreshTokenFamilies = auth.table(
   {
     id: uuid('id').primaryKey(),
     userId: uuid('user_id').notNull(),
+    kidsContext: jsonb('kids_context').$type<KidsSessionClaim>(),
     impersonatorUserId: uuid('impersonator_user_id'),
     impersonationWritable: boolean('impersonation_writable').notNull().default(false),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
@@ -287,7 +290,91 @@ export const auditLogs = auth.table(
   ],
 )
 
+/** A credencial do navegador reconhece a família; cada perfil exige uma autorização própria. */
+export const studyDevices = auth.table(
+  'study_devices',
+  {
+    id: uuid('id').primaryKey(),
+    accountUserId: uuid('account_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    activeSessionId: uuid('active_session_id'),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('study_devices_token_uq').on(t.tokenHash),
+    index('study_devices_account_idx').on(t.accountUserId),
+    index('study_devices_expires_idx').on(t.expiresAt),
+  ],
+)
+
+export const studyGrants = auth.table(
+  'study_grants',
+  {
+    id: uuid('id').primaryKey(),
+    accountUserId: uuid('account_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    deviceId: uuid('device_id')
+      .notNull()
+      .references(() => studyDevices.id, { onDelete: 'cascade' }),
+    label: text('label').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('study_grants_device_profile_uq').on(t.deviceId, t.profileId),
+    index('study_grants_account_idx').on(t.accountUserId, t.profileId),
+  ],
+)
+
+export const studyCodes = auth.table(
+  'study_codes',
+  {
+    id: uuid('id').primaryKey(),
+    codeHash: text('code_hash').notNull(),
+    accountUserId: uuid('account_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    label: text('label').notNull(),
+    durationDays: integer('duration_days').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+    consumedDeviceId: uuid('consumed_device_id'),
+    grantId: uuid('grant_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex('study_codes_hash_uq').on(t.codeHash),
+    index('study_codes_expires_idx').on(t.expiresAt),
+  ],
+)
+
+export const studyAttempts = auth.table(
+  'study_attempts',
+  {
+    keyHash: text('key_hash').primaryKey(),
+    count: integer('count').notNull(),
+    resetsAt: timestamp('resets_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('study_attempts_resets_idx').on(t.resetsAt)],
+)
+
 export const schema = {
+  studyDevices,
+  studyGrants,
+  studyCodes,
+  studyAttempts,
   users,
   userDeletionReceipts,
   refreshTokenFamilies,

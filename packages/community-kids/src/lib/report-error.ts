@@ -1,3 +1,4 @@
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 /**
  * Envia um erro de RENDER do cliente ao beacon `/api/client-error` (ver a rota, que
  * espelha p/ o Sentry com redação de PII). Os error boundaries só faziam

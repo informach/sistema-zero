@@ -1,13 +1,17 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { LogOut, User, Users } from 'lucide-react'
+import { Button } from '@sistemazero/ui/button'
+import { Dialog } from '@sistemazero/ui/dialog'
+import { LogOut, ShieldCheck, User, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
 import { levelInfo } from '@/lib/level-info'
 import { endRenovationVisits } from '@/lib/platform-renovation-visit'
+import { leaveStudy, studyRequest } from '@/lib/study-access-client'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
 import { AvatarWithAura } from './avatar-with-aura'
@@ -23,8 +27,11 @@ const AVATAR_SOBRE_O_ESCURO = '[&>span]:bg-primary [&>span]:text-primary-foregro
 
 /**
  * Menu do avatar: cabeçalho com foto + nome + colocação no ranking/XP (NÃO o
- * e-mail dos pais — decisão 06/2026), itens Meu perfil e Sair (o "Mudar tema" saiu em
- * 17/09/2026: a cor é escolhida no perfil, num lugar só). SEM
+ * e-mail dos pais — decisão 06/2026), itens Trocar de perfil, Meu perfil, Área dos pais e
+ * Sair (o "Mudar tema" saiu em 17/09/2026: a cor é escolhida no perfil, num lugar só).
+ * "Área dos pais" é só um atalho para o login do responsável: encerra a sessão da criança
+ * e nunca reaproveita uma sessão adulta. "Sair" pede confirmação porque encerra o acesso
+ * deste perfil neste navegador (outro código para voltar). SEM
  * "Compras" (decisão da v1 kids: a compra é do RESPONSÁVEL — histórico financeiro
  * não aparece na área da criança). Dropdown custom.
  *
@@ -51,6 +58,7 @@ export function UserMenu({
 }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [confirmLogout, setConfirmLogout] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -69,16 +77,19 @@ export function UserMenu({
     }
   }, [open])
 
-  async function logout() {
+  async function leave(destination: string, forget = false) {
     setBusy(true)
     try {
-      await fetch('/api/auth/logout', { method: 'POST' })
-    } finally {
       endRenovationVisits()
-      // Navegação de DOCUMENTO: logout muda cookies HttpOnly e `router.replace +
-      // router.refresh` corre um contra o outro (vercel/next.js#54766); o full
-      // load também descarta o router cache com dados RSC do usuário deslogado.
-      window.location.replace('/login')
+      if (user.act) {
+        await studyRequest('/api/auth/logout', {})
+        window.location.replace('/login')
+        return
+      }
+      await leaveStudy(destination, forget ? user.id : undefined)
+    } catch {
+      toast.error('Não foi possível sair agora. Confira a conexão e tente novamente.')
+      setBusy(false)
     }
   }
 
@@ -186,7 +197,7 @@ export function UserMenu({
               ) : null}
             </div>
           </div>
-          {/* Voltar à grade de perfis (trocar de criança / abrir a área dos pais). */}
+          {/* Só a escolha entre crianças; a área dos pais é o atalho separado logo abaixo. */}
           <Link href="/perfis" onClick={() => setOpen(false)} className={itemClass}>
             <Users className="size-4" />
             Trocar de perfil
@@ -195,12 +206,26 @@ export function UserMenu({
             <User className="size-4" />
             Meu perfil
           </Link>
+          {!user.act ? (
+            <button
+              type="button"
+              className={itemClass}
+              disabled={busy}
+              onClick={() => void leave('/login/responsavel')}
+            >
+              <ShieldCheck className="size-4" />
+              Área dos pais
+            </button>
+          ) : null}
           {/* A cor mora em Meu perfil (logo acima). Dois lugares escrevendo o mesmo estado
               foi como o adulto e o kids divergiram antes. */}
           <div className="border-t border-border" />
           <button
             type="button"
-            onClick={logout}
+            onClick={() => {
+              setOpen(false)
+              setConfirmLogout(true)
+            }}
             disabled={busy}
             className={`${itemClass} disabled:opacity-50`}
           >
@@ -209,6 +234,30 @@ export function UserMenu({
           </button>
         </div>
       ) : null}
+      <Dialog
+        open={confirmLogout}
+        onClose={() => {
+          if (!busy) setConfirmLogout(false)
+        }}
+        title={user.act ? 'Encerrar sessão de suporte?' : 'Sair deste aparelho?'}
+        footer={
+          // Pílulas de 44px: a criança decide aqui se sai deste aparelho.
+          <div className="flex flex-wrap justify-end gap-2 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-4">
+            <Button variant="secondary" disabled={busy} onClick={() => setConfirmLogout(false)}>
+              Continuar aqui
+            </Button>
+            <Button disabled={busy} onClick={() => void leave('/login', true)}>
+              {user.act ? 'Encerrar suporte' : 'Sair deste aparelho'}
+            </Button>
+          </div>
+        }
+      >
+        <p>
+          {user.act
+            ? 'Os acessos da família neste aparelho continuam como estavam.'
+            : 'Para entrar de novo com seu perfil, você vai precisar de outro código do responsável. Seu progresso fica guardado.'}
+        </p>
+      </Dialog>
     </div>
   )
 }

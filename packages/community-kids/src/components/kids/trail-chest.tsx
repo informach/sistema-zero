@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import type { ModuleChestView } from '@sistemazero/member-shell/lib/types'
 import { useRouter } from 'next/navigation'
 import { useCallback, useRef, useState } from 'react'

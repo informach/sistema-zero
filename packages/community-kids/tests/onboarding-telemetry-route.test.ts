@@ -50,7 +50,7 @@ describe('POST /api/onboarding/events', () => {
   it('registra evento válido sem identificadores ou nome da criança', async () => {
     const response = await POST(
       eventRequest({
-        version: 'v2',
+        version: 'v3',
         audience: 'parent',
         action: 'welcome_opened',
         step: 'welcome',
@@ -62,6 +62,21 @@ describe('POST /api/onboarding/events', () => {
     const log = info.mock.calls.flat().join(' ')
     expect(log).not.toContain(accountSession.id)
     expect(log).not.toContain(accountSession.firstName)
+  })
+
+  it('aceita o acesso preparado no guia v3 dos pais', async () => {
+    const response = await POST(
+      eventRequest({
+        version: 'v3',
+        audience: 'parent',
+        action: 'access_prepared',
+        step: 'access',
+      }),
+    )
+
+    expect(response.status).toBe(204)
+    expect(info).toHaveBeenCalledTimes(1)
+    expect(info.mock.calls.flat().join(' ')).toContain('access_prepared')
   })
 
   it('recusa audiência incompatível com a sessão', async () => {

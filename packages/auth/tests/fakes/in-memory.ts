@@ -1,4 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
+import { type KidsSessionClaim, sameKidsSession } from '@sistemazero/core/security'
 import type {
   AuditLogListFilter,
   AuditLogRecord,
@@ -163,6 +164,7 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
       revokedAt: Date | null
       impersonatorUserId: string | null
       impersonationWritable: boolean
+      kidsContext: KidsSessionClaim | null
     }
   >()
 
@@ -175,18 +177,22 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
         revokedAt: null,
         impersonatorUserId: input.impersonatorUserId ?? null,
         impersonationWritable: input.impersonationWritable ?? false,
+        kidsContext: input.kidsContext ?? null,
       }
       this.families.set(input.familyId, family)
-    } else if (!family.impersonatorUserId) {
+    } else if (!family.impersonatorUserId && !family.kidsContext) {
       family.expiresAt = input.expiresAt
     }
     if (family.revokedAt || family.expiresAt.getTime() <= Date.now()) return false
+    if (family.userId !== input.userId || !sameKidsSession(family.kidsContext, input.kidsContext))
+      return false
     this.byId.set(input.id, {
       id: input.id,
       userId: input.userId,
       familyId: input.familyId,
       familyExpiresAt: family.expiresAt,
       familyRevokedAt: family.revokedAt,
+      kidsContext: family.kidsContext,
       tokenHash: input.tokenHash,
       expiresAt: input.expiresAt,
       rotatedAt: null,

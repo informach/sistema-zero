@@ -14,6 +14,7 @@ import type { SetUserPasswordService } from '../../application/admin/set-passwor
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
 import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
+import type { GetOwnProfileService } from '../../application/get-me/get-own-profile.service'
 import type { ChangeImpersonationModeService } from '../../application/impersonation/change-impersonation-mode.service'
 import type { CreateImpersonationTokenService } from '../../application/impersonation/create-impersonation-token.service'
 import type { ExchangeImpersonationTokenService } from '../../application/impersonation/exchange-impersonation-token.service'
@@ -30,6 +31,7 @@ import type { ForgotPasswordService } from '../../application/password-reset/for
 import type { ResetPasswordService } from '../../application/password-reset/reset-password.service'
 import type { RefreshService } from '../../application/refresh/refresh.service'
 import type { RegisterService } from '../../application/register/register.service'
+import type { StudyAccessService } from '../../application/study-access/study-access.service'
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import type { TokenIssuer } from '../../domain/ports/token-issuer.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
@@ -43,8 +45,10 @@ import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { impersonationRoutes } from './routes/impersonation.routes'
 import { internalRoutes } from './routes/internal.routes'
 import { type ProfilesRoutesDeps, profilesRoutes } from './routes/profiles.routes'
+import { studyAccessRoutes } from './routes/study-access.routes'
 
 export interface HttpDeps {
+  studyAccess?: StudyAccessService
   env: Env
   logger: Logger
   /** Probe do `/readyz` (banco alcançável) — montado no composition-root. */
@@ -55,6 +59,7 @@ export interface HttpDeps {
   refresh: RefreshService
   logout: LogoutService
   getMe: GetMeService
+  getOwnProfile: GetOwnProfileService
   forgotPassword: ForgotPasswordService
   resetPassword: ResetPasswordService
   requestOtp: RequestOtpService
@@ -140,6 +145,16 @@ export function createServer(deps: HttpDeps) {
   }
 
   return app
+    .use(
+      deps.studyAccess
+        ? studyAccessRoutes({
+            service: deps.studyAccess,
+            tokenIssuer: deps.tokenIssuer,
+            trustProxy: deps.env.TRUST_PROXY,
+            trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
+          })
+        : new Elysia(),
+    )
     .use(healthRoutes(deps.readiness))
     .use(
       authRoutes({
@@ -151,6 +166,7 @@ export function createServer(deps: HttpDeps) {
         refresh: deps.refresh,
         logout: deps.logout,
         getMe: deps.getMe,
+        getOwnProfile: deps.getOwnProfile,
         forgotPassword: deps.forgotPassword,
         resetPassword: deps.resetPassword,
         requestOtp: deps.requestOtp,

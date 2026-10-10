@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import type {
   Project,

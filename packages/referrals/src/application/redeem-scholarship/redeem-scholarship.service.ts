@@ -11,7 +11,11 @@ import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
 import { isMuralTrialGranted, scholarshipExpiresAt } from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
-import type { GatewayResult, ReferralsGateway } from '../../domain/ports/gateway.port'
+import type {
+  GatewayResult,
+  ReferralsGateway,
+  SendEmailInput,
+} from '../../domain/ports/gateway.port'
 import type {
   RedemptionRecord,
   ReferralRepository,
@@ -39,6 +43,15 @@ export type RedeemResult =
   | { kind: 'campaign_unavailable'; state: string }
   | { kind: 'failed'; reason: string }
   | { kind: 'upstream_error' }
+
+/**
+ * Chave que nasceu com o acesso infantil por aparelho (10/10/2026) → a que existia antes. Se o
+ * Referrals subir antes de o Messaging semear a nova, a família recebe a antiga em vez de ficar sem
+ * aviso. Contrato conferido em `tests/unit/message-templates-contract.test.ts` contra o seed.
+ */
+export const LEGACY_TEMPLATE_KEYS: Readonly<Record<string, string>> = {
+  'kids-new-access': 'new-access',
+}
 
 export interface RedeemOptions {
   /** Curso kids concedido pela indicação, sem a assinatura da Comunidade. */
@@ -360,9 +373,11 @@ export class RedeemScholarshipService {
           })
           return 'failed'
         }
-        // Token EMITIDO: a partir daqui NUNCA liberar o claim — reemitir mataria
-        // o link entregue (o auth consome tokens pendentes ao emitir um novo).
-        send = await this.gateway.sendEmail(
+        // Token EMITIDO: só liberar o claim se o Messaging RECUSAR (4xx, nada saiu);
+        // reemitir depois de um envio aceito mataria o link entregue (o auth consome
+        // tokens pendentes ao emitir um novo).
+        send = await this.sendWithFallback(
+          redemption.id,
           {
             templateKey:
               redemption.muralVisitorPolicy === 'trial'
@@ -393,7 +408,8 @@ export class RedeemScholarshipService {
       } else {
         // Conta pré-existente: NÃO emite token (invalidaria um token vivo de
         // compra/convite recente). A política do resgate escolhe o aviso correto.
-        send = await this.gateway.sendEmail(
+        send = await this.sendWithFallback(
+          redemption.id,
           {
             templateKey:
               redemption.muralVisitorPolicy === 'trial'
@@ -406,7 +422,7 @@ export class RedeemScholarshipService {
                     ? 'referrals-scholarship-existing-7d-mural'
                     : expiresAt
                       ? 'referrals-scholarship-existing-7d'
-                      : 'new-access',
+                      : 'kids-new-access',
             recipient: { name: firstName, email: redemption.email },
             variables: {
               nome: firstName,
@@ -418,16 +434,24 @@ export class RedeemScholarshipService {
                 : expiresAt
                   ? { indicador: source.name }
                   : {}),
-              link: `${base}/cursos`,
+              link: `${base}/login/responsavel`,
             },
           },
           idempotencyKey,
         )
       }
       if (send.status !== 202 && send.status !== 200) {
+        // 4xx = o Messaging (ou o gateway) RECUSOU antes de enfileirar: nada saiu, nem o
+        // link de senha. Libera o claim para a próxima submissão do mesmo e-mail retomar
+        // o envio (numa conta nova, com token novo: o anterior nunca foi entregue).
+        // 5xx/timeout é ambíguo (pode ter enfileirado com o token atual): o claim fica.
+        const refused = send.status >= 400 && send.status < 500
+        if (refused) await this.repo.releaseRedemptionWelcome(redemption.id)
         this.logger.warn('referrals.redeem_welcome_send_failed', {
           redemptionId: redemption.id,
           status: send.status,
+          errorCode: readErrorCode(send.body),
+          released: refused,
         })
         return 'failed'
       }
@@ -446,6 +470,28 @@ export class RedeemScholarshipService {
       })
       return 'failed'
     }
+  }
+
+  /**
+   * Envia o welcome; se a chave nova ainda não existir no Messaging (404 `TEMPLATE_NOT_FOUND`),
+   * tenta a chave antiga com as MESMAS variáveis e a MESMA Idempotency-Key — o Messaging recusa a
+   * chave ausente antes de gravar a mensagem, então nada ficou registrado com ela.
+   */
+  private async sendWithFallback(
+    redemptionId: string,
+    input: SendEmailInput,
+    idempotencyKey: string,
+  ): Promise<GatewayResult> {
+    const res = await this.gateway.sendEmail(input, idempotencyKey)
+    const legacy = LEGACY_TEMPLATE_KEYS[input.templateKey]
+    if (!legacy || res.status !== 404 || readErrorCode(res.body) !== 'TEMPLATE_NOT_FOUND')
+      return res
+    this.logger.warn('referrals.redeem_welcome_template_fallback', {
+      redemptionId,
+      from: input.templateKey,
+      to: legacy,
+    })
+    return this.gateway.sendEmail({ ...input, templateKey: legacy }, idempotencyKey)
   }
 }
 

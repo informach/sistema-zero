@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '../../lib/session-fetch'
+
 import '@sistemazero/studio/styles.css'
 import type {
   Project,

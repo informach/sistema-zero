@@ -20,102 +20,64 @@ import {
   writeSessionGuideFlag,
 } from '../src/lib/guide'
 
-/** Base: pai em sessão de CONTA, primeira visita, nada dispensado. */
-function input(over: Partial<ParentGuideInput> = {}): ParentGuideInput {
-  return {
+describe('guia dos pais acompanha a autorização do aparelho', () => {
+  const base: ParentGuideInput = {
     profilesCount: 0,
-    managing: false,
     canCreateProfile: true,
-    profileCreated: false,
-    creatingOpen: false,
+    accessReady: false,
     dismissed: false,
-    isProfileSession: false,
-    ...over,
   }
-}
-
-describe('resolveParentGuideStep — o guia segue o ESTADO real', () => {
-  it('grade sem perfil, fora da gestão → aponta a Área dos pais', () => {
-    expect(resolveParentGuideStep(input())).toBe('welcome-area')
+  it('começa no cadastro só quando ainda não existe perfil e há vaga', () => {
+    expect(resolveParentGuideStep(base)).toBe('profile')
+    expect(resolveParentGuideStep({ ...base, canCreateProfile: false })).toBeNull()
   })
-
-  it('gestão aberta sem perfil, com vaga → aponta o Adicionar', () => {
-    expect(resolveParentGuideStep(input({ managing: true }))).toBe('plus')
+  it('perfil criado ainda precisa de autorização', () => {
+    expect(resolveParentGuideStep({ ...base, profilesCount: 1 })).toBe('access')
+    expect(resolveParentGuideStep({ ...base, profilesCount: 1, accessReady: true })).toBe('ready')
   })
-
-  it('gestão aberta sem perfil e sem direito de criar não aponta um alvo inexistente', () => {
-    expect(
-      resolveParentGuideStep({
-        ...input({ managing: true }),
-        canCreateProfile: false,
-      }),
-    ).toBeNull()
+  it('dispensar esconde o guia sem alterar as permissões', () => {
+    expect(resolveParentGuideStep({ ...base, dismissed: true })).toBeNull()
   })
-
-  it('formulário de criação aberto → dica de preenchimento', () => {
-    expect(resolveParentGuideStep(input({ creatingOpen: true }))).toBe('form')
+  it('família antiga usa perfil existente e guia aponta o novo acesso', () => {
+    const copy = parentWelcomeSteps({ profilesCount: 1, canCreateProfile: false })
+      .map((step) => step.text)
+      .join(' ')
+    expect(copy).toContain('perfil que já existe')
+    expect(copy).toContain('Acesso nos aparelhos')
+    expect(copy).not.toContain('Adicionar criança')
   })
-
-  it('perfil criado durante o guia → permite celebrar a criação', () => {
-    expect(
-      resolveParentGuideStep(input({ profilesCount: 1, managing: true, profileCreated: true })),
-    ).toBe('conclude-created')
+  it('os passos citam os rótulos reais da tela e o título acompanha a família', () => {
+    const existing = parentWelcomeSteps({ profilesCount: 1, canCreateProfile: true })
+    const copy = existing.map((step) => step.text).join(' ')
+    for (const label of [
+      'Acesso nos aparelhos',
+      'Autorizar aparelho',
+      'Neste aparelho',
+      'Em outro aparelho',
+      'Autorizar este aparelho',
+      'Gerar código',
+      'Ir para a área do aluno',
+    ])
+      expect(copy).toContain(`"${label}"`)
+    expect(copy).not.toContain('Libere este navegador')
+    // Botão se clica; "toque" sai do fluxo dos pais.
+    expect(copy).not.toMatch(/\btoqu?e\b/i)
+    expect(existing.map((step) => step.title)).toEqual([
+      '1. Escolha a criança',
+      '2. Autorize o aparelho',
+      '3. A criança entra',
+    ])
+    // Sem criança, o primeiro passo não fala em escolher uma que não existe.
+    expect(parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true })[0]?.title).toBe(
+      '1. Adicione a criança',
+    )
   })
-
-  it('perfil antigo com gestão aberta → orienta a saída sem fingir que acabou de criar', () => {
-    expect(resolveParentGuideStep(input({ profilesCount: 1, managing: true }))).toBe('conclude')
-  })
-
-  it('grade normal com perfil → aponta a bolinha (o arremate)', () => {
-    expect(resolveParentGuideStep(input({ profilesCount: 1 }))).toBe('tile')
-  })
-
-  it('"Pular tutorial" encerra qualquer passo do guia', () => {
-    expect(resolveParentGuideStep(input({ dismissed: true }))).toBeNull()
-    expect(resolveParentGuideStep(input({ dismissed: true, managing: true }))).toBeNull()
-    expect(resolveParentGuideStep(input({ dismissed: true, managing: true }))).toBeNull()
-    expect(resolveParentGuideStep(input({ profilesCount: 1, dismissed: true }))).toBeNull()
-    expect(
-      resolveParentGuideStep(input({ profilesCount: 1, managing: true, dismissed: true })),
-    ).toBeNull()
-    expect(resolveParentGuideStep(input({ creatingOpen: true, dismissed: true }))).toBeNull()
-  })
-
-  it('sessão de PERFIL (criança trocando de irmão) nunca vê o guia', () => {
-    expect(resolveParentGuideStep(input({ isProfileSession: true }))).toBeNull()
-    expect(
-      resolveParentGuideStep(input({ isProfileSession: true, profilesCount: 2, managing: true })),
-    ).toBeNull()
-  })
-
-  it('o modal reaberto descreve seleção/gestão sem prometer criação indisponível', () => {
-    const steps = parentWelcomeSteps({ profilesCount: 1, canCreateProfile: false })
-    const copy = steps.map((step) => step.text).join(' ')
-    expect(copy).toContain('Escolha quem vai criar')
-    expect(copy).not.toContain('cria o primeiro perfil')
-    expect(copy).not.toContain('adicionar outro perfil')
-  })
-
-  it('o primeiro perfil comunica que nascimento é opcional', () => {
+  it('criação continua com nascimento opcional e sem compartilhar senha', () => {
     const copy = parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true })
       .map((step) => step.text)
       .join(' ')
     expect(copy).toContain('opcional')
-    // O passo final combina com a grade ("Quem vai criar hoje?"): a criança ENTRA pela bolinha.
-    // Antes dizia "Na hora de estudar", e o outro diálogo já dizia "Escolha quem vai criar".
-    expect(copy).toContain('Na hora de entrar')
-    expect(copy).not.toMatch(/estud/i)
-  })
-
-  it('a copy do guia não usa travessão nem aspas curvas (voz da marca)', () => {
-    const copy = [
-      ...parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true }),
-      ...parentWelcomeSteps({ profilesCount: 1, canCreateProfile: true }),
-      ...parentWelcomeSteps({ profilesCount: 1, canCreateProfile: false }),
-      ...childWelcomeSteps({ hasAvatar: false, hasCourseActivity: false, startAvailable: true }),
-    ]
-      .map((step) => step.text)
-      .join(' ')
+    expect(copy).toContain('Eu sou aluno')
     expect(copy).not.toMatch(/[—–“”]/)
   })
 })
@@ -173,7 +135,15 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
   })
 
   /** A explicação FIXA do app, na ordem em que a criança a lê. */
-  const EXPLICACAO: GuideWelcomeStepId[] = ['aulas', 'xp', 'criar', 'mural', 'jornada', 'ajuda']
+  const EXPLICACAO: GuideWelcomeStepId[] = [
+    'aulas',
+    'xp',
+    'criar',
+    'mural',
+    'jornada',
+    'ajuda',
+    'voltar',
+  ]
 
   it('boas-vindas de quem já estudou não promete uma primeira aula', () => {
     const steps = childWelcomeSteps({
@@ -272,7 +242,7 @@ describe('resolveChildGuideStep — fase 2, a criança na home', () => {
     // E não colidem com as chaves do guia dos PAIS.
     expect(keys).not.toContain(guideWelcomeSeenKey('p1'))
     expect(keys.every((key) => key.includes(':v2:'))).toBe(true)
-    expect(guideWelcomeSeenKey('p1')).toContain(':v2:')
+    expect(guideWelcomeSeenKey('p1')).toContain(':v3:')
   })
 })
 

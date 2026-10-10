@@ -74,9 +74,14 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    retomada posterior; outros 5xx gravam `last_error` (`grant:<status>[:código]`, some no
    sucesso) + soltam lease + devolvem 502 (o usuário re-tenta; tudo idempotente).
 7. Welcome com **claim atômico** (`welcome_sent_at`, molde `welcome-email.ts` do funil):
-   conta NOVA → password-token (falha na emissão → release do claim; **emitido → NUNCA liberar**,
-   reemitir mataria o link entregue — o auth consome tokens pendentes) → template
-   `referrals-scholarship-welcome`; conta PRÉ-EXISTENTE → **sem token**, template `new-access`.
+   conta NOVA → password-token (falha na emissão → release do claim; **emitido → só libera se o
+   Messaging RECUSAR o envio (4xx)**, porque reemitir depois de um envio aceito mataria o link
+   entregue — o auth consome tokens pendentes) → template
+   `referrals-scholarship-welcome`; conta PRÉ-EXISTENTE → **sem token**, template da política do resgate
+   (o histórico sem prazo usa `kids-new-access`, link `<kids>/login/responsavel`). Se o Messaging
+   ainda não tiver a chave nova (404 `TEMPLATE_NOT_FOUND`), cai em `new-access` com a mesma
+   Idempotency-Key (`LEGACY_TEMPLATE_KEYS`). Envio RECUSADO (4xx: nada enfileirado) libera o claim
+   para a próxima submissão do mesmo e-mail retomar; 5xx/timeout é ambíguo e mantém o claim.
 
 ## Conversões + bônus Pix manual (extensão 09/2026)
 
@@ -201,7 +206,9 @@ canônico `canonicalHmacMessage`, timeout NUNCA lança — vira 502/504 por stat
 - **messaging**: `POST /messaging/send` (202; Idempotency-Key por consumer). Templates novos no
   seed do messaging: `referrals-ambassador-link` {nome, link} ·
   `referrals-scholarship-invite` {nome, indicador, link} · `referrals-scholarship-welcome`
-  {nome, indicador, link}. Conta pré-existente reusa `new-access` {nome, link}.
+  {nome, indicador, link}. Conta pré-existente histórica usa `kids-new-access` {nome, link}, com
+  reserva em `new-access`. `tests/unit/message-templates-contract.test.ts` confere cada chave usada
+  contra o seed do Messaging.
 - **payments** (extensão 09/2026): consumer de `payment.paid`/`payment.refunded` ATIVO (ver
   §Conversões) + enriquecimento `GET /payments/internal/payments/:id` (direto, x-internal-token,
   `PAYMENTS_BASE_URL`/`PAYMENTS_INTERNAL_TOKEN`).

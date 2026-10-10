@@ -8,7 +8,14 @@ import type { GetPublicProfileService } from '../../../application/profiles/get-
 import type { ListProfilesService } from '../../../application/profiles/list-profiles.service'
 import type { SelectProfileService } from '../../../application/profiles/select-profile.service'
 import type { UpdateProfileDetailsService } from '../../../application/profiles/update-profile.service'
-import { type AuthContext, isPrivilegedRole, resolveClientIp, resolveGatewayActor } from '../auth'
+import { isRecentParentAuth } from '../../../domain/study-access/policy'
+import {
+  type AuthContext,
+  isPrivilegedRole,
+  resolveClientIp,
+  resolveGatewayActor,
+  resolveGatewayKidsContext,
+} from '../auth'
 import {
   CreateProfileBody,
   ExitProfileSessionBody,
@@ -97,6 +104,16 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
     return actor.id
   }
 
+  // Sessão de RESPONSÁVEL do Kids: o login tem até 15 min? `undefined` nos outros produtos
+  // (e no suporte), que não ganham a exigência. Arquivar e mudar nascimento ou perfil
+  // público pedem o MESMO "entre de novo" (`PARENT_REAUTH_REQUIRED`) das ações de aparelho.
+  const parentAuthRecent = (headers: Record<string, string | undefined>) => {
+    const kids = resolveGatewayKidsContext(headers)
+    return kids?.kind === 'parent' ? isRecentParentAuth(kids.authenticatedAt) : undefined
+  }
+  const kidsContext = (headers: Record<string, string | undefined>) =>
+    resolveGatewayKidsContext(headers)?.kind ?? null
+
   return (
     new Elysia({ prefix: '/auth' })
       .get('/profiles', ({ headers }) => deps.listProfiles.execute(accountContext(headers)))
@@ -145,6 +162,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             whatsapp: body.whatsapp,
             birthDate: body.birthDate,
             publicProfileEnabled: body.publicProfileEnabled,
+            parentAuthRecent: parentAuthRecent(headers),
           })
           return { profile }
         },
@@ -154,7 +172,11 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
         '/profiles/:id',
         async ({ headers, params }) => {
           const accountUserId = requireAccountSession(headers).id
-          await deps.archiveProfile.execute({ accountUserId, profileId: params.id })
+          await deps.archiveProfile.execute({
+            accountUserId,
+            profileId: params.id,
+            parentAuthRecent: parentAuthRecent(headers),
+          })
           return { archived: true }
         },
         { params: ProfileIdParams },
@@ -174,6 +196,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             // `x-auth-impersonator-id` — propaga o vínculo p/ a sessão de perfil.
             impersonatorUserId: headers['x-auth-impersonator-id']?.trim() || null,
             refreshToken: body?.refreshToken ?? null,
+            kidsContext: kidsContext(headers),
           })
         },
         { body: t.Optional(SelectProfileSessionBody), params: ProfileIdParams },
@@ -192,6 +215,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             ip: clientIp({ request, server, headers }),
             impersonatorUserId: headers['x-auth-impersonator-id']?.trim() || null,
             refreshToken: body.refreshToken ?? null,
+            kidsContext: kidsContext(headers),
           })
         },
         { body: ExitProfileSessionBody },

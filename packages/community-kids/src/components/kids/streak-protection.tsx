@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import { Palmtree, Shield, ShieldCheck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'

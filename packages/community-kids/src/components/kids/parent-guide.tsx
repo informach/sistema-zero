@@ -117,46 +117,6 @@ export function GuideTargetItem({ children }: { children: React.ReactNode }) {
   return <li className="flex w-28 shrink-0 flex-col items-center gap-3">{children}</li>
 }
 
-/** Alvo "Concluir" com copy fiel à transição que de fato aconteceu. */
-export function ParentConcludeTarget({
-  created,
-  showGuide = true,
-  busy,
-  onConclude,
-}: {
-  created: boolean
-  showGuide?: boolean
-  busy: boolean
-  onConclude: () => void
-}) {
-  const descriptionId = showGuide ? 'parent-conclude-guide' : undefined
-  return (
-    <div className="flex w-36 shrink-0 flex-col items-center gap-3">
-      {showGuide ? (
-        <GuideBalloon arrow="down" mobileFloating descriptionId={descriptionId}>
-          {created ? (
-            <>
-              Perfil criado! 🎉 Agora é só tocar em <strong>Concluir</strong> para voltar.
-            </>
-          ) : (
-            <>
-              Tudo certo por aqui. Toque em <strong>Concluir</strong> quando quiser voltar.
-            </>
-          )}
-        </GuideBalloon>
-      ) : null}
-      <Button
-        variant="secondary"
-        onClick={onConclude}
-        disabled={busy}
-        aria-describedby={descriptionId}
-      >
-        Concluir
-      </Button>
-    </div>
-  )
-}
-
 /**
  * Modal de boas-vindas do primeiro acesso (molde do `ClubeCombinados`): Dialog do
  * ui (foco/Esc/trap grátis via useModalA11y) + Zappy + passos ilustrados.

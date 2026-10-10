@@ -1,5 +1,17 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Acesso infantil por aparelho (10/10/2026)
+
+A implementação de entrada Kids passa a usar sessões discriminadas `kids.kind`: responsável em `/pais`, criança em `/login/aluno` e `/perfis`. `/login` escolhe o público. O login adulto exige senha ou OTP próprio e não autoriza perfis implicitamente. Cada autorização pertence a um perfil e navegador; o cookie HttpOnly do aparelho é separado da sessão ativa. Os endpoints antigos de seleção/saída de perfil do Kids retornam 410 para a família. A seleção aceita exclusivamente sessões de suporte autenticadas (`act`), sem criar autorização de aparelho; `/perfis` mostra um seletor separado nesse contexto. As descrições antigas do portão de senha e da grade mista de perfis neste documento são históricas.
+
+Especificação e evidências: `docs/plans/2026-10-10-acesso-infantil-design.md`, `docs/superpowers/plans/2026-10-10-acesso-infantil.md` e `docs/qa/2026-10-10-acesso-infantil.md`, na raiz do monorepo.
+
+No navegador, chamadas Kids a `/api/` usam `sessionFetch`, que transporta a identidade do documento em `x-sz-session`. O backend compara essa prova à sessão autenticada antes das mutações; mudar um cookie em outra aba não pode salvar criações sob outro perfil. Não substituir por `fetch` nativo nas operações autenticadas. `GET /api/study/session` é a exceção intencional para detectar mudanças.
+
+O tutorial dos pais usa v3, o tutorial infantil conserva v2. O código da criança não é o OTP enviado ao e-mail do responsável. Ajuda de entrada fica disponível sem login em `/ajuda/entrar`.
+
+Telas, revisão de 10/10/2026: toda falha de `studyRequest` passa por `studyErrorMessage` (só a frase de um `StudyRequestError` vai à tela; rede, tempo esgotado, HTML e 5xx viram "Não conseguimos conectar agora…"). Rótulos: "Código de acesso" é o da criança, "Código enviado ao seu e-mail" é o OTP do responsável. `/login` e `/perfis` mandam sessão de responsável para `/pais`; `/login` com sessão de aluno vai à área da criança. Destinos de entrada moram em `lib/entry-destination.ts` (o `next` adulto é respeitado; link de fase vira `/pais?aluno=`). A área dos pais lê as autorizações de cada criança no servidor (`server/family-access.ts`): o guia v3, o evento `access_prepared` e os avisos "Vence em breve"/"Vencido" seguem o estado real da família (`lib/study-access-view.ts`, cuja prévia de data é espelho do Auth travado em `tests/study-access-view.test.ts`). A criança não remove acessos do aparelho; isso é do responsável. A troca segura para a criança é o `StudentAreaButton`, nunca um link para `/perfis`.
+
 ## Recados iniciados pelo professor e ajuda — 11/09/2026
 
 Avisos individuais/coletivos chegam em conversas privadas no mesmo Recados. O sino usa

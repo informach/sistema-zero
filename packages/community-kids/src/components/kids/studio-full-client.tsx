@@ -8,6 +8,7 @@ import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 // menus do editor saem sem fundo/cor). Ver o comentário no globals.css.
 import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import { requestPersistentStorage } from '@sistemazero/member-shell/lib/persistent-storage'
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'

@@ -2,12 +2,12 @@ import { KidsBackButton } from './back-button'
 
 /**
  * Destino da volta para a Área dos Pais a partir das superfícies da CONTA que vivem
- * fora do layout infantil (`/responsavel`, o acompanhamento, e `/responsavel/ajuda`). `?manage=1` cai direto no
- * modo "Gerenciar perfis", onde vive o card "Abrir atendimento"; se o portão parental
- * (15 min) tiver vencido, a página degrada para a grade com o modal de senha, nunca um
- * beco. É o MESMO destino que o portal usa no aviso de portão expirado (uma fonte).
+ * fora do layout infantil (`/responsavel`, o acompanhamento, e `/responsavel/ajuda`).
+ * `/pais` é a área adulta com o card "Abrir atendimento"; sem sessão de responsável ela
+ * manda ao login dele, nunca a um beco. É o MESMO destino que o portal usa no aviso de
+ * sessão expirada (uma fonte).
  */
-export const PARENT_AREA_HREF = '/perfis?manage=1'
+export const PARENT_AREA_HREF = '/pais'
 
 /**
  * Seta de volta para a Área dos Pais. Rotas `/responsavel/*` não têm sidebar, topo nem

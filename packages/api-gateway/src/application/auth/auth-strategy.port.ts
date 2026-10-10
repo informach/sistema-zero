@@ -17,7 +17,7 @@ export interface Principal {
  */
 export type AuthResult =
   | { ok: true; principal: Principal }
-  | { ok: false; status: 401 | 403; code: string; message: string }
+  | { ok: false; status: 401 | 403 | 503; code: string; message: string }
   | { ok: 'skip' }
 
 /** Strategy de autenticação plugável (jwt/session/hmac). */

@@ -1,3 +1,4 @@
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 /**
  * "Guardado na sua conta" (18/08/2026) — o cliente comum das criações do Estúdio
  * Completo e do Pinta. Cada jogo/desenho sobe sozinho depois que o autosave

@@ -139,6 +139,18 @@ export async function createApplication(
       issuer: env.JWT_ISSUER,
       audience: env.JWT_AUDIENCE,
       algorithms: env.JWT_ALGORITHMS,
+      validateKidsSession: async (token) => {
+        const target = targetsByGroup.get('auth:default')?.[0]
+        if (!target) throw new Error('Auth indisponível para validar a sessão Kids')
+        const response = await fetch(new URL('/auth/kids/session/validate', target.baseUrl), {
+          method: 'POST',
+          headers: { authorization: `Bearer ${token}`, 'cache-control': 'no-store' },
+          signal: AbortSignal.timeout(5000),
+        })
+        if (response.ok) return true
+        if (response.status === 401 || response.status === 403) return false
+        throw new Error(`Auth indisponível para validar sessão: ${response.status}`)
+      },
     })
   }
   const authChain = createAuthChain(strategies)

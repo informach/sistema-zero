@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import { Button } from '@sistemazero/ui/button'
 import { LogOut, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'

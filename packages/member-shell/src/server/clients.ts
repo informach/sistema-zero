@@ -265,6 +265,21 @@ export function createAuthClient(gw: GatewayModule) {
      */
     getMeReadonly,
 
+    /**
+     * O PRÓPRIO perfil numa sessão de perfil (aluno do Kids ou suporte dentro de um perfil):
+     * nela o `/auth/me` devolve `{ profile }` no lugar da ficha da conta (`user` ausente). É a
+     * leitura que a criança pode fazer: a política do aluno recusa `GET /auth/profiles` (a
+     * lista da família é da área dos pais). Mesma ida ao gateway do `getMeReadonly`
+     * (cache por request). Fora de sessão de perfil → `profile: null`.
+     */
+    async getMyProfileReadonly(): Promise<GatewayResponse<{ profile: ProfileView | null }>> {
+      const res = (await getMeReadonly()) as GatewayResponse<{ profile?: ProfileView } | null>
+      return {
+        status: res.status,
+        body: { profile: res.status === 200 ? (res.body?.profile ?? null) : null },
+      }
+    },
+
     updateMe(body: {
       firstName?: string
       lastName?: string
@@ -290,8 +305,12 @@ export function createAuthClient(gw: GatewayModule) {
     },
 
     /** Pede um código OTP (login passwordless ou recuperação). Sempre 200 (anti-enum). */
-    requestOtp(email: string, purpose: 'sign_in' | 'password_reset'): Promise<GatewayResponse> {
-      return publicPost('/auth/otp/request', { email, purpose })
+    requestOtp(
+      email: string,
+      purpose: 'sign_in' | 'password_reset',
+      platform: 'main' | 'kids' = 'main',
+    ): Promise<GatewayResponse> {
+      return publicPost('/auth/otp/request', { email, purpose, platform })
     },
 
     /**

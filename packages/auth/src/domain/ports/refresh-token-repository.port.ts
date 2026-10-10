@@ -1,7 +1,9 @@
+import type { KidsSessionClaim } from '@sistemazero/core/security'
 import type { CreateAuditLogInput } from './audit-log-repository.port'
 
 /** Linha persistida de refresh token (somente o HASH do token é guardado). */
 export interface RefreshTokenRecord {
+  kidsContext?: KidsSessionClaim | null
   id: string
   userId: string
   /** Família de rotação: detectar reuso revoga a família inteira (token roubado). */
@@ -22,6 +24,7 @@ export interface RefreshTokenRecord {
 }
 
 export interface CreateRefreshTokenInput {
+  kidsContext?: KidsSessionClaim | null
   id: string
   userId: string
   familyId: string

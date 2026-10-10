@@ -1,12 +1,14 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { PasswordHasher } from '../../domain/ports/password-hasher.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
+import { newParentKidsSession } from '../../domain/study-access/policy'
 import { InvalidCredentialsError, UserNotActiveError } from '../../domain/user/user.errors'
 import type { UserStatus } from '../../domain/user/user.status'
 import { toUserView, type UserView } from '../mappers/user-view'
 import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
 
 export interface LoginCommand {
+  platform?: 'main' | 'kids'
   email: string
   password: string
   userAgent?: string | null
@@ -51,6 +53,8 @@ export class LoginService {
     if (!user.isActive()) throw new UserNotActiveError(statusMessage(user.status))
 
     const tokens = await this.tokens.issueForUser(user, {
+      // Kids: sessão ADULTA com prazo absoluto de 12 h (sem deslizar no refresh).
+      ...(command.platform === 'kids' ? newParentKidsSession() : {}),
       userAgent: command.userAgent,
       ip: command.ip,
     })

@@ -24,7 +24,6 @@ import {
   getStudioUnlocksReadonly,
   listCatalog,
 } from '@/server/members'
-import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 import { ProfileClient } from './profile-client'
@@ -50,9 +49,11 @@ export default async function ProfilePage() {
   // com o motivo, em vez de deixar a pessoa clicar num 403.
   const readOnly = isReadonlyImpersonation(session)
 
-  const [profilesRes, gam, avatarRes, showcaseRes, catalogRes, unlocksRes, studioRes] =
+  const [profileRes, gam, avatarRes, showcaseRes, catalogRes, unlocksRes, studioRes] =
     await Promise.all([
-      listReadonly(),
+      // O PRÓPRIO perfil pelo `/auth/me` da sessão de perfil: a lista da família
+      // (`/auth/profiles`) é da área dos pais e o Gateway a recusa para o aluno.
+      shell.auth.getMyProfileReadonly(),
       getGamificationReadonly({ withRanking: true }),
       getAvatarReadonly(),
       // Jogos publicados + jogadas (linha da jornada) — best-effort, some no erro.
@@ -65,8 +66,8 @@ export default async function ProfilePage() {
       getStudioUnlocksReadonly().catch(() => null),
       checkStudioAccessReadonly().catch(() => null),
     ])
-  const profiles = profilesRes.status === 200 ? (profilesRes.body?.profiles ?? []) : []
-  const profile = profiles.find((p) => p.id === session.id) ?? null
+  const mine = profileRes.status === 200 ? profileRes.body.profile : null
+  const profile = mine?.id === session.id ? mine : null
   // Sessão da conta (sem perfil) ou perfil sumido → volta à grade de seleção.
   if (!profile) redirect('/perfis')
   const gamification = gam.status === 200 ? (gam.body ?? null) : null

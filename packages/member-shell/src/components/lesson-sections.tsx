@@ -40,6 +40,7 @@ import {
   SPLIT_HANDLE_WIDTH_PX,
   type SplitBlock,
 } from '../lib/lesson-split'
+import { sessionFetch as fetch } from '../lib/session-fetch'
 import type { LessonBlockView, LessonDetailView, MaterialsBlock } from '../lib/types'
 import { isPlayableVideo, type LocalWatched, videoGateFor } from '../lib/video-gate'
 import { MaterialsBookPreview } from './ebook/materials-book-preview'

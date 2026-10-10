@@ -1,3 +1,4 @@
+import { sameKidsSession } from '@sistemazero/core/security'
 import { and, eq, exists, gt, inArray, isNotNull, isNull, lt, notExists } from 'drizzle-orm'
 import type { CreateAuditLogInput } from '../../../domain/ports/audit-log-repository.port'
 import type {
@@ -30,6 +31,7 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
         .values({
           id: input.familyId,
           userId: input.userId,
+          kidsContext: input.kidsContext ?? null,
           impersonatorUserId: input.impersonatorUserId ?? null,
           impersonationWritable: input.impersonationWritable ?? false,
           expiresAt: input.expiresAt,
@@ -38,7 +40,7 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
 
       // Sessão normal mantém o TTL deslizante histórico. Impersonação preserva
       // o deadline absoluto da família, mesmo após rotações sucessivas.
-      if (!input.impersonatorUserId) {
+      if (!input.impersonatorUserId && !input.kidsContext) {
         await tx
           .update(refreshTokenFamilies)
           .set({ expiresAt: input.expiresAt, updatedAt: new Date() })
@@ -51,7 +53,11 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
       }
 
       const [activeFamily] = await tx
-        .select({ id: refreshTokenFamilies.id })
+        .select({
+          id: refreshTokenFamilies.id,
+          userId: refreshTokenFamilies.userId,
+          context: refreshTokenFamilies.kidsContext,
+        })
         .from(refreshTokenFamilies)
         .where(
           and(
@@ -62,6 +68,11 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
         )
         .limit(1)
       if (!activeFamily) return false
+      if (
+        activeFamily.userId !== input.userId ||
+        !sameKidsSession(activeFamily.context, input.kidsContext)
+      )
+        return false
 
       await tx.insert(refreshTokens).values({
         id: input.id,
@@ -257,6 +268,7 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
 
 function toRecord(row: RefreshRow, family: RefreshFamilyRow): RefreshTokenRecord {
   return {
+    kidsContext: family.kidsContext,
     id: row.id,
     userId: row.userId,
     familyId: row.familyId,

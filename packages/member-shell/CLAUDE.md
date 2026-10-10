@@ -1,5 +1,38 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Acesso infantil — correções do review (10/10/2026)
+
+- A conferência da sessão Kids (`validateKidsAccess`) vai ao Gateway ASSINADA como `member-shell`
+  (sem o `x-forwarded-for` da criança); sem `MEMBER_SHELL_HMAC_SECRET` segue anônima.
+- `gatewayFetch*` no Kids usa só `verifyAccessTokenLocally` (assinatura/exp + prova `x-sz-session`): o
+  Gateway introspecta toda chamada. Mídia, upload, downloads e HMAC seguem com `verifyAccessToken`
+  completo.
+- `shell.auth.getMyProfileReadonly()` = o próprio perfil pelo `/auth/me` da sessão de perfil (a lista
+  `/auth/profiles` é da área dos pais e o Gateway a recusa ao aluno).
+- Marca d'água do ALUNO estampa `Perfil <8 do id>` (sem e-mail do responsável; `watermarkIdentity`),
+  com cache separado (`<id>-perfil`).
+- `studyLeave` com `forgetProfileId` só para o perfil da sessão atual (`PROFILE_MISMATCH`, 403).
+  `studyForget` exige sessão de RESPONSÁVEL (`PARENT_SESSION_REQUIRED`), chama o Auth com o Bearer,
+  limpa o cookie do aparelho e NÃO encerra a sessão adulta.
+- `safeStudyDestination` resolve com `new URL` antes de conferir (recusa `..`, codificação e outra
+  origem). `kidsMayUseBff` usa o caminho canônico.
+- Proxy: raiz sem sessão → `/login` (ou `/login/aluno` se o navegador tem acesso vivo,
+  `hasLiveStudyDevice`); sessão sem contexto Kids → `/login` com `next`; área dos pais preserva o `next`
+  em `/login/responsavel`. `POST /api/client-error` vale para os dois públicos sem a prova da sessão
+  (mesma origem continua obrigatória).
+- Miniaturas: o corpo HMAC leva `rateLimitKey` (hash do cookie do aparelho com domínio próprio).
+
+
+## Acesso infantil por aparelho (10/10/2026)
+
+A implementação de entrada Kids passa a usar sessões discriminadas `kids.kind`: responsável em `/pais`, criança em `/login/aluno` e `/perfis`. `/login` escolhe o público. O login adulto exige senha ou OTP próprio e não autoriza perfis implicitamente. Cada autorização pertence a um perfil e navegador; o cookie HttpOnly do aparelho é separado da sessão ativa. Os endpoints antigos de seleção/saída de perfil do Kids retornam 410 para a família. A seleção aceita exclusivamente sessões de suporte autenticadas (`act`), sem criar autorização de aparelho; `/perfis` mostra um seletor separado nesse contexto. As descrições antigas do portão de senha e da grade mista de perfis neste documento são históricas.
+
+Especificação e evidências: `docs/plans/2026-10-10-acesso-infantil-design.md`, `docs/superpowers/plans/2026-10-10-acesso-infantil.md` e `docs/qa/2026-10-10-acesso-infantil.md`, na raiz do monorepo.
+
+No navegador, chamadas Kids a `/api/` usam `sessionFetch`, que transporta a identidade do documento em `x-sz-session`. O backend compara essa prova à sessão autenticada antes das mutações; mudar um cookie em outra aba não pode salvar criações sob outro perfil. Não substituir por `fetch` nativo nas operações autenticadas. `GET /api/study/session` é a exceção intencional para detectar mudanças.
+
+O tutorial dos pais usa v3, o tutorial infantil conserva v2. O código da criança não é o OTP enviado ao e-mail do responsável. Ajuda de entrada fica disponível sem login em `/ajuda/entrar`.
+
 > **Contrato vigente das aulas (20/09/2026):** `scene-activity.tsx` é o único player de cena:
 > a criança experimenta, faz o palpite e pode responder à pergunta final. Não existem mais
 > `scene-sandbox.tsx`, `scene-demo-controls.tsx` ou reprodução de roteiro. A moldura usa

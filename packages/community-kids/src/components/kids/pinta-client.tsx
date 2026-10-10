@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 // O CSS do Pinta (tokens + @theme que GERA as utilitárias pin-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa: um JS-import aqui só traria os tokens, sem gerar as utilitárias.

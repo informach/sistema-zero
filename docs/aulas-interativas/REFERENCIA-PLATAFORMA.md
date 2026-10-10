@@ -9,6 +9,49 @@
 >
 > A fonte de cada linha está citada. Quando a plataforma mudar, recomece daqui, não de memória.
 
+## A entrada: criança e responsável (10/10/2026)
+
+Fontes: `packages/community-kids/src/app/(auth)/login/page.tsx` (escolha),
+`components/kids/student-entry.tsx` (criança), `app/(auth)/login/login-form.tsx` (responsável),
+`app/pais/parents-client.tsx` (Área dos pais), `components/kids/study-device-manager.tsx`
+(aparelhos), `components/kids/user-menu.tsx` (menu do avatar), `lib/study-access-client.ts`
+(avisos) e `packages/member-shell/src/lib/study-access.ts` (prazos). Ajuda pública:
+`app/(auth)/ajuda/entrar/page.tsx`, em **/ajuda/entrar**, que funciona antes de entrar.
+
+A criança entra pelo próprio perfil num navegador que o responsável autorizou. Ela não usa o
+e-mail nem a senha dos pais. Cada autorização vale para **um perfil num navegador**: irmãos no
+mesmo computador têm uma autorização cada, e escolher um irmão nunca abre o perfil dele sem a
+autorização dele. Os perfis, as criações e o progresso de antes continuam guardados.
+
+⚠️ **"Aluno" só existe dentro do rótulo exato** (**Eu sou aluno** e **Ir para a área do aluno**).
+Na fala da fase e no Como Fazer, quem entra é "você" ou "a criança", como em todo o vocabulário da
+aventura. Nunca peça a senha do responsável na fala.
+
+Rótulos marcados com † foram decididos em 10/10/2026 e estão sendo aplicados nas telas por outra
+sessão; confira o código antes de gravar uma fala com eles.
+
+| Onde | Rótulos exatos |
+| --- | --- |
+| Escolha de entrada (`/login`; a raiz sem sessão também mostra esta escolha †) | Título **Quem vai entrar?**; cartões **Eu sou aluno** (subtítulo "Entre para continuar suas aventuras." †) e **Eu sou responsável**; link **Preciso de ajuda para entrar** |
+| Entrada da criança, perfis (`/login/aluno`) | Título **Quem vai criar hoje?**; no cartão, **Entrar** ou **Pedir código**, o selo **Último perfil usado** e os avisos **O prazo deste acesso terminou.** e **Acesso encerrado neste aparelho.**; botão **Tenho um código**; links **Voltar** e **Preciso de ajuda** |
+| Entrada da criança, código | Títulos **Vamos começar?** ou **Vamos entrar, [nome]?**; campo **Código de acesso** † (era "Código do responsável"); botão **Entrar para criar**; **Voltar aos perfis**. A criança não tem mais "Remover estes perfis do aparelho" †: só a Área dos pais esquece o aparelho |
+| Avisos da entrada | **Foram muitas tentativas. Aguarde 10 minutos e tente novamente.**; **Esse código não liberou o acesso. Confira as letras ou peça um novo código ao responsável.**; **Não conseguimos preparar este navegador. Permita os cookies e tente novamente.**; **Este navegador já está sendo usado por outra família. Use outro navegador.** † |
+| Entrada do responsável (`/login/responsavel`) | Título **Área dos pais**; **Enviar código**, campo **Código enviado ao seu e-mail** † (os 6 dígitos do e-mail; não é o código da criança), **Entrar**, **Reenviar código**; **Entrar com senha** ou **Entrar com código por e-mail**; **Esqueci minha senha**; **Voltar à escolha de entrada** |
+| Área dos pais (`/pais`) | **Ir para a área do aluno**, **Compras**, **Trocar senha**, **Como preparar o acesso**; **Seus filhos**, **Adicionar criança**; no cartão da criança, **Acesso nos aparelhos** e **Editar perfil**; **Voltar aos filhos**. `/perfis` com a sessão do responsável leva a `/pais` † |
+| Acesso nos aparelhos | **Autorizar aparelho**; **Neste aparelho** ou **Em outro aparelho**; **Nome do aparelho**; **Por quanto tempo?** com **Somente hoje**, **7 dias**, **30 dias** e **90 dias**; **Autorizar este aparelho** ou **Gerar código** (depois, **Gerar outro código**); **Copiar**; **Conferir se a criança já entrou**; situação **Liberado**, **Venceu** ou **Encerrado**; **Renovar prazo** (**Confirmar novo prazo**), **Mudar nome** e **Encerrar acesso** |
+| Menu do avatar da criança | **Trocar de perfil** (só crianças), **Meu perfil**, **Área dos pais** (encerra a sessão da criança e abre a entrada do responsável), **Sair**, que confirma em **Sair deste aparelho** |
+
+Três armadilhas de fala:
+
+1. **O código vale 10 minutos; o acesso vale o prazo escolhido.** O código serve só para a
+   primeira entrada num navegador e libera um navegador só. Depois, a criança volta pelo perfil.
+2. **Fechar a página não tira o acesso; Sair → Sair deste aparelho tira.** Depois de sair, o
+   perfil precisa de outro código naquele navegador.
+3. **Outro navegador, janela anônima ou dados do navegador apagados pedem código novo.** Na fala
+   para a criança, diga "limpar os dados do navegador", não "cookies". A legenda do formulário
+   dos pais diz "Onde [nome] vai estudar?": não a cite em texto para a criança ("estudar" é
+   palavra da escola).
+
 ## 1. O menu da esquerda da Comunidade Kids
 
 Fonte: `packages/community-kids/src/components/kids/nav.ts`

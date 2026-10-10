@@ -1,120 +1,41 @@
-import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
-import { redactProfilesForProfileSession } from '@sistemazero/member-shell/lib/profile-redaction'
 import { redirect } from 'next/navigation'
-import type { ReactNode } from 'react'
-import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
+import { KidsScreen } from '@/components/kids/kids-screen'
+import { ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
+import { StudentEntry } from '@/components/kids/student-entry'
+import { SupportProfileSelector } from '@/components/kids/support-profile-selector'
 import { actorLabel } from '@/lib/act'
-import { resolveProfileAllowance } from '@/lib/profile-allowance'
-import { getProfileAllowanceReadonly, listAvatarsByProfileIdsReadonly } from '@/server/members'
-import { isParentVerifiedFor } from '@/server/parent-gate'
-import { listReadonly } from '@/server/profiles'
-import { getSession } from '@/server/session'
-import { PerfisClient } from './perfis-client'
+import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
-
-type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>
-
-function ImpersonationFrame({ session, children }: { session: Session; children: ReactNode }) {
-  const studentName =
-    session.activeProfile?.name ??
-    (`${session.firstName} ${session.lastName}`.trim() || session.email)
-  return (
-    <>
-      {session.act ? (
-        <ImpersonationBanner
-          studentName={studentName}
-          actorName={actorLabel(session.act)}
-          mode={session.act.mode}
-        />
-      ) : null}
-      {children}
-    </>
-  )
-}
-
-/**
- * Grade de perfis (estilo Netflix): a CONTA escolhe qual perfil de criança usar.
- * Fica FORA do grupo `(app)` (sem a sidebar/chrome kids) — é o "quem vai aprender
- * hoje?". O proxy garante a sessão (conta OU perfil) e isenta esta rota do gate de
- * perfil. Selecionar um perfil emite a sessão de perfil e leva à home.
- */
-export default async function PerfisPage({
+export default async function ProfilesPage({
   searchParams,
 }: {
   searchParams: Promise<{ manage?: string }>
 }) {
-  const session = await getSession()
-  if (!session) redirect('/login')
-  // Perfis + teto da conta (p/ a área dos pais travar o "Adicionar" e mostrar "X de Y").
-  const [res, allowanceRes] = await Promise.all([listReadonly(), getProfileAllowanceReadonly()])
-  // Falha da API não é uma conta vazia. Manter os estados separados evita abrir o
-  // onboarding e sugerir a criação de um perfil que pode já existir.
-  if (res.status !== 200) {
+  if ((await searchParams).manage === '1') redirect('/pais')
+  const session = await shell.session.getSession()
+  // A grade é só das crianças. O responsável (inclusive o que chega por um link antigo de
+  // e-mail para `/perfis`) vai para a área dele; a troca para a criança é o "Ir para a área
+  // do aluno", que encerra a sessão adulta antes.
+  if (session?.kids?.kind === 'parent') redirect('/pais')
+  if (session?.act) {
+    const profiles = await shell.profiles.listReadonly()
+    if (profiles.status !== 200) return <ProfilesUnavailable />
     return (
-      <ImpersonationFrame session={session}>
-        <ProfilesUnavailable />
-      </ImpersonationFrame>
+      <KidsScreen innerClassName="max-w-xl">
+        <SupportProfileSelector
+          profiles={(profiles.body?.profiles ?? []).map(({ id, name }) => ({ id, name }))}
+          actorName={actorLabel(session.act)}
+          familyName={session.firstName}
+          mode={session.act.mode}
+        />
+      </KidsScreen>
     )
   }
-  const isProfileSession = Boolean(session.activeProfile)
-  const profiles = redactProfilesForProfileSession(
-    res.body?.profiles ?? [],
-    isProfileSession ? session.id : null,
-  )
-  const profileAllowance = resolveProfileAllowance({
-    status: allowanceRes.status,
-    maxProfiles: allowanceRes.body?.maxProfiles,
-  })
-  // Sem perfis, esses estados terminam aqui. Uma falha de leitura nunca vira uma
-  // conta vazia com botão "+"; zero é ausência real de matrícula, com CTA próprio.
-  if (profiles.length === 0 && profileAllowance.kind === 'unavailable') {
-    return (
-      <ImpersonationFrame session={session}>
-        <ProfilesUnavailable reason="allowance" />
-      </ImpersonationFrame>
-    )
-  }
-  if (profiles.length === 0 && profileAllowance.kind === 'none') {
-    return (
-      <ImpersonationFrame session={session}>
-        <ProfilesNotIncluded />
-      </ImpersonationFrame>
-    )
-  }
-  // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
-  // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
-  const parentVerified = !isProfileSession && (await isParentVerifiedFor(session.id))
-  // Rostinhos da grade = SNAPSHOT do avatar 3D (24/07 — a ÚNICA fonte da cara da
-  // criança; a foto enviada pelos pais MORREU). Lote no members, best-effort:
-  // members fora → tiles caem na inicial do nome.
-  const avatarsRes =
-    profiles.length > 0
-      ? await listAvatarsByProfileIdsReadonly(profiles.map((p) => p.id)).catch(() => null)
-      : null
-  const avatarPhotoByProfile = Object.fromEntries(
-    Object.entries(avatarsRes?.status === 200 ? (avatarsRes.body?.avatars ?? {}) : {}).map(
-      ([id, view]) => [id, view.photoUrl ?? null],
-    ),
-  )
-  // Logo após sair de um perfil pela "Área dos pais", o reload volta com `?manage=1`
-  // e o portão aberto → já entra direto na GESTÃO (sem exigir um 2º clique no botão).
-  const { manage } = await searchParams
-  const startManaging = parentVerified && manage === '1'
+  const device = await shell.study.recognize()
   return (
-    <ImpersonationFrame session={session}>
-      <PerfisClient
-        initialProfiles={profiles}
-        avatarPhotoByProfile={avatarPhotoByProfile}
-        isProfileSession={isProfileSession}
-        parentVerified={parentVerified}
-        startManaging={startManaging}
-        profileAllowance={profileAllowance}
-        // Tutorial guiado dos PAIS: keyado na CONTA (em sessão de conta, `session.id`
-        // É a conta). Em sessão de perfil (criança trocando de irmão) fica nulo — o
-        // guia nunca aparece para a criança.
-        guideKey={isProfileSession ? null : session.id}
-      />
-    </ImpersonationFrame>
+    <KidsScreen innerClassName="max-w-xl">
+      <StudentEntry profiles={device.body.profiles} unavailable={device.status !== 200} />
+    </KidsScreen>
   )
 }

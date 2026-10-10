@@ -21,8 +21,11 @@ export class LogoutService {
 
     // "Todas as sessões" = TODAS as famílias do usuário (cada login/dispositivo
     // inicia uma família própria — revogar só a família do token apresentado
-    // deixaria os outros dispositivos logados).
-    if (command.allSessions) await this.refreshTokens.revokeAllForUser(record.userId)
+    // deixaria os outros dispositivos logados). ⚠️ Com o refresh de um ALUNO do Kids o
+    // pedido vale só para a sessão dele: o `userId` da família é a CONTA, e o aluno
+    // derrubaria o responsável e os irmãos em todos os aparelhos.
+    if (command.allSessions && record.kidsContext?.kind !== 'student')
+      await this.refreshTokens.revokeAllForUser(record.userId)
     else await this.refreshTokens.revokeFamily(record.familyId)
   }
 }

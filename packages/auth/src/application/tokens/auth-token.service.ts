@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto'
-import { sha256Hex } from '@sistemazero/core/security'
+import { type KidsSessionClaim, sha256Hex } from '@sistemazero/core/security'
 import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
 import type { ActClaim, ProfileClaim, TokenIssuer } from '../../domain/ports/token-issuer.port'
 import type { UserAggregate } from '../../domain/user/user.aggregate'
@@ -29,6 +29,9 @@ export interface AuthTokens {
 }
 
 export interface IssueContext {
+  kids?: KidsSessionClaim
+  /** Deadline absoluto das sessões Kids; renovar o refresh não renova a autorização. */
+  familyExpiresAt?: Date
   userAgent?: string | null
   ip?: string | null
   /** Estado coeso: não é possível informar ator sem claim (ou vice-versa). */
@@ -65,7 +68,7 @@ export class AuthTokenService {
 
   /** Login/registro: emite tokens iniciando uma NOVA família de refresh. */
   issueForUser(user: UserAggregate, ctx: IssueContext = {}): Promise<AuthTokens> {
-    return this.issue(user, randomUUID(), ctx)
+    return this.issue(user, ctx.kids?.sessionId ?? randomUUID(), ctx)
   }
 
   /** Rotação (/refresh): emite novos tokens REUSANDO a família do token anterior. */
@@ -83,6 +86,7 @@ export class AuthTokenService {
         }
       : undefined
     const issued = await this.tokenIssuer.issueAccessToken(user, {
+      kids: ctx.kids,
       act,
       profile: profile
         ? {
@@ -107,8 +111,9 @@ export class AuthTokenService {
   ): Promise<AuthTokens> {
     const access = await this.issueAccessForUser(user, ctx)
     const now = Date.now()
-    const familyExpiresAt = ctx.impersonation?.familyExpiresAt
-      ? ctx.impersonation.familyExpiresAt
+    const absoluteDeadline = ctx.familyExpiresAt ?? ctx.impersonation?.familyExpiresAt
+    const familyExpiresAt = absoluteDeadline
+      ? absoluteDeadline
       : new Date(
           now +
             (ctx.impersonation
@@ -119,6 +124,7 @@ export class AuthTokenService {
     const refreshExpiresIn = Math.max(1, Math.ceil((familyExpiresAt.getTime() - now) / 1000))
     const refreshToken = randomBytes(32).toString('base64url')
     const created = await this.refreshTokens.create({
+      kidsContext: ctx.kids ?? null,
       id: randomUUID(),
       userId: user.id,
       familyId,

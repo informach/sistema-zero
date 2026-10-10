@@ -293,11 +293,13 @@ describe('SendRenewalRemindersService', () => {
       'challenge-expiry-3d',
       'challenge-expired',
     ])
+    // Avisos de 7 e 3 dias vão ao responsável: Área dos pais, não a fase da criança.
     expect(msg.sent[0]?.variables).toEqual({
       nome: 'Ana',
       data: '30/05/2027',
-      link: 'https://kids.sistemazero.com.br/cursos/desafio-primeiro-jogo',
+      link: 'https://kids.sistemazero.com.br/pais',
     })
+    expect(msg.sent[1]?.variables?.link).toBe('https://kids.sistemazero.com.br/pais')
     expect(msg.sent[2]?.variables?.link).toBe(
       'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta/continuar',
     )

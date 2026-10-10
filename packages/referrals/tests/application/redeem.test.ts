@@ -74,14 +74,14 @@ describe('RedeemScholarshipService', () => {
     expect(send.idempotencyKey).toBe(`scholarship-welcome:${r.id}`)
   })
 
-  test('conta PRÉ-EXISTENTE: sem token, template new-access', async () => {
+  test('conta PRÉ-EXISTENTE: sem token, aviso da política do resgate', async () => {
     gateway.ensureBuyerResult = { status: 200, body: { userId: 'u-1', created: false } }
     const result = await service.execute(input)
     expect(result.kind).toBe('completed')
     expect(gateway.callsOf('createPasswordToken')).toHaveLength(0)
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-existing-mural-trial')
-    expect(email.variables.link).toContain('/cursos')
+    expect(email.variables.link).toContain('/login/responsavel')
   })
 
   test('resgate da política visitante conserva sua entrega e seu e-mail', async () => {
@@ -121,7 +121,7 @@ describe('RedeemScholarshipService', () => {
     expect(email.templateKey).toBe('referrals-scholarship-welcome')
   })
 
-  test('conta histórica pré-existente conserva o aviso genérico de acesso', async () => {
+  test('conta histórica pré-existente recebe orientação de acesso infantil', async () => {
     const { redemption } = await repo.insertRedemption({
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
@@ -134,8 +134,62 @@ describe('RedeemScholarshipService', () => {
 
     expect((await service.execute(input)).kind).toBe('completed')
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
-    expect(email.templateKey).toBe('new-access')
+    expect(email.templateKey).toBe('kids-new-access')
+    expect(email.variables.link).toBe('https://kids.sistemazero.com.br/login/responsavel')
     expect(gateway.callsOf('grantMuralTrial')).toHaveLength(0)
+  })
+
+  describe('Messaging ainda sem kids-new-access (publicação fora de ordem)', () => {
+    async function historicExistingAccount() {
+      const { redemption } = await repo.insertRedemption({
+        codeId: repo.codes[0]!.id,
+        email: 'paula@example.com',
+        name: 'Paula Prado',
+        phone: null,
+      })
+      redemption.accessDurationDays = null
+      redemption.muralVisitorPolicy = null
+      gateway.ensureBuyerResult = { status: 200, body: { userId: 'u-1', created: false } }
+    }
+
+    /** O Messaging responde `code` para as chaves `kids-*` e aceita as demais. */
+    function messagingWithout(code: string) {
+      const record = gateway.sendEmail.bind(gateway)
+      gateway.sendEmail = async (email, idempotencyKey) => {
+        const accepted = await record(email, idempotencyKey)
+        if (!email.templateKey.startsWith('kids-')) return accepted
+        return { status: 404, body: { error: { code, message: 'não encontrado' } } }
+      }
+    }
+
+    test('cai em new-access com o mesmo link e a mesma Idempotency-Key', async () => {
+      await historicExistingAccount()
+      messagingWithout('TEMPLATE_NOT_FOUND')
+
+      const result = await service.execute(input)
+      expect(result.kind).toBe('completed')
+      if (result.kind === 'completed') expect(result.emailStatus).toBe('accepted')
+      const sends = gateway.callsOf('sendEmail')
+      expect(sends.map((call) => (call.input as SendEmailInput).templateKey)).toEqual([
+        'kids-new-access',
+        'new-access',
+      ])
+      expect((sends[1]!.input as SendEmailInput).variables).toEqual(
+        (sends[0]!.input as SendEmailInput).variables,
+      )
+      expect(sends[1]!.idempotencyKey).toBe(sends[0]!.idempotencyKey)
+      expect(repo.redemptions[0]!.welcomeAcceptedAt).not.toBeNull()
+    })
+
+    test('404 que não é TEMPLATE_NOT_FOUND não troca a chave e libera a retomada', async () => {
+      await historicExistingAccount()
+      messagingWithout('NOT_FOUND')
+
+      const result = await service.execute(input)
+      if (result.kind === 'completed') expect(result.emailStatus).toBe('failed')
+      expect(gateway.callsOf('sendEmail')).toHaveLength(1)
+      expect(repo.redemptions[0]!.welcomeSentAt).toBeNull()
+    })
   })
 
   test('resgate anterior à visita não recebe Mural mesmo com curso de sete dias', async () => {
@@ -304,6 +358,31 @@ describe('RedeemScholarshipService', () => {
     const result = await service.execute(input)
     expect(result.kind).toBe('completed')
     expect(repo.redemptions[0]!.welcomeSentAt).not.toBeNull()
+  })
+
+  test('Messaging RECUSA o envio (4xx) → claim liberado e a re-submissão manda o link', async () => {
+    // Nada foi enfileirado: o token emitido nunca chegou à família.
+    gateway.sendEmailResult = {
+      status: 404,
+      body: { error: { code: 'TEMPLATE_NOT_FOUND', message: 'não encontrado' } },
+    }
+    const first = await service.execute(input)
+    expect(first.kind).toBe('completed')
+    if (first.kind === 'completed') expect(first.emailStatus).toBe('failed')
+    expect(repo.redemptions[0]!.welcomeSentAt).toBeNull()
+
+    gateway.sendEmailResult = { status: 202, body: {} }
+    gateway.passwordTokenResult = {
+      status: 201,
+      body: { token: 'tok-novo', expiresAt: new Date(Date.now() + 86_400_000).toISOString() },
+    }
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+    const sends = gateway.callsOf('sendEmail')
+    expect(sends).toHaveLength(2)
+    expect((sends[1]!.input as SendEmailInput).variables.link).toContain('token=tok-novo')
+    expect(sends[1]!.idempotencyKey).toBe(sends[0]!.idempotencyKey)
+    expect(repo.redemptions[0]!.welcomeSentAt).not.toBeNull()
+    expect(repo.redemptions[0]!.welcomeAcceptedAt).not.toBeNull()
   })
 
   test('completed SEM welcome → re-submissão RETOMA só o e-mail (409 + envio)', async () => {

@@ -11,6 +11,7 @@ import {
   HUB_ATTACHMENT_LIMITS,
   HUB_UPLOAD_ACCEPT,
 } from '../lib/hub-attachments'
+import { sessionFetch as fetch } from '../lib/session-fetch'
 import type { HubAttachmentKind } from '../lib/types'
 
 export interface UploadedAttachment {

@@ -120,6 +120,11 @@ const NAO_E_FONTE = /\.test\.tsx?$|\.d\.ts$|[\\/]__tests__[\\/]/
  * varredura: a criança também as lê. O que é dos pais ali dentro é exceção com motivo.
  */
 const AREA_DOS_PAIS = [
+  'community-kids/src/app/pais/',
+  'community-kids/src/components/kids/study-device-manager.tsx',
+  'community-kids/src/components/kids/study-access-dialogs.tsx',
+  'community-kids/src/components/kids/study-access-result.tsx',
+  'community-kids/src/components/kids/student-area-button.tsx',
   'community-kids/src/app/perfis/ambassador-card.tsx',
   'community-kids/src/app/perfis/parent-dashboard.tsx',
   'community-kids/src/app/perfis/purchases-view.tsx',
@@ -185,6 +190,24 @@ interface Excecao {
  * aparecer UMA vez no arquivo e cobrir alguma palavra; o resto do mesmo texto continua varrido.
  */
 const EXCECOES: Excecao[] = [
+  {
+    arquivo: 'community-kids/src/lib/guide.ts',
+    trechos: [
+      'No aparelho autorizado, a criança entra em "Eu sou aluno" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área do aluno".',
+    ],
+    motivo: 'passo do tutorial exclusivo dos responsáveis, com os nomes dos botões aprovados',
+  },
+  {
+    arquivo: 'community-kids/src/app/(auth)/login/page.tsx',
+    trechos: ['Eu sou aluno'],
+    motivo:
+      'separação de entrada pedida expressamente pelo usuário; a aventura mantém seu vocabulário',
+  },
+  {
+    arquivo: 'community-kids/src/app/(auth)/ajuda/entrar/page.tsx',
+    trechos: ['Eu sou aluno', 'Ir para a área do aluno'],
+    motivo: 'ajuda de acesso cita só os nomes exatos dos botões aprovados pelo usuário',
+  },
   {
     arquivo: 'member-shell/src/components/lesson-video-gate.tsx',
     trechos: ['A atividade abre depois que você assistir ao vídeo uma vez.', 'Atividade liberada.'],

@@ -11,6 +11,23 @@ const { createMemberProxy } = await import('../src/server/proxy')
 
 const realFetch = globalThis.fetch
 
+test('novo acesso conserva o destino infantil e separa o login dos pais', async () => {
+  const proxy = createMemberProxy({
+    kidsAccess: true,
+    cookies: { accessCookie: 'kids_access', refreshCookie: 'kids_refresh' },
+    protectedPrefixes: ['/cursos', '/pais', '/responsavel'],
+    isRootProtected: true,
+  })
+  const student = await proxy(
+    new NextRequest('http://localhost/cursos/aventura/aulas/fase?parte=2'),
+  )
+  const target = new URL(student.headers.get('location') ?? '')
+  expect(target.pathname).toBe('/login/aluno')
+  expect(target.searchParams.get('next')).toBe('/cursos/aventura/aulas/fase?parte=2')
+  const parent = await proxy(new NextRequest('http://localhost/responsavel'))
+  expect(new URL(parent.headers.get('location') ?? '').pathname).toBe('/login/responsavel')
+})
+
 afterAll(() => {
   globalThis.fetch = realFetch
 })
@@ -19,6 +36,70 @@ function jwt(payload: Record<string, unknown>): string {
   const part = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url')
   return `${part({ alg: 'none', typ: 'JWT' })}.${part(payload)}.assinatura`
 }
+
+test('remover o refresh não libera APIs infantis para uma sessão adulta', async () => {
+  const parentSessionId = crypto.randomUUID()
+  const proxy = createMemberProxy({
+    kidsAccess: true,
+    cookies: { accessCookie: 'kids_access', refreshCookie: 'kids_refresh' },
+    protectedPrefixes: [],
+    isRootProtected: true,
+  })
+  const access = jwt({
+    sub: crypto.randomUUID(),
+    exp: Math.floor(Date.now() / 1000) + 900,
+    kids: {
+      kind: 'parent',
+      sessionId: parentSessionId,
+      authenticatedAt: Math.floor(Date.now() / 1000),
+    },
+  })
+  const response = await proxy(
+    new NextRequest('http://localhost/api/zappy/chat', {
+      method: 'POST',
+      headers: {
+        cookie: `kids_access=${access}`,
+        origin: 'http://localhost',
+        host: 'localhost',
+        'x-sz-session': parentSessionId,
+      },
+    }),
+  )
+  expect(response.status).toBe(403)
+})
+
+test('aba antiga não usa operações S2S com a identidade de outro perfil', async () => {
+  const sessionId = crypto.randomUUID()
+  const access = jwt({
+    sub: crypto.randomUUID(),
+    exp: Math.floor(Date.now() / 1000) + 900,
+    kids: {
+      kind: 'student',
+      sessionId,
+      deviceId: crypto.randomUUID(),
+      grantId: crypto.randomUUID(),
+    },
+  })
+  const proxy = createMemberProxy({
+    kidsAccess: true,
+    cookies: { accessCookie: 'kids_access', refreshCookie: 'kids_refresh' },
+    protectedPrefixes: [],
+    isRootProtected: true,
+  })
+  const request = (proof?: string) =>
+    new NextRequest('http://localhost/api/studio/zappy/ask', {
+      method: 'POST',
+      headers: {
+        cookie: `kids_access=${access}`,
+        origin: 'http://localhost',
+        host: 'localhost',
+        ...(proof ? { 'x-sz-session': proof } : {}),
+      },
+    })
+  expect((await proxy(request(crypto.randomUUID()))).status).toBe(409)
+  expect((await proxy(request())).status).toBe(409)
+  expect((await proxy(request(sessionId))).status).toBe(200)
+})
 
 describe('proxy: renovação de sessão e hidratação da paleta', () => {
   const userId = '11111111-1111-4111-8111-111111111111'

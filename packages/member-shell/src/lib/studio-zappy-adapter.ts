@@ -3,6 +3,7 @@ import type {
   StudioTutorAskResult,
   StudioTutorHistoryMessage,
 } from '@sistemazero/studio'
+import { sessionFetch as fetch } from './session-fetch'
 
 interface ErrorBody {
   error?: { code?: string; message?: string }

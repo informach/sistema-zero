@@ -178,9 +178,141 @@ const small = (html: string) =>
   `<p class="mut" style="margin:0 0 8px;font-family:${FONT};font-size:13px;line-height:20px;color:${MUTED};">${html}</p>`
 const divider = `<hr class="dvd" style="border:0;border-top:1px solid ${BORDER};margin:28px 0 20px;">`
 
+// ── Acesso infantil por aparelho (10/10/2026) ─────────────────────────────────
+// A criança entra pelo próprio perfil num computador que o responsável autorizou
+// na Área dos pais. Os rótulos em negrito são os da tela (community-kids:
+// `app/(auth)/login/page.tsx`, `app/pais/parents-client.tsx` e
+// `components/kids/study-device-manager.tsx`). A conta pode nascer sem perfil,
+// por isso "Adicionar criança" vem antes de "Acesso nos aparelhos".
+
+/** Preparação do computador, em texto puro (WhatsApp) e em HTML (e-mail). */
+const DEVICE_SETUP = {
+  text: 'Depois de entrar como responsável, clique em Adicionar criança (ou escolha o perfil, se ele já existir) e abra Acesso nos aparelhos. Clique em Autorizar aparelho e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer Quem vai entrar?, ele clica em Eu sou aluno e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
+  html: 'Depois de entrar como responsável, clique em <strong>Adicionar criança</strong> (ou escolha o perfil, se ele já existir) e abra <strong>Acesso nos aparelhos</strong>. Clique em <strong>Autorizar aparelho</strong> e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, ele clica em <strong>Eu sou aluno</strong> e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
+}
+
+/** Conta que já existia: a autorização feita antes continua valendo. */
+const DEVICE_ALREADY_READY =
+  'Se você já autorizou o computador do seu filho, não precisa refazer: ele continua entrando pelo próprio perfil até o prazo que você escolheu terminar.'
+
+/** Esqueceu a senha: na entrada dos responsáveis, o código chega ao e-mail. */
+const PARENT_SIGN_IN_HELP =
+  'Não lembra a senha? Na entrada dos responsáveis, receba um código no seu e-mail ou use “Esqueci minha senha”.'
+
 // ── Templates ─────────────────────────────────────────────────────────────────
 
 const seeds = [
+  ...(['kids-welcome', 'kids-new-access'] as const).flatMap((key) => {
+    const first = key === 'kids-welcome'
+    const greeting = first
+      ? 'Olá, {{nome}}! Sua compra foi confirmada.'
+      : 'Olá, {{nome}}! Há um novo acesso liberado para sua família.'
+    const instruction = (where: 'botão' | 'link') =>
+      first
+        ? `Crie sua senha pelo ${where} abaixo e entre na Área dos pais.`
+        : 'Entre na Área dos pais com o código enviado ao seu e-mail ou com sua senha.'
+    return [
+      {
+        key,
+        channel: 'email' as const,
+        name: first ? 'Primeiro acesso Kids (e-mail)' : 'Novo acesso Kids (e-mail)',
+        subject: first
+          ? 'Vamos preparar o acesso do seu filho, {{nome}}?'
+          : 'Novo acesso liberado para sua família, {{nome}}',
+        variables: ['nome', 'link'],
+        body: emailLayout({
+          preheader: first
+            ? 'Crie sua senha e prepare o computador para seu filho entrar pelo próprio perfil.'
+            : 'O novo acesso já está na sua conta. Confira o computador do seu filho na Área dos pais.',
+          title: first
+            ? 'Compra confirmada! Falta preparar o acesso'
+            : 'Há um novo acesso na sua conta',
+          content: [
+            p(greeting),
+            p(instruction('botão')),
+            p(DEVICE_SETUP.html),
+            ...(first ? [] : [p(DEVICE_ALREADY_READY)]),
+            ctaButton(first ? 'Criar senha da área dos pais' : 'Abrir a área dos pais', '{{link}}'),
+            divider,
+            small(
+              'Cada criança e cada computador têm uma autorização própria. Você escolhe o prazo e pode encerrar o acesso quando precisar.',
+            ),
+            small(
+              first
+                ? 'O link para criar a senha pode ser usado uma vez. Se ele vencer, use “Esqueci minha senha” na entrada dos responsáveis.'
+                : PARENT_SIGN_IN_HELP,
+            ),
+            fallbackLink('{{link}}'),
+          ].join('\n'),
+          footerNote: first
+            ? 'Você recebeu este e-mail porque uma compra foi realizada com este endereço.'
+            : 'Você recebeu este e-mail porque um acesso foi liberado para sua família.',
+        }),
+      },
+      {
+        key,
+        channel: 'whatsapp' as const,
+        name: first ? 'Primeiro acesso Kids (WhatsApp)' : 'Novo acesso Kids (WhatsApp)',
+        variables: ['nome', 'link'],
+        body: [
+          greeting,
+          instruction('link'),
+          '{{link}}',
+          DEVICE_SETUP.text,
+          ...(first ? [] : [DEVICE_ALREADY_READY]),
+        ].join('\n\n'),
+      },
+    ]
+  }),
+  // Aviso da TRANSIÇÃO para o acesso por aparelho (10/10/2026). Na publicação,
+  // toda sessão Kids antiga cai e a família prepara o computador uma vez. Só o
+  // template: o envio (lista de destinatários e horário) depende de decisão da
+  // dona e não tem script. `link` = `<kids>/login/responsavel`.
+  {
+    key: 'kids-access-transition',
+    channel: 'email' as const,
+    name: 'Mudança na entrada das crianças (e-mail)',
+    subject: 'A entrada das crianças mudou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader:
+        'Prepare o computador uma vez na Área dos pais. Perfis, criações e progresso continuam guardados.',
+      title: 'A entrada das crianças mudou',
+      content: [
+        p(
+          'Olá, {{nome}}! Mudamos a forma de entrar na plataforma. Agora seu filho entra pelo próprio perfil, sem usar a sua senha nem o código que chega ao seu e-mail.',
+        ),
+        p(
+          'Para isso, você prepara o computador dele uma vez. Entre como responsável e, na <strong>Área dos pais</strong>, clique em <strong>Acesso nos aparelhos</strong> no cartão da criança. Depois clique em <strong>Autorizar aparelho</strong> e escolha o prazo. Se estiver no celular, escolha <strong>Em outro aparelho</strong> e passe o código para a criança digitar no computador dela.',
+        ),
+        p(
+          'Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, a criança clica em <strong>Eu sou aluno</strong> e escolhe o próprio perfil. Irmãos no mesmo computador recebem cada um a sua autorização, no cartão de cada criança.',
+        ),
+        p('Os perfis, as criações e o progresso continuam guardados. Ninguém precisa recomeçar.'),
+        ctaButton('Abrir a área dos pais', '{{link}}'),
+        divider,
+        small(
+          'Por segurança, quem já estava com a plataforma aberta vai precisar entrar de novo uma vez.',
+        ),
+        small(PARENT_SIGN_IN_HELP),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque há um perfil de criança na sua conta do Sistema Zero.',
+    }),
+  },
+  {
+    key: 'kids-access-transition',
+    channel: 'whatsapp' as const,
+    name: 'Mudança na entrada das crianças (WhatsApp)',
+    variables: ['nome', 'link'],
+    body: [
+      'Olá, {{nome}}! Mudamos a forma de entrar na plataforma. Agora seu filho entra pelo próprio perfil, sem usar a sua senha nem o código que chega ao seu e-mail.',
+      'Você prepara o computador dele uma vez: entre como responsável pelo link abaixo, clique em Acesso nos aparelhos no cartão da criança e depois em Autorizar aparelho. Se estiver no celular, escolha Em outro aparelho e passe o código para a criança digitar no computador dela.',
+      '{{link}}',
+      'Nesse computador, se aparecer Quem vai entrar?, a criança clica em Eu sou aluno e escolhe o próprio perfil. Os perfis, as criações e o progresso continuam guardados.',
+    ].join('\n\n'),
+  },
   {
     key: 'welcome',
     channel: 'email' as const,
@@ -379,7 +511,7 @@ const seeds = [
           'Este é o resumo da semana ({{semana}}) de <strong>{{criancas}}</strong> no <strong>Sistema Zero</strong>:',
         ),
         `<div class="codebox" style="white-space:pre-wrap;font-family:${FONT};font-size:15px;line-height:24px;color:${TEXT};background:${BOX_BG};border:1px solid ${BORDER};border-radius:12px;padding:16px 20px;margin:20px 0;">{{resumo}}</div>`,
-        ctaButton('Ver na plataforma', '{{link}}'),
+        ctaButton('Abrir a área dos pais', '{{link}}'),
         divider,
         small(
           'Para deixar de receber este resumo semanal, desative-o na <strong>Área dos pais</strong> da plataforma.',
@@ -469,9 +601,9 @@ const seeds = [
       content: [
         p('Olá, {{nome}}! A conta já está pronta, mas a primeira etapa ainda não foi iniciada.'),
         p(
-          'Entre com seu filho, escolha o perfil e abra a introdução para conhecer A Chave do Farol jogando. Depois vêm as três etapas de montagem. Vocês podem pausar e continuar dentro do prazo de acesso; não precisam fazer tudo no mesmo dia.',
+          'Entre na <strong>Área dos pais</strong> e prepare o computador da criança em <strong>Acesso nos aparelhos</strong>. No computador autorizado, ela escolhe o próprio perfil e abre a introdução para conhecer A Chave do Farol jogando. Depois vêm as três etapas de montagem. Vocês podem pausar e continuar dentro do prazo de acesso; não precisam fazer tudo no mesmo dia.',
         ),
-        ctaButton('Abrir o Desafio', '{{link}}'),
+        ctaButton('Abrir a área dos pais', '{{link}}'),
         fallbackLink('{{link}}'),
       ].join('\n'),
       footerNote: 'Você recebeu este e-mail porque tem acesso ativo ao Desafio do Primeiro Jogo.',
@@ -511,9 +643,9 @@ const seeds = [
           'Olá, {{nome}}! O acesso ao Desafio do Primeiro Jogo termina em <strong>{{data}}</strong>.',
         ),
         p(
-          'Falta uma semana. Entre para ver onde a criança parou e escolha a próxima etapa possível, sem precisar recomeçar.',
+          'Falta uma semana. Na <strong>Área dos pais</strong>, veja onde a criança parou. No computador autorizado, ela entra pelo próprio perfil e segue para a próxima etapa possível, sem precisar recomeçar.',
         ),
-        ctaButton('Retomar o Desafio', '{{link}}'),
+        ctaButton('Ver onde a criança parou', '{{link}}'),
         fallbackLink('{{link}}'),
       ].join('\n'),
       footerNote:
@@ -533,9 +665,12 @@ const seeds = [
       content: [
         p('Olá, {{nome}}! O período do Desafio termina em <strong>{{data}}</strong>.'),
         p(
-          'Se o jogo ainda não ficou pronto, tudo bem: retomem agora e avancem até o próximo marco possível. O projeto e o progresso continuam guardados na conta.',
+          'Se o jogo ainda não ficou pronto, tudo bem: retomem agora e avancem até o próximo marco possível. No computador autorizado, a criança entra pelo próprio perfil e continua de onde parou. O projeto e o progresso continuam guardados na conta.',
         ),
-        ctaButton('Continuar agora', '{{link}}'),
+        p(
+          'Se o acesso do computador tiver vencido, renove o prazo em <strong>Acesso nos aparelhos</strong>, na Área dos pais.',
+        ),
+        ctaButton('Abrir a área dos pais', '{{link}}'),
         fallbackLink('{{link}}'),
       ].join('\n'),
       footerNote:
@@ -782,13 +917,10 @@ const seeds = [
         p(
           'O curso indicado por <strong>{{indicador}}</strong> já está liberado na sua conta do <strong>Sistema Zero</strong>.',
         ),
-        p(
-          'Falta só um passo: criar a sua senha de acesso. O perfil da criança vocês criam juntos lá dentro, em um minutinho.',
-        ),
-        ctaButton('Criar minha senha', '{{link}}'),
-        p(
-          'Depois é só entrar, criar o perfil da criança e começar a primeira missão. Divirtam-se! 🚀',
-        ),
+        p('Primeiro, crie a sua senha pelo botão abaixo e entre na Área dos pais.'),
+        p(DEVICE_SETUP.html),
+        ctaButton('Criar senha da área dos pais', '{{link}}'),
+        p('Depois é só seu filho começar a aventura. Divirtam-se! 🚀'),
         divider,
         small(
           'Por segurança, o link acima expira em <strong>14 dias</strong> e só pode ser usado uma vez. Se expirar, use a opção <strong>“Esqueci minha senha”</strong> na página de login para gerar outro.',
@@ -814,6 +946,7 @@ const seeds = [
         p(
           'Você tem 7 dias de acesso ao curso a partir do cadastro pelo link. Criar ou recuperar a senha depois não reinicia esse prazo. Vale começar agora com a criança.',
         ),
+        p(DEVICE_SETUP.html),
         ctaButton('Criar minha senha e começar', '{{link}}'),
         divider,
         small(
@@ -838,9 +971,11 @@ const seeds = [
           '<strong>{{indicador}}</strong> indicou sua família para receber o curso <strong>Cadê Todo Mundo?</strong> sem custo.',
         ),
         p(
-          'O acesso a este curso dura 7 dias a partir do cadastro pelo link. Entre com sua senha de sempre e comece agora. Recuperar a senha não reinicia esse prazo.',
+          'O acesso a este curso dura 7 dias a partir do cadastro pelo link. Entre como responsável e comece agora. Recuperar a senha não reinicia esse prazo.',
         ),
-        ctaButton('Acessar meus cursos', '{{link}}'),
+        p(DEVICE_SETUP.html),
+        p(DEVICE_ALREADY_READY),
+        ctaButton('Abrir a área dos pais', '{{link}}'),
         divider,
         fallbackLink('{{link}}'),
       ].join('\n'),
@@ -866,6 +1001,7 @@ const seeds = [
         p(
           'Vocês também podem <strong>ver e jogar os jogos do Mural dos Criadores</strong> enquanto a conta existir, mesmo depois dos 7 dias. Este presente não libera publicar, comentar, reagir nem fazer cópias dos jogos. Uma assinatura ativa libera a participação completa.',
         ),
+        p(DEVICE_SETUP.html),
         ctaButton('Criar minha senha e começar', '{{link}}'),
         divider,
         small(
@@ -895,6 +1031,8 @@ const seeds = [
         p(
           'O acesso para <strong>ver e jogar os jogos do Mural dos Criadores</strong> continua enquanto sua conta existir. Publicar, comentar, reagir e copiar jogos não fazem parte do presente; uma assinatura ativa libera a participação completa.',
         ),
+        p(DEVICE_SETUP.html),
+        p(DEVICE_ALREADY_READY),
         ctaButton('Acessar meu presente', '{{link}}'),
         divider,
         fallbackLink('{{link}}'),
@@ -918,6 +1056,7 @@ const seeds = [
         p(
           'O curso está disponível até <strong>{{validade}} (horário de Brasília)</strong>: são sete dias contados do cadastro. Separe um computador com internet e um momento para fazer o primeiro acesso com seu filho.',
         ),
+        p(DEVICE_SETUP.html),
         ctaButton('Criar minha senha e começar', '{{link}}'),
         p(
           'Depois dos sete dias, vocês continuam podendo ver e jogar no Mural dos Criadores enquanto a conta existir. Publicar, comentar, reagir e copiar jogos não fazem parte do presente.',
@@ -950,6 +1089,8 @@ const seeds = [
         p(
           'Entre com sua senha de sempre. Em um computador com internet, seu filho acompanha as aulas e programa um jogo de esconde-esconde a partir de um projeto preparado para começar. Vocês podem pausar e rever cada explicação dentro dos sete dias de acesso.',
         ),
+        p(DEVICE_SETUP.html),
+        p(DEVICE_ALREADY_READY),
         ctaButton('Acessar meu presente', '{{link}}'),
         p(
           'Vocês também podem ver e jogar no Mural dos Criadores enquanto a conta existir, mesmo depois do curso. Publicar, comentar, reagir e copiar jogos não fazem parte do presente.',
@@ -994,6 +1135,8 @@ const seeds = [
         p(
           'Depois da publicação, vocês recebem um link para convidar familiares e amigos para jogar, sem que eles precisem de uma conta. É uma oportunidade de seu filho mostrar o que criou e explicar como a brincadeira funciona.',
         ),
+        p(DEVICE_SETUP.html),
+        ...(newAccount ? [] : [p(DEVICE_ALREADY_READY)]),
         ctaButton(newAccount ? 'Criar minha senha e começar' : 'Acessar meu presente', '{{link}}'),
         p(
           'Depois dos sete dias, o curso e as ações de publicar, comentar e reagir deixam de estar liberados por este convite. Sua conta continua podendo <strong>ver e jogar no Mural</strong> enquanto existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',

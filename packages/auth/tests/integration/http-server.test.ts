@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { sha256Hex } from '@sistemazero/core/security'
 import { saoPauloDayKey } from '@sistemazero/core/time'
 import { decodeJwt } from 'jose'
 import { BatchGetProfilesService } from '../../src/application/admin/batch-get-profiles/batch-get-profiles.service'
@@ -14,6 +15,7 @@ import { SetUserPasswordService } from '../../src/application/admin/set-password
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from '../../src/application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from '../../src/application/get-me/get-me.service'
+import { GetOwnProfileService } from '../../src/application/get-me/get-own-profile.service'
 import { ChangeImpersonationModeService } from '../../src/application/impersonation/change-impersonation-mode.service'
 import { CreateImpersonationTokenService } from '../../src/application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from '../../src/application/impersonation/exchange-impersonation-token.service'
@@ -104,6 +106,7 @@ function buildApp(
   )
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
+  const getOwnProfile = new GetOwnProfileService(profilesRepo)
   const createPasswordToken = new CreatePasswordTokenService(users, resetTokens, {
     ttlMinutes: 60,
   })
@@ -248,6 +251,7 @@ function buildApp(
     refresh,
     logout,
     getMe,
+    getOwnProfile,
     forgotPassword,
     resetPassword,
     requestOtp,
@@ -346,6 +350,25 @@ interface UserView {
 }
 
 describe('Auth HTTP server', () => {
+  test('login Kids por senha emite contexto adulto; login dos outros produtos continua sem contexto Kids', async () => {
+    const { app } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    for (const platform of ['kids', 'main']) {
+      const response = await app.handle(
+        post('/auth/login', {
+          email: 'maria@example.com',
+          password: REGISTER_BODY.password,
+          platform,
+        }),
+      )
+      expect(response.status).toBe(200)
+      const body = (await response.json()) as { tokens: Tokens }
+      const claims = decodeJwt(body.tokens.accessToken)
+      if (platform === 'kids') expect(claims.kids).toMatchObject({ kind: 'parent' })
+      else expect(claims.kids).toBeUndefined()
+      expect(claims.pfl).toBeUndefined()
+    }
+  })
   test('GET /health → 200', async () => {
     const { app } = buildApp()
     const res = await app.handle(new Request('http://localhost/health'))
@@ -988,6 +1011,51 @@ describe('Auth OTP (login passwordless + recuperação por código)', () => {
     expect(body.user.email).toBe('maria@example.com')
     expect(body.tokens.accessToken.length).toBeGreaterThan(0)
     expect(body.tokens.refreshToken.length).toBeGreaterThan(0)
+  })
+  test('responsável Kids pode entrar por e-mail antes de definir senha, sem mudar a regra dos outros produtos', async () => {
+    const { app, messaging } = buildApp()
+    expect(
+      (
+        await app.handle(
+          post('/auth/internal/ensure-buyer', REGISTER_BODY, {
+            'x-internal-token': INTERNAL_TOKEN,
+          }),
+        )
+      ).status,
+    ).toBe(201)
+    expect(
+      (
+        await app.handle(
+          post('/auth/otp/request', {
+            email: 'maria@example.com',
+            purpose: 'sign_in',
+            platform: 'kids',
+          }),
+        )
+      ).status,
+    ).toBe(200)
+    const code = messaging.sent.find((email) => email.templateKey === 'otp')?.variables.codigo
+    expect(code).toMatch(/^\d{6}$/)
+    expect(
+      (
+        await app.handle(
+          post('/auth/otp/verify', { email: 'maria@example.com', code, platform: 'main' }),
+        )
+      ).status,
+    ).toBe(403)
+    const accepted = await app.handle(
+      post('/auth/otp/verify', { email: 'maria@example.com', code, platform: 'kids' }),
+    )
+    expect(accepted.status).toBe(200)
+    const body = (await accepted.json()) as { tokens: Tokens }
+    expect(decodeJwt(body.tokens.accessToken).kids).toMatchObject({ kind: 'parent' })
+    expect(
+      (
+        await app.handle(
+          post('/auth/otp/verify', { email: 'maria@example.com', code, platform: 'kids' }),
+        )
+      ).status,
+    ).toBe(401)
   })
 
   test('código de uso único: o mesmo código não loga duas vezes', async () => {
@@ -2402,7 +2470,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(payload.pfl).toBeUndefined()
   })
 
-  test('rotação re-deriva pfl; perfil ARQUIVADO → cai para sessão da conta', async () => {
+  test('rotação re-deriva pfl; perfil ARQUIVADO encerra a sessão sem promover para conta', async () => {
     const { app, accountId, profilesRepo } = await setup()
     const sel = (await (
       await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(accountId)))
@@ -2413,15 +2481,13 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(decodeJwt(r1.tokens.accessToken).sub).toBe(PROFILE_ID)
     expect(decodeJwt(r1.tokens.accessToken).pfl).toMatchObject({ accountId })
 
-    // Arquiva o perfil e rotaciona de novo → a sessão cai para a conta (sem pfl).
+    // A regra vale também para as famílias antigas, sem contexto Kids.
     const profile = await profilesRepo.findById(PROFILE_ID)
     profile?.archive()
     if (profile) await profilesRepo.update(profile)
-    const r2 = (await (
-      await app.handle(post('/auth/refresh', { refreshToken: r1.tokens.refreshToken }))
-    ).json()) as { tokens: { accessToken: string } }
-    expect(decodeJwt(r2.tokens.accessToken).sub).toBe(accountId)
-    expect(decodeJwt(r2.tokens.accessToken).pfl).toBeUndefined()
+    const r2 = await app.handle(post('/auth/refresh', { refreshToken: r1.tokens.refreshToken }))
+    expect(r2.status).toBe(401)
+    expect(await r2.json()).not.toHaveProperty('tokens')
   })
 
   test('ownership: selecionar perfil de OUTRA conta → 404', async () => {
@@ -2608,5 +2674,176 @@ describe('Auth audit log (/auth/internal/audit + /auth/admin/audit)', () => {
       getReq('/auth/admin/audit?actorId=not-a-uuid', adminHeaders('admin')),
     )
     expect(r.status).toBe(400)
+  })
+})
+
+describe('Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo antigo de perfis', () => {
+  const PROFILE_ID = '66666666-6666-4666-8666-666666666666'
+  const nowSeconds = () => Math.floor(Date.now() / 1000)
+  function req(
+    method: string,
+    path: string,
+    headers: Record<string, string>,
+    body?: unknown,
+  ): Request {
+    return new Request(`http://localhost${path}`, {
+      method,
+      headers: { 'content-type': 'application/json', ...headers },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  }
+  const gwAccount = (accountId: string, extra: Record<string, string> = {}) => ({
+    'x-internal-token': INTERNAL_TOKEN,
+    'x-auth-user-id': accountId,
+    'x-auth-user-role': 'customer',
+    'x-auth-user-status': 'active',
+    ...extra,
+  })
+  // O que o Gateway injeta numa sessão de responsável do Kids.
+  const gwParent = (accountId: string, authenticatedAt: number) =>
+    gwAccount(accountId, {
+      'x-auth-kids-context': 'parent',
+      'x-auth-kids-auth-time': String(authenticatedAt),
+    })
+  async function setup() {
+    const built = buildApp()
+    const reg = (await (await built.app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
+      user: { id: string }
+    }
+    const accountId = reg.user.id
+    built.profilesRepo.seed(
+      ProfileAggregate.create({
+        id: PROFILE_ID,
+        accountUserId: accountId,
+        name: 'Sofia',
+        birthDate: '2016-05-01',
+      }),
+    )
+    return { ...built, accountId }
+  }
+  async function code(res: Response) {
+    return ((await res.json()) as { error?: { code?: string } }).error?.code
+  }
+
+  test('login do responsável no Kids dura no máximo 12 horas; o dos outros produtos não muda', async () => {
+    const { app } = buildApp()
+    await app.handle(post('/auth/register', REGISTER_BODY))
+    const login = async (platform: string) =>
+      (
+        (await (
+          await app.handle(
+            post('/auth/login', {
+              email: REGISTER_BODY.email,
+              password: REGISTER_BODY.password,
+              platform,
+            }),
+          )
+        ).json()) as { tokens: { refreshExpiresIn: number } }
+      ).tokens
+    const kids = await login('kids')
+    expect(kids.refreshExpiresIn).toBeLessThanOrEqual(12 * 60 * 60)
+    expect(kids.refreshExpiresIn).toBeGreaterThan(11 * 60 * 60)
+    // A renovação que não desliza é provada contra o PostgreSQL real (tests/db).
+    expect((await login('main')).refreshExpiresIn).toBeGreaterThan(24 * 60 * 60)
+  })
+
+  test('arquivar perfil pede login recente do responsável Kids; outros produtos seguem iguais', async () => {
+    const { app, accountId } = await setup()
+    const stale = await app.handle(
+      req('DELETE', `/auth/profiles/${PROFILE_ID}`, gwParent(accountId, nowSeconds() - 16 * 60)),
+    )
+    expect(stale.status).toBe(403)
+    expect(await code(stale)).toBe('PARENT_REAUTH_REQUIRED')
+    expect(
+      (
+        await app.handle(
+          req('DELETE', `/auth/profiles/${PROFILE_ID}`, gwParent(accountId, nowSeconds() - 60)),
+        )
+      ).status,
+    ).toBe(200)
+  })
+
+  test('mudar nascimento ou perfil público pede login recente; reenviar o mesmo valor não pede', async () => {
+    const { app, accountId } = await setup()
+    const stale = gwParent(accountId, nowSeconds() - 16 * 60)
+    const patch = (headers: Record<string, string>, body: unknown) =>
+      app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, headers, body))
+    // O formulário dos pais reenvia tudo ao trocar só o nome.
+    expect(
+      (
+        await patch(stale, {
+          name: 'Sofia Maria',
+          birthDate: '2016-05-01',
+          publicProfileEnabled: false,
+        })
+      ).status,
+    ).toBe(200)
+    const birth = await patch(stale, { birthDate: '2016-06-01' })
+    expect(birth.status).toBe(403)
+    expect(await code(birth)).toBe('PARENT_REAUTH_REQUIRED')
+    const toggle = await patch(stale, { publicProfileEnabled: true })
+    expect(toggle.status).toBe(403)
+    expect(await code(toggle)).toBe('PARENT_REAUTH_REQUIRED')
+    const recent = gwParent(accountId, nowSeconds() - 60)
+    expect((await patch(recent, { publicProfileEnabled: true })).status).toBe(200)
+    expect((await patch(recent, { birthDate: '2016-06-01' })).status).toBe(200)
+    // Hora de login ilegível vale como antiga (falha fechada).
+    expect((await patch(gwParent(accountId, 0), { birthDate: '2016-07-01' })).status).toBe(403)
+    // Sessão de outro produto (sem contexto Kids) não ganha a exigência.
+    expect((await patch(gwAccount(accountId), { birthDate: '2016-07-01' })).status).toBe(200)
+  })
+
+  test('seleção e saída antigas recusam qualquer sessão do Kids no próprio Auth', async () => {
+    const { app, accountId, refreshTokens } = await setup()
+    for (const kind of ['parent', 'student']) {
+      const headers = gwAccount(accountId, { 'x-auth-kids-context': kind })
+      const select = await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, headers))
+      expect(select.status).toBe(403)
+      expect(await code(select)).toBe('KIDS_CONTEXT_FORBIDDEN')
+      const exit = await app.handle(
+        req(
+          'POST',
+          '/auth/profile-session/exit',
+          { ...headers, 'x-auth-account-id': accountId },
+          { password: REGISTER_BODY.password },
+        ),
+      )
+      expect(exit.status).toBe(403)
+      expect(await code(exit)).toBe('KIDS_CONTEXT_FORBIDDEN')
+    }
+    // Sem o header (Gateway antigo), o refresh da família Kids também denuncia o contexto.
+    const refreshToken = 'refresh-de-uma-familia-kids'
+    await refreshTokens.create({
+      id: crypto.randomUUID(),
+      userId: accountId,
+      familyId: crypto.randomUUID(),
+      tokenHash: sha256Hex(refreshToken),
+      expiresAt: new Date(Date.now() + 3_600_000),
+      kidsContext: {
+        kind: 'parent',
+        sessionId: crypto.randomUUID(),
+        authenticatedAt: nowSeconds(),
+      },
+    })
+    const viaRefresh = await app.handle(
+      req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(accountId), { refreshToken }),
+    )
+    expect(viaRefresh.status).toBe(403)
+    expect(await code(viaRefresh)).toBe('KIDS_CONTEXT_FORBIDDEN')
+  })
+
+  test('GET /auth/me numa sessão de perfil devolve só o próprio perfil, sem a ficha do responsável', async () => {
+    const { app, accountId } = await setup()
+    const selected = (await (
+      await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(accountId)))
+    ).json()) as { tokens: { accessToken: string } }
+    const me = await app.handle(
+      req('GET', '/auth/me', { authorization: `Bearer ${selected.tokens.accessToken}` }),
+    )
+    expect(me.status).toBe(200)
+    const body = (await me.json()) as Record<string, unknown>
+    expect(body.user).toBeUndefined()
+    expect(body.profile).toMatchObject({ id: PROFILE_ID, name: 'Sofia', birthDate: '2016-05-01' })
+    expect(JSON.stringify(body).toLowerCase()).not.toContain(REGISTER_BODY.email.toLowerCase())
   })
 })

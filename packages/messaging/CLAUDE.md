@@ -66,7 +66,8 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    `idempotencyKey = ambassador-invite:<inviteId>:<n>`); `referrals-scholarship-welcome`:
    `nome`+`indicador`+`link` (boas-vindas com link de definir senha — TTL 14 dias,
    `idempotencyKey = scholarship-welcome:<redemptionId>`). Bolsista com conta PRÉ-EXISTENTE
-   recebe o `new-access` de sempre (sem template novo). O convite e o link do embaixador
+   recebe o template da política do resgate; o histórico sem prazo usa `kids-new-access` desde
+   10/10/2026, com reserva em `new-access`. O convite e o link do embaixador
    nomeiam **Cadê Todo Mundo?**; boas-vindas e `new-access` ficam neutros sobre qual curso foi
    liberado, pois resgates históricos do Desafio ainda podem reprocessar o e-mail.
    `referrals-bonus-eligible` (09/2026):
@@ -334,3 +335,7 @@ escalonados (cada lane com seu próprio `next_available_at`).
 ## Presente de campanha (02/10/2026)
 
 Templates `referrals-campaign-welcome` (conta nova, link de senha) e `referrals-campaign-existing` (conta existente, link de cursos): variáveis `nome`, `campanha`, `validade`, `link`. `validade` é o vencimento dos sete dias do resgate, formatado em Brasília pelo referrals; não é o encerramento da campanha. Os templates entram pelo seed de deploy já existente. Preservar templates históricos de indicação. Não executar seed remoto ou enviar mensagens reais para verificar copy.
+
+## Acesso infantil por aparelho (10/10/2026)
+
+Templates do Kids, todos com `nome` + `link`: `kids-welcome` (conta nova, link de definir senha), `kids-new-access` (conta existente, link `<kids>/login/responsavel`) e `kids-access-transition` (aviso às famílias atuais de que a entrada mudou, link `<kids>/login/responsavel`), em e-mail e WhatsApp. A preparação do computador (`DEVICE_SETUP`) usa os rótulos reais da Área dos pais e começa por **Adicionar criança**, porque a conta nova nasce sem perfil. Funil e Referrals caem na chave antiga (`welcome`/`new-access`) quando o Messaging ainda responde 404 `TEMPLATE_NOT_FOUND` para a chave nova; os testes de contrato deles conferem as chaves neste seed. O `kids-access-transition` não tem chamador nem script de envio: lista de destinatários e horário dependem de decisão da dona. Não rodar o seed contra um ambiente para conferir a copy.

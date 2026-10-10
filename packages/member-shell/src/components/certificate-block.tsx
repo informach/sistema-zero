@@ -2,6 +2,7 @@
 
 import { Award, Download, Loader2, Lock } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { sessionFetch as fetch } from '../lib/session-fetch'
 import type { CertificateBlock, CertificateStateView } from '../lib/types'
 import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'

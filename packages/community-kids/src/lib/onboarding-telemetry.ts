@@ -1,4 +1,5 @@
-import { GUIDE_VERSION } from '@/lib/guide'
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+import { GUIDE_VERSION, PARENT_ACCESS_GUIDE_VERSION } from '@/lib/guide'
 
 export const ONBOARDING_AUDIENCES = ['parent', 'child'] as const
 export const ONBOARDING_ACTIONS = [
@@ -12,8 +13,10 @@ export const ONBOARDING_ACTIONS = [
   'cta_clicked',
   'profile_created',
   'tour_completed',
+  /** A família passou a ter uma autorização viva enquanto o responsável estava na tela. */
+  'access_prepared',
 ] as const
-export const ONBOARDING_STEPS = ['welcome', 'avatar', 'start', 'profile', 'tile'] as const
+export const ONBOARDING_STEPS = ['welcome', 'avatar', 'start', 'profile', 'tile', 'access'] as const
 
 export type OnboardingAudience = (typeof ONBOARDING_AUDIENCES)[number]
 export type OnboardingAction = (typeof ONBOARDING_ACTIONS)[number]
@@ -28,7 +31,10 @@ export interface OnboardingEvent {
 
 export function trackOnboardingEvent(event: OnboardingEvent): void {
   if (typeof window === 'undefined') return
-  const body = JSON.stringify({ version: GUIDE_VERSION, ...event })
+  const body = JSON.stringify({
+    version: event.audience === 'parent' ? PARENT_ACCESS_GUIDE_VERSION : GUIDE_VERSION,
+    ...event,
+  })
   void fetch('/api/onboarding/events', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

@@ -1,5 +1,6 @@
 export * from './hash'
 export * from './hmac'
 export * from './ip'
+export * from './kids-session'
 export * from './rate-limiter'
 export * from './safe-equal'

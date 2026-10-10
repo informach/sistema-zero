@@ -1,6 +1,7 @@
 import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type { GetMeService } from '../../../application/get-me/get-me.service'
+import type { GetOwnProfileService } from '../../../application/get-me/get-own-profile.service'
 import type { LoginService } from '../../../application/login/login.service'
 import type { LogoutService } from '../../../application/logout/logout.service'
 import type { ChangeMyPasswordService } from '../../../application/me/change-password.service'
@@ -37,6 +38,7 @@ export interface AuthRoutesDeps {
   refresh: RefreshService
   logout: LogoutService
   getMe: GetMeService
+  getOwnProfile: GetOwnProfileService
   forgotPassword: ForgotPasswordService
   resetPassword: ResetPasswordService
   requestOtp: RequestOtpService
@@ -78,6 +80,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
       '/login',
       async ({ body, request, server, headers }) => {
         return deps.login.execute({
+          platform: body.platform,
           email: body.email,
           password: body.password,
           userAgent: headers['user-agent'] ?? null,
@@ -130,7 +133,11 @@ export function authRoutes(deps: AuthRoutesDeps) {
       '/otp/request',
       async ({ body }) => {
         // SEMPRE 200, exista a conta ou não (anti-enumeração). O e-mail é best-effort.
-        await deps.requestOtp.execute({ email: body.email, purpose: body.purpose })
+        await deps.requestOtp.execute({
+          email: body.email,
+          purpose: body.purpose,
+          platform: body.platform,
+        })
         return { ok: true }
       },
       { body: RequestOtpBody },
@@ -140,6 +147,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
       async ({ body, request, server, headers }) => {
         // Login por código → mesmo retorno do `/auth/login` (`{ user, tokens }`).
         return deps.verifyOtp.execute({
+          platform: body.platform,
           email: body.email,
           code: body.code,
           userAgent: headers['user-agent'] ?? null,
@@ -164,6 +172,13 @@ export function authRoutes(deps: AuthRoutesDeps) {
       if (!token) throw new UnauthorizedError('Token de acesso ausente')
       const claims = await deps.tokenIssuer.verifyAccessToken(token)
       if (!claims) throw new UnauthorizedError('Token inválido ou expirado')
+      // Sessão de PERFIL (aluno do Kids ou suporte dentro de um perfil): só o próprio perfil,
+      // nunca a ficha do responsável (`{ profile }` no lugar de `{ user }`).
+      if (claims.pfl) {
+        const profile = await deps.getOwnProfile.execute(claims.pfl.accountId, claims.sub)
+        if (!profile) throw new UnauthorizedError('Perfil não encontrado')
+        return { profile }
+      }
       // Resolve o usuário fresco do banco (contrato null | usuário).
       const user = await deps.getMe.execute(claims.sub)
       if (!user) throw new UnauthorizedError('Usuário não encontrado')

@@ -10,6 +10,7 @@ const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{
 // Uniões de literais derivadas dos enums de domínio (fonte única da verdade).
 const roleLiteral = t.Union(USER_ROLES.map((r) => t.Literal(r)))
 const statusLiteral = t.Union(USER_STATUSES.map((s) => t.Literal(s)))
+const platformLiteral = t.Union([t.Literal('main'), t.Literal('kids')])
 
 /** Corpo de `POST /auth/register`. `phone`/`source` são opcionais. */
 export const RegisterBody = t.Object({
@@ -24,6 +25,7 @@ export const RegisterBody = t.Object({
 
 /** Corpo de `POST /auth/login`. */
 export const LoginBody = t.Object({
+  platform: t.Optional(platformLiteral),
   email: t.String({ minLength: 3, maxLength: 320 }),
   password: t.String({ minLength: 1, maxLength: 200 }),
 })
@@ -41,7 +43,6 @@ export const LogoutBody = t.Object({
 
 // Plataforma de DESTINO dos links de e-mail (enum — NUNCA URL do cliente):
 // `main` = community | `kids` = community-kids. Ausente → main.
-const platformLiteral = t.Union([t.Literal('main'), t.Literal('kids')])
 
 /** Query opcional `?platform=` (impersonação: decide a `communityUrl` devolvida). */
 export const PlatformQuery = t.Object({ platform: t.Optional(platformLiteral) })
@@ -63,12 +64,14 @@ const otpPurposeLiteral = t.Union([t.Literal('sign_in'), t.Literal('password_res
 
 /** Corpo de `POST /auth/otp/request` (pede um código por e-mail). Resposta é SEMPRE 200. */
 export const RequestOtpBody = t.Object({
+  platform: t.Optional(platformLiteral),
   email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
   purpose: otpPurposeLiteral,
 })
 
 /** Corpo de `POST /auth/otp/verify` (login por código → tokens). */
 export const VerifyOtpBody = t.Object({
+  platform: t.Optional(platformLiteral),
   email: t.String({ minLength: 3, maxLength: 320, pattern: EMAIL_PATTERN }),
   code: t.String({ minLength: 4, maxLength: 12 }),
 })

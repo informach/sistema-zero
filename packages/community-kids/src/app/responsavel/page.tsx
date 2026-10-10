@@ -9,17 +9,19 @@ import {
 import { KidsEyebrow } from '@/components/kids/kids-eyebrow'
 import { KidsScreen } from '@/components/kids/kids-screen'
 import { ParentAreaBack } from '@/components/kids/parent-area-back'
-import { isParentVerifiedFor } from '@/server/parent-gate'
+import { StudentAreaButton } from '@/components/kids/student-area-button'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
 
-/** Account-only accompaniment. The data endpoints independently require the same parent gate. */
+/**
+ * Acompanhamento da conta. A mesma régua do layout (`ParentSessionFrame`) repetida na página,
+ * porque o layout não roda de novo numa navegação entre páginas irmãs; os endpoints de dados
+ * conferem a sessão de responsável por conta própria.
+ */
 export default async function ResponsavelPage() {
   const session = await getSession()
-  if (!session) redirect('/login')
-  if (session.activeProfile || !(await isParentVerifiedFor(session.id)))
-    redirect('/perfis?manage=1')
+  if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
   return (
     <KidsScreen align="start" innerClassName="flex max-w-4xl flex-col items-center gap-7">
       {/* Mesma volta de Minhas compras e do Atendimento: `/responsavel` não tem layout,
@@ -37,14 +39,9 @@ export default async function ResponsavelPage() {
           conversa começa pedindo que ela mostre como fez o jogo.
         </p>
         <nav aria-label="Área dos responsáveis" className="mt-5 flex flex-wrap gap-2">
-          <Link href="/perfis" prefetch={false} className="sz-btn-gradient sz-btn-contorno">
-            Escolher uma criança
-          </Link>
-          <Link
-            href="/perfis?manage=1"
-            prefetch={false}
-            className="sz-btn-gradient sz-btn-contorno"
-          >
+          {/* A troca SEGURA: um link para `/perfis` deixava a sessão adulta aberta. */}
+          <StudentAreaButton className="sz-btn-gradient sz-btn-contorno" />
+          <Link href="/pais" prefetch={false} className="sz-btn-gradient sz-btn-contorno">
             Gerenciar perfis e conta
           </Link>
           <Link

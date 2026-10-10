@@ -2,6 +2,7 @@ import type { Logger } from '@sistemazero/core/logging'
 import { sha256Hex } from '@sistemazero/core/security'
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
+import type { StudyAccessRepository } from '../../domain/ports/study-access-repository.port'
 import type { ProfileClaim } from '../../domain/ports/token-issuer.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { InvalidRefreshTokenError, UserNotActiveError } from '../../domain/user/user.errors'
@@ -26,6 +27,7 @@ export class RefreshService {
     private readonly profiles: ProfileRepository,
     private readonly impersonationSessions: ImpersonationSessionValidator,
     private readonly logger: Logger,
+    private readonly studyAccess?: StudyAccessRepository,
   ) {}
 
   async execute(command: RefreshCommand): Promise<AuthTokens> {
@@ -53,6 +55,18 @@ export class RefreshService {
     }
 
     if (record.expiresAt.getTime() <= Date.now()) throw new InvalidRefreshTokenError()
+    if (
+      record.kidsContext &&
+      !(await this.studyAccess?.validateSession(
+        record.kidsContext,
+        record.userId,
+        record.activeProfileId,
+        new Date(),
+      ))
+    ) {
+      await this.refreshTokens.revokeFamily(record.familyId)
+      throw new InvalidRefreshTokenError()
+    }
 
     const user = await this.users.findById(record.userId)
     if (!user) {
@@ -95,9 +109,8 @@ export class RefreshService {
     }
 
     // Sessão de PERFIL: re-deriva a claim `pfl` do perfil ativo a cada rotação (o
-    // access é re-emitido da CONTA e a perderia). Perfil arquivado/sumido → a sessão
-    // CAI para a conta (sem `pfl`): a criança volta à grade na próxima carga (em vez
-    // de uma sessão presa a um perfil que não existe mais).
+    // access é re-emitido da CONTA e a perderia). Perfil arquivado/sumido encerra
+    // a sessão, inclusive nas famílias antigas. Nunca promove criança a adulto.
     let profileSession: { profileId: string; claim: ProfileClaim } | null = null
     if (record.activeProfileId) {
       const profile = await this.profiles.findById(record.activeProfileId)
@@ -107,6 +120,9 @@ export class RefreshService {
           profileId: profile.id,
           claim: { accountId: user.id, name: profile.name, pub: profile.publicProfileEnabled },
         }
+      } else {
+        await this.refreshTokens.revokeFamily(record.familyId)
+        throw new InvalidRefreshTokenError()
       }
     }
 
@@ -154,6 +170,8 @@ export class RefreshService {
       }
     }
     return this.tokens.rotate(user, record.familyId, {
+      kids: record.kidsContext ?? undefined,
+      familyExpiresAt: record.kidsContext ? record.familyExpiresAt : undefined,
       userAgent: command.userAgent,
       ip: command.ip,
       impersonation,

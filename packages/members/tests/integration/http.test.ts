@@ -39,6 +39,32 @@ describe('Members HTTP — health/readiness', () => {
 })
 
 describe('Members HTTP — consumo do aluno', () => {
+  test('miniaturas da entrada exigem token interno e consumer member-shell, sem dados de progresso', async () => {
+    const internalToken = 'token-interno-gateway-0123456789'
+    const { app } = buildApp({ internalToken })
+    const request = (headers: Record<string, string>) =>
+      app.handle(
+        new Request('http://localhost/members/internal/device-avatars', {
+          method: 'POST',
+          headers: { ...headers, 'content-type': 'application/json' },
+          body: JSON.stringify({ profileIds: [USER] }),
+        }),
+      )
+    expect((await request({ 'x-consumer-id': 'member-shell' })).status).toBe(401)
+    expect(
+      (await request({ 'x-internal-token': internalToken, 'x-consumer-id': 'funnel' })).status,
+    ).toBe(401)
+    const accepted = await request({
+      'x-internal-token': internalToken,
+      'x-consumer-id': 'member-shell',
+    })
+    expect(accepted.status).toBe(200)
+    const body = await accepted.json()
+    if (!body || typeof body !== 'object') throw new Error('Resposta de miniaturas inválida')
+    expect(Object.keys(body)).toEqual(['photos'])
+    expect(JSON.stringify(body)).not.toContain('email')
+    expect(JSON.stringify(body)).not.toContain('level')
+  })
   test('sem identidade (x-auth-user-id) → 401', async () => {
     const { app } = buildApp()
     const res = await app.handle(new Request('http://localhost/members/courses'))

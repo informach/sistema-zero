@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import type { Project, StudioProjectPlayerProps } from '@sistemazero/studio'
 import { describeProjectControls, type InternalPadMode } from '@sistemazero/studio/controls'
 import { Gamepad2, Maximize, Minimize } from 'lucide-react'

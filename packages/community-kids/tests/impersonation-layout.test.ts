@@ -9,8 +9,10 @@ describe('abrangência do banner de impersonação no Kids', () => {
     expect(appLayout).toContain('session.activeProfile?.name ??')
   })
 
-  test('a grade /perfis mantém o banner visível durante a impersonação', () => {
-    expect(profilesPage).toContain('<ImpersonationBanner')
-    expect(profilesPage).toContain('session.act')
+  test('a grade /perfis usa a credencial do aparelho e nunca a sessão de suporte para liberar irmãos', () => {
+    expect(profilesPage).toContain('shell.study.recognize()')
+    expect(profilesPage).toContain('if (session?.act)')
+    expect(profilesPage).toContain('<SupportProfileSelector')
+    expect(appLayout).toContain("if (session.act && !session.activeProfile) redirect('/perfis')")
   })
 })

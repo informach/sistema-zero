@@ -1435,7 +1435,8 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
   Teto por ciclo `PARENT_REPORT_BATCH_LIMIT` (200). O sender só é construído quando
   `AUTH_BASE_URL` + `AUTH_INTERNAL_TOKEN` + `GATEWAY_URL` + `MEMBERS_HMAC_SECRET` existem
   (dev sem eles = feature desligada, tela continua). Link do e-mail = `KIDS_COMMUNITY_URL`
-  + `/perfis`. Envs novas (todas com default/opcionais fora de prod): `AUTH_BASE_URL`,
+  + `/pais` (Área dos pais desde o acesso infantil por aparelho, 10/10/2026; os avisos
+  `challenge-not-started` e `challenge-expiry-7d`/`-3d` também apontam para `/pais`). Envs novas (todas com default/opcionais fora de prod): `AUTH_BASE_URL`,
   `AUTH_INTERNAL_TOKEN`, `AUTH_REQUEST_TIMEOUT_MS` (8s), `GATEWAY_URL`, `MEMBERS_HMAC_SECRET`
   (= o do consumer `members` no gateway), `KIDS_COMMUNITY_URL`, `PARENT_REPORT_*`.
   Testes: `tests/unit/parent-report.test.ts` (isDue calendário + ciclo/dedupe/opt-out/retry).

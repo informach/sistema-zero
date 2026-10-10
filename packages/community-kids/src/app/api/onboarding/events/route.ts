@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { GUIDE_VERSION } from '@/lib/guide'
+import { GUIDE_VERSION, PARENT_ACCESS_GUIDE_VERSION } from '@/lib/guide'
 import {
   ONBOARDING_ACTIONS,
   ONBOARDING_AUDIENCES,
@@ -11,7 +11,7 @@ import { getSession } from '@/server/session'
 const MAX_BODY_CHARS = 512
 const EventBody = z
   .object({
-    version: z.literal(GUIDE_VERSION),
+    version: z.enum([GUIDE_VERSION, PARENT_ACCESS_GUIDE_VERSION]),
     audience: z.enum(ONBOARDING_AUDIENCES),
     action: z.enum(ONBOARDING_ACTIONS),
     step: z.enum(ONBOARDING_STEPS).optional(),
@@ -46,6 +46,11 @@ export async function POST(req: Request): Promise<Response> {
   if (!parsed.success) return noContent()
   const actualAudience = session.activeProfile ? 'child' : 'parent'
   if (parsed.data.audience !== actualAudience) return noContent()
+  if (
+    parsed.data.version !==
+    (actualAudience === 'parent' ? PARENT_ACCESS_GUIDE_VERSION : GUIDE_VERSION)
+  )
+    return noContent()
 
   console.info(
     '[kids-onboarding]',
