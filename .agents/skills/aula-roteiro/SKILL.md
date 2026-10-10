@@ -50,6 +50,10 @@ antes de jogar. Não colocar tour da interface nas notas de gravação do vídeo
 - Separar cada **Na tela:** da fala com linha em branco; fala em citação. Quando houver avatar,
   identificar **Professora/Professor**, **Debinha (avatar)** ou **Dedé (avatar)** e marcar entrada
   e saída conforme ESPEC-ROTEIRO.md e AVATARES-NOS-VIDEOS.md. Zappy é fala da página, não do vídeo.
+- Distribuir participações nos trechos longos e depois dos testes, sem interromper gestos ou impor
+  uma cota por vídeo. Para mostrar entendimento, a criança traz um exemplo ou uma consequência;
+  não repete a definição. Reações breves de surpresa e comemoração também cabem. “Agora sim!”
+  responde depois de “Funcionou?”, com o resultado da demonstração visível.
 - Preservar seções, experiências e critérios que funcionam quando a revisão é de linguagem.
 - Atualizar proposta, roteiro, manifesto e gerador juntos. Manter identificadores, projetos,
   mídia anexada e progresso. O molde local plannedVideo não substitui um vídeo publicado.

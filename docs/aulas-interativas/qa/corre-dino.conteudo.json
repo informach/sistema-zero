@@ -202,6 +202,20 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.",
+            "speech": "A tela vai ser preparada só quando eu começar!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Agora olhe a área do jogo: a cor aparece!",
+            "speech": "A tela já ficou azul!",
+            "beforeScreen": "Manter o fundo azul à vista, depois da atualização do jogo.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -244,6 +258,14 @@
                 "WIDTH": 4
               }
             }
+          }
+        ],
+        "avatar": [
+          {
+            "after": "A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.",
+            "speech": "Qual cor vai aparecer melhor?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -373,6 +395,15 @@
                 "SIZE": 64
               }
             }
+          }
+        ],
+        "avatar": [
+          {
+            "after": "O bloco chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.",
+            "speech": "Escolhi a cor! Mas cadê o Dino?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+            "reply": "Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar."
           }
         ]
       },
@@ -600,6 +631,20 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área. Tudo o que ficar dentro dele vai acontecer de novo em cada quadro.",
+            "speech": "Ah! O desenho precisa acompanhar o Dino enquanto ele se mexe!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado!",
+            "speech": "Olha, o Dino apareceu!",
+            "beforeScreen": "Esperar o Dino aparecer na prévia antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -740,6 +785,14 @@
               "count": 1
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "O lugar da floresta é entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Deixe esse espaço à vista. Depois, abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.",
+            "speech": "Agora falta fazer a floresta andar!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -846,6 +899,15 @@
                 "DESCRIPTION": "Corra com o dino e pule os cactos apertando espaço"
               }
             }
+          }
+        ],
+        "avatar": [
+          {
+            "after": "A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia. Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.",
+            "speech": "Essa frase vai ficar escrita no jogo?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+            "reply": "Ela fica guardada para o leitor de tela ler em voz alta."
           }
         ]
       },
@@ -1188,13 +1250,27 @@
             }
           }
         ],
-        "avatar": {
-          "after": "porque o mesmo bloco já cuida dos três controles.",
-          "speech": "Já consegui pular dos três jeitos!",
-          "beforeScreen": "Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso.",
-          "afterScreen": "Retomar a explicação do toque embaixo e testar os dois toques durante o mesmo salto.",
-          "reply": "Agora vamos conferir mais duas coisas."
-        }
+        "avatar": [
+          {
+            "after": "Olha só: ele pula e volta para o chão!",
+            "speech": "Foi! Ele pulou!",
+            "beforeScreen": "Esperar o Dino completar o salto e pousar antes da entrada.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "porque o mesmo bloco já cuida dos três controles.",
+            "speech": "Já consegui pular dos três jeitos!",
+            "beforeScreen": "Concluir os saltos com espaço, seta para cima e toque na parte de cima; esperar o pouso.",
+            "afterScreen": "Retomar a explicação do toque embaixo e testar os dois toques durante o mesmo salto.",
+            "reply": "Agora vamos conferir mais duas coisas."
+          },
+          {
+            "after": "Agora teste! Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. Olha só: ele pula e volta para o chão! Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.",
+            "speech": "Dá para pular de novo lá no alto?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "revisao",
@@ -1564,13 +1640,27 @@
             }
           }
         ],
-        "avatar": {
-          "after": "porque o som está ligado ao pulo, e não à tecla.",
-          "speech": "O meu ainda está sem som.",
-          "beforeScreen": "Concluir os testes sem sobrepor vozes ao som; esperar o Dino pousar.",
-          "afterScreen": "Apontar o evento e o efeito na conferência; mostrar também o clique que libera o áudio, se necessário.",
-          "reply": "Vamos conferir onde o som ficou."
-        }
+        "avatar": [
+          {
+            "after": "Agora deixe à vista o espaço vazio dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área. No nome, escolha dino. É esse bloco que percebe o pulo do Dino, venha ele da tecla ou do toque.",
+            "speech": "Até quando eu pular pelo toque, o som vai tocar!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Escute: agora o pulo vem com som!",
+            "speech": "Uhu! Agora dá para ouvir!",
+            "beforeScreen": "Tocar o efeito do salto inteiro antes da reação; não sobrepor as vozes ao som.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "porque o som está ligado ao pulo, e não à tecla.",
+            "speech": "O meu ainda está sem som.",
+            "beforeScreen": "Concluir os testes sem sobrepor vozes ao som; esperar o Dino pousar.",
+            "afterScreen": "Apontar o evento e o efeito na conferência; mostrar também o clique que libera o áudio, se necessário.",
+            "reply": "Vamos conferir onde o som ficou."
+          }
+        ]
       },
       {
         "key": "entrega",
@@ -1806,6 +1896,14 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.",
+            "speech": "E como eu faço aparecer um cacto de cada vez?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -1914,6 +2012,14 @@
               "count": 1
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita.",
+            "speech": "Ah, ele vai entrar pela beirada!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -1974,13 +2080,21 @@
             }
           }
         ],
-        "avatar": {
-          "after": "Depois de corrigir, teste de novo.",
-          "speech": "O cacto passou pelo meu Dino!",
-          "beforeScreen": "Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras.",
-          "afterScreen": "Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.",
-          "reply": "Neste ponto, isso pode acontecer."
-        }
+        "avatar": [
+          {
+            "after": "Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.",
+            "speech": "Agora quero ver os cactos chegando!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Depois de corrigir, teste de novo.",
+            "speech": "O cacto passou pelo meu Dino!",
+            "beforeScreen": "Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras.",
+            "afterScreen": "Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.",
+            "reply": "Neste ponto, isso pode acontecer."
+          }
+        ]
       },
       {
         "key": "entrega",
@@ -2233,7 +2347,7 @@
         "activityKey": "experiencia-visivel-guardado",
         "avatar": {
           "after": "Por isso o grupo tem mais cactos do que a tela.",
-          "speech": "Tem cacto guardado mesmo depois de sair!",
+          "speech": "Eu achei que sair da tela já tirava o cacto do jogo!",
           "beforeScreen": "Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave.",
           "afterScreen": "Ligar a regra e acompanhar os números até ficarem iguais.",
           "reply": "Tem, sim. Vamos tirar do grupo os que já saíram."
@@ -2297,12 +2411,20 @@
             }
           }
         ],
-        "avatar": {
-          "after": "Agora a gente vai colocar a regra que tira esses cactos de lá!",
-          "speech": "Onde essa regra entra?",
-          "beforeScreen": "Retomar a experiência com o projeto aberto, sem pegar blocos ainda.",
-          "afterScreen": "Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa."
-        }
+        "avatar": [
+          {
+            "after": "Agora a gente vai colocar a regra que tira esses cactos de lá!",
+            "speech": "Onde essa regra entra?",
+            "beforeScreen": "Retomar a experiência com o projeto aberto, sem pegar blocos ainda.",
+            "afterScreen": "Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa."
+          },
+          {
+            "after": "Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.",
+            "speech": "Se um cacto sair da tela, ele sai da lista também!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "revisao",
@@ -2572,6 +2694,15 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "O estado começa junto com o jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.",
+            "speech": "O jogo já vai esperar para começar?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+            "reply": "Ainda falta ligar as ações a esse estado."
+          }
         ]
       },
       {
@@ -2786,6 +2917,26 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "Olha aqui: dentro de A cada quadro do jogo, as ações da partida começam em Aplicar a gravidade do mundo ao sprite e vão até o fim. São o controle, o desenho do Dino, o movimento e o desenho dos cactos e a regra que tira do grupo. Arraste o bloco da gravidade para um espaço livre, e a pilha inteira vem junto, porque os outros blocos estão encaixados embaixo dele. Não copie nada: só separe.",
+            "speech": "A pilha veio inteira!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Repare: o Se chega com a pergunta x > 0. Arraste essa pergunta para a lixeira, para o lugar dela ficar vazio. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. No menu dele, escolha jogando.",
+            "speech": "Assim a corrida espera eu começar!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Agora olhe o jogo: com o estado em inicio, o Dino e os cactos deixam de aparecer, e só a floresta continua passando, porque as ações da partida esperam o estado jogando.",
+            "speech": "Agora só a floresta está passando!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -2848,13 +2999,21 @@
             }
           }
         ],
-        "avatar": {
-          "after": "mesmo ainda sem uma tela de abertura desenhada.",
-          "speech": "A floresta continua passando, mas os cactos esperam!",
-          "beforeScreen": "Concluir o teste em jogando e voltar para inicio antes da entrada; mostrar apenas a floresta passando.",
-          "afterScreen": "Manter inicio e seguir para a verificação, o salvamento e a próxima parte.",
-          "reply": "Isso mesmo."
-        }
+        "avatar": [
+          {
+            "after": "Agora deixe à vista o espaço vazio dentro do relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.",
+            "speech": "Falta dizer qual é a pergunta!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "mesmo ainda sem uma tela de abertura desenhada.",
+            "speech": "A floresta continua passando, mas os cactos esperam!",
+            "beforeScreen": "Concluir o teste em jogando e voltar para inicio antes da entrada; mostrar apenas a floresta passando.",
+            "afterScreen": "Manter inicio e seguir para a verificação, o salvamento e a próxima parte.",
+            "reply": "Isso mesmo."
+          }
+        ]
       },
       {
         "key": "entrega",
@@ -3256,6 +3415,20 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se.",
+            "speech": "Quem abrir meu jogo vai encontrar essa tela primeiro!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.",
+            "speech": "Agora quem abre o jogo vai saber como começar!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -3385,12 +3558,26 @@
             }
           }
         ],
-        "avatar": {
-          "after": "pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.",
-          "speech": "Mas eu também uso uma tecla para pular!",
-          "beforeScreen": "Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio.",
-          "afterScreen": "Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas."
-        }
+        "avatar": [
+          {
+            "after": "pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.",
+            "speech": "Mas eu também uso uma tecla para pular!",
+            "beforeScreen": "Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio.",
+            "afterScreen": "Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas."
+          },
+          {
+            "after": "Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.",
+            "speech": "A tecla do pulo não vai começar a partida de novo!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Olha só: a abertura some, e o Dino aparece!",
+            "speech": "Começou!",
+            "beforeScreen": "Esperar o Dino aparecer depois da tecla, sem fazer o próximo salto durante a fala.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "entrega",
@@ -3666,6 +3853,20 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "Escolha o grupo cactos e o sprite dino. Repare na linha chamar o sprite de: ela chega com inimigo. Clique em inimigo e escreva cacto. É o nome que o seu jogo vai usar para o cacto que bateu.",
+            "speech": "E o que vai acontecer quando ele bater?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "e agora o estado é fim!",
+            "speech": "A corrida parou!",
+            "beforeScreen": "Mostrar o desaparecimento do Dino e dos cactos depois da batida, sem desenhar uma tela de fim que ainda não existe.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -3704,6 +3905,20 @@
                 }
               }
             }
+          }
+        ],
+        "avatar": [
+          {
+            "after": "Deixe à vista o Se do quadro, que já tem os ramos jogando e inicio. Na linha de baixo do bloco, clique uma vez no + ao lado de senão se, para criar mais um senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.",
+            "speech": "Quem perder precisa saber como tentar de novo!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Olha só: a tela de fim aparece!",
+            "speech": "Agora dá para ver que a partida acabou!",
+            "beforeScreen": "Manter a tela de fim real à vista antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -3765,12 +3980,20 @@
             }
           }
         ],
-        "avatar": {
-          "after": "Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela.",
-          "speech": "O som vem antes de mostrar a tela de fim?",
-          "beforeScreen": "Retomar a regra da batida com os blocos à vista, sem inserir efeitos ainda.",
-          "afterScreen": "Apontar o lugar antes de Mudar o estado do jogo para fim e montar os três efeitos na ordem narrada."
-        }
+        "avatar": [
+          {
+            "after": "Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela.",
+            "speech": "O som vem antes de mostrar a tela de fim?",
+            "beforeScreen": "Retomar a regra da batida com os blocos à vista, sem inserir efeitos ainda.",
+            "afterScreen": "Apontar o lugar antes de Mudar o estado do jogo para fim e montar os três efeitos na ordem narrada."
+          },
+          {
+            "after": "Agora deixe à vista o espaço entre a explosão e a mudança de estado. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela e solte nesse espaço. Ele já chega com intensidade 8: mantenha.",
+            "speech": "Já colocamos a explosão e a tremida!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "trocar-nao-limpa",
@@ -3876,6 +4099,21 @@
               "blockType": "sz_g2d_on_any_input",
               "count": 1
             }
+          }
+        ],
+        "avatar": [
+          {
+            "after": "O recomeço vai no mesmo evento que começa a partida. Deixe à vista o Se inicio, dentro de Quando apertar qualquer tecla ou tocar na tela. Na linha de baixo desse Se, clique uma vez no + ao lado de senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.",
+            "speech": "E como ele volta para o começo?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+            "reply": "A gente vai dizer o que fazer no estado fim."
+          },
+          {
+            "after": "Olha só: a abertura volta!",
+            "speech": "Voltou para o começo!",
+            "beforeScreen": "Mostrar a abertura restaurada e esperar a criança sair antes do novo toque.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -4246,6 +4484,14 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "O contorno precisa ser desenhado depois do Dino, para aparecer por cima dele. Por isso, deixe à vista o lugar logo depois de Desenhar o sprite dino, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Mostrar a caixa de colisão do sprite e solte logo depois do desenho do Dino. Escolha dino.",
+            "speech": "Quero ver onde fica essa área!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -4300,6 +4546,14 @@
                 "SIZE": 64
               }
             }
+          }
+        ],
+        "avatar": [
+          {
+            "after": "porque só a área da batida mudou!",
+            "speech": "O contorno encolheu, mas o Dino não!",
+            "beforeScreen": "Manter o contorno menor e o desenho do Dino visíveis para a comparação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -4582,6 +4836,14 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "Repare: o placar já chega com Pontos: escrito. Mantenha. Depois, deixe à vista o número do campo valor. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima desse número, para ele tomar o lugar do número. Escolha pontos, e assim o placar lê o número guardado em pontos.",
+            "speech": "Se eu ganhar mais pontos, o placar vai mostrar o número novo!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -4686,6 +4948,21 @@
               "count": 1
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "A soma vai num relógio só dela, separado do relógio dos cactos. Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e do relógio dos cactos. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.",
+            "speech": "Mas só vale somar durante a partida, né?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.",
+            "reply": "Isso. Vamos colocar essa pergunta no relógio."
+          },
+          {
+            "after": "Olha só: os pontos sobem, um por segundo!",
+            "speech": "Olha os pontos subindo!",
+            "beforeScreen": "Esperar pelo menos duas mudanças reais do placar antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -4752,13 +5029,21 @@
             }
           }
         ],
-        "avatar": {
-          "after": "para mostrar quantos pontos você fez na partida.",
-          "speech": "Esse número vai mudar a cada partida?",
-          "beforeScreen": "Deixar a tela de fim sem o resultado visível e retomar o placar que já existe.",
-          "afterScreen": "Localizar o subtítulo e mostrar a montagem de juntar texto com a leitura de pontos no meio.",
-          "reply": "Vai mostrar os pontos daquela partida."
-        }
+        "avatar": [
+          {
+            "after": "para mostrar quantos pontos você fez na partida.",
+            "speech": "Esse número vai mudar a cada partida?",
+            "beforeScreen": "Deixar a tela de fim sem o resultado visível e retomar o placar que já existe.",
+            "afterScreen": "Localizar o subtítulo e mostrar a montagem de juntar texto com a leitura de pontos no meio.",
+            "reply": "Vai mostrar os pontos daquela partida."
+          },
+          {
+            "after": "Deixe à vista a primeira entrada. Ainda em Programação e Valores, pegue o bloco de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.",
+            "speech": "E o número dos pontos vai no meio?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "revisao",
@@ -5163,6 +5448,14 @@
               "count": 1
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "Deixe à vista o x 560 do bloco No grupo criar obstáculo, no então de Se jogando, dentro do relógio de 1.4 segundo. Depois, abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.",
+            "speech": "Quais números eu coloco no sorteio?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -5243,13 +5536,21 @@
             }
           }
         ],
-        "avatar": {
-          "after": "Agora a gente vai sortear a velocidade também!",
-          "speech": "Quero ver uns cactos mais rápidos que os outros!",
-          "beforeScreen": "Comparar os cactos ainda com vx -5 e retomar a experiência das raias.",
-          "afterScreen": "Localizar vx e montar a conta e o sorteio antes de comparar os cactos.",
-          "reply": "Vamos preparar essa diferença no bloco que cria cada cacto."
-        }
+        "avatar": [
+          {
+            "after": "Agora a gente vai sortear a velocidade também!",
+            "speech": "Quero ver uns cactos mais rápidos que os outros!",
+            "beforeScreen": "Comparar os cactos ainda com vx -5 e retomar a experiência das raias.",
+            "afterScreen": "Localizar vx e montar a conta e o sorteio antes de comparar os cactos.",
+            "reply": "Vamos preparar essa diferença no bloco que cria cada cacto."
+          },
+          {
+            "after": "Na conta, troque o primeiro 0 por -5 e, no sinal, troque + por −, o sinal de menos. Depois, deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.",
+            "speech": "Por que a conta usa menos?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "entrega",
@@ -5586,6 +5887,14 @@
               }
             }
           }
+        ],
+        "avatar": [
+          {
+            "after": "A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar variável pontos. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Troque contador por velocidade e o valor por -5.",
+            "speech": "Ah! Vou poder mudar esse número durante a corrida!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
         ]
       },
       {
@@ -5628,6 +5937,14 @@
                 }
               }
             }
+          }
+        ],
+        "avatar": [
+          {
+            "after": "A base só pode mudar durante a partida. Por isso, deixe à vista o espaço vazio dentro desse relógio, abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.",
+            "speech": "Se eu demorar na abertura, a corrida não vai começar mais rápida!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },
@@ -5708,6 +6025,20 @@
               },
               "count": 1
             }
+          }
+        ],
+        "avatar": [
+          {
+            "after": "Agora deixe à vista o lado esquerdo da comparação do Se de dentro. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade.",
+            "speech": "Até onde a velocidade pode mudar?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Agora deixe à vista o espaço vazio do então do Se de dentro. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte ali. Escolha velocidade e coloque -1 no valor da soma. Somar -1 deixa a base menor, e base menor é cacto mais rápido.",
+            "speech": "Quero ver a corrida ficando mais rápida!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
           }
         ]
       },

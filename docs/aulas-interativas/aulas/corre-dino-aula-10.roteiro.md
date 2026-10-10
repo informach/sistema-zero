@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Aproximar até o primeiro BATEU! e apontar o vão entre os desenhos. Diminuir a área para 80% sem mexer na distância. Aproximar com o botão −, que anda de 10 em 10, até os desenhos se encostarem (com o deslizante, BATEU! aparece antes, ainda com vão) e, por último, diminuir a área para 40%, com a indicação da batida à vista a cada mudança. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-caixa-decide-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a área em 100% e o cacto longe. Aproximar até o primeiro BATEU! e apontar o vão entre os desenhos. Diminuir a área para 80% sem mexer na distância. Aproximar com o botão −, que anda de 10 em 10, até os desenhos se encostarem (com o deslizante, BATEU! aparece antes, ainda com vão) e, por último, diminuir a área para 40%, com a indicação da batida à vista a cada mudança. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Mostrar BATEU! com a área em 100% e o vão entre os desenhos.
 
@@ -29,6 +27,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é a mesma experiência da fase anterior, agora para a gente entender o tamanho da área que decide a batida.
 >
 > Olha aqui: com a área do Dino em 100%, eu aproximo o cacto até aparecer BATEU! Os desenhos ainda nem se encostaram: a área pega um pedaço vazio em volta do desenho.”
+
+**ID de edição:** `video-caixa-decide-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -55,7 +55,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -63,9 +65,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência da parte anterior? Com a área em 100%, a batida vinha antes de os desenhos se encostarem. Agora a gente vai mostrar essa área!
 >
-> O contorno precisa ser desenhado depois do Dino, para aparecer por cima dele. Por isso, deixe à vista o lugar logo depois de Desenhar o sprite dino, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Mostrar a caixa de colisão do sprite e solte logo depois do desenho do Dino. Escolha dino.
->
-> Agora comece a partida. Olha só: aparece um contorno em volta do Dino, que só mostra a área e não muda a batida! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no então de Se jogando, logo depois de Desenhar o sprite dino, está Mostrar a caixa de colisão do sprite, com dino. Depois de corrigir, teste de novo.
+> O contorno precisa ser desenhado depois do Dino, para aparecer por cima dele. Por isso, deixe à vista o lugar logo depois de Desenhar o sprite dino, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Mostrar a caixa de colisão do sprite e solte logo depois do desenho do Dino. Escolha dino.”
+
+**ID de edição:** `video-ligar-raio-x-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Quero ver onde fica essa área!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Agora comece a partida. Olha só: aparece um contorno em volta do Dino, que só mostra a área e não muda a batida! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no então de Se jogando, logo depois de Desenhar o sprite dino, está Mostrar a caixa de colisão do sprite, com dino. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
 
@@ -78,7 +92,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Manter o contorno menor e o desenho do Dino visíveis para a comparação.
 
 **Professora:**
 
@@ -88,7 +104,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A área é escolhida uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Usar área de colisão, que chega com 80 % do tamanho, e solte no fim de Ao iniciar. No sprite, escolha dino e deixe a porcentagem em 80.
 >
-> Agora comece a partida e olhe o contorno: ele ficou menor, mas o Dino continua do mesmo tamanho, 64, porque só a área da batida mudou! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Usar área de colisão está no fim de Ao iniciar, com dino e 80, e o tamanho do Dino continua 64. Depois de corrigir, teste de novo.
+> Agora comece a partida e olhe o contorno: ele ficou menor, mas o Dino continua do mesmo tamanho, 64, porque só a área da batida mudou!”
+
+**ID de edição:** `video-ajustar-area-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “O contorno encolheu, mas o Dino não!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Usar área de colisão está no fim de Ao iniciar, com dino e 80, e o tamanho do Dino continua 64. Depois de corrigir, teste de novo.
 >
 > Deixe um cacto chegar e compare a batida com a do teste anterior. Se quiser, teste 70 e 85 nesse campo e compare. Você pode escolher um valor entre 70 e 85, e, no exemplo, fica 80. Não mude o tamanho do desenho para tentar ajustar a área, porque isso encolheria o Dino.
 >
@@ -103,15 +133,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. No “Repare” da abertura, apontar no jogo ou no projeto o que ainda falta. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-retirar-contorno-avatar-01`.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. No “Repare” da abertura, apontar no jogo ou no projeto o que ainda falta. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Mostrar a área já ajustada e os blocos encaixados, antes de arrastar qualquer um.
 
 **Professora:**
 
 > “Repare: agora que a área da batida está ajustada, o contorno não faz mais falta. Ele serviu para você enxergar a área enquanto ajustava. Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.”
+
+**ID de edição:** `video-retirar-contorno-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 

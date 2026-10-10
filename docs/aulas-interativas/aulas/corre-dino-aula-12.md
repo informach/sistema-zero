@@ -31,7 +31,9 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 **Zappy na página (não gravar):** Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte.
 
-**Participação no vídeo:** ID video-sorteio-tira-na-hora-avatar-01. Professora até “Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.”. Antes da entrada: Sortear até aparecer uma repetição e apontar a marca na régua; não avançar para as velocidades. Dedé entra, com os gestos parados, e fala: “Ué, saiu o mesmo lugar outra vez!”. Dedé sai antes da resposta. Retomada da professora: “Pode acontecer num sorteio. Todos ficam entre 500 e 560, depois da borda 480, fora da tela. O sorteio respeita os limites, e um lugar pode repetir.”. Na retomada: Continuar explicando os limites e a repetição; depois demonstrar o sorteio das velocidades. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-sorteio-tira-na-hora-avatar-01. Professora até “Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.”. Antes: Sortear até aparecer uma repetição e apontar a marca na régua; não avançar para as velocidades. Dedé: “Ué, saiu o mesmo lugar outra vez!”. Retomada da professora: “Pode acontecer num sorteio. Todos ficam entre 500 e 560, depois da borda 480, fora da tela.”. Depois: Continuar explicando os limites e a repetição; depois demonstrar o sorteio das velocidades.
 
 **Experiência existente:** `random`. Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem. Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -42,6 +44,10 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 **Blocos na página:** video-lugar-diferente → fala-lugar-diferente.
 
 **Zappy na página (não gravar):** Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-lugar-diferente-avatar-01. Professora até “Deixe à vista o x 560 do bloco No grupo criar obstáculo, no então de Se jogando, dentro do relógio de 1.4 segundo. Depois, abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Quais números eu coloco no sorteio?”. Retomada da professora: “O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -57,7 +63,11 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 **Zappy na página (não gravar):** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Participação no vídeo:** ID video-velocidade-propria-avatar-01. Professora até “Agora a gente vai sortear a velocidade também!”. Antes da entrada: Comparar os cactos ainda com vx -5 e retomar a experiência das raias. Dedé entra, com os gestos parados, e fala: “Quero ver uns cactos mais rápidos que os outros!”. Dedé sai antes da resposta. Retomada da professora: “Vamos preparar essa diferença no bloco que cria cada cacto. Deixe à vista o campo vx, com -5, no bloco que cria os cactos. Depois, abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5.”. Na retomada: Localizar vx e montar a conta e o sorteio antes de comparar os cactos. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-velocidade-propria-avatar-01. Professora até “Agora a gente vai sortear a velocidade também!”. Antes: Comparar os cactos ainda com vx -5 e retomar a experiência das raias. Dedé: “Quero ver uns cactos mais rápidos que os outros!”. Retomada da professora: “Vamos preparar essa diferença no bloco que cria cada cacto. Deixe à vista o campo vx, com -5, no bloco que cria os cactos.”. Depois: Localizar vx e montar a conta e o sorteio antes de comparar os cactos.
+
+ID video-velocidade-propria-avatar-02. Professora até “Na conta, troque o primeiro 0 por -5 e, no sinal, troque + por −, o sinal de menos. Depois, deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Por que a conta usa menos?”. Retomada da professora: “Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

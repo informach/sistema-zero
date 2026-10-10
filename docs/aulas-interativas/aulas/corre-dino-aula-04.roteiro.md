@@ -41,9 +41,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Tocar efeito em Quando apertar Espaço e os contadores de pulos e sons em 0. Fazer os gestos no ritmo da fala, esperando o pouso entre os testes, e manter os contadores à vista depois de cada clique. Levar Tocar efeito para Quando o Dino pular e repetir os testes. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-dedo-e-pulo-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Tocar efeito em Quando apertar Espaço e os contadores de pulos e sons em 0. Fazer os gestos no ritmo da fala, esperando o pouso entre os testes, e manter os contadores à vista depois de cada clique. Levar Tocar efeito para Quando o Dino pular e repetir os testes. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o teste por tecla e o teste por toque; deixar os contadores à vista e o Dino pousado.
 
@@ -54,6 +52,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > Olha aqui: com Tocar efeito em Quando apertar Espaço, eu clico em Apertar Espaço. O Dino pula, e o som toca. Com ele ainda no ar, eu clico de novo: o som toca outra vez, mas o Dino não pula de novo. Agora são 2 sons para 1 pulo.
 >
 > Depois que ele pousa, eu clico em Tocar para pular. O Dino pula, e nenhum som toca, porque esse pulo não veio da tecla Espaço.”
+
+**ID de edição:** `video-dedo-e-pulo-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -78,11 +78,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Percebeu?”, deixar ouvir que o pulo está sem som. No teste final, em “Escute”, deixar o som do pulo ser ouvido, sem fala nem música por cima. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
-**ID de edição:** `video-som-no-pulo-avatar-01`.
-
-**Na tela:** Concluir os testes sem sobrepor vozes ao som; esperar o Dino pousar.
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -92,13 +90,41 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > O som vai esperar um acontecimento, e os acontecimentos ficam numa área própria, chamada Quando acontecer. O seu projeto ainda não tem essa área, por isso a gente vai criar uma. Deixe à vista um espaço vazio do projeto, separado de Ao iniciar e de Enquanto estiver rodando. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse espaço.
 >
-> Agora deixe à vista o espaço vazio dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área. No nome, escolha dino. É esse bloco que percebe o pulo do Dino, venha ele da tecla ou do toque.
+> Agora deixe à vista o espaço vazio dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área. No nome, escolha dino. É esse bloco que percebe o pulo do Dino, venha ele da tecla ou do toque.”
+
+**ID de edição:** `video-som-no-pulo-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Até quando eu pular pelo toque, o som vai tocar!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Tocar o efeito do salto inteiro antes da reação; não sobrepor as vozes ao som.
+
+**Professora:**
+
+> “Agora deixe à vista o espaço vazio dentro de Quando o sprite pular. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro do evento do pulo. No efeito, escolha pulo.
 >
-> Agora deixe à vista o espaço vazio dentro de Quando o sprite pular. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro do evento do pulo. No efeito, escolha pulo.
->
-> Agora teste! Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.
+> Agora teste! Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som!”
+
+**ID de edição:** `video-som-no-pulo-avatar-02`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Uhu! Agora dá para ouvir!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir os testes sem sobrepor vozes ao som; esperar o Dino pousar.
+
+**Professora:**
+
+> “Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.
 >
 > Por último, toque duas vezes na barra de espaço com o Dino no ar. Repare: o segundo toque não faz outro salto nem outro som, porque o som está ligado ao pulo, e não à tecla.”
+
+**ID de edição:** `video-som-no-pulo-avatar-03`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 

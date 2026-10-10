@@ -30,7 +30,11 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Blocos na página:** video-nomes → fala-nomes → experimento-nomes.
 
-**Participação no vídeo:** ID video-nomes-avatar-01. Professora até “cada um precisa de um nome só dele.”. Antes da entrada: Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível. Dedé entra, com os gestos parados, e fala: “Que nome eu dou para a folha?”. Dedé sai antes da resposta. Retomada da professora: “Por isso, eu escolho folha-nave. Olha só: os avisos somem, e a nave volta a voar na prévia, porque a folha ganhou um nome só dela, e a nave continua com o nome nave.”. Na retomada: Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-nomes-avatar-01. Professora até “Agora eu clico em Tirar este bloco. Tá vendo? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Os três blocos reclamaram juntos!”. Retomada da professora: “Eu clico em Pôr de volta, e os avisos somem.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-nomes-avatar-02. Professora até “cada um precisa de um nome só dele.”. Antes: Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível. Dedé: “Que nome eu dou para a folha?”. Retomada da professora: “Por isso, eu escolho folha-nave.”. Depois: Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite.
 
 **Experiência existente:** `unique-names`. Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave. Sem palpite, pistas ou pergunta final.
 
@@ -40,6 +44,10 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Blocos na página:** video-trazer-artes → fala-trazer-artes.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-trazer-artes-avatar-01. Professora até “Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Já trouxe os desenhos. Eles já vão aparecer?”. Retomada da professora: “Agora clique na prévia e toque na tecla Enter para começar uma partida.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Separe o quadro do tamanho no jogo
@@ -48,7 +56,9 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Blocos na página:** video-recorte → fala-recorte → experimento-recorte.
 
-**Participação no vídeo:** ID video-recorte-avatar-01. Professora até “São esses dois quadros que vão se revezar na animação.”. Antes da entrada: Concluir o recorte correto de 32 e comparar os quadros 1 e 2. Dedé entra, com os gestos parados, e fala: “Posso deixar a nave maior no jogo sem mudar o recorte?”. Dedé sai antes da resposta. Retomada da professora: “Agora eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o tamanho no jogo é outra escolha, por isso ele não muda o recorte da folha.”. Na retomada: Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-recorte-avatar-01. Professora até “São esses dois quadros que vão se revezar na animação.”. Antes: Concluir o recorte correto de 32 e comparar os quadros 1 e 2. Dedé: “Posso deixar a nave maior no jogo sem mudar o recorte?”. Retomada da professora: “Agora eu mudo tamanho no jogo para 80.”. Depois: Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32.
 
 **Experiência existente:** `sheet-vs-sprite`. Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32. Sem palpite, pistas ou pergunta final.
 
@@ -58,6 +68,12 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Blocos na página:** video-trocar-nave → fala-trocar-nave.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-trocar-nave-avatar-01. Professora até “Para isso, troque o criador da nave. Em Ao iniciar, encontre Criar nave e leia o x e o y dele, porque o bloco novo vai usar os mesmos. Depois deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Sprites, Criar e trocar aparência e arraste Criar sprite em x y largura altura com imagem até esse espaço livre. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “O bloco novo já está preenchido. E o antigo?”. Retomada da professora: “Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-trocar-nave-avatar-02. Professora até “Agora clique na prévia e comece uma partida de novo. Olha só: a sua nave aparece, com os dois desenhos espremidos, porque o criador está usando a folha inteira, como na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é por esse nome que os controles e as colisões procuram o sprite.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Eles andam, mas ainda estão espremidos!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 5. Prepare o recorte da nave
@@ -65,6 +81,10 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 **Tarefa / Zappy na página:** Agora prepare o recorte da sua nave! Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-folha-nave → fala-folha-nave.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-folha-nave-avatar-01. Professora até “Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Que nome eu dou para essa folha?”. Retomada da professora: “No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta fase.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
@@ -74,7 +94,9 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Blocos na página:** video-animar-nave → fala-animar-nave.
 
-**Participação no vídeo:** ID video-animar-nave-avatar-01. Professora até “do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”. Antes da entrada: Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números. Dedé entra, com os gestos parados, e fala: “No Pinta era um e dois. Por que aqui é zero e um?”. Dedé sai antes da resposta. Retomada da professora: “O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.”. Na retomada: Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-animar-nave-avatar-01. Professora até “do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”. Antes: Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números. Dedé: “No Pinta era um e dois. Por que aqui é zero e um?”. Retomada da professora: “O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.”. Depois: Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação.
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

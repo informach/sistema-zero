@@ -22,7 +22,9 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar. No Olha só, parar e apontar o fogo da nave pulsando e uma pedra caindo, com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima parte. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.
+**Direção geral do clipe:** Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar. No Olha só, parar e apontar o fogo da nave pulsando e uma pedra caindo, com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima parte. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -30,9 +32,21 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > Olha aqui: eu clico no jogo e toco na tecla Enter para começar. Quando eu seguro a seta para a direita, a nave anda para a direita. O objetivo é atirar nas pedras para fazer pontos antes de perder as vidas.
 >
-> Olha só: o fogo da nave pulsa, e as pedras também mudam um pouquinho enquanto caem. É que cada desenho deste exemplo tem duas versões, que se revezam bem rápido. E as regras continuam as mesmas do jogo que você terminou em Nave Contra Asteroides: só os desenhos são novos, e é isso que você vai fazer com as suas próprias artes.
->
-> Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Você pode seguir mesmo sem vencer. Quando terminar, clique em Próxima parte.”
+> Olha só: o fogo da nave pulsa, e as pedras também mudam um pouquinho enquanto caem. É que cada desenho deste exemplo tem duas versões, que se revezam bem rápido. E as regras continuam as mesmas do jogo que você terminou em Nave Contra Asteroides: só os desenhos são novos, e é isso que você vai fazer com as suas próprias artes.”
+
+**ID de edição:** `video-jogo-pronto-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Agora eu quero desenhar a minha nave!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Você pode seguir mesmo sem vencer. Quando terminar, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Sua vez! Jogue um pouco: mova a nave, atire e repare nos desenhos e no fogo, porque logo você vai criar as suas próprias artes. Quando terminar, clique em Próxima parte.
@@ -62,9 +76,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do tema Nave no espaço, com a regra ligada: clicar em Mover e em Atirar e deixar ver a nave andar e o tiro sair. Apontar a lista Regras do jogo. Em Tema do mesmo jogo, escolher Carrinho na estrada, Submarino no mar e Nave no espaço, deixando ver os desenhos mudarem e a lista continuar com as quatro regras. Clicar em Regra: a tecla atira para desligar, mostrar essa regra apagada na lista, clicar em Atirar e deixar ver que não sai tiro, com a frase embaixo do jogo. Esperar um instante e ligar a regra de novo. Meme na comparação: na frase do pega-pega, o Zappy com fantasia de pirata e o Zappy com fantasia de astronauta correndo no mesmo pega-pega, com a legenda "fantasia nova, mesma brincadeira". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-aparencia-e-regras-avatar-01`.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do tema Nave no espaço, com a regra ligada: clicar em Mover e em Atirar e deixar ver a nave andar e o tiro sair. Apontar a lista Regras do jogo. Em Tema do mesmo jogo, escolher Carrinho na estrada, Submarino no mar e Nave no espaço, deixando ver os desenhos mudarem e a lista continuar com as quatro regras. Clicar em Regra: a tecla atira para desligar, mostrar essa regra apagada na lista, clicar em Atirar e deixar ver que não sai tiro, com a frase embaixo do jogo. Esperar um instante e ligar a regra de novo. Meme na comparação: na frase do pega-pega, o Zappy com fantasia de pirata e o Zappy com fantasia de astronauta correndo no mesmo pega-pega, com a legenda "fantasia nova, mesma brincadeira". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Testar os temas, voltar para Nave no espaço e concluir a comparação com as fantasias.
 
@@ -77,6 +89,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 > Agora, em Tema do mesmo jogo, eu escolho Carrinho na estrada. Olha só: a nave virou um carrinho e o asteroide também mudou de desenho, mas a lista continua com as mesmas quatro regras. Depois eu escolho Submarino no mar, e acontece a mesma coisa: os desenhos mudam e as regras ficam. Por último, eu volto para Nave no espaço.
 >
 > É como brincar de pega-pega fantasiado. Com fantasia de pirata ou de astronauta, a brincadeira continua a mesma: quem é pego vira o pegador. Na experiência, Tema do mesmo jogo troca a fantasia, e a lista Regras do jogo é a brincadeira.”
+
+**ID de edição:** `video-aparencia-e-regras-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -103,9 +117,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da nave azul no jogo da fase, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave do jogo da fase no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a do jogo da fase azul. Meme na comparação: na frase do gibi, o Zappy copiando a nave de um gibi numa folha e pintando a cópia de rosa, enquanto a nave do gibi continua azul, com a legenda "a cópia é sua". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-copias-avatar-01`.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da nave azul no jogo da fase, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave do jogo da fase no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a do jogo da fase azul. Meme na comparação: na frase do gibi, o Zappy copiando a nave de um gibi numa folha e pintando a cópia de rosa, enquanto a nave do gibi continua azul, com a legenda "a cópia é sua". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir Exportar e Importar na experiência; mostrar as duas naves ainda azuis.
 
@@ -116,6 +128,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 > Olha aqui: quando eu clico em Exportar, aparece o arquivo jogo-da-nave, guardando a nave azul. E o jogo da fase continua no lugar, com a mesma nave azul, porque exportar não leva o jogo embora: só faz uma cópia dele num arquivo.
 >
 > Depois eu clico em Importar, e o mesmo jogo aparece no lado do Estúdio, também com a nave azul. Ou seja, o arquivo virou um projeto no Estúdio.”
+
+**ID de edição:** `video-copias-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -142,7 +156,9 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -150,9 +166,21 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > No Estúdio, esse comando se chama Baixar o projeto. Para começar, clique em Abrir meu Estúdio nesta parte. Na outra aba, se o menu estiver escondido, clique em Mostrar menu. Depois abra Explorar e a trilha da aventura Nave Contra Asteroides, clique no cartão dessa aventura e entre na última fase, Termine e recomece a partida.
 >
-> Retome ali o projeto que você concluiu e confira início, pontos, vidas e reinício. Se ele abriu vazio, traga o que você enviou em Mais opções, O meu jogo, Trazer o que eu enviei. E, se ainda falta terminar, conclua esse jogo antes de fazer a cópia, porque a cópia guarda o jogo do jeito que ele está agora.
->
-> Com o jogo pronto, abra Mais opções, no botão de três pontinhos do Estúdio dessa fase. Em Levar o jogo, clique em Baixar o projeto e espere o arquivo que termina em .szproject.json chegar à pasta de downloads do seu aparelho. Olha só: esse arquivo é a cópia do projeto que você está vendo. Confira o nome do arquivo antes de voltar à aba da fase.
+> Retome ali o projeto que você concluiu e confira início, pontos, vidas e reinício. Se ele abriu vazio, traga o que você enviou em Mais opções, O meu jogo, Trazer o que eu enviei. E, se ainda falta terminar, conclua esse jogo antes de fazer a cópia, porque a cópia guarda o jogo do jeito que ele está agora.”
+
+**ID de edição:** `video-exportar-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Vou conferir o jogo antes de fazer a cópia!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Com o jogo pronto, abra Mais opções, no botão de três pontinhos do Estúdio dessa fase. Em Levar o jogo, clique em Baixar o projeto e espere o arquivo que termina em .szproject.json chegar à pasta de downloads do seu aparelho. Olha só: esse arquivo é a cópia do projeto que você está vendo. Confira o nome do arquivo antes de voltar à aba da fase.
 >
 > Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o nome do arquivo com a conferência que a gente acabou de fazer. Quando o arquivo .szproject.json estiver nos seus downloads, volte a esta aba e clique em Próxima parte.”
 
@@ -165,13 +193,27 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
-> “Agora a gente vai levar o arquivo que você baixou para o seu Estúdio. Clique em Abrir meu Estúdio nesta parte e, na outra aba, em Meus Jogos, clique em Importar. Escolha o arquivo .szproject.json que você acabou de baixar e abra o projeto importado. Repare: os blocos de Jogo 2D vêm junto, porque o arquivo guarda o projeto inteiro.
->
-> Agora dê um nome a essa cópia. Clique no nome do projeto no alto, escreva um nome que você reconheça, como Minha nave, e confirme a edição. Depois confira a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo você importou. Não apague os seus outros jogos.
+> “Agora a gente vai levar o arquivo que você baixou para o seu Estúdio. Clique em Abrir meu Estúdio nesta parte e, na outra aba, em Meus Jogos, clique em Importar. Escolha o arquivo .szproject.json que você acabou de baixar e abra o projeto importado. Repare: os blocos de Jogo 2D vêm junto, porque o arquivo guarda o projeto inteiro.”
+
+**ID de edição:** `video-importar-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Até os blocos vieram junto!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Agora dê um nome a essa cópia. Clique no nome do projeto no alto, escreva um nome que você reconheça, como Minha nave, e confirme a edição. Depois confira a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo você importou. Não apague os seus outros jogos.
 >
 > Por último, volte a Meus Jogos pelo nome do Estúdio na barra de cima e abra esse cartão de novo. Tá vendo? O nome e os blocos continuam lá, porque o Estúdio guardou a sua cópia. É esse cartão que você vai retomar nas próximas fases.
 >

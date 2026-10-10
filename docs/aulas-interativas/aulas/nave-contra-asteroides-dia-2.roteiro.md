@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy apertando a campainha de uma porta, com a legenda "apertou, tocou"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-tecla-e-repeticao-avatar-01`.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Criar um tiro em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado sem clicar em Apertar a tecla, mostrando a peça em 0 vezes. Clicar em Apertar a tecla e mostrar um tiro e a peça em 1 vez. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar 5 tiros no fim do teste. Meme na comparação: na frase da campainha, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy apertando a campainha de uma porta, com a legenda "apertou, tocou"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Deixar o primeiro teste terminar sem tiros e apontar 0 vezes na peça.
 
@@ -29,6 +27,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é a mesma experiência da primeira fase, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.
 >
 > Olha aqui: eu coloco Criar um tiro em Quando acontecer e clico em Começar o jogo. O jogo roda e o teste para, mas tá vendo? Nenhum tiro nasce, e a peça mostra 0 vezes. É que Quando acontecer espera um acontecimento, e ninguém clicou em Apertar a tecla.”
+
+**ID de edição:** `video-tecla-e-repeticao-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -55,9 +55,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy conferindo o relógio de pulso antes de responder, com a legenda "ler na hora"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-escrito-e-lido-avatar-01`.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A nave se move pelo controle x da nave, não por arrastar o desenho. Com O número 400, clicar em Atirar, mudar x da nave para 640 e atirar de novo, mostrando as duas marcas em 400. Trocar para O centro x da nave, atirar, mudar a nave para 200 e atirar, mostrando as marcas em 640 e 200. Ligar Marcas da caixa e atirar, apontando o centro x e a borda de cima da caixa. Meme na comparação: na frase do relógio, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy conferindo o relógio de pulso antes de responder, com a legenda "ler na hora"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir os disparos com o número fixo, com a nave em 640 e o tiro distante; terminar a comparação com o relógio.
 
@@ -68,6 +66,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > Olha aqui: em De onde vem o x do tiro, está escolhido O número 400, e a nave está em x 400. Eu clico em Atirar, e o tiro nasce em 400, bem na nave. Agora eu mudo x da nave para 640 e atiro de novo. Tá vendo? O tiro nasce em 400 outra vez, longe da nave, porque o número escrito não muda quando a nave anda.
 >
 > É como responder que horas são sempre com o mesmo horário, sem olhar o relógio: às vezes você acerta, mas quase sempre erra. Para acertar, é preciso olhar o relógio na hora.”
+
+**ID de edição:** `video-escrito-e-lido-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -94,9 +94,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-direcao-do-tiro-avatar-01`.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A velocidade para o lado fica fechada em 0 nesta experiência. Colocar velocidade para baixo em -9, clicar em Avançar 1 quadro algumas vezes e mostrar o y caindo de 135 para 126, 117 e 108, com o tiro subindo. Trocar para 9, avançar outros quadros e mostrar o y crescendo e o tiro descendo. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Avançar com -9 e mostrar o tiro subindo, com os valores de y à vista.
 
@@ -105,6 +103,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender como a velocidade decide para onde o tiro vai depois de nascer. Aqui, a velocidade para o lado fica em 0, e o tiro não anda para os lados.
 >
 > Olha aqui: eu coloco velocidade para baixo em -9 e clico em Avançar 1 quadro algumas vezes. Tá vendo? O y vai de 135 para 126, depois 117, depois 108, e o tiro sobe. É que, em cada quadro, o jogo soma a velocidade ao y. Somar um número negativo diminui o y, e, na tela, y menor fica mais para cima.”
+
+**ID de edição:** `video-direcao-do-tiro-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -127,9 +127,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Clipe `video-criar-tiro` · Monte o disparo da barra de espaço
 
-**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 6 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no "Tá vendo?", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, tocar na barra de espaço e, no "Tá vendo?", mostrar que nada acontece. Abrir cada caminho com o destino à vista antes. Trocar os números de x e y por blocos de leitura, com nave selecionada. Não testar visibilidade antes do desenho. Confirmar o grupo e as duas velocidades. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -139,23 +141,71 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Como vão ser muitos tiros, eles ficam juntos num grupo, que é um conjunto de objetos que o jogo move e desenha de uma vez. O grupo é criado uma vez só, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar nave.
 >
-> Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo.
+> Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo.”
+
+**ID de edição:** `video-criar-tiro-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “O grupo dos tiros está pronto!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “Agora o disparo. Tocar numa tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.
 >
-> Agora o disparo. Tocar numa tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.
+> Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço.”
+
+**ID de edição:** `video-criar-tiro-avatar-02`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Vou poder atirar quando eu apertar espaço!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “O tiro nasce dentro desse evento: deixe à vista o espaço vazio dentro de Quando apertar a tecla. Abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar tiro no grupo e solte nesse espaço. O grupo já vem tiros, e o raio já vem em 5, que é o tamanho do tiro: mantenha os dois. E escolha uma cor que apareça bem no fundo escuro.
 >
-> Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço.
->
-> O tiro nasce dentro desse evento: deixe à vista o espaço vazio dentro de Quando apertar a tecla. Abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar tiro no grupo e solte nesse espaço. O grupo já vem tiros, e o raio já vem em 5, que é o tamanho do tiro: mantenha os dois. E escolha uma cor que apareça bem no fundo escuro.
->
-> Agora o lugar de onde o tiro sai: o x vai ler a posição da nave. Deixe à vista o número do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.
->
-> Faça o mesmo com o y: deixe à vista o número do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a posição y do sprite, solte em cima desse número e escolha nave também.
+> Agora o lugar de onde o tiro sai: o x vai ler a posição da nave. Deixe à vista o número do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.”
+
+**ID de edição:** `video-criar-tiro-avatar-03`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “E a altura de onde sai o tiro?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “Faça o mesmo com o y: deixe à vista o número do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a posição y do sprite, solte em cima desse número e escolha nave também.
 >
 > Falta a direção. No bloco do tiro, vx é a velocidade para os lados e já vem em 0: mantenha. Já vy é a velocidade para baixo: troque para -9, com o sinal de menos, para o tiro subir.
 >
-> Por último, o som. Deixe à vista o encaixe logo abaixo de Criar tiro, ainda dentro da tecla. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte logo abaixo de Criar tiro. No menu, escolha tiro grande.
->
-> Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites tiros. Em Quando acontecer, dentro de Quando apertar a tecla barra de espaço, vem primeiro Criar tiro no grupo tiros, com o centro x e a posição y da nave, raio 5, vx 0 e vy -9, e logo abaixo vem Tocar efeito tiro grande.
+> Por último, o som. Deixe à vista o encaixe logo abaixo de Criar tiro, ainda dentro da tecla. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte logo abaixo de Criar tiro. No menu, escolha tiro grande.”
+
+**ID de edição:** `video-criar-tiro-avatar-04`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “O disparo também vai ter som!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites tiros. Em Quando acontecer, dentro de Quando apertar a tecla barra de espaço, vem primeiro Criar tiro no grupo tiros, com o centro x e a posição y da nave, raio 5, vx 0 e vy -9, e logo abaixo vem Tocar efeito tiro grande.
 >
 > O tiro ainda não aparece na tela, porque o jogo ainda não move nem desenha o grupo tiros. Isso vem na próxima parte.
 >
@@ -170,7 +220,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar mostrando o som sem tiro: clicar na área do jogo e tocar na barra de espaço, deixando ouvir o disparo com a tela sem tiros. Testar a tecla com foco no jogo, em duas posições. Enquadrar a sequência da nave seguida pelo movimento e desenho de tiros. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -178,11 +230,37 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
 >
-> Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima.
+> Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima.”
+
+**ID de edição:** `video-tiros-voam-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Já tem movimento. Falta desenhar!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Esperar o tiro aparecer e subir, depois interromper os controles para a fala.
+
+**Professora:**
+
+> “Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe. Escolha tiros nesse bloco também.
 >
-> Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe. Escolha tiros nesse bloco também.
->
-> Agora teste: clique na área do jogo, toque na barra de espaço e solte. Olha só: o tiro sai da nave e sobe! Depois, mova a nave para outro lugar e atire de novo. O tiro nasce na nave outra vez, porque o jogo lê a posição dela a cada disparo.
+> Agora teste: clique na área do jogo, toque na barra de espaço e solte. Olha só: o tiro sai da nave e sobe!”
+
+**ID de edição:** `video-tiros-voam-avatar-02`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “O tiro saiu da nave!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Depois, mova a nave para outro lugar e atire de novo. O tiro nasce na nave outra vez, porque o jogo lê a posição dela a cada disparo.
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. Depois de corrigir, teste de novo.
 >
@@ -197,7 +275,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Começar no estado inicial. Clicar em Tempo e deixar os tiros saírem pela borda de cima, mostrando a prateleira Fora da tela, no grupo encher e o número no grupo crescer. A chave Tirar do grupo quem sair da tela só abre depois da saída de dois tiros. Ligar a chave e deixar o tempo passar (se o tempo estiver parado, clicar em Tempo), mostrando a prateleira vazia, Removidos do grupo e o número no grupo igual ao da tela. Meme na comparação: na frase da lista de convidados, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy na porta de uma festa, com uma prancheta, riscando da lista de convidados um tiro que saiu pela porta, com a legenda "saiu da tela, sai da lista"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Começar no estado inicial. Clicar em Tempo e deixar os tiros saírem pela borda de cima, mostrando a prateleira Fora da tela, no grupo encher e o número no grupo crescer. A chave Tirar do grupo quem sair da tela só abre depois da saída de dois tiros. Ligar a chave e deixar o tempo passar (se o tempo estiver parado, clicar em Tempo), mostrando a prateleira vazia, Removidos do grupo e o número no grupo igual ao da tela. Meme na comparação: na frase da lista de convidados, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy na porta de uma festa, com uma prancheta, riscando da lista de convidados um tiro que saiu pela porta, com a legenda "saiu da tela, sai da lista"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -205,9 +285,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os tiros sobem e saem pela borda de cima, e, na tela, eles somem. Mas tá vendo? Nos bastidores, cada tiro que saiu vai para a prateleira Fora da tela, no grupo, e o número no grupo só cresce, enquanto na tela continuam poucos tiros. Ou seja, sair da tela não tira o tiro do grupo.
 >
-> É como a lista de convidados de uma festa: se um convidado vai embora, o nome dele continua na lista. Só sai da lista se alguém riscar.
->
-> Agora eu ligo Tirar do grupo quem sair da tela. Olha só: a prateleira fica vazia, aparece Removidos do grupo, e o número no grupo fica igual ao número na tela. É que a regra risca da lista quem saiu da tela. No seu jogo, esse mesmo bloco vai limpar o grupo dos tiros.
+> É como a lista de convidados de uma festa: se um convidado vai embora, o nome dele continua na lista. Só sai da lista se alguém riscar.”
+
+**ID de edição:** `video-tiro-fora-da-tela-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Como eu tiro os que já foram embora?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Agora eu ligo Tirar do grupo quem sair da tela. Olha só: a prateleira fica vazia, aparece Removidos do grupo, e o número no grupo fica igual ao número na tela. É que a regra risca da lista quem saiu da tela. No seu jogo, esse mesmo bloco vai limpar o grupo dos tiros.
 >
 > Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.”
 
@@ -220,7 +312,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar pela retomada: atirar algumas vezes e, no "Tá vendo?", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar pela retomada: atirar algumas vezes e, no "Tá vendo?", mostrar os tiros sumindo pela borda de cima, sem prometer que o grupo foi limpo. Montar o bloco com interior vazio. A ausência visual de tiros não prova limpeza: mostrar a ordem e usar o verificador. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -230,13 +324,37 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, deixe à vista o espaço entre Mover os sprites do grupo tiros e Desenhar o grupo tiros, dentro de A cada quadro do jogo.
 >
-> Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.
+> Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.”
+
+**ID de edição:** `video-faxina-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Qual grupo eu escolho aqui?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o espaço de dentro do bloco, porque aqui ele só precisa tirar os tiros do grupo.
 >
-> No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o espaço de dentro do bloco, porque aqui ele só precisa tirar os tiros do grupo.
->
-> Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem.
->
-> Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.
+> Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem.”
+
+**ID de edição:** `video-faxina-avatar-02`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Vou conferir se os tiros continuam saindo da nave!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase.”
 

@@ -42,7 +42,7 @@ Dedé pergunta por que o número ficou no zero, o que acontece ao tocar num espa
 entra o bloco que conta. Na personalização, escolhe o gato; na publicação, pergunta como mostrar
 o jogo à família. A professora responde logo depois, mantendo os passos completos. A pergunta do
 espaço vazio passa para Dedé, sem repetição na voz da professora. A escolha do gato é um exemplo,
-não um requisito. As cinco entradas e seus IDs estão em [Avatares nos vídeos](../AVATARES-NOS-VIDEOS.md).
+não um requisito. As nove entradas e seus IDs estão em [Avatares nos vídeos](../AVATARES-NOS-VIDEOS.md).
 
 Zappy continua nas instruções da página, com o recurso Ouvir da plataforma. No meme e na tela de
 publicação, sua presença é somente visual: não incluir voz do mascote na gravação.
@@ -173,7 +173,7 @@ esperada, sem criar bloqueio técnico de conclusão ou acesso obrigatório ao Mu
 
 ## Conferência da gravação e edição
 
-Conferir as cinco entradas do Dedé, cada uma antes da resposta e do gesto correspondente.
+Conferir as nove entradas do Dedé, cada uma antes da resposta e do gesto correspondente.
 Manter o placar e os blocos visíveis. As perguntas precisam se ligar às respostas sem repetir a
 mesma explicação; a criança não substitui quem assiste nem executa os passos no lugar da professora.
 
@@ -199,3 +199,14 @@ comemoração, **Copiar link de jogar** e **Link copiado!**, Fechar e Concluir f
 O tutorial de compartilhamento deve acompanhar a orientação da aula e conservar as alternativas
 de capa e link público. As novas falas precisam ser regravadas antes de substituir os vídeos
 atuais e o caminho precisa de ensaio com crianças.
+
+## Revisão de ritmo e entendimento · 10/10/2026
+
+O roteiro tem 9 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
+
+| Entrada | Depois da professora | Criança | Retomada da professora |
+| --- | --- | --- | --- |
+| A2P3-D02 | “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!” | Dedé: “Agora sim! Já está contando!” | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” |
+| A2P3-D03 | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” | Dedé: “E se eu tocar aqui de novo?” | “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.” |
+| A2P4-D02 | “Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.” | Dedé: “Meu gato vai se esconder atrás de uma pedra!” | “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.” |
+| A2P4-D03 | “Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.” | Dedé: “Troquei os desenhos e não precisei arrumar tudo de novo!” | “Agora vamos mudar a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.” |

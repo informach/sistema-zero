@@ -31,6 +31,12 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 **Zappy na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-menu-avatar-01. Professora até “Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Quem abrir meu jogo vai encontrar essa tela primeiro!”. Retomada da professora: “O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-menu-avatar-02. Professora até “No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Agora quem abre o jogo vai saber como começar!”. Retomada da professora: “Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio!”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.
@@ -43,7 +49,9 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 **Zappy na página (não gravar):** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.
 
-**Participação no vídeo:** ID video-convite-avatar-01. Professora até “Quando eu clico em Apertar Enter, a partida começa.”. Antes da entrada: Terminar o teste com Enter; não trocar o evento antes da pergunta. Dedé entra, com os gestos parados, e fala: “E quem quiser começar pelo toque?”. Dedé sai antes da resposta. Retomada da professora: “Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco na tela de início, a partida começa. Volto ao início, clico em Apertar Enter, e ela começa também. Esse evento escuta os dois jeitos.”. Na retomada: Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-convite-avatar-01. Professora até “Quando eu clico em Apertar Enter, a partida começa.”. Antes: Terminar o teste com Enter; não trocar o evento antes da pergunta. Dedé: “E quem quiser começar pelo toque?”. Retomada da professora: “Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela.”. Depois: Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes.
 
 **Experiência existente:** `controls`. Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -55,7 +63,13 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 **Zappy na página (não gravar):** Agora faça a partida começar! Crie o evento de qualquer tecla ou toque, com um Se inicio que muda o estado para jogando. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Participação no vídeo:** ID video-entrada-ampla-avatar-01. Professora até “pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”. Antes da entrada: Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio. Dedé entra, com os gestos parados, e fala: “Mas eu também uso uma tecla para pular!”. Dedé sai antes da resposta. Retomada da professora: “Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.”. Na retomada: Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-entrada-ampla-avatar-01. Professora até “pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”. Antes: Concluir o encaixe do evento e soltar o mouse antes da entrada; mostrar o evento vazio. Dedé: “Mas eu também uso uma tecla para pular!”. Retomada da professora: “Só que esse evento também acontece no meio da partida, a cada pulo.”. Depois: Explicar por que o evento precisa perguntar o estado e montar o Se inicio, sem pular etapas.
+
+ID video-entrada-ampla-avatar-02. Professora até “Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “A tecla do pulo não vai começar a partida de novo!”. Retomada da professora: “Agora deixe à vista o espaço vazio do então desse Se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-entrada-ampla-avatar-03. Professora até “Olha só: a abertura some, e o Dino aparece!”. Antes: Esperar o Dino aparecer depois da tecla, sem fazer o próximo salto durante a fala. Dedé: “Começou!”. Retomada da professora: “Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

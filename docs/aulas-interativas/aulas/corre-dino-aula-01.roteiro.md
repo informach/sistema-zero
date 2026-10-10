@@ -102,7 +102,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -112,13 +114,39 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Antes de pegar cada peça, deixe à vista o lugar do encaixe. Se ele estiver fora da tela, é só arrastar um espaço vazio entre os blocos até ele aparecer.
 >
-> A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.
->
-> Agora deixe à vista o espaço vazio dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste até dentro de Ao iniciar e solte quando aparecer o encaixe.
+> A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.”
+
+**ID de edição:** `video-area-e-tela-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “A tela vai ser preparada só quando eu começar!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Manter o fundo azul à vista, depois da atualização do jogo.
+
+**Professora:**
+
+> “Agora deixe à vista o espaço vazio dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste até dentro de Ao iniciar e solte quando aparecer o encaixe.
 >
 > Repare nos números do bloco: ele chega com 800 e 480. O primeiro número é a largura, e o segundo, a altura. Troque 800 por 480 e 480 por 270. Depois, no campo fundo, escolha um azul claro, que vai pintar o fundo do seu jogo.
 >
-> Agora olhe a área do jogo: a cor aparece! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270. Depois de corrigir, teste de novo.
+> Agora olhe a área do jogo: a cor aparece!”
+
+**ID de edição:** `video-area-e-tela-avatar-02`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “A tela já ficou azul!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
 
@@ -131,7 +159,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -139,9 +169,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência do tamanho da tela, na quarta parte desta fase? Com a borda ligada, aparecia um contorno. Agora a gente vai colocar a borda no seu jogo!
 >
-> A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.
->
-> Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco, porque, com duas cores parecidas, a borda some no fundo.
+> A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.”
+
+**ID de edição:** `video-borda-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Qual cor vai aparecer melhor?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco, porque, com duas cores parecidas, a borda some no fundo.
 >
 > Agora olhe a área do jogo: aparece um retângulo em volta dela! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar, primeiro vem Preparar o jogo em tela cheia e, logo abaixo, Mostrar a borda da tela, com espessura 4. Se a borda estiver lá e mesmo assim não aparecer, escolha para ela uma cor diferente da cor do fundo. Depois de corrigir, teste de novo.
 >
@@ -156,9 +198,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Pelo deslizante (os botões − e + andam de 20 em 20), aumentar só o x até 300, depois só o y até 200, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com um mapa do tesouro, com uma seta x para a direita e uma seta y para baixo. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-coordenadas-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Pelo deslizante (os botões − e + andam de 20 em 20), aumentar só o x até 300, depois só o y até 200, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com um mapa do tesouro, com uma seta x para a direita e uma seta y para baixo. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Mostrar o Dino indo para a direita ao aumentar somente x, com y ainda em 150.
 
@@ -167,6 +207,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender como dois números, o x e o y, dizem onde o Dino fica na tela.
 >
 > Olha aqui: o Dino está em x 110 e y 150. Quando eu aumento só o x, para 300, o Dino vai para a direita, e o y continua igual. O x conta de um lado para o outro.”
+
+**ID de edição:** `video-coordenadas-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -193,9 +235,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com os bastidores e a tela do jogo vazios, lado a lado. Clicar em Criar o Dino e mostrar o Dino nos bastidores, com a tela ainda vazia. Clicar em Mostrar o Dino na tela e mostrar o mesmo Dino nos dois lugares. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino no camarim, arrumando o chapéu, e depois entrando no palco sob a luz. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-criar-e-mostrar-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com os bastidores e a tela do jogo vazios, lado a lado. Clicar em Criar o Dino e mostrar o Dino nos bastidores, com a tela ainda vazia. Clicar em Mostrar o Dino na tela e mostrar o mesmo Dino nos dois lugares. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino no camarim, arrumando o chapéu, e depois entrando no palco sob a luz. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Clicar em Criar o Dino e deixar os bastidores ocupados e a tela vazia à vista.
 
@@ -204,6 +244,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender que criar o Dino e mostrar o Dino na tela são duas coisas diferentes.
 >
 > Olha aqui: quando eu clico em Criar o Dino, ele aparece nos bastidores, mas a tela do jogo continua vazia. O Dino já existe no jogo. Ele só não foi desenhado.”
+
+**ID de edição:** `video-criar-e-mostrar-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -230,7 +272,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -240,9 +284,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: o bloco já vem com o nome dino. Mantenha esse nome, porque é ele que identifica o seu Dino no jogo. No jogo, o Dino é um sprite, que é um objeto do jogo que você pode programar.
 >
-> O bloco chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.
->
-> Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64. A tela continua sem Dino, e está certo: ele já existe nos bastidores, mas ainda não tem uma ordem de desenho. Por isso, não duplique o bloco para tentar fazer o Dino aparecer.
+> O bloco chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.”
+
+**ID de edição:** `video-criar-dino-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Escolhi a cor! Mas cadê o Dino?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar. Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64. A tela continua sem Dino, e está certo: ele já existe nos bastidores, mas ainda não tem uma ordem de desenho. Por isso, não duplique o bloco para tentar fazer o Dino aparecer.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
 

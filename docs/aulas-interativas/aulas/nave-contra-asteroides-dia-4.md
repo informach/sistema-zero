@@ -32,7 +32,9 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 **Zappy na página (não gravar):** Sua vez! Compare Dar três vidas à nave em Ao iniciar e em Enquanto estiver rodando, esperando cada teste parar e olhando os corações. Quando terminar, clique em Próxima parte.
 
-**Participação no vídeo:** ID video-vidas-no-comeco-avatar-01. Professora até “as batidas conseguiram tirar.”. Antes da entrada: Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3. Debinha entra, com os gestos parados, e fala: “E se eu der as vidas o tempo todo?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. Repare: a batida apaga um coração, mas, no quadro seguinte, as vidas voltam para 3. No fim do teste, aparece Vidas: 2, porque a última batida foi bem no último quadro. Ou seja, a peça devolve as vidas o tempo todo, e a nave nunca perderia. Por isso, no seu jogo, as vidas vão ser dadas em Ao iniciar.”. Na retomada: Levar a peça para Enquanto estiver rodando e mostrar o resultado real, inclusive Vidas: 2 no último quadro. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-vidas-no-comeco-avatar-01. Professora até “as batidas conseguiram tirar.”. Antes: Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3. Debinha: “E se eu der as vidas o tempo todo?”. Retomada da professora: “Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo.”. Depois: Levar a peça para Enquanto estiver rodando e mostrar o resultado real, inclusive Vidas: 2 no último quadro.
 
 **Experiência existente:** `once-vs-always`. Na experiência, coloque Dar três vidas à nave em Ao iniciar. Clique em Começar o jogo, espere o teste parar e observe os corações depois das batidas. Leve a mesma peça para Enquanto estiver rodando. Clique em Começar o jogo, espere o teste parar e compare os corações. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
@@ -43,6 +45,10 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 **Blocos na página:** video-vidas → fala-vidas.
 
 **Zappy na página (não gravar):** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-vidas-avatar-01. Professora até “Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E como eu vejo quantas vidas tenho?”. Retomada da professora: “Agora os corações, que precisam ser desenhados em todo quadro.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -57,7 +63,9 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 **Zappy na página (não gravar):** Sua vez! Teste as três batidas com 0, 45 e 15 quadros de proteção, voltando ao começo entre os testes. Quando terminar, clique em Próxima parte.
 
-**Participação no vídeo:** ID video-protecao-avatar-01. Professora até “só a primeira batida tirou vida.”. Antes da entrada: Concluir as três batidas com proteção de 45 quadros; manter os corações e o tempo restante à vista. Debinha entra, com os gestos parados, e fala: “E quando esse tempinho de proteção acabar?”. Debinha sai antes da resposta. Retomada da professora: “Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida, e, na batida do quadro 10, restam 6 quadros, por isso a vida não cai. Mas, no quadro 30, a proteção já acabou, e olha só: essa batida tira outra vida. A proteção é um respiro com prazo. No seu jogo, a batida vai dar 45 quadros de proteção.”. Na retomada: Voltar ao começo, escolher 15 quadros e mostrar a terceira batida tirando vida. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-protecao-avatar-01. Professora até “só a primeira batida tirou vida.”. Antes: Concluir as três batidas com proteção de 45 quadros; manter os corações e o tempo restante à vista. Debinha: “E quando esse tempinho de proteção acabar?”. Retomada da professora: “Por último, eu volto ao começo e escolho 15 quadros.”. Depois: Voltar ao começo, escolher 15 quadros e mostrar a terceira batida tirando vida.
 
 **Experiência existente:** `invincibility`. Teste as três batidas com proteção de 0 quadros. Volte ao começo e repita com 45. Volte ao começo e repita com 15, observando quando a proteção acaba. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
 
@@ -68,6 +76,14 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 **Blocos na página:** video-batida-e-coracoes → fala-batida.
 
 **Zappy na página (não gravar):** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-batida-e-coracoes-avatar-01. Professora até “Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Qual pedra o jogo vai tirar?”. Retomada da professora: “Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-batida-e-coracoes-avatar-02. Professora até “Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Falta tirar a vida da nave, né?”. Retomada da professora: “Deixe à vista o encaixe logo abaixo da explosão.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-batida-e-coracoes-avatar-03. Professora até “Olha só: a pedra sai, a tela treme e um coração apaga!”. Antes: Esperar a batida e a tremida acabarem; manter os corações à vista. Debinha: “Um coração apagou!”. Retomada da professora: “Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

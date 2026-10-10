@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-vidas-no-comeco-avatar-01`.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Dar três vidas à nave em Ao iniciar, clicar em Começar o jogo e acompanhar os corações apagando até Vidas: 0 · Batidas: 3 e Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e mostrar os corações voltando para 3 no quadro depois de cada batida e Vidas: 2 no fim, porque a última batida cai no último quadro. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o teste em Ao iniciar com Vidas: 0 e Batidas: 3.
 
@@ -29,6 +27,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é a mesma experiência da primeira fase, agora para a gente entender onde as vidas da nave devem ser dadas. Aqui, uma pedra bate na nave de tempos em tempos.
 >
 > Olha aqui: eu coloco Dar três vidas à nave em Ao iniciar e clico em Começar o jogo. A nave começa com 3 vidas, e cada batida apaga um coração. Tá vendo? No fim do teste, a tela mostra Vidas: 0 e Batidas: 3, porque as vidas foram dadas uma vez, no começo, e as batidas conseguiram tirar.”
+
+**ID de edição:** `video-vidas-no-comeco-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -53,7 +53,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar pela retomada: no "Tá vendo?", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar pela retomada: no "Tá vendo?", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -63,9 +65,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > As vidas são dadas uma vez, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar variável pontos.
 >
-> Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.
->
-> Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois do placar. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Desenhar as vidas do sprite e solte nesse lugar.
+> Agora abra Jogo 2D, depois Vida e placar e depois Vida, e pegue o bloco Dar ao sprite de vida. Arraste e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.”
+
+**ID de edição:** `video-vidas-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “E como eu vejo quantas vidas tenho?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois do placar. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Desenhar as vidas do sprite e solte nesse lugar.
 >
 > Escolha nave. O formato já vem corações, em x 12, y 48 e tamanho 22: mantenha. Depois, escolha vermelho.
 >
@@ -84,9 +98,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-protecao-avatar-01`.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar 0, 45 e 15 no seletor. A cena tem batidas nos quadros 1, 10 e 30; 15 permite ver expirar. Com 0 quadros, clicar três vezes em Avançar até a próxima pedra e mostrar as vidas de 3 a 0. Voltar ao começo, repetir com 45 e mostrar 36 e 16 quadros restando nas batidas 10 e 30, com 2 vidas no fim. Voltar ao começo, repetir com 15 e mostrar 6 quadros restando na batida 10 e a vida caindo na batida 30. Não prometer que a cena reproduz 45 quadros de jogo real em segundos. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir as três batidas com proteção de 45 quadros; manter os corações e o tempo restante à vista.
 
@@ -97,6 +109,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > Olha aqui: eu escolho 0 quadros em Proteção em quadros e clico em Avançar até a próxima pedra três vezes. Tá vendo? Cada batida apaga um coração, e a nave fica sem vidas, porque, sem proteção, as três batidas tiram as três vidas.
 >
 > Eu clico em Voltar ao começo, escolho 45 quadros e repito as três batidas. A primeira tira uma vida, e a proteção começa com 45 quadros. Repare: na batida do quadro 10, ainda restam 36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Ou seja, só a primeira batida tirou vida.”
+
+**ID de edição:** `video-protecao-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -121,7 +135,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar pela retomada: deixar uma pedra bater na nave e, no "Tá vendo?", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar pela retomada: deixar uma pedra bater na nave e, no "Tá vendo?", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -131,19 +147,57 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > O jogo confere a batida em todo quadro, antes de desenhar os corações, para eles já mostrarem a vida certa. Por isso, deixe à vista o espaço entre Mostrar placar e Desenhar as vidas do sprite, dentro de A cada quadro do jogo.
 >
-> Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.
->
-> Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo. Inimigo é o apelido da pedra que bateu na nave. Confira se ficou asteroides, nave e inimigo.
+> Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.”
+
+**ID de edição:** `video-batida-e-coracoes-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Qual pedra o jogo vai tirar?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo. Inimigo é o apelido da pedra que bateu na nave. Confira se ficou asteroides, nave e inimigo.
 >
 > Agora as ações da batida, que vão dentro dessa colisão. Deixe à vista o espaço de dentro dela. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha inimigo como sprite e asteroides como grupo, porque quem sai do jogo é a pedra, e não a nave.
 >
-> Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.
->
-> Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Machucar o sprite em e deixá-lo invencível por quadros e solte nesse encaixe. Escolha nave. O dano já vem em 1, e a proteção, em 45 quadros: mantenha, porque cada batida tira uma vida e depois dá esse respiro.
+> Deixe à vista o encaixe logo abaixo da retirada. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.”
+
+**ID de edição:** `video-batida-e-coracoes-avatar-02`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Falta tirar a vida da nave, né?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Esperar a batida e a tremida acabarem; manter os corações à vista.
+
+**Professora:**
+
+> “Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco Machucar o sprite em e deixá-lo invencível por quadros e solte nesse encaixe. Escolha nave. O dano já vem em 1, e a proteção, em 45 quadros: mantenha, porque cada batida tira uma vida e depois dá esse respiro.
 >
 > Deixe à vista o encaixe logo abaixo do dano. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela com intensidade e solte nesse encaixe. A intensidade já vem em 8: mantenha.
 >
-> Agora teste: clique na área do jogo e deixe uma pedra atingir a nave. Olha só: a pedra sai, a tela treme e um coração apaga! Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar. Por enquanto, ficar sem vidas ainda não encerra a partida: o fim da partida vem mais adiante.
+> Agora teste: clique na área do jogo e deixe uma pedra atingir a nave. Olha só: a pedra sai, a tela treme e um coração apaga!”
+
+**ID de edição:** `video-batida-e-coracoes-avatar-03`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Um coração apagou!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Espere a proteção acabar e deixe outra pedra bater, para ver outro coração apagar. Por enquanto, ficar sem vidas ainda não encerra a partida: o fim da partida vem mais adiante.
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: entre o placar e os corações está a colisão de asteroides com nave, com o apelido inimigo. Dentro dela vêm Tirar o sprite inimigo do grupo asteroides, Soltar explosão no sprite inimigo, Machucar o sprite nave em 1 e deixá-lo invencível por 45 quadros e Tremer a tela com intensidade 8, nessa ordem. Depois de corrigir, teste de novo.
 >

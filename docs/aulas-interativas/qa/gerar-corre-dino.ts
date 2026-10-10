@@ -18,7 +18,7 @@ import {
 import { etapasDino, ORDEM_DINO, projetoDino } from './corre-dino-etapas'
 
 export interface SecaoDino {
-  avatar?: ParticipacaoAvatar
+  avatar?: ParticipacaoAvatar | ParticipacaoAvatar[]
   key: string
   title: string
   bridge: string

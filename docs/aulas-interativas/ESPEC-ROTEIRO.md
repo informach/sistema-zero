@@ -202,6 +202,10 @@ Separar sempre a nota de produção da fala, com uma linha em branco:
 Cada nota de tela tem sua fala correspondente, com o nome de quem fala. Um vídeo pode conter
 vários pares; marcar a entrada do avatar antes da fala dele e a saída antes da retomada da
 professora. Não sobrepor vozes, cobrir controles ou antecipar o gesto que responde à pergunta.
+Distribuir as entradas pelos trechos longos, depois de concluir cada gesto. Na fala de
+entendimento, trazer um exemplo ou uma consequência da ideia; não apenas repetir a professora.
+Uma reação breve pode comemorar o teste. Quando houver “Funcionou?”, a resposta “Agora sim!”
+vem depois da pergunta. Usar a quantidade que a conversa pede, sem cota por vídeo.
 Instruções para quem grava não são falas da aula. Não usar o campo plannedVideo do manifesto
 como substituto do roteiro completo.
 

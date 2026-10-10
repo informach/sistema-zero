@@ -1,7 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { avatarDaAula, palavrasDoVideo, planoAvatar, roteiroComAvatar } from './avatares-video'
+import {
+  avatarDaAula,
+  palavrasDoVideo,
+  participacoes,
+  planoAvatar,
+  roteiroComAvatar,
+} from './avatares-video'
 import { aulasDino, falasSecao as falasDino } from './gerar-corre-dino'
 import { aulasMeuJeito, falasSecao as falasMeuJeito } from './gerar-meu-jeito'
 import { aulasNave, falasSecao as falasNave } from './gerar-nave-contra-asteroides'
@@ -44,6 +50,44 @@ describe('edição com avatares', () => {
     expect(avatarDaAula(8)).toBe('Debinha')
     expect(() => avatarDaAula(-1)).toThrow()
   })
+
+  test('duas entradas mantêm os passos entre elas e contam ambas as falas', () => {
+    const multi = {
+      ...section,
+      avatar: [
+        section.avatar,
+        { ...section.avatar, after: 'Toque em Enter.', speech: 'Agora começou!', reply: undefined },
+      ],
+    }
+    const texto = roteiroComAvatar(multi, speech, 'Mostrar os controles.', 0)
+    expect(texto).toContain('video-teste-avatar-01')
+    expect(texto).toContain('video-teste-avatar-02')
+    expect(texto.match(/\*\*Debinha \(avatar\):\*\*/g)).toHaveLength(2)
+    expect(texto).toContain('> “Vamos começar. Toque em Enter.”')
+    expect(texto).toContain('> “Agora começou!”')
+    expect(texto).toContain('> “Depois, mova a nave.”')
+    expect(palavrasDoVideo(multi, speech)).toBe(18)
+    expect(planoAvatar(multi, speech, 0)).toContain('Agora começou!')
+    expect(() =>
+      roteiroComAvatar({ ...multi, avatar: [...multi.avatar].reverse() }, speech, '', 0),
+    ).toThrow('ordem')
+  })
+
+  test('âncoras podem compartilhar contexto, mas não o mesmo ponto de corte', () => {
+    const multi = {
+      ...section,
+      avatar: [
+        section.avatar,
+        { ...section.avatar, after: speech[0]!, speech: 'Começou!', reply: undefined },
+      ],
+    }
+    const texto = roteiroComAvatar(multi, speech, '', 0)
+    expect(texto).toContain('> “Vamos começar. Toque em Enter.”')
+    expect(texto).toContain('> “Depois, mova a nave.”')
+    expect(() =>
+      roteiroComAvatar({ ...multi, avatar: [section.avatar, section.avatar] }, speech, '', 0),
+    ).toThrow('mesmo ponto')
+  })
 })
 
 for (const [course, lessons, falas] of [
@@ -58,7 +102,7 @@ for (const [course, lessons, falas] of [
       const proposta = readFileSync(`${base}.md`, 'utf8')
       const manifesto = JSON.parse(readFileSync(`${base}.manifesto.json`, 'utf8'))
       const nome = avatarDaAula(index)
-      const entradas = lesson.sections.filter((s) => s.avatar)
+      const entradas = lesson.sections.flatMap((s) => participacoes(s))
       expect(entradas.length, `${course}/${lesson.slug}`).toBeGreaterThan(0)
       expect(roteiro.match(new RegExp(`\\*\\*${nome} \\(avatar\\):\\*\\*`, 'g'))).toHaveLength(
         entradas.length,
@@ -68,29 +112,31 @@ for (const [course, lessons, falas] of [
         if (s.questions) expect(s.avatar).toBeUndefined()
         if (!s.avatar) continue
         const fala = falas(s)
-        expect(planoAvatar(s, fala, index)).toContain(s.avatar.speech)
         const plano = manifesto.blocks.find(
           (b: { key: string }) => b.key === s.videoKey,
         )?.plannedVideo
-        expect(plano).toContain(s.avatar.after)
-        expect(plano).toContain(`${nome} entra`)
-        expect(plano).toContain(s.avatar.speech)
-        expect(proposta).toContain(s.avatar.speech)
-        expect(roteiro).toContain(`> “${s.avatar.speech}”`)
+        for (const avatar of participacoes(s)) {
+          expect(planoAvatar(s, fala, index)).toContain(avatar.speech)
+          expect(plano).toContain(avatar.after)
+          expect(plano).toContain(`${nome} entra`)
+          expect(plano).toContain(avatar.speech)
+          expect(proposta).toContain(avatar.speech)
+          expect(roteiro).toContain(`> “${avatar.speech}”`)
+          expect(fala.join(' ')).not.toContain(avatar.speech)
+          expect(s.bridge).not.toContain(avatar.speech)
+        }
         // A fala completa da professora continua nos mesmos turnos, acrescida só da ponte de vídeo.
         const render = roteiroComAvatar(s, fala, '', index)
         const teacher = [...render.matchAll(/\*\*Professora:\*\*\s+> “([\s\S]*?)”\n/g)].map((m) =>
           m[1]!.replaceAll('\n>\n> ', ' '),
         )
-        const after = teacher[1]!
-        const restored = [
-          teacher[0],
-          s.avatar.reply ? after.slice(s.avatar.reply.length).trimStart() : after,
-        ].join(' ')
+        const restored = teacher
+          .map((text, i) => {
+            const reply = participacoes(s)[i - 1]?.reply
+            return reply ? text.slice(reply.length).trimStart() : text
+          })
+          .join(' ')
         expect(restored).toBe(fala.join(' '))
-        // A conversa não vira instrução do Mapa nem um segundo diálogo do Zappy.
-        expect(fala.join(' ')).not.toContain(s.avatar.speech)
-        expect(s.bridge).not.toContain(s.avatar.speech)
       }
     }
   })

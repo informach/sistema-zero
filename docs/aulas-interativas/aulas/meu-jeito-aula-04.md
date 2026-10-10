@@ -30,7 +30,9 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 **Blocos na página:** video-preenchimento-contorno → fala-preenchimento-contorno → experiencia-cores.
 
-**Participação no vídeo:** ID video-preenchimento-contorno-avatar-01. Professora até “por dentro dela aparece o xadrez do fundo.”. Antes da entrada: Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista. Dedé entra, com os gestos parados, e fala: “Cadê a cor de dentro?”. Dedé sai antes da resposta. Retomada da professora: “É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.”. Na retomada: Apontar o fundo visível enquanto explica a transparência; retomar o preenchimento no momento previsto. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-preenchimento-contorno-avatar-01. Professora até “por dentro dela aparece o xadrez do fundo.”. Antes: Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista. Dedé: “Cadê a cor de dentro?”. Retomada da professora: “É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.”. Depois: Apontar o fundo visível enquanto explica a transparência; retomar o preenchimento no momento previsto.
 
 **Experiência existente:** `fill-stroke`. Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões. Sem palpite, pistas ou pergunta final.
 
@@ -64,7 +66,9 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 **Blocos na página:** video-crateras → fala-crateras.
 
-**Participação no vídeo:** ID video-crateras-avatar-01. Professora até “a forma desenhada por último fica na frente.”. Antes da entrada: Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada. Dedé entra, com os gestos parados, e fala: “Quero uma cratera grande e outra pequena!”. Dedé sai antes da resposta. Retomada da professora: “Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar. Mova a cópia para outro lugar dentro da pedra e mude o tamanho dela pelas alças. Se quiser, faça mais uma.”. Na retomada: Copiar a cratera, mover e redimensionar a cópia pelas alças; conferir que todas ficam dentro da pedra. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-crateras-avatar-01. Professora até “a forma desenhada por último fica na frente.”. Antes: Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada. Dedé: “Quero uma cratera grande e outra pequena!”. Retomada da professora: “Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar.”. Depois: Copiar a cratera, mover e redimensionar a cópia pelas alças; conferir que todas ficam dentro da pedra.
 
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

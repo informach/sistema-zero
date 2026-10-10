@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o marcador em -5. Clicar em Somar -1 três vezes, com o marcador à vista. Clicar em Voltar ao começo, escolher > maior que e mudar valor da base para -9, com a pergunta e a resposta à vista. Voltar ao começo, escolher = igual a e clicar em Somar -1 quatro vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino de cachecol olhando dois termômetros, um em -5 e outro em -9. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-regua-negativos-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o marcador em -5. Clicar em Somar -1 três vezes, com o marcador à vista. Clicar em Voltar ao começo, escolher > maior que e mudar valor da base para -9, com a pergunta e a resposta à vista. Voltar ao começo, escolher = igual a e clicar em Somar -1 quatro vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino de cachecol olhando dois termômetros, um em -5 e outro em -9. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Mostrar os três passos de -5 a -8 na régua, sem antecipar a comparação.
 
@@ -29,6 +27,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender os números negativos e como comparar esses números numa régua.
 >
 > Olha aqui: quando eu clico em Somar -1 três vezes, o marcador sai do -5 e anda até o -8, sempre para a esquerda. Somar um número negativo deixa o valor menor. No seu jogo, velocidade mais para a esquerda é cacto mais rápido.”
+
+**ID de edição:** `video-regua-negativos-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -57,9 +57,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a base em -5 e a condição ligada. Clicar em Passar 5 segundos cinco vezes, com a base e o número de cada cacto à vista. Continuar até nascer um cacto -10 com a base em -9. Desligar a condição e clicar mais cinco vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino descendo uma ladeira de bicicleta, apertando o freio. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-o-que-o-freio-segura-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a base em -5 e a condição ligada. Clicar em Passar 5 segundos cinco vezes, com a base e o número de cada cacto à vista. Continuar até nascer um cacto -10 com a base em -9. Desligar a condição e clicar mais cinco vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino descendo uma ladeira de bicicleta, apertando o freio. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Passar cinco intervalos com a condição ligada; deixar a base em -9 e os números dos cactos visíveis.
 
@@ -68,6 +66,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender a diferença entre a base e a velocidade que cada cacto recebe ao nascer.
 >
 > Olha aqui: com a condição ligada, eu clico em Passar 5 segundos cinco vezes. Em cada clique, nasce um cacto com o seu número escrito. A base diminui 1 de cada vez, de -5 até -9, e para ali, porque a pergunta velocidade > -9 passou a responder não. Os cactos que já nasceram não trocam de número: cada um guarda a velocidade que recebeu ao nascer.”
+
+**ID de edição:** `video-o-que-o-freio-segura-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -96,7 +96,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o -5 escrito na conta do vx. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o -5 escrito na conta do vx. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -104,9 +106,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência da parte anterior? A base diminuía com o tempo. Agora a gente vai guardar a base numa variável!
 >
-> A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar variável pontos. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Troque contador por velocidade e o valor por -5.
->
-> Agora deixe à vista o -5 do lado esquerdo da conta, no vx do bloco que cria os cactos. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse -5 e escolha velocidade. Mantenha o sinal de menos e o sorteio de 0 a 1 do lado direito.
+> A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar variável pontos. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. Troque contador por velocidade e o valor por -5.”
+
+**ID de edição:** `video-numero-que-manda-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Ah! Vou poder mudar esse número durante a corrida!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Agora deixe à vista o -5 do lado esquerdo da conta, no vx do bloco que cria os cactos. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse -5 e escolha velocidade. Mantenha o sinal de menos e o sorteio de 0 a 1 do lado direito.
 >
 > Confira se ficou assim: em Ao iniciar, está Criar variável velocidade com valor -5, e o vx dos cactos é velocidade menos um número de 0 a 1. Agora comece uma partida. Repare: o jogo continua igual, porque a variável guarda o mesmo -5 de antes. A diferença é que, agora, essa base pode mudar durante a corrida.
 >
@@ -119,9 +133,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Clipe `video-relogio-da-dificuldade` · Prepare o relógio da dificuldade
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar os dois relógios que já existem em Enquanto estiver rodando. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar os dois relógios que já existem em Enquanto estiver rodando. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -131,9 +147,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e dos dois relógios que já existem. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o valor para 5.
 >
-> A base só pode mudar durante a partida. Por isso, deixe à vista o espaço vazio dentro desse relógio, abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.
->
-> Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando.
+> A base só pode mudar durante a partida. Por isso, deixe à vista o espaço vazio dentro desse relógio, abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.”
+
+**ID de edição:** `video-relogio-da-dificuldade-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Se eu demorar na abertura, a corrida não vai começar mais rápida!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando.
 >
 > Confira se ficou assim: em Enquanto estiver rodando, há três relógios separados: o dos cactos, em 1.4 segundo, o dos pontos, no intervalo que você escolheu, e o da dificuldade, em 5 segundos, com o Se jogando. O então do relógio novo ainda está vazio, e por isso a base ainda não muda.
 >
@@ -148,7 +176,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o então vazio do relógio de 5 segundos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o então vazio do relógio de 5 segundos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -158,13 +188,37 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Deixe à vista o espaço vazio do então de Se jogando, no relógio de 5 segundos. Depois, abra Programação e depois Lógica e Se, pegue outro bloco Se e solte nesse espaço. Desta vez, mantenha a comparação que veio nele, porque você vai usar essa pergunta.
 >
-> Agora deixe à vista o lado esquerdo da comparação do Se de dentro. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade.
+> Agora deixe à vista o lado esquerdo da comparação do Se de dentro. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade.”
+
+**ID de edição:** `video-acelerador-e-freio-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Até onde a velocidade pode mudar?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “O sinal já chega como >, maior que: mantenha. No lado direito, troque o 0 por -9. Assim, a pergunta fica: velocidade maior que -9? A resposta é sim enquanto a base não chega em -9, e vira não quando ela chega lá.
 >
-> O sinal já chega como >, maior que: mantenha. No lado direito, troque o 0 por -9. Assim, a pergunta fica: velocidade maior que -9? A resposta é sim enquanto a base não chega em -9, e vira não quando ela chega lá.
->
-> Agora deixe à vista o espaço vazio do então do Se de dentro. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte ali. Escolha velocidade e coloque -1 no valor da soma. Somar -1 deixa a base menor, e base menor é cacto mais rápido.
->
-> Agora teste uma partida longa. Repare: os cactos novos vão ficando mais rápidos aos poucos, e os que já nasceram guardam a velocidade que receberam. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 5 segundos, o Se jogando tem dentro dele o Se velocidade > -9, e só dentro desse Se fica Somar -1 em velocidade, o único bloco de soma dessa variável. Depois de corrigir, teste de novo.
+> Agora deixe à vista o espaço vazio do então do Se de dentro. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte ali. Escolha velocidade e coloque -1 no valor da soma. Somar -1 deixa a base menor, e base menor é cacto mais rápido.”
+
+**ID de edição:** `video-acelerador-e-freio-avatar-02`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Quero ver a corrida ficando mais rápida!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Agora teste uma partida longa. Repare: os cactos novos vão ficando mais rápidos aos poucos, e os que já nasceram guardam a velocidade que receberam. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 5 segundos, o Se jogando tem dentro dele o Se velocidade > -9, e só dentro desse Se fica Somar -1 em velocidade, o único bloco de soma dessa variável. Depois de corrigir, teste de novo.
 >
 > Se você perder cedo, tudo bem: a comparação completa você já viu na experiência da segunda parte desta fase.
 >
@@ -206,9 +260,7 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Enviar meu projeto, Enviar e Concluir fase). Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-entrega-avatar-01`.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Enviar meu projeto, Enviar e Concluir fase). Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir todos os testes de partida, derrota, reinício e controles, com o jogo construído à vista.
 
@@ -221,6 +273,8 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 > Depois de uma derrota, confira o recomeço: os pontos voltam a zero, a base volta a -5 e a abertura aparece. Comece outra partida e confira os três controles.
 >
 > Os desenhos do Dino, da floresta e dos efeitos vêm nos blocos. Olha só o que você programou: as regras que fazem essas partes funcionarem juntas!”
+
+**ID de edição:** `video-entrega-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 

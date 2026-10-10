@@ -15,7 +15,7 @@
 
 ## Vozes e produção · 10/10/2026
 
-**Dedé** participa em 4 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-2.roteiro.md) identifica **Professora**, **Dedé (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+**Dedé** participa em 6 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-2.roteiro.md) identifica **Professora**, **Dedé (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
 
 As participações distinguem a chave sumir, a informação ficar guardada e o aviso orientar quem joga. Não mostrar temChave no jogo como se existisse um mostrador; ele pertence à experiência separada.
 
@@ -115,3 +115,12 @@ A verificação é cumulativa em cada montagem: a seção 2 confere o movimento 
 Preservar as seções `contexto` e `programar-chave` (agora a entrega do aviso), os vídeos existentes e a chave do Estúdio. As seções `recolher` e `guardar` são novas. Manter a aposentadoria histórica de `video-d2-teste`.
 
 A aula entrega movimento, borda e coleta; não programa a porta. Valores: temChave começa falso e vira verdadeiro na coleta; aviso recebe a mensagem; ganhou continua falso. O Dia 3 retoma prioritariamente o envio da criança. Não substituir mídia existente por plannedVideo sem reconciliação no admin.
+
+## Revisão de ritmo e entendimento · 10/10/2026
+
+O roteiro tem 6 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
+
+| Entrada | Depois da professora | Criança | Retomada da professora |
+| --- | --- | --- | --- |
+| F2P2-R01 | “No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.” | Dedé: “Se eu só passar perto da chave, não vale!” | “Agora vem a ação: tirar a chave do chão. Ela vai dentro desse encontro. Deixe à vista o espaço vazio dentro dele.” |
+| F2P3-R01 | “Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.” | Dedé: “Ah! Na partida nova eu tenho que buscar a chave outra vez!” | “Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.” |

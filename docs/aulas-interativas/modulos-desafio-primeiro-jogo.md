@@ -7,9 +7,9 @@ mascote sem voz dentro do vídeo.
 
 | Aula | Avatar | Entradas |
 | --- | --- | --- |
-| Dia 1 | Debinha | 5; o Mapa continua só com a professora |
-| Dia 2 | Dedé | 4; coleta, memória e aviso têm funções distintas |
-| Dia 3 | Debinha | 8; duas na montagem com chave, nenhuma no vídeo dos quatro avisos |
+| Dia 1 | Debinha | 8; o Mapa continua só com a professora |
+| Dia 2 | Dedé | 6; coleta, memória e aviso têm funções distintas |
+| Dia 3 | Debinha | 14; três na montagem com chave, nenhuma no vídeo dos quatro avisos |
 | Certificado | Dedé | 1 comemoração; quiz sem vídeo |
 
 Os roteiros identificam quem fala, os pontos de entrada e saída e a resposta da professora.

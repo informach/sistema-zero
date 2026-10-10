@@ -19,7 +19,7 @@
 
 ## Vozes e produção · 10/10/2026
 
-**Debinha** participa em 5 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-1.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+**Debinha** participa em 8 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-1.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
 
 O vídeo do Mapa da Aventura continua só com a professora. As participações ajudam a descobrir os controles, a repetição dos quadros e o limite da tela.
 
@@ -149,3 +149,13 @@ Preservar as seções `apresentacao`, `caderno` e `borda` (agora a última, com 
 Valores finais: controles com as quatro direções, personagem, velocidade 3 e movimento antes do limite de tela. O Dia 2 assume esse trabalho enviado; a retomada preparada só é alternativa quando não há envio anterior.
 
 No Admin, a aula antiga `boas-vindas` sai do curso sem apagar progresso nem certificados; ver [Atualização de aulas existentes](../modulos-desafio-primeiro-jogo.md#atualização-de-aulas-existentes). Anexar o PDF antes de gravar a seção 2. Os links do Como Fazer abrem na mesma aba e voltam para a aula.
+
+## Revisão de ritmo e entendimento · 10/10/2026
+
+O roteiro tem 8 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
+
+| Entrada | Depois da professora | Criança | Retomada da professora |
+| --- | --- | --- | --- |
+| F1P4-R01 | “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.” | Debinha: “Quero fazer as setas funcionarem!” | “As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.” |
+| F1P4-R02 | “Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!” | Debinha: “Foi! Agora ele anda!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.” |
+| F1P6-R01 | “Agora teste as quatro direções até chegar às beiradas. Repare: o personagem tem que ficar sempre inteiro na tela.” | Debinha: “Agora posso segurar a seta que ele não vai embora!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.” |

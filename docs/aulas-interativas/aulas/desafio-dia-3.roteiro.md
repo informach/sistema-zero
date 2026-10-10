@@ -1,6 +1,6 @@
 # Roteiro de gravação · A Chave do Farol · Dia 3
 
-**Vozes e produção · 10/10/2026:** **Professora** conduz; **Debinha (avatar)** participa em 8 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
+**Vozes e produção · 10/10/2026:** **Professora** conduz; **Debinha (avatar)** participa em 14 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
 
 **Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações são referências para ensaio, incluindo as novas falas; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
@@ -66,7 +66,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > No primeiro nome, escolha personagem e, no segundo, escolha farol."
 
-**Na tela:** com o espaço vazio do novo evento à vista, abrir **Programação → Lógica & Se** e soltar **Se** dentro dele. A pergunta `x > 0` do **Se** é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos e deixar à vista o lugar vazio ao lado de **Se**. Só então abrir **Programação → Valores**, pegar **valor da variável**, soltar nesse lugar e escolher `temChave`. Conferir antes da gravação onde fica a lixeira.
+**Na tela:** **F3P2-R01** · Terminar de escolher personagem e farol antes da entrada. Deixar os dois eventos separados à vista.
+
+**Debinha (avatar):**
+
+> "Agora o jogo vai perceber quando eu chegar ao farol!"
+
+**Na tela:** Debinha sai. Mostrar o espaço dentro do novo encontro antes de montar a pergunta. com o espaço vazio do novo evento à vista, abrir **Programação → Lógica & Se** e soltar **Se** dentro dele. A pergunta `x > 0` do **Se** é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos e deixar à vista o lugar vazio ao lado de **Se**. Só então abrir **Programação → Valores**, pegar **valor da variável**, soltar nesse lugar e escolher `temChave`. Conferir antes da gravação onde fica a lixeira.
 
 **Professora:**
 
@@ -112,9 +118,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Agora vamos testar! Clique em Atualizar, logo acima do jogo, para começar uma partida nova.
 >
-> Vá ao farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta senão funcionando!
->
-> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro de senão está o aviso de que falta a chave. Depois de corrigir, teste de novo."
+> Vá ao farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta senão funcionando!"
+
+**Na tela:** **F3P2-R02** · Mostrar o farol apagado e o aviso após a visita sem chave. Debinha reage ao resultado que acabou de aparecer.
+
+**Debinha (avatar):**
+
+> "Não adiantou correr direto para o farol. Preciso da chave!"
+
+**Na tela:** Debinha sai. Retomar a conferência condicional para quem teve um resultado diferente.
+
+**Professora:**
+
+> "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro de senão está o aviso de que falta a chave. Depois de corrigir, teste de novo."
 
 **Na tela:** clicar em **Verificar esta parte** e mostrar o resultado real da verificação intermediária. Esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
 
@@ -172,9 +188,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Arraste e solte logo abaixo do bloco de ganhou.
 >
-> Escolha o sprite farol e a imagem farol listrado aceso.
->
-> Por último, falta avisar quem está jogando. O aviso vai logo abaixo da troca de imagem, ainda dentro de então. Deixe esse lugar à vista.
+> Escolha o sprite farol e a imagem farol listrado aceso."
+
+**Na tela:** **F3P3-R01** · Terminar a escolha da imagem antes da entrada. Deixar ganhou e a troca de imagem juntos dentro de então, sem simular uma vitória antes do teste.
+
+**Debinha (avatar):**
+
+> "Com a chave, vou conseguir chamar o barco e acender a luz!"
+
+**Na tela:** Debinha sai. Mostrar o encaixe do aviso logo abaixo da troca de imagem.
+
+**Professora:**
+
+> "Por último, falta avisar quem está jogando. O aviso vai logo abaixo da troca de imagem, ainda dentro de então. Deixe esse lugar à vista.
 >
 > Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
 >
@@ -262,7 +288,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora encontre Quando acontecer e o encontro do personagem com o farol. Dentro do então do Se está Trocar imagem do sprite farol para. Clique no nome da imagem e escolha o mesmo modelo, aceso: farol de pedra aceso. Repare: de pedra nos dois lugares, apagado no começo e aceso na resposta com chave."
 
-**Na tela:** em **Enquanto estiver rodando**, deixar à vista **A cada quadro do jogo** e **Desenhar o cenário praia-tropical**. Abrir a lista no nome do cenário e escolher **noite-na-ilha**. Mostrar o cenário completo, com ponte, terra e mar nas mesmas posições.
+**Na tela:** **F3P4-R01** · Debinha entra depois de conferir o par de imagens. Mostrar as opções de pedra apagado e aceso, sem trocar por um par errado.
+
+**Debinha (avatar):**
+
+> "Se eu misturar os modelos, o farol muda de tipo quando acende!"
+
+**Na tela:** Debinha sai. Passar para a escolha do cenário depois de a criança sair. em **Enquanto estiver rodando**, deixar à vista **A cada quadro do jogo** e **Desenhar o cenário praia-tropical**. Abrir a lista no nome do cenário e escolher **noite-na-ilha**. Mostrar o cenário completo, com ponte, terra e mar nas mesmas posições.
 
 **Professora:**
 
@@ -272,7 +304,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> "Agora teste a sua combinação! Clique em Atualizar e vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando! Agora a aventura tem a sua cara, e é com essa cara que o seu jogo vai para o Mural."
+> "Agora teste a sua combinação! Clique em Atualizar e vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!"
+
+**Na tela:** **F3P4-R02** · Debinha entra depois de acender o farol e chegar o barco. Não encobrir o resultado com o avatar.
+
+**Debinha (avatar):**
+
+> "Uhu! Minha aventura de pirata está funcionando!"
+
+**Na tela:** Debinha sai. Reconhecer a combinação e manter a conferência e a verificação.
+
+**Professora:**
+
+> "Agora a aventura tem a sua cara, e é com essa cara que o seu jogo vai para o Mural."
 
 **Na tela:** apontar, uma vez só e depois do teste, cada imagem no bloco do mesmo tipo e os dois blocos do farol. Clicar em **Verificar esta parte**; depois de **Objetivo cumprido!**, esperar **Salvo** e apontar **Próxima parte**.
 
@@ -378,9 +422,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha só: agora quem joga precisa buscar a chave em outro lugar! Confira se a chave aparece inteira, se está visível e se o personagem consegue chegar até ela. Ela precisa ficar separada do personagem no começo e da porta do farol. Se ficar escondida por outro desenho ou difícil de alcançar, escolha um dos lugares do mapa.
 >
-> Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar.
->
-> Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte."
+> Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar."
+
+**Na tela:** **F3P7-R01** · Concluir o novo percurso, a coleta e a chegada do barco. Debinha entra com o resultado visível.
+
+**Debinha (avatar):**
+
+> "Mudei o caminho, mas a missão continua a mesma!"
+
+**Na tela:** Debinha sai. Reiniciar para conferir se a chave volta ao lugar escolhido.
+
+**Professora:**
+
+> "Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Depois clique em Próxima parte.
 

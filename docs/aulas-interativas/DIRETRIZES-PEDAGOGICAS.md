@@ -248,6 +248,14 @@ repetido. As duas crianças podem perguntar, entender e comemorar; não deixar u
 papel de quem erra. Uma dificuldade como “No meu não deu certo” abre uma ajuda concreta, mantendo
 “Se algo não funcionou no seu jogo…” para que quem acertou saiba que pode continuar.
 
+Revisão de ritmo de 10/10/2026: distribuir perguntas, descobertas e reações nos trechos longos,
+especialmente depois de um gesto concluído ou de um teste. Não limitar a uma entrada por vídeo
+nem interromper todo comando. Uma fala de entendimento precisa trazer um exemplo ou uma
+consequência, como “Se eu tocar no arbusto, ele vira o escolhido!”. Repetir a definição não
+mostra uma descoberta. Reações breves de surpresa e comemoração continuam cabendo; “Agora sim!”
+vem depois do resultado e, quando houver “Funcionou?”, responde a essa pergunta. O avatar
+reage à própria tentativa, sem afirmar que o jogo de quem assiste também funcionou.
+
 No roteiro, separar **Professora/Professor**, **Debinha (avatar)** ou **Dedé (avatar)** e **Na tela**.
 Marcar a entrada e a saída, sem sobrepor vozes ou cobrir o que está sendo demonstrado. Manter os
 passos completos e a passagem da vez para quem assiste. Em material já gravado, preservar o áudio
@@ -263,14 +271,14 @@ do certificado estão em [Avatares nos vídeos](AVATARES-NOS-VIDEOS.md) e nos re
 O documento distingue gravação informada, texto preparado e edição a conferir.
 
 Aplicação à **Chave do Farol**, também em 10/10/2026: Debinha no Dia 1, Dedé no Dia 2, Debinha no
-Dia 3 e Dedé no certificado. São 18 participações; os vídeos do Mapa e dos quatro avisos continuam
+Dia 3 e Dedé no certificado. São 29 participações; os vídeos do Mapa e dos quatro avisos continuam
 sem intervenção. A montagem da resposta com chave recebe duas entradas, antes da montagem e antes
 do reinício. As falas variam entre dúvida, descoberta e comemoração, mantendo os passos completos
 e “então” somente como nome do espaço do bloco Se. Roteiros, propostas e direções dos manifestos
 atualizados; gravação e edição desta versão ainda não confirmadas.
 
-Aplicação aos demais cursos em **10/10/2026**: **Corre, Dino!** (13 aulas, 31 participações),
-**Nave Contra Asteroides** (9 aulas, 21 participações) e **O Jogo do Meu Jeito** (8 aulas, 19
+Aplicação aos demais cursos em **10/10/2026**: **Corre, Dino!** (13 aulas, 75 participações),
+**Nave Contra Asteroides** (9 aulas, 78 participações) e **O Jogo do Meu Jeito** (8 aulas, 38
 participações). Debinha começa cada curso e alterna com Dedé pela ordem das aulas, não pelo nome
 numérico do arquivo. Cada entrada tem âncora literal, fala da criança e notas de tela antes e depois;
 a professora conserva todos os passos e responde antes de passar a vez. As fontes editoriais e os

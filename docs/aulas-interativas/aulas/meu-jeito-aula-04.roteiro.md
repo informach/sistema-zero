@@ -22,9 +22,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda "linha: Contorno · dentro: Preenchimento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-preenchimento-contorno-avatar-01`.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda "linha: Contorno · dentro: Preenchimento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista.
 
@@ -35,6 +33,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 > Olha aqui: a pedra começa com Preenchimento azul e Contorno laranja. Quando eu deixo o Contorno em Sem cor, a linha laranja da borda some, e fica só o azul por dentro, porque o Contorno é a linha da borda.
 >
 > Agora eu volto o Contorno com cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo.”
+
+**ID de edição:** `video-preenchimento-contorno-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -126,15 +126,15 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-crateras-avatar-01`.
+**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada.
 
 **Professora:**
 
 > “Agora faça crateras na sua pedra. Antes de escolher uma cor nova, clique fora da pedra para tirar a seleção, porque, com a pedra selecionada, a cor nova pintaria a pedra inteira. Depois escolha um tom mais escuro e a ferramenta Círculo, e arraste dentro da pedra para criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.”
+
+**ID de edição:** `video-crateras-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 

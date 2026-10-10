@@ -1,6 +1,6 @@
 # Roteiro de gravação · A Chave do Farol · Dia 1
 
-**Vozes e produção · 10/10/2026:** **Professora** conduz; **Debinha (avatar)** participa em 5 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
+**Vozes e produção · 10/10/2026:** **Professora** conduz; **Debinha (avatar)** participa em 8 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
 
 **Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações são referências para ensaio, incluindo as novas falas; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
@@ -122,9 +122,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência da parte anterior? Com a seta segurada, ele andava a cada quadro. Agora a gente vai pôr as setas e o movimento no seu jogo!
 >
-> Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.
->
-> As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
+> Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo."
+
+**Na tela:** **F1P4-R01** · Debinha entra depois da apresentação da paleta, com o personagem parado à vista. Ainda não pegar um bloco.
+
+**Debinha (avatar):**
+
+> "Quero fazer as setas funcionarem!"
+
+**Na tela:** Debinha sai. Mostrar o destino dos controles em Ao iniciar antes de abrir a categoria.
+
+**Professora:**
+
+> "As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
 >
 > Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Ativar controles clássicos.
 >
@@ -156,9 +166,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> "Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!
->
-> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.
+> "Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!"
+
+**Na tela:** **F1P4-R02** · Terminar o teste de movimento antes da entrada. Debinha comemora o resultado da demonstração; não afirmar que todos os jogos já funcionam.
+
+**Debinha (avatar):**
+
+> "Foi! Agora ele anda!"
+
+**Na tela:** Debinha sai. Retomar a orientação condicional para quem precisa conferir os blocos.
+
+**Professora:**
+
+> "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
@@ -232,9 +252,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Arraste e solte logo abaixo do bloco de movimento e escolha personagem.
 >
-> Agora teste as quatro direções até chegar às beiradas. Repare: o personagem tem que ficar sempre inteiro na tela.
->
-> Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo."
+> Agora teste as quatro direções até chegar às beiradas. Repare: o personagem tem que ficar sempre inteiro na tela."
+
+**Na tela:** **F1P6-R01** · Mostrar o personagem parando inteiro na beirada. Soltar a seta antes da fala da Debinha.
+
+**Debinha (avatar):**
+
+> "Agora posso segurar a seta que ele não vai embora!"
+
+**Na tela:** Debinha sai. Conferir os dois blocos na ordem indicada, mantendo os testes e o envio.
+
+**Professora:**
+
+> "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo."
 
 **Na tela:** clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Em caso de pendência, enquadrar o item a corrigir e verificar de novo. Esperar **Salvo**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar o envio. Apontar **Concluir fase**.
 

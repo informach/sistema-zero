@@ -30,7 +30,9 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 **Blocos na página:** video-copia-publicada → fala-copia-publicada → experimento-copia-publicada.
 
-**Participação no vídeo:** ID video-copia-publicada-avatar-01. Professora até “Para ela ver o desenho novo, você manda outra foto.”. Antes da entrada: Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul. Dedé entra, com os gestos parados, e fala: “E para mostrar a versão rosa do jogo?”. Dedé sai antes da resposta. Retomada da professora: “Por isso, eu clico em Publicar de novo. Repare: aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Ou seja, cada publicação é um cartão novo, e o anterior fica no Mural.”. Na retomada: Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-copia-publicada-avatar-01. Professora até “Para ela ver o desenho novo, você manda outra foto.”. Antes: Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul. Dedé: “E para mostrar a versão rosa do jogo?”. Retomada da professora: “Por isso, eu clico em Publicar de novo.”. Depois: Publicar de novo na bancada e mostrar a Publicação 2 rosa ao lado da primeira.
 
 **Experiência existente:** `published-copy`. Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo. Sem palpite, pistas ou pergunta final.
 
@@ -40,6 +42,10 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 **Blocos na página:** video-teste-completo → fala-teste-completo.
 
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-teste-completo-avatar-01. Professora até “Depois deixe as pedras acertarem a nave até acabar a última vida. Tá vendo? A partida acaba e aparece a tela de fim, porque as vidas acabaram. Toque na tecla Enter para voltar à abertura e em outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “E se alguma coisa não funcionar?”. Retomada da professora: “Se alguma regra falhar, volte à fase em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Mostre o jogo se quiser
@@ -48,7 +54,9 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 **Blocos na página:** video-compartilhar → fala-compartilhar.
 
-**Participação no vídeo:** ID video-compartilhar-avatar-01. Professora até “Teste uma partida e volte à aba do Estúdio.”. Antes da entrada: Esperar Publicado!, abrir e testar a versão publicada e voltar ao Estúdio; não copiar o link antes da pergunta. Dedé entra, com os gestos parados, e fala: “Como eu mando o jogo para a minha família?”. Dedé sai antes da resposta. Retomada da professora: “Depois clique em Copiar link. Olha só: o botão muda para Link copiado! Mande o link para a sua família e os seus amigos, porque quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.”. Na retomada: Clicar em Copiar link e mostrar Link copiado!; manter a orientação de pedir ajuda a um adulto, se precisar. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-compartilhar-avatar-01. Professora até “Teste uma partida e volte à aba do Estúdio.”. Antes: Esperar Publicado!, abrir e testar a versão publicada e voltar ao Estúdio; não copiar o link antes da pergunta. Dedé: “Como eu mando o jogo para a minha família?”. Retomada da professora: “Depois clique em Copiar link.”. Depois: Clicar em Copiar link e mostrar Link copiado!; manter a orientação de pedir ajuda a um adulto, se precisar.
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

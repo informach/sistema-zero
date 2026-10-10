@@ -31,7 +31,9 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 **Zappy na página (não gravar):** Sua vez! Mude só a área com o cacto parado e, depois, compare a batida com a área em 40%. Quando terminar, clique em Próxima parte.
 
-**Participação no vídeo:** ID video-caixa-decide-avatar-01. Professora até “a área pega um pedaço vazio em volta do desenho.”. Antes da entrada: Mostrar BATEU! com a área em 100% e o vão entre os desenhos. Dedé entra, com os gestos parados, e fala: “Dá para diminuir só essa área?”. Dedé sai antes da resposta. Retomada da professora: “Sem mudar a distância, eu diminuo Tamanho da área do Dino para 80%. O BATEU some. O Dino continua do mesmo tamanho; só a área ficou menor.”. Na retomada: Diminuir a área para 80% sem mudar a distância; comparar com 40% só no momento narrado. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-caixa-decide-avatar-01. Professora até “a área pega um pedaço vazio em volta do desenho.”. Antes: Mostrar BATEU! com a área em 100% e o vão entre os desenhos. Dedé: “Dá para diminuir só essa área?”. Retomada da professora: “Sem mudar a distância, eu diminuo Tamanho da área do Dino para 80%.”. Depois: Diminuir a área para 80% sem mudar a distância; comparar com 40% só no momento narrado.
 
 **Experiência existente:** `hitbox`. Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU! Observe os desenhos nesse momento. Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -42,6 +44,10 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 **Blocos na página:** video-ligar-raio-x → fala-ligar-raio-x.
 
 **Zappy na página (não gravar):** Agora mostre a área da batida no seu jogo! Coloque Mostrar a caixa de colisão do sprite logo depois do desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-ligar-raio-x-avatar-01. Professora até “O contorno precisa ser desenhado depois do Dino, para aparecer por cima dele. Por isso, deixe à vista o lugar logo depois de Desenhar o sprite dino, no então de Se jogando, dentro do quadro. Depois, abra Jogo 2D, depois Colisões e depois Área de contato, pegue o bloco Mostrar a caixa de colisão do sprite e solte logo depois do desenho do Dino. Escolha dino.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Dedé: “Quero ver onde fica essa área!”. Retomada da professora: “Agora comece a partida.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -54,6 +60,10 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 **Blocos na página:** video-ajustar-area → fala-ajustar-area.
 
 **Zappy na página (não gravar):** Agora ajuste a área da batida! Coloque Usar área de colisão no fim de Ao iniciar, com dino e 80%, sem mudar o tamanho 64 do desenho. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-ajustar-area-avatar-01. Professora até “porque só a área da batida mudou!”. Antes: Manter o contorno menor e o desenho do Dino visíveis para a comparação. Dedé: “O contorno encolheu, mas o Dino não!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Usar área de colisão está no fim de Ao iniciar, com dino e 80, e o tamanho do Dino continua 64.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -69,7 +79,9 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 **Zappy na página (não gravar):** Agora retire o contorno de teste! Tire só Mostrar a caixa de colisão do sprite e deixe o ajuste da área em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Participação no vídeo:** ID video-retirar-contorno-avatar-01. Professora até “Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.”. Antes da entrada: Mostrar a área já ajustada e os blocos encaixados, antes de arrastar qualquer um. Dedé entra, com os gestos parados, e fala: “Como eu tiro só o contorno?”. Dedé sai antes da resposta. Retomada da professora: “Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando. Se você puxar esse bloco, os blocos de baixo saem junto, porque estão encaixados nele. Por isso, primeiro arraste o bloco que vem logo abaixo do contorno para um espaço livre, levando o resto da sequência. Depois, arraste o contorno para a lixeira e encaixe a sequência de volta, logo abaixo do desenho do Dino.”. Na retomada: Separar primeiro a sequência de baixo, retirar o contorno e encaixar a sequência novamente. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Dedé entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-retirar-contorno-avatar-01. Professora até “Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.”. Antes: Mostrar a área já ajustada e os blocos encaixados, antes de arrastar qualquer um. Dedé: “Como eu tiro só o contorno?”. Retomada da professora: “Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando.”. Depois: Separar primeiro a sequência de baixo, retirar o contorno e encaixar a sequência novamente.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

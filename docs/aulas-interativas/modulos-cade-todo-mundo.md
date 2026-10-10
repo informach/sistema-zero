@@ -33,8 +33,8 @@ alternar na seguinte. Os roteiros separam a professora, o avatar e as falas do Z
 
 | Aula | Avatar e participações | Estado da produção |
 | --- | --- | --- |
-| Aula 1 | Debinha: seis entradas nos quatro vídeos | Gravação base informada; pontos de edição registrados |
-| Aula 2 | Dedé: cinco entradas, uma em cada vídeo | Aplicado ao roteiro; gravação e edição não confirmadas |
+| Aula 1 | Debinha: oito entradas nos quatro vídeos (duas novas na parte 4) | Gravação base informada; pontos de edição registrados |
+| Aula 2 | Dedé: nove entradas distribuídas pelos cinco vídeos | Aplicado ao roteiro; gravação e edição não confirmadas |
 | Certificado | Debinha: “Eu consegui!” na celebração | Aplicado ao roteiro; gravação e edição não confirmadas |
 
 A professora responde às perguntas antes do próximo gesto. As notas de tela marcam entrada e

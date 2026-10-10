@@ -1,10 +1,10 @@
 # Roteiro falado: Cadê Todo Mundo? | Aula 2
 
-Um vídeo por seção. **Produção em 10/10/2026:** roteiro atualizado com cinco participações do **Dedé**, uma por vídeo, alternando com a Debinha da Aula 1. A gravação e a edição desta versão ainda não foram confirmadas. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo são referências anteriores às inserções; medir a versão final com as falas e os gestos, sem acelerar.
+Um vídeo por seção. **Produção em 10/10/2026:** roteiro atualizado com nove participações do **Dedé**, distribuídas pelos cinco vídeos, alternando com a Debinha da Aula 1. A gravação e a edição desta versão ainda não foram confirmadas. Comandos da atividade e montagem completa ficam na fala. Tours da plataforma ficam no Como Fazer. As durações abaixo são referências anteriores às inserções; medir a versão final com as falas e os gestos, sem acelerar.
 
 **Quem fala:** **Professora** conduz a explicação; **Dedé (avatar)** participa dentro do vídeo; **Zappy na página (não gravar)** é o diálogo da plataforma. Zappy pode aparecer visualmente no meme ou na interface, mas não tem voz dentro do vídeo. O recurso Ouvir da página continua independente da gravação.
 
-**Edição:** Dedé entra no intervalo indicado, fala e sai antes da resposta e do próximo gesto da professora. Manter livres os blocos, o placar, os botões e o resultado mostrado, sem sobrepor vozes. Os IDs em **Na tela** localizam as cinco entradas. [Direção dos avatares](../AVATARES-NOS-VIDEOS.md).
+**Edição:** Dedé entra no intervalo indicado, fala e sai antes da resposta e do próximo gesto da professora. Manter livres os blocos, o placar, os botões e o resultado mostrado, sem sobrepor vozes. Os IDs em **Na tela** localizam as nove entradas. [Direção dos avatares](../AVATARES-NOS-VIDEOS.md).
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("então", "por isso", "mas", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).
 
@@ -108,11 +108,31 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Professora:**
 
-> “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!
->
-> Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.
->
-> Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.
+> “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!”
+
+**Na tela:** **A2P3-D02** · Dedé entra somente depois de Achados mostrar 1. Manter o número e o primeiro personagem visíveis.
+
+**Dedé (avatar):**
+
+> “Agora sim! Já está contando!”
+
+**Na tela:** Dedé sai. Continuar o teste com o segundo e o terceiro esconderijos.
+
+**Professora:**
+
+> “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.”
+
+**Na tela:** **A2P3-D03** · Dedé olha para o lugar do último esconderijo. A contagem permanece em 3; esperar a pergunta antes de tocar outra vez.
+
+**Dedé (avatar):**
+
+> “E se eu tocar aqui de novo?”
+
+**Na tela:** Dedé sai. Demonstrar o novo toque e explicar por que o número não sobe.
+
+**Professora:**
+
+> “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.
 >
 > Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os dois blocos estão dentro de Quando clicar ou tocar, primeiro o esconderijo escolhido fica invisível e, logo abaixo, o jogo soma 1 em achados. Depois de corrigir, teste de novo.
 >
@@ -150,13 +170,33 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Vamos começar pelos bichos. Encontre a área Ao iniciar. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer. Repare nos blocos Criar sprite que estão nela: cada um cria um bicho ou um esconderijo do jardim.
 >
-> Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.
+> Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.”
+
+**Na tela:** **A2P4-D02** · Dedé entra depois da troca do bichinho, antes de escolher o esconderijo. A pedra é a escolha dele, não uma exigência para quem assiste.
+
+**Dedé (avatar):**
+
+> “Meu gato vai se esconder atrás de uma pedra!”
+
+**Na tela:** Dedé sai. Explicar como trocar o esconderijo e manter as opções livres.
+
+**Professora:**
+
+> “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.
 >
-> Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.
->
-> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.
->
-> Agora vamos mudar a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.
+> Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.”
+
+**Na tela:** **A2P4-D03** · Mostrar o bichinho e o esconderijo novos nas posições anteriores. Dedé entra depois de terminar a troca, sem cobrir o jogo.
+
+**Dedé (avatar):**
+
+> “Troquei os desenhos e não precisei arrumar tudo de novo!”
+
+**Na tela:** Dedé sai. Deixar a combinação visível antes de começar a editar a mensagem.
+
+**Professora:**
+
+> “Agora vamos mudar a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.
 >
 > Antes de testar, dê uma olhada no jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a imagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo.
 >

@@ -36,7 +36,15 @@
           "Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Você pode seguir mesmo sem vencer. Quando terminar, clique em Próxima parte."
         ],
         "screen": "Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar. No Olha só, parar e apontar o fogo da nave pulsando e uma pedra caindo, com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima parte. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.",
-        "play": true
+        "play": true,
+        "avatar": [
+          {
+            "after": "Olha só: o fogo da nave pulsa, e as pedras também mudam um pouquinho enquanto caem. É que cada desenho deste exemplo tem duas versões, que se revezam bem rápido. E as regras continuam as mesmas do jogo que você terminou em Nave Contra Asteroides: só os desenhos são novos, e é isso que você vai fazer com as suas próprias artes.",
+            "speech": "Agora eu quero desenhar a minha nave!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "caderno",
@@ -146,7 +154,15 @@
           "Com o jogo pronto, abra Mais opções, no botão de três pontinhos do Estúdio dessa fase. Em Levar o jogo, clique em Baixar o projeto e espere o arquivo que termina em .szproject.json chegar à pasta de downloads do seu aparelho. Olha só: esse arquivo é a cópia do projeto que você está vendo. Confira o nome do arquivo antes de voltar à aba da fase."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": [
+          {
+            "after": "Retome ali o projeto que você concluiu e confira início, pontos, vidas e reinício. Se ele abriu vazio, traga o que você enviou em Mais opções, O meu jogo, Trazer o que eu enviei. E, se ainda falta terminar, conclua esse jogo antes de fazer a cópia, porque a cópia guarda o jogo do jeito que ele está agora.",
+            "speech": "Vou conferir o jogo antes de fazer a cópia!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "importar",
@@ -160,7 +176,15 @@
           "Por último, volte a Meus Jogos pelo nome do Estúdio na barra de cima e abra esse cartão de novo. Tá vendo? O nome e os blocos continuam lá, porque o Estúdio guardou a sua cópia. É esse cartão que você vai retomar nas próximas fases."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": [
+          {
+            "after": "Agora a gente vai levar o arquivo que você baixou para o seu Estúdio. Clique em Abrir meu Estúdio nesta parte e, na outra aba, em Meus Jogos, clique em Importar. Escolha o arquivo .szproject.json que você acabou de baixar e abra o projeto importado. Repare: os blocos de Jogo 2D vêm junto, porque o arquivo guarda o projeto inteiro.",
+            "speech": "Até os blocos vieram junto!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "entrega",
@@ -323,7 +347,15 @@
           "semPerguntaFinal": true
         },
         "activityKey": "experimento-bordas",
-        "meme": "na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda \"de longe: redonda · de perto: degraus\"."
+        "meme": "na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda \"de longe: redonda · de perto: degraus\".",
+        "avatar": [
+          {
+            "after": "Olha aqui: com Aproximar em 1 vez, a pedra de pixel e a pedra de vetor parecem a mesma pedra. Mas, quando eu aumento Aproximar até 4, as bordas ficam diferentes: a pedra de pixel mostra degraus, e a de vetor continua lisa.",
+            "speech": "Uma ficou com degraus e a outra não!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "nova-nave",
@@ -338,7 +370,15 @@
           "Por último, deixe as quatro linhas de baixo da grade livres, porque elas vão ser o lugar do fogo do motor. O contorno fica para depois: antes, você vai experimentar o espelho na próxima parte."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": [
+          {
+            "after": "Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.",
+            "speech": "E por que o nome tem que ser nave?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "espelho",
@@ -395,7 +435,15 @@
           "Quando terminar, desligue o espelho e confira se a nave cabe na grade e se o espaço do motor continua livre."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": [
+          {
+            "after": "Escolha uma cor escura para o contorno e ligue Espelho lado a lado. Depois escolha Linha e arraste pequenos trechos para desenhar metade da ponta, a lateral e uma asa. Olha só: o espelho desenha o outro lado sozinho. A largura e o formato são escolha sua.",
+            "speech": "Eu desenho de um lado, e o outro vai junto!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "cores",
@@ -472,7 +520,15 @@
           "Olha só: com o claro de um lado e o escuro do outro, a sua nave começa a parecer redonda. Se no seu desenho não ficou assim, confira: os tons aparecem de perto e de longe, o contorno continua fechado e a luz vem do mesmo lado no corpo e na cabine."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": [
+          {
+            "after": "a sua nave começa a parecer redonda.",
+            "speech": "Olha! Parece que ela ganhou uma curva!",
+            "beforeScreen": "Mostrar o contraste claro e escuro no desenho antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "entrega",
@@ -653,12 +709,20 @@
         },
         "activityKey": "experiencia-fantasma",
         "meme": "na frase da folha fina, o Zappy desenhando o fogo da nave numa folha fina posta por cima de outro desenho, com as linhas de baixo aparecendo, com a legenda \"dá para ver o de baixo\".",
-        "avatar": {
-          "after": "agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.",
-          "speech": "Assim eu vejo os dois fogos ao mesmo tempo!",
-          "beforeScreen": "Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis.",
-          "afterScreen": "Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta."
-        }
+        "avatar": [
+          {
+            "after": "Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.",
+            "speech": "Posso usar o desenho anterior como guia!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.",
+            "speech": "Agora dá para ver quanto o fogo cresceu!",
+            "beforeScreen": "Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis.",
+            "afterScreen": "Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta."
+          }
+        ]
       },
       {
         "key": "segundo-fogo",
@@ -673,7 +737,15 @@
           "Para conferir, troque entre os quadros 1 e 2: o corpo e a cabine ficam no mesmo lugar, e só o fogo cresce. Depois desligue o fantasma para ver o desenho sem ele."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": [
+          {
+            "after": "Primeiro, na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Depois selecione o quadro 2 e ligue Fantasma do quadro anterior. No Pinta, o quadro 1 fica clarinho, atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.",
+            "speech": "Ainda está igual. Qual pedaço eu mudo?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "voando",
@@ -1111,7 +1183,15 @@
           "Depois disso, a pedra e as crateras aparecem na frente do fogo. Se no seu desenho não ficou assim, confira na lista Camadas: a pedra e as crateras ficam acima da chama."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": [
+          {
+            "after": "Primeiro, abra o asteroide no Pinta e selecione o quadro 1. Clique fora das formas, escolha uma cor quente em Preenchimento e deixe o Contorno em Sem cor. Depois, com a Caneta, marque pontos formando uma chama no espaço acima da pedra e termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.",
+            "speech": "A chama ficou na frente da pedra!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "miolo-fogo",
@@ -1192,7 +1272,15 @@
           "Por último, troque entre os dois quadros: o corpo fica no lugar, e só os detalhes mudam. Se no seu desenho não ficou assim, confira: o corpo da pedra está na mesma posição nos dois quadros, e a pedra e as crateras continuam na frente do fogo, porque uma chama na frente num quadro só pisca por cima da pedra na animação."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "pinta"
+        "externalTool": "pinta",
+        "avatar": [
+          {
+            "after": "Primeiro, em Spritesheet, selecione o quadro 1 e clique em Duplicar quadro. Depois, no quadro 2, com Selecionar, mova uma cratera um pouco para o lado, mantendo a cratera dentro da pedra. Se quiser, faça uma mudança pequena em outra cratera.",
+            "speech": "A pedra ficou no lugar. Só mexi no detalhe!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "girando",
@@ -1392,12 +1480,20 @@
         },
         "activityKey": "experimento-nomes",
         "meme": "na frase do time, o Zappy de técnico, com apito, chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\".",
-        "avatar": {
-          "after": "cada um precisa de um nome só dele.",
-          "speech": "Que nome eu dou para a folha?",
-          "beforeScreen": "Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível.",
-          "afterScreen": "Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite."
-        }
+        "avatar": [
+          {
+            "after": "Agora eu clico em Tirar este bloco. Tá vendo? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.",
+            "speech": "Os três blocos reclamaram juntos!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "cada um precisa de um nome só dele.",
+            "speech": "Que nome eu dou para a folha?",
+            "beforeScreen": "Concluir os testes de nome ausente e repetido e a comparação com os jogadores; manter o aviso de nome repetido visível.",
+            "afterScreen": "Escolher folha-nave e mostrar o aviso sumindo, preservando nave para o sprite."
+          }
+        ]
       },
       {
         "key": "trazer-artes",
@@ -1412,7 +1508,15 @@
           "Agora clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos. As suas imagens já estão nos materiais, mas nenhum bloco mandou o jogo usar essas imagens ainda. É isso que a gente vai fazer nas próximas partes."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": [
+          {
+            "after": "Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.",
+            "speech": "Já trouxe os desenhos. Eles já vão aparecer?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "recorte",
@@ -1470,7 +1574,21 @@
           "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados. Depois de corrigir, teste de novo. Na próxima parte, a gente vai recortar cada quadro."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": [
+          {
+            "after": "Para isso, troque o criador da nave. Em Ao iniciar, encontre Criar nave e leia o x e o y dele, porque o bloco novo vai usar os mesmos. Depois deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Sprites, Criar e trocar aparência e arraste Criar sprite em x y largura altura com imagem até esse espaço livre. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.",
+            "speech": "O bloco novo já está preenchido. E o antigo?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          },
+          {
+            "after": "Agora clique na prévia e comece uma partida de novo. Olha só: a sua nave aparece, com os dois desenhos espremidos, porque o criador está usando a folha inteira, como na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é por esse nome que os controles e as colisões procuram o sprite.",
+            "speech": "Eles andam, mas ainda estão espremidos!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "folha-nave",
@@ -1486,7 +1604,15 @@
           "Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador, porque aquele é o tamanho da nave na tela, e não o do recorte. Com isso, a folha está preparada. Para a nave animar, ainda falta ligar essa folha ao sprite, e é isso que você vai fazer na próxima parte."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": [
+          {
+            "after": "Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.",
+            "speech": "Que nome eu dou para essa folha?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "animar-nave",
@@ -1696,7 +1822,15 @@
           "Confira as duas folhas: folha-nave continua 32 por 32, e folha-asteroide usa 64 por 64. Depois, clique na prévia e comece uma partida com Enter. Repare que as pedras ainda usam o desenho antigo, porque carregar a folha só deixa os quadros prontos. Ainda falta trocar o criador das pedras."
         ],
         "screen": "Mostrar cada gesto narrado e conferir os recortes nas duas folhas. Depois, voltar à prévia, começar uma partida com Enter e apontar as pedras ainda com o desenho antigo. Não pedir para observar as pedras enquanto só os blocos ou a abertura estão na tela.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": [
+          {
+            "after": "Agora, em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros e encaixe no fim de Ao iniciar, depois da animação da nave. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro, porque o seu asteroide foi desenhado em 64 por 64.",
+            "speech": "Se eu usar o tamanho da nave aqui, vou cortar minha pedra!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "trocar-pedra",
@@ -1734,7 +1868,15 @@
           "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite asteroide com a folha folha-asteroide na animação girando, do quadro 0 ao 1, a 8 fps, logo abaixo do criador, dentro do mesmo Se, e folha-asteroide com quadros de 64 por 64. Depois de corrigir, teste de novo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": [
+          {
+            "after": "Escolha sprite asteroide e folha folha-asteroide. Em Escolher, selecione girando, e os valores chegam preenchidos, como na nave. Repare: o carregamento da folha continua no Ao iniciar, e o comando de animar fica aqui, depois de cada nascimento.",
+            "speech": "Quero ver as minhas pedras caindo!",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "revisao",
@@ -1983,7 +2125,15 @@
           "Se alguma regra falhar, volte à fase em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. Se precisar de ajuda, clique em Preciso de ajuda, aqui na fase, e conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste de novo."
         ],
         "screen": "Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução.",
-        "externalTool": "estudio"
+        "externalTool": "estudio",
+        "avatar": [
+          {
+            "after": "Depois deixe as pedras acertarem a nave até acabar a última vida. Tá vendo? A partida acaba e aparece a tela de fim, porque as vidas acabaram. Toque na tecla Enter para voltar à abertura e em outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.",
+            "speech": "E se alguma coisa não funcionar?",
+            "beforeScreen": "Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.",
+            "afterScreen": "Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste."
+          }
+        ]
       },
       {
         "key": "compartilhar",

@@ -19,9 +19,9 @@
 
 ## Vozes e produção · 10/10/2026
 
-**Debinha** participa em 8 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-3.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
+**Debinha** participa em 14 entradas, alternando por aula: Debinha, Dedé, Debinha e Dedé no certificado. O [roteiro completo](desafio-dia-3.roteiro.md) identifica **Professora**, **Debinha (avatar)** e as falas do **Zappy na página (não gravar)**. Cada entrada tem ID, fala literal, saída e retomada da professora.
 
-A montagem da resposta com chave tem duas entradas, antes de montar e antes de reiniciar a partida. O vídeo dos quatro avisos continua só com a professora. As escolhas de imagens, frases e posição continuam livres.
+A montagem da resposta com chave tem três entradas: no problema inicial, depois de configurar a luz e antes de reiniciar a partida. O vídeo dos quatro avisos continua só com a professora. As escolhas de imagens, frases e posição continuam livres.
 
 | Entrada | Fala de Debinha |
 | --- | --- |
@@ -188,3 +188,16 @@ Preservar `condicao`, `sem-chave`, `decisao`, `personalizar`, `fecho`, chave `pr
 Valores: temChave é consultado, ganhou vira verdadeiro apenas na resposta com chave, farol recebe a imagem acesa do modelo escolhido e aviso muda conforme o ramo. O barco preparado não é atribuído à autoria da criança.
 
 A oferta vigente já inclui Mural completo durante os 30 dias e modo visitante depois; o review não altera direitos ou prazos. A publicação não bloqueia o certificado por expiração do Mural. Conferir conta elegível na gravação e reconciliar mídia/progresso antes de aplicar no admin.
+
+## Revisão de ritmo e entendimento · 10/10/2026
+
+O roteiro tem 14 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
+
+| Entrada | Depois da professora | Criança | Retomada da professora |
+| --- | --- | --- | --- |
+| F3P2-R01 | “No primeiro nome, escolha personagem e, no segundo, escolha farol.” | Debinha: “Agora o jogo vai perceber quando eu chegar ao farol!” | “Dentro desse encontro, o farol vai fazer a mesma pergunta da porta. Por isso, deixe à vista o espaço vazio dentro do encontro com o farol.” |
+| F3P2-R02 | “Vá ao farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta senão funcionando!” | Debinha: “Não adiantou correr direto para o farol. Preciso da chave!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro de senão está o aviso de que falta a chave. Depois de corrigir, teste de novo.” |
+| F3P3-R01 | “Escolha o sprite farol e a imagem farol listrado aceso.” | Debinha: “Com a chave, vou conseguir chamar o barco e acender a luz!” | “Por último, falta avisar quem está jogando. O aviso vai logo abaixo da troca de imagem, ainda dentro de então. Deixe esse lugar à vista.” |
+| F3P4-R01 | “Agora encontre Quando acontecer e o encontro do personagem com o farol. Dentro do então do Se está Trocar imagem do sprite farol para. Clique no nome da imagem e escolha o mesmo modelo, aceso: farol de pedra aceso. Repare: de pedra nos dois lugares, apagado no começo e aceso na resposta com chave.” | Debinha: “Se eu misturar os modelos, o farol muda de tipo quando acende!” | “Falta o lugar onde a história acontece. Em Enquanto estiver rodando, dentro de A cada quadro do jogo, clique em praia tropical, no bloco Desenhar o cenário. Olha só: eu vou usar noite na ilha. A ponte e o mar continuam no mesmo lugar.” |
+| F3P4-R02 | “Agora teste a sua combinação! Clique em Atualizar e vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!” | Debinha: “Uhu! Minha aventura de pirata está funcionando!” | “Agora a aventura tem a sua cara, e é com essa cara que o seu jogo vai para o Mural.” |
+| F3P7-R01 | “Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar.” | Debinha: “Mudei o caminho, mas a missão continua a mesma!” | “Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte.” |

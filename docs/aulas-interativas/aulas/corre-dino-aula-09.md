@@ -32,7 +32,9 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Zappy na página (não gravar):** Sua vez! Aproxime o cacto aos poucos até aparecer BATEU! Quando terminar, clique em Próxima parte.
 
-**Participação no vídeo:** ID video-contato-avatar-01. Professora até “Mas os desenhos ainda têm um espacinho entre eles.”. Antes da entrada: Aproximar até BATEU! e apontar o vão entre os desenhos e as áreas que se tocam. Debinha entra, com os gestos parados, e fala: “Ué, nem encostou no desenho!”. Debinha sai antes da resposta. Retomada da professora: “O jogo não olha o desenho: ele confere se as áreas se encostaram.”. Na retomada: Manter as áreas pontilhadas à vista enquanto explica como a batida é decidida. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-contato-avatar-01. Professora até “Mas os desenhos ainda têm um espacinho entre eles.”. Antes: Aproximar até BATEU! e apontar o vão entre os desenhos e as áreas que se tocam. Debinha: “Ué, nem encostou no desenho!”. Retomada da professora: “O jogo não olha o desenho: ele confere se as áreas se encostaram.”. Depois: Manter as áreas pontilhadas à vista enquanto explica como a batida é decidida.
 
 **Experiência existente:** `hitbox`. Na experiência, mantenha Tamanho da área do Dino em 100%. Aproxime o cacto com Distância do cacto, um toque de cada vez, até aparecer BATEU! Observe os desenhos e as áreas mostradas quando a indicação muda. Nesta comparação, mantenha o tamanho da área em 100%. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -43,6 +45,12 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 **Blocos na página:** video-batida-acaba-partida → fala-batida-acaba-partida.
 
 **Zappy na página (não gravar):** Agora faça a batida terminar a partida! Coloque a colisão entre o Dino e os cactos dentro do Se jogando, mudando o estado para fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-batida-acaba-partida-avatar-01. Professora até “Escolha o grupo cactos e o sprite dino. Repare na linha chamar o sprite de: ela chega com inimigo. Clique em inimigo e escreva cacto. É o nome que o seu jogo vai usar para o cacto que bateu.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E o que vai acontecer quando ele bater?”. Retomada da professora: “Agora deixe à vista o espaço vazio dentro da colisão.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-batida-acaba-partida-avatar-02. Professora até “e agora o estado é fim!”. Antes: Mostrar o desaparecimento do Dino e dos cactos depois da batida, sem desenhar uma tela de fim que ainda não existe. Debinha: “A corrida parou!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: a colisão com o grupo cactos, o sprite dino e o nome cacto está no então de Se jogando, entre Desenhar o grupo cactos e a regra que tira do grupo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -56,6 +64,12 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Zappy na página (não gravar):** Agora mostre a tela de fim! Acrescente mais um senão se ao Se do quadro, para o estado fim, com a tela de fim dentro dele. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-mapa-do-jogo-avatar-01. Professora até “Deixe à vista o Se do quadro, que já tem os ramos jogando e inicio. Na linha de baixo do bloco, clique uma vez no + ao lado de senão se, para criar mais um senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Quem perder precisa saber como tentar de novo!”. Retomada da professora: “Agora deixe à vista o lugar vazio da pergunta do último ramo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-mapa-do-jogo-avatar-02. Professora até “Olha só: a tela de fim aparece!”. Antes: Manter a tela de fim real à vista antes da reação. Debinha: “Agora dá para ver que a partida acabou!”. Retomada da professora: “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o último ramo do Se do quadro pergunta se o estado do jogo é fim, com a tela de fim dentro dele, e a colisão muda o estado para fim.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
 - No segundo senão se, quando o estado do jogo é fim, desenhe a tela de fim. O título, o subtítulo e a cor do fundo são seus.
@@ -68,7 +82,11 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Zappy na página (não gravar):** Agora dê som e imagem à batida! Dentro da colisão, antes de mudar para fim, exploda o cacto, trema a tela em 8 e toque o som de derrota. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Participação no vídeo:** ID video-batida-sentida-avatar-01. Professora até “Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela.”. Antes da entrada: Retomar a regra da batida com os blocos à vista, sem inserir efeitos ainda. Debinha entra, com os gestos parados, e fala: “O som vem antes de mostrar a tela de fim?”. Debinha sai antes da resposta. Retomada da professora: “Os efeitos vêm antes da mudança de estado: primeiro o jogo mostra a batida e, por último, passa para a tela de fim. Por isso, deixe à vista o lugar logo antes de Mudar o estado do jogo para fim, dentro da colisão. Depois, abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte antes da mudança de estado. No sprite, escolha cacto, o nome que você deu ao cacto que bateu, e escolha uma cor para a explosão.”. Na retomada: Apontar o lugar antes de Mudar o estado do jogo para fim e montar os três efeitos na ordem narrada. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-batida-sentida-avatar-01. Professora até “Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela.”. Antes: Retomar a regra da batida com os blocos à vista, sem inserir efeitos ainda. Debinha: “O som vem antes de mostrar a tela de fim?”. Retomada da professora: “Os efeitos vêm antes da mudança de estado: primeiro o jogo mostra a batida e, por último, passa para a tela de fim.”. Depois: Apontar o lugar antes de Mudar o estado do jogo para fim e montar os três efeitos na ordem narrada.
+
+ID video-batida-sentida-avatar-02. Professora até “Agora deixe à vista o espaço entre a explosão e a mudança de estado. Abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Tremer a tela e solte nesse espaço. Ele já chega com intensidade 8: mantenha.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Já colocamos a explosão e a tremida!”. Retomada da professora: “Deixe à vista o espaço entre Tremer a tela e a mudança de estado.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -84,7 +102,9 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 **Zappy na página (não gravar):** Sua vez! Compare os dois jeitos de voltar e repare em como começa a partida seguinte. Quando terminar, clique em Próxima parte.
 
-**Participação no vídeo:** ID video-trocar-nao-limpa-avatar-01. Professora até “Ele não arruma a pista.”. Antes da entrada: Concluir a segunda partida com os cactos antigos e deixar a batida visível. Debinha entra, com os gestos parados, e fala: “Eu comecei de novo e já perdi!”. Debinha sai antes da resposta. Retomada da professora: “É porque os cactos da outra partida ficaram ali. Agora, no fim, eu troco a ação para Reiniciar o jogo. Clico em Tocar na tela: a abertura volta com a pista vazia. Clico de novo, e a partida começa limpa. Reiniciar o jogo repete a preparação do começo.”. Na retomada: Trocar a ação para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-trocar-nao-limpa-avatar-01. Professora até “Ele não arruma a pista.”. Antes: Concluir a segunda partida com os cactos antigos e deixar a batida visível. Debinha: “Eu comecei de novo e já perdi!”. Retomada da professora: “É porque os cactos da outra partida ficaram ali. Agora, no fim, eu troco a ação para Reiniciar o jogo.”. Depois: Trocar a ação para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa.
 
 **Experiência existente:** `restart`. Na experiência, em No fim, o toque faz, escolha Mudar o estado do jogo para inicio. Clique em Tocar na tela para começar e espere a partida terminar. Clique em Tocar na tela para voltar à abertura e outra vez para jogar. Observe os cactos e os números da nova partida. Quando terminar novamente, troque a ação para Reiniciar o jogo. Clique em Tocar na tela para voltar e outra vez para começar. Compare os cactos e os números com a tentativa anterior. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -95,6 +115,12 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 **Blocos na página:** video-caminho-de-volta → fala-caminho-de-volta.
 
 **Zappy na página (não gravar):** Agora prepare uma nova partida! No evento de qualquer tecla ou toque, acrescente um senão se fim com Reiniciar o jogo. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-caminho-de-volta-avatar-01. Professora até “O recomeço vai no mesmo evento que começa a partida. Deixe à vista o Se inicio, dentro de Quando apertar qualquer tecla ou tocar na tela. Na linha de baixo desse Se, clique uma vez no + ao lado de senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “E como ele volta para o começo?”. Retomada da professora: “A gente vai dizer o que fazer no estado fim. Deixe à vista o lugar vazio da pergunta desse ramo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-caminho-de-volta-avatar-02. Professora até “Olha só: a abertura volta!”. Antes: Mostrar a abertura restaurada e esperar a criança sair antes do novo toque. Debinha: “Voltou para o começo!”. Retomada da professora: “Toque outra vez para jogar e repare que os cactos da partida anterior não estão mais na pista.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 

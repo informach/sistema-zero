@@ -12,7 +12,12 @@ export interface ParticipacaoAvatar {
 interface SecaoComAvatar {
   key: string
   videoKey?: string
-  avatar?: ParticipacaoAvatar
+  avatar?: ParticipacaoAvatar | ParticipacaoAvatar[]
+}
+
+export function participacoes(section: SecaoComAvatar): ParticipacaoAvatar[] {
+  if (!section.avatar) return []
+  return Array.isArray(section.avatar) ? section.avatar : [section.avatar]
 }
 
 export function avatarDaAula(index: number): 'Debinha' | 'Dedé' {
@@ -26,24 +31,33 @@ export function orientacaoAvatares(index: number): string {
 
 function dividirFala(section: SecaoComAvatar, speech: string[]) {
   const fala = speech.join('\n\n')
-  const a = section.avatar
-  if (!a) return { before: fala, after: '' }
+  const entradas = participacoes(section)
+  if (!entradas.length) return { entradas, trechos: [fala] }
   if (!section.videoKey) throw new Error(`${section.key}: avatar exige vídeo`)
-  for (const field of ['after', 'speech', 'beforeScreen', 'afterScreen'] as const) {
-    if (!a[field]?.trim()) throw new Error(`${section.key}: ${field} vazio`)
+  const trechos: string[] = []
+  let cursor = 0
+  for (const a of entradas) {
+    for (const field of ['after', 'speech', 'beforeScreen', 'afterScreen'] as const) {
+      if (!a[field]?.trim()) throw new Error(`${section.key}: ${field} vazio`)
+    }
+    const offset = fala.indexOf(a.after)
+    if (offset < 0 || fala.indexOf(a.after, offset + 1) >= 0) {
+      throw new Error(`${section.videoKey}: âncora ausente ou repetida: ${a.after}`)
+    }
+    const split = offset + a.after.length
+    if (split <= cursor)
+      throw new Error(`${section.videoKey}: entradas fora de ordem ou no mesmo ponto`)
+    trechos.push(fala.slice(cursor, split).trim())
+    cursor = split
   }
-  const offset = fala.indexOf(a.after)
-  if (offset < 0 || fala.indexOf(a.after, offset + 1) >= 0) {
-    throw new Error(`${section.videoKey}: âncora ausente ou repetida: ${a.after}`)
-  }
-  const split = offset + a.after.length
-  const after = fala.slice(split).trim()
+  const after = fala.slice(cursor).trim()
   if (!after) throw new Error(`${section.videoKey}: falta retomada da professora`)
-  return { before: fala.slice(0, split).trim(), after }
+  trechos.push(after)
+  return { entradas, trechos }
 }
 
 export function palavrasDoVideo(section: SecaoComAvatar, speech: string[]): number {
-  return [...speech, section.avatar?.speech ?? '', section.avatar?.reply ?? '']
+  return [...speech, ...participacoes(section).flatMap((a) => [a.speech, a.reply ?? ''])]
     .join(' ')
     .trim()
     .split(/\s+/).length
@@ -59,35 +73,46 @@ export function roteiroComAvatar(
   screen: string,
   index: number,
 ): string {
-  const { before, after } = dividirFala(section, speech)
-  const a = section.avatar
-  if (!a) return turno('Professora', screen, before)
+  const { entradas, trechos } = dividirFala(section, speech)
+  if (!entradas.length) return turno('Professora', screen, trechos[0]!)
   const nome = avatarDaAula(index)
-  return [
-    `**Direção geral do clipe:** ${screen} Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.`,
+  const lines = [
+    `**Direção geral do clipe:** ${screen} Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.`,
     '',
-    `**ID de edição:** \`${section.videoKey}-avatar-01\`.`,
-    '',
-    turno('Professora', a.beforeScreen, before),
-    turno(
-      `${nome} (avatar)`,
-      `${nome} entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.`,
-      a.speech,
-    ),
-    turno(
-      'Professora',
-      `${nome} sai antes da resposta. ${a.afterScreen}`,
-      `${a.reply ? `${a.reply} ` : ''}${after}`,
-    ),
-  ].join('\n')
+    turno('Professora', entradas[0]!.beforeScreen, trechos[0]!),
+  ]
+  for (const [i, a] of entradas.entries()) {
+    lines.push(
+      `**ID de edição:** \`${section.videoKey}-avatar-${String(i + 1).padStart(2, '0')}\`.`,
+      '',
+      turno(
+        `${nome} (avatar)`,
+        `${nome} entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.`,
+        a.speech,
+      ),
+      turno(
+        'Professora',
+        `${nome} sai antes da resposta. ${a.afterScreen}${entradas[i + 1] ? ` ${entradas[i + 1]!.beforeScreen}` : ''}`,
+        `${a.reply ? `${a.reply} ` : ''}${trechos[i + 1]}`,
+      ),
+    )
+  }
+  return lines.join('\n')
 }
 
 /** Texto comum à proposta e ao plannedVideo, com âncora e fala completas. */
 export function planoAvatar(section: SecaoComAvatar, speech: string[], index: number): string {
-  const { after } = dividirFala(section, speech)
-  const a = section.avatar
-  if (!a) return 'Somente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.'
+  const { entradas, trechos } = dividirFala(section, speech)
+  if (!entradas.length)
+    return 'Somente a professora neste clipe. Zappy permanece na página, sem voz no vídeo.'
   const nome = avatarDaAula(index)
-  const retomada = `${a.reply ? `${a.reply} ` : ''}${after.split('\n\n')[0]}`
-  return `ID ${section.videoKey}-avatar-01. Professora até “${a.after}”. Antes da entrada: ${a.beforeScreen} ${nome} entra, com os gestos parados, e fala: “${a.speech}”. ${nome} sai antes da resposta. Retomada da professora: “${retomada}”. Na retomada: ${a.afterScreen} Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.`
+  const pontos = entradas
+    .map((a, i) => {
+      const proximoParagrafo = trechos[i + 1]!.split('\n\n')[0]!
+      const inicio = proximoParagrafo.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? proximoParagrafo
+      const retomada = `${a.reply ? `${a.reply} ` : ''}${inicio}`
+      return `ID ${section.videoKey}-avatar-${String(i + 1).padStart(2, '0')}. Professora até “${a.after}”. Antes: ${a.beforeScreen} ${nome}: “${a.speech}”. Retomada da professora: “${retomada}”. Depois: ${a.afterScreen}`
+    })
+    .join('\n\n')
+  return `${nome} entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.\n\n${pontos}`
 }

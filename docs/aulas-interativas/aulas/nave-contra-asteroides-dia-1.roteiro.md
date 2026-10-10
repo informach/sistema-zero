@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda "Velocidade 3 · Velocidade 1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-seta-e-velocidade-avatar-01`.
+**Direção geral do clipe:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda "Velocidade 3 · Velocidade 1"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Mostrar os três avanços com velocidade 3 e deixar x em 217.
 
@@ -31,6 +29,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. Tá vendo? O x continua 208, e a nave fica parada, porque, em cada quadro, o jogo confere a seta, e a seta está solta.
 >
 > Agora eu ligo a seta, deixo Velocidade 3 e avanço um quadro de cada vez. Repare no x: ele vai para 211, depois 214, depois 217, ou seja, cada quadro soma 3. É como o tamanho do passo quando você anda: passo grande leva mais longe. A velocidade é o tamanho do passo da nave em cada quadro.”
+
+**ID de edição:** `video-seta-e-velocidade-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -55,7 +55,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, segurar uma seta e, no "Tá vendo?", manter a nave parada à vista. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, segurar uma seta e, no "Tá vendo?", manter a nave parada à vista. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -65,11 +67,37 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A nave precisa andar em todo quadro, e antes de ser desenhada, para o desenho já mostrar o lugar novo. Por isso, o movimento vai no começo de A cada quadro do jogo, logo acima de Desenhar o sprite: deixe esse lugar à vista.
 >
-> Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover o sprite com as setas, que tem as setas para a esquerda e para a direita. Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.
+> Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover o sprite com as setas, que tem as setas para a esquerda e para a direita. Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.”
+
+**ID de edição:** `video-setas-e-rastro-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “E qual velocidade eu uso?”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Soltar a seta e deixar visíveis a nave e seu rastro, sem corrigir o rastro antes da explicação.
+
+**Professora:**
+
+> “Repare: o nome do sprite já vem nave, por isso mantenha. Depois, troque a velocidade para 7, um passo maior do que os da experiência.
 >
-> Repare: o nome do sprite já vem nave, por isso mantenha. Depois, troque a velocidade para 7, um passo maior do que os da experiência.
->
-> Agora teste: clique na área do jogo e segure uma seta por um instante, sem chegar à borda. Olha só: a nave anda! Mas vai aparecer um rastro, com várias naves, porque o jogo desenha a nave no lugar novo e ainda não apaga a imagem de antes. Isso a gente resolve na próxima parte.
+> Agora teste: clique na área do jogo e segure uma seta por um instante, sem chegar à borda. Olha só: a nave anda!”
+
+**ID de edição:** `video-setas-e-rastro-avatar-02`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Foi! A nave andou!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Mas vai aparecer um rastro, com várias naves, porque o jogo desenha a nave no lugar novo e ainda não apaga a imagem de antes. Isso a gente resolve na próxima parte.
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Mover o sprite nave com as setas, com velocidade 7, e logo abaixo vem Desenhar o sprite nave. E clique na área do jogo antes de segurar a seta, porque é assim que o jogo recebe as teclas. Depois de corrigir, teste de novo.
 >
@@ -84,9 +112,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no "Tá vendo?", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-limpeza-avatar-01`.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no "Tá vendo?", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Mostrar o rastro e retomar a experiência, antes de pegar o bloco de limpeza.
 
@@ -95,6 +121,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Clique no seu jogo e segure uma seta. Tá vendo? Fica um rastro de naves, porque nada apaga o desenho de antes.
 >
 > Lembra da experiência do desenho a cada quadro, na primeira fase? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!”
+
+**ID de edição:** `video-limpeza-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -125,9 +153,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-limite-da-tela-avatar-01`.
+**Direção geral do clipe:** Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Deixar a nave sair inteira da tela com a regra do limite desligada.
 
@@ -136,6 +162,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é a mesma experiência da primeira parte desta fase, agora para a gente entender o limite da tela.
 >
 > Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? A nave anda, chega à borda e continua até sair inteira da tela, porque, sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.”
+
+**ID de edição:** `video-limite-da-tela-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -160,7 +188,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco: segurar uma seta até a nave passar da borda e, no "Tá vendo?", manter a saída à vista. Depois deixar à vista o espaço entre o movimento e o desenho, montar o limite e repetir os dois testes. Conferir o sprite escolhido no bloco de limite. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: segurar uma seta até a nave passar da borda e, no "Tá vendo?", manter a saída à vista. Depois deixar à vista o espaço entre o movimento e o desenho, montar o limite e repetir os dois testes. Conferir o sprite escolhido no bloco de limite. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -170,13 +200,37 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > O limite é conferido em todo quadro, logo depois que a nave anda e antes de ela ser desenhada. Por isso, ele vai entre o movimento e o desenho: deixe à vista o espaço entre Mover o sprite com as setas e Desenhar o sprite, dentro de A cada quadro do jogo.
 >
-> Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe.
+> Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe.”
+
+**ID de edição:** `video-limite-da-nave-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Esse nome heroi é o da minha nave?”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “Repare: o bloco chega com o nome heroi, que não é o da sua nave. Por isso, clique em heroi e escolha nave.
 >
-> Repare: o bloco chega com o nome heroi, que não é o da sua nave. Por isso, clique em heroi e escolha nave.
->
-> Agora teste: clique na área do jogo, segure a seta para a esquerda até chegar à borda e depois segure a seta para a direita até a outra borda. Olha só: a nave para nos dois lados e continua inteira na tela!
->
-> Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Mover o sprite nave com as setas, Manter o sprite nave dentro da tela e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo.
+> Agora teste: clique na área do jogo, segure a seta para a esquerda até chegar à borda e depois segure a seta para a direita até a outra borda. Olha só: a nave para nos dois lados e continua inteira na tela!”
+
+**ID de edição:** `video-limite-da-nave-avatar-02`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Parou bem na borda!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo estão Limpar a tela, Mover o sprite nave com as setas, Manter o sprite nave dentro da tela e Desenhar o sprite nave, nessa ordem. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
 
@@ -212,7 +266,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar o fundo liso. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar o fundo liso. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -222,13 +278,37 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Para começar, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
 >
-> Agora abra Jogo 2D, depois Cenários e depois Fundos, e pegue o bloco Desenhar fundo de estrelas. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: mantenha.
+> Agora abra Jogo 2D, depois Cenários e depois Fundos, e pegue o bloco Desenhar fundo de estrelas. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: mantenha.”
+
+**ID de edição:** `video-fundo-estrelado-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Ué, cadê a nave?”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “Olhe o que ficou por cima dela. Olha só: as estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você viu na experiência. Mas o bloco da nave continua no projeto, e é só mudar a ordem.
 >
-> Olha só: as estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você viu na experiência. Mas o bloco da nave continua no projeto, e é só mudar a ordem.
->
-> Solte qualquer peça que estiver segurando e deixe Limpar a tela à vista. Depois, arraste o bloco das estrelas e solte logo abaixo de Limpar a tela, antes do movimento. Agora a nave aparece de novo, na frente das estrelas, porque as estrelas passaram a ser desenhadas antes dela.
->
-> Repare que a limpeza continua no começo, mesmo com as estrelas: ela apaga o quadro anterior para o jogo desenhar o quadro novo.
+> Solte qualquer peça que estiver segurando e deixe Limpar a tela à vista. Depois, arraste o bloco das estrelas e solte logo abaixo de Limpar a tela, antes do movimento. Agora a nave aparece de novo, na frente das estrelas, porque as estrelas passaram a ser desenhadas antes dela.”
+
+**ID de edição:** `video-fundo-estrelado-avatar-02`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Voltou! Ela ficou na frente das estrelas!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Repare que a limpeza continua no começo, mesmo com as estrelas: ela apaga o quadro anterior para o jogo desenhar o quadro novo.
 >
 > Teste as setas mais uma vez. A nave precisa andar na frente das estrelas e parar nas duas bordas.
 >

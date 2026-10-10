@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do bloquinho, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy anotando pontos: 2 num bloquinho, ao lado de um placar de estádio mostrando 2, com a legenda "guardar · mostrar"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-variavel-avatar-01`.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Mudar número guardado em pontos para 1 e voltar para 0. Com Mostrar placar desligado, clicar em Somar 1 em pontos duas vezes e mostrar o número guardado em 2, com a tela sem placar. Ligar Mostrar placar e mostrar Pontos: 2 na tela; somar 1 e mostrar os dois em 3. A comparação ajuda, mas não substitui os testes nos controles reais. Meme na comparação: na frase do bloquinho, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy anotando pontos: 2 num bloquinho, ao lado de um placar de estádio mostrando 2, com a legenda "guardar · mostrar"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Somar dois pontos com o placar desligado e concluir a comparação com o bloquinho.
 
@@ -31,6 +29,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > Olha aqui: eu mudo número guardado em pontos para 1 e depois volto para 0. Agora pontos existe e começa em 0, como no começo de uma partida. Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. Tá vendo? O número guardado vai para 1 e depois para 2, mas a tela do jogo não mostra nada. Ou seja, o jogo guardou e mudou o número sem mostrar.
 >
 > É como anotar os gols de um jogo num bloquinho: o número fica anotado, mesmo que ninguém esteja vendo. O placar do estádio só mostra o que já foi anotado.”
+
+**ID de edição:** `video-variavel-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -55,9 +55,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: acertar uma pedra e, no "Tá vendo?", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-pontos-e-placar-avatar-01`.
+**Direção geral do clipe:** Começar pela retomada: acertar uma pedra e, no "Tá vendo?", mostrar que nenhum placar aparece. Mostrar o contador inicial, um erro e dois acertos. O bloco de placar fica fora da colisão e depois dela. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir Criar variável pontos com valor 0 em Ao iniciar; soltar o mouse antes da entrada.
 
@@ -71,13 +69,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora abra Programação e depois Variáveis, e pegue o bloco Criar variável com valor. Arraste e solte no fim de Ao iniciar. Repare: o nome chega como contador. Troque contador por pontos e clique fora do campo. O valor já vem em 0: mantenha, porque cada partida começa sem pontos.”
 
+**ID de edição:** `video-pontos-e-placar-avatar-01`.
+
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
 **Dedé (avatar):**
 
 > “Onde eu coloco o bloco que soma?”
 
-**Na tela:** Dedé sai antes da resposta. Localizar o fim da colisão e mostrar onde a soma entra; depois montar o placar fora da colisão.
+**Na tela:** Dedé sai antes da resposta. Localizar o fim da colisão e mostrar onde a soma entra; depois montar o placar fora da colisão. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -85,15 +85,53 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Ainda em Programação e Variáveis, pegue o bloco Somar em variável e solte logo depois de Tocar efeito explosão, dentro da colisão. Escolha pontos. O número já vem em 1: mantenha, porque cada acerto vale um ponto.
 >
-> Agora o placar, que precisa aparecer em todo quadro, e não só no acerto. Por isso, ele fica fora da colisão: deixe à vista o encaixe logo depois do bloco inteiro da colisão, ainda dentro de A cada quadro do jogo.
+> Agora o placar, que precisa aparecer em todo quadro, e não só no acerto. Por isso, ele fica fora da colisão: deixe à vista o encaixe logo depois do bloco inteiro da colisão, ainda dentro de A cada quadro do jogo.”
+
+**ID de edição:** `video-pontos-e-placar-avatar-02`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Mesmo sem acertar outra pedra, eu vou ver quantos pontos tenho!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse encaixe. O texto já vem Pontos:, que é o que aparece antes do número: mantenha.
 >
-> Abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse encaixe. O texto já vem Pontos:, que é o que aparece antes do número: mantenha.
+> O número do placar precisa ler o valor guardado em pontos. Deixe à vista o número do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse número e escolha pontos. Assim, o placar mostra o número que o jogo guardou, em vez de mostrar sempre o mesmo número.”
+
+**ID de edição:** `video-pontos-e-placar-avatar-03`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Se eu acertar mais uma pedra, o número muda junto!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Manter o primeiro ponto visível, sem fazer outro disparo durante a fala.
+
+**Professora:**
+
+> “O placar já vem em x 12, y 30 e tamanho 24: mantenha. Escolha a cor branca, para aparecer no fundo escuro. Esses números só posicionam e dimensionam o texto, e não mudam a pontuação.
 >
-> O número do placar precisa ler o valor guardado em pontos. Deixe à vista o número do campo valor do placar. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima desse número e escolha pontos. Assim, o placar mostra o número que o jogo guardou, em vez de mostrar sempre o mesmo número.
->
-> O placar já vem em x 12, y 30 e tamanho 24: mantenha. Escolha a cor branca, para aparecer no fundo escuro. Esses números só posicionam e dimensionam o texto, e não mudam a pontuação.
->
-> Agora teste: clique na área do jogo e deixe um tiro passar sem acertar. O placar tem que ficar igual, porque nenhum tiro acertou. Depois, acerte uma pedra. Olha só: Pontos vai para 1! E, se você acertar outra, o placar soma mais 1.
+> Agora teste: clique na área do jogo e deixe um tiro passar sem acertar. O placar tem que ficar igual, porque nenhum tiro acertou. Depois, acerte uma pedra. Olha só: Pontos vai para 1!”
+
+**ID de edição:** `video-pontos-e-placar-avatar-04`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Acertei e ganhei um ponto!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “E, se você acertar outra, o placar soma mais 1.
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Criar variável pontos com valor 0. Dentro da colisão entre tiros e asteroides, depois de Tocar efeito explosão, está Somar 1 em variável pontos. E, logo depois da colisão, ainda dentro de A cada quadro do jogo, está Mostrar placar Pontos:, com o valor da variável pontos, em x 12, y 30 e tamanho 24. Depois de corrigir, teste de novo.
 >

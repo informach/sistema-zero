@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy tirando papeizinhos de um saquinho, com os números 500, 530 e 560. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-sorteio-tira-na-hora-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy tirando papeizinhos de um saquinho, com os números 500, 530 e 560. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Sortear até aparecer uma repetição e apontar a marca na régua; não avançar para as velocidades.
 
@@ -29,6 +27,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender o sorteio, que escolhe um valor na hora em que cada cacto nasce.
 >
 > Olha aqui: quando eu clico em Sortear lugar (velocidade fica −5), sai um lugar na régua. Clico de novo, e sai outro. Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.”
+
+**ID de edição:** `video-sorteio-tira-na-hora-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -57,7 +57,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -65,9 +67,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência da parte anterior? Cada sorteio tirava um lugar de 500 a 560. Agora a gente vai sortear o lugar dos seus cactos!
 >
-> Deixe à vista o x 560 do bloco No grupo criar obstáculo, no então de Se jogando, dentro do relógio de 1.4 segundo. Depois, abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.
->
-> O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares ficam além da borda direita, e o cacto continua entrando escondido. Mantenha o tamanho 44 e o vx -5 no bloco.
+> Deixe à vista o x 560 do bloco No grupo criar obstáculo, no então de Se jogando, dentro do relógio de 1.4 segundo. Depois, abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.”
+
+**ID de edição:** `video-lugar-diferente-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Quais números eu coloco no sorteio?”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares ficam além da borda direita, e o cacto continua entrando escondido. Mantenha o tamanho 44 e o vx -5 no bloco.
 >
 > Agora comece e observe vários cactos entrarem. Repare: a distância entre eles muda um pouco, porque cada um sorteia o lugar quando nasce, e dois cactos podem até nascer no mesmo lugar. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o x do único No grupo criar obstáculo tem um número de 500 a 560, e o relógio continua em 1.4 segundo. Depois de corrigir, teste de novo.
 >
@@ -82,9 +96,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-velocidade-propria-avatar-01`.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Comparar os cactos ainda com vx -5 e retomar a experiência das raias.
 
@@ -94,21 +106,35 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência da primeira parte desta fase? Nas raias, o cacto de -6 andou mais longe que o de -5. Agora a gente vai sortear a velocidade também!”
 
+**ID de edição:** `video-velocidade-propria-avatar-01`.
+
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
 **Dedé (avatar):**
 
 > “Quero ver uns cactos mais rápidos que os outros!”
 
-**Na tela:** Dedé sai antes da resposta. Localizar vx e montar a conta e o sorteio antes de comparar os cactos.
+**Na tela:** Dedé sai antes da resposta. Localizar vx e montar a conta e o sorteio antes de comparar os cactos. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
 > “Vamos preparar essa diferença no bloco que cria cada cacto. Deixe à vista o campo vx, com -5, no bloco que cria os cactos. Depois, abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5.
 >
-> Na conta, troque o primeiro 0 por -5 e, no sinal, troque + por −, o sinal de menos. Depois, deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.
->
-> Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal de mais, porque, com ele, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos.
+> Na conta, troque o primeiro 0 por -5 e, no sinal, troque + por −, o sinal de menos. Depois, deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.”
+
+**ID de edição:** `video-velocidade-propria-avatar-02`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Por que a conta usa menos?”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal de mais, porque, com ele, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos.
 >
 > Agora comece e compare vários cactos. Repare: alguns andam um pouco mais rápido, e cada um guarda a velocidade que recebeu ao nascer. Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no vx, está a conta -5 menos um número de 0 a 1, e o x continua com o sorteio de 500 a 560, no mesmo bloco, com tamanho 44 e o relógio em 1.4. Depois de corrigir, teste de novo.
 >

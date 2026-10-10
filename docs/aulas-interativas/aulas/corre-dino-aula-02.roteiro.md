@@ -41,7 +41,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -51,11 +53,37 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > A repetição fica numa área própria, chamada Enquanto estiver rodando. Deixe à vista um espaço vazio ao lado de Ao iniciar. Depois, abra Áreas do projeto, pegue Enquanto estiver rodando e solte nesse espaço, separada de Ao iniciar.
 >
-> Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área. Tudo o que ficar dentro dele vai acontecer de novo em cada quadro.
+> Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área. Tudo o que ficar dentro dele vai acontecer de novo em cada quadro.”
+
+**ID de edição:** `video-motor-e-dino-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Ah! O desenho precisa acompanhar o Dino enquanto ele se mexe!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Esperar o Dino aparecer na prévia antes da reação.
+
+**Professora:**
+
+> “Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro do quadro. No nome, escolha dino.
 >
-> Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro do quadro. No nome, escolha dino.
->
-> Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar dinossauro continua em Ao iniciar, e Desenhar o sprite dino está dentro de A cada quadro do jogo, em Enquanto estiver rodando, com o nome dino nos dois blocos. Depois de corrigir, teste de novo.
+> Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado!”
+
+**ID de edição:** `video-motor-e-dino-avatar-02`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Olha, o Dino apareceu!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar dinossauro continua em Ao iniciar, e Desenhar o sprite dino está dentro de A cada quadro do jogo, em Enquanto estiver rodando, com o nome dino nos dois blocos. Depois de corrigir, teste de novo.
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
 
@@ -68,15 +96,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. No “Repare” da abertura, aproximar a sombra embaixo do Dino e deixar ver que ela escurece a cada quadro (conferir na gravação); depois da limpeza, mostrar a sombra clara de novo. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-limpeza-avatar-01`.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. No “Repare” da abertura, aproximar a sombra embaixo do Dino e deixar ver que ela escurece a cada quadro (conferir na gravação); depois da limpeza, mostrar a sombra clara de novo. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Aproximar a sombra que escurece, antes de pegar qualquer bloco.
 
 **Professora:**
 
 > “Aqui no seu jogo, olhe a sombra do Dino. Tá vendo? Ela vai ficando escura, porque cada desenho novo cai em cima do velho.”
+
+**ID de edição:** `video-limpeza-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -107,9 +135,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy colando a figurinha do Dino por cima da figurinha da floresta. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-camadas-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy colando a figurinha do Dino por cima da figurinha da floresta. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Mostrar a floresta cobrindo quase todo o Dino; manter a ordem inicial.
 
@@ -118,6 +144,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender como a ordem dos desenhos decide quem fica na frente.
 >
 > Olha aqui: no começo, a lista desenha o Dino primeiro e a floresta depois. Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.”
+
+**ID de edição:** `video-camadas-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -144,7 +172,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -152,9 +182,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência da parte anterior? O Dino só apareceu inteiro quando foi desenhado depois da floresta. Agora a gente vai colocar a floresta atrás dele!
 >
-> O lugar da floresta é entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Deixe esse espaço à vista. Depois, abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.
->
-> Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada quadro, e é ele que faz o Dino parecer correr pela floresta.
+> O lugar da floresta é entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Deixe esse espaço à vista. Depois, abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.”
+
+**ID de edição:** `video-ordem-certa-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Agora falta fazer a floresta andar!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada quadro, e é ele que faz o Dino parecer correr pela floresta.
 >
 > Agora olhe a área do jogo: a floresta passa atrás do Dino! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela, depois Desenhar fundo de floresta, com velocidade 5, e, por último, Desenhar o sprite dino, com uma floresta só. Depois de corrigir, teste de novo.
 >
@@ -190,9 +232,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Gravar com voz disponível no navegador. No "Escute", deixar ouvir a leitura inteira, sem falar nem tocar música por cima, mantendo também a leitura escrita à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-descricao-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Gravar com voz disponível no navegador. No "Escute", deixar ouvir a leitura inteira, sem falar nem tocar música por cima, mantendo também a leitura escrita à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Deixar a leitura do campo vazio terminar antes da entrada; não sobrepor as vozes.
 
@@ -201,6 +241,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender o que ouve uma pessoa que usa leitor de tela. O leitor de tela é um programa que lê a tela em voz alta para quem não consegue ver bem.
 >
 > Escute o que acontece quando eu clico em Ouvir a tela com o campo vazio. O leitor diz só: Tela do jogo. Imagem. O programa não vê o desenho, por isso não tem como contar o que acontece.”
+
+**ID de edição:** `video-descricao-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -227,7 +269,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco de descrição. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco de descrição. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -235,9 +279,21 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Lembra da experiência da parte anterior? Com a frase, o leitor de tela contava como jogar. Agora você vai escrever a sua descrição!
 >
-> A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia. Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.
->
-> No texto, apague a frase que veio no bloco e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos apertando espaço. Essa frase não aparece desenhada sobre a floresta, porque ela fica guardada para o leitor de tela. O pulo ainda vai ser montado, mas tudo bem: a frase descreve o jogo completo.
+> A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia. Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.”
+
+**ID de edição:** `video-descrever-jogo-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Essa frase vai ficar escrita no jogo?”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Ela fica guardada para o leitor de tela ler em voz alta. No texto, apague a frase que veio no bloco e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos apertando espaço. Essa frase não aparece desenhada sobre a floresta, porque ela fica guardada para o leitor de tela. O pulo ainda vai ser montado, mas tudo bem: a frase descreve o jogo completo.
 >
 > Confira se ficou assim: em Ao iniciar, logo abaixo da preparação da tela, está Descrever o jogo para leitor de tela, com a frase inteira. O Dino e a floresta continuam aparecendo como antes.
 >

@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os seletores reais e o botão de tempo da cena collision-pair. Com tiros (o grupo inteiro) e asteroides (o grupo inteiro), clicar em Deixar a trombada acontecer e mostrar pedras no grupo e tiros no grupo em 0. Clicar em Voltar ao começo, escolher tiro (o apelido) e asteroide (o apelido), deixar a trombada acontecer e mostrar 2 pedras e 2 tiros. Clicar em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Meme na comparação: na frase da queimada, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando queimada com os asteroides: a bola acerta um asteroide só, que sai da quadra, e os outros continuam, com a legenda "só quem foi acertado sai"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-apelidos-avatar-01`.
+**Direção geral do clipe:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os seletores reais e o botão de tempo da cena collision-pair. Com tiros (o grupo inteiro) e asteroides (o grupo inteiro), clicar em Deixar a trombada acontecer e mostrar pedras no grupo e tiros no grupo em 0. Clicar em Voltar ao começo, escolher tiro (o apelido) e asteroide (o apelido), deixar a trombada acontecer e mostrar 2 pedras e 2 tiros. Clicar em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Meme na comparação: na frase da queimada, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando queimada com os asteroides: a bola acerta um asteroide só, que sai da quadra, e os outros continuam, com a legenda "só quem foi acertado sai"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir a colisão com os grupos inteiros e deixar os dois contadores em zero.
 
@@ -29,6 +27,8 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 > “Esta é uma experiência para a gente entender os apelidos: como escolher quem sai do jogo quando um tiro acerta uma pedra. Aqui há três tiros e três pedras, e só o tiro do meio vai encontrar uma pedra.
 >
 > Olha aqui: em O tiro que sai, eu escolho tiros, o grupo inteiro, e, em A pedra que sai, escolho asteroides, o grupo inteiro. Clico em Deixar a trombada acontecer. Tá vendo? Só um tiro encontrou uma pedra, mas sumiram todos: pedras no grupo e tiros no grupo foram para 0. É que o grupo inteiro quer dizer todos os objetos do grupo.”
+
+**ID de edição:** `video-apelidos-avatar-01`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -53,13 +53,11 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Clipe `video-colisao` · Programe o acerto
 
-**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: atirar numa pedra e, no "Tá vendo?", mostrar o tiro atravessando. Mostrar os nomes dos dois grupos e os dois apelidos sem inverter. Seletores de objetos locais devem ser preenchidos dentro da colisão. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
+**Direção geral do clipe:** Começar pela retomada: atirar numa pedra e, no "Tá vendo?", mostrar o tiro atravessando. Mostrar os nomes dos dois grupos e os dois apelidos sem inverter. Seletores de objetos locais devem ser preenchidos dentro da colisão. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
-**ID de edição:** `video-colisao-avatar-01`.
-
-**Na tela:** Concluir a montagem e o teste; deixar os outros tiros e pedras continuarem no jogo.
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -69,19 +67,45 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > O jogo confere os encontros em todo quadro, depois que tudo já andou e foi desenhado. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.
 >
-> Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.
->
-> Repare no que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e asteroide, que são os apelidos do tiro e da pedra daquele acerto. Confira se ficou tiros e asteroides nos grupos e tiro e asteroide nos apelidos, nessa ordem. Esses apelidos valem só dentro da colisão.
+> Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.”
+
+**ID de edição:** `video-colisao-avatar-01`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “Como ele sabe qual tiro acertou qual pedra?”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
+
+**Professora:**
+
+> “Repare no que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e asteroide, que são os apelidos do tiro e da pedra daquele acerto. Confira se ficou tiros e asteroides nos grupos e tiro e asteroide nos apelidos, nessa ordem. Esses apelidos valem só dentro da colisão.
 >
 > Agora as ações do acerto, que vão dentro da colisão. Deixe à vista o espaço de dentro da colisão entre tiros e asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha tiro como sprite e tiros como grupo.
 >
-> Deixe à vista o encaixe logo abaixo desse bloco. Na mesma categoria Participação e limpeza, pegue outro Tirar o sprite do grupo e solte nesse encaixe. Nesse segundo, o sprite já vem asteroide e o grupo já vem asteroides, que é o certo: mantenha os dois.
->
-> Deixe à vista o encaixe logo abaixo das duas retiradas, ainda dentro da colisão. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte nesse encaixe. O sprite já vem asteroide, para a explosão sair no lugar da pedra: mantenha e escolha uma cor para a explosão.
+> Deixe à vista o encaixe logo abaixo desse bloco. Na mesma categoria Participação e limpeza, pegue outro Tirar o sprite do grupo e solte nesse encaixe. Nesse segundo, o sprite já vem asteroide e o grupo já vem asteroides, que é o certo: mantenha os dois.”
+
+**ID de edição:** `video-colisao-avatar-02`.
+
+**Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Debinha (avatar):**
+
+> “As outras pedras continuam vindo. Vou ter que acertar cada uma!”
+
+**Na tela:** Debinha sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste. Concluir a montagem e o teste; deixar os outros tiros e pedras continuarem no jogo.
+
+**Professora:**
+
+> “Deixe à vista o encaixe logo abaixo das duas retiradas, ainda dentro da colisão. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte nesse encaixe. O sprite já vem asteroide, para a explosão sair no lugar da pedra: mantenha e escolha uma cor para a explosão.
 >
 > Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito, solte nesse encaixe e escolha explosão no menu.
 >
 > Agora teste: clique na área do jogo e atire até acertar uma pedra. Olha só: o tiro e a pedra atingidos saem, aparece a explosão e os outros continuam!”
+
+**ID de edição:** `video-colisao-avatar-03`.
 
 **Na tela:** Debinha entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 

@@ -1,6 +1,6 @@
 # Roteiro falado: Cadê Todo Mundo? | Aula 1
 
-Um vídeo por seção. **Status em 10/10/2026:** a responsável informou que os quatro vídeos-base já foram gravados. Este roteiro organiza as seis inserções da **Debinha**, confirmada como a criança desta aula, para a edição. Preservar a fala gravada da professora; conferir os pontos de corte no material original. As durações abaixo são referências anteriores às inserções, não tempos medidos da montagem final.
+Um vídeo por seção. **Status em 10/10/2026:** a responsável informou que os quatro vídeos-base já foram gravados. Este roteiro organiza oito inserções da **Debinha**, confirmada como a criança desta aula: as seis informadas e duas novas na parte 4. Preservar a fala gravada da professora; conferir os pontos de corte no material original. As durações abaixo são referências anteriores às inserções, não tempos medidos da montagem final.
 
 **Quem fala:** **Professora** é a voz que conduz a explicação; **Debinha (avatar)** é a participação dentro do vídeo; **Zappy na página (não gravar)** é o diálogo da plataforma, fora da gravação. O Zappy não ganha voz no meio do vídeo. Quando aparece no meme ou na interface capturada, sua presença é visual. O botão Ouvir da plataforma continua independente da edição do vídeo.
 
@@ -138,9 +138,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Para começar, encontre a área Quando acontecer. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
 >
-> Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.
->
-> A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.
+> Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.”
+
+**Na tela:** **A1P4-R01** · Nova inserção. Debinha entra depois da explicação de escolhido. Deixar o nome à vista e terminar o apontamento antes da fala.
+
+**Debinha (avatar):**
+
+> “Ah! Se eu tocar no arbusto, ele vira o escolhido!”
+
+**Na tela:** Debinha sai. Retomar o áudio gravado em A reação vai ficar dentro desse bloco; só então apontar o encaixe.
+
+**Professora:**
+
+> “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.
 >
 > Agora sim, abra Jogo 2D, depois Sprites e depois Aparência, e pegue o bloco Deixar o sprite jogador com 50% de visibilidade.
 >
@@ -168,7 +178,19 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o bloco está dentro de Quando clicar ou tocar, o sprite é escolhido e o número é 0. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
+> Funcionou?”
+
+**Na tela:** **A1P4-R02** · Nova inserção, depois da pergunta Funcionou? Mostrar novamente um esconderijo ficando invisível e o personagem aparecendo, com os blocos conferidos. Debinha responde à professora sobre o próprio novo teste; não afirmar que todos os jogos de quem assiste já funcionaram.
+
+**Debinha (avatar):**
+
+> “Agora sim!”
+
+**Na tela:** Debinha sai. Retomar o áudio gravado em Clique em Verificar esta parte. Não repetir Funcionou? depois da resposta da criança. Não retirar a verificação nem o envio.
+
+**Professora:**
+
+> “Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
 > Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
 >

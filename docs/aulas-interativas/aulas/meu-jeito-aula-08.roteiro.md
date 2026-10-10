@@ -22,9 +22,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do projeto com a nave azul e do Mural vazio: clicar em Publicar e mostrar o cartão Publicação 1 azul. Em Cor da nave no seu projeto, escolher rosa e mostrar o projeto rosa e a Publicação 1 azul. Clicar em Publicar de novo e mostrar a Publicação 2 rosa ao lado da Publicação 1 azul, com a nota da bancada. Meme na comparação: na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda "a foto guarda aquele momento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-copia-publicada-avatar-01`.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do projeto com a nave azul e do Mural vazio: clicar em Publicar e mostrar o cartão Publicação 1 azul. Em Cor da nave no seu projeto, escolher rosa e mostrar o projeto rosa e a Publicação 1 azul. Clicar em Publicar de novo e mostrar a Publicação 2 rosa ao lado da Publicação 1 azul, com a nota da bancada. Meme na comparação: na frase da foto, o Zappy olhando no celular a foto de uma nave azul enquanto, ao lado, a nave do desenho já está rosa, com a legenda "a foto guarda aquele momento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir a mudança no projeto e a comparação com a foto; manter a Publicação 1 azul.
 
@@ -37,6 +35,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 > Agora, em Cor da nave no seu projeto, eu escolho rosa. Tá vendo? A nave do projeto fica rosa, e a Publicação 1 continua azul, porque publicar guardou uma cópia daquele momento, e o projeto continua seu para mexer.
 >
 > Sabe quando você manda a foto de um desenho para alguém da família? Se depois você pinta mais o desenho, a foto que a pessoa recebeu continua igual. Para ela ver o desenho novo, você manda outra foto.”
+
+**ID de edição:** `video-copia-publicada-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -61,9 +61,11 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 ### Clipe `video-teste-completo` · Jogue do começo ao reinício
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
@@ -71,9 +73,21 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > Clique em Abrir meu Estúdio nesta parte e retome o seu jogo. Clique na prévia e toque na tecla Enter para começar. Mova a nave para os lados, atire e acerte uma pedra. Confira se os pontos mudam e se as duas animações aparecem.
 >
-> Depois deixe as pedras acertarem a nave até acabar a última vida. Tá vendo? A partida acaba e aparece a tela de fim, porque as vidas acabaram. Toque na tecla Enter para voltar à abertura e em outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.
->
-> Se alguma regra falhar, volte à fase em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. Se precisar de ajuda, clique em Preciso de ajuda, aqui na fase, e conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste de novo.
+> Depois deixe as pedras acertarem a nave até acabar a última vida. Tá vendo? A partida acaba e aparece a tela de fim, porque as vidas acabaram. Toque na tecla Enter para voltar à abertura e em outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.”
+
+**ID de edição:** `video-teste-completo-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “E se alguma coisa não funcionar?”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Se alguma regra falhar, volte à fase em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. Se precisar de ajuda, clique em Preciso de ajuda, aqui na fase, e conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste de novo.
 >
 > Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”
 
@@ -86,9 +100,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-compartilhar-avatar-01`.
+**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Esperar Publicado!, abrir e testar a versão publicada e voltar ao Estúdio; não copiar o link antes da pergunta.
 
@@ -97,6 +109,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 > “Agora vem uma escolha sua: publicar o seu jogo no Mural. Se quiser mostrar o seu jogo para a família e os amigos, deixe o jogo salvo e clique em Compartilhar, no alto do Estúdio. Confira o título. O resumo pode já vir escrito, por isso leia e deixe do seu jeito, contando como jogar. Depois clique em Gerar capa e confira se a imagem mostra o seu jogo. Com título, resumo e capa prontos, clique em Publicar.
 >
 > Espere aparecer Publicado!, com a frase Seu projeto já está no Mural dos Criadores. Que conquista! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Abrir o jogo, e a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio.”
+
+**ID de edição:** `video-compartilhar-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 

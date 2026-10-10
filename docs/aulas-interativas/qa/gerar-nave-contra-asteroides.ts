@@ -18,7 +18,7 @@ import {
 import { etapasNave, ORDEM_NAVE, projetoNave } from './nave-contra-asteroides-etapas'
 
 export interface SecaoNave {
-  avatar?: ParticipacaoAvatar
+  avatar?: ParticipacaoAvatar | ParticipacaoAvatar[]
   key: string
   title: string
   bridge: string

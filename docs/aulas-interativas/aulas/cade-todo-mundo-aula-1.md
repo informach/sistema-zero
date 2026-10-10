@@ -154,7 +154,18 @@ prévia, verificação da etapa, envio e avanço. Manter mouse, toque e teclado 
 caderno real anexado e a sua presença na captura; não substituir o anexo pela lista vazia do molde editorial.
 
 O ensaio da abertura deve comprovar que a criança reconhece o jogo a construir, começa a jogar
-sem explicação adicional e sabe como seguir. Conferir as seis entradas da Debinha na versão
+sem explicação adicional e sabe como seguir. Conferir as oito entradas da Debinha na versão
 editada, sem sobrepor vozes nem cobrir os controles. A gravação base foi informada como concluída;
 avaliar uma fala complementar somente se a edição revelar uma lacuna concreta. Os manifestos
 locais continuam como moldes de autoria.
+
+## Revisão de ritmo e entendimento · 10/10/2026
+
+O roteiro tem 8 entradas ao todo. As novas falas abaixo distribuem perguntas, reações e descobertas ao longo da montagem. A fala de entendimento aplica a ideia a um exemplo ou consequência; a comemoração pode ser breve. Preservar os passos e deixar o resultado visível antes da reação.
+
+Somente a parte 4 mudou nesta rodada: duas inserções entre trechos do áudio já gravado. As partes 1, 2 e 3 continuam iguais. “Funcionou?” vem antes de “Agora sim!”. [Cortes exatos](../edicao-cade-aula-1-reacoes.md).
+
+| Entrada | Depois da professora | Criança | Retomada da professora |
+| --- | --- | --- | --- |
+| A1P4-R01 | “Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.” | Debinha: “Ah! Se eu tocar no arbusto, ele vira o escolhido!” | “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.” |
+| A1P4-R02 | “Funcionou?” | Debinha: “Agora sim!” | “Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.” |

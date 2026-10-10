@@ -22,15 +22,29 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo. Meme na comparação: na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda "de longe: redonda · de perto: degraus". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir de Aproximar em 1 vez, deixar ver as duas pedras parecidas. Aumentar Aproximar devagar até 4 e parar para mostrar os degraus da pedra de pixel e a borda lisa da pedra de vetor. Seguir até 6 e mostrar a grade da pedra de pixel e os pontos e curvas da pedra de vetor. Voltar para 1 e mostrar as duas parecidas de novo. Meme na comparação: na frase das pecinhas de montar, o Zappy segurando uma pedra feita de pecinhas, que de longe parece redonda e, numa lupa, mostra os degraus, com a legenda "de longe: redonda · de perto: degraus". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
 > “Esta é uma experiência para a gente entender a diferença entre um desenho em pixel e um desenho em vetor.
 >
-> Olha aqui: com Aproximar em 1 vez, a pedra de pixel e a pedra de vetor parecem a mesma pedra. Mas, quando eu aumento Aproximar até 4, as bordas ficam diferentes: a pedra de pixel mostra degraus, e a de vetor continua lisa.
->
-> Sabe um desenho feito com pecinhas de montar? De longe, ele parece redondo. De perto, você vê os degraus das pecinhas. A pedra de pixel é assim: ela é feita de quadradinhos. Quando eu aumento Aproximar, é como chegar perto das pecinhas.
+> Olha aqui: com Aproximar em 1 vez, a pedra de pixel e a pedra de vetor parecem a mesma pedra. Mas, quando eu aumento Aproximar até 4, as bordas ficam diferentes: a pedra de pixel mostra degraus, e a de vetor continua lisa.”
+
+**ID de edição:** `video-bordas-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Uma ficou com degraus e a outra não!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Sabe um desenho feito com pecinhas de montar? De longe, ele parece redondo. De perto, você vê os degraus das pecinhas. A pedra de pixel é assim: ela é feita de quadradinhos. Quando eu aumento Aproximar, é como chegar perto das pecinhas.
 >
 > Eu continuo até 6. Olha só: na pedra de pixel aparece a grade dos quadradinhos, e na pedra de vetor aparecem pontos e curvas. É que a pedra de vetor é feita de pontos ligados por linhas, e o computador desenha essa linha de novo em qualquer tamanho. Por isso ela continua lisa.
 >
@@ -49,15 +63,29 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
 > “Lembra da experiência da parte anterior? De perto, a pedra de pixel mostrava os degraus dos quadradinhos. Agora a gente vai desenhar a sua nave desse jeito, em Pixel art, por isso você vai pintar quadradinho por quadradinho.
 >
-> Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.
->
-> Confira o nome nave e a grade quadrada. O nome precisa ser nave, porque é por esse nome que você vai encontrar o desenho quando ele entrar no jogo. Se você já tem a nave desta aventura, abra esse desenho e continue nele, em vez de criar outra igual.
+> Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Pixel art. Em O que você quer criar?, escolha Personagem. Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.”
+
+**ID de edição:** `video-nova-nave-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “E por que o nome tem que ser nave?”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Confira o nome nave e a grade quadrada. O nome precisa ser nave, porque é por esse nome que você vai encontrar o desenho quando ele entrar no jogo. Se você já tem a nave desta aventura, abra esse desenho e continue nele, em vez de criar outra igual.
 >
 > Por último, deixe as quatro linhas de baixo da grade livres, porque elas vão ser o lugar do fogo do motor. O contorno fica para depois: antes, você vai experimentar o espelho na próxima parte.
 >
@@ -72,9 +100,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho. Meme na comparação: na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda "um pingo, dois lados". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-espelho-avatar-01`.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do papel em branco, com os dois espelhos desligados: clicar em Pintar a asa e mostrar uma asa só. Ligar só o Espelho lado a lado e mostrar a linha do meio; clicar em Pintar a asa e mostrar a cópia do outro lado. Desligar esse espelho, ligar só o Espelho de cima e de baixo, clicar em Pintar a ponta e mostrar a cópia embaixo. Deixar só o Espelho lado a lado ligado, clicar em Balde de tinta: encher a asa e mostrar que só a asa esquerda enche, com a frase embaixo do desenho. Meme na comparação: na frase da tinta, o Zappy abrindo uma folha dobrada com uma mancha igual dos dois lados, em forma de asa, com a legenda "um pingo, dois lados". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o teste do Espelho lado a lado e a comparação com a folha dobrada; apontar o outro controle sem ligá-lo ainda.
 
@@ -87,6 +113,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 > Agora eu ligo só o Espelho lado a lado, e aparece uma linha marcada como meio. Quando eu clico em Pintar a asa de novo, olha só: uma cópia da asa surge do outro lado dessa linha. Um traço meu virou dois, porque o espelho copia cada traço para o outro lado da linha do meio.
 >
 > Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.”
+
+**ID de edição:** `video-espelho-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -115,15 +143,29 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
 > “Lembra da experiência da parte anterior? Com o Espelho lado a lado ligado, cada traço seu virou dois. Agora a gente vai usar esse espelho no contorno da sua nave, por isso você só vai desenhar uma metade.
 >
-> Escolha uma cor escura para o contorno e ligue Espelho lado a lado. Depois escolha Linha e arraste pequenos trechos para desenhar metade da ponta, a lateral e uma asa. Olha só: o espelho desenha o outro lado sozinho. A largura e o formato são escolha sua.
->
-> Feche a base acima das quatro linhas reservadas para o fogo. Depois aproxime a imagem e confira se não ficou nenhuma abertura entre os trechos do contorno, porque, por uma abertura, a tinta do Balde escapa para fora da nave. Se faltar um quadradinho, feche com o Lápis.
+> Escolha uma cor escura para o contorno e ligue Espelho lado a lado. Depois escolha Linha e arraste pequenos trechos para desenhar metade da ponta, a lateral e uma asa. Olha só: o espelho desenha o outro lado sozinho. A largura e o formato são escolha sua.”
+
+**ID de edição:** `video-contorno-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Eu desenho de um lado, e o outro vai junto!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Feche a base acima das quatro linhas reservadas para o fogo. Depois aproxime a imagem e confira se não ficou nenhuma abertura entre os trechos do contorno, porque, por uma abertura, a tinta do Balde escapa para fora da nave. Se faltar um quadradinho, feche com o Lápis.
 >
 > Quando terminar, desligue o espelho e confira se a nave cabe na grade e se o espaço do motor continua livre.
 >
@@ -138,15 +180,15 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-cores-avatar-01`.
+**Direção geral do clipe:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Mostrar o contorno ainda sem preenchimento e o espaço do motor livre.
 
 **Professora:**
 
 > “Agora pinte o corpo da sua nave.”
+
+**ID de edição:** `video-cores-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -177,9 +219,7 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da bola no quintal, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda "lado do sol: claro · outro lado: escuro". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-luz-avatar-01`.
+**Direção geral do clipe:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da bola com um tom de azul e o sol na esquerda: ligar A sombra e a luz e deixar ver os três tons e a bola redonda. Desligar e mostrar a bola chapada, com um tom. Ligar de novo, mudar O sol para a direita e deixar ver o azul claro passar para a direita e o escuro para a esquerda. Meme na comparação: na frase da bola no quintal, o Zappy de óculos escuros ao lado de uma bola com o lado do sol claro e o outro lado escuro, com a legenda "lado do sol: claro · outro lado: escuro". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir a comparação com a bola no quintal e manter o sol à esquerda.
 
@@ -192,6 +232,8 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 > Quando eu desligo, a bola volta a ter um tom só e fica chapada, como um adesivo.
 >
 > Sabe uma bola no quintal, num dia de sol? O lado virado para o sol fica mais claro, e o outro lado fica mais escuro. É isso que A sombra e a luz desenha.”
+
+**ID de edição:** `video-luz-avatar-01`.
 
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
@@ -218,7 +260,9 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+
+**Na tela:** Mostrar o contraste claro e escuro no desenho antes da reação.
 
 **Professora:**
 
@@ -226,7 +270,21 @@ Vocabulário da aventura (06/10/2026): na narração, na ponte do Zappy e nos t�
 >
 > Primeiro, decida de qual lado vem a luz. Escolha um tom mais claro da cor do corpo e pinte com o Lápis uma faixa pequena desse lado. Depois escolha um tom mais escuro e pinte o lado oposto, e, se quiser, faça o mesmo na cabine. As cores são suas: use a sua paleta, mesmo que ela seja bem diferente das cores do exemplo.
 >
-> Olha só: com o claro de um lado e o escuro do outro, a sua nave começa a parecer redonda. Se no seu desenho não ficou assim, confira: os tons aparecem de perto e de longe, o contorno continua fechado e a luz vem do mesmo lado no corpo e na cabine.
+> Olha só: com o claro de um lado e o escuro do outro, a sua nave começa a parecer redonda.”
+
+**ID de edição:** `video-volume-avatar-01`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Olha! Parece que ela ganhou uma curva!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Se no seu desenho não ficou assim, confira: os tons aparecem de perto e de longe, o contorno continua fechado e a luz vem do mesmo lado no corpo e na cabine.
 >
 > Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.”
 

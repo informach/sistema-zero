@@ -18,9 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy com uma mochila cheia de cactos pesando nas costas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-visivel-guardado-avatar-01`.
+**Direção geral do clipe:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy com uma mochila cheia de cactos pesando nas costas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave.
 
@@ -30,11 +28,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os cactos passam e saem pela esquerda. Na tela do jogo eles somem, mas nos bastidores continuam no grupo, na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.”
 
+**ID de edição:** `video-visivel-guardado-avatar-01`.
+
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
 **Dedé (avatar):**
 
-> “Tem cacto guardado mesmo depois de sair!”
+> “Eu achei que sair da tela já tirava o cacto do jogo!”
 
 **Na tela:** Dedé sai antes da resposta. Ligar a regra e acompanhar os números até ficarem iguais.
 
@@ -53,11 +53,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 ### Clipe `video-faxina` · Retire do grupo quem já saiu
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam o corte do avatar.
-
-**ID de edição:** `video-faxina-avatar-01`.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Retomar a experiência com o projeto aberto, sem pegar blocos ainda.
 
@@ -65,21 +63,35 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Lembra da experiência da parte anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá!”
 
+**ID de edição:** `video-faxina-avatar-01`.
+
 **Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
 
 **Dedé (avatar):**
 
 > “Onde essa regra entra?”
 
-**Na tela:** Dedé sai antes da resposta. Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa.
+**Na tela:** Dedé sai antes da resposta. Localizar o fim do quadro, depois do desenho dos cactos, e mostrar a montagem completa. Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
 **Professora:**
 
 > “A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos. Depois, abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte depois do desenho dos cactos. Escolha cactos.
 >
-> Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.
->
-> Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos. Limpar a tela continua no começo do quadro, porque ela cuida da imagem, e esta regra cuida dos cactos guardados no grupo.
+> Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.”
+
+**ID de edição:** `video-faxina-avatar-02`.
+
+**Na tela:** Dedé entra com o resultado anterior à vista. Manter os gestos parados durante a fala; não adiantar a demonstração seguinte.
+
+**Dedé (avatar):**
+
+> “Se um cacto sair da tela, ele sai da lista também!”
+
+**Na tela:** Dedé sai antes da resposta. Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+**Professora:**
+
+> “Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos. Limpar a tela continua no começo do quadro, porque ela cuida da imagem, e esta regra cuida dos cactos guardados no grupo.
 >
 > Agora espere alguns cactos atravessarem a tela. Os que chegam pela direita têm que continuar entrando normalmente. A diferença no grupo não aparece no seu jogo, porque ela acontece por dentro, e quem confere essa regra é a verificação.
 >

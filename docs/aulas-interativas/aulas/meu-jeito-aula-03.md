@@ -30,7 +30,9 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 **Blocos na página:** video-quadros → fala-quadros → experiencia-quadros.
 
-**Participação no vídeo:** ID video-quadros-avatar-01. Professora até “a Velocidade diz quantas páginas passam por segundo.”. Antes da entrada: Comparar as velocidades 2 e 8, parar a Prévia e concluir a comparação com o livrinho. Debinha entra, com os gestos parados, e fala: “E se os dois desenhos forem iguais?”. Debinha sai antes da resposta. Retomada da professora: “Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. Repare: a Prévia continua trocando 8 quadros por segundo, mas o fogo parou de pulsar, porque os dois desenhos ficaram iguais. Ou seja, sem diferença entre os quadros, não há movimento.”. Na retomada: Ligar a Prévia e tornar o quadro 2 igual ao 1 só depois da pergunta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-quadros-avatar-01. Professora até “a Velocidade diz quantas páginas passam por segundo.”. Antes: Comparar as velocidades 2 e 8, parar a Prévia e concluir a comparação com o livrinho. Debinha: “E se os dois desenhos forem iguais?”. Retomada da professora: “Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1.”. Depois: Ligar a Prévia e tornar o quadro 2 igual ao 1 só depois da pergunta.
 
 **Experiência existente:** `frames`. Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo. Sem palpite, pistas ou pergunta final.
 
@@ -48,7 +50,11 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 **Blocos na página:** video-fantasma → fala-fantasma → experiencia-fantasma.
 
-**Participação no vídeo:** ID video-fantasma-avatar-01. Professora até “agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”. Antes da entrada: Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis. Debinha entra, com os gestos parados, e fala: “Assim eu vejo os dois fogos ao mesmo tempo!”. Debinha sai antes da resposta. Retomada da professora: “E o Fantasma não entra na animação, porque ele só ajuda a comparar.”. Na retomada: Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-fantasma-avatar-01. Professora até “Sabe quando você põe uma folha fina por cima de um desenho e consegue ver as linhas de baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Posso usar o desenho anterior como guia!”. Retomada da professora: “Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-fantasma-avatar-02. Professora até “agora ele está um pouco maior que o fogo tracejado e cabe inteiro no quadro.”. Antes: Concluir a comparação com Fantasma e ajustar o fogo 2 para 10, com os dois contornos visíveis. Debinha: “Agora dá para ver quanto o fogo cresceu!”. Retomada da professora: “E o Fantasma não entra na animação, porque ele só ajuda a comparar.”. Depois: Explicar que o Fantasma serve para comparar e mostrar a diferença entre a experiência tracejada e o quadro clarinho do Pinta.
 
 **Experiência existente:** `onion-skin`. Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro. Sem palpite, pistas ou pergunta final.
 
@@ -57,6 +63,10 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 **Tarefa / Zappy na página:** Agora mude só o fogo no segundo quadro! Duplique o quadro e aumente um pouco a chama, mantendo o corpo no lugar. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
 
 **Blocos na página:** video-segundo-fogo → fala-segundo-fogo.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-segundo-fogo-avatar-01. Professora até “Primeiro, na área Spritesheet da nave, selecione o quadro 1 e clique em Duplicar quadro. Depois selecione o quadro 2 e ligue Fantasma do quadro anterior. No Pinta, o quadro 1 fica clarinho, atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Ainda está igual. Qual pedaço eu mudo?”. Retomada da professora: “Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta seção registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

@@ -1,6 +1,6 @@
 # Debinha e Dedé nos vídeos
 
-Direção de produção de 10/10/2026. A responsável já gravou os quatro vídeos-base da Aula 1 do Cadê Todo Mundo? e confirmou a **Debinha** como a criança dessa aula. As seis entradas informadas estão no [roteiro, em ordem de edição](aulas/cade-todo-mundo-aula-1.roteiro.md). A pedido da responsável, a alternância também foi aplicada aos roteiros da Aula 2, com **Dedé**, e do certificado, com **Debinha**. Este documento orienta a edição e as próximas gravações; não comprova uma montagem ou publicação dos vídeos.
+Direção de produção de 10/10/2026. A responsável já gravou os quatro vídeos-base da Aula 1 do Cadê Todo Mundo? e confirmou a **Debinha** como a criança dessa aula. As seis entradas informadas e duas novas na parte 4 estão no [roteiro, em ordem de edição](aulas/cade-todo-mundo-aula-1.roteiro.md). A pedido da responsável, a alternância também foi aplicada aos roteiros da Aula 2, com **Dedé**, e do certificado, com **Debinha**. Este documento orienta a edição e as próximas gravações; não comprova uma montagem ou publicação dos vídeos.
 
 ## Quem fala e onde aparece
 
@@ -19,8 +19,8 @@ Manter a mesma criança em todas as partes de uma aula. Alternar na aula seguint
 
 | Curso e aula | Avatar | Situação |
 | --- | --- | --- |
-| Cadê Todo Mundo?, Aula 1 | Debinha | Confirmada pela responsável; seis entradas registradas |
-| Cadê Todo Mundo?, Aula 2 | Dedé | Cinco entradas aplicadas ao roteiro; gravação e edição não confirmadas |
+| Cadê Todo Mundo?, Aula 1 | Debinha | Confirmada pela responsável; seis entradas informadas e duas novas na parte 4 |
+| Cadê Todo Mundo?, Aula 2 | Dedé | Nove entradas aplicadas ao roteiro; gravação e edição não confirmadas |
 | Cadê Todo Mundo?, certificado | Debinha | Uma comemoração aplicada ao roteiro; gravação e edição não confirmadas |
 
 Para outro curso, registrar quem começa no cabeçalho do roteiro e alternar por aula. Uma aula pode ter partes sem participação. Uma seção de quiz sem vídeo continua sem gravação ou avatar inserido. Não existe uma quantidade obrigatória de aparições.
@@ -30,11 +30,11 @@ Para outro curso, registrar quem começa no cabeçalho do roteiro e alternar por
 Usar a criança onde ela ajuda a conversa a avançar:
 
 - **Curiosidade:** abre uma dúvida que a explicação seguinte responde.
-- **Entendimento:** mostra, em poucas palavras, o que ela acabou de compreender.
+- **Entendimento:** aplica a ideia a um exemplo ou percebe uma consequência. Evitar apenas repetir a definição com outras palavras. Por exemplo: “Ah! Se eu tocar no arbusto, ele vira o escolhido!”.
 - **Dificuldade:** leva a professora a conferir e corrigir um passo concreto.
 - **Reação:** comemora uma descoberta ou conquista sem antecipar o resultado da experiência.
 
-Nas próximas aulas, priorizar uma entrada curta por mudança importante de assunto; uma segunda pode caber em um vídeo mais longo. Isso é um critério editorial, não uma cota. Não colocar uma pergunta antes de cada comando nem repetir a explicação inteira pela voz da criança. Evitar o mesmo bordão em todas as partes. Manter os passos completos com a professora e a passagem explícita da vez para quem assiste.
+Distribuir entradas curtas nas mudanças de assunto, nos resultados dos testes e nos trechos longos de montagem. Um mesmo vídeo pode receber várias participações. A quantidade depende da conversa e dos gestos, sem uma cota nem um intervalo fixo de palavras. Reações como “Agora sim!” cabem depois do resultado ou como resposta a “Funcionou?”. Não colocar uma pergunta antes de cada comando nem repetir a explicação inteira pela voz da criança. Evitar o mesmo bordão em todas as partes. Manter os passos completos com a professora e a passagem explícita da vez para quem assiste.
 
 “No meu não deu certo” funciona como abertura de ajuda quando a resposta vem logo depois. Não transformar esse comportamento na personalidade fixa de uma das crianças. Quem teve sucesso no próprio jogo deve poder continuar, por isso a orientação mantém a condição “Se algo não funcionou no seu jogo…”.
 
@@ -53,9 +53,9 @@ O texto da professora é o do roteiro já gravado. As âncoras são trechos lite
 
 “E os outros dois?” pertence somente à Debinha: não manter também na voz da professora. As outras falas são inserções nos intervalos indicados. A frase sobre consultar o mapa foi mantida como informada; o mapa continua sendo uma ajuda opcional para os passos do jogo.
 
-## Aula 2: Dedé aplicado aos cinco vídeos
+## Aula 2: Dedé nos cinco vídeos
 
-As cinco participações já estão incorporadas ao [roteiro da Aula 2](aulas/cade-todo-mundo-aula-2.roteiro.md), com a fala completa da professora antes e depois de cada entrada. A gravação e a edição desta versão ainda não foram confirmadas.
+As nove participações estão incorporadas ao [roteiro da Aula 2](aulas/cade-todo-mundo-aula-2.roteiro.md), com a fala completa da professora antes e depois de cada entrada. A gravação e a edição desta versão ainda não foram confirmadas.
 
 | ID de edição | Depois desta fala da professora | Dedé | Retomada da professora |
 | --- | --- | --- | --- |
@@ -81,9 +81,9 @@ A entrada é uma reação breve à conclusão. Debinha sai antes da instrução 
 
 ## Chave do Farol
 
-Aplicado aos quatro roteiros em 10/10/2026: **18 participações**, com Debinha no Dia 1 (cinco), Dedé no Dia 2 (quatro), Debinha no Dia 3 (oito) e Dedé na celebração do certificado (uma). Gravação, edição e publicação desta versão ainda não foram confirmadas.
+Aplicado aos quatro roteiros em 10/10/2026: **29 participações**, com Debinha no Dia 1 (oito), Dedé no Dia 2 (seis), Debinha no Dia 3 (catorze) e Dedé na celebração do certificado (uma). Gravação, edição e publicação desta versão ainda não foram confirmadas.
 
-Os vídeos do Mapa da Aventura e dos quatro avisos continuam sem intervenção do avatar. A montagem da resposta com chave, mais longa, recebe duas entradas em momentos distintos. A escolha considera a conversa de cada vídeo, sem criar uma quantidade obrigatória para os próximos cursos.
+Os vídeos do Mapa da Aventura e dos quatro avisos continuam sem intervenção do avatar. As montagens mais longas recebem entradas em momentos distintos, incluindo reações depois dos testes. A escolha considera a conversa de cada vídeo, sem criar uma quantidade obrigatória para os próximos cursos.
 
 As tabelas registram as âncoras e o começo da resposta; a fala completa e os gestos permanecem nos roteiros. A professora sempre retoma depois de o avatar sair. “Então” continua sendo apenas o nome do espaço do bloco Se, não uma palavra de ligação.
 
@@ -112,7 +112,7 @@ As tabelas registram as âncoras e o começo da resposta; a fala completa e os g
 
 ### Dia 3: Debinha
 
-[Roteiro completo](aulas/desafio-dia-3.roteiro.md). A montagem da resposta com chave tem duas entradas, antes de montar e antes de reiniciar a partida. O vídeo dos quatro avisos continua só com a professora. As escolhas de imagens, frases e posição continuam livres.
+[Roteiro completo](aulas/desafio-dia-3.roteiro.md). A montagem da resposta com chave tem três entradas: no problema inicial, depois de configurar a luz e antes de reiniciar a partida. O vídeo dos quatro avisos continua só com a professora. As escolhas de imagens, frases e posição continuam livres.
 
 | Entrada | Depois desta fala da professora | Debinha | Começo da resposta da professora |
 | --- | --- | --- | --- |
@@ -149,13 +149,13 @@ Para o formato dos próximos roteiros, seguir [ESPEC-ROTEIRO, seção 7](ESPEC-R
 
 ## Aplicação aos outros cursos
 
-Revisão de 10/10/2026: as 30 aulas dos três cursos abaixo têm 71 participações escritas. Debinha começa cada curso; Dedé assume a segunda aula, e a alternância segue pela ordem pedagógica. Em Nave Contra Asteroides, usar a ordem desta tabela, pois os nomes dos arquivos não são os números das aulas. A gravação, a edição e a publicação destas versões não foram confirmadas.
+Revisão de 10/10/2026: as 30 aulas dos três cursos abaixo têm 191 participações escritas. Debinha começa cada curso; Dedé assume a segunda aula, e a alternância segue pela ordem pedagógica. Em Nave Contra Asteroides, usar a ordem desta tabela, pois os nomes dos arquivos não são os números das aulas. A gravação, a edição e a publicação destas versões não foram confirmadas.
 
 Cada roteiro contém a fala integral da professora, as intervenções da criança e a retomada. As participações incluem perguntas, escolhas, descobertas e dificuldades. As seções de quiz e os clipes sem intervenção continuam como estavam; não é preciso inserir uma criança em cada vídeo.
 
 ### Fonte e pontos de edição
 
-Nos arquivos `qa/corre-dino.conteudo.json`, `qa/nave-contra-asteroides.conteudo.json` e `qa/meu-jeito.conteudo.json`, a propriedade `avatar` de uma seção registra:
+Nos arquivos `qa/corre-dino.conteudo.json`, `qa/nave-contra-asteroides.conteudo.json` e `qa/meu-jeito.conteudo.json`, a propriedade `avatar` de uma seção aceita uma participação ou uma lista em ordem de edição. Cada participação registra:
 
 - `after`: trecho literal da professora imediatamente antes da entrada, usado como âncora de edição, sem inventar segundos.
 - `speech`: fala completa da criança; o nome vem da ordem da aula.
@@ -170,51 +170,75 @@ Se houver gravação anterior, localizar os cortes pelas âncoras e verificar a 
 
 ### Corre, Dino!
 
-13 aulas e 31 participações. Os clipes de cada entrada estão identificados na proposta e no roteiro.
+13 aulas e 75 participações. Os clipes de cada entrada estão identificados na proposta e no roteiro.
 
 | Aula e roteiro | Avatar | Participações |
 | --- | --- | --- |
-| [1. Prepare a tela e crie o Dino](aulas/corre-dino-aula-01.roteiro.md) | Debinha | 2 |
-| [2. Mostre o Dino e a floresta](aulas/corre-dino-aula-02.roteiro.md) | Dedé | 3 |
-| [3. Faça o Dino cair e pular](aulas/corre-dino-aula-03.roteiro.md) | Debinha | 2 |
-| [4. Toque um som em cada pulo](aulas/corre-dino-aula-04.roteiro.md) | Dedé | 2 |
-| [5. Faça os cactos entrar na pista](aulas/corre-dino-aula-05.roteiro.md) | Debinha | 3 |
-| [6. Retire os cactos que saíram](aulas/corre-dino-aula-06.roteiro.md) | Dedé | 2 |
-| [7. Separe a abertura da partida](aulas/corre-dino-aula-07.roteiro.md) | Debinha | 2 |
-| [8. Comece por tecla ou toque](aulas/corre-dino-aula-08.roteiro.md) | Dedé | 2 |
-| [9. Termine e recomece a corrida](aulas/corre-dino-aula-09.roteiro.md) | Debinha | 3 |
-| [10. Ajuste a área da batida](aulas/corre-dino-aula-10.roteiro.md) | Dedé | 2 |
-| [11. Conte e mostre os pontos](aulas/corre-dino-aula-11.roteiro.md) | Debinha | 3 |
-| [12. Varie o lugar e a velocidade dos cactos](aulas/corre-dino-aula-12.roteiro.md) | Dedé | 2 |
-| [13. Aumente a dificuldade com um limite](aulas/corre-dino-aula-13.roteiro.md) | Debinha | 3 |
+| [1. Prepare a tela e crie o Dino](aulas/corre-dino-aula-01.roteiro.md) | Debinha | 6 |
+| [2. Mostre o Dino e a floresta](aulas/corre-dino-aula-02.roteiro.md) | Dedé | 7 |
+| [3. Faça o Dino cair e pular](aulas/corre-dino-aula-03.roteiro.md) | Debinha | 4 |
+| [4. Toque um som em cada pulo](aulas/corre-dino-aula-04.roteiro.md) | Dedé | 4 |
+| [5. Faça os cactos entrar na pista](aulas/corre-dino-aula-05.roteiro.md) | Debinha | 6 |
+| [6. Retire os cactos que saíram](aulas/corre-dino-aula-06.roteiro.md) | Dedé | 3 |
+| [7. Separe a abertura da partida](aulas/corre-dino-aula-07.roteiro.md) | Debinha | 7 |
+| [8. Comece por tecla ou toque](aulas/corre-dino-aula-08.roteiro.md) | Dedé | 6 |
+| [9. Termine e recomece a corrida](aulas/corre-dino-aula-09.roteiro.md) | Debinha | 10 |
+| [10. Ajuste a área da batida](aulas/corre-dino-aula-10.roteiro.md) | Dedé | 4 |
+| [11. Conte e mostre os pontos](aulas/corre-dino-aula-11.roteiro.md) | Debinha | 7 |
+| [12. Varie o lugar e a velocidade dos cactos](aulas/corre-dino-aula-12.roteiro.md) | Dedé | 4 |
+| [13. Aumente a dificuldade com um limite](aulas/corre-dino-aula-13.roteiro.md) | Debinha | 7 |
 
 ### Nave Contra Asteroides
 
-9 aulas e 21 participações. Os clipes de cada entrada estão identificados na proposta e no roteiro.
+9 aulas e 78 participações. Os clipes de cada entrada estão identificados na proposta e no roteiro.
 
 | Aula e roteiro | Avatar | Participações |
 | --- | --- | --- |
-| [1. Faça a nave aparecer](aulas/nave-contra-asteroides-primeira-nave.roteiro.md) | Debinha | 3 |
-| [2. Mova a nave pelo espaço](aulas/nave-contra-asteroides-dia-1.roteiro.md) | Dedé | 3 |
-| [3. Faça a nave atirar](aulas/nave-contra-asteroides-dia-2.roteiro.md) | Debinha | 3 |
-| [4. Faça os asteroides cair](aulas/nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | Dedé | 2 |
-| [5. Faça o tiro acertar o asteroide](aulas/nave-contra-asteroides-dia-3.roteiro.md) | Debinha | 2 |
-| [6. Conte os acertos](aulas/nave-contra-asteroides-pontos.roteiro.md) | Dedé | 2 |
-| [7. Dê três vidas à nave](aulas/nave-contra-asteroides-dia-4.roteiro.md) | Debinha | 2 |
-| [8. Comece a partida com Enter](aulas/nave-contra-asteroides-comecar-partida.roteiro.md) | Dedé | 2 |
-| [9. Termine e recomece a partida](aulas/nave-contra-asteroides-dia-5.roteiro.md) | Debinha | 2 |
+| [1. Faça a nave aparecer](aulas/nave-contra-asteroides-primeira-nave.roteiro.md) | Debinha | 9 |
+| [2. Mova a nave pelo espaço](aulas/nave-contra-asteroides-dia-1.roteiro.md) | Dedé | 9 |
+| [3. Faça a nave atirar](aulas/nave-contra-asteroides-dia-2.roteiro.md) | Debinha | 12 |
+| [4. Faça os asteroides cair](aulas/nave-contra-asteroides-chuva-de-asteroides.roteiro.md) | Dedé | 7 |
+| [5. Faça o tiro acertar o asteroide](aulas/nave-contra-asteroides-dia-3.roteiro.md) | Debinha | 4 |
+| [6. Conte os acertos](aulas/nave-contra-asteroides-pontos.roteiro.md) | Dedé | 5 |
+| [7. Dê três vidas à nave](aulas/nave-contra-asteroides-dia-4.roteiro.md) | Debinha | 6 |
+| [8. Comece a partida com Enter](aulas/nave-contra-asteroides-comecar-partida.roteiro.md) | Dedé | 12 |
+| [9. Termine e recomece a partida](aulas/nave-contra-asteroides-dia-5.roteiro.md) | Debinha | 14 |
 
 ### O Jogo do Meu Jeito
 
-8 aulas e 19 participações. Os clipes de cada entrada estão identificados na proposta e no roteiro.
+8 aulas e 38 participações. Os clipes de cada entrada estão identificados na proposta e no roteiro.
 
 | Aula e roteiro | Avatar | Participações |
 | --- | --- | --- |
-| [1. Guarde uma cópia para criar do seu jeito](aulas/meu-jeito-aula-01.roteiro.md) | Debinha | 2 |
-| [2. Desenhe sua nave em pixel art](aulas/meu-jeito-aula-02.roteiro.md) | Dedé | 3 |
-| [3. Faça o motor da nave pulsar](aulas/meu-jeito-aula-03.roteiro.md) | Debinha | 2 |
+| [1. Guarde uma cópia para criar do seu jeito](aulas/meu-jeito-aula-01.roteiro.md) | Debinha | 5 |
+| [2. Desenhe sua nave em pixel art](aulas/meu-jeito-aula-02.roteiro.md) | Dedé | 7 |
+| [3. Faça o motor da nave pulsar](aulas/meu-jeito-aula-03.roteiro.md) | Debinha | 4 |
 | [4. Desenhe um asteroide com formas](aulas/meu-jeito-aula-04.roteiro.md) | Dedé | 2 |
-| [5. Anime as chamas e as crateras](aulas/meu-jeito-aula-05.roteiro.md) | Debinha | 3 |
-| [6. Coloque sua nave animada no jogo](aulas/meu-jeito-aula-06.roteiro.md) | Dedé | 3 |
-| [7. Faça suas pedras nascerem animadas](aulas/meu-jeito-aula-07.roteiro.md) | Debinha | 2 |
-| [8. Teste e compartilhe sua versão](aulas/meu-jeito-aula-08.roteiro.md) | Dedé | 2 |
+| [5. Anime as chamas e as crateras](aulas/meu-jeito-aula-05.roteiro.md) | Debinha | 5 |
+| [6. Coloque sua nave animada no jogo](aulas/meu-jeito-aula-06.roteiro.md) | Dedé | 8 |
+| [7. Faça suas pedras nascerem animadas](aulas/meu-jeito-aula-07.roteiro.md) | Debinha | 4 |
+| [8. Teste e compartilhe sua versão](aulas/meu-jeito-aula-08.roteiro.md) | Dedé | 3 |
+
+## Novas entradas na revisão de ritmo · 10/10/2026
+
+As tabelas anteriores conservam as entradas originais. Somam-se as inserções abaixo, já incorporadas aos roteiros, propostas e geradores. Na Aula 1 do Cadê, editar somente a parte 4; [pontos exatos de corte](edicao-cade-aula-1-reacoes.md). A gravação e a publicação destas inserções ainda não foram confirmadas.
+
+| Aula e parte | Entrada | Depois da professora | Criança | Retomada |
+| --- | --- | --- | --- | --- |
+| [cade-todo-mundo-aula-1](aulas/cade-todo-mundo-aula-1.roteiro.md) | A1P4-R01 | “Olha aqui: nessa área já tem o bloco Quando clicar ou tocar num sprite do grupo esconderijos, chamá-lo de escolhido. É ele que percebe quando alguém toca num esconderijo. Cada esconderijo é um sprite, que é um objeto do jogo. E escolhido é o nome que o jogo dá ao esconderijo que você tocar.” | Debinha: “Ah! Se eu tocar no arbusto, ele vira o escolhido!” | “A reação vai ficar dentro desse bloco, no espaço vazio ao lado da palavra fazer. Então deixe esse espaço à vista.” |
+| [cade-todo-mundo-aula-1](aulas/cade-todo-mundo-aula-1.roteiro.md) | A1P4-R02 | “Funcionou?” | Debinha: “Agora sim!” | “Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.” |
+| [cade-todo-mundo-aula-2](aulas/cade-todo-mundo-aula-2.roteiro.md) | A2P3-D02 | “Agora vamos testar! Toque num esconderijo. Olha só: o personagem aparece, e Achados vira 1!” | Dedé: “Agora sim! Já está contando!” | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” |
+| [cade-todo-mundo-aula-2](aulas/cade-todo-mundo-aula-2.roteiro.md) | A2P3-D03 | “Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.” | Dedé: “E se eu tocar aqui de novo?” | “Vamos ver. Agora toque de novo no mesmo lugar. Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.” |
+| [cade-todo-mundo-aula-2](aulas/cade-todo-mundo-aula-2.roteiro.md) | A2P4-D02 | “Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.” | Dedé: “Meu gato vai se esconder atrás de uma pedra!” | “Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.” |
+| [cade-todo-mundo-aula-2](aulas/cade-todo-mundo-aula-2.roteiro.md) | A2P4-D03 | “Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.” | Dedé: “Troquei os desenhos e não precisei arrumar tudo de novo!” | “Agora vamos mudar a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.” |
+| [desafio-dia-1](aulas/desafio-dia-1.roteiro.md) | F1P4-R01 | “Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como bloquinhos. Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.” | Debinha: “Quero fazer as setas funcionarem!” | “As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.” |
+| [desafio-dia-1](aulas/desafio-dia-1.roteiro.md) | F1P4-R02 | “Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. Olha só: o personagem anda na direção da seta!” | Debinha: “Foi! Agora ele anda!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar, e o bloco de movimento está dentro de A cada quadro do jogo, logo abaixo de Desenhar o cenário, com o sprite personagem. Depois de corrigir, teste de novo.” |
+| [desafio-dia-1](aulas/desafio-dia-1.roteiro.md) | F1P6-R01 | “Agora teste as quatro direções até chegar às beiradas. Repare: o personagem tem que ficar sempre inteiro na tela.” | Debinha: “Agora posso segurar a seta que ele não vai embora!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo.” |
+| [desafio-dia-2](aulas/desafio-dia-2.roteiro.md) | F2P2-R01 | “No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave.” | Dedé: “Se eu só passar perto da chave, não vale!” | “Agora vem a ação: tirar a chave do chão. Ela vai dentro desse encontro. Deixe à vista o espaço vazio dentro dele.” |
+| [desafio-dia-2](aulas/desafio-dia-2.roteiro.md) | F2P3-R01 | “Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso.” | Dedé: “Ah! Na partida nova eu tenho que buscar a chave outra vez!” | “Agora que temChave existe, o jogo precisa mudar essa informação quando o personagem encostar na chave. Por isso, o próximo bloco vai logo abaixo de Destruir o sprite, dentro do encontro. Deixe esse lugar à vista.” |
+| [desafio-dia-3](aulas/desafio-dia-3.roteiro.md) | F3P2-R01 | “No primeiro nome, escolha personagem e, no segundo, escolha farol.” | Debinha: “Agora o jogo vai perceber quando eu chegar ao farol!” | “Dentro desse encontro, o farol vai fazer a mesma pergunta da porta. Por isso, deixe à vista o espaço vazio dentro do encontro com o farol.” |
+| [desafio-dia-3](aulas/desafio-dia-3.roteiro.md) | F3P2-R02 | “Vá ao farol sem passar pela chave. Repare: a luz continua apagada, e o aviso diz que falta a chave. É a resposta senão funcionando!” | Debinha: “Não adiantou correr direto para o farol. Preciso da chave!” | “Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro de senão está o aviso de que falta a chave. Depois de corrigir, teste de novo.” |
+| [desafio-dia-3](aulas/desafio-dia-3.roteiro.md) | F3P3-R01 | “Escolha o sprite farol e a imagem farol listrado aceso.” | Debinha: “Com a chave, vou conseguir chamar o barco e acender a luz!” | “Por último, falta avisar quem está jogando. O aviso vai logo abaixo da troca de imagem, ainda dentro de então. Deixe esse lugar à vista.” |
+| [desafio-dia-3](aulas/desafio-dia-3.roteiro.md) | F3P4-R01 | “Agora encontre Quando acontecer e o encontro do personagem com o farol. Dentro do então do Se está Trocar imagem do sprite farol para. Clique no nome da imagem e escolha o mesmo modelo, aceso: farol de pedra aceso. Repare: de pedra nos dois lugares, apagado no começo e aceso na resposta com chave.” | Debinha: “Se eu misturar os modelos, o farol muda de tipo quando acende!” | “Falta o lugar onde a história acontece. Em Enquanto estiver rodando, dentro de A cada quadro do jogo, clique em praia tropical, no bloco Desenhar o cenário. Olha só: eu vou usar noite na ilha. A ponte e o mar continuam no mesmo lugar.” |
+| [desafio-dia-3](aulas/desafio-dia-3.roteiro.md) | F3P4-R02 | “Agora teste a sua combinação! Clique em Atualizar e vá ao farol sem a chave: ele continua apagado. Depois busque a chave e volte na mesma partida. Olha só: o farol de pedra acende, e o barco pirata vem chegando!” | Debinha: “Uhu! Minha aventura de pirata está funcionando!” | “Agora a aventura tem a sua cara, e é com essa cara que o seu jogo vai para o Mural.” |
+| [desafio-dia-3](aulas/desafio-dia-3.roteiro.md) | F3P7-R01 | “Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar.” | Debinha: “Mudei o caminho, mas a missão continua a mesma!” | “Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte.” |

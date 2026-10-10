@@ -1,6 +1,6 @@
 # Roteiro de gravação · A Chave do Farol · Dia 2
 
-**Vozes e produção · 10/10/2026:** **Professora** conduz; **Dedé (avatar)** participa em 4 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
+**Vozes e produção · 10/10/2026:** **Professora** conduz; **Dedé (avatar)** participa em 6 entradas marcadas para gravação e edição. A sequência do curso é Debinha no Dia 1, Dedé no Dia 2, Debinha no Dia 3 e Dedé no certificado. As falas da criança também são gravadas. **Zappy na página (não gravar)** identifica as instruções da plataforma; ele não tem voz nos vídeos, mesmo quando aparece no meme ou na interface. As notas **Na tela** não são locução.
 
 **Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações são referências para ensaio, incluindo as novas falas; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
@@ -78,7 +78,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > No primeiro nome, escolha personagem e, no segundo, escolha chave. Assim, tudo o que você colocar dentro desse bloco vai acontecer quando o personagem encostar na chave."
 
-**Na tela:** com o espaço vazio do evento à vista, abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, soltar dentro do evento e escolher `chave`.
+**Na tela:** **F2P2-R01** · Dedé entra depois de configurar os dois nomes. Deixar o evento visível, sem executar o encontro ainda.
+
+**Dedé (avatar):**
+
+> "Se eu só passar perto da chave, não vale!"
+
+**Na tela:** Dedé sai. Mostrar o espaço da ação dentro do encontro antes de buscar Destruir o sprite. com o espaço vazio do evento à vista, abrir **Jogo 2D → Sprites → Criar e trocar aparência**, pegar **Destruir o sprite ...**, soltar dentro do evento e escolher `chave`.
 
 **Professora:**
 
@@ -144,7 +150,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Confira se ficou assim: no fim de Ao iniciar, está Criar variável temChave com valor falso."
 
-**Na tela:** deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Escolher `temChave`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**.
+**Na tela:** **F2P3-R01** · Dedé entra com temChave falso em Ao iniciar à vista. Não mostrar um contador de chave inexistente no jogo.
+
+**Dedé (avatar):**
+
+> "Ah! Na partida nova eu tenho que buscar a chave outra vez!"
+
+**Na tela:** Dedé sai. Mostrar o encontro que vai mudar a informação depois da coleta. deixar à vista o bloco **Destruir o sprite chave**, dentro do encontro. Abrir **Programação → Variáveis**, pegar **Alterar variável ... para ...** e soltar logo abaixo dele, ainda dentro do evento. Escolher `temChave`. Em **Programação → Lógica & Se**, pegar o bloco **verdadeiro**, soltar sobre o número e manter **verdadeiro**.
 
 **Professora:**
 

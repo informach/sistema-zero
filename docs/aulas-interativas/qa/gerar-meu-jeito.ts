@@ -17,7 +17,7 @@ import { ORDEM_MEU_JEITO, projetoMeuJeito } from './meu-jeito-etapas'
 
 type Content = Extract<LearningManifest['blocks'][number], { content: unknown }>['content']
 export interface SecaoMeuJeito {
-  avatar?: ParticipacaoAvatar
+  avatar?: ParticipacaoAvatar | ParticipacaoAvatar[]
   key: string
   title: string
   bridge: string

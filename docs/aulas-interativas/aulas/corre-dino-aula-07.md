@@ -31,7 +31,9 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 
 **Zappy na página (não gravar):** Sua vez! Compare a tela de início e a partida, com Criar cacto fora e dentro de Se o estado do jogo é jogando. Quando terminar, clique em Próxima parte.
 
-**Participação no vídeo:** ID video-condicao-avatar-01. Professora até “O relógio cria cactos sem perguntar nada.”. Antes da entrada: Deixar nascer um cacto na abertura, com Criar cacto fora do Se. Debinha entra, com os gestos parados, e fala: “Mas eu nem comecei a jogar!”. Debinha sai antes da resposta. Retomada da professora: “Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Na tela de início, eu deixo passar três segundos. O relógio continua tocando, mas os nascimentos ficam em 0. A pergunta responde não, porque o estado ainda é inicio.”. Na retomada: Mover a peça para dentro do Se jogando, soltar e repetir os testes antes e depois de começar. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-condicao-avatar-01. Professora até “O relógio cria cactos sem perguntar nada.”. Antes: Deixar nascer um cacto na abertura, com Criar cacto fora do Se. Debinha: “Mas eu nem comecei a jogar!”. Retomada da professora: “Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero.”. Depois: Mover a peça para dentro do Se jogando, soltar e repetir os testes antes e depois de começar.
 
 **Experiência existente:** `game-state`. Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto. Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador. Depois clique em Toque para começar e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
 
@@ -42,6 +44,10 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 **Blocos na página:** video-estado-inicio → fala-estado-inicio.
 
 **Zappy na página (não gravar):** Agora guarde em que momento o seu jogo está! Coloque Mudar o estado do jogo para inicio no fim de Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-estado-inicio-avatar-01. Professora até “O estado começa junto com o jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “O jogo já vai esperar para começar?”. Retomada da professora: “Ainda falta ligar as ações a esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo para inicio, e as regras de movimento e de criação dos cactos continuam nos mesmos lugares.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -54,6 +60,14 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 **Blocos na página:** video-embrulhar → fala-embrulhar.
 
 **Zappy na página (não gravar):** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
+
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-embrulhar-avatar-01. Professora até “Olha aqui: dentro de A cada quadro do jogo, as ações da partida começam em Aplicar a gravidade do mundo ao sprite e vão até o fim. São o controle, o desenho do Dino, o movimento e o desenho dos cactos e a regra que tira do grupo. Arraste o bloco da gravidade para um espaço livre, e a pilha inteira vem junto, porque os outros blocos estão encaixados embaixo dele. Não copie nada: só separe.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “A pilha veio inteira!”. Retomada da professora: “Agora deixe à vista o espaço logo depois de Desenhar fundo de floresta, dentro do quadro.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-embrulhar-avatar-02. Professora até “Repare: o Se chega com a pergunta x > 0. Arraste essa pergunta para a lixeira, para o lugar dela ficar vazio. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. No menu dele, escolha jogando.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Assim a corrida espera eu começar!”. Retomada da professora: “Agora deixe à vista o espaço vazio do então, dentro do Se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-embrulhar-avatar-03. Professora até “Agora olhe o jogo: com o estado em inicio, o Dino e os cactos deixam de aparecer, e só a floresta continua passando, porque as ações da partida esperam o estado jogando.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Agora só a floresta está passando!”. Retomada da professora: “Para conferir se essas ações ainda funcionam, troque, por um momento, o estado em Ao iniciar para jogando.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
@@ -75,7 +89,11 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 
 **Zappy na página (não gravar):** Agora faça o relógio esperar a partida! Coloque a criação dos cactos num Se jogando, dentro do relógio, e termine com inicio em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
 
-**Participação no vídeo:** ID video-relogio-avatar-01. Professora até “mesmo ainda sem uma tela de abertura desenhada.”. Antes da entrada: Concluir o teste em jogando e voltar para inicio antes da entrada; mostrar apenas a floresta passando. Debinha entra, com os gestos parados, e fala: “A floresta continua passando, mas os cactos esperam!”. Debinha sai antes da resposta. Retomada da professora: “Isso mesmo. Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”. Na retomada: Manter inicio e seguir para a verificação, o salvamento e a próxima parte. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+**Participação no vídeo:** Debinha entra com os gestos parados em cada ponto e sai antes da resposta. Zappy não tem voz no vídeo. Gravação, edição e publicação desta versão não confirmadas.
+
+ID video-relogio-avatar-01. Professora até “Agora deixe à vista o espaço vazio dentro do relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.”. Antes: Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Debinha: “Falta dizer qual é a pergunta!”. Retomada da professora: “Deixe à vista o lugar vazio da pergunta desse Se.”. Depois: Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+ID video-relogio-avatar-02. Professora até “mesmo ainda sem uma tela de abertura desenhada.”. Antes: Concluir o teste em jogando e voltar para inicio antes da entrada; mostrar apenas a floresta passando. Debinha: “A floresta continua passando, mas os cactos esperam!”. Retomada da professora: “Isso mesmo. Funcionou?”. Depois: Manter inicio e seguir para a verificação, o salvamento e a próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
 
