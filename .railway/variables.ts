@@ -378,6 +378,9 @@ const extra: Record<string, Record<string, string[]>> = {
     admin: ['R2_UGC_BUCKET', 'RELEASE_MAINTENANCE_MODE', 'SENTRY_DSN'],
     'community-kids': [
       'KIDS_REFORM_NOTICE_ENABLED',
+      // O baú da trilha em Rive (10/10/2026): o mesmo arquivo do staging, no bucket público
+      // da produção (`cdn.sistemazero.com.br/kids/chest/`).
+      'NEXT_PUBLIC_KIDS_CHEST_RIVE_URL',
       'OPENROUTER_MODEL',
       'RELEASE_MAINTENANCE_MODE',
       'SENTRY_DSN',
