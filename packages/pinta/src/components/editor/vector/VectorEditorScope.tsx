@@ -203,7 +203,13 @@ export interface VectorEditorContextValue {
   commitShapes: (next: VectorShape[], recordUndo?: boolean) => void
   updateSelected: (update: (shape: VectorShape) => VectorShape) => void
   rememberColor: (hex: string) => void
-  applyStyle: (partial: Partial<ShapeStyle>) => void
+  /** `recordUndo: false` aplica sem desfazer: é o miolo de um gesto aberto por `beginStyleGesture`. */
+  applyStyle: (partial: Partial<ShapeStyle>, recordUndo?: boolean) => void
+  /**
+   * Abre um gesto de estilo (arrastar um controle deslizante): devolve quem o fecha com UMA
+   * entrada de desfazer, voltando ao antes do arrasto inteiro.
+   */
+  beginStyleGesture: () => () => void
   adoptStyle: (partial: Partial<ShapeStyle>) => void
   activeChannel: VectorColorChannel
   setActiveChannel: (channel: VectorColorChannel) => void
@@ -799,11 +805,15 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }
 
   /** O miolo do `updateSelected`, para quem já resolveu as livres (sem checar o cadeado 2×). */
-  function updateFree(free: readonly string[], update: (shape: VectorShape) => VectorShape): void {
+  function updateFree(
+    free: readonly string[],
+    update: (shape: VectorShape) => VectorShape,
+    recordUndo = true,
+  ): void {
     const current = currentShapes()
     const next = current.map((s) => (free.includes(s.id) ? update(s) : s))
     if (next.every((s, i) => s === current[i])) return
-    commitShapes(next)
+    commitShapes(next, recordUndo)
   }
 
   /**
@@ -891,25 +901,40 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     return selected.length > 0 ? freeSelectedIds() : []
   }
 
-  function applyStyle(partial: Partial<ShapeStyle>): void {
+  function applyStyle(partial: Partial<ShapeStyle>, recordUndo = true): void {
     const free = freeForStyle()
     if (!free) return
     setStyle((current) => ({ ...current, ...partial }))
     if (free.length === 0) return
-    updateFree(free, (shape) => {
-      const fillApplies = partial.fill !== undefined && hasFill(shape)
-      const strokeApplies = partial.stroke !== undefined
-      const opacityApplies = partial.opacity !== undefined
-      // Nada se aplica a esta forma (linha ou figura recebendo só preenchimento):
-      // a MESMA referência, para o `updateFree` não gravar desfazer vazio.
-      if (!fillApplies && !strokeApplies && !opacityApplies) return shape
-      return {
-        ...shape,
-        ...(fillApplies ? { fill: partial.fill } : {}),
-        ...(strokeApplies ? { stroke: partial.stroke } : {}),
-        ...(opacityApplies ? { opacity: partial.opacity } : {}),
-      }
-    })
+    updateFree(
+      free,
+      (shape) => {
+        const fillApplies = partial.fill !== undefined && hasFill(shape)
+        const strokeApplies = partial.stroke !== undefined
+        const opacityApplies = partial.opacity !== undefined
+        // Nada se aplica a esta forma (linha ou figura recebendo só preenchimento):
+        // a MESMA referência, para o `updateFree` não gravar desfazer vazio.
+        if (!fillApplies && !strokeApplies && !opacityApplies) return shape
+        return {
+          ...shape,
+          ...(fillApplies ? { fill: partial.fill } : {}),
+          ...(strokeApplies ? { stroke: partial.stroke } : {}),
+          ...(opacityApplies ? { opacity: partial.opacity } : {}),
+        }
+      },
+      recordUndo,
+    )
+  }
+
+  /**
+   * ⚠️ Arrastar a espessura ou a opacidade dispara um `change` por degrau: com um desfazer por
+   * degrau, ir de 1 a 10 gravava 18 entradas e o primeiro "Desfazer" voltava só a 9,5 (full
+   * review de 10/10/2026). O arrasto pinta via `replace` e fecha com `commitGesture`, a régua do
+   * arrastar camadas: UMA entrada por gesto.
+   */
+  function beginStyleGesture(): () => void {
+    const base = editor.getState().asset
+    return () => editor.getState().commitGesture(base)
   }
 
   /**
@@ -1587,6 +1612,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     updateSelected,
     rememberColor,
     applyStyle,
+    beginStyleGesture,
     adoptStyle,
     activeChannel,
     setActiveChannel,

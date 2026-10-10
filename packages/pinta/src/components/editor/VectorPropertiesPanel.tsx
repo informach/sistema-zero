@@ -12,7 +12,7 @@
  * vivem na faixa colada na barra de cima (VectorSelectionBar) — antes ficavam
  * aqui embaixo, onde a criança só achava rolando a coluna inteira.
  */
-import type { JSX } from 'react'
+import { type JSX, type PointerEvent as ReactPointerEvent, useEffect, useRef } from 'react'
 import { COPY } from '../../core/copy'
 import {
   fontFamilyOf,
@@ -37,6 +37,7 @@ import { DEFAULT_STROKE_WIDTH } from '../../vector/shapes'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import { AlignCenter, AlignLeft, AlignRight, SquareRoundCorner } from '../ui/icons'
 import { Panel, type PanelDisclosure, usePanelLook } from '../ui/Panel'
+import { addPointerDragListeners } from './pointerDrag'
 import { useVectorEditor } from './vector/VectorEditorScope'
 import { formatStrokeWidth, gradientCss } from './vector/vectorTools'
 
@@ -75,6 +76,7 @@ export function VectorPropertiesPanel({
     setFontFamily,
     updateSelected,
     applyStyle,
+    beginStyleGesture,
     currentGradient,
     gradientOpen,
     setGradientOpen,
@@ -83,6 +85,28 @@ export function VectorPropertiesPanel({
     setStarTips,
   } = useVectorEditor()
   const strokeWidth = style.stroke?.width ?? DEFAULT_STROKE_WIDTH
+  // O arrasto de um controle deslizante é UM gesto: abre no toque, fecha no soltar (em qualquer
+  // lugar da página), e desfazer volta ao antes do arrasto inteiro. Teclado segue um passo por tecla.
+  const fecharGesto = useRef<(() => void) | null>(null)
+  useEffect(() => () => fecharGesto.current?.(), [])
+  function abrirGesto(event: ReactPointerEvent<HTMLInputElement>): void {
+    fecharGesto.current?.()
+    const fechar = beginStyleGesture()
+    const soltar = addPointerDragListeners(document, {
+      pointerId: event.pointerId,
+      onMove: () => {},
+      onEnd: () => {
+        fecharGesto.current = null
+        fechar()
+      },
+    })
+    fecharGesto.current = () => {
+      fecharGesto.current = null
+      soltar()
+      fechar()
+    }
+  }
+  const noGesto = () => fecharGesto.current === null
   const single = selected.length === 1
   const singleShape = single ? (selected[0] ?? null) : null
   const selectedRect = singleShape?.type === 'rect' ? singleShape : null
@@ -171,11 +195,12 @@ export function VectorPropertiesPanel({
             value={Math.min(10, Math.max(0.5, strokeWidth))}
             aria-valuetext={formatStrokeWidth(strokeWidth)}
             disabled={style.stroke === null}
+            onPointerDown={abrirGesto}
             onChange={(event) => {
               const width = Number(event.target.value)
-              applyStyle({ stroke: { color: style.stroke?.color ?? '#000000', width } })
+              applyStyle({ stroke: { color: style.stroke?.color ?? '#000000', width } }, noGesto())
             }}
-            className="mt-1 w-full accent-pin-accent"
+            className="mt-1 h-11 w-full accent-pin-accent"
           />
         </label>
 
@@ -188,8 +213,11 @@ export function VectorPropertiesPanel({
             max={100}
             step={5}
             value={Math.round(style.opacity * 100)}
-            onChange={(event) => applyStyle({ opacity: Number(event.target.value) / 100 })}
-            className="mt-1 w-full accent-pin-accent"
+            onPointerDown={abrirGesto}
+            onChange={(event) =>
+              applyStyle({ opacity: Number(event.target.value) / 100 }, noGesto())
+            }
+            className="mt-1 h-11 w-full accent-pin-accent"
           />
         </label>
       </Panel>

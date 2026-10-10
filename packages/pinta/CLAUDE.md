@@ -3463,8 +3463,9 @@ por px reais.
   protegida, coluna sem layout, anúncio ao leitor de tela, miniatura viva da Prévia, título que
   abre/recolhe, Cores recolhida sem botões mortos, degradê no pé das colunas. Ver o bullet em
   "Ajustes do VETOR". Suíte + typecheck + biome verdes; QA em navegador no playground.
-- **Espessuras 0,5..3 + conta-gotas na janelinha do degradê (02/09/2026, EM PRODUÇÃO no PR #154)**: ver
-  "Espessuras do contorno" e "Conta-gotas na janelinha de cor do degradê" nas seções do vetor.
+- **Espessuras 0,5..3 + conta-gotas na janelinha do degradê (02/09/2026, EM PRODUÇÃO no PR #154)**: os
+  presets foram substituídos em 10/10/2026 (ver "Espessura do contorno (10/10/2026)"); o conta-gotas segue
+  em "Conta-gotas na janelinha de cor do degradê" nas seções do vetor.
   Full review no mesmo dia (3 revisores): 3 MÉDIAS corrigidas (request velha ao reabrir o Degradê
   na captura; forma sem cor roubando o toque; foco perdido ao reabrir) + baixas. Suíte (1154) +
   typecheck + biome verdes; QA em navegador no playground feito, inclusive dos consertos.
