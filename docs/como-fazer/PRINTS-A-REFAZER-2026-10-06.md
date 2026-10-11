@@ -412,4 +412,8 @@ Estes prints mostram uma parte da tela em que o rótulo antigo só aparece se o 
   `plataforma-nao-consigo-entrar/prazo` e `plataforma-voltar-ao-meu-perfil/vencido`. Os passos
   `plataforma-nao-consigo-entrar/tentativas` e `/navegador` seguem só com texto.
 - Os 28 prints dos tutoriais do Pinta são do editor de PIXEL e continuam certos depois da mudança
-  da espessura do vetor (10/10/2026).
+  da espessura do vetor (10/10/2026). O Vetor ganhou tutorial próprio no mesmo dia,
+  `pinta-desenhar-no-vetor` (escolher Vetor, formas, preenchimento e contorno, espessura em
+  Aparência e selecionar), com 5 prints do "asteroide" da Leninha já na interface nova.
+- As três telas do Pinta nas páginas de venda (`tela-pinta`, `tela-pinta-vetor`, `tela-animacao`)
+  ficam com os desenhos do Lipe, mesmo com a caixa do vetor antiga (decisão da dona).

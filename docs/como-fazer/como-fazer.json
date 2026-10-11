@@ -1179,7 +1179,7 @@
             "imageAlt": "Barra de cima do Pinta com a seta Desfazer destacada."
           }
         ],
-        "related": ["pinta-usar-uma-camada", "pinta-desfazer"],
+        "related": ["pinta-usar-uma-camada", "pinta-desfazer", "pinta-desenhar-no-vetor"],
         "toolRef": "pinta"
       }
     },
@@ -1905,6 +1905,69 @@
         ],
         "related": ["pinta-desfazer", "pinta-criar-um-desenho"],
         "toolRef": "pinta"
+      }
+    },
+    {
+      "slug": "pinta-desenhar-no-vetor",
+      "collection": "pinta",
+      "position": 6,
+      "draft": {
+        "title": "Como desenhar no Vetor do Pinta",
+        "summary": "Monte o desenho com formas e ajuste as cores e o contorno de cada uma.",
+        "keywords": [
+          "vetor",
+          "forma",
+          "formas",
+          "retângulo",
+          "círculo",
+          "polígono",
+          "estrela",
+          "pincel",
+          "contorno",
+          "preenchimento",
+          "espessura",
+          "grossura",
+          "aparência",
+          "selecionar"
+        ],
+        "steps": [
+          {
+            "id": "escolher",
+            "title": "Escolha Vetor",
+            "body": "Em **Meus desenhos**, clique em **Criar novo** e escolha **Vetor**. No Vetor, o desenho é feito de formas, e as linhas ficam sempre lisinhas, mesmo quando o desenho cresce.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desenhar-no-vetor/escolher-c16a286e18bb0c61.webp",
+            "imageAlt": "Janela Como você quer desenhar? com a opção Vetor destacada, ao lado de Pixel art."
+          },
+          {
+            "id": "forma",
+            "title": "Desenhe uma forma",
+            "body": "Na caixa de ferramentas, clique em **Retângulo**, **Círculo**, **Polígono** ou **Estrela** e arraste no desenho. Para um traço livre, use o **Pincel**.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desenhar-no-vetor/forma-64fbec279d4306e8.webp",
+            "imageAlt": "Editor de vetor do Pinta com as ferramentas Pincel, Retângulo, Círculo, Polígono e Estrela destacadas na caixa de ferramentas."
+          },
+          {
+            "id": "cores",
+            "title": "Escolha o preenchimento e o contorno",
+            "body": "No pé da caixa de ferramentas, o quadrado cheio é o **Preenchimento** e a moldura é o **Contorno**. Clique em um dos dois e depois em uma cor da paleta. O primeiro quadradinho da paleta, com o risco, deixa sem cor. A setinha ao lado troca as duas cores de lugar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desenhar-no-vetor/cores-99282b3b63b40025.webp",
+            "imageAlt": "Pé da caixa de ferramentas com o quadrado do Preenchimento e a moldura do Contorno destacados, ao lado da paleta de cores."
+          },
+          {
+            "id": "espessura",
+            "title": "Ajuste a espessura do contorno",
+            "body": "Na coluna da direita, abra **Aparência** e arraste **Espessura do contorno**, que vai de 0,5 a 10. Com uma forma escolhida, a mudança vale para ela. Sem nenhuma escolhida, vale para as próximas formas. Se a forma não tiver contorno, o controle fica apagado.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desenhar-no-vetor/espessura-ecca99502c35bb36.webp",
+            "imageAlt": "Painel Aparência aberto na coluna da direita, com o controle Espessura do contorno destacado."
+          },
+          {
+            "id": "selecionar",
+            "title": "Mude uma forma depois",
+            "body": "Clique em **Selecionar** e depois na forma. Arraste para mudar de lugar ou puxe os quadradinhos da borda para mudar o tamanho. A barra de cima mostra o que dá para fazer com ela, como espelhar, duplicar e apagar.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/pinta-desenhar-no-vetor/selecionar-306117b085b43f30.webp",
+            "imageAlt": "Editor de vetor com o corpo do asteroide selecionado, com os quadradinhos na borda, e a barra de cima com as ações de alinhar, espelhar, mudar a ordem, agrupar, duplicar e apagar destacada."
+          }
+        ],
+        "related": ["pinta-ferramentas", "pinta-usar-uma-camada", "pinta-desfazer"]
       }
     },
     {

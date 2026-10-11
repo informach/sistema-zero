@@ -82,9 +82,11 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'Um personagem preparado permite começar pelas regras do jogo.',
   },
-  // ⚠️ `tela-pinta-vetor`, `tela-pinta` e `tela-animacao` mostram a caixa do editor de vetor de
+  // `tela-pinta-vetor`, `tela-pinta` e `tela-animacao` mostram a caixa do editor de vetor de
   // ANTES de 10/10/2026 (os seis botões de espessura no alto; hoje a espessura mora em
-  // Aparência). Refazer com o roteiro `pinta` no perfil do Lipe, que tem esses desenhos.
+  // Aparência). Decisão da dona (11/10/2026): ficam, porque os desenhos do Lipe são os mais
+  // bonitos para a página pública e o detalhe não justifica trocá-los. Se refizer, que seja
+  // com os mesmos desenhos (roteiro `pinta` no perfil do Lipe).
   'pinta-vetor': {
     frames: [
       tela(
