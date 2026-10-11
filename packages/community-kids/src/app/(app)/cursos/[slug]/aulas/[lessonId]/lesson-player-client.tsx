@@ -25,6 +25,7 @@ import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
 import { KidsLessonProgress } from '@/components/kids/kids-lesson-progress'
 import { LessonActionEvidence } from '@/components/kids/lesson-action-evidence'
 import { LessonCelebration } from '@/components/kids/lesson-celebration'
+import { useLessonCompletionRefresh } from '@/components/kids/lesson-completion-refresh'
 import { KidsMascotAnimated, prefetchZappyRive } from '@/components/kids/mascot-rive'
 import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
@@ -75,6 +76,7 @@ export function LessonPlayer({
   const router = useRouter()
   // Junta os pedidos e espera a atividade ampliada fechar (ver `use-lesson-refresh`).
   const refreshLesson = useLessonRefresh(() => router.refresh())
+  const { lessonCompleted, celebrationClosed } = useLessonCompletionRefresh()
   const learning = useLessonLearning(lesson, viewerId)
   // Uma nuvem por perfil e por aba (ver `lessonDraftCloudFor`): sobrevive à troca de fase e ao
   // StrictMode. No servidor não há nuvem (e o bloco não desenha nada sem ela).
@@ -183,6 +185,7 @@ export function LessonPlayer({
           })
         : await sendCompletion()
       completedRef.current = true
+      lessonCompleted()
       setCelebration({
         progress: course.progress,
         progressAfter: res,
@@ -192,9 +195,8 @@ export function LessonPlayer({
           course.milestones?.showcased === false,
         gamification: res?.gamification ?? null,
       })
-      // A atualização da página espera a celebração fechar (11/10/2026): ela já mostra o retrato
-      // da resposta, e com um build novo no servidor o refresh viraria recarregamento e levaria a
-      // celebração embora. "Próxima fase" navega e traz os dados novos de qualquer jeito.
+      // A celebração usa a resposta. O layout guarda a atualização até ela fechar ou a rota
+      // mudar: navegar sozinho não rebusca o menu com XP, moedas e ferramentas conquistadas.
     } catch (error) {
       toast.error(conclusaoRecusada(error))
     } finally {
@@ -208,6 +210,7 @@ export function LessonPlayer({
     course.careerSlot,
     course.milestones?.showcased,
     lessonDrafts,
+    lessonCompleted,
   ])
 
   const playerContext = useMemo<LessonPlayerContextValue>(
@@ -473,7 +476,7 @@ export function LessonPlayer({
           courseHref={courseHref}
           onClose={() => {
             setCelebration(null)
-            refreshLesson()
+            celebrationClosed()
           }}
         />
       ) : null}

@@ -7,6 +7,7 @@ import { CelebrationWatcher } from '@/components/kids/celebration-watcher'
 import { FocusModeProvider, SidebarFallback } from '@/components/kids/focus-mode'
 import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import { KidsLessonCopy } from '@/components/kids/kids-lesson-copy'
+import { LessonCompletionRefreshProvider } from '@/components/kids/lesson-completion-refresh'
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { PlatformRenovationNotice } from '@/components/kids/platform-renovation-notice'
@@ -202,7 +203,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               </Suspense>
               <MainContainer>
                 {/* O vocabulário da criança (fase, parte, equipe) nas telas de aula do member-shell. */}
-                <KidsLessonCopy>{children}</KidsLessonCopy>
+                <LessonCompletionRefreshProvider key={session.id}>
+                  <KidsLessonCopy>{children}</KidsLessonCopy>
+                </LessonCompletionRefreshProvider>
               </MainContainer>
               {/* ⚠️ Com `<Suspense>`: a barra de abas virou Server Component (espera a posse
                 das ferramentas para não oferecer porta trancada), e sem o boundary o
