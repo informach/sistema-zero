@@ -17,6 +17,8 @@ Você monta as regras com blocos e testa até achar todo mundo.
 
 ## Situação editorial
 
+**Confirmação de 11/10/2026:** o responsável informou que Cadê Todo Mundo? é o único curso já gravado; os outros quatro ainda não foram gravados. O ajuste de salvamento e envio pede correção apenas dos encerramentos das partes 3 e 4 da Aula 2. Essa confirmação não significa que os dois encerramentos novos já tenham sido gravados ou publicados.
+
 O curso já foi gravado e testado com duas crianças. A revisão de 27/09/2026 muda a linguagem
 das nove seções: tarefa imediata, passos completos e tutoriais de interface no Como Fazer.
 A revisão atual tem quatro seções na Aula 1, cinco na Aula 2 e duas no certificado: quiz e celebração. São onze seções e dez vídeos.
@@ -34,7 +36,7 @@ alternar na seguinte. Os roteiros separam a professora, o avatar e as falas do Z
 | Aula | Avatar e participações | Estado da produção |
 | --- | --- | --- |
 | Aula 1 | Debinha: oito entradas nos quatro vídeos (duas novas na parte 4), mais o corte de “Por isso,” na parte 3 | Gravação base informada; pontos de edição registrados |
-| Aula 2 | Dedé: nove entradas distribuídas pelos cinco vídeos | Aplicado ao roteiro; gravação e edição não confirmadas |
+| Aula 2 | Dedé: nove entradas distribuídas pelos cinco vídeos | Gravação da parte 3 em andamento, informada em 11/10; encerramentos das partes 3 e 4 ajustados para envio único, edição e publicação a conferir |
 | Certificado | Debinha: “Eu consegui!” na celebração | Aplicado ao roteiro; gravação e edição não confirmadas |
 
 A professora responde às perguntas antes do próximo gesto. As notas de tela marcam entrada e
@@ -60,7 +62,7 @@ Ajustes depois da revisão de ritmo, aplicados aos roteiros, propostas, gerador 
 
 **Pendências de produção:**
 
-1. **Trocar o PDF anexado no Admin.** O **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf** foi regerado em 10/10/2026 com a regra da celebração; a versão anterior ainda traz, nas páginas 2 e 6, a ressalva sobre o que veio pronto. Substituir o anexo do bloco **caderno** (Aula 1, **Seu Mapa da Aventura**) por esse PDF, preservando o bloco e o histórico, antes de editar o vídeo do Mapa.
+1. **Trocar o PDF anexado no Admin.** O **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf** de 11/10/2026 reúne a regra da celebração e o envio único da Aula 2: a página 4 termina na verificação e a página 5 orienta o envio após a personalização. Substituir o anexo do bloco **caderno** (Aula 1, **Seu Mapa da Aventura**) por esse PDF, preservando o bloco e o histórico, antes de editar o vídeo do Mapa.
 2. Atualizar a descrição do curso no Admin com o texto do topo deste documento.
 3. Importar os três manifestos, conferindo as chaves e os vídeos já vinculados.
 4. Editar a Aula 1 com as oito entradas da Debinha e o corte da parte 3; gravar e editar a Aula 2 e o certificado com as participações.
@@ -73,6 +75,10 @@ de visibilidade. A prática termina com envio, confirmação e conclusão da aul
 
 A Aula 2 retoma o contador em zero, propõe quatro testes na experiência e ensina a soma no
 evento de toque. A montagem continua com caminho completo, encaixe, campos e teste de 1, 2, 3.
+Desde 11/10/2026, a parte 3 termina em **Verificar esta parte** e **Próxima parte**, sem envio.
+O mesmo projeto é salvo automaticamente e continua na parte 4, que concentra o único envio
+da aula, depois da personalização: **Enviar meu projeto**, **Enviar**, **Projeto enviado!** e
+**Próxima parte**. O envio também é necessário quando a criança mantém as imagens e a mensagem.
 O fechamento ensina a publicar o mesmo jogo no Mural: Compartilhar, gerar capa, publicar,
 comemorar, copiar o link de jogar para a família e os amigos, fechar e concluir a aula. A
 publicação é a tarefa ensinada, sem novo bloqueio técnico de conclusão. Trocar a capa fica no
@@ -101,7 +107,7 @@ Arquivo: **output/pdf/cade-todo-mundo-caderno-do-aluno.pdf**. Fonte editável:
 **bun docs/aulas-interativas/recursos/cade-todo-mundo/gerar-caderno.ts**.
 
 A Aula 2 mantém **retireBlockKeys: ['caderno']** para o molde anterior, mas não recebe outro PDF.
-O PDF atualizado tem sete páginas: capa, visão geral, duas montagens, personalização, publicação e revisão com certificado. A página 5 mostra os sete bichos e os seis esconderijos, com os desenhos e nomes do jogo; a publicação fica na página 6 e a revisão com certificado na 7. A galeria é gerada a partir de **JARDIM_BICHOS**, **JARDIM_ESCONDERIJOS** e **jardimSvg**, as mesmas fontes do projeto. Os desenhos dos blocos usam suas cores oficiais. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. O PDF de 10/10/2026 ainda precisa substituir o anexo atual (ver **Pendências de produção**, acima). Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
+O PDF atualizado tem sete páginas: capa, visão geral, duas montagens, personalização, publicação e revisão com certificado. A página 5 mostra os sete bichos e os seis esconderijos, com os desenhos e nomes do jogo; a publicação fica na página 6 e a revisão com certificado na 7. A galeria é gerada a partir de **JARDIM_BICHOS**, **JARDIM_ESCONDERIJOS** e **jardimSvg**, as mesmas fontes do projeto. Os desenhos dos blocos usam suas cores oficiais. A atualização do anexo no Admin deve preservar o bloco e o histórico existentes. O PDF de 11/10/2026 ainda precisa substituir o anexo atual (ver **Pendências de produção**, acima). Para gerar com conferência de cores, fontes e limites: **python docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py cade-todo-mundo**.
 Como folhear e baixar está no tutorial de materiais.
 
 ## Configuração que deve ser preservada
@@ -143,7 +149,7 @@ No caderno, as duas páginas de montagem trazem a retomada numa caixa de experi�
 Na mesma revisão:
 
 - **As experiências explicam enquanto fazem.** O vídeo faz cada teste no ritmo da fala e diz por que o resultado aconteceu. Na Aula 1, a comparação é "toda ação tem uma reação": a cócega é a ação e a risada é a reação; no jogo, a gente precisa ligar uma reação ao toque. Na Aula 2, Achados é como o placar de um jogo de futebol. Cada comparação tem um meme ilustrado nosso na nota de tela.
-- **Mexa e veja numa seção própria (seção nova da Aula 2, Deixe o jogo com a sua cara).** Só mudanças que a criança mantém. Saíram os momentos de trocar e voltar dentro das montagens (o 50% da Aula 1) e a mensagem de vitória saiu da montagem da Aula 2. Depois do envio e antes de publicar, a criança troca a imagem dos bichos e dos esconderijos nos blocos **Criar sprite**, na área **Ao iniciar**, e escreve a mensagem do final. O projeto traz sete bichos e seis esconderijos, com caixa única por tipo (72 × 87 e 161 × 144), então a troca não estica o desenho nem muda o lugar. Os sprites passaram a se chamar **bicho1** a **bicho3** e **esconderijo1** a **esconderijo3**. A seção é de fechamento (a entrega continua sendo a última montagem) e conclui pelo vídeo; as escolhas não viram critério. Desde 10/10/2026 ela também exige o **envio em dia**: a parte só fecha quando o último envio é igual ao jogo de agora, então quem mudou alguma coisa clica em **Enviar de novo** e confirma em **Reenviar**. Chave nova: **personalizar**, com o vídeo **video-a2-personalizar**. No Admin, acrescentar a seção sem mexer nas outras.
+- **Mexa e veja numa seção própria (seção nova da Aula 2, Deixe o jogo com a sua cara).** Só mudanças que a criança mantém. Saíram os momentos de trocar e voltar dentro das montagens (o 50% da Aula 1) e a mensagem de vitória saiu da montagem da Aula 2. Depois da verificação da contagem e antes do único envio da aula, a criança troca a imagem dos bichos e dos esconderijos nos blocos **Criar sprite**, na área **Ao iniciar**, e escreve a mensagem do final. O projeto traz sete bichos e seis esconderijos, com caixa única por tipo (72 × 87 e 161 × 144), então a troca não estica o desenho nem muda o lugar. Os sprites passaram a se chamar **bicho1** a **bicho3** e **esconderijo1** a **esconderijo3**. Desde 11/10/2026, a seção **personalizar** é a única entrega da aula e exige o vídeo, o envio do projeto e o **envio em dia**; as escolhas não viram critério. O envio em dia protege apenas o caso de editar novamente após enviar: nesse caso, atualizar em **Enviar de novo** e **Reenviar** antes de avançar. A seção **contar-achados** passa a aplicação com as mesmas verificações intermediárias, sem exigir envio. Preservar as chaves **personalizar**, **video-a2-personalizar** e **projeto**, os vídeos vinculados e o histórico. As partes 3, 4 e 5 continuam usando o mesmo projeto; o bloco pertence agora à parte 4.
 - **Projetos salvos antes da revisão** recebem as imagens novas ao abrir: o Estúdio da aula acrescenta ao projeto salvo as imagens do curso que faltam, sem trocar nenhuma das que já existem. Eles guardam os nomes antigos dos sprites (coelho, arbusto e os outros) e as caixas antigas (coelho 54 × 87, raposa 66 × 84, coruja 72 × 81, arbusto 154 × 116, pedras 161 × 112, flores 133 × 144). Ao escolher outra imagem, o Estúdio ajusta largura e altura ao tamanho da imagem nova e mantém o canto de cima do sprite. Por isso, nesses projetos, o desenho trocado pode ficar um pouco fora do lugar: um bicho novo fica até 18 pixels mais largo para a direita e até 6 pixels mais baixo; um esconderijo novo, até 28 pixels mais largo para a direita ou até 32 pixels mais baixo. A fala da seção serve aos dois projetos, porque cita nomes de imagens, que existem nos dois. As crianças que começarem depois recebem o projeto novo, em que bicho por bicho e esconderijo por esconderijo não muda tamanho nem lugar.
 - **A imagem do bloco é um NOME.** No fim do bloco **Criar sprite**, depois de **com imagem**, o Estúdio mostra o nome da imagem (coelho, arbusto…), e não um desenho. A fala manda clicar nesse nome para abrir a lista com as imagens do jogo e, se não achar, rolar a lista. O erro provável é escolher uma imagem do outro tipo (um esconderijo no bloco de um bicho fica grande e aparece antes do toque); a fala ensina a corrigir escolhendo de novo um desenho do mesmo tipo.
 

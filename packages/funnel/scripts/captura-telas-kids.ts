@@ -20,8 +20,6 @@
  *                   (padrão: base-3-2 / dumb-animation / dumb-scene-2)
  *   KIDS_PINTA_BUSCA  o que digitar na busca da galeria para os desenhos bonitos subirem (padrão: base)
  *   KIDS_PLANO      plano do Pensa (padrão: ParOuImpar)   KIDS_MOLDA  modelo do Molda (padrão: player-2)
- *   KIDS_PAIS_SENHA_FILE  arquivo FORA do repositório com a senha da conta na primeira linha: com
- *                   ele o roteiro `pais` entra sozinho na Área dos pais (a senha nunca é impressa)
  *   KIDS_PERGUNTA   se o Zappy do Estúdio estiver sem conversa, faz esta pergunta (gasta crédito de IA)
  *   KIDS_CDP_PORT   usa um Chrome JÁ ABERTO com `--remote-debugging-port` e já logado no perfil
  *                   (dispensa o arquivo de cookies e não fecha o navegador ao fim)
@@ -32,9 +30,9 @@
  *
  * ⚠️ Os cookies são uma sessão de verdade: o arquivo NUNCA entra no repositório (o script recusa um
  * caminho dentro dele), vencem em poucas horas, e o perfil do Chrome fica no TEMP e é apagado ao
- * fim. ⚠️ A Área dos pais pede a senha da conta e a liberação vale 15 minutos (cookie
- * `sz_kids_parent`): rode `KIDS_SO=pais` com `KIDS_PAIS_SENHA_FILE`, ou exporte os cookies logo
- * depois de entrar nela. ⚠️ Antes de fotografar o Estúdio os blocos são ORGANIZADOS (botão direito
+ * fim. ⚠️ A Área dos pais é uma sessão de RESPONSÁVEL (desde o acesso infantil por aparelho,
+ * 10/10/2026): rode `KIDS_SO=pais` sozinho, com os cookies exportados logado como responsável.
+ * ⚠️ Antes de fotografar o Estúdio os blocos são ORGANIZADOS (botão direito
  * numa área vazia › "Organizar blocos") e enquadrados no alto: soltos, eles ficam lá embaixo e
  * sobrepostos. Toda imagem precisa de revisão humana antes do commit (nomes de outros perfis no
  * Mural, dados na tela).
@@ -59,7 +57,6 @@ const pintaCenario = process.env.KIDS_PINTA_CENARIO ?? 'dumb-scene-2'
 const pintaBusca = process.env.KIDS_PINTA_BUSCA ?? 'base'
 const plano = process.env.KIDS_PLANO ?? 'ParOuImpar'
 const modelo = process.env.KIDS_MOLDA ?? 'player-2'
-const senhaPais = process.env.KIDS_PAIS_SENHA_FILE
 const pergunta = process.env.KIDS_PERGUNTA
 // ⚠️ O token de sessão do kids GIRA a cada renovação: quem usa os cookies primeiro invalida a
 // cópia do arquivo. Para rodar o script duas vezes na mesma sessão, anexe a um Chrome já aberto.
@@ -72,10 +69,7 @@ if (!anexar && !cookiesFile) {
 }
 const repo = resolve(import.meta.dir, '..', '..', '..')
 const semCaixa = (c: string) => (process.platform === 'win32' ? c.toLowerCase() : c)
-for (const [arquivo, nome] of [
-  [cookiesFile, 'de cookies'],
-  [senhaPais, 'da senha'],
-] as const) {
+for (const [arquivo, nome] of [[cookiesFile, 'de cookies']] as const) {
   if (arquivo && semCaixa(resolve(arquivo)).startsWith(semCaixa(repo + sep))) {
     console.error(`O arquivo ${nome} não pode ficar dentro do repositório.`)
     process.exit(2)
@@ -443,12 +437,16 @@ async function main() {
     })
     await tamanho(altura, 1)
 
-    // A sessão é de PERFIL? (sem perfil a borda manda para /perfis)
-    const inicio = await abrir('/', 1500)
-    if (inicio.includes('/perfis') || inicio.includes('/login'))
-      throw new Error(
-        `A sessão não é de um perfil (caiu em ${inicio}). Exporte os cookies logado no perfil.`,
-      )
+    // A sessão é de PERFIL? (sem perfil a borda manda para /perfis ou /login; a do responsável,
+    // para /pais). O roteiro `pais` sozinho é o único que roda com a sessão do responsável.
+    const soPais = so?.length === 1 && so[0] === 'pais'
+    if (!soPais) {
+      const inicio = await abrir('/', 1500)
+      if (/\/(perfis|login|pais)/.test(inicio))
+        throw new Error(
+          `A sessão não é de um perfil (caiu em ${inicio}). Exporte os cookies logado no perfil.`,
+        )
+    }
 
     let aulas: string[] | null = null
     /** As aulas do curso, na ordem da trilha (o endereço usa o UUID, que só existe no banco). */
@@ -839,76 +837,108 @@ async function main() {
         },
       },
       /**
-       * Só roda com `KIDS_SO=pais`. Entra na Área dos pais com a senha do arquivo
-       * (`KIDS_PAIS_SENHA_FILE`) ou com os cookies exportados logo depois da senha. É o ÚLTIMO
-       * roteiro: a gestão de perfis tira a sessão do perfil da criança.
+       * Só roda com `KIDS_SO=pais` SOZINHO e com a sessão do RESPONSÁVEL (cookies exportados
+       * logado como responsável). As páginas da Área dos pais (11/10/2026): Acompanhamento,
+       * Editar perfil, Ajuda › Atendimento, Conta e Família. Nada é salvo nem enviado.
        */
       pais: {
         nomes: ['pais'],
         rodar: async () => {
           if (!so?.includes('pais')) return
-          let onde = await abrir('/responsavel', 4000)
-          if (!onde.includes('/responsavel')) {
-            if (!senhaPais)
-              throw new Error(
-                `A Área dos pais pediu a senha (caiu em ${onde}). Defina KIDS_PAIS_SENHA_FILE ou exporte os cookies logo depois de entrar nela.`,
-              )
-            const senha = (await Bun.file(senhaPais).text())
-              .replace(/^\uFEFF/, '')
-              .split(/\r?\n/)[0]
-              ?.trim()
-            if (!senha) throw new Error('O arquivo da senha está vazio.')
-            await abrir('/perfis?manage=1', 3000)
-            await clicar('Área dos pais', 0, 1200)
-            await avaliar('document.querySelector("[role=dialog] input, dialog input")?.focus(); 1')
-            await digitar(senha)
-            await clicar('Entrar', 0, 4000)
-            onde = await abrir('/responsavel', 4000)
-            if (!onde.includes('/responsavel'))
-              throw new Error('A senha da Área dos pais não foi aceita.')
-          }
+          const onde = await abrir('/pais/acompanhamento', 4000)
+          if (!onde.includes('/pais/acompanhamento'))
+            throw new Error(
+              `A Área dos pais pede a sessão do responsável (caiu em ${onde}). Exporte os cookies logado como responsável e rode só KIDS_SO=pais.`,
+            )
           so.push(
             'tela-pais-painel',
             'tela-pais-conversa',
             'tela-pais-perfil',
-            'tela-pais-indicacao',
             'tela-pais-atendimento',
             'tela-pais-chamado',
+            'tela-pais-indicacao',
+            'tela-pais-creditos',
+            'tela-pais-perfis',
           )
-          // O painel de cada criança, cortado ANTES da lista de ferramentas (na conta de teste ela
-          // diz "Não incluído na conta"), e as perguntas para conversar sobre uma criação.
-          altura = 1400
+          /** Recorte em volta dos elementos; a primeira peça sobe para perto do alto da janela. */
+          const caixaDe = async (elementos: string, folga = 20, topo = 96) => {
+            const r = (await avaliar(
+              `(() => { const secao = (t) => [...document.querySelectorAll('main h1, main h2, main h3')].find((h) => h.textContent.trim().startsWith(t))?.closest('section'); const els = (${elementos}).filter(Boolean); if (!els.length) return null; window.scrollTo(0, els[0].getBoundingClientRect().top + window.scrollY - ${topo}); const rs = els.map((e) => e.getBoundingClientRect()); const x = Math.max(0, Math.min(...rs.map((q) => q.left)) - ${folga}); const y = Math.max(0, Math.min(...rs.map((q) => q.top)) - ${folga}); const r = Math.min(innerWidth, Math.max(...rs.map((q) => q.right)) + ${folga}); const b = Math.min(innerHeight, Math.max(...rs.map((q) => q.bottom)) + ${folga}); return { x: Math.round(x), y: Math.round(y), w: Math.round(r - x), h: Math.round(b - y) } })()`,
+            )) as Recorte | null
+            if (!r) throw new Error(`Não achei ${elementos}.`)
+            return r
+          }
+          altura = 1000
           await tamanho(altura, 1)
-          await Bun.sleep(900)
-          await foto('tela-pais-painel', { x: 166, y: 28, w: 948, h: 592 })
-          await foto('tela-pais-conversa', { x: 288, y: 845, w: 704, h: 440 })
-          altura = 800
-          // Editar perfil: a visibilidade para os colegas. Só abre e cancela, nunca salva.
-          await abrir('/perfis?manage=1', 3500)
-          const perfil = (await avaliar(
-            `(() => { const b = [...document.querySelectorAll('button')].find((e) => e.getClientRects().length && e.getBoundingClientRect().height > 100 && !/adicionar/i.test(e.textContent)); if (!b) return null; const r = b.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 } })()`,
-          )) as Ponto | null
-          if (!perfil) throw new Error('Não achei um perfil na gestão de perfis.')
-          await clicarEm(perfil.x, perfil.y)
-          await Bun.sleep(1800)
-          await foto('tela-pais-perfil', { x: 400, y: 132, w: 480, h: 536 })
-          await clicar('Cancelar', 0, 1500)
-          // O cartão do programa de indicações.
-          await abrir('/perfis?manage=1', 3500)
-          altura = 1800
-          await tamanho(altura, 1)
-          await Bun.sleep(900)
-          const cartao = (await avaliar(
-            `(() => { const h = [...document.querySelectorAll('h2')].find((x) => /embaixador/i.test(x.textContent)); if (!h) return null; let c = h; for (let i = 0; i < 8 && c.parentElement; i++) { c = c.parentElement; const r = c.getBoundingClientRect(); if (r.width > 660) return { x: r.left - 16, y: r.top - 16, w: r.width + 32, h: r.height + 32 } } return null })()`,
-          )) as Recorte | null
-          if (cartao) await foto('tela-pais-indicacao', cartao)
-          altura = 800
-          // Atendimento: a entrada e o formulário de chamado ABERTO (enviar seria um chamado real).
-          await abrir('/responsavel/ajuda', 3500)
-          await foto('tela-pais-atendimento', { x: 160, y: 24, w: 960, h: 600 })
-          await clicar('Abrir chamado', 0, 1800)
-          await foto('tela-pais-chamado', { x: 160, y: 24, w: 960, h: 600 })
+          // O que a criança fez na semana e os números no total.
+          await foto(
+            'tela-pais-painel',
+            await caixaDe(
+              `[document.querySelector('main h1'), secao('Esta semana'), secao('No total')]`,
+              24,
+            ),
+          )
+          // As perguntas para conversar e o resumo da semana por e-mail.
+          await foto(
+            'tela-pais-conversa',
+            await caixaDe(
+              `[secao('Para conversar'), document.querySelector('[role=switch]')?.closest('label')]`,
+            ),
+          )
+          // Editar perfil (a visibilidade para os colegas): só abre, nunca salva. ⚠️ A data de
+          // nascimento aparece no formulário: embace-a antes de publicar a foto.
+          await abrir('/pais', 3000)
+          const crianca = String(
+            await avaliar(
+              `document.querySelector('main a[href^="/pais/crianca/"]')?.getAttribute('href')?.split('?')[0] ?? ''`,
+            ),
+          )
+          if (!crianca) throw new Error('Não achei uma criança na Família.')
+          await abrir(`${crianca}/editar`, 3000)
+          await foto(
+            'tela-pais-perfil',
+            await caixaDe(
+              `[document.querySelector('main h1'), document.querySelector('main form')]`,
+              24,
+            ),
+          )
+          // Atendimento e o formulário de chamado ABERTO (enviar seria um chamado real).
+          await abrir('/pais/ajuda/atendimento', 3500)
+          await foto(
+            'tela-pais-atendimento',
+            await caixaDe(
+              `[document.querySelector('main h1, main h2'), ...[...document.querySelectorAll('main section, main div')].filter((d) => /ainda não tem chamados/.test(d.textContent) && d.getBoundingClientRect().height > 120 && d.getBoundingClientRect().height < 600).slice(-1)]`,
+              24,
+            ),
+          )
+          await clicar('Abrir chamado', 0, 1500)
+          await foto(
+            'tela-pais-chamado',
+            await caixaDe(`[document.querySelector('main form')]`, 24, 110),
+          )
           await clicar('Cancelar', 0, 800)
+          // Conta: o programa de indicações e a ajuda da IA. "Minhas compras" sai da conta da
+          // dona, com assinatura ativa: o staging não tem uma para mostrar.
+          await abrir('/pais/conta', 3500)
+          await foto(
+            'tela-pais-indicacao',
+            await caixaDe(`[document.querySelector('#embaixador')]`, 16),
+          )
+          await foto(
+            'tela-pais-creditos',
+            await caixaDe(
+              `[document.querySelector('section[aria-labelledby="parents-ai"]')]`,
+              16,
+              110,
+            ),
+          )
+          // Família: os cartões das crianças, sem a frase do limite de perfis do plano.
+          await abrir('/pais', 3000)
+          await foto(
+            'tela-pais-perfis',
+            await caixaDe(`[secao('Suas crianças')?.querySelector('ul')]`, 20),
+          )
+          altura = 800
         },
       },
     }

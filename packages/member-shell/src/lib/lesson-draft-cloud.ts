@@ -20,6 +20,30 @@ export interface LessonDraftState {
   status: LessonDraftStatus
   /** Recado na linguagem da criança quando algo deu errado (nunca a mensagem crua do servidor). */
   message: string | null
+  /**
+   * A versão da conta é de um editor mais novo que o desta página (ou o servidor não aceita mais o
+   * formato daqui). Tentar de novo não resolve: a pílula oferece atualizar a página.
+   */
+  outdated?: boolean
+}
+
+/** O código da falha que só uma página nova resolve (o mesmo do servidor para o cliente antigo). */
+export const LESSON_DRAFT_OUTDATED = 'CREATION_CLIENT_OUTDATED'
+
+/**
+ * O bloco não conseguiu ler a versão da conta num conflito. O servidor só promove uma revisão
+ * depois de conferi-la com o editor do deploy de agora, então, se esta página a recusa, é ela que
+ * está com o editor antigo.
+ */
+export class LessonDraftOutdatedError extends Error {
+  readonly code = LESSON_DRAFT_OUTDATED
+
+  constructor(cause?: unknown) {
+    super('A versão guardada na conta foi feita por um editor mais novo que esta página.', {
+      cause,
+    })
+    this.name = 'LessonDraftOutdatedError'
+  }
 }
 
 /** A cópia que está na conta, sem baixar o conteúdo (a decisão de abrir vem antes). */
@@ -90,8 +114,10 @@ export interface LessonDraftChannel {
   flush(timeoutMs?: number): Promise<void>
   /** Espera a confirmação do bloco; timeout/falha nunca são tratados como sucesso. */
   confirm(blockId: string, timeoutMs?: number): Promise<void>
-  getState(): LessonDraftState
-  subscribe(listener: (state: LessonDraftState) => void): () => void
+  /** O estado do rascunho DESTE bloco (a pílula é do bloco, não da fila da ferramenta). */
+  getState(blockId: string): LessonDraftState
+  /** Avisa quando o estado de algum bloco pode ter mudado; releia com `getState`. */
+  subscribe(listener: () => void): () => void
 }
 
 export interface LessonDraftEditor {
@@ -136,22 +162,36 @@ export interface LessonDraftCloud extends LessonDraftCoordinator {
 }
 
 export class LessonDraftSaveError extends Error {
-  /** `VIEWER_CHANGED` = o perfil desta aba mudou (a subida ouviu `VIEWER_MISMATCH`). */
-  readonly code: 'LESSON_DRAFT_NOT_SAVED' | 'VIEWER_CHANGED'
+  /**
+   * `VIEWER_CHANGED` = o perfil desta aba mudou (a subida ouviu `VIEWER_MISMATCH`).
+   * `PAGE_OUTDATED` = a versão da conta é de um editor mais novo: só a página atualizada guarda.
+   */
+  readonly code: 'LESSON_DRAFT_NOT_SAVED' | 'VIEWER_CHANGED' | 'PAGE_OUTDATED'
   /** Repetir não adianta: só abrindo a fase de novo. */
   readonly viewerChanged: boolean
+  /** Repetir não adianta: só atualizando a página (ou enviando de novo). */
+  readonly outdated: boolean
 
   constructor(cause?: unknown) {
-    const viewerChanged = (cause as { code?: string } | null)?.code === 'VIEWER_MISMATCH'
+    const code = (cause as { code?: string } | null)?.code
+    const viewerChanged = code === 'VIEWER_MISMATCH'
+    const outdated = code === LESSON_DRAFT_OUTDATED
     super(
       viewerChanged
         ? 'O perfil mudou. Abra a fase de novo.'
-        : 'Não consegui guardar suas últimas mudanças na conta. Tente de novo, ou clique em Enviar de novo para a equipe receber a versão nova.',
+        : outdated
+          ? 'Esta página ficou desatualizada. Clique em Atualizar, no aviso do Estúdio ou do Pinta, ou clique em Enviar de novo para a equipe receber a versão nova. Nada se perde.'
+          : 'Não consegui guardar suas últimas mudanças na conta. Tente de novo, ou clique em Enviar de novo para a equipe receber a versão nova.',
       { cause },
     )
     this.name = 'LessonDraftSaveError'
-    this.code = viewerChanged ? 'VIEWER_CHANGED' : 'LESSON_DRAFT_NOT_SAVED'
+    this.code = viewerChanged
+      ? 'VIEWER_CHANGED'
+      : outdated
+        ? 'PAGE_OUTDATED'
+        : 'LESSON_DRAFT_NOT_SAVED'
     this.viewerChanged = viewerChanged
+    this.outdated = outdated
   }
 }
 

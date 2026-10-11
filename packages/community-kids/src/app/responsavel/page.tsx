@@ -1,69 +1,9 @@
-import { HeartHandshake } from 'lucide-react'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import {
-  ChildrenDashboard,
-  FamilyAiCredits,
-  ParentSupportCard,
-} from '@/app/perfis/parent-dashboard'
-import { KidsEyebrow } from '@/components/kids/kids-eyebrow'
-import { KidsScreen } from '@/components/kids/kids-screen'
-import { ParentAreaBack } from '@/components/kids/parent-area-back'
-import { StudentAreaButton } from '@/components/kids/student-area-button'
-import { getSession } from '@/server/session'
-
-export const dynamic = 'force-dynamic'
 
 /**
- * Acompanhamento da conta. A mesma régua do layout (`ParentSessionFrame`) repetida na página,
- * porque o layout não roda de novo numa navegação entre páginas irmãs; os endpoints de dados
- * conferem a sessão de responsável por conta própria.
+ * O acompanhamento virou a seção Acompanhamento da área dos pais (11/10/2026). O endereço antigo
+ * continua valendo para links salvos e e-mails já enviados.
  */
-export default async function ResponsavelPage() {
-  const session = await getSession()
-  if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
-  return (
-    <KidsScreen align="start" innerClassName="flex max-w-4xl flex-col items-center gap-7">
-      {/* Mesma volta de Minhas compras e do Atendimento: `/responsavel` não tem layout,
-          sidebar nem topo, e o pai que abria o acompanhamento não tinha a seta de volta. */}
-      <div className="w-full max-w-2xl">
-        <ParentAreaBack />
-      </div>
-      <header className="w-full max-w-2xl">
-        <KidsEyebrow icon={HeartHandshake}>Área dos responsáveis</KidsEyebrow>
-        <h1 className="sz-display mt-3 text-[clamp(2rem,3.4vw,2.8125rem)]">
-          Acompanhe as descobertas
-        </h1>
-        <p className="mt-2.5 font-medium text-[1.0625rem] text-muted-foreground">
-          Veja o que cada criança está criando, as conquistas da jornada e o próximo passo. Uma boa
-          conversa começa pedindo que ela mostre como fez o jogo.
-        </p>
-        <nav aria-label="Área dos responsáveis" className="mt-5 flex flex-wrap gap-2">
-          {/* A troca SEGURA: um link para `/perfis` deixava a sessão adulta aberta. */}
-          <StudentAreaButton className="sz-btn-gradient sz-btn-contorno" />
-          <Link href="/pais" prefetch={false} className="sz-btn-gradient sz-btn-contorno">
-            Gerenciar perfis e conta
-          </Link>
-          <Link
-            href="/responsavel/ajuda"
-            prefetch={false}
-            className="sz-btn-gradient sz-btn-contorno"
-          >
-            Atendimento
-          </Link>
-        </nav>
-      </header>
-      <ChildrenDashboard avatarPhotoByProfile={{}} />
-      <section className="kids-carta w-full max-w-2xl p-5 md:p-6">
-        <h2 className="sz-display text-xl">Para conversar sobre uma criação</h2>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
-          <li>Que ideia você quis colocar neste jogo?</li>
-          <li>O que precisou testar ou mudar para funcionar?</li>
-          <li>O que gostaria de experimentar na próxima versão?</li>
-        </ul>
-      </section>
-      <FamilyAiCredits />
-      <ParentSupportCard />
-    </KidsScreen>
-  )
+export default function ResponsavelPage() {
+  redirect('/pais/acompanhamento')
 }

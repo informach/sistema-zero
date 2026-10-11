@@ -42,7 +42,11 @@ import type { CreationsRepository } from '../../domain/ports/creations-repositor
 import { ValidationError } from '../../domain/shared/errors'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { LessonDraftAccessService } from './lesson-draft-access.service'
-import { rememberToolOwned, toolOwnershipCached } from './tool-ownership-cache'
+import {
+  rememberToolOwned,
+  toolOwnershipCached,
+  toolOwnershipGeneration,
+} from './tool-ownership-cache'
 
 export { invalidateToolOwnership, resetToolOwnershipCacheForTests } from './tool-ownership-cache'
 
@@ -102,12 +106,13 @@ async function assertToolOwned(
   if (privileged) return
   // Cache curto da posse (ver `tool-ownership-cache.ts`): quem rebaixa matrícula invalida.
   if (toolOwnershipCached(accountId, tool, now)) return
+  const since = toolOwnershipGeneration()
   const ref = CREATION_ACCESS_REF[tool]
   const result = await accessCheck.execute(accountId, [ref])
   if (!result.grants.includes(ref) && !result.communities.includes(ref)) {
     throw new AccessDeniedError(`Você não tem acesso ao ${CREATION_TOOL_NAMES[tool]}`)
   }
-  rememberToolOwned(accountId, tool, now)
+  rememberToolOwned(accountId, tool, now, since)
 }
 
 export class ListCreationsService {

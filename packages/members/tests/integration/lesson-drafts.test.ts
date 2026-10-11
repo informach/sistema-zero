@@ -13,6 +13,7 @@ import {
   type SectionProgressView,
 } from '@sistemazero/core/learning'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import { RevokeEntitlementService } from '../../src/application/revoke-entitlement/revoke-entitlement.service'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
@@ -20,12 +21,17 @@ const OUTRO = '22222222-2222-2222-2222-222222222222'
 const REVISION = '12345678901234567890123456789012'
 const impressao = (letra: string) => `v1:${letra.repeat(64)}`
 
-function setup(opts: { personalizar?: LessonSection['completion'] } = {}) {
+function setup(
+  opts: {
+    personalizar?: LessonSection['completion']
+    matricula?: { subscriptionId?: string; expiresAt?: Date }
+  } = {},
+) {
   let agora = new Date('2026-10-10T12:00:00.000Z')
   const env = buildApp({ now: agora })
   const course = seedSampleCourse(env.courses)
   const lessonId = course.lessonIds[0] as string
-  grantLifetime(env.entitlements, { userId: USER, courseRef: course.slug })
+  grantLifetime(env.entitlements, { userId: USER, courseRef: course.slug, ...opts.matricula })
   env.courses.blocks = env.courses.blocks.filter((b) => b.lessonId !== lessonId)
   const projeto = randomUUID()
   const fecho = randomUUID()
@@ -204,6 +210,24 @@ describe('o rascunho da fase guardado na conta', () => {
       },
     )
     expect(inexistente.status).toBe(404)
+  })
+
+  test('a matrícula revogada para de guardar na hora, sem esperar o minuto do cache', async () => {
+    const ctx = setup({ matricula: { subscriptionId: 'assinatura-1' } })
+    expect((await ctx.guardarRascunho(impressao('a'))).status).toBe(200)
+    await new RevokeEntitlementService({
+      entitlements: ctx.entitlements,
+      clock: () => ctx.clockRef.now,
+    }).cancel('assinatura-1')
+    expect((await ctx.guardarRascunho(impressao('b'))).status).toBe(403)
+  })
+
+  test('a matrícula que vence dentro do minuto do cache não ganha o minuto inteiro', async () => {
+    const vence = new Date('2026-10-10T12:00:30.000Z')
+    const ctx = setup({ matricula: { expiresAt: vence } })
+    expect((await ctx.guardarRascunho(impressao('a'))).status).toBe(200)
+    ctx.clockRef.now = new Date(vence.getTime() + 1_000)
+    expect((await ctx.guardarRascunho(impressao('b'))).status).toBe(403)
   })
 
   test('impressão fora do formato é recusada na borda', async () => {

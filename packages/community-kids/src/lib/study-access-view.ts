@@ -9,6 +9,12 @@ import type { StudyDuration, StudyGrantView } from '@sistemazero/member-shell/li
 const DAY_MS = 86_400_000
 /** "Vence em breve" a partir de 7 dias do fim (especificação, tela 5). */
 export const EXPIRING_SOON_MS = 7 * DAY_MS
+/**
+ * Prazo CURTO por escolha: "Somente hoje" (até a meia-noite) e 7 dias. Com a régua de 7 dias eles
+ * nasciam "Vence em breve" e caíam em "Precisa da sua atenção" pedindo renovação, o contrário do
+ * conselho de usar "Somente hoje" num aparelho emprestado (full review de 11/10/2026).
+ */
+const SHORT_GRANT_MS = 7 * DAY_MS + 60 * 60_000
 
 export type GrantState = 'active' | 'expiring' | 'expired' | 'revoked'
 export const GRANT_STATE_LABEL: Record<GrantState, string> = {
@@ -18,13 +24,27 @@ export const GRANT_STATE_LABEL: Record<GrantState, string> = {
   revoked: 'Encerrado',
 }
 
-type GrantDates = Pick<StudyGrantView, 'expiresAt' | 'revokedAt'>
+type GrantDates = Pick<StudyGrantView, 'expiresAt' | 'revokedAt' | 'createdAt'>
+
+/**
+ * A janela do "Vence em breve": 7 dias para os prazos longos; o último dia para o de 7 dias;
+ * nenhuma para o "Somente hoje", que termina por escolha. Sem a data de criação (Auth antigo),
+ * vale a régua de 7 dias de sempre. Renovar não muda a criação, então um prazo renovado conta
+ * como longo.
+ */
+function expiringWindow(grant: GrantDates, end: number): number {
+  const created = grant.createdAt ? new Date(grant.createdAt).getTime() : Number.NaN
+  if (!Number.isFinite(created)) return EXPIRING_SOON_MS
+  const total = end - created
+  if (total <= DAY_MS) return 0
+  return total <= SHORT_GRANT_MS ? DAY_MS : EXPIRING_SOON_MS
+}
 
 export function grantState(grant: GrantDates, now = Date.now()): GrantState {
   if (grant.revokedAt) return 'revoked'
   const end = new Date(grant.expiresAt).getTime()
   if (!(end > now)) return 'expired'
-  return end - now <= EXPIRING_SOON_MS ? 'expiring' : 'active'
+  return end - now <= expiringWindow(grant, end) ? 'expiring' : 'active'
 }
 
 /** Ainda deixa a criança entrar (inclusive a que vence em breve). */

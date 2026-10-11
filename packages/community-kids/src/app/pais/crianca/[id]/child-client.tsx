@@ -1,0 +1,183 @@
+'use client'
+
+import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
+import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
+import { computeAgeFromBirthDate } from '@sistemazero/member-shell/lib/user-display'
+import { ArrowLeft, Monitor, Pencil, Sparkles } from 'lucide-react'
+import Link from 'next/link'
+import { type KeyboardEvent, useCallback, useRef, useState } from 'react'
+import { StudyDeviceManager } from '@/components/kids/study-device-manager'
+import { cn } from '@/lib/cn'
+import { levelInfo } from '@/lib/level-info'
+import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
+import { grantIsLive } from '@/lib/study-access-view'
+import type { ProfileView } from '@/lib/types'
+import { ChildProgress } from '../../_components/child-progress'
+import { ParentShell } from '../../_components/parent-shell'
+import { LevelChip, SECONDARY_ACTION } from '../../_components/parent-ui'
+import { statsFor, useChildrenStats } from '../../_components/use-children-stats'
+import { childEditHref, familyHref, studentEntryFor } from '../../parent-routes'
+
+export type ChildTab = 'acesso' | 'progresso'
+
+const TABS: { id: ChildTab; label: string; icon: typeof Monitor }[] = [
+  { id: 'acesso', label: 'Acesso nos aparelhos', icon: Monitor },
+  { id: 'progresso', label: 'Progresso', icon: Sparkles },
+]
+
+/**
+ * A página de uma criança (11/10/2026): quem ela é, onde pode entrar e o que anda criando. Era o
+ * painel que tomava o lugar da lista na área dos pais, sem endereço próprio.
+ */
+export function ChildClient({
+  accountId,
+  parentName,
+  profile,
+  photoUrl,
+  initialTab,
+  familyReady,
+  studentDestination,
+}: {
+  accountId: string
+  parentName?: string
+  profile: ProfileView
+  photoUrl: string | null
+  initialTab: ChildTab
+  /** O acesso da família já estava preparado ao abrir (o guia registra a primeira vez). */
+  familyReady: boolean | null
+  /** A fase do link que trouxe o responsável (`?aluno=`): abre depois da troca para a criança. */
+  studentDestination?: string
+}) {
+  const [tab, setTab] = useState<ChildTab>(initialTab)
+  const tabRefs = useRef<Record<ChildTab, HTMLButtonElement | null>>({
+    acesso: null,
+    progresso: null,
+  })
+  const studentEntry = studentEntryFor(studentDestination)
+  const stats = useChildrenStats()
+  const child = statsFor(stats, profile.id)
+  const level = child?.career ? levelInfo(child.career.level) : null
+  const age = computeAgeFromBirthDate(profile.birthDate)
+  const reported = useRef(familyReady !== false)
+  const onGrants = useCallback((_profileId: string, grants: StudyGrantView[]) => {
+    // A família não tinha nenhum acesso vivo e agora tem: é o passo que o guia dos pais espera.
+    if (reported.current || !grants.some((grant) => grantIsLive(grant))) return
+    reported.current = true
+    trackOnboardingEvent({ audience: 'parent', action: 'access_prepared', step: 'access' })
+  }, [])
+  function choose(next: ChildTab) {
+    setTab(next)
+    // O endereço acompanha a aba (voltar e recarregar abrem a mesma), sem nova navegação.
+    const url = new URL(window.location.href)
+    if (next === 'progresso') url.searchParams.set('aba', 'progresso')
+    else url.searchParams.delete('aba')
+    window.history.replaceState(window.history.state, '', url)
+  }
+  /** O padrão de abas do ARIA: setas e Home/End andam entre as abas e já as abrem. */
+  function onTabKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    const last = TABS.length - 1
+    const target =
+      event.key === 'ArrowRight'
+        ? index === last
+          ? 0
+          : index + 1
+        : event.key === 'ArrowLeft'
+          ? index === 0
+            ? last
+            : index - 1
+          : event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? last
+              : null
+    if (target === null) return
+    event.preventDefault()
+    const next = TABS[target] as (typeof TABS)[number]
+    choose(next.id)
+    tabRefs.current[next.id]?.focus()
+  }
+  const details = [
+    age !== null ? (age === 1 ? '1 ano' : `${age} anos`) : null,
+    profile.publicProfileEnabled ? 'perfil público' : 'perfil privado',
+  ].filter(Boolean)
+  return (
+    <ParentShell active="familia" parentName={parentName} studentDestination={studentEntry}>
+      <Link
+        href={familyHref(studentDestination)}
+        className="-mb-4 inline-flex min-h-11 items-center gap-2 self-start font-bold text-muted-foreground text-sm hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" /> Família
+      </Link>
+      <section className="kids-carta flex flex-wrap items-center gap-5 p-6">
+        <UserAvatar avatarUrl={photoUrl} firstName={profile.name} size="xl" />
+        <div className="min-w-0 flex-1">
+          <h1 className="sz-display break-words text-[2.25rem] leading-tight">{profile.name}</h1>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            {level ? (
+              <LevelChip label={level.label} color={level.colorVar} icon={level.icon} />
+            ) : null}
+            <span className="text-muted-foreground text-sm">{details.join(' · ')}</span>
+          </div>
+        </div>
+        <Link href={childEditHref(profile.id)} className={SECONDARY_ACTION}>
+          <Pencil className="size-4" aria-hidden="true" /> Editar perfil
+        </Link>
+      </section>
+      {/* No celular as duas abas dividem a largura (o rótulo longo quebra dentro da aba, não a
+          fileira); do `sm` em diante, a pílula de sempre. */}
+      <div
+        role="tablist"
+        aria-label={`Sobre ${profile.name}`}
+        className="-mt-4 grid grid-cols-2 gap-1 rounded-2xl bg-card p-1 sm:flex sm:self-start sm:rounded-full"
+      >
+        {TABS.map((item, index) => (
+          <button
+            key={item.id}
+            ref={(node) => {
+              tabRefs.current[item.id] = node
+            }}
+            type="button"
+            role="tab"
+            id={`tab-${item.id}`}
+            aria-selected={tab === item.id}
+            aria-controls={`painel-${item.id}`}
+            tabIndex={tab === item.id ? 0 : -1}
+            onClick={() => choose(item.id)}
+            onKeyDown={(event) => onTabKey(event, index)}
+            className={cn(
+              'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-1.5 text-center font-bold text-sm leading-tight sm:rounded-full sm:px-5',
+              tab === item.id ? 'kids-marca' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            <item.icon className="size-4 shrink-0" aria-hidden="true" />
+            {item.label}
+          </button>
+        ))}
+      </div>
+      {/* Os dois painéis ficam montados: trocar de aba não pode apagar o código gerado nem a
+          espera de "a criança já entrou" do painel de aparelhos. */}
+      <div
+        role="tabpanel"
+        id="painel-acesso"
+        aria-labelledby="tab-acesso"
+        hidden={tab !== 'acesso'}
+      >
+        <StudyDeviceManager
+          profileId={profile.id}
+          name={profile.name}
+          accountId={accountId}
+          onGrants={onGrants}
+          studentDestination={studentEntry}
+        />
+      </div>
+      <div
+        role="tabpanel"
+        id="painel-progresso"
+        aria-labelledby="tab-progresso"
+        hidden={tab !== 'progresso'}
+      >
+        <ChildProgress profileId={profile.id} stats={stats} />
+      </div>
+    </ParentShell>
+  )
+}

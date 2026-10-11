@@ -106,7 +106,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Aqui, destruir só tira a chave desta partida. Quando você começa outra, ela volta. E repare que quem sai é a chave, não o personagem."
 
-**Na tela:** depois da atualização da Pré-visualização, levar o personagem até a chave e passar de novo pelo mesmo lugar. Clicar em **Atualizar**, na barra logo acima do jogo, para começar outra partida e mostrar a chave de volta; em barra estreita, o botão aparece só como ⟳. Clicar em **Verificar esta parte**, esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
+**Na tela:** depois da atualização da Pré-visualização, levar o personagem até a chave e passar de novo pelo mesmo lugar. Clicar em **Atualizar**, na barra logo acima do jogo, para começar outra partida e mostrar a chave de volta; em barra estreita, o botão aparece só como ⟳. Clicar em **Verificar esta parte** e apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Professora:**
 
@@ -118,7 +118,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
+> Quando aparecer Objetivo cumprido!, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte.
 
@@ -176,7 +176,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Como eu vejo se o jogo guardou a chave?"
 
-**Na tela:** Dedé sai. Apontar a declaração em **Ao iniciar** e a mudança no encontro. Clicar em **Verificar esta parte**, esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
+**Na tela:** Dedé sai. Apontar a declaração em **Ao iniciar** e a mudança no encontro. Clicar em **Verificar esta parte** e apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Professora:**
 
@@ -184,7 +184,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
+> Quando aparecer Objetivo cumprido!, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte.
 
@@ -228,17 +228,17 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro Destruir o sprite chave, depois Alterar temChave para verdadeiro e, por último, Alterar aviso para a sua mensagem. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta parte**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo cumprido!**, esperar **Salvo**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem exigir recado e aguardar. No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir fase**.
+**Na tela:** clicar em **Verificar esta parte**, mostrar o resultado ou uma pendência real e corrigir antes de verificar de novo. Depois de **Objetivo cumprido!**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem exigir recado e aguardar. No "lembra da surpresa", lembrar sem mostrar nada dela. Apontar **Concluir fase**.
 
 **Professora:**
 
 > "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
+> Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
 >
 > Pronto, você programou a coleta da chave e o aviso do seu jogo! E lembra da surpresa que eu te contei quando a aventura começou? Ela está quase aqui! Na próxima fase você vai descobrir o que é.
 >
-> Quando o envio terminar, clique em Concluir fase."
+> Quando aparecer Projeto enviado!, clique em Concluir fase."
 
 **Ponte do Zappy na página (não gravar):** Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte antes de enviar o seu projeto.
 

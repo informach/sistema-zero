@@ -3,6 +3,7 @@ import { pintaContentFingerprint, studioContentFingerprint } from '@sistemazero/
 import { createAsset, type PintaAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { Project } from '@sistemazero/studio'
 import { createEmptyProject } from '@sistemazero/studio/project'
+import { sanitizeCloudProjectSnapshot } from '@sistemazero/studio/project-validation'
 import {
   pintaDraftProducer,
   preparePintaLessonDraft,
@@ -14,10 +15,12 @@ import {
   type StudioDraftDeps,
   studioDraftProducer,
 } from '../src/components/studio/lesson-studio-draft'
-import type {
-  LessonDraftChannel,
-  LessonDraftMark,
-  LessonDraftRemote,
+import {
+  LESSON_DRAFT_OUTDATED,
+  type LessonDraftChannel,
+  type LessonDraftMark,
+  LessonDraftOutdatedError,
+  type LessonDraftRemote,
 } from '../src/lib/lesson-draft-cloud'
 
 test.each([
@@ -282,4 +285,52 @@ test('estúdio: conflito com o MESMO projeto só adota a revisão', async () => 
   )
   expect(desfecho).toEqual({ kept: false, opened: null, adoptedAt: daqui.updatedAt })
   expect(projetos.has('outra')).toBe(false)
+})
+
+test('estúdio: a versão da conta feita por um Estúdio mais novo vira "página desatualizada", sem gravar nada', async () => {
+  const daqui = createEmptyProject('local', 'Meu jogo')
+  const { projetos, studio } = memoriaDoEstudio([daqui])
+  const deps = {
+    // O validador de verdade do Estúdio: é ele que recusa o formato que esta página não conhece.
+    studio: { ...studio, validateCloudProjectSnapshot: sanitizeCloudProjectSnapshot },
+    channel: canalParado,
+    blockId: 'block',
+    projectId: 'local',
+    backupId: 'outra',
+  }
+  const daConta = { ...createEmptyProject('block', 'Meu jogo'), formatVersion: 999 }
+  const erro = await resolveStudioConflict(
+    deps,
+    remotoDe(daConta, `v1:${'f'.repeat(64)}`),
+    false,
+  ).catch((e: unknown) => e)
+  expect(erro).toBeInstanceOf(LessonDraftOutdatedError)
+  expect((erro as LessonDraftOutdatedError).code).toBe(LESSON_DRAFT_OUTDATED)
+  expect(projetos.has('outra')).toBe(false)
+  expect(projetos.get('local')).toBe(daqui)
+})
+
+test('estúdio: falha do disco ao guardar a outra versão continua sendo falha comum', async () => {
+  const daqui = createEmptyProject('local', 'Meu jogo')
+  const { studio } = memoriaDoEstudio([daqui])
+  const deps = {
+    studio: {
+      ...studio,
+      replaceLocalProject: async () => {
+        throw new Error('disco cheio')
+      },
+    },
+    channel: canalParado,
+    blockId: 'block',
+    projectId: 'local',
+    backupId: 'outra',
+  }
+  const daConta = createEmptyProject('block', 'Outro jogo')
+  const erro = await resolveStudioConflict(
+    deps,
+    remotoDe(daConta, `v1:${'f'.repeat(64)}`),
+    false,
+  ).catch((e: unknown) => e)
+  expect(erro).not.toBeInstanceOf(LessonDraftOutdatedError)
+  expect((erro as Error).message).toBe('disco cheio')
 })

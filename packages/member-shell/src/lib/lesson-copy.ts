@@ -138,6 +138,9 @@ export interface LessonCopy {
     outraVersaoFalhou: string
     /** A conta já tinha um trabalho que este aparelho não conhecia: ele abriu por cima. */
     trouxeDaConta: string
+    /** A versão da conta é de um editor mais novo que esta página: só a página nova junta as duas. */
+    paginaDesatualizada: string
+    atualizarPagina: string
   }
   /** Entrega pela galeria do Pinta ou do Estúdio completo. */
   galeria: {
@@ -311,6 +314,9 @@ export const ADULT_LESSON_COPY: LessonCopy = {
     trazer: 'Trazer',
     outraVersaoFalhou: 'Não foi possível trazer a outra versão agora. Tente novamente.',
     trouxeDaConta: 'Abrimos a versão salva na sua conta. A deste navegador ficou em Outra versão.',
+    paginaDesatualizada:
+      'A versão da sua conta é mais nova que esta página. Atualize para juntar as duas; nada se perde.',
+    atualizarPagina: 'Atualizar',
   },
   galeria: {
     instrucaoPinta: 'Escolha os desenhos que você fez para esta missão e envie ao professor.',

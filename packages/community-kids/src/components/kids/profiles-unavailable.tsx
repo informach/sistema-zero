@@ -13,6 +13,17 @@ import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
 import { endRenovationVisits } from '@/lib/platform-renovation-visit'
 import { KidsRecado } from './kids-recado'
 
+/**
+ * Encerra a sessão da conta e volta à entrada. Lança quando o servidor não confirmou: quem chama
+ * mostra o recado e libera o botão de novo.
+ */
+export async function logoutAccount(): Promise<void> {
+  const response = await fetch('/api/auth/logout', { method: 'POST' })
+  if (!response.ok) throw new Error(`logout failed with ${response.status}`)
+  endRenovationVisits()
+  window.location.replace('/login')
+}
+
 /** Logout reutilizável nos estados normais e terminais da grade de perfis. */
 export function ProfileLogoutButton({
   disabled = false,
@@ -32,10 +43,7 @@ export function ProfileLogoutButton({
     setLoggingOut(true)
     onLoggingChange?.(true)
     try {
-      const response = await fetch('/api/auth/logout', { method: 'POST' })
-      if (!response.ok) throw new Error(`logout failed with ${response.status}`)
-      endRenovationVisits()
-      window.location.replace('/login')
+      await logoutAccount()
     } catch {
       toast.error('Não foi possível sair agora. Verifique a conexão e tente novamente.')
       setLoggingOut(false)

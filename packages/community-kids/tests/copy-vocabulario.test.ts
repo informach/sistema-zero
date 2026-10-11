@@ -125,9 +125,6 @@ const AREA_DOS_PAIS = [
   'community-kids/src/components/kids/study-access-dialogs.tsx',
   'community-kids/src/components/kids/study-access-result.tsx',
   'community-kids/src/components/kids/student-area-button.tsx',
-  'community-kids/src/app/perfis/ambassador-card.tsx',
-  'community-kids/src/app/perfis/parent-dashboard.tsx',
-  'community-kids/src/app/perfis/purchases-view.tsx',
   'community-kids/src/app/responsavel/',
 ]
 

@@ -1,44 +1,72 @@
 'use client'
 
-import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { sessionFetch } from '@sistemazero/member-shell/lib/session-fetch'
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
-import { Button } from '@sistemazero/ui/button'
-import { Dialog } from '@sistemazero/ui/dialog'
-import { ArrowLeft, KeyRound, Monitor, Plus, Receipt } from 'lucide-react'
+import { ChevronRight, Info } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
-import { KidsScreen } from '@/components/kids/kids-screen'
-import { GuideBalloon } from '@/components/kids/parent-guide'
-import { ParentPasswordChange, ProfileForm } from '@/components/kids/profile-management'
-import { ProfileLogoutButton } from '@/components/kids/profiles-unavailable'
-import { StudentAreaButton } from '@/components/kids/student-area-button'
-import { StudyDeviceManager } from '@/components/kids/study-device-manager'
+import { useEffect, useRef, useState } from 'react'
 import {
   guideDismissedKey,
+  guideWelcomeSeenKey,
   parentWelcomeSteps,
   readGuideFlag,
   resolveParentGuideStep,
   writeGuideFlag,
 } from '@/lib/guide'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
-import { PROFILE_AGE_ERROR_MESSAGE } from '@/lib/profile-age'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
-import { StudyRequestError, studyErrorMessage, studyRequest } from '@/lib/study-access-client'
 import { familyAccessReady } from '@/lib/study-access-view'
 import type { ProfileView } from '@/lib/types'
-import { AmbassadorCard } from '../perfis/ambassador-card'
-import { ChildrenDashboard, FamilyAiCredits, ParentSupportCard } from '../perfis/parent-dashboard'
-import { PurchasesView } from '../perfis/purchases-view'
-import { ChildAccessStatus } from './child-access-status'
+import { AttentionList, attentionItems } from './_components/attention-list'
+import { AddChildCard, ChildCard } from './_components/child-card'
+import { ParentShell } from './_components/parent-shell'
+import {
+  ParentPageTitle,
+  ParentSection,
+  PRIMARY_ACTION,
+  SECONDARY_ACTION,
+} from './_components/parent-ui'
+import { useChildrenStats } from './_components/use-children-stats'
+import { childHref, NEW_CHILD_HREF, studentEntryFor } from './parent-routes'
 import { ProfileAllowanceNote } from './profile-allowance-note'
 
-/** Os botões da área dos pais em pílula de 44px (o ui desenha 32px com cantos de 8px). */
-const PILL_BUTTONS = '[&_button]:min-h-11 [&_button]:rounded-full'
+const HOW_IT_WORKS = [
+  {
+    title: 'Crie o perfil',
+    text: 'Cada criança tem o próprio perfil, com o progresso guardado nele.',
+  },
+  {
+    title: 'Autorize o aparelho',
+    text: 'Neste computador ou em outro, com um código que vale 10 minutos.',
+  },
+  {
+    title: 'A criança entra sozinha',
+    text: 'Ela clica em Eu sou criador(a) e no próprio nome, sem a sua senha.',
+  },
+] as const
 
-type FocusTarget = { kind: 'panel' } | { kind: 'card'; id: string }
+function NumberedSteps({ steps }: { steps: readonly { title: string; text: string }[] }) {
+  return (
+    <ol className="grid gap-3 md:grid-cols-3">
+      {steps.map((step, index) => (
+        <li key={step.title} className="kids-carta flex gap-4 p-5">
+          <span className="kids-marca sz-display flex size-10 shrink-0 items-center justify-center rounded-full text-lg">
+            {index + 1}
+          </span>
+          <span>
+            <strong className="block">{step.title}</strong>
+            <span className="text-muted-foreground text-sm">{step.text}</span>
+          </span>
+        </li>
+      ))}
+    </ol>
+  )
+}
 
+/**
+ * A Família, o início da área dos pais (11/10/2026): o que pede atenção primeiro, um cartão por
+ * criança e, no primeiro acesso, o guia de como preparar a entrada. O acesso de cada criança e o
+ * progresso detalhado moram na página dela; conta e ajuda têm páginas próprias na barra.
+ */
 export function ParentsClient({
   accountId,
   parentName,
@@ -47,7 +75,6 @@ export function ParentsClient({
   profileAllowance,
   initialAccess = {},
   studentDestination,
-  initialSelected,
 }: {
   accountId: string
   parentName?: string
@@ -58,23 +85,13 @@ export function ParentsClient({
   initialAccess?: Record<string, StudyGrantView[] | null>
   /** A fase do link que trouxe o responsável: abre depois da troca para a criança. */
   studentDestination?: string
-  initialSelected?: string
 }) {
-  const [profiles, setProfiles] = useState(initialProfiles)
-  const [selectedId, setSelectedId] = useState<string | null>(initialSelected ?? null)
-  const [editing, setEditing] = useState<
-    { mode: 'create' } | { mode: 'edit'; profile: ProfileView } | null
-  >(null)
-  const [removing, setRemoving] = useState<ProfileView | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [purchases, setPurchases] = useState(false)
-  const [password, setPassword] = useState(false)
+  const profiles = initialProfiles
+  const access = initialAccess
   const [guideOpen, setGuideOpen] = useState(false)
-  const [access, setAccess] = useState(initialAccess)
-  const selected = profiles.find((profile) => profile.id === selectedId) ?? null
+  const stats = useChildrenStats()
   const canCreateProfile = canAddProfile(profileAllowance, profiles.length)
-  // O estado REAL da família (todas as crianças), e não só o painel aberto: recarregar a
-  // página não "desprepara" um acesso que existe. Criança sem leitura conta como "não sei".
+  // O estado REAL da família (todas as crianças): criança sem leitura conta como "não sei".
   const accessReady = familyAccessReady(
     Object.fromEntries(profiles.map((profile) => [profile.id, access[profile.id] ?? null])),
   )
@@ -86,59 +103,32 @@ export function ParentsClient({
     dismissed: !guideOpen,
   })
   const steps = parentWelcomeSteps({ profilesCount: profiles.length, canCreateProfile })
-  const studentEntry = studentDestination
-    ? `/login/aluno?next=${encodeURIComponent(studentDestination)}`
-    : '/perfis'
+  const studentEntry = studentEntryFor(studentDestination)
   const initial = useRef({
     profiles: initialProfiles.length,
     allowance: profileAllowance,
     ready: accessReady,
   })
-  const previousReady = useRef(accessReady)
-  const focusTarget = useRef<FocusTarget | null>(null)
+  const welcomeKey = guideWelcomeSeenKey(accountId)
   useEffect(() => {
-    // Abre sozinho só quando há um passo a fazer: quem já preparou o acesso (ou quando não
-    // dá para saber) não lê "Vamos preparar o acesso?". "Como preparar o acesso" reabre.
+    // Abre sozinho só quando há um passo a fazer: quem já preparou o acesso (ou quando não dá
+    // para saber) não lê "Vamos preparar o acesso?".
     if (readGuideFlag(guideKey)) return
     const start = initial.current
     const actionable = start.profiles ? start.ready === false : canAddProfile(start.allowance, 0)
-    if (!actionable) return
-    setGuideOpen(true)
-    trackOnboardingEvent({ audience: 'parent', action: 'welcome_opened', step: 'welcome' })
-  }, [guideKey])
-  useEffect(() => {
-    if (previousReady.current === false && accessReady === true)
-      trackOnboardingEvent({ audience: 'parent', action: 'access_prepared', step: 'access' })
-    previousReady.current = accessReady
-  }, [accessReady])
-  useEffect(() => {
-    // Abrir o painel leva o foco ao título dele; fechar devolve ao botão que abriu.
-    const target = focusTarget.current
-    if (!target) return
-    focusTarget.current = null
-    const element = selectedId
-      ? document.getElementById('device-title')
-      : target.kind === 'card'
-        ? document.querySelector<HTMLElement>(`[data-access-for="${target.id}"]`)
-        : null
-    element?.focus()
-  }, [selectedId])
-  const onGrants = useCallback((profileId: string, grants: StudyGrantView[]) => {
-    setAccess((previous) => ({ ...previous, [profileId]: grants }))
-  }, [])
-  function openPanel(profileId: string) {
-    focusTarget.current = { kind: 'panel' }
-    setSelectedId(profileId)
-  }
-  function closePanel() {
-    if (selectedId) focusTarget.current = { kind: 'card', id: selectedId }
-    setSelectedId(null)
-  }
-  function reopenGuide() {
-    setGuideOpen(true)
-    trackOnboardingEvent({ audience: 'parent', action: 'guide_reopened', step: 'welcome' })
-    trackOnboardingEvent({ audience: 'parent', action: 'welcome_opened', step: 'welcome' })
-  }
+    if (actionable) {
+      setGuideOpen(true)
+      // O guia acompanha a família por várias páginas (Família, nova criança, página da
+      // criança, Família de novo): a abertura conta UMA vez por conta neste navegador.
+      if (!readGuideFlag(welcomeKey))
+        trackOnboardingEvent({ audience: 'parent', action: 'welcome_opened', step: 'welcome' })
+      writeGuideFlag(welcomeKey)
+      return
+    }
+    // O acesso é preparado na página da criança. Quem começou o guia e voltou com o acesso
+    // pronto lê "O acesso está preparado" uma vez, e o "Entendi" fecha o guia (tour_completed).
+    if (start.ready === true && readGuideFlag(welcomeKey)) setGuideOpen(true)
+  }, [guideKey, welcomeKey])
   function dismissGuide() {
     setGuideOpen(false)
     writeGuideFlag(guideKey)
@@ -154,270 +144,132 @@ export function ParentsClient({
           : { audience: 'parent', action: 'welcome_dismissed', step: 'welcome' },
     )
   }
-  async function run(action: () => Promise<void>) {
-    setBusy(true)
-    try {
-      await action()
-    } catch (error) {
-      // ⚠️ Arquivar, mudar o nascimento e ligar o perfil público pedem login de até 15 min
-      // (`PARENT_REAUTH_REQUIRED`, full review de 10/10/2026): sem o atalho, o responsável lia
-      // o recado e ficava sem caminho. A entrada dos responsáveis volta para cá (`next=/pais`).
-      if (error instanceof StudyRequestError && error.code === 'PARENT_REAUTH_REQUIRED') {
-        toast.error('Por segurança, entre de novo para salvar essa mudança.', {
-          action: {
-            label: 'Entrar de novo',
-            onClick: () => window.location.assign('/login/responsavel?next=%2Fpais'),
-          },
-        })
-        return
-      }
-      toast.error(studyErrorMessage(error))
-    } finally {
-      setBusy(false)
-    }
-  }
-  async function saveProfile(
-    name: string,
-    birthDate: string | null,
-    publicProfileEnabled: boolean,
-    existing?: ProfileView,
-  ) {
-    await run(async () => {
-      try {
-        const result = await studyRequest<{ profile: ProfileView }>(
-          existing ? `/api/profiles/${existing.id}` : '/api/profiles',
-          { name, birthDate, publicProfileEnabled },
-          existing ? 'PATCH' : 'POST',
-        )
-        setProfiles((previous) =>
-          existing
-            ? previous.map((profile) => (profile.id === existing.id ? result.profile : profile))
-            : [...previous, result.profile],
-        )
-        if (!existing) {
-          setAccess((previous) => ({ ...previous, [result.profile.id]: [] }))
-          trackOnboardingEvent({ audience: 'parent', action: 'profile_created', step: 'profile' })
-        }
-        setEditing(null)
-        openPanel(result.profile.id)
-      } catch (error) {
-        if (error instanceof StudyRequestError && error.code === 'PROFILE_AGE_RESTRICTED')
-          throw new StudyRequestError(error.code, PROFILE_AGE_ERROR_MESSAGE)
-        throw error
-      }
-    })
-  }
-  if (purchases) return <PurchasesView onBack={() => setPurchases(false)} />
+  const allAttention = attentionItems(profiles, access)
+  // A primeira criança sem aparelho: o guia leva direto à página dela. Enquanto ele está aberto,
+  // o "sem aparelho" sai do "Precisa da sua atenção" (seria o mesmo pedido duas vezes seguidas).
+  const firstWithoutAccess = allAttention.find((item) => item.kind === 'none')?.profile
+  const attention =
+    guideStep === 'access' ? allAttention.filter((item) => item.kind !== 'none') : allAttention
+  const limited = profileAllowance.kind === 'limited'
+  const addNote = limited
+    ? `${profiles.length} de ${profileAllowance.maxProfiles} perfis do seu plano`
+    : undefined
   return (
-    <>
-      {editing ? (
-        <ProfileForm
-          editing={editing}
-          busy={busy}
-          showGuideHint={guideOpen && editing.mode === 'create'}
-          onCancel={() => setEditing(null)}
-          onSave={saveProfile}
-          onArchive={setRemoving}
-        />
-      ) : (
-        <KidsScreen align="start" innerClassName="flex max-w-5xl flex-col gap-7">
-          <header className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-bold text-primary">Comunidade dos Criadores</p>
-              <h1 className="sz-display mt-1 text-3xl sm:text-4xl">Área dos pais</h1>
-              {parentName ? (
-                <p className="mt-2 text-sm text-muted-foreground">Você entrou como {parentName}.</p>
-              ) : null}
-              <p className="mt-2 text-muted-foreground">
-                Prepare o acesso e acompanhe as descobertas dos seus filhos.
-              </p>
-            </div>
-            <ProfileLogoutButton disabled={busy} className="min-h-11 rounded-full" />
-          </header>
-          {studentDestination ? (
-            <section role="status" className="kids-carta p-5">
-              <h2 className="sz-display text-xl">Esse link abre na área da criança</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                A aula do link é da criança, não do responsável. Confira se o acesso dela está
-                preparado neste computador e clique em Ir para a área da criança: a criança escolhe
-                o perfil e a aula abre em seguida.
-              </p>
-            </section>
-          ) : null}
-          <nav aria-label="Ações do responsável" className={`flex flex-wrap gap-2 ${PILL_BUTTONS}`}>
-            <StudentAreaButton destination={studentEntry} disabled={busy} />
-            <Button variant="ghost" onClick={() => setPurchases(true)}>
-              <Receipt className="size-4" />
-              Compras
-            </Button>
-            <Button variant="ghost" onClick={() => setPassword(true)}>
-              <KeyRound className="size-4" />
-              Trocar senha
-            </Button>
-            <Button variant="ghost" onClick={reopenGuide}>
-              Como preparar o acesso
-            </Button>
-          </nav>
-          {guideStep ? (
-            <div className={`rounded-2xl border-2 border-primary bg-card p-5 ${PILL_BUTTONS}`}>
-              <h2 className="sz-display text-xl">
-                {guideStep === 'ready'
-                  ? 'O acesso está preparado'
-                  : profiles.length
-                    ? 'Seu filho já tem perfil. Vamos preparar o acesso?'
-                    : 'Vamos preparar a primeira entrada?'}
-              </h2>
-              <ol className="mt-3 grid gap-4 text-sm sm:grid-cols-3">
-                {steps.map((step) => (
-                  <li key={step.id}>
-                    <strong className="block">{step.title}</strong>
-                    {step.text}
-                  </li>
-                ))}
-              </ol>
-              <div className="mt-4 flex flex-wrap items-center gap-3">
-                <Link
-                  href="/ajuda/entrar"
-                  className="inline-flex min-h-11 items-center text-sm underline underline-offset-4"
-                >
-                  Ver o passo a passo
-                </Link>
-                <button
-                  type="button"
-                  onClick={dismissGuide}
-                  className="px-2 text-sm font-bold underline underline-offset-4"
-                >
-                  {guideStep === 'ready' ? 'Entendi' : 'Fechar orientação'}
-                </button>
-              </div>
-            </div>
-          ) : null}
-          {selected ? (
-            <div className={`kids-carta space-y-5 p-5 sm:p-7 ${PILL_BUTTONS}`}>
-              <Button variant="ghost" onClick={closePanel}>
-                <ArrowLeft className="size-4" />
-                Voltar aos filhos
-              </Button>
-              <StudyDeviceManager
-                key={selected.id}
-                profileId={selected.id}
-                name={selected.name}
-                accountId={accountId}
-                onGrants={onGrants}
-                studentDestination={studentEntry}
-              />
-            </div>
+    <ParentShell active="familia" parentName={parentName} studentDestination={studentEntry}>
+      <ParentPageTitle
+        title={parentName ? `Olá, ${parentName}` : 'Área dos pais'}
+        text="Aqui você prepara o acesso das crianças e acompanha o que elas estão criando."
+      />
+      {studentDestination ? (
+        <section role="status" className="kids-carta flex gap-4 p-5">
+          <Info className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+          <div>
+            <h2 className="font-extrabold">Esse link abre na área da criança</h2>
+            <p className="mt-1 text-muted-foreground text-sm">
+              A aula do link é da criança, não do responsável. Confira se o acesso dela está
+              preparado neste computador e clique em Ir para a área da criança: a criança escolhe o
+              perfil e a aula abre em seguida.
+            </p>
+          </div>
+        </section>
+      ) : null}
+      {guideStep ? (
+        <section
+          aria-labelledby="parents-guide"
+          className="kids-carta flex flex-col gap-5 border-2 border-primary p-6"
+        >
+          <h2 id="parents-guide" className="sz-display text-[1.375rem]">
+            {guideStep === 'ready'
+              ? 'O acesso está preparado'
+              : profiles.length
+                ? 'Seu filho já tem perfil. Vamos preparar o acesso?'
+                : 'Vamos preparar a primeira entrada?'}
+          </h2>
+          {guideStep === 'ready' ? (
+            <p className="max-w-3xl text-sm">
+              No aparelho autorizado, a criança clica em <strong>Eu sou criador(a)</strong> e
+              escolhe o próprio perfil, sem a sua senha. Se ela for usar este computador agora,
+              clique em <strong>Ir para a área da criança</strong>, no alto da página.
+            </p>
           ) : (
-            <section aria-labelledby="children-title" className={PILL_BUTTONS}>
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <h2 id="children-title" className="sz-display text-2xl">
-                  Seus filhos
-                </h2>
-                {canCreateProfile ? (
-                  <Button onClick={() => setEditing({ mode: 'create' })}>
-                    <Plus className="size-4" />
-                    Adicionar criança
-                  </Button>
-                ) : null}
-              </div>
-              {profiles.length === 0 ? (
-                <GuideBalloon arrow="none">
-                  Comece em <strong>Adicionar criança</strong>. Depois você escolhe em qual aparelho
-                  ela poderá entrar.
-                </GuideBalloon>
-              ) : (
-                <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {profiles.map((profile) => (
-                    <li
-                      key={profile.id}
-                      className="kids-carta flex flex-col items-center gap-4 p-5 text-center"
-                    >
-                      <UserAvatar
-                        avatarUrl={avatarPhotoByProfile[profile.id] ?? null}
-                        firstName={profile.name}
-                        size="xl"
-                      />
-                      <h3 className="sz-display break-words text-2xl">{profile.name}</h3>
-                      <ChildAccessStatus grants={access[profile.id]} />
-                      <Button
-                        className="w-full"
-                        data-access-for={profile.id}
-                        onClick={() => openPanel(profile.id)}
-                      >
-                        <Monitor className="size-4" />
-                        Acesso nos aparelhos
-                      </Button>
-                      <Button variant="ghost" onClick={() => setEditing({ mode: 'edit', profile })}>
-                        Editar perfil
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <ProfileAllowanceNote allowance={profileAllowance} profilesCount={profiles.length} />
-            </section>
+            <ol className="grid gap-4 md:grid-cols-3">
+              {steps.map((step) => (
+                <li key={step.id} className="text-sm">
+                  <strong className="block">{step.title}</strong>
+                  <span className="text-muted-foreground">{step.text}</span>
+                </li>
+              ))}
+            </ol>
           )}
-          <div className="flex flex-col items-center gap-6">
-            <Link href="/responsavel" className="sz-btn-gradient px-6">
-              Abrir acompanhamento da família
-            </Link>
-            <ChildrenDashboard avatarPhotoByProfile={avatarPhotoByProfile} />
-            <FamilyAiCredits />
-            <ParentSupportCard />
-            <AmbassadorCard />
-          </div>
-        </KidsScreen>
-      )}
-      <Dialog
-        open={removing !== null}
-        onClose={() => {
-          if (!busy) setRemoving(null)
-        }}
-        title="Remover perfil"
-        footer={
-          <div className={`flex flex-wrap justify-end gap-2 ${PILL_BUTTONS}`}>
-            <Button variant="secondary" disabled={busy} onClick={() => setRemoving(null)}>
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              disabled={busy}
-              onClick={() =>
-                void run(async () => {
-                  if (!removing) return
-                  const response = await sessionFetch(`/api/profiles/${removing.id}`, {
-                    method: 'DELETE',
-                  })
-                  if (!response.ok)
-                    throw new StudyRequestError(
-                      'PROFILE_REMOVE_FAILED',
-                      'Não foi possível remover o perfil.',
-                    )
-                  setProfiles((previous) =>
-                    previous.filter((profile) => profile.id !== removing.id),
-                  )
-                  setAccess((previous) =>
-                    Object.fromEntries(
-                      Object.entries(previous).filter(([id]) => id !== removing.id),
-                    ),
-                  )
-                  setRemoving(null)
-                  setEditing(null)
-                  setSelectedId(null)
-                })
-              }
+          <div className="flex flex-wrap items-center gap-2">
+            {guideStep === 'profile' ? (
+              <Link href={NEW_CHILD_HREF} className={PRIMARY_ACTION}>
+                Adicionar criança
+              </Link>
+            ) : null}
+            {guideStep === 'access' && firstWithoutAccess ? (
+              <Link
+                href={childHref(firstWithoutAccess.id, undefined, studentDestination)}
+                className={PRIMARY_ACTION}
+              >
+                Preparar o acesso de {firstWithoutAccess.name}
+              </Link>
+            ) : null}
+            {guideStep === 'ready' ? null : (
+              <Link href="/pais/ajuda" className={SECONDARY_ACTION}>
+                Ver o passo a passo
+              </Link>
+            )}
+            <button
+              type="button"
+              onClick={dismissGuide}
+              className="min-h-11 px-3 font-bold text-sm underline underline-offset-4"
             >
-              Remover
-            </Button>
+              {guideStep === 'ready' ? 'Entendi' : 'Fechar orientação'}
+            </button>
           </div>
-        }
-      >
-        <p>
-          Remover o perfil de {removing?.name}? Os acessos dessa criança serão encerrados. O
-          progresso fica guardado.
-        </p>
-      </Dialog>
-      {password ? <ParentPasswordChange onCancel={() => setPassword(false)} /> : null}
-    </>
+        </section>
+      ) : null}
+      <AttentionList
+        items={attention}
+        photoByProfile={avatarPhotoByProfile}
+        studentDestination={studentDestination}
+      />
+      <ParentSection title="Suas crianças" id="children-title">
+        <ul className="kids-grade-centrada [--grade-vao:1.25rem] md:[--grade-colunas:2] xl:[--grade-colunas:3]">
+          {profiles.map((profile) => (
+            <ChildCard
+              key={profile.id}
+              profile={profile}
+              photoUrl={avatarPhotoByProfile[profile.id] ?? null}
+              grants={access[profile.id]}
+              stats={stats}
+              studentDestination={studentDestination}
+            />
+          ))}
+          {canCreateProfile ? <AddChildCard note={addNote} /> : null}
+        </ul>
+        {/* O limite do plano já mora no cartão de adicionar; o recado só aparece no limite,
+            ilimitado ou quando a consulta falhou. */}
+        {!canCreateProfile || !limited ? (
+          <ProfileAllowanceNote allowance={profileAllowance} profilesCount={profiles.length} />
+        ) : null}
+      </ParentSection>
+      {guideStep ? null : (
+        <ParentSection
+          title="Como funciona o acesso"
+          action={
+            <Link
+              href="/pais/ajuda"
+              className="inline-flex min-h-11 items-center gap-1 font-bold text-primary text-sm"
+            >
+              Ver o passo a passo completo <ChevronRight className="size-4" aria-hidden="true" />
+            </Link>
+          }
+        >
+          <NumberedSteps steps={HOW_IT_WORKS} />
+        </ParentSection>
+      )}
+    </ParentShell>
   )
 }

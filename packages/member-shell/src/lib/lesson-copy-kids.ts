@@ -67,6 +67,8 @@ const ERRO_DO_SERVIDOR: Record<string, string> = {
   LESSON_DRAFT_NOT_SAVED:
     'Não consegui guardar suas últimas mudanças na conta. Tente de novo, ou clique em Enviar de novo para a equipe receber a versão nova.',
   VIEWER_CHANGED: 'O perfil mudou. Abra a fase de novo.',
+  PAGE_OUTDATED:
+    'Esta página ficou desatualizada. Clique em Atualizar, no aviso do Estúdio ou do Pinta, ou clique em Enviar de novo para a equipe receber a versão nova. Nada se perde.',
   // As recusas de concluir a fase.
   SECTION_GATE_INCOMPLETE: 'Termine todas as partes desta fase para concluir.',
   LEARNING_GATE_INCOMPLETE: 'Termine as experiências desta fase para concluir.',
@@ -210,6 +212,9 @@ export const KIDS_LESSON_COPY: LessonCopy = {
     trazer: 'Trazer',
     outraVersaoFalhou: 'Não consegui trazer a outra versão agora. Tente de novo.',
     trouxeDaConta: 'Abri a versão guardada na sua conta. A deste computador ficou em Outra versão.',
+    paginaDesatualizada:
+      'A versão da sua conta é mais nova que esta página. Clique em Atualizar. Nada se perde.',
+    atualizarPagina: 'Atualizar',
   },
   galeria: {
     instrucaoPinta: 'Escolha os desenhos que você fez nesta fase e envie.',

@@ -147,7 +147,7 @@ export function StudioBlockView({
   const draftChannel = player?.lessonDrafts?.studio
   const channel =
     draftChannel?.supported && player?.viewerId && player.lessonId ? draftChannel : null
-  const draftState = useLessonDraftState(channel)
+  const draftState = useLessonDraftState(channel, blockId)
 
   const [StudioLesson, setStudioLesson] = useState<StudioComponent | null>(null)
   const [studioMod, setStudioMod] = useState<StudioModule | null>(null)
@@ -724,7 +724,19 @@ export function StudioBlockView({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           <h3 className="sz-display text-base">{estudio.titulo}</h3>
-          <LessonDraftStatus state={draftState} />
+          <LessonDraftStatus
+            state={draftState}
+            onReload={async () => {
+              // A página nova traz o Estúdio novo, que lê a versão da conta; o projeto da tela vai
+              // ao disco antes (o autosave é debounced).
+              // Com prazo: um IndexedDB travado deixava o botão desligado para sempre.
+              await Promise.race([
+                handleRef.current?.save().catch(() => {}),
+                new Promise((resolve) => setTimeout(resolve, 3_000)),
+              ])
+              window.location.reload()
+            }}
+          />
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <LessonVideoToggle expanded={expanded} size="sm" />

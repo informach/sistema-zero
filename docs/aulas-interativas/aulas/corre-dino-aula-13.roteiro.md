@@ -96,7 +96,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o -5 escrito na conta do vx. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o -5 escrito na conta do vx. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -124,7 +124,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Confira se ficou assim: em Ao iniciar, está Criar variável velocidade com valor -5, e o vx dos cactos é velocidade menos um número de 0 a 1. Agora comece uma partida. Repare: o jogo continua igual, porque a variável guarda o mesmo -5 de antes. A diferença é que, agora, essa base pode mudar durante a corrida.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora guarde a velocidade base numa variável! Crie velocidade com -5 em Ao iniciar e use o valor dela na conta do vx dos cactos. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
@@ -135,7 +135,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar os dois relógios que já existem em Enquanto estiver rodando. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar os dois relógios que já existem em Enquanto estiver rodando. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -165,7 +165,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Confira se ficou assim: em Enquanto estiver rodando, há três relógios separados: o dos cactos, em 1.4 segundo, o dos pontos, no intervalo que você escolheu, e o da dificuldade, em 5 segundos, com o Se jogando. O então do relógio novo ainda está vazio, e por isso a base ainda não muda.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora prepare o relógio da dificuldade! Crie um relógio de 5 segundos com um Se jogando, separado dos outros dois. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
@@ -176,7 +176,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o então vazio do relógio de 5 segundos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o então vazio do relógio de 5 segundos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte). Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -222,7 +222,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se você perder cedo, tudo bem: a comparação completa você já viu na experiência da segunda parte desta fase.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora faça a corrida acelerar até um limite! No relógio de 5 segundos, some -1 em velocidade só enquanto a base for maior que -9. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
@@ -233,7 +233,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Professora:**
 
@@ -243,7 +243,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Confira se ficou assim: em Ao iniciar, a descrição tem a frase inteira, com o que fazer e os três controles. Depois, teste os três controles no jogo. A descrição só conta como se joga: ela não cria nenhum controle novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora complete a descrição do seu jogo! Troque a descrição pela frase Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.
@@ -260,7 +260,7 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado (Enviar meu projeto, Enviar e Concluir fase). Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Enviar meu projeto, Enviar, Projeto enviado! e Concluir fase). Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir todos os testes de partida, derrota, reinício e controles, com o jogo construído à vista.
 
@@ -286,7 +286,7 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 **Professora:**
 
-> “Você pode! Primeiro vamos conferir e enviar o seu projeto. Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.”
+> “Você pode! Primeiro vamos conferir e enviar o seu projeto. Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir fase.”
 
 
 **Zappy na página (não gravar):** Hora de testar e enviar o seu Corre, Dino! Teste a corrida inteira, clique em Verificar esta parte e depois em Enviar meu projeto, confirmando em Enviar. Se quiser, mostre o seu jogo no Mural e, por último, clique em Concluir fase.

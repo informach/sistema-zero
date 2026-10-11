@@ -94,7 +94,7 @@ export function PintaBlockView({
   const draftChannel = player?.lessonDrafts?.pinta
   const channel =
     draftChannel?.supported && player?.viewerId && player.lessonId ? draftChannel : null
-  const draftState = useLessonDraftState(channel)
+  const draftState = useLessonDraftState(channel, blockId)
 
   const [mod, setMod] = useState<PintaLessonModule | null>(null)
   const [persistence, setPersistence] = useState<PintaPersistence | null>(null)
@@ -432,7 +432,18 @@ export function PintaBlockView({
     >
       <div className="flex flex-wrap items-center justify-end gap-2">
         <span className="mr-auto">
-          <LessonDraftStatus state={draftState} />
+          <LessonDraftStatus
+            state={draftState}
+            onReload={async () => {
+              // A página nova junta a versão da conta com a daqui; o desenho da tela vai ao disco antes.
+              // Com prazo: um IndexedDB travado deixava o botão desligado para sempre.
+              await Promise.race([
+                handleRef.current?.save().catch(() => false),
+                new Promise((resolve) => setTimeout(resolve, 3_000)),
+              ])
+              window.location.reload()
+            }}
+          />
         </span>
         <LessonVideoToggle expanded={expanded} size="sm" />
         {hasOther ? (

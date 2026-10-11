@@ -162,7 +162,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > No nome do sprite, escolha personagem. A velocidade já vem em 3; deixe assim."
 
-**Na tela:** testar uma seta da tela. No computador, clicar dentro do jogo e testar uma seta do teclado. Pausar para a pessoa testar. Depois clicar em **Verificar esta parte**, mostrar o resultado real, esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
+**Na tela:** testar uma seta da tela. No computador, clicar dentro do jogo e testar uma seta do teclado. Pausar para a pessoa testar. Depois clicar em **Verificar esta parte**, mostrar o resultado real e apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Professora:**
 
@@ -182,7 +182,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
+> O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta fase. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte.
 
@@ -266,15 +266,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro está Mover sprite personagem em 4 direções com setas, com a velocidade 3, e logo abaixo está Manter o sprite personagem dentro da tela. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Em caso de pendência, enquadrar o item a corrigir e verificar de novo. Esperar **Salvo**, clicar em **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar o envio. Apontar **Concluir fase**.
+**Na tela:** clicar em **Verificar esta parte** e mostrar **Objetivo cumprido!**. Em caso de pendência, enquadrar o item a corrigir e verificar de novo. Clicar em **Enviar meu projeto**, confirmar em **Enviar** sem preencher o recado opcional e aguardar o envio. Apontar **Concluir fase**.
 
 **Professora:**
 
 > "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
+> Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
 >
-> Quando o envio terminar, clique em Concluir fase."
+> Quando aparecer Projeto enviado!, clique em Concluir fase."
 
 **Ponte do Zappy na página (não gravar):** Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte antes de enviar o seu projeto.
 

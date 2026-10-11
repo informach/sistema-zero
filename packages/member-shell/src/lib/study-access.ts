@@ -24,6 +24,8 @@ export const studyGrantSchema = z.object({
   revokedAt: z.string().nullable(),
   lastUsedAt: z.string().nullable(),
   isCurrentDevice: z.boolean().optional(),
+  /** Opcional: o Auth anterior a 11/10/2026 não mandava (a tela cai na régua de sempre). */
+  createdAt: z.string().optional(),
 })
 export const createStudyAccessSchema = z.object({
   profileId: z.string().uuid(),

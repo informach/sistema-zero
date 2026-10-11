@@ -57,7 +57,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no "Tá vendo?", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no "Tá vendo?", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -103,7 +103,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites asteroides, e, dentro de Enquanto estiver rodando, A cada 40 quadros está logo abaixo de A cada quadro do jogo, como vizinho, e não encaixado dentro dele. Por enquanto, nenhuma pedra cai, porque o relógio ainda está vazio.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -149,7 +149,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: esperar alguns segundos e, no "Tá vendo?", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada: esperar alguns segundos e, no "Tá vendo?", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -215,7 +215,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está No grupo asteroides criar um asteroide, com um x aleatório na tela, y -30, tamanho 40, vx 0 e vy 3. E, no fim de A cada quadro do jogo, estão Mover os sprites do grupo asteroides, Tirar do grupo asteroides quem sair da tela e Desenhar o grupo asteroides, nessa ordem. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -226,7 +226,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Professora:**
 
@@ -234,7 +234,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima fase.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”
 
 
 **Zappy na página (não gravar):** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.

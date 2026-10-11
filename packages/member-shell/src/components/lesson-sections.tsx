@@ -719,7 +719,8 @@ function LessonSectionsContent({
       // criança lê "tente novamente" para um erro que só passa reabrindo a aula.
       if (e instanceof LessonDraftSaveError) {
         setError(e.viewerChanged ? copy.secoes.perfilMudou : e.message)
-        setRetryable(!e.viewerChanged)
+        // Página desatualizada: repetir daria o mesmo erro; o "Atualizar" do editor resolve.
+        setRetryable(!e.viewerChanged && !e.outdated)
       } else if ((e as { code?: string } | null)?.code === 'VIEWER_CHANGED') {
         setError((e as { message?: string }).message ?? copy.secoes.perfilMudou)
         setRetryable(false)

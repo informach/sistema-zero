@@ -1,14 +1,16 @@
 'use client'
 
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
-import { Button } from '@sistemazero/ui/button'
 import { CheckCircle2, Copy } from 'lucide-react'
 import { useState } from 'react'
 import { formatAccessEnd } from '@/lib/study-access-view'
 import { StudentAreaButton } from './student-area-button'
 
-const COPY_FIELD =
-  'min-w-0 rounded-xl border border-border bg-card p-3 text-center font-mono tracking-widest'
+/** Os botões dentro do cartão azul do código: o branco cheio e o de vidro, em pílula de 44px. */
+const INVERSE =
+  'kids-marca-inverso inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 font-bold text-sm'
+const GLASS =
+  'kids-marca-vidro inline-flex min-h-11 items-center justify-center gap-2 self-start rounded-full px-5 font-bold text-sm disabled:opacity-60'
 
 async function copyText(text: string): Promise<boolean> {
   try {
@@ -53,60 +55,57 @@ export function AccessCodeResult({
     else onCopyFailed()
   }
   return (
-    <div
-      role="status"
-      className="rounded-2xl border-2 border-primary bg-primary/5 p-5 [&_button]:min-h-11 [&_button]:rounded-full"
-    >
-      <h3 className="font-bold">{expired ? 'Esse código venceu' : `Código para ${name}`}</h3>
+    <div role="status" className="kids-marca flex flex-col gap-4 rounded-(--raio-carta) p-6">
+      <h3 className="kids-marca-suave font-extrabold text-xs uppercase tracking-[0.12em]">
+        {expired ? 'Esse código venceu' : `Código para ${name}`}
+      </h3>
       {!expired ? (
         <>
-          <p className="mt-2 text-sm">
+          <input
+            aria-label="Código para copiar"
+            readOnly
+            value={code}
+            className="sz-display w-full min-w-0 bg-transparent text-[2.4rem] leading-none tracking-[0.18em] outline-none focus-visible:outline-2 focus-visible:outline-offset-4"
+            onFocus={(event) => event.target.select()}
+          />
+          <button type="button" className={INVERSE} onClick={() => void copy('code')}>
+            <Copy className="size-4" aria-hidden="true" />
+            {copied === 'code' ? 'Copiado' : 'Copiar'}
+          </button>
+          <p className="kids-marca-suave text-sm">
             No computador da criança, abra a plataforma neste endereço, clique em{' '}
             <strong>Eu sou criador(a)</strong> e digite este código.
           </p>
           {address ? (
-            <div className="mt-3 flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <input
                 aria-label="Endereço da plataforma"
                 readOnly
                 value={address}
-                className={`${COPY_FIELD} w-full max-w-xs text-sm tracking-normal`}
+                className="kids-marca-vidro min-h-11 w-full min-w-0 max-w-xs flex-1 rounded-full px-4 text-sm outline-none focus-visible:outline-2"
                 onFocus={(event) => event.target.select()}
               />
-              <Button variant="secondary" onClick={() => void copy('address')}>
+              <button type="button" className={GLASS} onClick={() => void copy('address')}>
                 <Copy className="size-4" aria-hidden="true" />
                 {copied === 'address' ? 'Endereço copiado' : 'Copiar endereço'}
-              </Button>
+              </button>
             </div>
           ) : null}
-          <div className="my-4 flex flex-wrap items-center gap-3">
-            <input
-              aria-label="Código para copiar"
-              readOnly
-              value={code}
-              className={`${COPY_FIELD} w-48 text-xl`}
-              onFocus={(event) => event.target.select()}
-            />
-            <Button variant="secondary" onClick={() => void copy('code')}>
-              <Copy className="size-4" aria-hidden="true" />
-              {copied === 'code' ? 'Copiado' : 'Copiar'}
-            </Button>
-          </div>
-          <p className="text-sm">
+          <p className="kids-marca-suave text-sm">
             O código vale por 10 minutos e libera um único navegador. Depois de usar o código, o
             acesso dura pelo prazo que você escolheu.
           </p>
-          <Button variant="ghost" className="mt-3" disabled={busy} onClick={onCheck}>
+          <button type="button" className={GLASS} disabled={busy} onClick={onCheck}>
             Conferir se a criança já entrou
-          </Button>
+          </button>
           {checkedWithoutEntry ? (
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="kids-marca-suave text-sm">
               Ainda não. Quando a criança digitar o código, o aparelho aparece na lista acima.
             </p>
           ) : null}
         </>
       ) : (
-        <p className="mt-2 text-sm">
+        <p className="kids-marca-suave text-sm">
           Gere outro código no formulário acima. O código vencido não libera novos aparelhos.
         </p>
       )}
@@ -127,7 +126,7 @@ export function CurrentDeviceReady({
   return (
     <div
       role="status"
-      className="rounded-2xl border-2 border-(--success-foreground) bg-(--band-menta) p-5"
+      className="rounded-(--raio-carta) border-2 border-(--success-foreground) bg-(--band-menta) p-5"
     >
       <p className="flex items-start gap-2 font-bold">
         <CheckCircle2 className="mt-0.5 size-5 shrink-0" aria-hidden="true" />

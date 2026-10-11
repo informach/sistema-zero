@@ -33,8 +33,10 @@ function manifesto(name: string): LearningManifest {
 }
 
 function checks(name: string): SectionProjectCheck[] {
+  // A decisão continua verificada antes das escolhas; desde 11/10 o envio é posterior.
+  const sectionKey = name === 'dia-3' ? 'decisao' : name === 'dia-2' ? 'programar-chave' : 'borda'
   return (
-    manifesto(name).sections.find((section) => section.intent === 'delivery')?.completion
+    manifesto(name).sections.find((section) => section.key === sectionKey)?.completion
       ?.projectChecks ?? []
   )
 }
@@ -293,11 +295,11 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       'posicionar-chave',
       'fecho',
     ])
-    // O mexa e veja do curso: fechamento depois da entrega, no mesmo projeto. Uma ideia só
+    // O mexa e veja do curso: aplicação antes da entrega, no mesmo projeto. Uma ideia só
     // (decisão da dona, 06/10/2026): todas as trocas de imagem, o par do farol incluído. A única
     // conferência é a do farol aceso, que aceita qualquer modelo: nenhuma escolha vira critério.
     const mexa = m.sections[3]!
-    expect(mexa.intent).toBe('closing')
+    expect(mexa.intent).toBe('application')
     expect(mexa.workspaceKey).toBe('projeto')
     expect(mexa.completion?.blockIds).toEqual(['video-d3-personalizar'])
     expect(mexa.completion?.projectChecks?.map((check) => check.id)).toEqual(['acender'])
@@ -310,7 +312,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
     expect(avisos.blockKeys).toEqual(['video-d3-farol-mensagens', 'ponte-d3-farol-mensagens'])
     for (const key of ['farol-mensagens', 'posicionar-chave']) {
       const choice = m.sections.find((section) => section.key === key)!
-      expect(choice.intent).toBe('closing')
+      expect(choice.intent).toBe(key === 'posicionar-chave' ? 'delivery' : 'closing')
       expect(choice.workspaceKey).toBe('projeto')
       expect(choice.completion?.projectChecks).toBeUndefined()
     }
@@ -329,18 +331,25 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       'experiencia-posicao',
     ])
     const intermediate = m.sections[1]!
-    const delivery = m.sections[2]!
+    const decision = m.sections[2]!
+    const delivery = m.sections[6]!
     expect(intermediate.workspaceKey).toBe('projeto')
     expect(delivery.workspaceKey).toBe(intermediate.workspaceKey)
     expect(intermediate.blockKeys).not.toContain('projeto')
     expect(intermediate.completion?.blockIds).toEqual(['video-d3-sem-chave'])
     expect(intermediate.completion?.projectChecks).toHaveLength(10)
-    expect(delivery.completion?.projectChecks).toHaveLength(14)
+    expect(decision.intent).toBe('application')
+    expect(decision.blockKeys).not.toContain('projeto')
+    expect(decision.completion?.blockIds).toEqual(['video-d3-decisao'])
+    expect(decision.completion?.projectChecks).toHaveLength(14)
+    expect(delivery.completion?.blockIds).toEqual(['video-d3-posicionar-chave', 'projeto'])
+    expect(delivery.blockKeys).toContain('projeto')
+    expect(m.sections[5]?.intent).toBe('exploration')
     expect(
       m.sections
         .filter((section) => section.completion?.blockIds.includes('projeto'))
         .map((section) => section.key),
-    ).toEqual(['decisao'])
+    ).toEqual(['posicionar-chave'])
     expect(m.blocks.filter((block) => block.content?.kind === 'studio')).toHaveLength(1)
   })
 
@@ -367,7 +376,7 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       expect(content.showcase?.enabled === true).toBe(day === 'dia-3')
     }
     const m = manifesto('dia-3')
-    const delivery = m.sections.find((section) => section.key === 'decisao')
+    const delivery = m.sections.find((section) => section.key === 'posicionar-chave')
     const publication = m.sections.find((section) => section.key === 'fecho')
     expect(publication?.workspaceKey).toBe(delivery?.workspaceKey)
     expect(publication?.workspaceKey).toBe('projeto')

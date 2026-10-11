@@ -11,8 +11,13 @@ import { ValidationError } from '../../domain/shared/errors'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
+import { onToolOwnershipInvalidated, toolOwnershipGeneration } from './tool-ownership-cache'
 
-/** O autosave da fase reserva a cada poucos segundos: a mesma resposta vale por um minuto. */
+/**
+ * O autosave da fase reserva a cada poucos segundos: a mesma resposta vale por um minuto, nunca
+ * além do fim da matrícula, e some na hora quando a matrícula da conta é revogada ou expirada
+ * (`invalidateToolOwnership`).
+ */
 const ACCESS_TTL_MS = 60_000
 const MAX_CACHED = 5_000
 
@@ -28,7 +33,9 @@ const MAX_CACHED = 5_000
  * ferramentas livres (a criança sempre traz de volta o que guardou).
  */
 export class LessonDraftAccessService {
-  private readonly allowedUntil = new Map<string, number>()
+  /** Conta → (perfil, tipo, bloco) → até quando vale. Por conta para a revogação apagar de uma vez. */
+  private readonly allowedUntil = new Map<string, Map<string, number>>()
+  private cached = 0
 
   constructor(
     private readonly courses: CourseRepository,
@@ -36,7 +43,16 @@ export class LessonDraftAccessService {
     private readonly progress: ProgressRepository,
     private readonly sections: SectionProgressionService,
     private readonly clock: () => number = () => Date.now(),
-  ) {}
+  ) {
+    onToolOwnershipInvalidated((accountIds) => {
+      for (const accountId of accountIds) this.forget(accountId)
+    })
+  }
+
+  private forget(accountId: string): void {
+    this.cached -= this.allowedUntil.get(accountId)?.size ?? 0
+    this.allowedUntil.delete(accountId)
+  }
 
   async assert(input: {
     userId: string
@@ -47,9 +63,11 @@ export class LessonDraftAccessService {
   }): Promise<void> {
     if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(input.blockId))
       throw new ValidationError('Identificador de bloco inválido')
-    const cacheKey = `${input.accountId}:${input.userId}:${input.tool}:${input.blockId}`
+    const cacheKey = `${input.userId}:${input.tool}:${input.blockId}`
     const now = this.clock()
-    if ((this.allowedUntil.get(cacheKey) ?? 0) > now) return
+    if ((this.allowedUntil.get(input.accountId)?.get(cacheKey) ?? 0) > now) return
+    // Uma revogação que chega no meio das consultas abaixo não pode ser desfeita pelo fim delas.
+    const since = toolOwnershipGeneration()
     const lessonId = await this.courses.findBlockLessonId(input.blockId)
     const lesson = lessonId ? await this.courses.findLessonWithContent(lessonId) : null
     if (!lesson?.isPublished || hasComingSoonBlock(lesson.blocks)) throw new LessonNotFoundError()
@@ -60,7 +78,7 @@ export class LessonDraftAccessService {
       isGalleryBlock(block.content)
     )
       throw new LessonNotFoundError('Esta atividade não guarda rascunho na conta.')
-    const { course } = await this.access.requireById(
+    const { course, entitlement } = await this.access.requireById(
       input.accountId,
       lesson.courseId,
       input.privileged,
@@ -80,7 +98,16 @@ export class LessonDraftAccessService {
       input.blockId,
       input.privileged,
     )
-    if (this.allowedUntil.size >= MAX_CACHED) this.allowedUntil.clear()
-    this.allowedUntil.set(cacheKey, now + ACCESS_TTL_MS)
+    if (toolOwnershipGeneration() !== since) return
+    if (this.cached >= MAX_CACHED) {
+      this.allowedUntil.clear()
+      this.cached = 0
+    }
+    const daConta = this.allowedUntil.get(input.accountId) ?? new Map<string, number>()
+    if (!daConta.has(cacheKey)) this.cached += 1
+    // A matrícula que vence em menos de um minuto não ganha o minuto inteiro.
+    const vence = entitlement.expiresAt?.getTime() ?? Number.POSITIVE_INFINITY
+    daConta.set(cacheKey, Math.min(now + ACCESS_TTL_MS, vence))
+    this.allowedUntil.set(input.accountId, daConta)
   }
 }

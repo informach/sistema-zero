@@ -13,9 +13,15 @@
  * Exceções que o bloco decide: conteúdo igual só adota a revisão, e no PRIMEIRO contato (este
  * aparelho nunca teve marca do bloco: abriu sem conseguir perguntar à conta) a versão da conta
  * passa para cima, porque a daqui pode ser só o modelo inicial.
+ *
+ * O selo é de cada BLOCO (`getItemState`), não da fila da ferramenta: um bloco com erro não pinta
+ * o selo do vizinho. Bloco cuja versão da conta veio de um editor mais novo que esta página
+ * (`CREATION_CLIENT_OUTDATED`) para de subir até a página ser atualizada: cada nova tentativa só
+ * baixaria a versão da conta de novo para falhar do mesmo jeito.
  */
 import {
   createLessonDraftCoordinator,
+  LESSON_DRAFT_OUTDATED,
   type LessonDraftChannel,
   type LessonDraftCloud,
   type LessonDraftConflictOutcome,
@@ -24,8 +30,8 @@ import {
   type LessonDraftUpload,
 } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
 import {
+  type CloudItemState,
   type CloudPeek,
-  type CloudSyncState,
   type CreationsCloud,
   createCreationsCloud,
   type FetchLike,
@@ -41,8 +47,12 @@ type Ferramenta = 'studio' | 'pinta'
 
 const IDLE_MS: Readonly<Record<Ferramenta, number>> = { studio: 2000, pinta: 1500 }
 
-function estado(state: CloudSyncState): LessonDraftState {
-  return { status: state.status, message: state.lastError }
+function estado(state: CloudItemState): LessonDraftState {
+  return {
+    status: state.status,
+    message: state.lastError,
+    ...(state.code === LESSON_DRAFT_OUTDATED ? { outdated: true } : {}),
+  }
 }
 
 function canal(
@@ -81,6 +91,9 @@ function canal(
       context: { firstContact: boolean },
     ) => Promise<LessonDraftConflictOutcome | undefined>,
   ): void {
+    // Esta página não lê a versão da conta (ou o servidor não aceita mais o formato dela): só a
+    // página nova resolve. O rascunho continua guardado no disco deste computador.
+    if (cloud.getItemState(id).code === LESSON_DRAFT_OUTDATED) return
     cloud.enqueueUpload(
       id,
       async () => {
@@ -140,8 +153,8 @@ function canal(
     enqueue: enfileirar,
     flush: (timeoutMs) => cloud.flush(timeoutMs === undefined ? undefined : { timeoutMs }),
     confirm: (blockId, timeoutMs) => cloud.confirm(blockId, { timeoutMs }),
-    getState: () => estado(cloud.getState()),
-    subscribe: (listener) => cloud.subscribe((state) => listener(estado(state))),
+    getState: (blockId) => estado(cloud.getItemState(blockId)),
+    subscribe: (listener) => cloud.subscribeItems(listener),
   }
 }
 

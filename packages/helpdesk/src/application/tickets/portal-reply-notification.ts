@@ -11,10 +11,14 @@ export interface PortalUrls {
   kids: string
 }
 
-/** Caminho da Ajuda em cada app — espelha as rotas do community e do community-kids. */
+/**
+ * Caminho da Ajuda em cada app — espelha as rotas do community e do community-kids. No kids o
+ * atendimento mora na área dos pais desde 11/10/2026; o `/responsavel/ajuda` dos e-mails já
+ * enviados redireciona para cá.
+ */
 export const PORTAL_HELP_PATH: Record<TicketPortal, string> = {
   adult: '/ajuda',
-  kids: '/responsavel/ajuda',
+  kids: '/pais/ajuda/atendimento',
 }
 
 /** Link da Ajuda do app que abriu o chamado. Nulo/legado cai no adulto, que sempre existiu. */

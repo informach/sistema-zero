@@ -93,7 +93,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar o espaço dos blocos vazio e a prévia sem nada. Montar as duas áreas do zero, com um lugar vazio à vista antes de cada uma. Mostrar o bloco da tela dentro de Ao iniciar e a prévia automática; não acrescentar estrelas. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar o espaço dos blocos vazio e a prévia sem nada. Montar as duas áreas do zero, com um lugar vazio à vista antes de cada uma. Mostrar o bloco da tela dentro de Ao iniciar e a prévia automática; não acrescentar estrelas. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -141,7 +141,9 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta fase.
+>
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -212,7 +214,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada, sem teste no jogo: a criação não aparece na tela. Mostrar a criação em Ao iniciar, com nome, posição, tamanho e cores, deixando à vista Preparar o jogo em tela cheia antes de abrir a paleta. Conferir os blocos e manter a prévia ainda vazia: o desenho será montado depois. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada, sem teste no jogo: a criação não aparece na tela. Mostrar a criação em Ao iniciar, com nome, posição, tamanho e cores, deixando à vista Preparar o jogo em tela cheia antes de abrir a paleta. Conferir os blocos e manter a prévia ainda vazia: o desenho será montado depois. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -244,7 +246,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Olhe a tela do jogo: ela continua vazia, e é isso mesmo que tem que acontecer agora, porque a nave foi criada, mas ainda não foi desenhada.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -304,7 +306,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar a tela ainda lisa, sem a nave. Montar A cada quadro do jogo e Desenhar o sprite, escolhendo nave, com o destino à vista antes de abrir a paleta. Mostrar a nave aparecer e permanecer parada. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar a tela ainda lisa, sem a nave. Montar A cada quadro do jogo e Desenhar o sprite, escolhendo nave, com o destino à vista antes de abrir a paleta. Mostrar a nave aparecer e permanecer parada. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -350,7 +352,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “E a sua, apareceu também? Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar está Criar nave, e dentro de Enquanto estiver rodando está A cada quadro do jogo, com Desenhar o sprite nave dentro dele. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”
 
 
 **Zappy na página (não gravar):** Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.

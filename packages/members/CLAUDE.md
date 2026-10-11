@@ -34,7 +34,16 @@ DENTRO da fase sobe sozinho para a conta; o envio virou só a entrega à equipe.
 - **Quem pode reservar** é `LessonDraftAccessService` (`application/creations/`), a régua da FASE e
   não a da posse: aula publicada sem "Em breve", curso liberado à conta, aula destravada, bloco
   numa parte já aberta, do tipo da ferramenta e fora da galeria. Cache de 60 s por
-  (conta, perfil, tipo, bloco). Só a RESERVA passa por ele; listar, baixar e apagar seguem abertos.
+  (conta, perfil, tipo, bloco), nunca além do `expiresAt` da matrícula, e APAGADO na hora quando a
+  matrícula da conta é revogada ou expirada (11/10/2026): o serviço ouve a mesma
+  `invalidateToolOwnership` do cache de posse (`onToolOwnershipInvalidated`, em
+  `tool-ownership-cache.ts`). Antes a reserva seguia aceita por até 60 s depois da revogação.
+  ⚠️ Uma checagem EM VOO quando a invalidação chega não regrava o cache (full review de
+  11/10/2026): os dois caches leem `toolOwnershipGeneration()` antes das consultas e só guardam se
+  ela não mudou (`rememberToolOwned` recebe a geração lida). Sem isso a revogação que chegava entre
+  o `requireById` e o fim da checagem era desfeita por mais 60 s
+  (`tests/unit/tool-ownership-race.test.ts`).
+  Só a RESERVA passa por ele; listar, baixar e apagar seguem abertos.
   `CreationsService` recebe o serviço como 4º argumento e escolhe entre ele e `assertToolOwned`.
 - **Impressão do conteúdo** (migration **0101**, colunas `varchar(70)` nulas, `IF NOT EXISTS`):
   `creations.pending_content_fingerprint` na reserva, promovida a `content_fingerprint` no commit;

@@ -1,12 +1,12 @@
 'use client'
 
-import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Gift } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { apiGet, apiSend } from '@/lib/api'
 import { EMBAIXADORES_URL } from '@/lib/links'
 import type { AmbassadorEnrollmentView } from '@/lib/types'
+import { PRIMARY_ACTION, SECONDARY_ACTION } from './parent-ui'
 
 /**
  * Card de embaixador da área dos pais: o responsável vira embaixador da
@@ -89,19 +89,11 @@ export function AmbassadorCard() {
   const needsPixKey = eligible > 0 && view.ambassador?.pixKeySet === false
 
   return (
-    <section id="embaixador" className="w-full max-w-2xl scroll-mt-6">
-      <div className="kids-carta p-5 md:p-6">
-        <a
-          href={EMBAIXADORES_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="mb-4 inline-block text-sm font-bold text-primary underline underline-offset-4"
-        >
-          Conhecer o programa e o presente que vou oferecer
-        </a>
+    <section id="embaixador" className="scroll-mt-24 rounded-(--raio-carta) bg-(--band-lilas) p-6">
+      <div>
         <div className="flex items-start gap-3">
-          <span className="kids-marca flex size-11 shrink-0 items-center justify-center rounded-xl">
-            <Gift className="size-5" aria-hidden="true" />
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-card">
+            <Gift className="size-6 text-(--level-elite)" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
             <h2 className="sz-display text-xl text-foreground">
@@ -135,23 +127,23 @@ export function AmbassadorCard() {
                     chave: sem ela o pagamento fica parado esperando.
                   </p>
                 ) : null}
-                <div className="mt-3 flex flex-wrap gap-2 [&_a]:rounded-full [&_button]:rounded-full">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {view.ambassador.shareUrl ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
+                      type="button"
+                      className={PRIMARY_ACTION}
                       onClick={() =>
                         view.ambassador?.shareUrl && copyShareUrl(view.ambassador.shareUrl)
                       }
                     >
                       Copiar link de bolsa
-                    </Button>
+                    </button>
                   ) : null}
                   <a
                     href={view.ambassador.pageUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                    className={SECONDARY_ACTION}
                   >
                     Abrir minha página
                   </a>
@@ -191,17 +183,25 @@ export function AmbassadorCard() {
                   renda garantida e não cria vínculo com a plataforma.
                 </p>
                 <div className="mt-3">
-                  <Button
-                    size="sm"
-                    className="rounded-full px-4"
+                  <button
+                    type="button"
+                    className={PRIMARY_ACTION}
                     onClick={() => void enroll()}
                     disabled={enrolling}
                   >
                     {enrolling ? 'Cadastrando…' : 'Quero ser embaixador(a)'}
-                  </Button>
+                  </button>
                 </div>
               </>
             )}
+            <a
+              href={EMBAIXADORES_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex min-h-11 items-center font-bold text-primary text-sm underline-offset-4 hover:underline"
+            >
+              Conhecer o programa e o presente que vou oferecer
+            </a>
           </div>
         </div>
       </div>

@@ -177,7 +177,8 @@
           "A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.",
           "Agora deixe à vista o espaço vazio dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste até dentro de Ao iniciar e solte quando aparecer o encaixe.",
           "Repare nos números do bloco: ele chega com 800 e 480. O primeiro número é a largura, e o segundo, a altura. Troque 800 por 480 e 480 por 270. Depois, no campo fundo, escolha um azul claro, que vai pintar o fundo do seu jogo.",
-          "Agora olhe a área do jogo: a cor aparece! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270. Depois de corrigir, teste de novo."
+          "Agora olhe a área do jogo: a cor aparece! Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270. Depois de corrigir, teste de novo.",
+          "O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta fase."
         ],
         "checks": [
           {

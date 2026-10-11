@@ -6,13 +6,28 @@ import {
   type StudyGrantView,
   studyGrantSchema,
 } from '@sistemazero/member-shell/lib/study-access'
-import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
-import { Ban, CalendarX, Clock, Monitor, Plus, ShieldCheck } from 'lucide-react'
+import {
+  Ban,
+  CalendarX,
+  ChevronRight,
+  Clock,
+  Monitor,
+  Pencil,
+  Plus,
+  ShieldCheck,
+  Smartphone,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
+import {
+  OptionsMenu,
+  PRIMARY_ACTION,
+  SECONDARY_ACTION,
+  StatusChip,
+} from '@/app/pais/_components/parent-ui'
 import { cn } from '@/lib/cn'
 import {
   CONNECTION_MESSAGE,
@@ -30,7 +45,7 @@ import {
   grantState,
 } from '@/lib/study-access-view'
 import {
-  DurationSelect,
+  DurationChips,
   RenameAccessDialog,
   RenewAccessDialog,
   RevokeAccessDialog,
@@ -39,25 +54,38 @@ import { AccessCodeResult, ChildJoinedNotice, CurrentDeviceReady } from './study
 
 type CodeView = { code: string; codeExpiresAt: string }
 
-const STATE_STYLE: Record<GrantState, { className: string; icon: typeof ShieldCheck }> = {
-  active: { className: 'bg-primary/10 text-primary', icon: ShieldCheck },
-  expiring: { className: 'bg-(--band-amarelo) text-foreground', icon: Clock },
-  expired: { className: 'bg-muted text-muted-foreground', icon: CalendarX },
-  revoked: { className: 'bg-muted text-muted-foreground', icon: Ban },
+const STATE_STYLE: Record<
+  GrantState,
+  { tone: 'ok' | 'attention' | 'neutral'; icon: typeof ShieldCheck }
+> = {
+  active: { tone: 'ok', icon: ShieldCheck },
+  expiring: { tone: 'attention', icon: Clock },
+  expired: { tone: 'neutral', icon: CalendarX },
+  revoked: { tone: 'neutral', icon: Ban },
 }
 
+/** Onde a criança vai criar: dois cartões com ícone (os rádios continuam nativos por dentro). */
+const MODE_OPTIONS = [
+  {
+    value: 'code',
+    title: 'Em outro aparelho',
+    text: 'Você gera um código e a criança digita lá.',
+    icon: Smartphone,
+  },
+  {
+    value: 'current',
+    title: 'Neste aparelho',
+    text: 'A criança vai usar este navegador.',
+    icon: Monitor,
+  },
+] as const
+
 export function GrantStateChip({ state }: { state: GrantState }) {
-  const { className, icon: Icon } = STATE_STYLE[state]
+  const { tone, icon } = STATE_STYLE[state]
   return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold',
-        className,
-      )}
-    >
-      <Icon className="size-3.5" aria-hidden="true" />
+    <StatusChip tone={tone} icon={icon}>
       {GRANT_STATE_LABEL[state]}
-    </span>
+    </StatusChip>
   )
 }
 
@@ -240,260 +268,320 @@ export function StudyDeviceManager({
   const liveCount = grants?.filter((grant) => grantIsLive(grant)).length ?? 0
   return (
     <section
-      className="w-full space-y-5 [&_button]:min-h-11 [&_button]:rounded-full"
+      className="grid w-full gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]"
       aria-labelledby="device-title"
     >
-      <div>
-        <h2 id="device-title" tabIndex={-1} className="sz-display text-2xl outline-none">
-          Acesso de {name} nos aparelhos
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Escolha onde e por quanto tempo {name} pode entrar sem pedir sua senha ou o código do seu
-          e-mail.
-        </p>
-      </div>
-      {grants === null && !error ? <p role="status">Buscando aparelhos…</p> : null}
-      {grants?.length === 0 ? (
-        <div className="rounded-2xl border-2 border-dashed border-border p-5">
-          <Monitor className="mb-2 size-6 text-muted-foreground" aria-hidden="true" />
-          <p>Ainda não há aparelho autorizado para {name}.</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Seu filho já tem perfil. Falta preparar onde ele vai estudar.
+      <div className="flex min-w-0 flex-col gap-4">
+        <div>
+          <h2 id="device-title" tabIndex={-1} className="sz-display text-[1.375rem] outline-none">
+            Acesso de {name} nos aparelhos
+          </h2>
+          <p className="mt-1 text-muted-foreground text-sm">
+            Escolha onde e por quanto tempo {name} pode entrar sem pedir sua senha ou o código do
+            seu e-mail.
           </p>
         </div>
-      ) : null}
-      <ul className="space-y-3">
-        {grants?.map((grant) => {
-          const state = grantState(grant)
-          return (
-            <li key={grant.id} className="rounded-2xl border border-border bg-card p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <h3 className="break-words font-bold">{grant.label}</h3>
-                  {grant.isCurrentDevice ? (
-                    <p className="text-sm text-muted-foreground">Este navegador</p>
-                  ) : null}
-                </div>
-                <GrantStateChip state={state} />
+        {grants === null && !error ? (
+          <p role="status" className="text-muted-foreground text-sm">
+            Buscando aparelhos…
+          </p>
+        ) : null}
+        {grants?.length === 0 ? (
+          <div className="flex flex-col items-start gap-2 rounded-(--raio-carta) border-2 border-(--linha-carta) border-dashed p-6">
+            <Monitor className="size-7 text-muted-foreground" aria-hidden="true" />
+            <p className="font-extrabold">Ainda não há aparelho autorizado para {name}.</p>
+            <p className="text-muted-foreground text-sm">
+              Seu filho já tem perfil. Falta preparar onde ele vai criar.
+            </p>
+          </div>
+        ) : null}
+        {grants?.length ? (
+          <ul className="flex flex-col gap-3">
+            {grants.map((grant) => {
+              const state = grantState(grant)
+              const used = [
+                grant.isCurrentDevice ? 'Este navegador' : null,
+                grant.lastUsedAt ? `Último uso: ${formatAccessDate(grant.lastUsedAt)}` : null,
+              ].filter(Boolean)
+              return (
+                <li key={grant.id} className="kids-carta flex flex-col gap-3 p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div className="flex min-w-0 flex-1 items-center gap-4">
+                      <span
+                        className={cn(
+                          'flex size-12 shrink-0 items-center justify-center rounded-2xl',
+                          state === 'revoked' || state === 'expired'
+                            ? 'bg-muted text-muted-foreground'
+                            : 'bg-(--band-ceu) text-primary',
+                        )}
+                      >
+                        <Monitor className="size-6" aria-hidden="true" />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="break-words font-extrabold">{grant.label}</h3>
+                        <p className="text-muted-foreground text-xs">
+                          {used.length ? used.join(' · ') : 'Ainda não usado'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <GrantStateChip state={state} />
+                      {state !== 'revoked' ? (
+                        <div className="ml-auto flex items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => setRenewing(grant)}
+                            className={SECONDARY_ACTION}
+                          >
+                            Renovar prazo
+                          </button>
+                          <OptionsMenu
+                            label={`Mais opções de ${grant.label}`}
+                            items={[
+                              {
+                                label: 'Mudar nome',
+                                icon: Pencil,
+                                disabled: busy,
+                                onSelect: () => setRenaming(grant),
+                              },
+                              {
+                                label: 'Encerrar acesso',
+                                icon: Ban,
+                                tone: 'danger',
+                                disabled: busy,
+                                onSelect: () => setRevoking(grant),
+                              },
+                            ]}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                  <p className="text-sm">{grantLine(grant, state)}</p>
+                </li>
+              )
+            })}
+          </ul>
+        ) : null}
+        {joined ? <ChildJoinedNotice name={name} label={joined.label} /> : null}
+        {currentReady ? (
+          <CurrentDeviceReady
+            name={name}
+            grant={currentReady}
+            studentDestination={studentDestination}
+          />
+        ) : null}
+        {!adding ? (
+          <button
+            type="button"
+            className={`${PRIMARY_ACTION} self-start`}
+            disabled={!prepared || busy}
+            onClick={() => {
+              setAdding(true)
+              setCode(null)
+              setJoined(null)
+              setCurrentReady(null)
+            }}
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            Autorizar aparelho
+          </button>
+        ) : (
+          <form
+            className="kids-carta flex flex-col gap-5 border-2 border-primary p-6"
+            onSubmit={(event) => {
+              event.preventDefault()
+              void create()
+            }}
+          >
+            <h3 className="sz-display text-xl">Autorizar um aparelho</h3>
+            <fieldset disabled={busy}>
+              <legend className="mb-2 font-bold text-sm">Onde {name} vai criar?</legend>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {MODE_OPTIONS.map((option) => (
+                  <label
+                    key={option.value}
+                    className={cn(
+                      'flex cursor-pointer flex-col gap-2 rounded-2xl border-2 p-4 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary has-[:focus-visible]:outline-offset-2',
+                      mode === option.value
+                        ? 'border-primary bg-(--band-ceu)'
+                        : 'border-(--linha-carta) hover:border-primary/50',
+                    )}
+                  >
+                    <span className="flex items-center justify-between gap-2">
+                      <option.icon
+                        className={cn(
+                          'size-7',
+                          mode === option.value ? 'text-primary' : 'text-muted-foreground',
+                        )}
+                        aria-hidden="true"
+                      />
+                      <input
+                        type="radio"
+                        name="device-mode"
+                        value={option.value}
+                        checked={mode === option.value}
+                        className="size-5 accent-[color:var(--primary)]"
+                        onChange={() => {
+                          setMode(option.value)
+                          setCode(null)
+                        }}
+                      />
+                    </span>
+                    <strong>{option.title}</strong>
+                    <span className="text-muted-foreground text-sm">{option.text}</span>
+                  </label>
+                ))}
               </div>
-              <p className="mt-3 text-sm">{grantLine(grant, state)}</p>
-              {grant.lastUsedAt ? (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Último uso: {formatAccessDate(grant.lastUsedAt)}
-                </p>
-              ) : null}
-              {state !== 'revoked' ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button variant="secondary" disabled={busy} onClick={() => setRenewing(grant)}>
-                    Renovar prazo
-                  </Button>
-                  <Button variant="ghost" disabled={busy} onClick={() => setRenaming(grant)}>
-                    Mudar nome
-                  </Button>
-                  <Button variant="ghost" disabled={busy} onClick={() => setRevoking(grant)}>
-                    Encerrar acesso
-                  </Button>
-                </div>
-              ) : null}
-            </li>
-          )
-        })}
-      </ul>
-      {joined ? <ChildJoinedNotice name={name} label={joined.label} /> : null}
-      {currentReady ? (
-        <CurrentDeviceReady
-          name={name}
-          grant={currentReady}
-          studentDestination={studentDestination}
-        />
-      ) : null}
-      {!adding ? (
-        <Button
-          disabled={!prepared || busy}
-          onClick={() => {
-            setAdding(true)
-            setCode(null)
-            setJoined(null)
-            setCurrentReady(null)
-          }}
-        >
-          <Plus className="size-4" />
-          Autorizar aparelho
-        </Button>
-      ) : (
-        <form
-          className="space-y-5 rounded-2xl border-2 border-primary bg-card p-5"
-          onSubmit={(event) => {
-            event.preventDefault()
-            void create()
-          }}
-        >
-          <fieldset disabled={busy}>
-            <legend className="mb-2 font-bold">Onde {name} vai estudar?</legend>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {(
-                [
-                  {
-                    value: 'code',
-                    title: 'Em outro aparelho',
-                    text: 'Vou passar um código para a criança.',
-                  },
-                  {
-                    value: 'current',
-                    title: 'Neste aparelho',
-                    text: 'A criança vai usar este navegador.',
-                  },
-                ] as const
-              ).map((option) => (
-                <label
-                  key={option.value}
-                  className={`cursor-pointer rounded-xl border-2 p-3 ${mode === option.value ? 'border-primary bg-primary/5' : 'border-border'}`}
-                >
-                  <span className="flex min-h-6 items-center gap-2">
-                    <input
-                      type="radio"
-                      name="device-mode"
-                      value={option.value}
-                      checked={mode === option.value}
-                      className="size-5"
-                      onChange={() => {
-                        setMode(option.value)
-                        setCode(null)
-                      }}
-                    />
-                    <strong className="text-sm">{option.title}</strong>
-                  </span>
-                  <span className="mt-1 block text-sm text-muted-foreground">{option.text}</span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <Field label="Nome do aparelho" htmlFor="device-label">
-            <Input
-              id="device-label"
-              value={label}
-              maxLength={60}
-              onChange={(event) => setLabel(event.target.value)}
-              placeholder="Ex.: notebook da sala"
-              disabled={busy}
-              className="min-h-11"
-            />
-          </Field>
-          <Field label="Por quanto tempo?" htmlFor="device-duration">
-            <DurationSelect
-              id="device-duration"
+            </fieldset>
+            <Field label="Nome do aparelho" htmlFor="device-label">
+              <Input
+                id="device-label"
+                value={label}
+                maxLength={60}
+                onChange={(event) => setLabel(event.target.value)}
+                placeholder="Ex.: notebook da sala"
+                disabled={busy}
+                className="min-h-11 rounded-full px-4"
+              />
+            </Field>
+            <DurationChips
+              legend="Por quanto tempo?"
               value={duration}
               onChange={setDuration}
               disabled={busy}
               describedBy="device-end"
             />
-          </Field>
-          <p id="device-end" className="text-sm font-bold">
-            {mode === 'code'
-              ? `Se o código for usado hoje, termina ${endPhrase}.`
-              : `Termina ${endPhrase}.`}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            No computador de casa, 90 dias evita novos pedidos de ajuda por mais tempo. Em um
-            aparelho emprestado, prefira somente hoje. Você pode encerrar antes.
-          </p>
-          <div className="rounded-xl bg-(--band-creme) p-4 text-sm" aria-live="polite">
-            <p className="font-bold">Resumo</p>
-            <dl className="mt-2 grid gap-1 sm:grid-cols-[auto_1fr] sm:gap-x-4">
-              <dt className="text-muted-foreground">Criança</dt>
-              <dd>{name}</dd>
-              <dt className="text-muted-foreground">Aparelho</dt>
-              <dd className="break-words">{label.trim() || 'Sem nome ainda'}</dd>
-              <dt className="text-muted-foreground">Prazo</dt>
-              <dd>
-                {durationLabel}, termina {endPhrase}
-                {mode === 'code' ? ' (contando a partir do uso do código)' : ''}
-              </dd>
-            </dl>
+            <p id="device-end" className="font-bold text-sm">
+              {mode === 'code'
+                ? `Se o código for usado hoje, termina ${endPhrase}.`
+                : `Termina ${endPhrase}.`}
+            </p>
+            <p className="text-muted-foreground text-sm">
+              No computador de casa, 90 dias evita novos pedidos de ajuda por mais tempo. Em um
+              aparelho emprestado, prefira somente hoje. Você pode encerrar antes.
+            </p>
+            <div className="rounded-2xl bg-(--band-creme) p-4 text-sm" aria-live="polite">
+              <p className="font-bold">Resumo</p>
+              <dl className="mt-2 grid gap-1 sm:grid-cols-[auto_1fr] sm:gap-x-4">
+                <dt className="text-muted-foreground">Criança</dt>
+                <dd>{name}</dd>
+                <dt className="text-muted-foreground">Aparelho</dt>
+                <dd className="break-words">{label.trim() || 'Sem nome ainda'}</dd>
+                <dt className="text-muted-foreground">Prazo</dt>
+                <dd>
+                  {durationLabel}, termina {endPhrase}
+                  {mode === 'code' ? ' (contando a partir do uso do código)' : ''}
+                </dd>
+              </dl>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="submit"
+                className={PRIMARY_ACTION}
+                disabled={busy || !prepared || label.trim().length < 2}
+              >
+                {busy
+                  ? 'Preparando…'
+                  : mode === 'code'
+                    ? code
+                      ? 'Gerar outro código'
+                      : 'Gerar código'
+                    : 'Autorizar este aparelho'}
+              </button>
+              <button
+                type="button"
+                className={SECONDARY_ACTION}
+                disabled={busy}
+                onClick={() => {
+                  // Cancelar descarta o rascunho: ele não pode reabrir o formulário depois.
+                  clearDraft()
+                  codeBaseline.current = null
+                  setAdding(false)
+                  setCode(null)
+                  setCheckedWithoutEntry(false)
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </form>
+        )}
+        {code ? (
+          <AccessCodeResult
+            name={name}
+            code={code.code}
+            expired={codeExpired}
+            busy={busy}
+            checkedWithoutEntry={checkedWithoutEntry}
+            onCopyFailed={() => setError('Não deu para copiar sozinho. Selecione o texto e copie.')}
+            onCheck={() =>
+              void run(async () => {
+                setCheckedWithoutEntry(!(await load()))
+              })
+            }
+          />
+        ) : null}
+        {error ? (
+          <div role="alert" className="rounded-2xl bg-destructive/10 p-4 text-sm">
+            <p>{error}</p>
+            {reauth ? (
+              <Link
+                href={`/login/responsavel?next=${encodeURIComponent(`/pais/crianca/${profileId}`)}`}
+                className="mt-2 inline-flex min-h-11 items-center font-bold underline"
+              >
+                Entrar novamente como responsável
+              </Link>
+            ) : !prepared || grants === null ? (
+              <button
+                type="button"
+                className={`${SECONDARY_ACTION} mt-2`}
+                disabled={busy}
+                onClick={() =>
+                  void run(async () => {
+                    await Promise.all([load(), studyRequest('/api/study/prepare', {})])
+                    setPrepared(true)
+                  })
+                }
+              >
+                Tentar novamente
+              </button>
+            ) : null}
           </div>
-          <div className="flex flex-wrap gap-2 [&_button]:px-4">
-            <Button type="submit" disabled={busy || !prepared || label.trim().length < 2}>
-              {busy
-                ? 'Preparando…'
-                : mode === 'code'
-                  ? code
-                    ? 'Gerar outro código'
-                    : 'Gerar código'
-                  : 'Autorizar este aparelho'}
-            </Button>
-            <Button
-              variant="ghost"
-              disabled={busy}
-              onClick={() => {
-                // Cancelar descarta o rascunho: ele não pode reabrir o formulário depois.
-                clearDraft()
-                codeBaseline.current = null
-                setAdding(false)
-                setCode(null)
-                setCheckedWithoutEntry(false)
-              }}
-            >
-              Cancelar
-            </Button>
-          </div>
-        </form>
-      )}
-      {code ? (
-        <AccessCodeResult
-          name={name}
-          code={code.code}
-          expired={codeExpired}
-          busy={busy}
-          checkedWithoutEntry={checkedWithoutEntry}
-          onCopyFailed={() => setError('Não deu para copiar sozinho. Selecione o texto e copie.')}
-          onCheck={() =>
-            void run(async () => {
-              setCheckedWithoutEntry(!(await load()))
-            })
-          }
-        />
-      ) : null}
-      {liveCount > 0 ? (
-        <p className="flex items-start gap-2 text-sm">
-          <ShieldCheck className="size-5 shrink-0 text-primary" aria-hidden="true" />
-          Acesso preparado. No aparelho autorizado, {name} escolhe Eu sou criador(a) e clica no
-          próprio perfil para continuar até o prazo terminar.
-        </p>
-      ) : null}
-      <p className="text-xs text-muted-foreground">
-        Cada navegador conta como um aparelho. Limpar os cookies ou usar uma janela anônima pode
-        exigir outro código. A autorização deste filho não libera os irmãos.
-      </p>
-      <p className="text-xs text-muted-foreground">
-        Este prazo permite entrar sem pedir um código. Ele não altera a validade dos cursos ou da
-        assinatura.
-      </p>
-      {error ? (
-        <div role="alert" className="rounded-xl bg-destructive/10 p-3 text-sm">
-          <p>{error}</p>
-          {reauth ? (
-            <Link
-              href={`/login/responsavel?child=${profileId}`}
-              className="mt-2 inline-flex min-h-11 items-center font-bold underline"
-            >
-              Entrar novamente como responsável
-            </Link>
-          ) : !prepared || grants === null ? (
-            <Button
-              variant="ghost"
-              disabled={busy}
-              onClick={() =>
-                void run(async () => {
-                  await Promise.all([load(), studyRequest('/api/study/prepare', {})])
-                  setPrepared(true)
-                })
-              }
-            >
-              Tentar novamente
-            </Button>
-          ) : null}
-        </div>
-      ) : null}
+        ) : null}
+      </div>
+      <aside className="flex flex-col gap-4">
+        {liveCount > 0 ? (
+          <section className="flex gap-3 rounded-(--raio-carta) bg-(--band-menta) p-5 text-sm">
+            <ShieldCheck
+              className="mt-0.5 size-5 shrink-0 text-(--success-foreground)"
+              aria-hidden="true"
+            />
+            <p>
+              <strong>Acesso preparado.</strong> No aparelho autorizado, {name} escolhe Eu sou
+              criador(a) e clica no próprio perfil para continuar até o prazo terminar.
+            </p>
+          </section>
+        ) : null}
+        <section className="kids-carta flex flex-col gap-2 p-5 text-sm">
+          <h3 className="font-extrabold">Bom saber</h3>
+          <p className="text-muted-foreground">
+            Cada navegador conta como um aparelho. Limpar os cookies ou usar uma janela anônima pode
+            exigir outro código. A autorização deste filho não libera os irmãos.
+          </p>
+          <p className="text-muted-foreground">
+            Este prazo permite entrar sem pedir um código. Ele não altera a validade dos cursos ou
+            da assinatura.
+          </p>
+          <Link
+            href="/pais/ajuda"
+            className="mt-1 inline-flex min-h-11 items-center gap-1 self-start font-bold text-primary"
+          >
+            Precisa de ajuda? <ChevronRight className="size-4" aria-hidden="true" />
+          </Link>
+        </section>
+      </aside>
       <RevokeAccessDialog
         grant={revoking}
         name={name}

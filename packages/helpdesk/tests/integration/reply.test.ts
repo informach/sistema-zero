@@ -429,7 +429,7 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
         variables: {
           saudacao: 'Olá, Maria!',
           assunto: 'Ajuda com acesso',
-          link: `${TEST_PORTAL_URLS.kids}/responsavel/ajuda`,
+          link: `${TEST_PORTAL_URLS.kids}/pais/ajuda/atendimento`,
         },
         idempotencyKey: `helpdesk-reply:${body.message.id}`,
       },

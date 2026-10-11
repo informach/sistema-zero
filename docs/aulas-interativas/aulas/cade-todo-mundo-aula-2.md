@@ -29,19 +29,23 @@ foram desenhados do mesmo tamanho, "por isso" (e não "então": a criança está
 nessa parte) o desenho novo cabe no lugar do antigo. Na publicação, **Compartilhar** aparece como
 "uma setinha para cima", a ponte pede ajuda a um adulto se precisar e a ajuda escrita fala em "a
 área de ajuda", sem "nossa". Seções, blocos e critérios não mudaram.
-**Envio em dia, 10/10/2026:** **Deixe o jogo com a sua cara** passa a exigir o envio em dia
-(`submissionUpToDate`). O rascunho da fase agora fica guardado na conta, e o envio virou só a
-entrega à equipe; sem este critério, a equipe recebia o jogo da parte 3, sem as escolhas da
-criança. Quem mudou algo depois do envio clica em **Enviar de novo** e confirma em **Reenviar**
-antes de **Próxima parte**; sem mudança, a parte fecha sem reenvio. Vídeo, ponte, roteiro e Mapa
-da Aventura dizem o passo.
+**Envio único, 11/10/2026:** a parte 3 confere a montagem com **Verificar esta parte**, sem envio.
+O projeto é salvo automaticamente e continua no mesmo Estúdio. **Deixe o jogo com a sua cara**,
+na parte 4, passa a ser a seção de entrega: a criança testa e usa **Enviar meu projeto**, confirmado
+em **Enviar**, mesmo que mantenha as imagens ou a mensagem. O critério `submissionUpToDate`
+permanece nessa parte para conferir a versão atual se ela editar depois de enviar, antes de avançar.
+Roteiro, ponte, manifesto, gerador e Mapa da Aventura seguem esse único ponto de envio.
+
+**Quem já enviou na versão anterior:** o bloco **projeto** conserva a mesma chave e a entrega
+anterior. Se o jogo mudou, **Enviar de novo** atualiza a versão que a equipe recebe. Se continua
+igual, o envio existente já atende ao critério. No fluxo novo, o botão de envio fica disponível
+quando a parte 4 é liberada; o salvamento e a verificação continuam disponíveis na parte 3.
 
 ## Vozes e produção
 
 Aplicação de 10/10/2026: **Dedé** participa dos cinco vídeos, alternando com a Debinha da Aula 1.
 O [roteiro completo](cade-todo-mundo-aula-2.roteiro.md) separa **Professora**, **Dedé (avatar)** e
-**Zappy na página (não gravar)**, com entrada e saída em cada participação. A gravação e a edição
-desta versão ainda não foram confirmadas. Os tempos da tabela foram revistos em 10/10/2026 e já
+**Zappy na página (não gravar)**, com entrada e saída em cada participação. Em 11/10/2026, a responsável informou a gravação da parte 3 em andamento. Os encerramentos das partes 3 e 4 mudaram para um único envio; a edição e a publicação precisam ser conferidas. Os tempos da tabela foram revistos em 10/10/2026 e já
 contam as participações; medir a versão final sem acelerar a montagem.
 
 Dedé pergunta por que o número ficou no zero, o que acontece ao tocar num espaço vazio e onde
@@ -59,8 +63,8 @@ publicação, sua presença é somente visual: não incluir voz do mascote na gr
 | --- | --- | --- | --- |
 | Volte ao seu jardim | 25 a 35 s | ver o que falta no contador e avançar | vídeo |
 | Um número que acompanha a busca | 75 a 95 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
-| Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar, verificar a etapa e enviar | vídeo, aprovação na verificação e envio |
-| Deixe o jogo com a sua cara | 3 a 4 min | trocar bichos e esconderijos pelo nome da imagem nos blocos Criar sprite, escrever a mensagem do final e encontrar todo mundo de novo | vídeo e envio em dia; as escolhas não viram critério |
+| Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar e verificar a parte | vídeo e aprovação na verificação; salvamento automático |
+| Deixe o jogo com a sua cara | 4 a 5 min | escolher bichos, esconderijos e mensagem, testar e enviar o jogo completo | vídeo, envio do projeto e envio em dia; as escolhas não viram critério |
 | Publique seu jogo | 60 a 80 s | manter o resumo, gerar capa, publicar, comemorar, copiar o link de jogar para a família e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |
 
 ## Orientação por seção
@@ -100,7 +104,7 @@ vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Qu
 num sprite do grupo esconderijos." Só então mostrar a ação de visibilidade dentro dele.
 Com a ação de visibilidade à vista, ensinar **Programação > Variáveis** e **Somar ___ em variável ___**,
 que nasce com **1** e **contador**, logo abaixo dela. Manter **1** e trocar **contador** por
-**achados**. A verificação da entrega também confere a regra da Aula 1.
+**achados**. A verificação desta parte também confere a regra da Aula 1.
 
 Pedir que teste cada esconderijo: contagem 1, 2, 3 e a mensagem de vitória, que aparece quando
 **Achados** chega a 3; a fala diz que quem faz a mensagem aparecer é a contagem que a criança montou. Repetir o toque no mesmo lugar deve manter 3, pois o esconderijo invisível não recebe
@@ -109,10 +113,9 @@ gatilho genérico ("Se algo não funcionou no seu jogo, volte aos blocos e confi
 cobrindo encaixe, ordem, número e variável.
 
 Depois do teste, clicar em **Verificar esta parte**. Se faltar algo, corrigir os blocos e
-verificar novamente. Quando aparecer **Objetivo cumprido!**, esperar **Salvo**, usar
-**Enviar meu projeto**, confirmar em **Enviar**, esperar o envio terminar e seguir em
-**Próxima parte**. O recado é opcional. A verificação exige esse clique; o envio
-não a executa automaticamente. Não ensinar o layout da Pré-visualização ou o compartilhamento.
+verificar novamente. Explicar que o jogo é salvo automaticamente enquanto a criança monta.
+Quando aparecer **Objetivo cumprido!**, seguir em **Próxima parte**. A verificação exige esse clique;
+o envio fica no fim da personalização, na parte 4. Não ensinar o layout da Pré-visualização ou o compartilhamento.
 O caderno continua disponível na Aula 1, sem novo upload ou bloco.
 
 ### Deixe o jogo com a sua cara
@@ -122,8 +125,8 @@ começa com "A surpresa chegou! Olha quem mais pode brincar de se esconder!" e m
 Aventura, a página **A surpresa do final**, com todos os bichos e esconderijos; só então vai
 para o Estúdio. Fecha ligando as escolhas à publicação: "é com essa cara que ele vai para o Mural".
 
-Seção de mexa e veja, de fechamento: vem depois do envio ao professor e antes de publicar, para o
-jogo publicado ter a cara da criança. Só traz mudanças que a criança mantém. Começar pelo destino:
+Seção de mexa e veja e entrega: vem depois da verificação da contagem e antes de publicar.
+O único envio da aula acontece depois das escolhas, para a equipe receber o jogo completo. Só traz mudanças que a criança mantém. Começar pelo destino:
 trazer à vista a área **Ao iniciar**, arrastando um espaço vazio entre os blocos se for preciso, e
 apontar os blocos **Criar sprite**. No bloco não
 há desenho para clicar: no fim dele, depois de **com imagem**, o Estúdio mostra o NOME da imagem.
@@ -147,22 +150,24 @@ esconderijo fica pequeno e deixa o bicho de trás à vista. A fala diz: "Antes d
 no jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a
 imagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do
 mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo." Testar encontrando todo
-mundo de novo; se a frase passar da tela, deixar mais curta. Quem mudou algo depois do envio
-reenvia (**Enviar de novo**, confirmado em **Reenviar**) e termina em **Próxima parte**.
+mundo de novo; se a frase passar da tela, deixar mais curta. Pedir **Enviar meu projeto**,
+confirmado em **Enviar**. Quando aparecer **Projeto enviado!**, terminar em **Próxima parte**.
+O envio vale também para quem manteve as imagens ou a mensagem.
 
 O projeto traz sete bichos (coelho, raposa, coruja, gato, sapo, tartaruga, esquilo) e seis
 esconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com uma caixa única
 (72 × 87 e 161 × 144). Os sprites se chamam **bicho1** a **bicho3** e **esconderijo1** a
 **esconderijo3**, para o nome não contradizer a imagem escolhida. A troca é escolha da criança e
-não vira critério: a seção conclui pelo vídeo e pelo envio em dia (10/10/2026), para a equipe
-receber o jogo personalizado.
+não vira critério: a seção conclui pelo vídeo, pelo envio do projeto e pelo envio em dia, para a equipe
+receber a versão atual. Se houver nova edição após o envio, antes do avanço, a plataforma pede a
+atualização dessa entrega. A gravação mostra o primeiro envio da fase.
 
 Na página 5 do Mapa da Aventura, a galeria mostra todos esses bichos e esconderijos, separados
 por tipo, com as imagens do jogo e os nomes exatos da lista. A criança pode consultar as opções
 antes de trocar, seguindo os passos de personalização e o teste na mesma página. A publicação
 fica na página 6; a revisão e o certificado, na 7.
 
-**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo. Se mudou alguma coisa, clique em Enviar de novo e confirme em Reenviar. Depois clique em Próxima parte.”
+**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.”
 
 ### Publique seu jogo
 

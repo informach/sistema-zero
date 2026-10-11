@@ -10,8 +10,8 @@ import { makeMessage, makeTicket } from '../helpers'
 const urls = { adult: 'https://community.test/', kids: 'https://kids.test' }
 
 describe('aviso de resposta do portal (puro)', () => {
-  it('link por app: kids → /responsavel/ajuda, adult → /ajuda; nulo (legado) cai no adulto', () => {
-    expect(portalHelpUrl('kids', urls)).toBe('https://kids.test/responsavel/ajuda')
+  it('link por app: kids → /pais/ajuda/atendimento, adult → /ajuda; nulo (legado) cai no adulto', () => {
+    expect(portalHelpUrl('kids', urls)).toBe('https://kids.test/pais/ajuda/atendimento')
     // Barra final da origem não duplica.
     expect(portalHelpUrl('adult', urls)).toBe('https://community.test/ajuda')
     expect(portalHelpUrl(null, urls)).toBe('https://community.test/ajuda')
@@ -41,7 +41,7 @@ describe('aviso de resposta do portal (puro)', () => {
       variables: {
         saudacao: 'Olá, Maria!',
         assunto: 'Não consigo abrir a aula',
-        link: 'https://kids.test/responsavel/ajuda',
+        link: 'https://kids.test/pais/ajuda/atendimento',
       },
       idempotencyKey: `helpdesk-reply:${message.id}`,
     })

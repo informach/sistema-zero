@@ -11,6 +11,19 @@ import { CREATION_TOOLS, type CreationTool } from '../../domain/creations/creati
 const TOOL_OWNERSHIP_TTL_MS = 60_000
 const cache = new Map<string, number>()
 
+/**
+ * Sobe a cada invalidação. Uma checagem que leu a posse ANTES de uma revogação e só terminou
+ * DEPOIS dela regravaria o "pode" por mais 60 s (full review de 11/10/2026: a revogação chegava
+ * entre as consultas da checagem). Quem guarda resultado compara a geração do começo com a de
+ * agora e, se mudou, não guarda: a próxima reserva consulta de novo. Um contador global basta,
+ * porque invalidação é rara e o custo de uma consulta a mais é nenhum.
+ */
+let generation = 0
+
+export function toolOwnershipGeneration(): number {
+  return generation
+}
+
 const keyOf = (accountId: string, tool: CreationTool) => `${accountId}:${tool}`
 
 export function toolOwnershipCached(accountId: string, tool: CreationTool, now: number): boolean {
@@ -18,7 +31,14 @@ export function toolOwnershipCached(accountId: string, tool: CreationTool, now: 
   return until !== undefined && until > now
 }
 
-export function rememberToolOwned(accountId: string, tool: CreationTool, now: number): void {
+export function rememberToolOwned(
+  accountId: string,
+  tool: CreationTool,
+  now: number,
+  /** A geração lida ANTES da consulta: mudou no meio, a resposta é velha e não é guardada. */
+  since: number,
+): void {
+  if (since !== generation) return
   cache.set(keyOf(accountId, tool), now + TOOL_OWNERSHIP_TTL_MS)
   // Sem crescer sem fim (contas que nunca voltam): poda ocasional das vencidas.
   if (cache.size > 5_000) {
@@ -26,19 +46,42 @@ export function rememberToolOwned(accountId: string, tool: CreationTool, now: nu
   }
 }
 
+const ownershipListeners = new Set<(accountIds: readonly string[]) => void>()
+
 /**
- * A posse da conta MUDOU (matrícula revogada/expirada pelo webhook ou pelo admin; conta
- * em exclusão): esquece o que estava guardado para ela — a próxima reserva volta a
- * consultar. Idempotente; contas sem entrada não fazem nada.
+ * A posse da conta MUDOU (matrícula revogada/expirada pelo webhook ou pelo admin): esquece o
+ * que estava guardado para ela — a próxima reserva volta a consultar. Idempotente; contas sem
+ * entrada não fazem nada. (A conta em exclusão não passa por aqui: a cerca durável da exclusão
+ * é quem a barra.)
  */
 export function invalidateToolOwnership(accountIds: string | readonly string[]): void {
+  const contas = typeof accountIds === 'string' ? [accountIds] : accountIds
+  generation += 1
   // TODAS as ferramentas, derivadas da lista: uma listada à mão ficava de fora e a
   // matrícula revogada seguia reservando por até 60 s nela.
-  for (const accountId of typeof accountIds === 'string' ? [accountIds] : accountIds) {
+  for (const accountId of contas) {
     for (const tool of CREATION_TOOLS) cache.delete(keyOf(accountId, tool))
+  }
+  for (const listener of ownershipListeners) listener(contas)
+}
+
+/**
+ * Outros caches de acesso às criações ouvem a mesma invalidação. Hoje é o do rascunho da fase
+ * (`LessonDraftAccessService`), que confere a matrícula do CURSO: sem isto ele seguia aceitando a
+ * reserva por até 60 s depois da revogação. Devolve o desligar.
+ */
+export function onToolOwnershipInvalidated(
+  listener: (accountIds: readonly string[]) => void,
+): () => void {
+  ownershipListeners.add(listener)
+  return () => {
+    ownershipListeners.delete(listener)
   }
 }
 
 export function resetToolOwnershipCacheForTests(): void {
   cache.clear()
+  generation = 0
+  // Cada app de teste registra o próprio ouvinte: os dos apps anteriores saem com o cache.
+  ownershipListeners.clear()
 }

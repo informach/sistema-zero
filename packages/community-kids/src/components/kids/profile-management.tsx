@@ -12,7 +12,6 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { KidsScreen } from '@/components/kids/kids-screen'
 import { GuideBalloon } from '@/components/kids/parent-guide'
 import {
   ADULT_COMMUNITY_INSTAGRAM,
@@ -117,17 +116,18 @@ export function ProfileForm({
     birthDate.length > 0 && birthDateChanged && isProfileAgeRestricted(birthDate, today)
 
   return (
-    <KidsScreen innerClassName="flex max-w-xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
       {showGuideHint ? (
         <GuideBalloon arrow="none">
           Coloque o nome da criança. A data de nascimento é opcional, e é aqui que você decide se o
-          perfil aparece para outras crianças na comunidade.
+          perfil aparece para outras crianças na comunidade. Depois de salvar, a página dela abre
+          para você autorizar o aparelho.
         </GuideBalloon>
       ) : null}
-      {/* O formulário num cartão branco sobre o creme, como as telas de recado. */}
+      {/* O formulário num cartão branco, dentro da moldura da área dos pais. */}
       <section className="kids-carta flex flex-col gap-6 px-6 py-8 md:px-10 md:py-10">
         <h1 className="sz-display text-[clamp(1.75rem,3vw,2.25rem)]">
-          {isEdit ? 'Editar perfil' : 'Novo perfil'}
+          {isEdit ? `Editar o perfil de ${profile?.name}` : 'Adicionar criança'}
         </h1>
         <form
           className="flex flex-col gap-6"
@@ -229,7 +229,7 @@ export function ProfileForm({
           </div>
         </form>
       </section>
-    </KidsScreen>
+    </div>
   )
 }
 

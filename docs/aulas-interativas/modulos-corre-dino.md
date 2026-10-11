@@ -157,3 +157,7 @@ python -X utf8 docs/aulas-interativas/recursos/corre-dino/gerar-materiais.py
 ```
 
 Executar o teste `src/blockly/__tests__/correDinoEditorial.test.ts` de dentro de `packages/studio`, com seu preload. Ele cobre a compilação e execução dos 13 marcos, controles, colisão, pontos, estados, reinício e dificuldade.
+
+## Salvamento e envio · 11/10/2026
+
+Cada fase já tem uma única entrega no fim. Os encerramentos agora avançam após Objetivo cumprido!, sem pedir Salvo antes de avançar entre as partes. A primeira montagem explica o salvamento automático. O envio final usa Enviar meu projeto → Enviar → Projeto enviado!; publicar continua opcional. Roteiros, propostas, manifestos e Mapa da Aventura foram alinhados. A revisão altera os encerramentos dos vídeos de montagem; preservar os passos e as participações dos avatares. [Auditoria e orientações de edição](qa/revisao-envio-unico-2026-10-11.md). Os arquivos locais não substituem mídia ou conteúdo já publicado.

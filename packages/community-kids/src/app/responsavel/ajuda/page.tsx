@@ -1,47 +1,9 @@
-import { CustomerHelpdeskPortal } from '@sistemazero/member-shell/components/customer-helpdesk-portal'
-import type { CustomerTicketPage } from '@sistemazero/member-shell/lib/customer-helpdesk'
 import { redirect } from 'next/navigation'
-import { KidsScreen } from '@/components/kids/kids-screen'
-import { PARENT_AREA_HREF, ParentAreaBack } from '@/components/kids/parent-area-back'
-import { getSession } from '@/server/session'
-import { shell } from '@/server/shell'
-
-export const dynamic = 'force-dynamic'
 
 /**
- * Rota fora do layout infantil. O perfil da criança nunca alcança os tickets da
- * conta, nem quando conhece a URL: o BFF abaixo repete a mesma fronteira. A página
- * confere a sessão de responsável com a mesma régua do layout (o antigo desvio para
- * `/perfis` nunca rodava: o layout e o proxy já mandavam ao login do responsável).
+ * O atendimento mora em `/pais/ajuda/atendimento` desde 11/10/2026. Os avisos de resposta por e-mail
+ * já enviados apontam para cá: o redirecionamento mantém esses links vivos.
  */
-export default async function AjudaDoResponsavelPage() {
-  const session = await getSession()
-  if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
-
-  const response = await shell.gateway.gatewayFetchReadonly<CustomerTicketPage>(
-    '/helpdesk/portal/tickets',
-    {
-      query: { limit: 50 },
-    },
-  )
-  const initialPage =
-    response.status === 200 && response.body
-      ? response.body
-      : { items: [], total: 0, hasMore: false, nextCursor: null }
-
-  return (
-    <KidsScreen align="start" innerClassName="flex max-w-6xl flex-col gap-3">
-      {/* A seta vive FORA do portal (que é compartilhado com o adulto, dono de um topo
-          próprio): `/responsavel/*` não tem layout, sidebar nem topo, e sem ela o pai
-          entra no Atendimento e não tem como voltar. Alinhada à largura do portal. */}
-      <div className="mx-auto w-full max-w-3xl">
-        <ParentAreaBack />
-      </div>
-      <CustomerHelpdeskPortal
-        initialPage={initialPage}
-        initialLoadFailed={response.status !== 200}
-        parentAreaHref={PARENT_AREA_HREF}
-      />
-    </KidsScreen>
-  )
+export default function AjudaDoResponsavelPage() {
+  redirect('/pais/ajuda/atendimento')
 }

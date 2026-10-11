@@ -26,6 +26,19 @@ export function resolveProfileAllowance({
   return { kind: 'limited', maxProfiles }
 }
 
+/**
+ * Quantos perfis a assinatura da Comunidade dos Criadores libera (o `maxProfiles: 2` das duas
+ * ofertas do catálogo, `packages/catalog/scripts/seed.ts`; `tests/profile-allowance.test.ts` lê
+ * o seed para os dois números não se separarem). O teto da conta é o MAIOR entre as matrículas,
+ * nunca a soma: assinar de novo não abre vaga para quem já tem esse teto.
+ */
+export const COMUNIDADE_MAX_PROFILES = 2
+
+/** A Comunidade só resolve o limite de quem tem MENOS perfis do que ela libera. */
+export function comunidadeRaisesLimit(maxProfiles: number): boolean {
+  return maxProfiles < COMUNIDADE_MAX_PROFILES
+}
+
 export function canAddProfile(allowance: ProfileAllowance, profilesCount: number): boolean {
   if (allowance.kind === 'unlimited') return true
   return allowance.kind === 'limited' && profilesCount < allowance.maxProfiles

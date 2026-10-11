@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'bun:test'
-import { canAddProfile, resolveProfileAllowance } from '../src/lib/profile-allowance'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import {
+  COMUNIDADE_MAX_PROFILES,
+  canAddProfile,
+  comunidadeRaisesLimit,
+  resolveProfileAllowance,
+} from '../src/lib/profile-allowance'
 
 describe('resolveProfileAllowance — fronteira members → tela de perfis', () => {
   it('não confunde falha da API com acesso sem limite conhecido', () => {
@@ -32,5 +39,21 @@ describe('resolveProfileAllowance — fronteira members → tela de perfis', () 
     expect(canAddProfile({ kind: 'limited', maxProfiles: 2 }, 1)).toBe(true)
     expect(canAddProfile({ kind: 'limited', maxProfiles: 2 }, 2)).toBe(false)
     expect(canAddProfile({ kind: 'unlimited' }, 200)).toBe(true)
+  })
+})
+
+describe('o convite para ampliar o acesso', () => {
+  it('só aparece quando a Comunidade aumenta o limite da família', () => {
+    expect(comunidadeRaisesLimit(1)).toBe(true)
+    expect(comunidadeRaisesLimit(COMUNIDADE_MAX_PROFILES)).toBe(false)
+    expect(comunidadeRaisesLimit(5)).toBe(false)
+  })
+
+  it('o teto da Comunidade é o mesmo das duas ofertas do catálogo', () => {
+    const seed = readFileSync(join(import.meta.dir, '../../catalog/scripts/seed.ts'), 'utf8')
+    const tetos = [...seed.matchAll(/^\s*maxProfiles:\s*(\d+),/gm)].map((m) => Number(m[1]))
+    // Só as propriedades (o comentário do seed também cita o campo). Anti-vácuo: as duas ofertas.
+    expect(tetos.length).toBe(2)
+    expect(tetos.every((teto) => teto === COMUNIDADE_MAX_PROFILES)).toBe(true)
   })
 })

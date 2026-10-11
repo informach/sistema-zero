@@ -38,6 +38,33 @@ describe('estado de cada acesso na área dos pais', () => {
     expect(grantState(grant({ revokedAt: new Date(NOW).toISOString() }), NOW)).toBe('revoked')
   })
 
+  // Prazo CURTO por escolha não nasce "Vence em breve" (full review de 11/10/2026): o "Somente
+  // hoje" de um aparelho emprestado caía em "Precisa da sua atenção" pedindo para renovar.
+  test('"Somente hoje" nunca vence em breve; 7 dias só no último dia; longo, na última semana', () => {
+    const created = new Date(NOW - 60_000).toISOString()
+    const hoje = grant({
+      createdAt: created,
+      expiresAt: new Date(NOW + 9 * 3_600_000).toISOString(),
+    })
+    expect(grantState(hoje, NOW)).toBe('active')
+    const seteDias = grant({ createdAt: created, expiresAt: new Date(NOW + 7 * DAY).toISOString() })
+    expect(grantState(seteDias, NOW)).toBe('active')
+    expect(grantState(seteDias, NOW + 6.5 * DAY)).toBe('expiring')
+    const longo = grant({ createdAt: created, expiresAt: new Date(NOW + 30 * DAY).toISOString() })
+    expect(grantState(longo, NOW + 23 * DAY + 60_000)).toBe('expiring')
+    expect(grantState(longo, NOW + 22 * DAY)).toBe('active')
+    // Renovar não muda a criação: um prazo de 7 dias renovado depois de um mês conta como longo.
+    const renovado = grant({
+      createdAt: new Date(NOW - 30 * DAY).toISOString(),
+      expiresAt: new Date(NOW + 7 * DAY).toISOString(),
+    })
+    expect(grantState(renovado, NOW)).toBe('expiring')
+    // Sem a data (Auth antigo), a régua de sempre.
+    expect(grantState(grant({ expiresAt: new Date(NOW + 9 * 3_600_000).toISOString() }), NOW)).toBe(
+      'expiring',
+    )
+  })
+
   test('o cartão da criança avisa o vencimento próximo antes de dizer "liberado"', () => {
     const soon = grant({
       label: 'Notebook da avó',

@@ -53,7 +53,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: no "Tá vendo?", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada: no "Tá vendo?", mostrar a tela sem corações. Dar as vidas em Ao iniciar e desenhar os corações depois do placar. Mostrar três corações. Ainda não montar nem simular perda de vida. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -87,7 +87,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Dar ao sprite nave 3 de vida, e, no fim de A cada quadro do jogo, depois do placar, está Desenhar as vidas do sprite nave como corações, em x 12, y 48 e tamanho 22. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora dê três vidas à sua nave! Coloque as vidas em Ao iniciar, desenhe os corações em cada quadro e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -135,7 +135,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: deixar uma pedra bater na nave e, no "Tá vendo?", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada: deixar uma pedra bater na nave e, no "Tá vendo?", mostrar que os corações continuam três. Encaixar a colisão entre o placar e o desenho dos corações, com o destino à vista antes de abrir a paleta. Confirmar a ordem final original: placar, colisão da nave, corações. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -201,7 +201,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: entre o placar e os corações está a colisão de asteroides com nave, com o apelido inimigo. Dentro dela vêm Tirar o sprite inimigo do grupo asteroides, Soltar explosão no sprite inimigo, Machucar o sprite nave em 1 e deixá-lo invencível por 45 quadros e Tremer a tela com intensidade 8, nessa ordem. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora programe a batida na nave! Monte a colisão da nave com as pedras, com explosão, dano e tremor, e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -218,7 +218,7 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Na tela:** Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.
+**Na tela:** Testar as duas colisões e inspecionar os encaixes, preservando os blocos anteriores. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Professora:**
 
@@ -226,7 +226,7 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar variável pontos e Dar ao sprite nave 3 de vida estão em Ao iniciar, Somar 1 em pontos está na colisão do tiro, Machucar o sprite nave está na colisão da nave, e o placar e os corações estão fora das colisões, em A cada quadro do jogo. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”
 
 
 **Zappy na página (não gravar):** Hora de testar os pontos e as vidas! Confira um erro, um acerto e uma batida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.
