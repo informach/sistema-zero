@@ -48,6 +48,49 @@ export function DurationSelect({
 }
 
 /**
+ * O prazo de um acesso novo em botões de rádio (Somente hoje, 7, 30 e 90 dias): as opções ficam à
+ * vista e se escolhe com um toque. Rádios nativos por dentro, então as setas do teclado andam
+ * entre eles e o leitor de tela diz o grupo.
+ */
+export function DurationChips({
+  legend,
+  value,
+  onChange,
+  disabled,
+  describedBy,
+}: {
+  legend: string
+  value: StudyDuration
+  onChange: (value: StudyDuration) => void
+  disabled?: boolean
+  describedBy?: string
+}) {
+  return (
+    <fieldset disabled={disabled} aria-describedby={describedBy}>
+      <legend className="mb-2 font-bold text-sm">{legend}</legend>
+      <div className="flex flex-wrap gap-1.5">
+        {STUDY_DURATIONS.map((option) => (
+          <label
+            key={option.value}
+            className={`inline-flex min-h-11 cursor-pointer items-center rounded-full px-4 font-bold text-sm has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-primary has-[:focus-visible]:outline-offset-2 ${value === option.value ? 'kids-marca' : 'bg-background text-muted-foreground hover:text-foreground'}`}
+          >
+            <input
+              type="radio"
+              name="device-duration"
+              value={option.value}
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+              className="sr-only"
+            />
+            {option.label}
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  )
+}
+
+/**
  * Renovar mostra o que muda antes de confirmar: de quem é o acesso, em qual aparelho, o prazo
  * de hoje e a data nova. O prazo escolhido aqui é estado DESTE diálogo: renovar não mexe no
  * prazo que o responsável deixou no formulário de novo acesso. Quem abre passa `key` pelo id da

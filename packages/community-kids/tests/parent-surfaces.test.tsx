@@ -1,14 +1,13 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import {
-  ChildrenDashboard,
-  FamilyAiCredits,
-  ParentSupportCard,
-} from '../src/app/perfis/parent-dashboard'
-import { PurchasesView } from '../src/app/perfis/purchases-view'
-import { PARENT_AREA_HREF, ParentAreaBack } from '../src/components/kids/parent-area-back'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { FamilyAiCredits } from '../src/app/pais/_components/ai-credits-card'
+import { ChildProgress } from '../src/app/pais/_components/child-progress'
+import { ParentSubscriptions, PurchaseHistory } from '../src/app/pais/_components/purchase-history'
+import type { ChildrenStats } from '../src/app/pais/_components/use-children-stats'
+import { WeeklyReportToggle } from '../src/app/pais/_components/weekly-report-toggle'
+import { HelpContent } from '../src/app/pais/ajuda/help-content'
 import type { ChildDashboardView, MySubscriptionView, PaymentView } from '../src/lib/types'
 
 const originalFetch = globalThis.fetch
@@ -33,7 +32,17 @@ const child: ChildDashboardView = {
     projectsSubmitted: 1,
     submissionsSubmitted: 1,
   },
-  games: [],
+  games: [{ title: 'Corre Dino', playId: 'play-1', publishedAt: '2026-10-09T12:00:00.000Z' }],
+  career: {
+    level: 'coder',
+    nextLevel: 'hacker',
+    pendingPublications: [{ courseSlug: 'cade', title: 'Cadê Todo Mundo?' }],
+    tools: [
+      { id: 'estudio-completo', owned: true, state: 'available', requiredLevel: 'coder' },
+      { id: 'pensa', owned: true, state: 'career-locked', requiredLevel: 'hacker' },
+      { id: 'molda', owned: false, state: 'not-included', requiredLevel: 'explorer' },
+    ],
+  },
 }
 
 const payment: PaymentView = {
@@ -64,185 +73,210 @@ const subscription: MySubscriptionView = {
   createdAt: '2026-06-01T12:00:00.000Z',
 }
 
+function installFetch(handler: (path: string, method: string, init?: RequestInit) => Response) {
+  const calls: Array<{ path: string; method: string; body?: unknown }> = []
+  globalThis.fetch = Object.assign(
+    mock(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const path = String(input)
+      const method = init?.method ?? 'GET'
+      calls.push({ path, method, body: init?.body })
+      return handler(path, method, init)
+    }),
+    { preconnect: originalFetch.preconnect },
+  )
+  return calls
+}
+
 afterEach(() => {
   globalThis.fetch = originalFetch
 })
 
-describe('superfícies extraídas da área dos pais', () => {
-  test('oferece atendimento apenas como destino da Área dos Pais', () => {
-    render(<ParentSupportCard />)
-
-    expect(screen.getByRole('link', { name: 'Abrir atendimento' }).getAttribute('href')).toBe(
-      '/responsavel/ajuda',
+describe('o progresso de uma criança', () => {
+  test('mostra a semana, a jornada, as ferramentas e o cartão do jogo', () => {
+    render(<ChildProgress profileId="profile-1" stats={{ state: 'ready', children: [child] }} />)
+    const week = screen.getByRole('region', { name: 'Esta semana' })
+    expect(within(week).getByText('+80')).toBeTruthy()
+    expect(within(week).getByText('aulas concluídas')).toBeTruthy()
+    expect(within(week).getByText('Corre Dino')).toBeTruthy()
+    // O cartão monta o endereço absoluto do jogo a partir da origem da página.
+    ;(window as unknown as { happyDOM: { setURL(url: string): void } }).happyDOM.setURL(
+      'https://kids.test/pais/acompanhamento',
     )
+    fireEvent.click(within(week).getByRole('button', { name: /Cartão do jogo/ }))
+    expect(screen.getByRole('dialog')).toBeTruthy()
+
+    const journey = screen.getByRole('region', { name: 'Jornada do Criador' })
+    expect(within(journey).getByText('Cadê Todo Mundo?')).toBeTruthy()
+    const tools = screen.getByRole('region', { name: 'Ferramentas' })
+    expect(within(tools).getByText('Liberado')).toBeTruthy()
+    expect(within(tools).getByText(/^Libera no /)).toBeTruthy()
+    expect(within(tools).getByText('Não incluído na conta')).toBeTruthy()
+    const totals = screen.getByRole('region', { name: 'No total' })
+    expect(within(totals).getByText('7º lugar')).toBeTruthy()
+    expect(within(totals).getByText('4 (recorde 8)')).toBeTruthy()
   })
 
-  // `/responsavel/ajuda` não tem layout, sidebar nem topo: sem esta seta o pai entrava no
-  // Atendimento e não tinha como voltar. O destino é o MESMO do aviso de portão expirado.
-  test('o Atendimento tem volta para a Área dos Pais, no modo Gerenciar perfis', () => {
-    render(<ParentAreaBack />)
-
-    const back = screen.getByRole('link', { name: 'Voltar à área dos pais' })
-    expect(back.getAttribute('href')).toBe('/pais')
-    expect(PARENT_AREA_HREF).toBe('/pais')
+  // O e-mail semanal manda desligar o resumo no Acompanhamento: o interruptor não pode depender
+  // de a criança ter números nem de a consulta ter dado certo.
+  test('o que vai ao lado aparece em todo estado', () => {
+    const aside = <p>interruptor do resumo</p>
+    const estados: ChildrenStats[] = [
+      { state: 'loading' },
+      { state: 'failed' },
+      { state: 'ready', children: [] },
+      { state: 'ready', children: [child] },
+    ]
+    for (const stats of estados) {
+      const view = render(<ChildProgress profileId="profile-1" stats={stats} aside={aside} />)
+      expect(screen.getByText('interruptor do resumo')).toBeTruthy()
+      view.unmount()
+    }
   })
 
-  // O acompanhamento da família (`/responsavel`) também vive fora do layout infantil: sem a
-  // seta, o pai que chegava por "Abrir acompanhamento da família" não tinha volta no topo.
-  test('o acompanhamento da família começa pela volta para a Área dos Pais', () => {
-    const page = readFileSync(join(import.meta.dir, '../src/app/responsavel/page.tsx'), 'utf8')
-    const back = page.indexOf('<ParentAreaBack />')
-    expect(back).toBeGreaterThan(-1)
-    // Antes do cabeçalho, como em Minhas compras e no Atendimento.
-    expect(back).toBeLessThan(page.indexOf('<header'))
+  test('falha da consulta oferece tentar de novo; criança sem dados ganha um recado', () => {
+    const failed = render(<ChildProgress profileId="profile-1" stats={{ state: 'failed' }} />)
+    expect(screen.getByText('Não conseguimos consultar o acompanhamento')).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Tentar de novo/ })).toBeTruthy()
+    failed.unmount()
+    render(<ChildProgress profileId="outra" stats={{ state: 'ready', children: [child] }} />)
+    expect(screen.getByText(/O acompanhamento aparece quando a criança começa/)).toBeTruthy()
   })
+})
 
-  test('renderiza progresso e créditos e persiste a preferência semanal', async () => {
-    const calls: Array<{ path: string; init?: RequestInit }> = []
-    globalThis.fetch = Object.assign(
-      mock(async (input: RequestInfo | URL, init?: RequestInit) => {
-        const path = String(input)
-        calls.push({ path, init })
-        if (path === '/api/parents/children-stats') return Response.json({ children: [child] })
-        if (path === '/api/parents/report-prefs' && init?.method === 'PUT') {
-          return Response.json({ disabled: true })
-        }
-        if (path === '/api/parents/report-prefs') return Response.json({ disabled: false })
-        if (path === '/api/parents/ai-credits') {
-          return Response.json({
-            credits: {
-              dayLimit: 10,
-              dayRemaining: 7,
-              monthLimit: 100,
-              monthRemaining: 64,
-              monthRenewsOn: '2026-09-01',
-            },
-          })
-        }
-        throw new Error(`fetch de teste não previsto: ${path}`)
-      }),
-      { preconnect: originalFetch.preconnect },
-    )
-
-    render(
-      <>
-        <ChildrenDashboard avatarPhotoByProfile={{ 'profile-1': null }} />
-        <FamilyAiCredits />
-      </>,
-    )
-
-    expect(await screen.findByText('Lia')).toBeTruthy()
-    expect(
-      screen.getByText(
-        '+80 XP · 2 aulas concluídas · 1 quiz aprovado · 1 medalha nova · 1 entrega enviada',
+describe('os cartões da conta', () => {
+  test('o resumo da semana é um interruptor que grava a escolha', async () => {
+    const calls = installFetch((path, method) => {
+      if (path === '/api/parents/report-prefs' && method === 'PUT')
+        return Response.json({ disabled: true })
+      if (path === '/api/parents/report-prefs') return Response.json({ disabled: false })
+      throw new Error(`fetch de teste não previsto: ${method} ${path}`)
+    })
+    render(<WeeklyReportToggle />)
+    const toggle = await screen.findByRole('switch', {
+      name: /Receber o resumo da semana por e-mail/,
+    })
+    expect((toggle as HTMLInputElement).checked).toBe(true)
+    fireEvent.click(toggle)
+    await waitFor(() =>
+      expect(calls.find((call) => call.method === 'PUT')?.body).toBe(
+        JSON.stringify({ disabled: true }),
       ),
-    ).toBeTruthy()
-    expect(screen.getByText('entregas')).toBeTruthy()
+    )
+    await waitFor(() => expect((toggle as HTMLInputElement).checked).toBe(false))
+  })
+
+  test('o uso da IA da família aparece com a barra do mês', async () => {
+    installFetch((path) => {
+      if (path === '/api/parents/ai-credits')
+        return Response.json({
+          credits: {
+            dayLimit: 10,
+            dayRemaining: 7,
+            monthLimit: 100,
+            monthRemaining: 64,
+            monthRenewsOn: '2026-11-01',
+          },
+        })
+      throw new Error(`fetch de teste não previsto: ${path}`)
+    })
+    render(<FamilyAiCredits />)
     expect(
       await screen.findByRole('progressbar', { name: '36 de 100 usados neste mês' }),
     ).toBeTruthy()
-
-    fireEvent.click(
-      await screen.findByRole('checkbox', {
-        name: /Receber o resumo da semana por e-mail/,
-      }),
-    )
-
-    await waitFor(() => {
-      const put = calls.find(
-        (call) => call.path === '/api/parents/report-prefs' && call.init?.method === 'PUT',
-      )
-      expect(put?.init?.body).toBe(JSON.stringify({ disabled: true }))
-    })
+    expect(screen.getByText(/Hoje: 3 de 10/)).toBeTruthy()
   })
 
-  test('pagina compras, volta e cancela uma assinatura com recarga da lista', async () => {
-    const onBack = mock(() => {})
-    const calls: Array<{ path: string; method: string }> = []
+  test('pagina as compras e cancela a assinatura com confirmação', async () => {
     let canceled = false
-    globalThis.fetch = Object.assign(
-      mock(async (input: RequestInfo | URL, init?: RequestInit) => {
-        const path = String(input)
-        const method = init?.method ?? 'GET'
-        calls.push({ path, method })
-        if (path === '/api/payments/my?limit=20&offset=0') {
-          return Response.json({ items: [payment], total: 2, limit: 20, offset: 0 })
-        }
-        if (path === '/api/payments/my?limit=20&offset=1') {
-          return Response.json({
-            items: [{ ...payment, id: 'payment-2', description: 'Curso de Games' }],
-            total: 2,
-            limit: 20,
-            offset: 1,
-          })
-        }
-        if (path === '/api/payments/my/subscriptions' && method === 'GET') {
-          return Response.json({ items: canceled ? [] : [subscription] })
-        }
-        if (path === '/api/payments/my/subscriptions/subscription-1' && method === 'DELETE') {
-          canceled = true
-          return Response.json({ ok: true })
-        }
-        throw new Error(`fetch de teste não previsto: ${method} ${path}`)
-      }),
-      { preconnect: originalFetch.preconnect },
+    const calls = installFetch((path, method) => {
+      if (path === '/api/payments/my?limit=20&offset=0')
+        return Response.json({ items: [payment], total: 2, limit: 20, offset: 0 })
+      if (path === '/api/payments/my?limit=20&offset=1')
+        return Response.json({
+          items: [{ ...payment, id: 'payment-2', description: 'Curso de Games' }],
+          total: 2,
+          limit: 20,
+          offset: 1,
+        })
+      if (path === '/api/payments/my/subscriptions' && method === 'GET')
+        return Response.json({ items: canceled ? [] : [subscription] })
+      if (path === '/api/payments/my/subscriptions/subscription-1' && method === 'DELETE') {
+        canceled = true
+        return Response.json({ ok: true })
+      }
+      throw new Error(`fetch de teste não previsto: ${method} ${path}`)
+    })
+    render(
+      <>
+        <ParentSubscriptions />
+        <PurchaseHistory />
+      </>,
     )
-
-    render(<PurchasesView onBack={onBack} />)
-
     expect(await screen.findByText('Comunidade dos Criadores')).toBeTruthy()
     expect(await screen.findByText('Plano da família')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Voltar à área dos pais' }))
-    expect(onBack).toHaveBeenCalledTimes(1)
+    expect(screen.getByText(/VISA •••• 4242/)).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Carregar mais' }))
     expect(await screen.findByText('Curso de Games')).toBeTruthy()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Cancelar assinatura' }))
-
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar assinatura' }))
+    const dialog = await screen.findByRole('dialog')
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancelar assinatura' }))
     await waitFor(() => {
+      expect(calls.some((call) => call.method === 'DELETE')).toBe(true)
       expect(
         calls.filter(
           (call) => call.path === '/api/payments/my/subscriptions' && call.method === 'GET',
-        ).length,
-      ).toBe(2)
-      expect(
-        calls.some(
-          (call) =>
-            call.path === '/api/payments/my/subscriptions/subscription-1' &&
-            call.method === 'DELETE',
         ),
-      ).toBe(true)
+      ).toHaveLength(2)
     })
+    await waitFor(() => expect(screen.queryByText('Plano da família')).toBeNull())
   })
 
-  test('degrada falhas sem manter skeletons ou quebrar a área dos pais', async () => {
-    globalThis.fetch = Object.assign(
-      mock(async (input: RequestInfo | URL) => {
-        const path = String(input)
-        if (path === '/api/payments/my/subscriptions') return Response.json({ items: [] })
-        if (path.startsWith('/api/payments/my?')) {
-          return Response.json({ error: { message: 'offline' } }, { status: 503 })
-        }
-        throw new TypeError('offline')
-      }),
-      { preconnect: originalFetch.preconnect },
-    )
-
+  test('falhas não deixam esqueleto nem derrubam a conta', async () => {
+    installFetch((path) => {
+      if (path === '/api/payments/my/subscriptions') return Response.json({ items: [] })
+      if (path.startsWith('/api/payments/my?'))
+        return Response.json({ error: { message: 'offline' } }, { status: 503 })
+      throw new TypeError('offline')
+    })
     render(
       <>
-        <ChildrenDashboard avatarPhotoByProfile={{}} />
         <FamilyAiCredits />
-        <PurchasesView onBack={() => {}} />
+        <WeeklyReportToggle />
+        <PurchaseHistory />
       </>,
     )
-
-    expect(screen.getByRole('heading', { name: 'Progresso dos filhos' })).toBeTruthy()
-    expect(await screen.findByText('Nenhuma compra ainda')).toBeTruthy()
+    expect(await screen.findByText(/Nenhuma compra ainda/)).toBeTruthy()
     await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: 'Progresso dos filhos' })).toBeNull()
-      expect(screen.queryByRole('heading', { name: 'Ajuda da IA neste mês' })).toBeNull()
+      expect(screen.queryByRole('heading', { name: /Ajuda da IA neste mês/ })).toBeNull()
+      expect(screen.queryByRole('switch')).toBeNull()
     })
+  })
+})
+
+describe('a Ajuda mora dentro da área dos pais', () => {
+  test('passo a passo, perguntas e atendimento sem sair da área', () => {
+    render(<HelpContent parentName="Helena" />)
+    expect(screen.getByRole('heading', { name: 'Como preparar o acesso' })).toBeTruthy()
+    expect(screen.getByText('O código não funcionou')).toBeTruthy()
+    expect(screen.getByRole('link', { name: /Abrir o atendimento/ }).getAttribute('href')).toBe(
+      '/pais/ajuda/atendimento',
+    )
+    expect(screen.getByRole('link', { name: 'Esqueci minha senha' }).getAttribute('href')).toBe(
+      '/esqueci-senha',
+    )
+    const nav = screen.getAllByRole('navigation', { name: 'Área dos pais' })[0] as HTMLElement
+    expect(within(nav).getByRole('link', { name: 'Ajuda' }).getAttribute('aria-current')).toBe(
+      'page',
+    )
+  })
+
+  // Os endereços antigos seguem vivos: e-mails já enviados e o aviso de resposta do helpdesk
+  // apontam para eles.
+  test('os endereços antigos levam às páginas novas', () => {
+    const read = (path: string) => readFileSync(join(import.meta.dir, '../src/app', path), 'utf8')
+    expect(read('responsavel/page.tsx')).toContain("redirect('/pais/acompanhamento')")
+    expect(read('responsavel/ajuda/page.tsx')).toContain("redirect('/pais/ajuda/atendimento')")
   })
 })

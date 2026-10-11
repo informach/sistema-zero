@@ -39,7 +39,7 @@ export function SupportProfileSelector({
         família.
       </p>
       {profiles.length === 0 ? <p>Esta família ainda não tem perfis cadastrados.</p> : null}
-      <ul className="grid gap-3 sm:grid-cols-2">
+      <ul className="kids-grade-centrada [--grade-vao:0.75rem] sm:[--grade-colunas:2]">
         {profiles.map((profile) => (
           <li key={profile.id}>
             <button

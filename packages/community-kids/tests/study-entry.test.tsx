@@ -229,7 +229,7 @@ describe('painel de aparelhos na área dos pais', () => {
     fireEvent.change(screen.getByLabelText('Nome do aparelho'), {
       target: { value: 'Notebook da sala' },
     })
-    fireEvent.change(screen.getByLabelText('Por quanto tempo?'), { target: { value: '7' } })
+    fireEvent.click(screen.getByRole('radio', { name: '7 dias' }))
     // A data de término e o resumo aparecem ANTES de confirmar.
     expect(screen.getByText(`Termina ${accessEndPreviewPhrase(7)}.`)).toBeTruthy()
     const summary = screen.getByText('Resumo').parentElement as HTMLElement
@@ -287,7 +287,7 @@ describe('painel de aparelhos na área dos pais', () => {
     })
     await renderManager()
     fireEvent.click(screen.getByRole('button', { name: 'Autorizar aparelho' }))
-    fireEvent.change(screen.getByLabelText('Por quanto tempo?'), { target: { value: '7' } })
+    fireEvent.click(screen.getByRole('radio', { name: '7 dias' }))
     fireEvent.click(screen.getByRole('button', { name: 'Renovar prazo' }))
     const dialog = screen.getByRole('dialog', { name: 'Renovar prazo' })
     expect(within(dialog).getByText('André')).toBeTruthy()
@@ -301,7 +301,7 @@ describe('painel de aparelhos na área dos pais', () => {
     ).toBeTruthy()
     fireEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }))
     expect(screen.queryByRole('dialog', { name: 'Renovar prazo' })).toBeNull()
-    expect((screen.getByLabelText('Por quanto tempo?') as HTMLSelectElement).value).toBe('7')
+    expect((screen.getByRole('radio', { name: '7 dias' }) as HTMLInputElement).checked).toBe(true)
     expect(patches).toEqual([])
     // Reaberto, o diálogo nasce no prazo padrão e confirma só o que foi escolhido nele.
     fireEvent.click(screen.getByRole('button', { name: 'Renovar prazo' }))
@@ -311,7 +311,7 @@ describe('painel de aparelhos na área dos pais', () => {
     ).toBe('90')
     fireEvent.click(within(again).getByRole('button', { name: 'Confirmar novo prazo' }))
     await waitFor(() => expect(patches).toEqual([{ action: 'renew', durationDays: 90 }]))
-    expect((screen.getByLabelText('Por quanto tempo?') as HTMLSelectElement).value).toBe('7')
+    expect((screen.getByRole('radio', { name: '7 dias' }) as HTMLInputElement).checked).toBe(true)
   })
 
   test('o código vem com o endereço do ambiente e sai da tela quando a criança entra', async () => {
@@ -375,8 +375,11 @@ describe('painel de aparelhos na área dos pais', () => {
     await renderManager()
     expect(screen.getByText('Vence em breve')).toBeTruthy()
     expect(screen.getByText('Vencido')).toBeTruthy()
-    const section = screen.getByRole('region', { name: /Acesso de André nos aparelhos/ })
-    expect(section.className).toContain('[&_button]:min-h-11')
+    // Alvos de toque de 44px: o Renovar e o menu de cada aparelho.
+    for (const renew of screen.getAllByRole('button', { name: 'Renovar prazo' }))
+      expect(renew.className).toContain('h-11')
+    for (const more of screen.getAllByRole('button', { name: /^Mais opções de / }))
+      expect(more.className).toContain('min-h-11')
   })
 
   test('oferece nova tentativa quando a lista carrega mas a preparação do navegador falha', async () => {

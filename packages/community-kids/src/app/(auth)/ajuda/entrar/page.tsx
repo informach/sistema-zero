@@ -32,11 +32,11 @@ export default function EntryHelpPage() {
             enviado ao seu e-mail.
           </li>
           <li>
-            Na Área dos pais, encontre a criança. Se ela ainda não tem perfil, use{' '}
-            <strong>Adicionar criança</strong>.
+            Na Área dos pais, em <strong>Família</strong>, encontre o cartão da criança. Se ela
+            ainda não tem perfil, use <strong>Adicionar criança</strong>.
           </li>
           <li>
-            Clique em <strong>Acesso nos aparelhos</strong> e depois em{' '}
+            Clique em <strong>Acesso nos aparelhos</strong> no cartão e, na página da criança, em{' '}
             <strong>Autorizar aparelho</strong>.
           </li>
           <li>
@@ -90,10 +90,11 @@ export default function EntryHelpPage() {
       <details className={ITEM}>
         <summary className={SUMMARY}>Quero renovar ou encerrar um acesso</summary>
         <p className="mt-1 text-sm">
-          Entre como responsável e clique em <strong>Acesso nos aparelhos</strong> da criança. Em
-          cada aparelho, <strong>Renovar prazo</strong> mostra a data atual e a nova antes de
-          confirmar, e <strong>Encerrar acesso</strong> tira a entrada daquele perfil naquele
-          navegador, sem mudar os irmãos e sem apagar o progresso.
+          Entre como responsável e clique em <strong>Acesso nos aparelhos</strong> no cartão da
+          criança. Em cada aparelho, <strong>Renovar prazo</strong> mostra a data atual e a nova
+          antes de confirmar. No botão <strong>⋯</strong> do aparelho,{' '}
+          <strong>Encerrar acesso</strong> tira a entrada daquele perfil naquele navegador, sem
+          mudar os irmãos e sem apagar o progresso.
         </p>
         <p className="mt-2 text-sm">
           Um acesso encerrado não volta. Para usar o aparelho de novo, clique em{' '}

@@ -14,6 +14,63 @@ O tutorial dos pais usa v3, o tutorial infantil conserva v2. O código da crian�
 
 Telas, revisão de 10/10/2026: toda falha de `studyRequest` passa por `studyErrorMessage` (só a frase de um `StudyRequestError` vai à tela; rede, tempo esgotado, HTML e 5xx viram "Não conseguimos conectar agora…"). Rótulos: "Código de acesso" é o da criança, "Código enviado ao seu e-mail" é o OTP do responsável. `/login` e `/perfis` mandam sessão de responsável para `/pais`; `/login` com sessão de aluno vai à área da criança. Destinos de entrada moram em `lib/entry-destination.ts` (o `next` adulto é respeitado; link de fase vira `/pais?aluno=`). A área dos pais lê as autorizações de cada criança no servidor (`server/family-access.ts`): o guia v3, o evento `access_prepared` e os avisos "Vence em breve"/"Vencido" seguem o estado real da família (`lib/study-access-view.ts`, cuja prévia de data é espelho do Auth travado em `tests/study-access-view.test.ts`). A criança não remove acessos do aparelho; isso é do responsável. A troca segura para a criança é o `StudentAreaButton`, nunca um link para `/perfis`.
 
+## A área dos pais com páginas próprias (11/10/2026)
+
+Pedido dela, como diretor de arte: a área dos pais estava muito abaixo da área da criança, e o
+"Preciso de ajuda" do acesso levava à ajuda do LOGIN, sem caminho de volta. Hoje cada assunto tem
+endereço, e a barra (`_components/parent-shell.tsx`) fica no alto de todas as páginas:
+**Família** (`/pais`), **Acompanhamento** (`/pais/acompanhamento`), **Conta** (`/pais/conta`) e
+**Ajuda** (`/pais/ajuda`, com o atendimento em `/pais/ajuda/atendimento`). Cada criança tem a sua
+página (`/pais/crianca/<id>`, abas "Acesso nos aparelhos" e "Progresso", `?aba=progresso`), e
+criar/editar perfil também (`/pais/nova-crianca`, `/pais/crianca/<id>/editar`). Rotas e rótulos
+moram em `app/pais/parent-routes.ts`; as peças visuais (título, seção, chip de situação, ladrilho
+de número, menu ⋯ acessível) em `app/pais/_components/parent-ui.tsx`.
+
+- **Família:** "Precisa da sua atenção" (sem aparelho, vencendo em até 7 dias, vencido;
+  `attention-list.tsx`) vem primeiro, depois "Suas crianças" (`child-card.tsx`, grade centrada) e o
+  cartão tracejado de adicionar com "N de M perfis do seu plano". `?child=<id>` redireciona para a
+  página da criança.
+- **O guia v3 dos pais** abre na Família quando há um passo a fazer. No passo "access" ele leva
+  direto à página da primeira criança sem aparelho ("Preparar o acesso de X"), e o "sem aparelho"
+  sai do "Precisa da sua atenção" enquanto ele está aberto (seria o mesmo pedido duas vezes). O
+  acesso é preparado na página da criança (`child-client.tsx` registra `access_prepared` ali); quem
+  começou o guia e volta à Família com o acesso pronto lê "O acesso está preparado", com o que fazer
+  agora, até clicar em "Entendi" (`tour_completed`). Salvar uma criança nova abre a página dela.
+  ⚠️ `welcome_opened` conta UMA vez por conta e navegador (a marca `welcome-seen`): o guia
+  acompanha a família por várias páginas e contava a cada volta à Família.
+- **Conta:** "Minhas compras" (assinatura + histórico), uso da IA, senha e o cartão de embaixador
+  (`#embaixador`). ⚠️ O título "Minhas compras" é load-bearing: os Termos de Uso e as páginas de
+  venda dizem que o cancelamento fica ali. Renomear exige mudar os Termos (versão nova).
+- **Endereços antigos:** `/responsavel` → `/pais/acompanhamento` e `/responsavel/ajuda` →
+  `/pais/ajuda/atendimento` (redirecionamentos, para e-mails já enviados). Os serviços apontam
+  direto para as páginas novas: o resumo da semana (members) para o Acompanhamento, a falha de
+  cobrança (funil) para a Conta, a resposta do atendimento (helpdesk) para o atendimento, o
+  convite de embaixador (funil) para `/pais/conta#embaixador`.
+- `PurchasesView`, `ChildrenDashboard`, `ParentSupportCard` e `ParentAreaBack` não existem mais;
+  as descrições deles nas seções abaixo são históricas. Testes: `tests/parents-area.test.tsx`,
+  `tests/parent-surfaces.test.tsx` e o painel de aparelhos em `tests/study-entry.test.tsx`.
+- **A fase do link (`?aluno=`) viaja até a criança:** `childHref(id, aba, aluno)`, `familyHref`
+  e `studentEntryFor` (`parent-routes.ts`). Sem isso, quem chegava por um link de fase preparava o
+  aparelho na página da criança e o "Ir para a área da criança" abria a área, não a fase.
+- **Página da criança:** abas no padrão do ARIA (setas, Home/End, `tabIndex` móvel) e os DOIS
+  painéis montados (o inativo com `hidden`): trocar de aba desmontava o painel de aparelhos e
+  apagava o código gerado. O Acompanhamento escolhe a criança por botões com `aria-pressed` (é
+  um seletor, não abas) e o interruptor do resumo semanal aparece em TODO estado (`ChildProgress`
+  com `aside`), porque o e-mail manda desligá-lo ali.
+- **Menu ⋯ (`OptionsMenu`):** setas/Home/End, fecha quando o foco sai, e escolher um item devolve
+  o foco ao botão ANTES da ação (o diálogo aberto por ela guarda quem tinha o foco).
+- ⚠️ **Classe de botão usada num Server Component vem de `_components/parent-actions.ts`**, nunca
+  do `parent-ui.tsx` (`'use client'`): ali todo export vira referência de cliente e a string
+  chegava ao `className` como o código de uma função (a Ajuda é Server Component).
+- **Celular:** a barra do topo cabe em 320px (logo menor, `HEADER_ACTION`, "Abrindo…" curto, a
+  setinha do menu some abaixo de 360px). As fotos do Chrome sem janela não descem de ~500px:
+  meça numa moldura (`/__moldura?w=360&tela=…` do ensaio, `bash tmp/pais/foto-m.sh`).
+- **Prazo curto não pede renovação (`grantState`):** com a data de criação (o Auth manda
+  `createdAt` desde 11/10/2026), "Somente hoje" nunca vira "Vence em breve", o de 7 dias só no
+  último dia, e os longos na última semana. Sem a data, a régua de 7 dias de sempre.
+- Conferência visual sem login: `tmp/pais/` (fora do git) monta as telas com dados de mentira
+  (`bun tmp/pais/serve.ts`, porta 5310; `bash tmp/pais/foto.sh <tela> <largura> <altura>`).
+
 ## Rascunho da fase guardado na conta (10/10/2026)
 
 A implementação do contrato `LessonDraftCloud` do member-shell (ver o CLAUDE.md de lá) mora em
@@ -41,6 +98,14 @@ Base vencida na subida (outro aparelho subiu antes) → o `onConflict` guarda a 
   outros nem vence o `confirm` de outro bloco. A página da aula (`page.tsx`) liga só
   com `LESSON_DRAFTS_ENABLED`, sessão com id e fora do suporte
   somente leitura.
+- **Selo por bloco e página desatualizada (11/10/2026):** `creations-cloud.ts` ganhou
+  `getItemState(itemId)` (`{status, lastError, code}`: `idle` antes de o item entrar na fila nesta
+  página, `saving`/`offline` com ele pendente ou em conflito, `error` com a falha dele, senão
+  `saved`) e `subscribeItems` (avisa a cada passo da fila e a cada enfileirar). O canal da fase usa
+  os dois no `getState(blockId)`/`subscribe`. Um conflito cujo `onStale` falha com
+  `code: 'CREATION_CLIENT_OUTDATED'` vira essa falha (recado `clientOutdated`), e o `enfileirar` do
+  canal NÃO enfileira de novo um bloco nesse estado: só a página atualizada resolve. ⚠️ Fila falsa
+  de teste precisa de `getItemState`/`subscribeItems` (molda/pinta/studio cloud tests).
 - Testes: `tests/lesson-draft-cloud.test.ts`, `molda-conformance.test.ts` (os CINCO tipos e a
   migration 0100), `copy-vocabulario.test.ts`.
 
@@ -191,6 +256,17 @@ MARKDOWN — `renderMarkdown` (bloco) no enunciado/explicação e `renderInline`
 recap, pois o `<button>` só aceita conteúdo inline; imagens limitadas por `[&_img]:max-h-*`).
 **Gamificação REAL implementada
 (11/06/2026)** — ver §"Gamificação estilo Duolingo" abaixo; nada fake, estado no members.
+
+## Grade de cartões com a linha incompleta no meio (11/10/2026)
+
+Pedido dela: nas grades de dois ou três cartões por linha, um perfil só ficava encostado à
+esquerda, com o lugar do outro vazio. A classe **`.kids-grade-centrada`** (`globals.css`,
+`@layer components`) é flex com quebra: cada cartão tem a largura de UMA coluna e a linha que não
+enche fica no meio. As colunas e o vão são variáveis trocadas no call site
+(`sm:[--grade-colunas:2] lg:[--grade-colunas:3]`, `[--grade-vao:0.75rem]`), porque o vão entra na
+conta da largura. Usam: os cartões das crianças da Família (área dos pais), a
+escolha de perfil da entrada da criança e da sessão de suporte, os feitos da jornada no Meu perfil
+e os jogos do perfil público. ⚠️ Não use `gap-*`/`grid-cols-*` junto: quem manda é a variável.
 
 ## As barras de rolagem vestem o tema (13/09/2026)
 
@@ -583,8 +659,8 @@ Shim `app/api/parents/embaixador/route.ts` = `requireParentGateAccountOnly(shell
 ambassadorMe.GET/POST)` — mesma régua estrita do children-stats (sessão de perfil é RECUSADA).
 Tipos no member-shell (`AmbassadorEnrollmentView`); gestão completa (bônus, Pix, jornada) vive no
 ADMIN e na página do embaixador no funil.
-A Área dos Pais também mostra o card **Atendimento**, que leva a `/responsavel/ajuda` (FORA do
-layout e da navegação infantil). Essa página exige sessão da CONTA e `isParentVerifiedFor` no RSC;
+A Área dos Pais também tem o **Atendimento**, hoje em `/pais/ajuda/atendimento` (era `/responsavel/ajuda`, que
+virou redirecionamento em 11/10/2026; FORA do layout e da navegação infantil). Essa página exige sessão da CONTA no RSC;
 os três BFFs `/api/helpdesk/portal/*` repetem a proteção com
 `requireParentGateAccountOnly`. Nunca adicione esse destino ao `NAV_ITEMS`, aos
 `MOBILE_NAV_ITEMS` ou aos `protectedPrefixes`: estes últimos exigem perfil selecionado e são a área

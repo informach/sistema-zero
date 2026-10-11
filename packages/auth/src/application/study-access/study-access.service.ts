@@ -274,5 +274,7 @@ function grantView(grant: StudyGrant) {
     expiresAt: grant.expiresAt.toISOString(),
     revokedAt: grant.revokedAt?.toISOString() ?? null,
     lastUsedAt: grant.lastUsedAt?.toISOString() ?? null,
+    // A área dos pais compara o prazo escolhido com o que falta: "Somente hoje" não pede renovação.
+    createdAt: grant.createdAt.toISOString(),
   }
 }

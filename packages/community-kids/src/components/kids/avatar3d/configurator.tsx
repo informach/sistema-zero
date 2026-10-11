@@ -534,7 +534,7 @@ export function AvatarConfigurator({
           /* Cabine de fotos: poses (posicione a câmera arrastando o personagem e tire a foto) */
           <div className="flex flex-col gap-2">
             <p className="text-center font-semibold text-muted-foreground text-xs">
-              Escolha a pose e toque em <strong>Tirar foto</strong> lá em cima 📸
+              Escolha a pose e clique em <strong>Tirar foto</strong> lá em cima 📸
             </p>
             <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-subtle">
               {POSES.map((p) => (

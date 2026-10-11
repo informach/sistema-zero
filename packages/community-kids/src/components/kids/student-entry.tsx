@@ -216,7 +216,7 @@ export function StudentEntry({
       ) : (
         <div ref={gridRef}>
           <p className="mt-3 text-muted-foreground">Clique no seu nome para continuar.</p>
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
+          <ul className="mt-6 kids-grade-centrada [--grade-vao:0.75rem] sm:[--grade-colunas:2]">
             {profiles.map((profile) => (
               <li key={profile.id}>
                 <button

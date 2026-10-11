@@ -246,7 +246,7 @@ export function JourneyTimeline({
           <h3 className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
             Meus feitos
           </h3>
-          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          <ul className="mt-5 kids-grade-centrada sm:[--grade-colunas:2] lg:[--grade-colunas:3] lg:[--grade-vao:1.5rem]">
             {universal.map((b) => (
               <FeatCard key={b.slug} slug={b.slug} unlockedAt={b.unlockedAt} />
             ))}
@@ -258,7 +258,7 @@ export function JourneyTimeline({
           <h3 className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
             Bônus dos apps criativos
           </h3>
-          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:gap-6">
+          <ul className="mt-5 kids-grade-centrada sm:[--grade-colunas:2] lg:[--grade-vao:1.5rem]">
             {product.map((b) => (
               <FeatCard key={b.slug} slug={b.slug} unlockedAt={b.unlockedAt} />
             ))}

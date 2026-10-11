@@ -6,6 +6,7 @@ import { listFamilyGrantsReadonly } from '@/server/family-access'
 import { getProfileAllowanceReadonly, listAvatarsByProfileIdsReadonly } from '@/server/members'
 import { listReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
+import { childHref } from './parent-routes'
 import { ParentsClient } from './parents-client'
 
 export const dynamic = 'force-dynamic'
@@ -16,12 +17,17 @@ export default async function ParentsPage({
 }) {
   const session = await getSession()
   if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
+  const params = await searchParams
   const [profilesRes, allowanceRes] = await Promise.all([
     listReadonly(),
     getProfileAllowanceReadonly(),
   ])
   if (profilesRes.status !== 200) return <ProfilesUnavailable />
   const profiles = profilesRes.body?.profiles ?? []
+  // O atalho antigo de reautenticação (`?child=`) abre a página da criança, onde mora o acesso.
+  const studentDestination = requestedStudyDestination(params.aluno) ?? undefined
+  if (params.child && profiles.some((profile) => profile.id === params.child))
+    redirect(childHref(params.child, undefined, studentDestination))
   const allowance = resolveProfileAllowance({
     status: allowanceRes.status,
     maxProfiles: allowanceRes.body?.maxProfiles,
@@ -41,8 +47,6 @@ export default async function ParentsPage({
       ([id, view]) => [id, view.photoUrl ?? null],
     ),
   )
-  const params = await searchParams
-  const requested = params.child
   return (
     <ParentsClient
       accountId={session.id}
@@ -51,8 +55,7 @@ export default async function ParentsPage({
       profileAllowance={allowance}
       avatarPhotoByProfile={photos}
       initialAccess={access}
-      studentDestination={requestedStudyDestination(params.aluno) ?? undefined}
-      initialSelected={profiles.some((profile) => profile.id === requested) ? requested : undefined}
+      studentDestination={studentDestination}
     />
   )
 }

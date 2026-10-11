@@ -103,7 +103,7 @@ export function PublicProfileView({ profile }: { profile: PublicProfileDTO }) {
         <KidsBand tone="ceu">
           <section aria-labelledby="perfil-publico-jogos">
             <KidsSectionHeader id="perfil-publico-jogos" title="Jogos publicados no Mural" />
-            <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-5">
+            <ul className="kids-grade-centrada [--grade-colunas:2] md:[--grade-colunas:3] md:[--grade-vao:1.25rem]">
               {games.map((game) => {
                 const inner = (
                   <>

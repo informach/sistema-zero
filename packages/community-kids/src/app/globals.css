@@ -889,6 +889,25 @@ button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):
   .kids-recorte {
     filter: drop-shadow(0 18px 26px rgba(12, 30, 62, 0.22));
   }
+
+  /* GRADE DE CARTÕES COM A LINHA INCOMPLETA NO MEIO (11/10/2026, pedido dela). Na grade de
+     duas ou três colunas, um perfil só ficava encostado à esquerda, com o lugar do outro
+     vazio ao lado. Aqui a grade é flex com quebra: cada cartão tem a largura de UMA coluna
+     (o número de colunas vem de `--grade-colunas`, trocado por breakpoint no call site,
+     ex. `sm:[--grade-colunas:2]`) e a linha que não enche fica centralizada. O vão também
+     é variável (`--grade-vao`), porque entra na conta da largura de cada cartão. */
+  .kids-grade-centrada {
+    --grade-colunas: 1;
+    --grade-vao: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--grade-vao);
+  }
+  .kids-grade-centrada > * {
+    flex: 0 0 calc((100% - (var(--grade-colunas) - 1) * var(--grade-vao)) / var(--grade-colunas));
+    min-width: 0;
+  }
 }
 
 /* ⚠️ `.kids-card` fica FORA de camada de propósito, ao contrário das irmãs.
