@@ -284,6 +284,16 @@ describe('a Família', () => {
       COMUNIDADE_OFERTA_URL,
     )
     atLimit.unmount()
+    // No teto da Comunidade (o assinante), assinar de novo não abre vaga: o caminho é o Atendimento.
+    const comunidade = renderFamily({
+      profiles: [andre, { ...andre, id: 'outra-crianca', name: 'Bia' }],
+      allowance: { kind: 'limited', maxProfiles: 2 },
+    })
+    expect(screen.queryByRole('link', { name: 'amplie o seu acesso' })).toBeNull()
+    expect(
+      screen.getByRole('link', { name: 'fale com a gente no Atendimento' }).getAttribute('href'),
+    ).toBe('/pais/ajuda/atendimento')
+    comunidade.unmount()
     renderFamily({ allowance: { kind: 'unavailable' } })
     expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeTruthy()
   })

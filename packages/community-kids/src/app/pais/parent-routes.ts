@@ -14,6 +14,9 @@ export const PARENT_SECTIONS: readonly { id: ParentSectionId; label: string; hre
 
 export const NEW_CHILD_HREF = '/pais/nova-crianca'
 
+/** A conversa com a equipe (era `/responsavel/ajuda`). */
+export const PARENT_SUPPORT_HREF = '/pais/ajuda/atendimento'
+
 /**
  * A página da criança; `aba` abre direto no progresso. `aluno` é a fase do link que trouxe o
  * responsável (`/pais?aluno=`): ela viaja junto até a página da criança, senão "Ir para a área da

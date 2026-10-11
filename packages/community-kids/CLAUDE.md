@@ -38,6 +38,20 @@ de número, menu ⋯ acessível) em `app/pais/_components/parent-ui.tsx`.
   agora, até clicar em "Entendi" (`tour_completed`). Salvar uma criança nova abre a página dela.
   ⚠️ `welcome_opened` conta UMA vez por conta e navegador (a marca `welcome-seen`): o guia
   acompanha a família por várias páginas e contava a cada volta à Família.
+- **A grade "Quem vai criar hoje?" (11/10/2026, pedido dela como diretor de arte):** `/perfis` usa
+  a MESMA moldura da entrada pelo login (`AuthSplitShell`: logo + painel da marca); antes ela
+  boiava sem logo num chão vazio. Na escolha de perfil o título e a frase ficam no eixo do meio
+  (com um perfil só o cartão nasce centrado e o título à esquerda o deixava torto); o formulário
+  do código segue alinhado à esquerda. No cartão, a ação vem logo depois do nome, em pílula
+  ("Entrar" na cor de ação, "Pedir código" em cinza), e os avisos ("Último perfil usado", acesso
+  encerrado, prazo) vêm embaixo: as ações dos cartões vizinhos ficam na mesma altura. Os
+  cartões têm a mesma altura (`h-full`). "Tenho um código" é botão de contorno.
+- **O convite "amplie o seu acesso" (11/10/2026, pedido dela):** só aparece quando a Comunidade
+  AUMENTA o limite (`comunidadeRaisesLimit`: teto da família abaixo de `COMUNIDADE_MAX_PROFILES`,
+  o `maxProfiles: 2` das duas ofertas do catálogo, travado contra o seed em
+  `tests/profile-allowance.test.ts`). O teto da conta é o MAIOR entre as matrículas, nunca a soma:
+  o assinante no limite lia o convite para comprar o que já tem. No teto da Comunidade a frase
+  manda ao Atendimento (`PARENT_SUPPORT_HREF`).
 - **Conta:** "Minhas compras" (assinatura + histórico), uso da IA, senha e o cartão de embaixador
   (`#embaixador`). ⚠️ O título "Minhas compras" é load-bearing: os Termos de Uso e as páginas de
   venda dizem que o cancelamento fica ali. Renomear exige mudar os Termos (versão nova).

@@ -8,6 +8,7 @@ import { Field } from '@sistemazero/ui/label'
 import { ArrowLeft, KeyRound, LockKeyhole } from 'lucide-react'
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { cn } from '@/lib/cn'
 import {
   CONNECTION_ERROR,
   enterStudyProfile,
@@ -125,7 +126,13 @@ export function StudentEntry({
   }
   return (
     <section className={`${AUTH_CARD} w-full p-6 sm:p-8`} aria-labelledby="student-entry-title">
-      <h1 id="student-entry-title" className="sz-display text-3xl">
+      {/* Na escolha de perfil tudo fica no eixo do meio (o cartão de um perfil só nasce
+          centrado, e o título à esquerda o deixava "torto"); o formulário do código segue
+          alinhado à esquerda, como os outros formulários da entrada. */}
+      <h1
+        id="student-entry-title"
+        className={cn('sz-display text-3xl', !showCode && 'text-center')}
+      >
         {showCode
           ? selected
             ? `Vamos entrar, ${selected.name}?`
@@ -215,7 +222,9 @@ export function StudentEntry({
         </>
       ) : (
         <div ref={gridRef}>
-          <p className="mt-3 text-muted-foreground">Clique no seu nome para continuar.</p>
+          <p className="mt-2 text-center text-muted-foreground">
+            Clique no seu nome para continuar.
+          </p>
           <ul className="mt-6 kids-grade-centrada [--grade-vao:0.75rem] sm:[--grade-colunas:2]">
             {profiles.map((profile) => (
               <li key={profile.id}>
@@ -225,20 +234,28 @@ export function StudentEntry({
                   disabled={busy || !ready}
                   aria-busy={entering === profile.id || undefined}
                   onClick={() => void choose(profile)}
-                  className="kid-pop flex min-h-32 w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-border bg-card p-4 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
+                  className="kid-pop flex h-full min-h-32 w-full flex-col items-center justify-start gap-2 rounded-2xl border-2 border-border bg-card px-4 pt-5 pb-4 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
                 >
                   <UserAvatar
                     avatarUrl={profile.photoUrl ?? null}
                     firstName={profile.name}
                     size="xl"
                   />
-                  <strong className="break-words">{profile.name}</strong>
-                  {profile.lastUsed ? (
-                    <span className="rounded-full bg-primary/10 px-2 py-1 text-xs">
-                      Último perfil usado
-                    </span>
-                  ) : null}
-                  <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                  <strong className="sz-display break-words text-xl leading-tight">
+                    {profile.name}
+                  </strong>
+                  {/* O que o clique faz, com cara de ação: "Entrar" na cor de ação, o
+                      "Pedir código" em cinza com o cadeado. Os dois em pílula, para não
+                      lerem como rótulo desligado, e logo depois do nome: assim as ações de
+                      cartões vizinhos ficam na mesma altura (os avisos vêm embaixo). */}
+                  <span
+                    className={cn(
+                      'mt-1 inline-flex items-center gap-1 rounded-full px-3 py-1 font-bold text-sm',
+                      profile.available
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground',
+                    )}
+                  >
                     {entering === profile.id ? (
                       'Entrando…'
                     ) : profile.available ? (
@@ -250,6 +267,11 @@ export function StudentEntry({
                       </>
                     )}
                   </span>
+                  {profile.lastUsed ? (
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs">
+                      Último perfil usado
+                    </span>
+                  ) : null}
                   {profile.available &&
                   profile.expiresAt &&
                   new Date(profile.expiresAt).getTime() - Date.now() < 3 * 86400000 ? (
@@ -273,16 +295,18 @@ export function StudentEntry({
               </li>
             ))}
           </ul>
-          <Button
-            variant="ghost"
-            data-entry-focus="code"
-            className="mt-4 min-h-11 w-full rounded-full"
-            onClick={() => openCode(null, 'code')}
-            disabled={busy}
-          >
-            <KeyRound className="size-4" />
-            Tenho um código
-          </Button>
+          <div className="mt-6 flex justify-center">
+            <Button
+              variant="outline"
+              data-entry-focus="code"
+              className="min-h-11 rounded-full px-5"
+              onClick={() => openCode(null, 'code')}
+              disabled={busy}
+            >
+              <KeyRound className="size-4" />
+              Tenho um código
+            </Button>
+          </div>
         </div>
       )}
       {error ? (
@@ -299,7 +323,7 @@ export function StudentEntry({
           Tentar novamente
         </Button>
       ) : null}
-      <div className="mt-6 flex flex-wrap justify-center gap-x-5 text-sm">
+      <div className="mt-4 flex flex-wrap justify-center gap-x-5 text-sm">
         <Link href="/login" className={FOOT_LINK}>
           Voltar
         </Link>

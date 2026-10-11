@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { AuthSplitShell } from '@/components/kids/auth-split-shell'
 import { KidsScreen } from '@/components/kids/kids-screen'
 import { ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
 import { StudentEntry } from '@/components/kids/student-entry'
@@ -33,9 +34,11 @@ export default async function ProfilesPage({
     )
   }
   const device = await shell.study.recognize()
+  // A mesma moldura da entrada pelo login (logo + painel da marca): a grade é o mesmo momento
+  // da criança, e aqui ela boiava sem logo, num chão vazio.
   return (
-    <KidsScreen innerClassName="max-w-xl">
+    <AuthSplitShell>
       <StudentEntry profiles={device.body.profiles} unavailable={device.status !== 200} />
-    </KidsScreen>
+    </AuthSplitShell>
   )
 }

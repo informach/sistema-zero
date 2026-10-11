@@ -2,8 +2,10 @@
 
 import { Button } from '@sistemazero/ui/button'
 import { RefreshCw } from 'lucide-react'
+import Link from 'next/link'
 import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
-import type { ProfileAllowance } from '@/lib/profile-allowance'
+import { comunidadeRaisesLimit, type ProfileAllowance } from '@/lib/profile-allowance'
+import { PARENT_SUPPORT_HREF } from './parent-routes'
 
 const OFFER_LINK =
   'font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2'
@@ -11,7 +13,8 @@ const OFFER_LINK =
 /**
  * O limite de perfis do plano, dito com clareza na área dos pais (a trava real é o servidor).
  * Volta o que a grade antiga mostrava: "Perfis ilimitados", a chamada para ampliar o acesso no
- * limite e o "Tentar de novo" quando a consulta falhou.
+ * limite e o "Tentar de novo" quando a consulta falhou. A chamada só aparece quando a Comunidade
+ * de fato aumenta o limite (`comunidadeRaisesLimit`); no teto dela, o caminho é o Atendimento.
  */
 export function ProfileAllowanceNote({
   allowance,
@@ -28,18 +31,31 @@ export function ProfileAllowanceNote({
     return (
       <p className="mt-3 text-sm text-muted-foreground">
         {profilesCount >= max ? (
-          <>
-            Você usou todos os <strong>{max}</strong> {word} do seu plano. Para liberar mais,{' '}
-            <a
-              href={COMUNIDADE_OFERTA_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={OFFER_LINK}
-            >
-              amplie o seu acesso
-            </a>
-            .
-          </>
+          comunidadeRaisesLimit(max) ? (
+            <>
+              Você usou todos os <strong>{max}</strong> {word} do seu plano. Para liberar mais,{' '}
+              <a
+                href={COMUNIDADE_OFERTA_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={OFFER_LINK}
+              >
+                amplie o seu acesso
+              </a>
+              .
+            </>
+          ) : (
+            // Quem já tem o teto da Comunidade (o assinante) não ganha vaga assinando de novo:
+            // mandar para a oferta seria vender o que a família já tem.
+            <>
+              Você usou todos os <strong>{max}</strong> {word} do seu plano. Se a família precisa de
+              mais,{' '}
+              <Link href={PARENT_SUPPORT_HREF} className={OFFER_LINK}>
+                fale com a gente no Atendimento
+              </Link>
+              .
+            </>
+          )
         ) : (
           <>
             {profilesCount} de {max} {word} do seu plano.
