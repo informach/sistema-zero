@@ -544,7 +544,7 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       ),
     ],
     caption:
-      'Cada criança tem o próprio cartão na Área dos pais, com o acesso nos aparelhos e o progresso.'
+      'Cada criança tem o próprio cartão na Área dos pais, com o acesso nos aparelhos e o progresso.',
   },
 }
 
