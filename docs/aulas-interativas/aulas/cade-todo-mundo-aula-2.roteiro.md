@@ -6,6 +6,8 @@ Um vídeo por seção. **Produção em 10/10/2026:** roteiro atualizado com nove
 
 **Ajuste para a gravação, 11/10/2026:** na parte 3, conservar até “Se faltar alguma coisa, corrija os blocos e clique novamente.” e usar o novo encerramento sobre salvamento automático e **Próxima parte**. Retirar a demonstração de envio desse trecho. Na parte 4, conservar até “é com essa cara que ele vai para o Mural.” e usar o novo encerramento com **Enviar meu projeto**, **Enviar**, **Projeto enviado!** e **Próxima parte**. Mostrar o primeiro envio da fase. As falas e entradas do Dedé continuam iguais. Esses dois encerramentos estão completos nas seções abaixo.
 
+**Fala do envio revisada, 11/10/2026:** na parte 4, após “é com essa cara que ele vai para o Mural.”, a instrução passa a começar em “Agora, clique em Enviar meu projeto”. O envio é o próximo passo da atividade. Esta revisão de linguagem altera apenas essa instrução; os gestos, a confirmação, a saída e as falas do Dedé permanecem.
+
 **Edição:** Dedé entra no intervalo indicado, fala e sai antes da resposta e do próximo gesto da professora. Manter livres os blocos, o placar, os botões e o resultado mostrado, sem sobrepor vozes. Os IDs em **Na tela** localizam as nove entradas. [Direção dos avatares](../AVATARES-NOS-VIDEOS.md).
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("então", "por isso", "mas", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).
@@ -204,7 +206,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Agora teste: encontre todo mundo de novo. Os bichos vão aparecer atrás dos esconderijos, do jeito que você deixou, e no fim vem a mensagem! Se a frase passar da tela, deixe a frase mais curta e teste de novo.
 >
-> Agora o jogo tem a sua cara, e é com essa cara que ele vai para o Mural. Para a equipe ver como ele ficou, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.”
+> Agora o jogo tem a sua cara, e é com essa cara que ele vai para o Mural. Agora, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.”
 
 **Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.”
 

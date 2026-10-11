@@ -36,6 +36,8 @@ em **Enviar**, mesmo que mantenha as imagens ou a mensagem. O critério `submiss
 permanece nessa parte para conferir a versão atual se ela editar depois de enviar, antes de avançar.
 Roteiro, ponte, manifesto, gerador e Mapa da Aventura seguem esse único ponto de envio.
 
+**Fala do envio, 11/10/2026:** no encerramento da parte 4, usar “Agora, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.” O envio é o próximo passo da atividade, sem justificá-lo como uma escolha de mostrar o jogo à equipe. Na gravação existente, preservar até “é com essa cara que ele vai para o Mural.” e substituir apenas a instrução seguinte.
+
 **Quem já enviou na versão anterior:** o bloco **projeto** conserva a mesma chave e a entrega
 anterior. Se o jogo mudou, **Enviar de novo** atualiza a versão que a equipe recebe. Se continua
 igual, o envio existente já atende ao critério. No fluxo novo, o botão de envio fica disponível
