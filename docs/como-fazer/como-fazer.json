@@ -2472,8 +2472,8 @@
           },
           {
             "id": "crianca",
-            "title": "Abra o cartão da criança",
-            "body": "Na **Área dos pais**, em **Seus filhos**, clique em **Acesso nos aparelhos** no cartão da criança. Se ela ainda não tem perfil, clique antes em **Adicionar criança**. Irmãos no mesmo computador precisam cada um da sua autorização, feita no cartão de cada um."
+            "title": "Abra a página da criança",
+            "body": "Na **Área dos pais**, em **Família**, clique em **Acesso nos aparelhos** no cartão da criança. Se ela ainda não tem perfil, clique em **Adicionar criança**, preencha os dados e clique em **Salvar**: a página dela abre em seguida. Irmãos no mesmo computador precisam cada um da sua autorização, feita na página de cada um."
           },
           {
             "id": "autorizar",
@@ -2488,12 +2488,12 @@
           {
             "id": "neste",
             "title": "Neste aparelho: passe o computador",
-            "body": "Clique em **Autorizar este aparelho**. Depois, no alto da Área dos pais, clique em **Ir para a área da criança**. A sua entrada de responsável termina e a criança escolhe o próprio perfil."
+            "body": "Clique em **Autorizar este aparelho**. Na confirmação que aparece, clique em **Ir para a área da criança**. A sua entrada de responsável termina e a criança escolhe o próprio perfil."
           },
           {
             "id": "outro",
             "title": "Em outro aparelho: passe o código",
-            "body": "Clique em **Gerar código** e depois em **Copiar**. No computador da criança, se aparecer **Quem vai entrar?**, ela clica em **Eu sou criador(a)** e digita o código em **Código de acesso**. O código vale por 10 minutos e libera um navegador só. O acesso vale pelo prazo que você escolheu, contado a partir do momento em que ela usa o código."
+            "body": "Clique em **Gerar código** e depois em **Copiar**. Se a criança ainda não abriu a plataforma, use também **Copiar endereço**. No computador da criança, se aparecer **Quem vai entrar?**, ela clica em **Eu sou criador(a)** e digita o código em **Código de acesso**. O código vale por 10 minutos e libera um navegador só. O acesso vale pelo prazo que você escolheu, contado a partir do momento em que ela usa o código."
           },
           {
             "id": "conferir",
@@ -2530,7 +2530,7 @@
           {
             "id": "abrir",
             "title": "Abra o acesso da criança",
-            "body": "Entre como responsável. Na **Área dos pais**, clique em **Acesso nos aparelhos** no cartão da criança. Cada aparelho aparece com o nome, a situação (**Liberado**, **Venceu** ou **Encerrado**) e a data. **Mudar nome** troca só o nome do aparelho."
+            "body": "Entre como responsável. Na **Área dos pais**, em **Família**, clique em **Acesso nos aparelhos** no cartão da criança. Cada aparelho aparece com o nome, a situação (**Liberado**, **Vence em breve**, **Vencido** ou **Encerrado**) e a data. Quando um prazo está perto do fim, o aviso também aparece em **Precisa da sua atenção**, no alto da Família."
           },
           {
             "id": "renovar",
@@ -2540,12 +2540,12 @@
           {
             "id": "encerrar",
             "title": "Encerre um acesso",
-            "body": "Para tirar o acesso de um aparelho, clique em **Encerrar acesso** e confirme em **Encerrar acesso**. A criança deixa de entrar por aquele aparelho. As criações e o progresso continuam guardados."
+            "body": "Para tirar o acesso de um aparelho, clique no botão **⋯** ao lado de **Renovar prazo**, depois em **Encerrar acesso**, e confirme em **Encerrar acesso**. A criança deixa de entrar por aquele aparelho. As criações e o progresso continuam guardados. No mesmo menu, **Mudar nome** troca só o nome do aparelho."
           },
           {
             "id": "irmaos",
             "title": "Dois irmãos no mesmo computador",
-            "body": "Cada criança tem a sua autorização. Se o André e a Débora usam o Computador de casa, renovar ou encerrar o acesso no cartão do André não muda nada para a Débora. Para mudar o dela, abra **Acesso nos aparelhos** no cartão da Débora."
+            "body": "Cada criança tem a sua autorização. Se o André e a Débora usam o Computador de casa, renovar ou encerrar o acesso na página do André não muda nada para a Débora. Para mudar o dela, volte à **Família** e abra **Acesso nos aparelhos** no cartão da Débora."
           },
           {
             "id": "voltar",

@@ -181,14 +181,16 @@ const divider = `<hr class="dvd" style="border:0;border-top:1px solid ${BORDER};
 // ── Acesso infantil por aparelho (10/10/2026) ─────────────────────────────────
 // A criança entra pelo próprio perfil num computador que o responsável autorizou
 // na Área dos pais. Os rótulos em negrito são os da tela (community-kids:
-// `app/(auth)/login/page.tsx`, `app/pais/parents-client.tsx` e
-// `components/kids/study-device-manager.tsx`). A conta pode nascer sem perfil,
-// por isso "Adicionar criança" vem antes de "Acesso nos aparelhos".
+// `app/(auth)/login/page.tsx`, `app/pais/parents-client.tsx`,
+// `app/pais/_components/child-card.tsx` e `components/kids/study-device-manager.tsx`).
+// A conta pode nascer sem perfil, por isso "Adicionar criança" vem antes de
+// "Acesso nos aparelhos". Desde 11/10/2026 cada criança tem uma página própria:
+// salvar uma criança nova já abre a página dela, onde fica "Autorizar aparelho".
 
 /** Preparação do computador, em texto puro (WhatsApp) e em HTML (e-mail). */
 const DEVICE_SETUP = {
-  text: 'Depois de entrar como responsável, clique em Adicionar criança (ou escolha o perfil, se ele já existir) e abra Acesso nos aparelhos. Clique em Autorizar aparelho e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer Quem vai entrar?, ele clica em Eu sou criador(a) e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
-  html: 'Depois de entrar como responsável, clique em <strong>Adicionar criança</strong> (ou escolha o perfil, se ele já existir) e abra <strong>Acesso nos aparelhos</strong>. Clique em <strong>Autorizar aparelho</strong> e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, ele clica em <strong>Eu sou criador(a)</strong> e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
+  text: 'Depois de entrar como responsável, clique em Adicionar criança. Se a criança já tem perfil, clique em Acesso nos aparelhos no cartão dela. Na página da criança, clique em Autorizar aparelho e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer Quem vai entrar?, ele clica em Eu sou criador(a) e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
+  html: 'Depois de entrar como responsável, clique em <strong>Adicionar criança</strong>. Se a criança já tem perfil, clique em <strong>Acesso nos aparelhos</strong> no cartão dela. Na página da criança, clique em <strong>Autorizar aparelho</strong> e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, ele clica em <strong>Eu sou criador(a)</strong> e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
 }
 
 /** Conta que já existia: a autorização feita antes continua valendo. */
@@ -283,10 +285,10 @@ const seeds = [
           'Olá, {{nome}}! Mudamos a forma de entrar na plataforma. Agora seu filho entra pelo próprio perfil, sem usar a sua senha nem o código que chega ao seu e-mail.',
         ),
         p(
-          'Para isso, você prepara o computador dele uma vez. Entre como responsável e, na <strong>Área dos pais</strong>, clique em <strong>Acesso nos aparelhos</strong> no cartão da criança. Depois clique em <strong>Autorizar aparelho</strong> e escolha o prazo. Se estiver no celular, escolha <strong>Em outro aparelho</strong> e passe o código para a criança digitar no computador dela.',
+          'Para isso, você prepara o computador dele uma vez. Entre como responsável e, na <strong>Área dos pais</strong>, clique em <strong>Acesso nos aparelhos</strong> no cartão da criança. Na página dela, clique em <strong>Autorizar aparelho</strong> e escolha o prazo. Se estiver no celular, escolha <strong>Em outro aparelho</strong> e passe o código para a criança digitar no computador dela.',
         ),
         p(
-          'Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, a criança clica em <strong>Eu sou criador(a)</strong> e escolhe o próprio perfil. Irmãos no mesmo computador recebem cada um a sua autorização, no cartão de cada criança.',
+          'Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, a criança clica em <strong>Eu sou criador(a)</strong> e escolhe o próprio perfil. Irmãos no mesmo computador recebem cada um a sua autorização, na página de cada criança.',
         ),
         p('Os perfis, as criações e o progresso continuam guardados. Ninguém precisa recomeçar.'),
         ctaButton('Abrir a área dos pais', '{{link}}'),
@@ -308,7 +310,7 @@ const seeds = [
     variables: ['nome', 'link'],
     body: [
       'Olá, {{nome}}! Mudamos a forma de entrar na plataforma. Agora seu filho entra pelo próprio perfil, sem usar a sua senha nem o código que chega ao seu e-mail.',
-      'Você prepara o computador dele uma vez: entre como responsável pelo link abaixo, clique em Acesso nos aparelhos no cartão da criança e depois em Autorizar aparelho. Se estiver no celular, escolha Em outro aparelho e passe o código para a criança digitar no computador dela.',
+      'Você prepara o computador dele uma vez: entre como responsável pelo link abaixo, clique em Acesso nos aparelhos no cartão da criança e, na página dela, em Autorizar aparelho. Se estiver no celular, escolha Em outro aparelho e passe o código para a criança digitar no computador dela.',
       '{{link}}',
       'Nesse computador, se aparecer Quem vai entrar?, a criança clica em Eu sou criador(a) e escolhe o próprio perfil. Os perfis, as criações e o progresso continuam guardados.',
     ].join('\n\n'),
@@ -511,10 +513,10 @@ const seeds = [
           'Este é o resumo da semana ({{semana}}) de <strong>{{criancas}}</strong> no <strong>Sistema Zero</strong>:',
         ),
         `<div class="codebox" style="white-space:pre-wrap;font-family:${FONT};font-size:15px;line-height:24px;color:${TEXT};background:${BOX_BG};border:1px solid ${BORDER};border-radius:12px;padding:16px 20px;margin:20px 0;">{{resumo}}</div>`,
-        ctaButton('Abrir a área dos pais', '{{link}}'),
+        ctaButton('Ver o acompanhamento', '{{link}}'),
         divider,
         small(
-          'Para deixar de receber este resumo semanal, desative-o na <strong>Área dos pais</strong> da plataforma.',
+          'Para deixar de receber este resumo semanal, desligue <strong>Receber o resumo da semana por e-mail</strong> em <strong>Acompanhamento</strong>, na Área dos pais.',
         ),
       ].join('\n'),
       footerNote:
@@ -643,7 +645,7 @@ const seeds = [
           'Olá, {{nome}}! O acesso ao Desafio do Primeiro Jogo termina em <strong>{{data}}</strong>.',
         ),
         p(
-          'Falta uma semana. Na <strong>Área dos pais</strong>, veja onde a criança parou. No computador autorizado, ela entra pelo próprio perfil e segue para a próxima etapa possível, sem precisar recomeçar.',
+          'Falta uma semana. Em <strong>Acompanhamento</strong>, na Área dos pais, veja onde a criança parou. No computador autorizado, ela entra pelo próprio perfil e segue para a próxima etapa possível, sem precisar recomeçar.',
         ),
         ctaButton('Ver onde a criança parou', '{{link}}'),
         fallbackLink('{{link}}'),

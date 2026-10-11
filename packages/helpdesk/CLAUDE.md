@@ -90,7 +90,7 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
     tentativas. Ticket de portal COM thread do Gmail (legado
     respondido por e-mail) segue pelo Gmail. `tickets.portal` (`adult`|`kids`, migration
     0009) vem do BFF (config compilada do app, o cliente não escolhe) e decide o link
-    (`/ajuda` vs `/responsavel/ajuda`); nulo cai no adulto. O guarda de "uma saída em voo"
+    (`/ajuda` vs `/pais/ajuda/atendimento`, que desde 11/10/2026 substitui o `/responsavel/ajuda`, mantido como redirecionamento); nulo cai no adulto. O guarda de "uma saída em voo"
     (`pending`/`unknown`) vale nos dois canais.
 12. **Triagem determinística na chegada (09/2026): o que NÃO é atendimento não entra na fila.**
     `domain/mail/triage.ts` (PURO, sem I/O) decide por mensagem, em ORDEM, primeira regra que

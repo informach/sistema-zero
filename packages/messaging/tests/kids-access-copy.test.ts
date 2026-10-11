@@ -27,7 +27,10 @@ describe('acesso infantil por aparelho nos templates (10/10/2026)', () => {
     ]) {
       expect(constants.split(label).length - 1).toBeGreaterThanOrEqual(2) // texto e HTML
     }
-    expect(constants).toContain('se ele já existir')
+    // A conta que já tem perfil vai pelo cartão; a página da criança é onde se autoriza
+    // (área dos pais com páginas próprias, 11/10/2026).
+    expect(constants).toContain('Se a criança já tem perfil')
+    expect(constants.split('Na página da criança').length - 1).toBe(2)
     expect(source).not.toContain('escolha o perfil do seu filho e abra')
     expect(source).not.toContain('Libere o computador')
     expect(source).not.toContain('O perfil da criança vocês criam juntos')

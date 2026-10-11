@@ -61,7 +61,7 @@ export function createHelpdeskRoutes(deps: {
   /**
    * Vitrine deste app (`adult` = community, `kids` = community-kids). Vira o
    * `portal` do chamado no Helpdesk, que monta o link do aviso de resposta
-   * (/ajuda vs /responsavel/ajuda). Vem da config COMPILADA do app — o cliente
+   * (/ajuda vs /pais/ajuda/atendimento). Vem da config COMPILADA do app — o cliente
    * não escolhe (o Zod `.strict()` abaixo recusa `portal` no corpo).
    */
   audience: MembersAudience

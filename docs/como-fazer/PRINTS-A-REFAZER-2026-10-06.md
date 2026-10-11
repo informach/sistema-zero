@@ -41,10 +41,12 @@ menu da conta antigo) saíram do rascunho, e os cinco tutoriais novos ainda não
 cai na entrada nova, e a criança só entra num navegador autorizado para o perfil dela. Antes de
 capturar:
 
-1. No Chrome de captura, entre como responsável (código do e-mail ou senha) e, na Área dos pais,
-   abra **Acesso nos aparelhos** no cartão do perfil de teste (Lipe ou Leninha) →
+1. No Chrome de captura, entre como responsável (código do e-mail ou senha) e, na Família da
+   Área dos pais, abra **Acesso nos aparelhos** no cartão do perfil de teste (Lipe ou Leninha) →
    **Autorizar aparelho** → **Neste aparelho** → **Autorizar este aparelho** →
-   **Ir para a área da criança**. Cada perfil de teste precisa da própria autorização.
+   **Ir para a área da criança**. Cada perfil de teste precisa da própria autorização. (Desde
+   11/10/2026 a área dos pais tem páginas próprias: Família, a página de cada criança,
+   Acompanhamento, Conta e Ajuda.)
 2. Para as telas do código, gere o código num navegador e digite em outro, ainda não autorizado:
    o código vale 10 minutos e é consumido ao entrar.
 3. As telas do responsável pedem uma sessão de responsável recente; mudar acessos pode pedir a
@@ -71,16 +73,16 @@ capturar:
 | `plataforma-nao-consigo-entrar` · `ajuda` | Página **Ajuda para entrar** (`/ajuda/entrar`) | Sem sessão |
 | `plataforma-nao-consigo-entrar` · `tentativas`, `navegador` | Opcional: os avisos de muitas tentativas e de navegador de outra família são difíceis de provocar sem esgotar o limite do staging; o texto basta | — |
 | `plataforma-preparar-acesso-da-crianca` · `entrar` | Entrada do responsável com **Enviar código** e o campo **Código enviado ao seu e-mail** | Sem sessão (`/login/responsavel`) |
-| `plataforma-preparar-acesso-da-crianca` · `crianca` | **Seus filhos** com **Acesso nos aparelhos** destacado no cartão e **Adicionar criança** visível | Responsável |
+| `plataforma-preparar-acesso-da-crianca` · `crianca` | **Suas crianças**, na Família, com **Acesso nos aparelhos** destacado no cartão e **Adicionar criança** visível | Responsável |
 | `plataforma-preparar-acesso-da-crianca` · `autorizar` | Formulário com **Neste aparelho** e **Em outro aparelho** | Responsável |
 | `plataforma-preparar-acesso-da-crianca` · `prazo` | **Nome do aparelho** com "Computador de casa" e **Por quanto tempo?** em **90 dias** | Responsável |
-| `plataforma-preparar-acesso-da-crianca` · `neste` | Aparelho **Liberado** na lista e **Ir para a área da criança** no alto | Responsável, depois de **Autorizar este aparelho** |
+| `plataforma-preparar-acesso-da-crianca` · `neste` | Confirmação **Este navegador está liberado** com **Ir para a área da criança** | Responsável, depois de **Autorizar este aparelho** |
 | `plataforma-preparar-acesso-da-crianca` · `outro` | Cartão do código com **Copiar** e a validade de 10 minutos (código embaçado) | Responsável, depois de **Gerar código** |
 | `plataforma-preparar-acesso-da-crianca` · `conferir` | **Conferir se a criança já entrou** e o aparelho **Liberado** | Responsável, depois de a criança usar o código |
-| `plataforma-renovar-ou-encerrar-acesso` · `abrir` | Lista com aparelhos **Liberado**, **Venceu** e **Encerrado** | Responsável, perfil com três autorizações |
-| `plataforma-renovar-ou-encerrar-acesso` · `renovar` | Janela **Renovar o acesso** com **Novo prazo, a partir de hoje** e **Confirmar novo prazo** | Responsável |
-| `plataforma-renovar-ou-encerrar-acesso` · `encerrar` | Janela **Encerrar este acesso?** com **Encerrar acesso** | Responsável |
-| `plataforma-renovar-ou-encerrar-acesso` · `irmaos` | Dois cartões em **Seus filhos**, cada um com **Acesso nos aparelhos** | Responsável com dois perfis |
+| `plataforma-renovar-ou-encerrar-acesso` · `abrir` | Lista com aparelhos **Liberado**, **Vencido** e **Encerrado** | Responsável, perfil com três autorizações |
+| `plataforma-renovar-ou-encerrar-acesso` · `renovar` | Janela **Renovar prazo** com **Novo prazo, a partir de hoje** e **Confirmar novo prazo** | Responsável |
+| `plataforma-renovar-ou-encerrar-acesso` · `encerrar` | Menu **⋯** do aparelho aberto e a janela **Encerrar este acesso?** com **Encerrar acesso** | Responsável |
+| `plataforma-renovar-ou-encerrar-acesso` · `irmaos` | Dois cartões em **Suas crianças**, cada um com **Acesso nos aparelhos** | Responsável com dois perfis |
 | `plataforma-renovar-ou-encerrar-acesso` · `voltar` | **Autorizar aparelho** destacado depois de um acesso **Encerrado** | Responsável |
 
 São **23 capturas novas** (25 passos, porque duas capturas servem a dois passos cada), mais uma a

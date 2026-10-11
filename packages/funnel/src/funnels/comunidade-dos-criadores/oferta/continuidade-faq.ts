@@ -341,7 +341,7 @@ export const CONTINUIDADE_FAQ = {
   cancelamento: {
     question: 'Como cancelo a próxima renovação?',
     paragraphs: [
-      'Abra a área do responsável, entre em Minhas compras e use a opção de cancelamento da renovação. O acesso continua até o fim do período já pago. No plano anual por Pix, o acesso termina ao fim dos 12 meses e uma nova contratação é necessária para continuar.',
+      'Abra a área do responsável, entre em Conta e, em Minhas compras, clique em Cancelar assinatura. O acesso continua até o fim do período já pago. No plano anual por Pix, o acesso termina ao fim dos 12 meses e uma nova contratação é necessária para continuar.',
     ],
   },
   reembolso: {

@@ -521,13 +521,13 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       tela(
         'pais-compras',
         'Minhas compras',
-        'Minhas compras na Área dos pais: a assinatura da Comunidade dos Criadores ativa, com o valor, a data da próxima cobrança e o botão Cancelar, e as compras pagas logo abaixo.',
+        'Minhas compras, na Conta da Área dos pais: a assinatura da Comunidade dos Criadores ativa, com o valor, a data da próxima cobrança e o botão Cancelar, e as compras pagas logo abaixo.',
         592,
         572,
       ),
     ],
     caption:
-      'Em Minhas compras ficam a assinatura, a data da próxima cobrança e a opção de cancelar.',
+      'Em Conta, na parte Minhas compras, ficam a assinatura, a data da próxima cobrança e a opção de cancelar.',
   },
   perfis: {
     frames: [

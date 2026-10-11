@@ -34,7 +34,7 @@ export interface Ticket {
   source: TicketSource
   /**
    * App que abriu o chamado pelo portal — decide o link do aviso de resposta
-   * (kids → /responsavel/ajuda; adult → /ajuda). Injetado pelo BFF, nunca lido do
+   * (kids → /pais/ajuda/atendimento; adult → /ajuda). Injetado pelo BFF, nunca lido do
    * corpo do cliente. Nulo em e-mail e no legado (o aviso cai no adulto).
    */
   portal: TicketPortal | null

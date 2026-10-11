@@ -6,7 +6,7 @@ import { createFakeGateway } from '../fakes/fake-gateway'
 const COMMUNITY_URL = 'http://localhost:3007'
 const KIDS_URL = 'http://localhost:3008'
 
-// O link de "ver minha assinatura" tem rota DIFERENTE por app: `/pais` no kids
+// O link de "ver minha assinatura" tem rota DIFERENTE por app: `/pais/conta` no kids
 // (Área dos pais, com o botão Compras; não existe `/compras` lá) e `/compras` no adulto. O caminho segue o app que
 // recebe o clique, não o funil: lead kids sem KIDS_COMMUNITY_URL cai no adulto.
 async function paidLead(funnel: string | null, telefone: string | null = null) {
@@ -31,7 +31,7 @@ describe('makeSendChargeFailed (dunning): link da assinatura por app', () => {
     expect(gw.calls.messages).toHaveLength(2)
     for (const m of gw.calls.messages) {
       expect(m.input.templateKey).toBe('subscription-charge-failed')
-      expect(m.input.variables?.link).toBe(`${KIDS_URL}/pais`)
+      expect(m.input.variables?.link).toBe(`${KIDS_URL}/pais/conta`)
     }
     expect(gw.calls.messages.map((m) => m.idempotencyKey)).toEqual([
       'dunning-pay-failed-1',

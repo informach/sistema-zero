@@ -10,7 +10,7 @@ const INPUT = {
   variables: {
     saudacao: 'Olá, Maria!',
     assunto: 'Não consigo abrir a aula',
-    link: 'https://kids.test/responsavel/ajuda',
+    link: 'https://kids.test/pais/ajuda/atendimento',
   },
   idempotencyKey: 'helpdesk-reply:msg-1',
 }

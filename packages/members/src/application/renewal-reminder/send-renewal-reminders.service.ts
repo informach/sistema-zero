@@ -182,11 +182,14 @@ export class SendRenewalRemindersService {
           : first.messageKind === 'expiry_3d'
             ? 'challenge-expiry-3d'
             : 'challenge-expiry-7d'
-        // O aviso é do responsável: a Área dos pais mostra onde a criança parou e
-        // renova o acesso do computador. A fase em si abre no perfil da criança.
+        // O aviso é do responsável. Faltando 7 dias ele mostra onde a criança parou (o
+        // Acompanhamento); faltando 3, o acesso do computador (a Família, onde o aviso de
+        // vencimento pede renovar). A fase em si abre no perfil da criança.
         const link = expired
           ? `${this.opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
-          : `${this.opts.kidsUrl}/pais`
+          : first.messageKind === 'expiry_7d'
+            ? `${this.opts.kidsUrl}/pais/acompanhamento`
+            : `${this.opts.kidsUrl}/pais`
 
         await this.messaging.sendEmail({
           templateKey,
