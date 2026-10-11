@@ -1458,7 +1458,7 @@
             "id": "escolher",
             "title": "Escolha seu nome",
             "body": "Se aparecer **Quem vai entrar?**, clique em **Eu sou criador(a)**. Na tela **Quem vai criar hoje?**, confira o nome e o avatar e clique no seu perfil.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/escolher-f644bab51f63b751.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-trocar-de-perfil/escolher-0995e6987ddec050.webp",
             "imageAlt": "Tela Quem vai criar hoje? com o cartão da Leninha destacado, mostrando Entrar, e o cartão da Débora com Pedir código."
           },
           {
@@ -2400,7 +2400,7 @@
             "id": "voltar",
             "title": "Volte pelo mesmo navegador",
             "body": "O código vale por 10 minutos e funciona em um computador só. Depois disso, é só voltar neste mesmo computador e navegador e escolher seu perfil, até o prazo que o responsável escolheu terminar. Veja [como voltar às suas aventuras](/como-fazer/plataforma-voltar-ao-meu-perfil).",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/voltar-f644bab51f63b751.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-entrar-com-codigo/voltar-0995e6987ddec050.webp",
             "imageAlt": "Na volta, no mesmo navegador, a tela Quem vai criar hoje? com o cartão da Leninha destacado, sem pedir código."
           }
         ],
@@ -2440,7 +2440,7 @@
             "id": "perfil",
             "title": "Escolha seu perfil",
             "body": "Na tela **Quem vai criar hoje?**, confira se o nome e o avatar são os seus e clique no seu perfil. Se foi você quem entrou por último, seu cartão mostra **Último perfil usado**. Depois abra sua aventura e continue de onde parou.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-ao-meu-perfil/perfil-3969f9d3a6895d65.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-voltar-ao-meu-perfil/perfil-6e2a5f8c44e2b7a7.webp",
             "imageAlt": "Tela Quem vai criar hoje? com o selo Último perfil usado destacado no cartão da Leninha."
           },
           {
@@ -2507,7 +2507,7 @@
             "id": "encerrado",
             "title": "Se o acesso foi encerrado",
             "body": "Se o seu cartão mostrar **Acesso encerrado neste aparelho.**, o responsável tirou o acesso deste computador. Se ninguém da família tiver mais acesso nele, a tela nem mostra os nomes e pede o código. Para voltar, o responsável precisa autorizar o computador de novo e passar um código novo para você.",
-            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-nao-consigo-entrar/encerrado-74426a52b97276d2.webp",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-nao-consigo-entrar/encerrado-76aeb92620a2c12b.webp",
             "imageAlt": "Tela Quem vai criar hoje? com o aviso Acesso encerrado neste aparelho. destacado no cartão da Leninha; o cartão da Débora continua com Entrar."
           },
           {

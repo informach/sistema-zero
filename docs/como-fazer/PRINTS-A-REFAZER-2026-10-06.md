@@ -404,10 +404,10 @@ Estes prints mostram uma parte da tela em que o rótulo antigo só aparece se o 
   `plataforma-entrar-com-codigo`, `plataforma-nao-consigo-entrar`,
   `plataforma-preparar-acesso-da-crianca`, `plataforma-renovar-ou-encerrar-acesso`,
   `plataforma-trocar-de-perfil` e `plataforma-voltar-ao-meu-perfil`.
-- ⚠️ A grade "Quem vai criar hoje?" mudou de desenho no mesmo dia (logo, título no meio, ações em
-  pílula). Refazer depois do deploy: `plataforma-trocar-de-perfil/escolher`,
-  `plataforma-voltar-ao-meu-perfil/perfil`, `plataforma-entrar-com-codigo/voltar` e
-  `plataforma-nao-consigo-entrar/encerrado`.
+- A grade "Quem vai criar hoje?" mudou de desenho no mesmo dia (logo, título no meio, ações em
+  pílula), e as quatro fotos dela foram refeitas no staging já com o desenho novo:
+  `plataforma-trocar-de-perfil/escolher`, `plataforma-voltar-ao-meu-perfil/perfil`,
+  `plataforma-entrar-com-codigo/voltar` e `plataforma-nao-consigo-entrar/encerrado`.
 - Faltam prints que dependem de um acesso VENCIDO (o prazo mínimo é "Somente hoje"):
   `plataforma-nao-consigo-entrar/prazo` e `plataforma-voltar-ao-meu-perfil/vencido`. Os passos
   `plataforma-nao-consigo-entrar/tentativas` e `/navegador` seguem só com texto.
