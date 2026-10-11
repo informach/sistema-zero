@@ -753,6 +753,11 @@ export interface StudioStateView {
    * envio). Reenviar volta para `false` — a entrega nova ainda não foi olhada.
    */
   reviewed?: boolean
+  /**
+   * Impressão digital do conteúdo ENVIADO ("envio em dia"): o bloco compara com o projeto de
+   * agora para avisar "mudou depois de enviar". `null` = sem conferência.
+   */
+  contentFingerprint?: string | null
 }
 
 export interface LessonBlockView {

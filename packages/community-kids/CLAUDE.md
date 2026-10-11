@@ -1,5 +1,49 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Acesso infantil por aparelho (10/10/2026)
+
+A implementação de entrada Kids passa a usar sessões discriminadas `kids.kind`: responsável em `/pais`, criança em `/login/aluno` e `/perfis`. `/login` escolhe o público. O login adulto exige senha ou OTP próprio e não autoriza perfis implicitamente. Cada autorização pertence a um perfil e navegador; o cookie HttpOnly do aparelho é separado da sessão ativa. Os endpoints antigos de seleção/saída de perfil do Kids retornam 410 para a família. A seleção aceita exclusivamente sessões de suporte autenticadas (`act`), sem criar autorização de aparelho; `/perfis` mostra um seletor separado nesse contexto. As descrições antigas do portão de senha e da grade mista de perfis neste documento são históricas.
+
+Especificação e evidências: `docs/plans/2026-10-10-acesso-infantil-design.md`, `docs/superpowers/plans/2026-10-10-acesso-infantil.md` e `docs/qa/2026-10-10-acesso-infantil.md`, na raiz do monorepo.
+
+No navegador, chamadas Kids a `/api/` usam `sessionFetch`, que transporta a identidade do documento em `x-sz-session`. O backend compara essa prova à sessão autenticada antes das mutações; mudar um cookie em outra aba não pode salvar criações sob outro perfil. Não substituir por `fetch` nativo nas operações autenticadas. `GET /api/study/session` é a exceção intencional para detectar mudanças.
+
+Os rótulos da entrada não falam a língua da escola (10/10/2026, antes da produção, decisão da dona): a criança clica em **Eu sou criador(a)** (ícone `Sparkles`; era "Eu sou aluno" com o chapéu de formatura) e o responsável em **Ir para a área da criança** (era "Ir para a área do aluno"). As exceções do guarda `copy-vocabulario` para esses rótulos SAÍRAM; o e-mail de acesso (messaging), o de boas-vindas (funil) e os tutoriais do Como fazer citam os nomes novos. A rota segue `/login/aluno` (URL é por dentro).
+
+O tutorial dos pais usa v3, o tutorial infantil conserva v2. O código da criança não é o OTP enviado ao e-mail do responsável. Ajuda de entrada fica disponível sem login em `/ajuda/entrar`.
+
+Telas, revisão de 10/10/2026: toda falha de `studyRequest` passa por `studyErrorMessage` (só a frase de um `StudyRequestError` vai à tela; rede, tempo esgotado, HTML e 5xx viram "Não conseguimos conectar agora…"). Rótulos: "Código de acesso" é o da criança, "Código enviado ao seu e-mail" é o OTP do responsável. `/login` e `/perfis` mandam sessão de responsável para `/pais`; `/login` com sessão de aluno vai à área da criança. Destinos de entrada moram em `lib/entry-destination.ts` (o `next` adulto é respeitado; link de fase vira `/pais?aluno=`). A área dos pais lê as autorizações de cada criança no servidor (`server/family-access.ts`): o guia v3, o evento `access_prepared` e os avisos "Vence em breve"/"Vencido" seguem o estado real da família (`lib/study-access-view.ts`, cuja prévia de data é espelho do Auth travado em `tests/study-access-view.test.ts`). A criança não remove acessos do aparelho; isso é do responsável. A troca segura para a criança é o `StudentAreaButton`, nunca um link para `/perfis`.
+
+## Rascunho da fase guardado na conta (10/10/2026)
+
+A implementação do contrato `LessonDraftCloud` do member-shell (ver o CLAUDE.md de lá) mora em
+**`src/lib/lesson-draft-cloud.ts`**: duas filas `createCreationsCloud` (Estúdio 2 s, Pinta 1,5 s),
+marcas `sz:creations-synced:lesson-<tipo>:<perfil>` (`createStoredSyncedMarks`) e
+`lessonDraftCloudFor(viewerId)`, UMA nuvem por perfil e por aba, que sobrevive à troca de fase.
+Base vencida na subida (outro aparelho subiu antes) → o `onConflict` guarda a cópia da conta como a
+"outra versão", adota a revisão dela e sobe a daqui de novo.
+
+- `lib/creations-cloud.ts` ganhou `peek` (o bilhete sem baixar o blob), `fingerprint` na reserva,
+  `contentFingerprint` e `serverNow`; `canonicalJson`/`sha256Hex` vêm do core (reexportados). ⚠️
+  Fila falsa de teste precisa de `peek` e `confirm` (molda/pinta/studio cloud tests).
+- `lib/studio-cloud.ts`: `resolveStudioCloudDocument(baixado, assetsLocais | () => Promise)`
+  (a função adia a leitura dos assets locais).
+- `lesson-player-client.tsx` cria a nuvem por perfil e usa `withSavedDrafts` antes de concluir,
+  com `confirm` = os blocos das partes com "envio em dia" da parte de agora até o fim
+  (`upToDateWorkspaceIds`). Só esses EXIGEM a conta; os outros sobem em tentativa (4 s) e nunca
+  seguram a criança. `confirm(itemId)` espera AQUELE item (acorda a cada passo da fila, não a fila
+  inteira), acompanha o backup/reenvio de conflitos, pula o debounce sem acordar o backoff e rejeita
+  timeout ou falha terminal com o `code` do servidor; `flush`/`flushAll` seguem melhor esforço.
+  `lessonDraftCloudFor` descarta a fila do perfil anterior ao trocar de perfil na aba. O conflito
+  na subida passa `{firstContact}` ao bloco (marca ausente) e respeita o `adopted` dele (marca a
+  revisão da conta e não sobe de novo). Na fila (`creations-cloud.ts`, vale para as criações livres
+  também) quem vai tentar de novo (rede, 429, 5xx) passa para o FIM: um item preso não segura os
+  outros nem vence o `confirm` de outro bloco. A página da aula (`page.tsx`) liga só
+  com `LESSON_DRAFTS_ENABLED`, sessão com id e fora do suporte
+  somente leitura.
+- Testes: `tests/lesson-draft-cloud.test.ts`, `molda-conformance.test.ts` (os CINCO tipos e a
+  migration 0100), `copy-vocabulario.test.ts`.
+
 ## Recados iniciados pelo professor e ajuda — 11/09/2026
 
 Avisos individuais/coletivos chegam em conversas privadas no mesmo Recados. O sino usa

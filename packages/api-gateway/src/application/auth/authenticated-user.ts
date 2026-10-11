@@ -41,6 +41,14 @@ export interface AuthenticatedUser {
   readonly impersonatorId?: string
   /** Capacidade explícita da sessão de suporte. Claims antigas são somente leitura. */
   readonly impersonationMode?: 'readonly' | 'write'
+  /**
+   * Público da sessão do Kids (claim `kids`). Vira `x-auth-kids-context`: o Auth exige login
+   * recente do RESPONSÁVEL e recusa o fluxo antigo de perfis sem receber o Bearer.
+   * ⚠️ No ALUNO, `email`/`firstName`/`lastName` chegam vazios (o token não os carrega).
+   */
+  readonly kidsContext?: 'parent' | 'student'
+  /** Só do responsável: `authenticatedAt` (segundos) → `x-auth-kids-auth-time`. */
+  readonly kidsAuthTime?: number
 }
 
 /**

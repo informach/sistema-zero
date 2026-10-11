@@ -1,102 +1,84 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 
-// O portão dos pais assina o cookie via `parentGateCodec()`, que chama `getEnv()` do
-// member-shell — e o schema de env EXIGE `JWT_HS256_SECRET`/`JWT_JWKS_URL` (≥16 chars)
-// ou lança. Sem `.env` (CI), esse throw derruba os testes ANTES de o codec cair no
-// segredo efêmero de dev. Semeia um segredo de teste (não sobrescreve o local) p/ o
-// `getEnv()` validar; `PARENT_GATE_HMAC_SECRET` segue ausente → caminho dev/efêmero.
-process.env.JWT_HS256_SECRET ||= 'test-hs256-secret-parent-gate-0123456789'
-
 const getSession = mock()
-let parentToken: string | null = null
-
+let legacyCookie: string | null = null
 mock.module('server-only', () => ({}))
 mock.module('@/server/session', () => ({ getSession }))
 mock.module('next/headers', () => ({
   cookies: async () => ({
-    get: () => (parentToken ? { value: parentToken } : undefined),
-    set: (_name: string, value: string) => {
-      parentToken = value || null
+    get: () => (legacyCookie ? { value: legacyCookie } : undefined),
+    set: () => {
+      legacyCookie = null
     },
   }),
 }))
-
-const { requireParentGate, requireParentGateAccountOnly, setParentVerified } = await import(
+const { requireParentGate, requireParentGateAccountOnly, isParentVerifiedFor } = await import(
   '../src/server/parent-gate'
 )
-
-const accountSession = { id: 'account-1', role: 'student' }
-const profileSession = {
-  ...accountSession,
-  activeProfile: { accountId: 'account-1', name: 'Ana' },
+const parent = {
+  id: 'account-1',
+  kids: { kind: 'parent', sessionId: 'parent-session', authenticatedAt: 1 },
 }
-
+const child = {
+  id: 'profile-1',
+  kids: { kind: 'student', sessionId: 'student-session' },
+  activeProfile: { accountId: 'account-1' },
+}
 beforeEach(() => {
   getSession.mockReset()
-  parentToken = null
+  legacyCookie = null
 })
-
-describe('portão dos pais', () => {
-  test('exige autenticação e não chama a mutação quando não há sessão', async () => {
+describe('área dos pais separada da sessão infantil', () => {
+  test('ausência de sessão e cookie legado não liberam a gestão', async () => {
     const handler = mock(async () => new Response('ok'))
-    const protectedHandler = requireParentGate(handler)
-    getSession.mockResolvedValue(null)
-
-    const response = await protectedHandler(new Request('https://kids.test/api/profiles'), {})
-
-    expect(response.status).toBe(401)
+    legacyCookie = 'qualquer-cookie-do-portao-antigo'
+    for (const session of [null, { id: 'account-1' }, child]) {
+      getSession.mockResolvedValue(session)
+      expect(
+        (
+          await requireParentGateAccountOnly(handler)(
+            new Request('https://kids.test/api/payments/my'),
+            {},
+          )
+        ).status,
+      ).toBe(403)
+    }
     expect(handler).not.toHaveBeenCalled()
   })
-
-  test('permite o autoatendimento do próprio perfil, mas bloqueia a conta sem prova recente', async () => {
+  test('login adulto por senha ou OTP abre a gestão sem outro portão de senha', async () => {
+    getSession.mockResolvedValue(parent)
     const handler = mock(async () => new Response('ok'))
-    const protectedHandler = requireParentGate(handler)
-
-    getSession.mockResolvedValue(profileSession)
-    expect((await protectedHandler(new Request('https://kids.test/api/profiles'), {})).status).toBe(
-      200,
-    )
-
-    getSession.mockResolvedValue(accountSession)
-    expect((await protectedHandler(new Request('https://kids.test/api/profiles'), {})).status).toBe(
-      403,
-    )
-    expect(handler).toHaveBeenCalledTimes(1)
+    expect(
+      (
+        await requireParentGateAccountOnly(handler)(
+          new Request('https://kids.test/api/payments/my'),
+          {},
+        )
+      ).status,
+    ).toBe(200)
+    expect(await isParentVerifiedFor(parent.id)).toBe(true)
+    expect(await isParentVerifiedFor('outra-conta')).toBe(false)
   })
-
-  test('libera a sessão da conta somente depois do cookie assinado e válido', async () => {
+  test('edição do próprio perfil aceita criança, mas sessão antiga não passa', async () => {
     const handler = mock(async () => new Response('ok'))
-    const protectedHandler = requireParentGate(handler)
-    getSession.mockResolvedValue(accountSession)
-    await setParentVerified(accountSession.id)
-
-    const response = await protectedHandler(new Request('https://kids.test/api/profiles'), {})
-
-    expect(response.status).toBe(200)
-    expect(handler).toHaveBeenCalledTimes(1)
-  })
-
-  test('o gate estrito protege compras e relatórios contra sessão de perfil', async () => {
-    const handler = mock(async () => new Response('ok'))
-    const protectedHandler = requireParentGateAccountOnly(handler)
-    getSession.mockResolvedValue(profileSession)
-
-    const profileResponse = await protectedHandler(
-      new Request('https://kids.test/api/payments/my'),
-      {},
-    )
-
-    expect(profileResponse.status).toBe(403)
-    expect(handler).not.toHaveBeenCalled()
-
-    getSession.mockResolvedValue(accountSession)
-    await setParentVerified(accountSession.id)
-    const accountResponse = await protectedHandler(
-      new Request('https://kids.test/api/payments/my'),
-      {},
-    )
-
-    expect(accountResponse.status).toBe(200)
+    getSession.mockResolvedValue(child)
+    expect(
+      (
+        await requireParentGate(handler)(
+          new Request('https://kids.test/api/profiles/profile-1'),
+          {},
+        )
+      ).status,
+    ).toBe(200)
+    getSession.mockResolvedValue({ id: 'account-1' })
+    expect(
+      (
+        await requireParentGate(handler)(
+          new Request('https://kids.test/api/profiles/profile-1'),
+          {},
+        )
+      ).status,
+    ).toBe(401)
     expect(handler).toHaveBeenCalledTimes(1)
   })
 })

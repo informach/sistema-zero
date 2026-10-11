@@ -79,6 +79,12 @@ const EnvSchema = z
       .enum(['true', 'false'])
       .default('true')
       .transform((value) => value === 'true'),
+    // Interruptor de emergência do rascunho da fase guardado na conta (10/10/2026). Desligado,
+    // o Estúdio e o Pinta da fase voltam a guardar só no navegador; o "envio em dia" deixa passar.
+    LESSON_DRAFTS_ENABLED: z
+      .enum(['true', 'false'])
+      .default('true')
+      .transform((value) => value === 'true'),
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     KIDS_REFORM_NOTICE_ENABLED: z
       .enum(['true', 'false'])

@@ -18,6 +18,8 @@ export interface CourseRepository {
   findCourseById(id: string): Promise<Course | null>
   /** Aula sem o conteúdo dos blocos (para checagem de acesso / mark-complete). */
   findLesson(lessonId: string): Promise<Lesson | null>
+  /** A aula de um bloco ATIVO (o rascunho da fase chega só com o id do bloco). */
+  findBlockLessonId(blockId: string): Promise<string | null>
   /** Cursos ACESSÍVEIS (published ou archived) por slugs — para montar "meus cursos". */
   findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por slugs, QUALQUER status (admin: progresso/detalhe inclui draft/archived). */

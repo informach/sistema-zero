@@ -1,11 +1,12 @@
 import { notFound } from 'next/navigation'
 import { journeyLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { KidsLockedLesson } from '@/components/kids/kids-locked-lesson'
+import { getEnv } from '@/lib/env'
 import type { LessonOutlineView } from '@/lib/types'
 import { computeAgeFromBirthDate } from '@/lib/user-display'
 import { getAvatarReadonly, getLesson, getMyCourse } from '@/server/members'
-import { listReadonly as listProfilesReadonly } from '@/server/profiles'
 import { getSession } from '@/server/session'
+import { shell } from '@/server/shell'
 import { LessonPlayer } from './lesson-player-client'
 
 export const dynamic = 'force-dynamic'
@@ -16,16 +17,17 @@ export default async function LessonPage({
   params: Promise<{ slug: string; lessonId: string }>
 }) {
   const { slug, lessonId } = await params
-  const [courseRes, lessonRes, session, avatar, profilesRes] = await Promise.all([
+  const [courseRes, lessonRes, session, avatar, profileRes] = await Promise.all([
     getMyCourse(slug),
     getLesson(slug, lessonId),
     getSession(),
     // Foto do agradecimento da classificação = snapshot do avatar 3D da CRIANÇA
     // (desde 24/07 é a ÚNICA imagem dela — nunca a foto da conta do responsável).
     getAvatarReadonly(),
-    // Perfis da conta → o ATIVO (a criança) dá nome + nascimento p/ a
-    // classificação (nunca o e-mail/nome do responsável). Best-effort.
-    listProfilesReadonly(),
+    // O PRÓPRIO perfil (a criança) dá nome + nascimento p/ a classificação (nunca o
+    // e-mail/nome do responsável). Pelo `/auth/me` da sessão de perfil: a lista da família
+    // é da área dos pais e o Gateway a recusa para o aluno. Best-effort.
+    shell.auth.getMyProfileReadonly(),
   ])
   if (courseRes.status === 404 || courseRes.status === 403) notFound()
   if (courseRes.status === 423)
@@ -52,10 +54,8 @@ export default async function LessonPage({
 
   // Perfil ATIVO = a criança (id da sessão). Server-side e best-effort: o nascimento
   // só é usado p/ a idade da PRÓPRIA criança (sem vazar dados de outros perfis).
-  const activeProfile =
-    profilesRes.status === 200
-      ? profilesRes.body?.profiles.find((p) => p.id === session?.id)
-      : undefined
+  const mine = profileRes.status === 200 ? profileRes.body.profile : null
+  const activeProfile = mine && mine.id === session?.id ? mine : undefined
 
   return (
     <LessonPlayer
@@ -65,6 +65,11 @@ export default async function LessonPage({
       nextLessonHref={nextLessonHref}
       viewerWatermark={session?.id ? `Perfil ${session.id.slice(0, 8)}` : null}
       viewerId={session?.id ?? null}
+      // O rascunho da fase guardado na conta: desligado pelo interruptor de emergência e na
+      // sessão de suporte só leitura (o BFF recusaria as escritas de qualquer jeito).
+      lessonDraftsEnabled={
+        getEnv().LESSON_DRAFTS_ENABLED && session?.act?.mode !== 'readonly' && Boolean(session?.id)
+      }
       ratingViewer={{
         name: activeProfile?.name ?? session?.activeProfile?.name ?? null,
         age: computeAgeFromBirthDate(activeProfile?.birthDate),

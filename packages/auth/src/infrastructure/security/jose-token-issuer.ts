@@ -1,3 +1,4 @@
+import { parseKidsSessionClaim } from '@sistemazero/core/security'
 import { type JWTPayload, jwtVerify, SignJWT } from 'jose'
 import type {
   AccessTokenClaims,
@@ -7,9 +8,11 @@ import type {
   TokenIssuer,
 } from '../../domain/ports/token-issuer.port'
 import type { UserAggregate } from '../../domain/user/user.aggregate'
+import { isPrivilegedUserRole } from '../../domain/user/user.role'
 import type { SigningMaterial } from './keys'
 
 export interface JoseTokenIssuerOptions {
+  validateKidsSession?: (claims: AccessTokenClaims) => Promise<boolean>
   signing: SigningMaterial
   issuer: string
   audience: string
@@ -27,16 +30,29 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
   return {
     async issueAccessToken(user: UserAggregate, opts?: IssueAccessTokenOptions) {
       const nowSeconds = Math.floor(Date.now() / 1000)
+      const student = opts?.kids?.kind === 'student'
       const claims: Record<string, unknown> = {
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
+        // A equipe conserva o papel também como aluno (cria e testa os jogos pelos perfis
+        // antes das crianças clientes); o Gateway segue barrando admin/financeiro/área dos
+        // pais para QUALQUER aluno, pelo contexto `kids`, não pelo papel.
+        role: student && !isPrivilegedUserRole(user.role) ? 'customer' : user.role,
         status: user.status,
         typ: 'access',
       }
-      if (user.phone) claims.phone = user.phone
-      if (user.signupSource) claims.signupSource = user.signupSource
+      // ⚠️ O token do ALUNO não carrega e-mail, telefone nem nome do RESPONSÁVEL: o JWT fica
+      // no navegador da criança. Quem precisa do nome dela usa `pfl.name`.
+      if (!student) {
+        claims.email = user.email
+        claims.firstName = user.firstName
+        claims.lastName = user.lastName
+        if (user.phone) claims.phone = user.phone
+        if (user.signupSource) claims.signupSource = user.signupSource
+      }
+      if (opts?.kids) {
+        if (opts.act || (opts.kids.kind === 'student') !== Boolean(opts.profile))
+          throw new Error('Contexto Kids incompatível com o perfil')
+        claims.kids = opts.kids
+      }
       // Impersonação (RFC 8693): `sub` = alvo; `act.sub` = admin navegando como ele.
       if (opts?.act) {
         claims.act = {
@@ -71,16 +87,21 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
     },
 
     async verifyAccessToken(token: string): Promise<AccessTokenClaims | null> {
+      let claims: AccessTokenClaims | null
       try {
         const { payload } = await jwtVerify(token, signing.verifyKey, {
           algorithms: [signing.alg],
           issuer,
           audience,
         })
-        return toClaims(payload)
+        claims = toClaims(payload)
       } catch {
         return null
       }
+      // Falha da infraestrutura não significa revogação. A borda HTTP deve
+      // devolver erro retentável, mantendo fechada a autorização desta chamada.
+      if (claims?.kids && !(await opts.validateKidsSession?.(claims))) return null
+      return claims
     },
 
     jwks() {
@@ -104,19 +125,27 @@ function toClaims(payload: JWTPayload): AccessTokenClaims | null {
   const lastName = asString(payload.lastName)
   const role = asString(payload.role)
   const status = asString(payload.status)
-  if (!sub || !email || !firstName || !lastName || !role || !status) return null
+  const kids = parseKidsSessionClaim(payload.kids)
+  if (payload.kids !== undefined && !kids) return null
+  const pfl = toProfileClaim(payload.pfl)
+  if (kids && ((kids.kind === 'student') !== Boolean(pfl) || payload.act)) return null
+  // O aluno não traz a identidade do responsável (ver `issueAccessToken`): os campos ficam
+  // vazios aqui e ninguém no Auth os lê numa sessão de aluno.
+  const student = kids?.kind === 'student'
+  if (!sub || !role || !status || (!student && (!email || !firstName || !lastName))) return null
 
   return {
     sub,
-    email,
-    firstName,
-    lastName,
+    email: email ?? '',
+    firstName: firstName ?? '',
+    lastName: lastName ?? '',
     role,
     status,
-    phone: asString(payload.phone),
-    signupSource: asString(payload.signupSource),
+    phone: student ? undefined : asString(payload.phone),
+    signupSource: student ? undefined : asString(payload.signupSource),
     act: toActClaim(payload.act),
-    pfl: toProfileClaim(payload.pfl),
+    pfl,
+    ...(kids ? { kids } : {}),
   }
 }
 

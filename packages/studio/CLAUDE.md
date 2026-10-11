@@ -1,5 +1,9 @@
 # @sistemazero/studio
 
+> **Escrita com namespace explícito (10/10/2026):** `replaceLocalProject(project, {namespace})`
+> captura o armazenamento antes de persistir. Os rascunhos das aulas usam `namespace: ''`, inclusive
+> para cópias de conflito, sem depender do namespace que o Estúdio Completo ativou durante o download.
+
 > Arquitetura e comandos atuais: [`docs/architecture.md`](docs/architecture.md).
 > Este arquivo também contém um diário histórico; em caso de conflito, o mapa
 > canônico, o código e os testes atuais prevalecem.

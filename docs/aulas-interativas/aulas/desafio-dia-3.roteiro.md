@@ -142,7 +142,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta parte antes de seguir.
 
-**Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O envio único do dia acontece na seção seguinte.
+**Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O envio do dia acontece na seção seguinte; o reenvio do que mudar depois fica em **Escolha onde fica a chave**.
 
 ## Seção 3. Acenda o farol com a chave
 
@@ -430,15 +430,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Mudei o caminho, mas a missão continua a mesma!"
 
-**Na tela:** Debinha sai. Reiniciar para conferir se a chave volta ao lugar escolhido.
+**Na tela:** Debinha sai. Reiniciar para conferir se a chave volta ao lugar escolhido. Depois esperar **Salvo**, clicar em **Enviar de novo**, confirmar em **Reenviar** e, quando o envio terminar, apontar **Próxima parte**.
 
 **Professora:**
 
-> "Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte."
+> "Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Você mudou o jogo depois de enviar. Envie de novo, para a equipe ver a versão nova: espere aparecer Salvo, clique em Enviar de novo e confirme em Reenviar. Quando o envio terminar, clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Depois clique em Próxima parte.
+**Ponte do Zappy na página (não gravar):** Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Mudou o jogo depois de enviar? Clique em Enviar de novo e confirme em Reenviar. Depois clique em Próxima parte.
 
-**Conferência de produção:** as sugestões vêm de FAROL_POSICOES_CHAVE. Conferir os três lugares nos quatro cenários antes de gravar. A posição não vira critério numérico; a pessoa testa legibilidade, alcance e percurso. Não alterar dimensões para compensar a posição. A seção conclui pelo vídeo, sem segundo envio obrigatório.
+**Conferência de produção:** as sugestões vêm de FAROL_POSICOES_CHAVE. Conferir os três lugares nos quatro cenários antes de gravar. A posição não vira critério numérico; a pessoa testa legibilidade, alcance e percurso. Não alterar dimensões para compensar a posição. A seção conclui pelo vídeo e pelo envio em dia (`submissionUpToDate`, 10/10/2026): quem mudou o projeto depois do envio da seção 3 (imagens, avisos ou a chave) só segue depois de **Enviar de novo**, confirmado em **Reenviar**; sem mudança, a parte fecha sem reenvio. É o que garante que a equipe recebe o jogo que vai ao Mural. A fala não usa "então" como ligação (regra do curso).
 
 ## Seção 8. Publique seu jogo
 

@@ -1,3 +1,4 @@
+import type { KidsSessionClaim } from '@sistemazero/core/security'
 import type { ImpersonationMode } from '../impersonation/impersonation-mode'
 import type { UserAggregate } from '../user/user.aggregate'
 
@@ -34,6 +35,7 @@ export interface ProfileClaim {
 
 /** Claims de identidade carregadas no access token (lidas pelo gateway p/ resolver o usuário). */
 export interface AccessTokenClaims {
+  kids?: KidsSessionClaim
   sub: string
   email: string
   firstName: string
@@ -50,6 +52,7 @@ export interface AccessTokenClaims {
 
 /** Contexto opcional do access token: impersonação (`act`) e/ou sessão de perfil. */
 export interface IssueAccessTokenOptions {
+  kids?: KidsSessionClaim
   act?: ActClaim
   /** Sessão de perfil: sobrescreve `sub` por `profileId` e adiciona a claim `pfl`. */
   profile?: { profileId: string; accountId: string; name?: string; pub?: boolean }

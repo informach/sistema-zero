@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import { useEffect, useState } from 'react'
 import { isLevelUp } from '@/lib/level-info'
 import {

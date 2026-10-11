@@ -64,6 +64,7 @@ export interface ProfileClaim {
 }
 
 export interface SessionUser {
+  kids?: import('@sistemazero/core/security').KidsSessionClaim
   id: string
   email: string
   firstName: string
@@ -611,6 +612,11 @@ export interface StudioStateView {
    * dizendo que viu.
    */
   reviewed?: boolean
+  /**
+   * Impressão digital do conteúdo ENVIADO ("envio em dia", 10/10/2026). O bloco compara com a
+   * do projeto de agora para avisar que ele mudou depois do envio. `null`/ausente = sem conferência.
+   */
+  contentFingerprint?: string | null
 }
 
 /**
@@ -631,7 +637,8 @@ export interface OwnPintaSubmissionView {
 }
 
 // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
-export type CreationToolView = 'studio' | 'pinta' | 'molda'
+/** `lesson-*` = o rascunho do Estúdio/Pinta DENTRO da fase (um item por bloco, 10/10/2026). */
+export type CreationToolView = 'studio' | 'pinta' | 'molda' | 'lesson-studio' | 'lesson-pinta'
 
 /** Uma linha do índice `GET /members/creations/:tool` (sem o blob). */
 export interface CreationSummaryView {
@@ -649,6 +656,8 @@ export interface CreationSummaryView {
   syncedAt: string
   /** ISO presente apenas para uma lápide de exclusão. */
   deletedAt?: string | null
+  /** Impressão digital do conteúdo da revisão corrente (rascunhos da fase). */
+  contentFingerprint?: string | null
 }
 
 export interface CreationTombstoneView {

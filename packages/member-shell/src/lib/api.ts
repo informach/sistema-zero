@@ -1,3 +1,4 @@
+import { sessionFetch as fetch, pageSessionId } from './session-fetch'
 /**
  * Cliente fetch para os Route Handlers do BFF (mesma origem). Em 401 (sessão
  * expirada e refresh falhou) redireciona para o login. Erros do gateway/catálogo
@@ -37,7 +38,7 @@ function extractError(status: number, body: unknown): ApiError {
 
 async function handle<T>(res: Response): Promise<T> {
   if (res.status === 401 && typeof window !== 'undefined') {
-    window.location.href = '/login'
+    if (!pageSessionId()) window.location.href = '/login'
     throw { status: 401, code: 'UNAUTHORIZED', message: 'Sessão expirada.' } satisfies ApiError
   }
   const body = await res.json().catch(() => null)

@@ -1,5 +1,6 @@
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import { ProfileNotFoundError } from '../../domain/profile/profile.errors'
+import { ParentReauthenticationRequiredError } from '../../domain/study-access/errors'
 import { type ProfileView, toProfileView } from '../mappers/profile-view'
 
 export interface UpdateProfileDetailsCommand {
@@ -15,6 +16,11 @@ export interface UpdateProfileDetailsCommand {
   birthDate?: string | null
   /** Perfil público (opt-in). AUTORIZAÇÃO parent-only é da rota; `undefined` = não mexe. */
   publicProfileEnabled?: boolean
+  /**
+   * Sessão de RESPONSÁVEL do Kids: o login dele tem até 15 minutos? `undefined` = sessão de
+   * outro produto (sem a exigência). `false` recusa MUDAR nascimento ou perfil público.
+   */
+  parentAuthRecent?: boolean
 }
 
 /**
@@ -33,6 +39,14 @@ export class UpdateProfileDetailsService {
     if (!profile?.belongsTo(cmd.accountUserId) || profile.isArchived) {
       throw new ProfileNotFoundError()
     }
+    // ⚠️ A exigência vale para a MUDANÇA, não para o campo no corpo: o formulário dos pais
+    // reenvia nascimento e perfil público ao trocar só o nome, e isso não pede login de novo.
+    const sensitiveChange =
+      (cmd.birthDate !== undefined && (cmd.birthDate?.trim() || null) !== profile.birthDate) ||
+      (cmd.publicProfileEnabled !== undefined &&
+        cmd.publicProfileEnabled !== profile.publicProfileEnabled)
+    if (sensitiveChange && cmd.parentAuthRecent === false)
+      throw new ParentReauthenticationRequiredError()
     const now = this.clock()
     profile.updateDetails({ name: cmd.name, avatarUrl: cmd.avatarUrl, whatsapp: cmd.whatsapp }, now)
     // birthDate tem caminho próprio (autorização parent-only na rota; `undefined` = não mexe).

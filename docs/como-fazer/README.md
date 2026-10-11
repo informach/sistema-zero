@@ -1,5 +1,30 @@
 # Como fazer: a biblioteca de ajuda do Kids
 
+## Acesso infantil por aparelho: conteúdo preparado em 10/10/2026
+
+O rascunho local tem **47 tutoriais**. Para a nova entrada da criança, entraram três tutoriais
+novos para ela (`plataforma-entrar-com-codigo`, `plataforma-voltar-ao-meu-perfil` e
+`plataforma-nao-consigo-entrar`) e dois guias para o responsável
+(`plataforma-preparar-acesso-da-crianca` e `plataforma-renovar-ou-encerrar-acesso`). Também
+mudaram `plataforma-trocar-de-perfil` (sem os dois prints antigos) e `plataforma-voltar-para-a-aula`
+(o pedido de entrada no meio do caminho). **Nada disso foi publicado.** A situação de publicação
+descrita abaixo é histórica.
+
+- Os rótulos são os da tela nova: **Quem vai entrar?**, **Eu sou criador(a)**, **Código de acesso**,
+  **Entrar para criar**, **Tenho um código**, **Pedir código**, **Autorizar aparelho**,
+  **Neste aparelho**, **Em outro aparelho**, **Gerar código**, **Copiar**, **Renovar prazo**,
+  **Encerrar acesso** e os avisos exatos da entrada. A lista inteira, com as fontes, está na
+  [referência da plataforma](../aulas-interativas/REFERENCIA-PLATAFORMA.md), seção "A entrada".
+- "Aluno" continua fora do texto da criança. O validador só aceita a palavra dentro de dois
+  rótulos em negrito: **Eu sou criador(a)** e **Ir para a área da criança** (este, no guia do responsável).
+- Os dois guias do responsável moram na mesma biblioteca da criança. Hoje `/como-fazer` só abre
+  com a sessão da criança, então quem está na Área dos pais encontra o passo a passo na ajuda
+  pública `/ajuda/entrar`; os guias servem à criança que lê junto com o responsável e ao Zappy.
+- Publique os tutoriais só depois de o Kids novo estar no ar em cada ambiente (passo 5 da
+  publicação em [`docs/qa/2026-10-10-acesso-infantil.md`](../qa/2026-10-10-acesso-infantil.md)).
+  O conteúdo publicado alimenta o Zappy. Os prints a refazer estão em
+  [PRINTS-A-REFAZER-2026-10-06.md](PRINTS-A-REFAZER-2026-10-06.md), seção de 10/10/2026.
+
 > O que é, como o conteúdo entra na plataforma e como manter os tutoriais vivos quando a
 > interface mudar. Implantado em 26/09/2026 (core/help, members `0097`, gateway, member-shell,
 > studio, community-kids e admin).

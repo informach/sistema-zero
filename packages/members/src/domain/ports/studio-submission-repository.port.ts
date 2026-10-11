@@ -27,6 +27,11 @@ export interface StudioSubmissionRecord {
   /** Recado OPCIONAL do aluno ao professor (modal de envio). `null` = sem recado. */
   message?: string | null
   /**
+   * Impressão digital do conteúdo enviado ("envio em dia"). `null` = sem conferência (envio
+   * antigo, galeria, restaurado pelo professor).
+   */
+  contentFingerprint?: string | null
+  /**
    * Carimbo "já conferi" do professor. ⚠️ NÃO é escrito pelo `upsert` (o set do
    * reenvio não o lista, de propósito): quem mexe aqui é só o `markReviewed`. O
    * reenvio invalida o carimbo pela COMPARAÇÃO com `submittedAt`, não apagando.
@@ -68,6 +73,8 @@ export interface StudioSubmissionState {
    * `submittedAt` diz se o carimbo vale para a entrega ATUAL (reenvio reabre).
    */
   reviewedAt: Date | null
+  /** Impressão digital do conteúdo enviado ("envio em dia"); `null` = sem conferência. */
+  contentFingerprint: string | null
 }
 
 /** Entrega completa de um aluno num bloco (admin detalhe + stickiness do submit). */

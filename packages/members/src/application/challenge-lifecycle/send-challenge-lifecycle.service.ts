@@ -157,7 +157,8 @@ function linkFor(
   opts: ChallengeLifecycleOptions,
 ): string {
   if (kind === 'not_activated') return `${opts.kidsUrl}/esqueci-senha`
-  if (kind === 'not_started') return `${opts.kidsUrl}/perfis`
+  // O responsável prepara o computador da criança na Área dos pais antes da 1ª fase.
+  if (kind === 'not_started') return `${opts.kidsUrl}/pais`
   if (kind === 'completed')
     return `${opts.funnelUrl}/kids/comunidade-dos-criadores/oferta/continuar`
   return `${opts.kidsUrl}/cursos/${encodeURIComponent(courseRef)}`

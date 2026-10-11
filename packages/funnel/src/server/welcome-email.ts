@@ -23,12 +23,15 @@ export interface WelcomeEmailDeps {
  * Notificação pós-compra por E-MAIL e WHATSAPP, RAMIFICADA pelo tipo de comprador
  * (`buyerIsNew`, vindo do `created` do `ensure-buyer`). Roda após fulfill+grant.
  * - **NOVO** (`buyerIsNew === true`): boas-vindas com o link de DEFINIR a senha
- *   (1º acesso) — template `welcome`, link `…/redefinir-senha?token=` (token
- *   single-use; mesmo nos dois canais).
+ *   (1º acesso) — template `welcome` (`kids-welcome` no funil kids), link
+ *   `…/redefinir-senha?token=` (token single-use; mesmo nos dois canais).
  * - **RECORRENTE** (`buyerIsNew === false`): já tem credenciais — NÃO recebe link
  *   de senha (seria confuso). Recebe um aviso de "novo acesso liberado" — template
- *   `new-access`, link `…/cursos` (sem token).
+ *   `new-access`, link `…/cursos` (sem token); no funil kids, `kids-new-access` com
+ *   link `…/login/responsavel` (a criança entra pelo computador autorizado).
  * `buyerIsNew` nulo = comprador ainda não registrado no IdP → nada a notificar.
+ * As chaves `kids-*` caem na chave antiga se o Messaging ainda não as tiver
+ * (`LEGACY_TEMPLATE_KEYS`).
  *
  * BEST-EFFORT deliberado: qualquer falha é logada e NUNCA lança — as mensagens não
  * são críticas para a concessão do acesso (o aluno tem "esqueci minha senha" como
@@ -59,9 +62,8 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
 
       const { firstName } = splitName(lead.nome)
       // Funil kids → app KIDS; senão o adulto. A chave do lead é `audience/produto`.
-      const baseUrl = lead.funnel?.startsWith('kids/')
-        ? (deps.kidsCommunityUrl ?? deps.communityUrl)
-        : deps.communityUrl
+      const isKids = lead.funnel?.startsWith('kids/') === true
+      const baseUrl = isKids ? (deps.kidsCommunityUrl ?? deps.communityUrl) : deps.communityUrl
       let challengeAccess: { expiresAtLabel: string } | null = null
       try {
         challengeAccess = await resolveChallengeAccess(deps.repo, lead)
@@ -90,18 +92,20 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
           await deps.repo.releaseWelcome(lead.id)
           return
         }
-        templateKey = 'welcome'
+        templateKey = isKids ? 'kids-welcome' : 'welcome'
         link = `${baseUrl}/redefinir-senha?token=${encodeURIComponent(token)}`
         keyPrefix = 'welcome'
-        action = 'Criar acesso e abrir a primeira etapa'
+        action = 'Criar senha da área dos pais'
+        // A conta nova nasce SEM perfil: primeiro "Adicionar criança", depois o aparelho.
         guidance =
-          'Crie sua senha pelo botão abaixo, cadastre o perfil da criança e abram juntos a primeira etapa.'
+          'Crie sua senha e entre como responsável. Na Área dos pais, clique em Adicionar criança (ou escolha o perfil, se ele já existir) e abra Acesso nos aparelhos para autorizar o computador da criança. Nesse computador, se aparecer Quem vai entrar?, ela clica em Eu sou criador(a) e entra no próprio perfil.'
       } else {
-        templateKey = 'new-access'
-        link = `${baseUrl}/cursos`
+        templateKey = isKids ? 'kids-new-access' : 'new-access'
+        link = `${baseUrl}${isKids ? '/login/responsavel' : '/cursos'}`
         keyPrefix = 'new-access'
-        action = 'Abrir a primeira etapa'
-        guidance = 'Entre com seu e-mail e sua senha de sempre e abra a primeira etapa do Desafio.'
+        action = 'Abrir a área dos pais'
+        guidance =
+          'Entre como responsável com o código enviado ao seu e-mail ou com sua senha. Na Área dos pais, escolha o perfil da criança (ou clique em Adicionar criança) e confira Acesso nos aparelhos. No computador autorizado, se aparecer Quem vai entrar?, ela clica em Eu sou criador(a) e começa o Desafio.'
       }
 
       const variables: Record<string, string> = { nome: firstName, link }
@@ -166,6 +170,24 @@ async function resolveChallengeAccess(
   }
 }
 
+/**
+ * Chaves que nasceram com o acesso infantil por aparelho (10/10/2026) → a chave que já existia.
+ * Se o Funil subir antes de o Messaging semear a nova, o comprador recebe a antiga (com o MESMO
+ * link de senha) em vez de ficar sem mensagem. Contrato conferido em
+ * `tests/unit/message-templates-contract.test.ts` contra o seed do Messaging.
+ */
+export const LEGACY_TEMPLATE_KEYS: Readonly<Record<string, string>> = {
+  'kids-welcome': 'welcome',
+  'kids-new-access': 'new-access',
+}
+
+/** 404 `TEMPLATE_NOT_FOUND` do Messaging: a chave ainda não existe (ou está inativa) lá. */
+function isTemplateNotFound(res: { status: number; body: unknown }): boolean {
+  if (res.status !== 404 || !res.body || typeof res.body !== 'object') return false
+  const error = (res.body as { error?: { code?: unknown } }).error
+  return error?.code === 'TEMPLATE_NOT_FOUND'
+}
+
 /** Um envio por canal — best-effort: loga sucesso/falha e NUNCA lança. */
 async function sendOne(
   deps: WelcomeEmailDeps,
@@ -174,7 +196,19 @@ async function sendOne(
   idempotencyKey: string,
 ): Promise<void> {
   try {
-    const res = await deps.gateway.sendMessage(input, idempotencyKey)
+    let res = await deps.gateway.sendMessage(input, idempotencyKey)
+    const legacy = LEGACY_TEMPLATE_KEYS[input.templateKey]
+    if (legacy && isTemplateNotFound(res)) {
+      // A mesma Idempotency-Key serve: o Messaging recusa a chave ausente ANTES de gravar
+      // a mensagem, então nada ficou registrado com ela.
+      deps.log?.('welcome.template_fallback', {
+        leadId,
+        channel: input.channel,
+        from: input.templateKey,
+        to: legacy,
+      })
+      res = await deps.gateway.sendMessage({ ...input, templateKey: legacy }, idempotencyKey)
+    }
     if (res.status !== 202 && res.status !== 200) {
       deps.log?.('welcome.send_failed', { leadId, channel: input.channel, status: res.status })
       return

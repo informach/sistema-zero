@@ -56,6 +56,8 @@ const TOQUE_EM_BOTAO =
 const ENDERECO_DO_LINK = /\]\([^)]*\)/g
 
 function vocabularioDaAventura(texto: string, noPensa: boolean): string[] {
+  // Os rótulos da entrada não têm mais exceção: desde 10/10/2026 são **Eu sou criador(a)** e
+  // **Ir para a área da criança**, sem "aluno".
   const visivel = texto.replace(ENDERECO_DO_LINK, ']')
   const escola = [...palavrasDaEscola(visivel), ...[...visivel.matchAll(TAREFA)].map((m) => m[0])]
     .filter((palavra) => !(noPensa && SO_NO_PENSA.test(palavra)))

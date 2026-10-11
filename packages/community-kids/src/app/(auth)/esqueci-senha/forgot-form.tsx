@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
@@ -107,7 +109,8 @@ export function ForgotForm() {
       })
       if (res.ok) {
         toast.success('Senha redefinida! Entre com a nova senha.')
-        router.replace('/login')
+        // A senha é da conta do responsável: volta para a entrada dele, como o `reset-form`.
+        router.replace('/login/responsavel')
         return
       }
       const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
@@ -191,14 +194,17 @@ export function ForgotForm() {
               type="button"
               onClick={() => sendCode()}
               disabled={loading}
-              className="text-center text-sm text-interactive hover:text-interactive-hover"
+              className="min-h-11 text-center text-sm text-interactive hover:text-interactive-hover"
             >
               Reenviar código
             </button>
           ) : null}
 
           <p className="text-center text-sm text-muted-foreground">
-            <Link href="/login" className="text-interactive hover:text-interactive-hover">
+            <Link
+              href="/login/responsavel"
+              className="inline-flex min-h-11 items-center text-interactive hover:text-interactive-hover"
+            >
               Voltar ao login
             </Link>
           </p>

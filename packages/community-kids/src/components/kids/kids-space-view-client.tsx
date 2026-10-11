@@ -1,6 +1,7 @@
 'use client'
 
 import type { UploadedAttachment } from '@sistemazero/member-shell/components/attachment-uploader'
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import {
   remixRequirementFromSnapshot,
   type StudioRemixCapability,

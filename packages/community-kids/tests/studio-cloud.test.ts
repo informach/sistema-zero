@@ -164,6 +164,8 @@ function fakeCloud(
     supported: true,
     list: async () => [...remote.values()].map((r) => r.summary),
     upload: async () => ({ revision: 1 }),
+    // O rascunho da fase consulta sem baixar; estas filas não usam.
+    peek: async () => null,
     download: async (itemId) => {
       const r = remote.get(itemId)
       return r
@@ -188,6 +190,9 @@ function fakeCloud(
       removed.push({ itemId, baseRevision, onRemoved, onStale })
     },
     flush: async () => {},
+    confirm: async () => {
+      throw new Error('A galeria livre não confirma avanços de aula')
+    },
     getState: () => ({ status: 'idle', pending: 0, lastSavedAt: null, lastError: null }),
     subscribe: () => () => {},
     dispose: () => {},

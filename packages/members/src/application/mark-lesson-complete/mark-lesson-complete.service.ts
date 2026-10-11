@@ -93,7 +93,9 @@ export class MarkLessonCompleteService {
       const sectionProgress =
         privileged || learning.legacyLayout
           ? undefined
-          : await this.learning.sections.read({ userId, accountId: accountId ?? userId }, lesson)
+          : await this.learning.sections.read({ userId, accountId: accountId ?? userId }, lesson, {
+              settle: 'all',
+            })
       const requirements = lessonCompletionRequirements({
         sectionProgress,
         videoBlockIds: learning.legacyLayout

@@ -18,3 +18,12 @@ export function lessonStudioProjectId(blockId: string, viewerId?: string | null)
   const who = viewerId ? `${viewerId}-` : ''
   return `sz-lesson-studio-${who}${blockId}`
 }
+
+/**
+ * A "outra versão" do rascunho da fase (10/10/2026): quando dois computadores mexeram ao mesmo
+ * tempo, a versão que não abriu fica guardada NESTE navegador com este id, e o bloco a traz de
+ * volta trocando as duas de lugar. Mesmo charset do id do rascunho (sem `:`).
+ */
+export function lessonStudioBackupProjectId(projectId: string): string {
+  return `${projectId}-outra`
+}

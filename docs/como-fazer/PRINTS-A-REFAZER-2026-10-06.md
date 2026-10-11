@@ -27,6 +27,67 @@ criação da galeria**, **Como ler e responder aos recados da equipe** e **Como 
 você enviou**; os slugs não mudaram). A galeria, que não tinha print nenhum, ganhou três prints
 novos a capturar (seção "Prints novos").
 
+## Acesso infantil por aparelho (10/10/2026)
+
+A entrada mudou: a criança entra pelo próprio perfil num navegador que o responsável autorizou, e
+a gestão foi para a **Área dos pais** (`/pais`). Os textos de sete tutoriais já estão em
+[como-fazer.json](como-fazer.json) (rótulos e fontes na
+[referência da plataforma](../aulas-interativas/REFERENCIA-PLATAFORMA.md), seção "A entrada").
+Os prints antigos de `plataforma-trocar-de-perfil/escolher` (a grade mista) e `/selecionar` (o
+menu da conta antigo) saíram do rascunho, e os cinco tutoriais novos ainda não têm imagem.
+
+**A sessão de captura mudou.** O roteiro de 07/10/2026 (cookies exportados de uma conta logada,
+`KIDS_COOKIES_FILE` ou `KIDS_CDP_PORT`) não serve mais: uma sessão de conta sem o contexto Kids
+cai na entrada nova, e a criança só entra num navegador autorizado para o perfil dela. Antes de
+capturar:
+
+1. No Chrome de captura, entre como responsável (código do e-mail ou senha) e, na Área dos pais,
+   abra **Acesso nos aparelhos** no cartão do perfil de teste (Lipe ou Leninha) →
+   **Autorizar aparelho** → **Neste aparelho** → **Autorizar este aparelho** →
+   **Ir para a área da criança**. Cada perfil de teste precisa da própria autorização.
+2. Para as telas do código, gere o código num navegador e digite em outro, ainda não autorizado:
+   o código vale 10 minutos e é consumido ao entrar.
+3. As telas do responsável pedem uma sessão de responsável recente; mudar acessos pode pedir a
+   entrada de novo.
+4. Espere os rótulos decididos em 10/10/2026 chegarem às telas antes de fotografar: o campo
+   **Código de acesso** (era "Código do responsável"), **Código enviado ao seu e-mail**, o
+   subtítulo "Entre para continuar suas aventuras." e o aviso de navegador de outra família.
+5. Embace o código nas capturas do cartão do código. Não deixe nome completo nem e-mail de conta
+   real no quadro.
+
+| Tutorial · passo | Precisa mostrar | Sessão para capturar |
+| --- | --- | --- |
+| `plataforma-trocar-de-perfil` · `escolher` | **Quem vai criar hoje?** com dois perfis, um com **Entrar** e outro com **Pedir código** | Navegador autorizado só para um dos perfis, sem sessão aberta (`/login/aluno`) |
+| `plataforma-trocar-de-perfil` · `selecionar` | Menu do avatar aberto com **Trocar de perfil**, **Meu perfil**, **Área dos pais** e **Sair** | Sessão de criança |
+| `plataforma-trocar-de-perfil` · `trocar` | Conferir: nome e avatar no menu da esquerda (provavelmente não muda) | Sessão de criança |
+| `plataforma-entrar-com-codigo` · `aluno` | **Quem vai entrar?** com **Eu sou criador(a)** destacado. Mesma captura de `plataforma-voltar-ao-meu-perfil` · `abrir` | Navegador sem sessão, na raiz |
+| `plataforma-entrar-com-codigo` · `codigo` | Campo **Código de acesso** preenchido (embaçado) e **Entrar para criar** | Navegador não autorizado + código gerado na Área dos pais |
+| `plataforma-entrar-com-codigo` · `conferir` | Área da criança com o nome e o avatar dela no menu | Sessão de criança recém-aberta pelo código |
+| `plataforma-voltar-ao-meu-perfil` · `perfil` | Grade com o selo **Último perfil usado** | Navegador autorizado, sem sessão aberta |
+| `plataforma-voltar-ao-meu-perfil` · `sair` | Janela **Sair deste aparelho?** com **Continuar aqui** e **Sair deste aparelho** (feche com **Continuar aqui**) | Sessão de criança |
+| `plataforma-voltar-ao-meu-perfil` · `vencido` | Cartão com **O prazo deste acesso terminou.** Mesma captura de `plataforma-nao-consigo-entrar` · `prazo` | Autorização **Somente hoje** vencida (capturar no dia seguinte) |
+| `plataforma-nao-consigo-entrar` · `conferir` | Aviso **Esse código não liberou o acesso. …** abaixo do campo | Navegador não autorizado, código errado |
+| `plataforma-nao-consigo-entrar` · `encerrado` | Cartão com **Acesso encerrado neste aparelho.** | Autorização encerrada na Área dos pais |
+| `plataforma-nao-consigo-entrar` · `ajuda` | Página **Ajuda para entrar** (`/ajuda/entrar`) | Sem sessão |
+| `plataforma-nao-consigo-entrar` · `tentativas`, `navegador` | Opcional: os avisos de muitas tentativas e de navegador de outra família são difíceis de provocar sem esgotar o limite do staging; o texto basta | — |
+| `plataforma-preparar-acesso-da-crianca` · `entrar` | Entrada do responsável com **Enviar código** e o campo **Código enviado ao seu e-mail** | Sem sessão (`/login/responsavel`) |
+| `plataforma-preparar-acesso-da-crianca` · `crianca` | **Seus filhos** com **Acesso nos aparelhos** destacado no cartão e **Adicionar criança** visível | Responsável |
+| `plataforma-preparar-acesso-da-crianca` · `autorizar` | Formulário com **Neste aparelho** e **Em outro aparelho** | Responsável |
+| `plataforma-preparar-acesso-da-crianca` · `prazo` | **Nome do aparelho** com "Computador de casa" e **Por quanto tempo?** em **90 dias** | Responsável |
+| `plataforma-preparar-acesso-da-crianca` · `neste` | Aparelho **Liberado** na lista e **Ir para a área da criança** no alto | Responsável, depois de **Autorizar este aparelho** |
+| `plataforma-preparar-acesso-da-crianca` · `outro` | Cartão do código com **Copiar** e a validade de 10 minutos (código embaçado) | Responsável, depois de **Gerar código** |
+| `plataforma-preparar-acesso-da-crianca` · `conferir` | **Conferir se a criança já entrou** e o aparelho **Liberado** | Responsável, depois de a criança usar o código |
+| `plataforma-renovar-ou-encerrar-acesso` · `abrir` | Lista com aparelhos **Liberado**, **Venceu** e **Encerrado** | Responsável, perfil com três autorizações |
+| `plataforma-renovar-ou-encerrar-acesso` · `renovar` | Janela **Renovar o acesso** com **Novo prazo, a partir de hoje** e **Confirmar novo prazo** | Responsável |
+| `plataforma-renovar-ou-encerrar-acesso` · `encerrar` | Janela **Encerrar este acesso?** com **Encerrar acesso** | Responsável |
+| `plataforma-renovar-ou-encerrar-acesso` · `irmaos` | Dois cartões em **Seus filhos**, cada um com **Acesso nos aparelhos** | Responsável com dois perfis |
+| `plataforma-renovar-ou-encerrar-acesso` · `voltar` | **Autorizar aparelho** destacado depois de um acesso **Encerrado** | Responsável |
+
+São **23 capturas novas** (25 passos, porque duas capturas servem a dois passos cada), mais uma a
+conferir e duas opcionais. Os vídeos de ajuda que mostram a entrada por e-mail da criança, a
+grade mista de perfis ou o antigo portão de senha dos pais também precisam de trecho novo; nenhum
+foi gravado.
+
 ## Situação em 07/10/2026
 
 Refeitos 78 prints: 68 da lista (conta Leninha; o do Pensa e os dois "Concluir fase" na conta
@@ -184,6 +245,9 @@ Ainda faltam:
 
 ### Como escolher ou trocar seu perfil · `plataforma-trocar-de-perfil`
 
+Desde 10/10/2026 os prints deste tutorial seguem a seção "Acesso infantil por aparelho", no alto
+deste arquivo: `escolher` e `selecionar` saíram do rascunho e precisam de captura nova.
+
 | Passo | Hoje mostra | Precisa mostrar | Certeza |
 | --- | --- | --- | --- |
 | `escolher` | Título **Quem vai aprender hoje?** na grade de perfis | **Quem vai criar hoje?** (decisão de 06/10/2026; o texto e o texto alternativo do passo já dizem assim) | certo |
@@ -312,7 +376,7 @@ Estes prints mostram uma parte da tela em que o rótulo antigo só aparece se o 
 
 | Tutorial | Passos | O que conferir |
 | --- | --- | --- |
-| `plataforma-trocar-de-perfil` | `selecionar` | O menu da conta abre sobre o rodapé do menu, onde fica **Recados do professor** |
+| `plataforma-trocar-de-perfil` | `selecionar` | Substituído em 10/10/2026: o print saiu do rascunho e volta com o menu novo (seção "Acesso infantil por aparelho") |
 | `plataforma-responder-o-quiz` | `responder`, `enviar` | **Seção N de M** na barra de cima, se ela estiver no quadro |
 | `plataforma-pausar-e-rever-video` | `controles`, `pausar`, `voltar`, `continuar` | A página da fase em volta do vídeo (**Seção N de M**, **Próxima seção**) |
 | `plataforma-jogar-exemplo-da-aula` | `recomecar` | A página da fase em volta do jogo |

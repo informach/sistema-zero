@@ -1,3 +1,5 @@
+import { KIDS_IDENTITY_HEADERS } from '@sistemazero/core/security'
+
 /**
  * Headers hop-by-hop (RFC 7230 §6.1) — não devem ser repassados por um proxy.
  */
@@ -80,6 +82,11 @@ export const IDENTITY_HEADERS = {
   // sessão (ex.: selecionar um perfil) — sem ele a impersonação seria "lavada" numa
   // sessão normal. De IDENTIDADE (auto-stripado da entrada + redigido no log).
   impersonatorId: 'x-auth-impersonator-id',
+  // Público da sessão do Kids (claim `kids`) e, só no responsável, a hora do login. O Auth
+  // os usa para exigir login recente nas ações sensíveis e recusar o fluxo antigo de perfis.
+  // De IDENTIDADE (auto-stripados da entrada + redigidos no log).
+  kidsContext: KIDS_IDENTITY_HEADERS.context,
+  kidsAuthTime: KIDS_IDENTITY_HEADERS.authTime,
 } as const
 
 const IDENTITY_HEADER_NAMES = Object.values(IDENTITY_HEADERS)
@@ -98,6 +105,8 @@ export interface IdentityHeaderInput {
   profileName?: string
   profilePublic?: boolean
   impersonatorId?: string
+  kidsContext?: 'parent' | 'student'
+  kidsAuthTime?: number
 }
 
 /** Remove quaisquer headers de identidade da entrada (anti-spoof do cliente). */
@@ -135,8 +144,11 @@ export function headerSafeValue(value: string): string {
 export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInput): void {
   stripIdentityHeaders(headers)
   headers.set(IDENTITY_HEADERS.id, headerSafeValue(user.id))
-  headers.set(IDENTITY_HEADERS.email, headerSafeValue(user.email))
-  headers.set(IDENTITY_HEADERS.name, headerSafeValue(`${user.firstName} ${user.lastName}`.trim()))
+  // O aluno do Kids não tem e-mail nem nome no token: o header some em vez de ir vazio
+  // (os serviços usam `x-auth-profile-name` para o nome da criança).
+  if (user.email) headers.set(IDENTITY_HEADERS.email, headerSafeValue(user.email))
+  const name = `${user.firstName} ${user.lastName}`.trim()
+  if (name) headers.set(IDENTITY_HEADERS.name, headerSafeValue(name))
   headers.set(IDENTITY_HEADERS.role, headerSafeValue(user.role))
   headers.set(IDENTITY_HEADERS.status, headerSafeValue(user.status))
   if (user.phone) headers.set(IDENTITY_HEADERS.phone, headerSafeValue(user.phone))
@@ -158,6 +170,9 @@ export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInpu
   if (user.impersonatorId) {
     headers.set(IDENTITY_HEADERS.impersonatorId, headerSafeValue(user.impersonatorId))
   }
+  if (user.kidsContext) headers.set(IDENTITY_HEADERS.kidsContext, user.kidsContext)
+  if (user.kidsContext === 'parent' && user.kidsAuthTime !== undefined)
+    headers.set(IDENTITY_HEADERS.kidsAuthTime, String(user.kidsAuthTime))
 }
 
 /**

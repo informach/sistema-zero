@@ -51,11 +51,19 @@ const MAX_PARTS = 128
 const HEAD_CONCURRENCY = 8
 const PartHash = z.string().regex(/^[a-f0-9]{64}$/)
 
-/** Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026). */
-const Tool = z.enum(['studio', 'pinta', 'molda'])
+/**
+ * Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026; `lesson-*` = o
+ * rascunho do Estúdio/Pinta dentro da fase, um item por bloco, 10/10/2026).
+ */
+const Tool = z.enum(['studio', 'pinta', 'molda', 'lesson-studio', 'lesson-pinta'])
 type ToolName = z.infer<typeof Tool>
+/** O documento é um projeto do Estúdio (conferido no commit): o livre e o da fase. */
+const isStudioFormat = (tool: ToolName) => tool === 'studio' || tool === 'lesson-studio'
 /** Charset seguro: vira segmento da chave no R2 (nunca `/`, `:`, `..`). */
 const ItemId = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/)
+const LessonBlockId = z
+  .string()
+  .regex(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i)
 const UploadBody = z.strictObject({
   formatVersion: z.number().int().min(1).max(65_535).optional(),
   // Corte por CARACTERE (não por UTF-16): um emoji na borda não vira meio par substituto.
@@ -92,6 +100,14 @@ const UploadBody = z.strictObject({
       }),
     )
     .max(MAX_PARTS)
+    .optional(),
+  /**
+   * Impressão digital do conteúdo (`v1:<sha256>`, régua de `@sistemazero/core/creations`). Vai
+   * opaca ao members: é o que o "envio em dia" compara entre o rascunho guardado e o envio.
+   */
+  fingerprint: z
+    .string()
+    .regex(/^v1:[a-f0-9]{64}$/)
     .optional(),
 })
 /**
@@ -250,6 +266,11 @@ export function createCreationsRoutes(deps: {
     const tool = Tool.safeParse(raw.tool)
     const itemId = ItemId.safeParse(raw.itemId)
     if (!tool.success || !itemId.success) return null
+    if (
+      (tool.data === 'lesson-studio' || tool.data === 'lesson-pinta') &&
+      !LessonBlockId.safeParse(itemId.data).success
+    )
+      return null
     return { tool: tool.data, itemId: itemId.data }
   }
 
@@ -416,7 +437,7 @@ export function createCreationsRoutes(deps: {
           }
         }
       }
-      if (item.tool === 'studio') {
+      if (isStudioFormat(item.tool)) {
         const user = await session.getSession()
         if (!user) return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
         try {
@@ -506,6 +527,9 @@ export function createCreationsRoutes(deps: {
           bytes: ticket.body.bytes,
           item: ticket.body.summary,
           parts,
+          // O relógio do servidor agora: corrige o do aparelho quando o rascunho da fase decide
+          // qual versão é a mais nova (a da conta tem `syncedAt` do servidor).
+          serverNow: new Date().toISOString(),
         })
       } catch (error) {
         return mediaErrorResponse(error)

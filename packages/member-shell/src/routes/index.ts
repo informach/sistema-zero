@@ -14,6 +14,7 @@ import {
 } from '../lib/download-mime'
 import { redactProfilesForProfileSession } from '../lib/profile-redaction'
 import { type ChildDashboardView, IMPERSONATION_MODES } from '../lib/types'
+import { watermarkIdentity } from '../lib/watermark-identity'
 import type { AuthClient, MembersClient, PaymentsClient, ProfilesClient } from '../server/clients'
 import type { GatewayModule, GatewayResponse } from '../server/gateway'
 import {
@@ -269,6 +270,15 @@ function extractStudioProject(raw: unknown): Record<string, unknown> | null {
 
 const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
 
+/**
+ * A impressão digital do conteúdo enviado ("envio em dia"). Só a FORMA é conferida; fora dela,
+ * fica de fora (o envio continua valendo, sem a conferência).
+ */
+function readFingerprint(raw: unknown): string | undefined {
+  const value = (raw as { fingerprint?: unknown } | null)?.fingerprint
+  return typeof value === 'string' && /^v1:[a-f0-9]{64}$/.test(value) ? value : undefined
+}
+
 /** Valida ids de path (perfil etc.) ANTES de tocar gateway/R2 — fail-fast e não
  * deixa um id forjado virar prefixo de chave no R2 (ex.: avatarSnapshot). */
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
@@ -311,6 +321,20 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
+  async function replaceLogin(
+    tokens: import('../server/session').AuthTokens,
+  ): Promise<NextResponse | null> {
+    if (session.audience === 'kids') {
+      const previous = await session.getRefreshToken()
+      if (previous && !(await gateway.logoutRequest(previous))) {
+        await gateway.logoutRequest(tokens.refreshToken)
+        return NextResponse.json({ error: { code: 'SERVICE_UNAVAILABLE' } }, { status: 503 })
+      }
+    }
+    await session.setSessionCookies(tokens)
+    return null
+  }
+
   /**
    * Login do aluno: qualquer conta ATIVA entra (inclusive `customer` — diferente
    * do admin, que filtra papel). Conta inativa → 403 do auth → INACTIVE.
@@ -337,7 +361,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         return NextResponse.json({ error: { code: 'INVALID_CREDENTIALS' } }, { status: 401 })
       }
 
-      await session.setSessionCookies(body.tokens)
+      const failed = await replaceLogin(body.tokens)
+      if (failed) return failed
       return NextResponse.json({ ok: true })
     },
   }
@@ -462,7 +487,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       if (!parsed.success) return invalidInput()
       let upstream: GatewayResponse | null = null
       try {
-        upstream = await auth.requestOtp(parsed.data.email, parsed.data.purpose)
+        upstream = await auth.requestOtp(
+          parsed.data.email,
+          parsed.data.purpose,
+          session.audience === 'kids' ? 'kids' : 'main',
+        )
       } catch {
         upstream = null // rede/timeout → indisponível
       }
@@ -509,7 +538,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         return NextResponse.json({ error: { code: 'INVALID_OTP' } }, { status: 401 })
       }
 
-      await session.setSessionCookies(body.tokens)
+      const failed = await replaceLogin(body.tokens)
+      if (failed) return failed
       return NextResponse.json({ ok: true })
     },
   }
@@ -739,8 +769,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             const url = await presignWatermarkedPdf({
               srcKey: key,
               srcEtag: head.etag,
-              email: user.email,
-              userId: user.id,
+              email: watermarkIdentity(user).label,
+              userId: watermarkIdentity(user).cacheUser,
               responseContentDisposition: disposition,
               signal: req.signal,
             })
@@ -765,8 +795,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           const pdf = await watermarkedPdfInline({
             srcKey: key,
             srcEtag: head.etag,
-            email: user.email,
-            userId: user.id,
+            email: watermarkIdentity(user).label,
+            userId: watermarkIdentity(user).cacheUser,
             signal: req.signal,
           })
           return finish(
@@ -790,7 +820,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
             const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
             let out: Uint8Array
             try {
-              out = await watermarkImage(original, dlMedia.mime, user.email)
+              out = await watermarkImage(original, dlMedia.mime, watermarkIdentity(user).label)
             } catch (error) {
               console.error('[anexos] watermark falhou — download bloqueado', { key, error })
               throw new WatermarkUnavailableError(error)
@@ -863,8 +893,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           const url = await presignWatermarkedPdf({
             srcKey: key,
             srcEtag: head.etag,
-            email: user.email,
-            userId: user.id,
+            email: watermarkIdentity(user).label,
+            userId: watermarkIdentity(user).cacheUser,
             responseContentDisposition: 'inline',
             signal: req.signal,
           })
@@ -885,8 +915,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         const pdf = await watermarkedPdfInline({
           srcKey: key,
           srcEtag: head.etag,
-          email: user.email,
-          userId: user.id,
+          email: watermarkIdentity(user).label,
+          userId: watermarkIdentity(user).cacheUser,
           signal: req.signal,
         })
         return new Response(pdf.body instanceof Uint8Array ? new Uint8Array(pdf.body) : pdf.body, {
@@ -1367,6 +1397,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         project,
         results,
         message,
+        readFingerprint(raw),
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -1407,7 +1438,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       if (!asset || typeof asset !== 'object') return invalidInput()
       const rawMessage = (raw as { message?: unknown })?.message
       const message = typeof rawMessage === 'string' ? rawMessage.slice(0, 1000) : undefined
-      const { status, body } = await members.submitPintaAsset(lessonId, blockId, asset, message)
+      const { status, body } = await members.submitPintaAsset(
+        lessonId,
+        blockId,
+        asset,
+        message,
+        readFingerprint(raw),
+      )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }
@@ -1584,6 +1621,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
    */
   const profileSelect = {
     POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      if (session.audience === 'kids' && !(await session.getSession())?.act)
+        return NextResponse.json({ error: { code: 'USE_KIDS_LOGIN' } }, { status: 410 })
       const { id } = await ctx.params
       if (!UUID_RE.test(id)) return invalidInput()
       const previousRefresh = await session.getRefreshToken()

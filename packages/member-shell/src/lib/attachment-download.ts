@@ -1,4 +1,5 @@
 import { CODIGO_SEM_ENVELOPE } from './api'
+import { sessionFetch as fetch } from './session-fetch'
 
 /**
  * Baixar um anexo da aula NA MESMA página.

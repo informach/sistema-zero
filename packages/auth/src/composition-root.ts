@@ -13,6 +13,7 @@ import { SetUserPasswordService } from './application/admin/set-password/set-use
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
+import { GetOwnProfileService } from './application/get-me/get-own-profile.service'
 import { ChangeImpersonationModeService } from './application/impersonation/change-impersonation-mode.service'
 import { CreateImpersonationTokenService } from './application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from './application/impersonation/exchange-impersonation-token.service'
@@ -20,6 +21,7 @@ import { ImpersonationSessionValidator } from './application/impersonation/imper
 import { WriteAuditLogService } from './application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
+import { purgeExpiredRecords } from './application/maintenance/purge-expired'
 import { ChangeMyPasswordService } from './application/me/change-password.service'
 import { UpdateProfileService } from './application/me/update-profile.service'
 import { RequestOtpService } from './application/otp/request-otp.service'
@@ -37,6 +39,7 @@ import { SelectProfileService } from './application/profiles/select-profile.serv
 import { UpdateProfileDetailsService } from './application/profiles/update-profile.service'
 import { RefreshService } from './application/refresh/refresh.service'
 import { RegisterService } from './application/register/register.service'
+import { StudyAccessService } from './application/study-access/study-access.service'
 import { AuthTokenService } from './application/tokens/auth-token.service'
 import type { Env } from './infrastructure/config/env'
 import { createMembersAllowanceGateway } from './infrastructure/gateways/members-allowance.gateway'
@@ -52,6 +55,7 @@ import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/o
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
 import { DrizzleProfileRepository } from './infrastructure/persistence/drizzle/profile.repository'
 import { DrizzleRefreshTokenRepository } from './infrastructure/persistence/drizzle/refresh-token.repository'
+import { DrizzleStudyAccessRepository } from './infrastructure/persistence/drizzle/study-access.repository'
 import { DrizzleUserRepository } from './infrastructure/persistence/drizzle/user.repository'
 import { createBunPasswordHasher } from './infrastructure/security/bun-password-hasher'
 import { createJoseTokenIssuer } from './infrastructure/security/jose-token-issuer'
@@ -105,6 +109,7 @@ export async function createApplication(env: Env): Promise<Application> {
 
   // Adapters
   const users = new DrizzleUserRepository(db)
+  const studyAccessRepository = new DrizzleStudyAccessRepository(db)
   const refreshTokens = new DrizzleRefreshTokenRepository(db)
   const passwordResetTokens = new DrizzlePasswordResetTokenRepository(db)
   const otpCodes = new DrizzleOtpCodeRepository(db)
@@ -134,6 +139,15 @@ export async function createApplication(env: Env): Promise<Application> {
 
   const signing = await loadSigningMaterial(env, logger)
   const tokenIssuer = createJoseTokenIssuer({
+    validateKidsSession: (claims) =>
+      claims.kids
+        ? studyAccessRepository.validateSession(
+            claims.kids,
+            claims.pfl?.accountId ?? claims.sub,
+            claims.pfl ? claims.sub : null,
+            new Date(),
+          )
+        : Promise.resolve(false),
     signing,
     issuer: env.JWT_ISSUER,
     audience: env.JWT_AUDIENCE,
@@ -144,6 +158,7 @@ export async function createApplication(env: Env): Promise<Application> {
     refreshTtlDays: env.REFRESH_TOKEN_TTL_DAYS,
     impersonationRefreshTtlSeconds: env.IMPERSONATION_REFRESH_TTL_SECONDS,
   })
+  const studyAccess = new StudyAccessService(studyAccessRepository, profilesRepo, users, authTokens)
 
   // Hash "isca" p/ equalizar o tempo do login quando o e-mail não existe (anti-enumeração).
   const dummyHash = await hasher.hash('timing-equalizer-not-a-real-password')
@@ -171,9 +186,11 @@ export async function createApplication(env: Env): Promise<Application> {
     profilesRepo,
     impersonationSessions,
     logger,
+    studyAccessRepository,
   )
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
+  const getOwnProfile = new GetOwnProfileService(profilesRepo)
   // Reset/definição de senha + self-service de perfil.
   const createPasswordToken = new CreatePasswordTokenService(users, passwordResetTokens, {
     ttlMinutes: env.RESET_TOKEN_TTL_MINUTES,
@@ -330,6 +347,7 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
+    studyAccess,
     env,
     logger,
     readiness,
@@ -339,6 +357,7 @@ export async function createApplication(env: Env): Promise<Application> {
     refresh,
     logout,
     getMe,
+    getOwnProfile,
     forgotPassword,
     resetPassword,
     requestOtp,
@@ -390,20 +409,20 @@ export async function createApplication(env: Env): Promise<Application> {
         select pg_try_advisory_xact_lock(${PURGE_ADVISORY_LOCK_KEY}::bigint) as locked
       `
       if (!row?.locked) return // outra réplica está purgando neste ciclo
-      const cutoff = new Date(Date.now() - PURGE_GRACE_MS)
       // A auditoria tem retenção PRÓPRIA (mais longa que a folga dos tokens) — é
-      // trilha de compliance, não dado efêmero de sessão.
-      const auditCutoff = new Date(Date.now() - AUDIT_RETENTION_MS)
-      const [refresh, reset, otp, impersonation, audit] = await Promise.all([
-        refreshTokens.deleteExpired(cutoff),
-        passwordResetTokens.deleteExpired(cutoff),
-        otpCodes.deleteExpired(cutoff),
-        impersonationTokens.deleteExpired(cutoff),
-        auditLogs.deleteExpired(auditCutoff),
-      ])
-      if (refresh + reset + otp + impersonation + audit > 0) {
-        logger.info('tokens.purged', { refresh, reset, otp, impersonation, audit })
-      }
+      // trilha de compliance, não dado efêmero de sessão. O acesso por aparelho roda
+      // isolado dentro do ciclo (falha dele não pula os tokens).
+      await purgeExpiredRecords({
+        logger,
+        study: studyAccessRepository,
+        refreshTokens,
+        passwordResetTokens,
+        otpCodes,
+        impersonationTokens,
+        auditLogs,
+        graceMs: PURGE_GRACE_MS,
+        auditRetentionMs: AUDIT_RETENTION_MS,
+      })
     })
   }
 

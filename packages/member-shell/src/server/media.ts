@@ -68,10 +68,23 @@ export function createMediaModule(deps: { session: SessionModule; gateway: Gatew
       if (renewed) verdict = await deps.session.verifyAccessToken(renewed)
     }
     if (!verdict.ok) {
+      if (verdict.unavailable)
+        return NextResponse.json({ error: { code: 'SERVICE_UNAVAILABLE' } }, { status: 503 })
       return NextResponse.json(
         { error: { code: 'UNAUTHORIZED', message: 'Sessão expirada — faça login novamente.' } },
         { status: 401 },
       )
+    }
+    if (verdict.user.kids) {
+      if (verdict.user.kids.kind !== 'student') {
+        return NextResponse.json({ error: { code: 'STUDENT_SESSION_REQUIRED' } }, { status: 403 })
+      }
+      if (
+        requiresOriginCheck(req.method) &&
+        req.headers.get('x-sz-session') !== verdict.user.kids.sessionId
+      ) {
+        return NextResponse.json({ error: { code: 'SESSION_CHANGED' } }, { status: 409 })
+      }
     }
     if (verdict.user.status !== 'active') {
       return NextResponse.json(

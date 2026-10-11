@@ -1,3 +1,4 @@
+import { isContentFingerprint } from '@sistemazero/core/creations'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 /**
  * "Guardado na sua conta" — os casos de uso do ÍNDICE das criações (Estúdio
@@ -21,6 +22,9 @@ import {
   creationPartStorageKey,
   creationStorageKey,
   isCreationPartHash,
+  isLessonCreationTool,
+  isStudioFormatTool,
+  type ProductCreationTool,
   toCreationSummary,
 } from '../../domain/creations/creation'
 import {
@@ -37,6 +41,7 @@ import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import type { AccessCheckService } from '../access-check/access-check.service'
+import type { LessonDraftAccessService } from './lesson-draft-access.service'
 import { rememberToolOwned, toolOwnershipCached } from './tool-ownership-cache'
 
 export { invalidateToolOwnership, resetToolOwnershipCacheForTests } from './tool-ownership-cache'
@@ -90,7 +95,7 @@ export interface CreationDownloadTicket {
 async function assertToolOwned(
   accessCheck: AccessCheckService,
   accountId: string,
-  tool: CreationTool,
+  tool: ProductCreationTool,
   privileged: boolean,
   now: number = Date.now(),
 ): Promise<void> {
@@ -186,6 +191,8 @@ export class ReserveCreationUploadService {
     private readonly creations: CreationsRepository,
     private readonly accessCheck: AccessCheckService,
     private readonly clock: () => Date,
+    /** O portão dos rascunhos da fase (`lesson-*`); sem ele, esses tipos são recusados. */
+    private readonly lessonDraftAccess?: Pick<LessonDraftAccessService, 'assert'>,
   ) {}
 
   async execute(input: {
@@ -204,14 +211,34 @@ export class ReserveCreationUploadService {
     formatVersion?: number
     /** Partes referenciadas (hash de conteúdo; `bytes` só para as que o item não tem). */
     parts?: ReadonlyArray<{ hash: string; bytes?: number }>
+    /** Impressão digital do conteúdo (`v1:<sha256>`), opaca aqui. */
+    fingerprint?: string | null
   }): Promise<CreationUploadTicket> {
-    await assertToolOwned(
-      this.accessCheck,
-      input.accountId,
-      input.tool,
-      input.privileged,
-      this.clock().getTime(),
-    )
+    if (isLessonCreationTool(input.tool)) {
+      if (!this.lessonDraftAccess) throw new AccessDeniedError('Rascunho de fase indisponível')
+      await this.lessonDraftAccess.assert({
+        userId: input.userId,
+        accountId: input.accountId,
+        privileged: input.privileged,
+        tool: input.tool,
+        blockId: input.itemId,
+      })
+    } else {
+      await assertToolOwned(
+        this.accessCheck,
+        input.accountId,
+        input.tool,
+        input.privileged,
+        this.clock().getTime(),
+      )
+    }
+    if (
+      input.fingerprint !== undefined &&
+      input.fingerprint !== null &&
+      !isContentFingerprint(input.fingerprint)
+    ) {
+      throw new ValidationError('Impressão digital do conteúdo inválida')
+    }
     if (
       input.baseRevision !== undefined &&
       (!Number.isInteger(input.baseRevision) || input.baseRevision < 0)
@@ -222,9 +249,9 @@ export class ReserveCreationUploadService {
     if (!Number.isInteger(formatVersion) || formatVersion < 1 || formatVersion > 65_535) {
       throw new ValidationError('Versão de formato inválida')
     }
-    if (input.tool === 'studio' && formatVersion < STUDIO_PROJECT_FORMAT_VERSION)
+    if (isStudioFormatTool(input.tool) && formatVersion < STUDIO_PROJECT_FORMAT_VERSION)
       throw new CreationClientOutdatedError(STUDIO_PROJECT_FORMAT_VERSION)
-    if (input.tool === 'studio' && formatVersion > STUDIO_PROJECT_FORMAT_VERSION)
+    if (isStudioFormatTool(input.tool) && formatVersion > STUDIO_PROJECT_FORMAT_VERSION)
       throw new ValidationError('Esta versão do servidor ainda não aceita esse formato de projeto')
     if (!Number.isInteger(input.bytes) || input.bytes <= 0) {
       throw new ValidationError('Tamanho do arquivo inválido')
@@ -291,6 +318,7 @@ export class ReserveCreationUploadService {
       thumb,
       ...(input.baseRevision !== undefined ? { baseRevision: input.baseRevision } : {}),
       ...(parts.length > 0 ? { parts } : {}),
+      contentFingerprint: input.fingerprint ?? null,
       now: this.clock(),
       limits: {
         maxItemBytes: CREATION_LIMITS.maxItemBytes,
@@ -367,7 +395,7 @@ export class CommitCreationUploadService {
       throw new ValidationError('Revisão inválida')
     }
     const uploadedParts = input.uploadedParts ?? []
-    if (input.tool === 'studio' && !input.verifiedPartHashes)
+    if (isStudioFormatTool(input.tool) && !input.verifiedPartHashes)
       throw new ValidationError(
         'O serviço precisa conferir o manifesto antes de confirmar o projeto',
       )

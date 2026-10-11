@@ -9,6 +9,7 @@ import {
 import type { ImpersonationSessionValidator } from '../impersonation/impersonation-session-validator'
 import type { AuthTokenService, AuthTokens, IssueContext } from '../tokens/auth-token.service'
 import { impersonationTransitionDeadline } from './impersonation-transition'
+import { assertNotKidsSession } from './kids-legacy-guard'
 
 export interface ExitProfileSessionCommand {
   /** Conta do responsável (x-auth-account-id da sessão de perfil). */
@@ -21,6 +22,8 @@ export interface ExitProfileSessionCommand {
   impersonatorUserId?: string | null
   /** Refresh vigente que ancora o deadline absoluto da família de suporte. */
   refreshToken?: string | null
+  /** Contexto `kids` do token (header do Gateway). Presente → recusa (fluxo antigo). */
+  kidsContext?: string | null
 }
 
 /**
@@ -39,6 +42,7 @@ export class ExitProfileSessionService {
   ) {}
 
   async execute(cmd: ExitProfileSessionCommand): Promise<{ tokens: AuthTokens }> {
+    await assertNotKidsSession(this.refreshTokens, cmd.kidsContext, cmd.refreshToken)
     const account = await this.users.findById(cmd.accountUserId)
     if (!account) throw new UserNotFoundError()
     if (!account.isActive()) throw new UserNotActiveError()

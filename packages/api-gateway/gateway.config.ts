@@ -654,6 +654,63 @@ const config: GatewayConfigInput = {
       ],
     },
 
+    // Kids: conferência da sessão pelo BFF. ⚠️ Assinada por HMAC (consumer `member-shell`):
+    // com principal autenticado ela sai do limite ANÔNIMO global por IP, que derrubava
+    // escolas e CGNAT (centenas de crianças atrás do mesmo IP → 429 → 503 no Kids). O teto
+    // da rota é por PRINCIPAL (o agregado do BFF), dimensionado como disjuntor. Sem a
+    // assinatura (dev sem MEMBER_SHELL_HMAC_SECRET) a chamada segue anônima, sob o limite
+    // global por IP. O passthrough preserva o Bearer; o JWT do gateway não roda aqui (a
+    // própria rota É a introspecção, sem recursão).
+    {
+      id: 'auth-kids-session-validate',
+      methods: ['POST'],
+      pathPattern: '/auth/kids/session/validate',
+      service: 'auth',
+      auth: {
+        required: false,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30_000, windowMs: 60_000, by: 'principal' },
+    },
+    // Kids: estas rotas verificam a sessão/credencial no Auth. O passthrough
+    // preserva o Bearer; introspecção não usa JWT no gateway para evitar recursão.
+    ...[
+      'grants/list',
+      'grants',
+      'device',
+      'redeem',
+      'enter',
+      'suspend',
+      'disconnect',
+      'forget',
+    ].map((path) => ({
+      id: `auth-kids-${path.replaceAll('/', '-')}`,
+      methods: ['POST' as const],
+      pathPattern: `/auth/kids/${path}`,
+      service: 'auth',
+      auth: 'public' as const,
+      upstreamAuth: 'passthrough' as const,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: {
+        max: path === 'redeem' ? 10 : 120,
+        windowMs: 60_000,
+        by: 'ip' as const,
+      },
+    })),
+    {
+      id: 'auth-kids-grant-update',
+      methods: ['PATCH'],
+      pathPattern: '/auth/kids/grants/:id',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'ip' },
+    },
     // ── Identidade (@sistemazero/auth) ──────────────────────────────────────
     // O IdP é a autoridade da sua própria auth: o gateway só ROTEIA (+ rate limit
     // por IP contra brute-force) e repassa o corpo/headers (`passthrough` mantém o
@@ -1397,6 +1454,25 @@ const config: GatewayConfigInput = {
       },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'json-field', field: 'actor.userId' },
+      maxBodyBytes: 4096,
+    },
+    {
+      id: 'members-internal-device-avatars',
+      methods: ['POST'],
+      pathPattern: '/members/internal/device-avatars',
+      service: 'members',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['member-shell'],
+      },
+      transforms: membersInternalTransforms,
+      // ⚠️ Por NAVEGADOR, não por principal: o principal é sempre o `member-shell`, e um
+      // teto único de 600/min valia para todas as famílias juntas. O BFF manda no corpo
+      // (coberto pelo HMAC) `rateLimitKey` = hash do cookie do aparelho; o members ignora
+      // o campo. Sem a chave, cai no balde agregado do principal.
+      rateLimit: { max: 120, windowMs: 60_000, by: 'json-field', field: 'rateLimitKey' },
       maxBodyBytes: 4096,
     },
     {

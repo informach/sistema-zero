@@ -3,6 +3,7 @@
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { LogOut, Pencil, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { useState } from 'react'
+import { sessionFetch as fetch } from '../lib/session-fetch'
 import type { ImpersonationMode } from '../lib/types'
 
 interface ImpersonationBannerProps {

@@ -183,7 +183,11 @@ export class LearningService {
   }
   async navigation(actor: LearningActor, lessonId: string, sectionId: string) {
     const lesson = await this.requireLesson(actor, lessonId)
-    await this.sections.assertSection(actor, lesson, sectionId, actor.privileged)
+    // Avançar é o momento em que as partes "envio em dia" ANTES do destino são gravadas (o player
+    // manda o rascunho para a conta logo antes). Ver `SectionSettle`.
+    await this.sections.assertSection(actor, lesson, sectionId, actor.privileged, {
+      settle: { before: sectionId },
+    })
     const structure = playbackLessonStructure(lesson, await this.structure(lesson))
     if (!structure.sections.some((s) => s.id === sectionId))
       throw new LessonNotFoundError('Seção não encontrada')

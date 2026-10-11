@@ -3,7 +3,6 @@ import type { CustomerTicketPage } from '@sistemazero/member-shell/lib/customer-
 import { redirect } from 'next/navigation'
 import { KidsScreen } from '@/components/kids/kids-screen'
 import { PARENT_AREA_HREF, ParentAreaBack } from '@/components/kids/parent-area-back'
-import { isParentVerifiedFor } from '@/server/parent-gate'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 
@@ -11,12 +10,13 @@ export const dynamic = 'force-dynamic'
 
 /**
  * Rota fora do layout infantil. O perfil da criança nunca alcança os tickets da
- * conta, nem quando conhece a URL: o BFF abaixo repete a mesma fronteira.
+ * conta, nem quando conhece a URL: o BFF abaixo repete a mesma fronteira. A página
+ * confere a sessão de responsável com a mesma régua do layout (o antigo desvio para
+ * `/perfis` nunca rodava: o layout e o proxy já mandavam ao login do responsável).
  */
 export default async function AjudaDoResponsavelPage() {
   const session = await getSession()
-  if (!session) redirect('/login')
-  if (session.activeProfile || !(await isParentVerifiedFor(session.id))) redirect('/perfis')
+  if (session?.kids?.kind !== 'parent') redirect('/login/responsavel')
 
   const response = await shell.gateway.gatewayFetchReadonly<CustomerTicketPage>(
     '/helpdesk/portal/tickets',

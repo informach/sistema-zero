@@ -1,3 +1,4 @@
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 /**
  * "Guardado na sua conta" (18/08/2026) — o cliente comum das criações do Estúdio
  * Completo e do Pinta. Cada jogo/desenho sobe sozinho depois que o autosave
@@ -31,10 +32,16 @@
  * sessão já trocou de perfil (irmão que entrou no meio de um upload em voo).
  */
 
+import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { perfSpanAsync } from './perf'
 
-/** Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026). */
-export type CreationTool = 'studio' | 'pinta' | 'molda'
+export { canonicalJson, sha256Hex }
+
+/**
+ * Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026; `lesson-*` = o
+ * rascunho do Estúdio/Pinta dentro da fase, um item por bloco, 10/10/2026).
+ */
+export type CreationTool = 'studio' | 'pinta' | 'molda' | 'lesson-studio' | 'lesson-pinta'
 
 /** O `fetch` injetável (testes): só a assinatura de chamada, sem o `preconnect` do Bun. */
 export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
@@ -65,6 +72,8 @@ export interface CreationMeta {
    * Vai na reserva; base vencida = 409 `CREATION_STALE_BASE` (ver `onStale`).
    */
   baseRevision?: number
+  /** Impressão digital do conteúdo (rascunho da fase: o "envio em dia" a compara com o envio). */
+  fingerprint?: string | null
 }
 
 export interface CloudCreationSummary {
@@ -80,6 +89,8 @@ export interface CloudCreationSummary {
   syncedAt: number
   /** ms desde a época; presente somente quando o item é uma lápide remota. */
   deletedAt?: number | null
+  /** Impressão digital do conteúdo da revisão corrente (rascunhos da fase). */
+  contentFingerprint?: string | null
 }
 
 /**
@@ -141,6 +152,11 @@ export interface CreationsCloud {
    */
   upload(meta: CreationMeta, json: string, parts?: CloudPart[]): Promise<{ revision: number }>
   /**
+   * A revisão corrente SEM baixar o conteúdo (só o tíquete): `null` = não existe (404). `load()`
+   * baixa e descomprime com o MESMO tíquete. `serverNow` é o relógio do servidor (ms).
+   */
+  peek(itemId: string, options?: { signal?: AbortSignal }): Promise<CloudPeek | null>
+  /**
    * Baixa e descomprime a revisão corrente. `null` = não existe (404). Lança em falha de rede.
    * `parts` lista as partes da revisão (vazio no fio simples); `fetchPart(hash)` baixa UMA,
    * descomprime e CONFERE o hash (lança `CREATION_PART_CORRUPT` se não bate).
@@ -173,6 +189,11 @@ export interface CreationsCloud {
    * MB, nem numa espera de backoff sem internet): a fila CONTINUA depois; só a promessa volta.
    */
   flush(options?: { timeoutMs?: number }): Promise<void>
+  /**
+   * Espera ESTE item chegar à conta, inclusive o conflito resolvido e a nova subida. Falha ou
+   * prazo vencido rejeitam (com o `code` do servidor quando houver), sem cancelar a fila.
+   */
+  confirm(itemId: string, options?: { timeoutMs?: number }): Promise<void>
   getState(): CloudSyncState
   subscribe(listener: (state: CloudSyncState) => void): () => void
   /**
@@ -180,6 +201,13 @@ export interface CreationsCloud {
    * já foi gasta); `{ abort: true }` corta até ele (testes / troca brusca de perfil).
    */
   dispose(options?: { abort?: boolean }): void
+}
+
+/** O que `peek` devolve. */
+export interface CloudPeek {
+  summary: CloudCreationSummary
+  serverNow: number
+  load(): Promise<CloudDownload>
 }
 
 /** O que `download` devolve. */
@@ -299,34 +327,6 @@ export function hashSupported(): boolean {
   )
 }
 
-function sortKeysDeep(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(sortKeysDeep)
-  if (value && typeof value === 'object') {
-    const out: Record<string, unknown> = {}
-    for (const key of Object.keys(value as Record<string, unknown>).sort()) {
-      const inner = (value as Record<string, unknown>)[key]
-      if (inner !== undefined) out[key] = sortKeysDeep(inner)
-    }
-    return out
-  }
-  return value
-}
-
-/**
- * JSON canônico (chaves ordenadas em profundidade, `undefined` fora): é ISTO que se hasheia e
- * que sobe como parte — nunca o gzip (não é determinístico) nem só um campo (nome/metadados
- * diferentes colidiriam). Estável entre navegadores e entre leituras do IndexedDB.
- */
-export function canonicalJson(value: unknown): string {
-  return JSON.stringify(sortKeysDeep(value))
-}
-
-/** SHA-256 hex de um texto (UTF-8). Assíncrono: o navegador calcula fora da main thread. */
-export async function sha256Hex(text: string): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))
-  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
-}
-
 /**
  * As mensagens de rede dos navegadores (Chrome "Failed to fetch", Firefox "NetworkError
  * when attempting to fetch resource.", Safari "Load failed" / "The network connection was
@@ -403,6 +403,7 @@ interface RawCloudSummary {
   thumb?: string | null
   syncedAt?: string
   deletedAt?: string | null
+  contentFingerprint?: string | null
 }
 
 interface CloudListPage {
@@ -424,6 +425,7 @@ function toSummary(raw: RawCloudSummary): CloudCreationSummary {
   }
   if (deletedAt !== undefined) summary.deletedAt = deletedAt
   if (raw.formatVersion !== undefined) summary.formatVersion = raw.formatVersion
+  if (raw.contentFingerprint) summary.contentFingerprint = raw.contentFingerprint
   return summary
 }
 
@@ -482,6 +484,16 @@ export function createCreationsCloud(options: {
         failures: number
       }
   const pending = new Map<string, Job>()
+  const conflicts = new Set<{ itemId: string; done: Promise<void> }>()
+  /** A última falha de cada item, até ele voltar à fila: o `confirm` rejeita com ela. */
+  const failedItems = new Map<string, { message: string; code?: string }>()
+  /** Acorda quem espera um item (`confirm`) a cada passo da fila, sem esperar a fila inteira. */
+  let progress = deferred()
+  const signalProgress = (): void => {
+    const current = progress
+    progress = deferred()
+    current.resolve()
+  }
   const listeners = new Set<(state: CloudSyncState) => void>()
   let state: CloudSyncState = {
     status: supported ? 'idle' : 'unsupported',
@@ -657,6 +669,7 @@ export function createCreationsCloud(options: {
         thumb: meta.thumb ?? null,
         ...(meta.formatVersion !== undefined ? { formatVersion: meta.formatVersion } : {}),
         ...(meta.baseRevision !== undefined ? { baseRevision: meta.baseRevision } : {}),
+        ...(meta.fingerprint ? { fingerprint: meta.fingerprint } : {}),
         ...(byHash.size > 0
           ? {
               parts: [...byHash.keys()].map((hash) => {
@@ -776,24 +789,58 @@ export function createCreationsCloud(options: {
     return gunzipToText(await response.arrayBuffer())
   }
 
+  interface DownloadTicket {
+    downloadUrl: string
+    revision: number
+    bytes: number
+    item: Parameters<typeof toSummary>[0]
+    parts?: Array<{ hash: string; bytes: number; url: string }>
+    /** ISO do relógio do servidor (BFF de 10/10/2026 em diante). */
+    serverNow?: string
+  }
+
+  async function fetchTicket(
+    itemId: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<DownloadTicket | null> {
+    try {
+      return await api<DownloadTicket>(`/${encodeURIComponent(itemId)}/download`, {
+        signal: options?.signal,
+      })
+    } catch (error) {
+      if ((error as CloudError).status === 404) return null
+      throw error
+    }
+  }
+
+  async function peek(
+    itemId: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<CloudPeek | null> {
+    if (!supported) return null
+    const ticket = await fetchTicket(itemId, options)
+    if (!ticket) return null
+    const serverNow = ticket.serverNow ? Date.parse(ticket.serverNow) : Number.NaN
+    return {
+      summary: toSummary(ticket.item),
+      serverNow: Number.isFinite(serverNow) ? serverNow : now(),
+      load: () => materialize(ticket, options),
+    }
+  }
+
   async function download(
     itemId: string,
     options?: { signal?: AbortSignal },
   ): Promise<CloudDownload | null> {
     if (!supported) return null
-    let ticket: {
-      downloadUrl: string
-      revision: number
-      bytes: number
-      item: Parameters<typeof toSummary>[0]
-      parts?: Array<{ hash: string; bytes: number; url: string }>
-    }
-    try {
-      ticket = await api(`/${encodeURIComponent(itemId)}/download`, { signal: options?.signal })
-    } catch (error) {
-      if ((error as CloudError).status === 404) return null
-      throw error
-    }
+    const ticket = await fetchTicket(itemId, options)
+    return ticket ? materialize(ticket, options) : null
+  }
+
+  async function materialize(
+    ticket: DownloadTicket,
+    options?: { signal?: AbortSignal },
+  ): Promise<CloudDownload> {
     const signal = options?.signal ? anySignal(abort.signal, options.signal) : abort.signal
     const json = await getBlobText(ticket.downloadUrl, signal)
     const partUrls = new Map((ticket.parts ?? []).map((part) => [part.hash, part]))
@@ -840,6 +887,15 @@ export function createCreationsCloud(options: {
     const next = pending.entries().next()
     if (next.done) return 'empty'
     const [itemId, job] = next.value
+    // Quem vai tentar de novo passa para o fim: um item preso (429, rede, 5xx) não segura os
+    // outros, e o `confirm` de outro bloco não vence o prazo esperando por ele.
+    const retry = (): 'retry' => {
+      if (pending.get(itemId) === job && pending.size > 1) {
+        pending.delete(itemId)
+        pending.set(itemId, job)
+      }
+      return 'retry'
+    }
     // Só um acordar que chegue DURANTE este passo conta (um `flush` antigo não vale).
     wakeRequested = false
     try {
@@ -863,6 +919,7 @@ export function createCreationsCloud(options: {
             ...(snapshot.meta?.baseRevision !== undefined
               ? { baseRevision: snapshot.meta.baseRevision }
               : {}),
+            ...(snapshot.meta?.fingerprint ? { fingerprint: snapshot.meta.fingerprint } : {}),
           }
           const { revision } = await upload(meta, snapshot.json, snapshot.parts)
           // Um `enqueueRemove` do mesmo item chegou enquanto o upload voava? A lápide manda:
@@ -901,22 +958,36 @@ export function createCreationsCloud(options: {
           setState({ status: 'saving', lastError: null })
           const onStale = job.onStale
           const currentRevision = err.details?.currentRevision
-          void Promise.resolve()
+          const conflict = { itemId, done: Promise.resolve() }
+          conflicts.add(conflict)
+          conflict.done = Promise.resolve()
             .then(() => onStale({ itemId, currentRevision }))
             .then(() => {
               if (!disposed && pending.size === 0 && !running) setState({ status: 'saved' })
             })
             .catch(() => {
+              failedItems.set(itemId, {
+                message: CLOUD_MESSAGES.staleFailed,
+                code: 'CREATION_STALE_BASE',
+              })
               if (!disposed) setState({ status: 'error', lastError: CLOUD_MESSAGES.staleFailed })
             })
+            .finally(() => {
+              conflicts.delete(conflict)
+              signalProgress()
+            })
         } else {
+          failedItems.set(itemId, {
+            message: CLOUD_MESSAGES.staleFailed,
+            code: 'CREATION_STALE_BASE',
+          })
           setState({ status: 'error', lastError: CLOUD_MESSAGES.staleFailed })
         }
         return 'done'
       }
       if (isNetworkError(error)) {
         setState({ status: 'offline', lastError: null })
-        return 'retry'
+        return retry()
       }
       // 429 da borda (rate limit): TEMPORÁRIO — espera o `retry-after` (ou um padrão) e tenta
       // de novo; derrubar o item aqui era perder desenhos na primeira sincronia de uma galeria
@@ -926,7 +997,7 @@ export function createCreationsCloud(options: {
         if (job.failures <= MAX_SERVER_RETRIES) {
           retryAfterMs = Math.min(err.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS, MAX_RETRY_AFTER_MS)
           setState({ status: 'saving', lastError: null })
-          return 'retry'
+          return retry()
         }
       }
       // Revisão vencida no commit (409): outro navegador reservou depois — reservar de novo
@@ -947,12 +1018,18 @@ export function createCreationsCloud(options: {
         job.failures += 1
         if (job.failures < MAX_SERVER_RETRIES) {
           setState({ status: 'saving', lastError: null })
-          return 'retry'
+          return retry()
         }
       }
       // 4xx de verdade (quota, sem posse, sessão de outro perfil), erro inesperado, ou 5xx
       // repetido: não fica em loop; o item sai da fila e o próximo autosave tenta de novo.
-      if (pending.get(itemId) === job) pending.delete(itemId)
+      if (pending.get(itemId) === job) {
+        pending.delete(itemId)
+        failedItems.set(itemId, {
+          message: messageForError(error),
+          ...(err?.code ? { code: err.code } : {}),
+        })
+      }
       setState({ status: 'error', lastError: messageForError(error) })
       return 'done'
     }
@@ -961,6 +1038,7 @@ export function createCreationsCloud(options: {
   async function run(): Promise<void> {
     while (!disposed && pending.size > 0) {
       const outcome = await step()
+      signalProgress()
       if (outcome === 'empty') break
       if (outcome === 'retry') {
         // 429: a espera é a que a borda pediu (não entra no backoff de rede, que um acordar
@@ -1028,6 +1106,7 @@ export function createCreationsCloud(options: {
     onUploaded?: UploadedListener,
     onStale?: StaleListener,
   ): void {
+    failedItems.delete(itemId)
     pending.set(itemId, { kind: 'upload', produce, onUploaded, onStale, failures: 0 })
     schedule(idleMs)
   }
@@ -1038,9 +1117,19 @@ export function createCreationsCloud(options: {
     onRemoved?: RemovedListener,
     onStale?: StaleListener,
   ): void {
+    failedItems.delete(itemId)
     pending.set(itemId, { kind: 'remove', baseRevision, onRemoved, onStale, failures: 0 })
     // Apagar não espera o debounce: a criança pode fechar a aba logo depois.
     schedule(0)
+  }
+
+  /** Roda já o que só esperava o debounce (sem acordar a espera de uma nova tentativa). */
+  function skipDebounce(): void {
+    if (!timer) return
+    clearTimeout(timer)
+    timer = null
+    dueAt = Number.POSITIVE_INFINITY
+    kick()
   }
 
   async function flush(options?: { timeoutMs?: number }): Promise<void> {
@@ -1060,6 +1149,41 @@ export function createCreationsCloud(options: {
     }
     // Teto: sair do editor não fica preso na fila (que segue sozinha).
     await Promise.race([running, new Promise<void>((resolve) => setTimeout(resolve, timeoutMs))])
+  }
+
+  async function confirm(itemId: string, options?: { timeoutMs?: number }): Promise<void> {
+    if (!supported || disposed) throw new Error('Sincronização indisponível')
+    let deadlineReached = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const timeout = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        deadlineReached = true
+        reject(new Error('A versão ainda não foi guardada na conta'))
+      }, options?.timeoutMs ?? 15_000)
+    })
+    // Pula o debounce UMA vez; as novas tentativas seguem o compasso da fila (acordar a cada
+    // volta do laço viraria uma rajada de pedidos sem internet).
+    void flush()
+    try {
+      while (!deadlineReached) {
+        if (disposed) throw new Error('Sincronização encerrada')
+        const failure = failedItems.get(itemId)
+        if (failure)
+          throw Object.assign(
+            new Error(failure.message),
+            failure.code ? { code: failure.code } : {},
+          )
+        const resolving = [...conflicts].filter((entry) => entry.itemId === itemId)
+        if (!pending.has(itemId) && resolving.length === 0) return
+        // O conflito resolvido enfileira a versão daqui de novo, com debounce: ela sobe já.
+        skipDebounce()
+        // Reavalia a cada passo da fila (o item pode ter saído enquanto outro item ainda espera)
+        // e quando o conflito termina (ele pode enfileirar outra revisão).
+        await Promise.race([progress.promise, ...resolving.map((entry) => entry.done), timeout])
+      }
+    } finally {
+      clearTimeout(timer)
+    }
   }
 
   // Sem esperar o debounce ao sair da página / trocar de aba; e a volta da rede acorda a fila.
@@ -1085,11 +1209,13 @@ export function createCreationsCloud(options: {
     supported,
     list,
     upload,
+    peek,
     download,
     remove,
     enqueueUpload,
     enqueueRemove,
     flush,
+    confirm,
     getState: () => state,
     subscribe(listener) {
       listeners.add(listener)

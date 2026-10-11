@@ -573,7 +573,7 @@
       {
         "kind": "step",
         "title": "3. Teste o novo caminho",
-        "text": "Clique em <b>Atualizar</b> e visite o farol sem passar pela chave: ele deve avisar que falta a chave. Afaste-se, busque a chave e volte na mesma partida. Confira a luz e espere o barco. Atualize outra vez: a chave deve voltar ao lugar escolhido. Espere <b>Salvo</b> e clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Atualizar</b> e visite o farol sem passar pela chave: ele deve avisar que falta a chave. Afaste-se, busque a chave e volte na mesma partida. Confira a luz e espere o barco. Atualize outra vez: a chave deve voltar ao lugar escolhido. Espere <b>Salvo</b>, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>. Quando o envio terminar, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -638,7 +638,7 @@
       {
         "kind": "step",
         "title": "Para guardar e para enviar",
-        "text": "<b>Salvo</b> indica que a mudança ficou guardada.<br/><b>Verificar esta parte</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, com a confirmação em <b>Enviar</b>, manda o seu projeto para a equipe.<br/>São passos diferentes. Você pode consultar o Mapa da Aventura e o Como Fazer sempre que precisar."
+        "text": "<b>Salvo</b> indica que a mudança ficou guardada.<br/><b>Verificar esta parte</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, com a confirmação em <b>Enviar</b>, manda o seu projeto para a equipe. Mudou o jogo depois? <b>Enviar de novo</b>, com a confirmação em <b>Reenviar</b>, manda a versão nova.<br/>São passos diferentes. Você pode consultar o Mapa da Aventura e o Como Fazer sempre que precisar."
       }
     ]
   }

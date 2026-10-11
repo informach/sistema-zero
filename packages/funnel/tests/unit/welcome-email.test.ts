@@ -1,6 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import type { Lead } from '../../src/db/repo'
-import { makeSendWelcome, toWhatsAppPhone } from '../../src/server/welcome-email'
+import type { SendMessageInput } from '../../src/lib/gateway-client'
+import {
+  LEGACY_TEMPLATE_KEYS,
+  makeSendWelcome,
+  toWhatsAppPhone,
+} from '../../src/server/welcome-email'
 import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
@@ -121,7 +126,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     for (const message of gw.calls.messages) {
       expect(message.input.templateKey).toBe('challenge-access-approved')
       expect(message.input.variables?.expira_em).toBe('16/10/2026, 12:30')
-      expect(message.input.variables?.acao).toBe('Criar acesso e abrir a primeira etapa')
+      expect(message.input.variables?.acao).toBe('Criar senha da área dos pais')
       expect(message.idempotencyKey).toStartWith('challenge-access-approved')
     }
   })
@@ -145,7 +150,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     })(lead)
 
     expect(gw.calls.messages).toHaveLength(2)
-    expect(gw.calls.messages[0]?.input.templateKey).toBe('welcome')
+    expect(gw.calls.messages[0]?.input.templateKey).toBe('kids-welcome')
   })
 
   test('lead sem telefone → só o e-mail sai (WhatsApp é pulado)', async () => {
@@ -186,7 +191,7 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     expect(wa?.idempotencyKey).toBe(`new-access-wa-${lead.id}`)
   })
 
-  test('RECORRENTE em funil kids → new-access aponta p/ o app KIDS /cursos', async () => {
+  test('RECORRENTE em funil kids → kids-new-access leva à entrada dos responsáveis', async () => {
     const { repo } = createFakeRepo()
     const gw = createFakeGateway()
     const base = await registeredLead(repo, { isNew: false, userId: 'user-existing' })
@@ -200,7 +205,106 @@ describe('makeSendWelcome (boas-vindas de 1º acesso: e-mail + WhatsApp)', () =>
     })(lead)
 
     expect(gw.calls.passwordTokens).toHaveLength(0)
-    expect(gw.calls.messages[0]?.input.variables?.link).toBe('http://localhost:3008/cursos')
+    expect(gw.calls.messages[0]?.input.templateKey).toBe('kids-new-access')
+    expect(gw.calls.messages[0]?.input.variables?.link).toBe(
+      'http://localhost:3008/login/responsavel',
+    )
+  })
+
+  describe('Messaging ainda sem a chave Kids (publicação fora de ordem)', () => {
+    /** Gateway cujo Messaging só conhece as chaves antigas. */
+    function legacyMessaging(
+      gw: ReturnType<typeof createFakeGateway>,
+      code = 'TEMPLATE_NOT_FOUND',
+    ) {
+      const sent: Array<{ templateKey: string; channel: string; link?: string; key: string }> = []
+      const gateway = {
+        ...gw.gateway,
+        sendMessage: async (input: SendMessageInput, idempotencyKey: string) => {
+          sent.push({
+            templateKey: input.templateKey,
+            channel: input.channel,
+            link: input.variables?.link,
+            key: idempotencyKey,
+          })
+          if (input.templateKey.startsWith('kids-'))
+            return { status: 404, body: { error: { code, message: 'não encontrado' } } }
+          return { status: 202, body: { messageId: 'msg-1', status: 'QUEUED' } }
+        },
+      }
+      return { gateway, sent }
+    }
+
+    test('comprador NOVO cai em welcome com o MESMO link de senha e a mesma chave', async () => {
+      const { repo } = createFakeRepo()
+      const gw = createFakeGateway()
+      const messaging = legacyMessaging(gw)
+      const lead = { ...(await registeredLead(repo)), funnel: 'kids/comunidade-dos-criadores' }
+
+      await makeSendWelcome({
+        gateway: messaging.gateway,
+        communityUrl: COMMUNITY_URL,
+        kidsCommunityUrl: 'http://localhost:3008',
+        repo,
+      })(lead)
+
+      const link = 'http://localhost:3008/redefinir-senha?token=fake-pw-token'
+      expect(gw.calls.passwordTokens).toHaveLength(1) // um token só, nos dois canais
+      expect(messaging.sent).toEqual([
+        { templateKey: 'kids-welcome', channel: 'email', link, key: `welcome-${lead.id}` },
+        { templateKey: 'welcome', channel: 'email', link, key: `welcome-${lead.id}` },
+        { templateKey: 'kids-welcome', channel: 'whatsapp', link, key: `welcome-wa-${lead.id}` },
+        { templateKey: 'welcome', channel: 'whatsapp', link, key: `welcome-wa-${lead.id}` },
+      ])
+    })
+
+    test('comprador RECORRENTE cai em new-access, ainda levando à entrada dos responsáveis', async () => {
+      const { repo } = createFakeRepo()
+      const gw = createFakeGateway()
+      const messaging = legacyMessaging(gw)
+      const base = await registeredLead(repo, { isNew: false, userId: 'user-existing' })
+      const lead = { ...base, funnel: 'kids/comunidade-dos-criadores' }
+
+      await makeSendWelcome({
+        gateway: messaging.gateway,
+        communityUrl: COMMUNITY_URL,
+        kidsCommunityUrl: 'http://localhost:3008',
+        repo,
+      })(lead)
+
+      expect(messaging.sent.map((m) => m.templateKey)).toEqual([
+        'kids-new-access',
+        'new-access',
+        'kids-new-access',
+        'new-access',
+      ])
+      expect(new Set(messaging.sent.map((m) => m.link))).toEqual(
+        new Set(['http://localhost:3008/login/responsavel']),
+      )
+    })
+
+    test('404 que não é TEMPLATE_NOT_FOUND não troca a chave', async () => {
+      const { repo } = createFakeRepo()
+      const gw = createFakeGateway()
+      const messaging = legacyMessaging(gw, 'NOT_FOUND')
+      const lead = { ...(await registeredLead(repo)), funnel: 'kids/comunidade-dos-criadores' }
+
+      await makeSendWelcome({
+        gateway: messaging.gateway,
+        communityUrl: COMMUNITY_URL,
+        kidsCommunityUrl: 'http://localhost:3008',
+        repo,
+      })(lead)
+
+      expect(messaging.sent.map((m) => m.templateKey)).toEqual(['kids-welcome', 'kids-welcome'])
+    })
+
+    test('as chaves de reserva são as que existiam antes do acesso por aparelho', () => {
+      expect(LEGACY_TEMPLATE_KEYS).toEqual({
+        'kids-welcome': 'welcome',
+        'kids-new-access': 'new-access',
+      })
+    })
   })
 
   test('RECORRENTE one-shot: 2ª execução não reenvia (claim por lead cobre os dois tipos)', async () => {

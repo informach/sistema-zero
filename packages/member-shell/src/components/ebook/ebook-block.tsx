@@ -3,6 +3,7 @@
 import { Button } from '@sistemazero/ui/button'
 import { BookOpen, Download } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { sessionFetch as fetch } from '../../lib/session-fetch'
 import type { EbookBlock } from '../../lib/types'
 import { useLessonCopy } from '../lesson-copy-context'
 import { useLessonPlayer } from '../lesson-player-context'

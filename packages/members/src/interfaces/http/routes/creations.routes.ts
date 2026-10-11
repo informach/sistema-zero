@@ -77,6 +77,7 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             thumb: body.thumb ?? null,
             ...(body.baseRevision !== undefined ? { baseRevision: body.baseRevision } : {}),
             ...(body.parts ? { parts: body.parts } : {}),
+            ...(body.fingerprint ? { fingerprint: body.fingerprint } : {}),
           }),
         { params: CreationItemParams, body: CreationUploadBody },
       )

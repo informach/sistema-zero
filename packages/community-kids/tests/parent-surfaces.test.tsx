@@ -83,8 +83,8 @@ describe('superfícies extraídas da área dos pais', () => {
     render(<ParentAreaBack />)
 
     const back = screen.getByRole('link', { name: 'Voltar à área dos pais' })
-    expect(back.getAttribute('href')).toBe('/perfis?manage=1')
-    expect(PARENT_AREA_HREF).toBe('/perfis?manage=1')
+    expect(back.getAttribute('href')).toBe('/pais')
+    expect(PARENT_AREA_HREF).toBe('/pais')
   })
 
   // O acompanhamento da família (`/responsavel`) também vive fora do layout infantil: sem a

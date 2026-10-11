@@ -296,7 +296,8 @@ trabalham nele.
       "rule": { "type": "usesBlock", "blockType": "sz_frame_start", "count": 1 } }
   ],
   "platformAction": { ... },
-  "materialItems": [ { "blockId": "...", "itemIds": ["..."] } ]
+  "materialItems": [ { "blockId": "...", "itemIds": ["..."] } ],
+  "submissionUpToDate": true
 }
 ```
 
@@ -315,8 +316,28 @@ Na direção vigente, uma seção com vídeo e atividade nunca conclui por apena
 Exceção: um fechamento pode reutilizar como `workspaceKey` um Estúdio cuja prática já foi
 comprovada em seção anterior, apenas para oferecer uma ação **opcional**, como compartilhar o jogo.
 Nesse caso, o bloco do Estúdio continua pertencendo só à seção prática em `blockKeys`; o fechamento
-exige o próprio vídeo, não uma segunda entrega nem a ação opcional. Isso não dispensa a evidência da
-prática na seção anterior.
+exige o próprio vídeo, não a ação opcional. Isso não dispensa a evidência da prática na seção
+anterior.
+
+**Envio em dia (`submissionUpToDate: true`, 10/10/2026).** Numa seção que muda o projeto DEPOIS da
+entrega (personalizar, trocar avisos, escolher o lugar da chave), a autora pode exigir que o último
+envio seja igual ao projeto de agora: a parte só fecha quando a criança reenviou o que mudou ("Enviar
+de novo"; no Estúdio a confirmação é "Reenviar", no Pinta é "Enviar"). Se nada mudou desde o envio, a
+parte fecha sem reenvio. Regras:
+
+- vale numa seção com `workspaceKey` de um Estúdio ou Pinta incorporado (não a galeria nem um
+  `purpose: 'experiment'`), cujo bloco pertence à seção de entrega final (a que passa por
+  `isFinalProjectSection`), a própria ou uma anterior; o validador do core recusa o resto;
+- use em UMA seção por projeto, a última que muda o jogo antes de publicar ou concluir: é ela que
+  garante que a equipe recebe o projeto final (Cadê aula 2 `personalizar`, Desafio Dia 3
+  `posicionar-chave`);
+- a comparação é pela impressão digital do conteúdo (rascunho guardado na conta × envio). Mover blocos
+  e as imagens da biblioteca do curso não contam como mudança; trocar o que aparece no jogo conta.
+  Renomear o projeto conta depois da próxima edição de bloco (o nome vai no `<title>` do
+  `index.html` gerado);
+- a fala da seção diz o passo: no Estúdio, "clique em Enviar de novo e confirme em Reenviar"; no
+  Pinta, "clique em Enviar de novo e confirme em Enviar".
+
 
 Regras de `usesBlock`: `blockType` é o tipo real do bloco do Estúdio, `area` aceita `structure`,
 `appearance`, `molds`, `start`, `events` ou `loops`, `count` exige número exato de blocos ativos

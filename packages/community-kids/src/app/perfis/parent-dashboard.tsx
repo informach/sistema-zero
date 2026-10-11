@@ -3,6 +3,7 @@
 import { type AiCreditsView, diaCivilPorExtenso } from '@sistemazero/core/ai-credits'
 import type { LearningTopicSummary } from '@sistemazero/core/learning'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import {
   Award,
@@ -142,7 +143,7 @@ export function ChildrenDashboard({
           área dos pais.
         </p>
         <a
-          href="/perfis?manage=1"
+          href="/pais"
           className="mt-2 inline-flex min-h-11 items-center text-sm font-bold text-primary"
         >
           Voltar à área dos pais

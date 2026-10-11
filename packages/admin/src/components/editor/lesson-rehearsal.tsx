@@ -103,7 +103,8 @@ export function LessonRehearsal({
       !s.completion ||
       (!s.completion.blockIds.length &&
         !s.completion.projectChecks?.length &&
-        !s.completion.platformAction)
+        !s.completion.platformAction &&
+        !s.completion.submissionUpToDate)
     )
       missing.push({ kind: 'authoring', text: 'Configure um critério de conclusão na autoria' })
     if (missing.length === 0) completed.add(s.id)

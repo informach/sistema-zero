@@ -33,6 +33,12 @@ const DOMAIN_STATUS: Record<string, number> = {
   PROFILE_NOT_FOUND: 404,
   PROFILE_LIMIT_REACHED: 409,
   PROFILE_AGE_RESTRICTED: 400,
+  STUDY_ACCESS_REQUIRED: 403,
+  PARENT_REAUTH_REQUIRED: 403,
+  // Navegador preso a OUTRA família com acesso vivo (a interface explica "use outro navegador").
+  DEVICE_OTHER_FAMILY: 409,
+  KIDS_CONTEXT_FORBIDDEN: 403,
+  KIDS_SESSION_INVALID: 401,
 }
 
 /**

@@ -31,6 +31,7 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
 import { useAnyActivityExpanded } from '../lib/lesson-activity-expansion'
+import { LessonDraftSaveError, upToDateWorkspaceIds } from '../lib/lesson-draft-cloud'
 import {
   ehEditorDeSecao,
   ehPreviaDeLivro,
@@ -40,6 +41,7 @@ import {
   SPLIT_HANDLE_WIDTH_PX,
   type SplitBlock,
 } from '../lib/lesson-split'
+import { sessionFetch as fetch } from '../lib/session-fetch'
 import type { LessonBlockView, LessonDetailView, MaterialsBlock } from '../lib/types'
 import { isPlayableVideo, type LocalWatched, videoGateFor } from '../lib/video-gate'
 import { MaterialsBookPreview } from './ebook/materials-book-preview'
@@ -670,16 +672,30 @@ function LessonSectionsContent({
     setNavigating(true)
     setError('')
     try {
-      if (!preview)
-        await apiSend(
-          `/api/members/lessons/${encodeURIComponent(lesson.id)}/navigation`,
-          'POST',
-          { sectionId: next.id },
-          { 'x-sz-viewer': player?.viewerId ?? '' },
-          // `keepalive`: trocar de seção e fechar a aba é comum, e sem isso o
-          // navegador cancela o pedido no unload.
-          { keepalive: true },
-        )
+      // Avançar fecha as partes com "envio em dia" antes do destino: a edição delas precisa
+      // chegar à conta antes deste pedido (inclusive o que ainda está no debounce do editor). O
+      // resto sobe em tentativa, como sempre; voltar não fecha parte nenhuma.
+      if (!preview) {
+        const sendNavigation = () =>
+          apiSend(
+            `/api/members/lessons/${encodeURIComponent(lesson.id)}/navigation`,
+            'POST',
+            { sectionId: next.id },
+            { 'x-sz-viewer': player?.viewerId ?? '' },
+            // `keepalive`: trocar de seção e fechar a aba é comum, e sem isso o
+            // navegador cancela o pedido no unload.
+            { keepalive: true },
+          )
+        if (player?.lessonDrafts)
+          await player.lessonDrafts.withSavedDrafts(lesson.id, sendNavigation, {
+            confirm: upToDateWorkspaceIds(
+              sections,
+              sections.findIndex((s) => s.id === section?.id),
+              target,
+            ),
+          })
+        else await sendNavigation()
+      }
       setSelected(next.id)
       setToolMode('example')
       setHelpOpen(false)
@@ -701,9 +717,18 @@ function LessonSectionsContent({
       // Trocar de perfil no meio da aula devolve 409 VIEWER_CHANGED: aqui repetir
       // NUNCA funciona, então quem fala é o servidor e o botão some. Sem isto a
       // criança lê "tente novamente" para um erro que só passa reabrindo a aula.
-      if ((e as { code?: string } | null)?.code === 'VIEWER_CHANGED') {
+      if (e instanceof LessonDraftSaveError) {
+        setError(e.viewerChanged ? copy.secoes.perfilMudou : e.message)
+        setRetryable(!e.viewerChanged)
+      } else if ((e as { code?: string } | null)?.code === 'VIEWER_CHANGED') {
         setError((e as { message?: string }).message ?? copy.secoes.perfilMudou)
         setRetryable(false)
+      } else if ((e as { code?: string } | null)?.code === 'SECTION_LOCKED') {
+        // A parte de agora ainda pede algo (o projeto mudou depois do envio, por exemplo): a
+        // leitura nova traz o motivo para a faixa do rodapé.
+        setError(copy.secoes.confiraAntes)
+        setRetryable(false)
+        player?.refreshAfterLearning?.()
       } else {
         setError(copy.secoes.erroAoAbrir)
         setRetryable(true)

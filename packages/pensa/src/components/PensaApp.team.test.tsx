@@ -213,396 +213,470 @@ const AVISO = 'Alguém da equipe mexeu no plano.'
 const pollCalls = (calls: string[]) =>
   calls.filter((call) => call === 'GET /projects/plan-1').length
 
+/**
+ * Cada teste da equipe leva ~160 ms aqui; dois deles caíram em 10/10/2026 porque o mesmo teste
+ * passa de 10 s no CI, onde a suíte divide a máquina com os testes de todos os
+ * outros, e é isso que derruba o limite padrão de 5 s, não um defeito (mesmo padrão do Kids).
+ */
+const LENTO_NO_CI = 30_000
+
 describe('a equipe do plano', () => {
-  test('o dono: "Equipe · 1" abre a janela com a lista, e o "Criar um código" gera o ZAP-', async () => {
-    const { adapter } = harness({ role: 'owner', members: [BIA] })
-    await openPlan(adapter)
-    // O que se VÊ é "Equipe · 1"; o que se OUVE é "Equipe, 1 na equipe" (o "·" fica fora do nome).
-    const equipe = screen.getByRole('button', { name: 'Equipe, 1 na equipe' })
-    expect(equipe.querySelector('[aria-hidden="true"]:not(svg)')?.textContent).toBe('Equipe · 1')
-    const { dialog } = await openTeam()
-    const janela = within(dialog)
-    await waitFor(() => janela.getByText('1 de 5 lugares'))
-    // O dono ("você", "dono do plano") e a Bia, com o rosto e o "Tirar".
-    expect(janela.getByText('Helena')).toBeTruthy()
-    expect(janela.getByText('você')).toBeTruthy()
-    expect(janela.getByText('dono do plano')).toBeTruthy()
-    expect(janela.getByText('Bia')).toBeTruthy()
-    expect(janela.getByRole('button', { name: 'Tirar Bia da equipe' })).toBeTruthy()
-    // Sem código ainda: o convite e o botão de criar.
-    expect(janela.getByText(/Ninguém entra sem um código/)).toBeTruthy()
-    fireEvent.click(janela.getByRole('button', { name: 'Criar um código' }))
-    // O nome vem do h3 (`aria-labelledby`), não de um `aria-label` que o repetia.
-    const code = await janela.findByRole('status', { name: 'Código do plano' })
-    expect(code.textContent).toBe('ZAP-AAAAAB')
-    expect(code.getAttribute('aria-label')).toBeNull()
-    expect(code.getAttribute('aria-labelledby')).toBe(
-      janela.getByRole('heading', { name: 'Código do plano', level: 3 }).id,
-    )
-    expect(janela.getByRole('button', { name: 'Gerar outro código' })).toBeTruthy()
-    expect(janela.getByRole('button', { name: 'Desligar o código' })).toBeTruthy()
-    // Gerar outro: o código muda (o antigo deixa de valer no servidor).
-    fireEvent.click(janela.getByRole('button', { name: 'Gerar outro código' }))
-    await waitFor(() =>
-      expect(janela.getByRole('status', { name: 'Código do plano' }).textContent).toBe(
-        'ZAP-AAAAAC',
-      ),
-    )
-    // Desligar: volta ao convite.
-    fireEvent.click(janela.getByRole('button', { name: 'Desligar o código' }))
-    await waitFor(() => janela.getByRole('button', { name: 'Criar um código' }))
-    expect(janela.queryByRole('status', { name: 'Código do plano' })).toBeNull()
-  })
+  test(
+    'o dono: "Equipe · 1" abre a janela com a lista, e o "Criar um código" gera o ZAP-',
+    async () => {
+      const { adapter } = harness({ role: 'owner', members: [BIA] })
+      await openPlan(adapter)
+      // O que se VÊ é "Equipe · 1"; o que se OUVE é "Equipe, 1 na equipe" (o "·" fica fora do nome).
+      const equipe = screen.getByRole('button', { name: 'Equipe, 1 na equipe' })
+      expect(equipe.querySelector('[aria-hidden="true"]:not(svg)')?.textContent).toBe('Equipe · 1')
+      const { dialog } = await openTeam()
+      const janela = within(dialog)
+      await waitFor(() => janela.getByText('1 de 5 lugares'))
+      // O dono ("você", "dono do plano") e a Bia, com o rosto e o "Tirar".
+      expect(janela.getByText('Helena')).toBeTruthy()
+      expect(janela.getByText('você')).toBeTruthy()
+      expect(janela.getByText('dono do plano')).toBeTruthy()
+      expect(janela.getByText('Bia')).toBeTruthy()
+      expect(janela.getByRole('button', { name: 'Tirar Bia da equipe' })).toBeTruthy()
+      // Sem código ainda: o convite e o botão de criar.
+      expect(janela.getByText(/Ninguém entra sem um código/)).toBeTruthy()
+      fireEvent.click(janela.getByRole('button', { name: 'Criar um código' }))
+      // O nome vem do h3 (`aria-labelledby`), não de um `aria-label` que o repetia.
+      const code = await janela.findByRole('status', { name: 'Código do plano' })
+      expect(code.textContent).toBe('ZAP-AAAAAB')
+      expect(code.getAttribute('aria-label')).toBeNull()
+      expect(code.getAttribute('aria-labelledby')).toBe(
+        janela.getByRole('heading', { name: 'Código do plano', level: 3 }).id,
+      )
+      expect(janela.getByRole('button', { name: 'Gerar outro código' })).toBeTruthy()
+      expect(janela.getByRole('button', { name: 'Desligar o código' })).toBeTruthy()
+      // Gerar outro: o código muda (o antigo deixa de valer no servidor).
+      fireEvent.click(janela.getByRole('button', { name: 'Gerar outro código' }))
+      await waitFor(() =>
+        expect(janela.getByRole('status', { name: 'Código do plano' }).textContent).toBe(
+          'ZAP-AAAAAC',
+        ),
+      )
+      // Desligar: volta ao convite.
+      fireEvent.click(janela.getByRole('button', { name: 'Desligar o código' }))
+      await waitFor(() => janela.getByRole('button', { name: 'Criar um código' }))
+      expect(janela.queryByRole('status', { name: 'Código do plano' })).toBeNull()
+    },
+    LENTO_NO_CI,
+  )
 
-  test('copiar: sem área de transferência o recado é honesto; com ela, "Código copiado!"', async () => {
-    const { adapter } = harness({ role: 'owner', shareCode: 'AAAAAB' })
-    await openPlan(adapter)
-    const { dialog } = await openTeam()
-    const janela = within(dialog)
-    await janela.findByRole('status', { name: 'Código do plano' })
-    const nav = navigator as Navigator & { clipboard?: { writeText(text: string): Promise<void> } }
-    const original = Object.getOwnPropertyDescriptor(nav, 'clipboard')
-    Object.defineProperty(nav, 'clipboard', { value: undefined, configurable: true })
-    try {
-      fireEvent.click(janela.getByRole('button', { name: 'Copiar' }))
-      await waitFor(() => janela.getByText(/Não deu para copiar/))
-      const written: string[] = []
-      Object.defineProperty(nav, 'clipboard', {
-        value: {
-          writeText: async (text: string) => {
-            written.push(text)
+  test(
+    'copiar: sem área de transferência o recado é honesto; com ela, "Código copiado!"',
+    async () => {
+      const { adapter } = harness({ role: 'owner', shareCode: 'AAAAAB' })
+      await openPlan(adapter)
+      const { dialog } = await openTeam()
+      const janela = within(dialog)
+      await janela.findByRole('status', { name: 'Código do plano' })
+      const nav = navigator as Navigator & {
+        clipboard?: { writeText(text: string): Promise<void> }
+      }
+      const original = Object.getOwnPropertyDescriptor(nav, 'clipboard')
+      Object.defineProperty(nav, 'clipboard', { value: undefined, configurable: true })
+      try {
+        fireEvent.click(janela.getByRole('button', { name: 'Copiar' }))
+        await waitFor(() => janela.getByText(/Não deu para copiar/))
+        const written: string[] = []
+        Object.defineProperty(nav, 'clipboard', {
+          value: {
+            writeText: async (text: string) => {
+              written.push(text)
+            },
           },
-        },
-        configurable: true,
+          configurable: true,
+        })
+        fireEvent.click(janela.getByRole('button', { name: 'Copiar' }))
+        await waitFor(() => janela.getByText('Código copiado!'))
+        expect(written).toEqual(['ZAP-AAAAAB'])
+      } finally {
+        if (original) Object.defineProperty(nav, 'clipboard', original)
+        else Reflect.deleteProperty(nav, 'clipboard')
+      }
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'tirar alguém pede confirmação na linha; "Deixar" desiste e "Tirar mesmo" tira (o contador do cabeçalho acompanha)',
+    async () => {
+      const { adapter, calls } = harness({ role: 'owner', members: [BIA] })
+      await openPlan(adapter)
+      const { dialog } = await openTeam()
+      const janela = within(dialog)
+      await janela.findByText('1 de 5 lugares')
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
+      expect(janela.getByText('Tirar Bia da equipe?')).toBeTruthy()
+      fireEvent.click(janela.getByRole('button', { name: 'Deixar' }))
+      expect(janela.queryByText('Tirar Bia da equipe?')).toBeNull()
+      expect(calls.some((call) => call.startsWith('DELETE'))).toBe(false)
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar mesmo' }))
+      await waitFor(() => janela.getByText('Ainda não entrou ninguém.'))
+      expect(calls).toContain('DELETE /projects/plan-1/members/perfil-bia')
+      expect(janela.queryByText('Bia')).toBeNull()
+      expect(screen.getByRole('button', { name: 'Equipe, 0 na equipe' })).toBeTruthy()
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'o foco dos dois passos do "Tirar": armar foca o "Tirar mesmo", "Deixar" devolve ao "Tirar", tirar pousa no contador',
+    async () => {
+      const { adapter } = harness({ role: 'owner', members: [BIA, JOAO_1] })
+      await openPlan(adapter)
+      const { dialog } = await openTeam()
+      const janela = within(dialog)
+      await janela.findByText('2 de 5 lugares')
+      // Enter no "Tirar" (o botão DESMONTA): o foco vai para o "Tirar mesmo", não para o body.
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
+      await waitFor(() =>
+        expect(document.activeElement).toBe(janela.getByRole('button', { name: 'Tirar mesmo' })),
+      )
+      // "Deixar": de volta ao "Tirar" da linha (um botão NOVO, com o mesmo nome).
+      fireEvent.click(janela.getByRole('button', { name: 'Deixar' }))
+      await waitFor(() =>
+        expect(document.activeElement).toBe(
+          janela.getByRole('button', { name: 'Tirar Bia da equipe' }),
+        ),
+      )
+      // "Tirar mesmo": a linha some, e o foco pousa no contador de lugares.
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar mesmo' }))
+      await janela.findByText('1 de 5 lugares')
+      await waitFor(() => expect(document.activeElement).toBe(janela.getByText('1 de 5 lugares')))
+      expect(document.activeElement).not.toBe(document.body)
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'dois colegas com o mesmo nome: o "Tirar" diz qual pela posição na lista',
+    async () => {
+      const { adapter, calls } = harness({ role: 'owner', members: [BIA, JOAO_1, JOAO_2] })
+      await openPlan(adapter)
+      const { dialog } = await openTeam()
+      const janela = within(dialog)
+      await janela.findByText('3 de 5 lugares')
+      expect(janela.getByRole('button', { name: 'Tirar Bia da equipe' })).toBeTruthy()
+      expect(
+        janela.getByRole('button', { name: 'Tirar João (2º da lista) da equipe' }),
+      ).toBeTruthy()
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar João (3º da lista) da equipe' }))
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar mesmo' }))
+      await waitFor(() => expect(calls).toContain('DELETE /projects/plan-1/members/perfil-joao-2'))
+      // Sobrou um João: o nome volta a ser só o nome.
+      await janela.findByRole('button', { name: 'Tirar João da equipe' })
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'quem entrou pelo código: sem o lápis, "Este plano é de Bia", sem a parte do código, e "Sair da equipe" leva à home com o foco no título',
+    async () => {
+      const { adapter, calls } = harness({
+        role: 'member',
+        members: [
+          { ...EU, profileId: 'perfil-eu-membro', joinedAt: '2026-09-21T10:00:00.000Z' },
+          JOAO_1,
+        ],
       })
-      fireEvent.click(janela.getByRole('button', { name: 'Copiar' }))
-      await waitFor(() => janela.getByText('Código copiado!'))
-      expect(written).toEqual(['ZAP-AAAAAB'])
-    } finally {
-      if (original) Object.defineProperty(nav, 'clipboard', original)
-      else Reflect.deleteProperty(nav, 'clipboard')
-    }
-  })
+      await openPlan(adapter)
+      expect(screen.queryByRole('button', { name: /^Renomear o plano/ })).toBeNull()
+      const { dialog } = await openTeam()
+      const janela = within(dialog)
+      // "Vocês" e não "vocês dois": aqui somos três.
+      await janela.findByText(/Este plano é de Bia\. Vocês mexem no mesmo plano\./)
+      expect(janela.queryByText(/Vocês dois/)).toBeNull()
+      expect(janela.queryByText(/Ninguém entra sem um código/)).toBeNull()
+      expect(janela.queryByRole('button', { name: 'Criar um código' })).toBeNull()
+      expect(janela.queryByRole('button', { name: /^Tirar/ })).toBeNull()
+      // Os dois passos do "Sair": armar foca o "Sair mesmo"; "Ficar" devolve ao "Sair da equipe".
+      fireEvent.click(janela.getByRole('button', { name: 'Sair da equipe' }))
+      expect(janela.getByText(/Você perde o acesso a este plano/)).toBeTruthy()
+      await waitFor(() =>
+        expect(document.activeElement).toBe(janela.getByRole('button', { name: 'Sair mesmo' })),
+      )
+      fireEvent.click(janela.getByRole('button', { name: 'Ficar' }))
+      expect(janela.queryByText(/Você perde o acesso/)).toBeNull()
+      await waitFor(() =>
+        expect(document.activeElement).toBe(janela.getByRole('button', { name: 'Sair da equipe' })),
+      )
+      fireEvent.click(janela.getByRole('button', { name: 'Sair da equipe' }))
+      fireEvent.click(janela.getByRole('button', { name: 'Sair mesmo' }))
+      const titulo = await screen.findByRole('heading', { name: 'Meus projetos' })
+      expect(calls).toContain('DELETE /projects/plan-1/members/me')
+      // Não sobrou ninguém para o foco voltar (o "Equipe" e a janela se foram): a home nasce com
+      // o foco no título, não no body.
+      await waitFor(() => expect(document.activeElement).toBe(titulo))
+    },
+    LENTO_NO_CI,
+  )
 
-  test('tirar alguém pede confirmação na linha; "Deixar" desiste e "Tirar mesmo" tira (o contador do cabeçalho acompanha)', async () => {
-    const { adapter, calls } = harness({ role: 'owner', members: [BIA] })
-    await openPlan(adapter)
-    const { dialog } = await openTeam()
-    const janela = within(dialog)
-    await janela.findByText('1 de 5 lugares')
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
-    expect(janela.getByText('Tirar Bia da equipe?')).toBeTruthy()
-    fireEvent.click(janela.getByRole('button', { name: 'Deixar' }))
-    expect(janela.queryByText('Tirar Bia da equipe?')).toBeNull()
-    expect(calls.some((call) => call.startsWith('DELETE'))).toBe(false)
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar mesmo' }))
-    await waitFor(() => janela.getByText('Ainda não entrou ninguém.'))
-    expect(calls).toContain('DELETE /projects/plan-1/members/perfil-bia')
-    expect(janela.queryByText('Bia')).toBeNull()
-    expect(screen.getByRole('button', { name: 'Equipe, 0 na equipe' })).toBeTruthy()
-  })
+  test(
+    'Esc fecha a janela e o foco volta ao "Equipe"; erro do servidor fica NA janela',
+    async () => {
+      const { adapter } = harness({
+        role: 'owner',
+        fail: { share: 'Só quem criou o plano pode fazer isso.' },
+      })
+      await openPlan(adapter)
+      const { button, dialog } = await openTeam()
+      const janela = within(dialog)
+      await janela.findByRole('button', { name: 'Criar um código' })
+      fireEvent.click(janela.getByRole('button', { name: 'Criar um código' }))
+      const alerta = await janela.findByRole('alert')
+      expect(alerta.textContent).toBe('Só quem criou o plano pode fazer isso.')
+      expect(screen.getByRole('dialog', { name: 'Equipe do plano' })).toBeTruthy()
+      fireEvent.keyDown(document, { key: 'Escape' })
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect(document.activeElement).toBe(button)
+    },
+    LENTO_NO_CI,
+  )
 
-  test('o foco dos dois passos do "Tirar": armar foca o "Tirar mesmo", "Deixar" devolve ao "Tirar", tirar pousa no contador', async () => {
-    const { adapter } = harness({ role: 'owner', members: [BIA, JOAO_1] })
-    await openPlan(adapter)
-    const { dialog } = await openTeam()
-    const janela = within(dialog)
-    await janela.findByText('2 de 5 lugares')
-    // Enter no "Tirar" (o botão DESMONTA): o foco vai para o "Tirar mesmo", não para o body.
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
-    await waitFor(() =>
-      expect(document.activeElement).toBe(janela.getByRole('button', { name: 'Tirar mesmo' })),
-    )
-    // "Deixar": de volta ao "Tirar" da linha (um botão NOVO, com o mesmo nome).
-    fireEvent.click(janela.getByRole('button', { name: 'Deixar' }))
-    await waitFor(() =>
-      expect(document.activeElement).toBe(
-        janela.getByRole('button', { name: 'Tirar Bia da equipe' }),
-      ),
-    )
-    // "Tirar mesmo": a linha some, e o foco pousa no contador de lugares.
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar mesmo' }))
-    await janela.findByText('1 de 5 lugares')
-    await waitFor(() => expect(document.activeElement).toBe(janela.getByText('1 de 5 lugares')))
-    expect(document.activeElement).not.toBe(document.body)
-  })
+  test(
+    'reabrir a janela não mostra a lista velha, e a resposta atrasada da abertura anterior não repõe nada',
+    async () => {
+      const { adapter, release } = harness({
+        role: 'owner',
+        members: [BIA],
+        defer: ['GET /projects/plan-1/members'],
+      })
+      await openPlan(adapter)
+      // 1ª abertura: o GET fica preso; fecha antes de ele voltar.
+      const primeira = await openTeam()
+      expect(within(primeira.dialog).getByText('Buscando a equipe…')).toBeTruthy()
+      fireEvent.keyDown(document, { key: 'Escape' })
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      // 2ª abertura: começa do zero (buscando), sem lista nenhuma à vista.
+      const segunda = await openTeam()
+      const janela = within(segunda.dialog)
+      expect(janela.getByText('Buscando a equipe…')).toBeTruthy()
+      expect(janela.queryByText('Bia')).toBeNull()
+      // A resposta ATRASADA da 1ª abertura chega com uma lista velha: é descartada.
+      const velha: PensaProjectMembersView = {
+        role: 'owner',
+        viewerProfileId: EU.profileId,
+        shareCode: null,
+        maxMembers: 5,
+        owner: EU,
+        members: [BIA, JOAO_1],
+      }
+      await act(async () => {
+        release('GET /projects/plan-1/members', velha)
+        await Promise.resolve()
+      })
+      expect(janela.queryByText('João')).toBeNull()
+      expect(janela.getByText('Buscando a equipe…')).toBeTruthy()
+      // A resposta da 2ª abertura é a que vale.
+      await act(async () => {
+        release('GET /projects/plan-1/members')
+      })
+      await janela.findByText('1 de 5 lugares')
+      expect(janela.getByText('Bia')).toBeTruthy()
+      expect(janela.queryByText('João')).toBeNull()
+    },
+    LENTO_NO_CI,
+  )
 
-  test('dois colegas com o mesmo nome: o "Tirar" diz qual pela posição na lista', async () => {
-    const { adapter, calls } = harness({ role: 'owner', members: [BIA, JOAO_1, JOAO_2] })
-    await openPlan(adapter)
-    const { dialog } = await openTeam()
-    const janela = within(dialog)
-    await janela.findByText('3 de 5 lugares')
-    expect(janela.getByRole('button', { name: 'Tirar Bia da equipe' })).toBeTruthy()
-    expect(janela.getByRole('button', { name: 'Tirar João (2º da lista) da equipe' })).toBeTruthy()
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar João (3º da lista) da equipe' }))
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar mesmo' }))
-    await waitFor(() => expect(calls).toContain('DELETE /projects/plan-1/members/perfil-joao-2'))
-    // Sobrou um João: o nome volta a ser só o nome.
-    await janela.findByRole('button', { name: 'Tirar João da equipe' })
-  })
-
-  test('quem entrou pelo código: sem o lápis, "Este plano é de Bia", sem a parte do código, e "Sair da equipe" leva à home com o foco no título', async () => {
-    const { adapter, calls } = harness({
-      role: 'member',
-      members: [
-        { ...EU, profileId: 'perfil-eu-membro', joinedAt: '2026-09-21T10:00:00.000Z' },
-        JOAO_1,
-      ],
-    })
-    await openPlan(adapter)
-    expect(screen.queryByRole('button', { name: /^Renomear o plano/ })).toBeNull()
-    const { dialog } = await openTeam()
-    const janela = within(dialog)
-    // "Vocês" e não "vocês dois": aqui somos três.
-    await janela.findByText(/Este plano é de Bia\. Vocês mexem no mesmo plano\./)
-    expect(janela.queryByText(/Vocês dois/)).toBeNull()
-    expect(janela.queryByText(/Ninguém entra sem um código/)).toBeNull()
-    expect(janela.queryByRole('button', { name: 'Criar um código' })).toBeNull()
-    expect(janela.queryByRole('button', { name: /^Tirar/ })).toBeNull()
-    // Os dois passos do "Sair": armar foca o "Sair mesmo"; "Ficar" devolve ao "Sair da equipe".
-    fireEvent.click(janela.getByRole('button', { name: 'Sair da equipe' }))
-    expect(janela.getByText(/Você perde o acesso a este plano/)).toBeTruthy()
-    await waitFor(() =>
-      expect(document.activeElement).toBe(janela.getByRole('button', { name: 'Sair mesmo' })),
-    )
-    fireEvent.click(janela.getByRole('button', { name: 'Ficar' }))
-    expect(janela.queryByText(/Você perde o acesso/)).toBeNull()
-    await waitFor(() =>
-      expect(document.activeElement).toBe(janela.getByRole('button', { name: 'Sair da equipe' })),
-    )
-    fireEvent.click(janela.getByRole('button', { name: 'Sair da equipe' }))
-    fireEvent.click(janela.getByRole('button', { name: 'Sair mesmo' }))
-    const titulo = await screen.findByRole('heading', { name: 'Meus projetos' })
-    expect(calls).toContain('DELETE /projects/plan-1/members/me')
-    // Não sobrou ninguém para o foco voltar (o "Equipe" e a janela se foram): a home nasce com
-    // o foco no título, não no body.
-    await waitFor(() => expect(document.activeElement).toBe(titulo))
-  })
-
-  test('Esc fecha a janela e o foco volta ao "Equipe"; erro do servidor fica NA janela', async () => {
-    const { adapter } = harness({
-      role: 'owner',
-      fail: { share: 'Só quem criou o plano pode fazer isso.' },
-    })
-    await openPlan(adapter)
-    const { button, dialog } = await openTeam()
-    const janela = within(dialog)
-    await janela.findByRole('button', { name: 'Criar um código' })
-    fireEvent.click(janela.getByRole('button', { name: 'Criar um código' }))
-    const alerta = await janela.findByRole('alert')
-    expect(alerta.textContent).toBe('Só quem criou o plano pode fazer isso.')
-    expect(screen.getByRole('dialog', { name: 'Equipe do plano' })).toBeTruthy()
-    fireEvent.keyDown(document, { key: 'Escape' })
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
-    expect(document.activeElement).toBe(button)
-  })
-
-  test('reabrir a janela não mostra a lista velha, e a resposta atrasada da abertura anterior não repõe nada', async () => {
-    const { adapter, release } = harness({
-      role: 'owner',
-      members: [BIA],
-      defer: ['GET /projects/plan-1/members'],
-    })
-    await openPlan(adapter)
-    // 1ª abertura: o GET fica preso; fecha antes de ele voltar.
-    const primeira = await openTeam()
-    expect(within(primeira.dialog).getByText('Buscando a equipe…')).toBeTruthy()
-    fireEvent.keyDown(document, { key: 'Escape' })
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
-    // 2ª abertura: começa do zero (buscando), sem lista nenhuma à vista.
-    const segunda = await openTeam()
-    const janela = within(segunda.dialog)
-    expect(janela.getByText('Buscando a equipe…')).toBeTruthy()
-    expect(janela.queryByText('Bia')).toBeNull()
-    // A resposta ATRASADA da 1ª abertura chega com uma lista velha: é descartada.
-    const velha: PensaProjectMembersView = {
-      role: 'owner',
-      viewerProfileId: EU.profileId,
-      shareCode: null,
-      maxMembers: 5,
-      owner: EU,
-      members: [BIA, JOAO_1],
-    }
-    await act(async () => {
-      release('GET /projects/plan-1/members', velha)
-      await Promise.resolve()
-    })
-    expect(janela.queryByText('João')).toBeNull()
-    expect(janela.getByText('Buscando a equipe…')).toBeTruthy()
-    // A resposta da 2ª abertura é a que vale.
-    await act(async () => {
-      release('GET /projects/plan-1/members')
-    })
-    await janela.findByText('1 de 5 lugares')
-    expect(janela.getByText('Bia')).toBeTruthy()
-    expect(janela.queryByText('João')).toBeNull()
-  })
-
-  test('com equipe, o compasso avisa "alguém mexeu no plano" e o "Atualizar" recarrega', async () => {
-    const { adapter, touch, calls } = harness({ role: 'owner', members: [BIA] })
-    await openPlan(adapter, 20)
-    expect(screen.queryByText(AVISO)).toBeNull()
-    // Sem mudança, o compasso pergunta e fica quieto.
-    await tiques(20)
-    expect(screen.queryByText(AVISO)).toBeNull()
-    touch()
-    const aviso = await screen.findByText(AVISO)
-    expect(aviso.closest('[role="status"]')).toBeTruthy()
-    const antes = calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z').length
-    fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
-    await waitFor(() => expect(screen.queryByText(AVISO)).toBeNull())
-    await waitFor(() =>
-      expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z').length).toBe(
-        antes + 1,
-      ),
-    )
-  })
-
-  test('mexer na equipe (gerar código, tirar alguém) NÃO acusa a própria criança, e a etapa não remonta', async () => {
-    const { adapter, calls } = harness({ role: 'owner', members: [BIA, JOAO_1] })
-    await openPlan(adapter, 20)
-    // O que ela está escrevendo na conversa tem que sobreviver à sincronização.
-    const campo = screen.getByRole('textbox', { name: 'Mensagem para o Zappy' })
-    fireEvent.change(campo, { target: { value: 'meu gato pula muito alto' } })
-    const { dialog } = await openTeam()
-    const janela = within(dialog)
-    await janela.findByText('2 de 5 lugares')
-    // Gerar o código grava o `updatedAt` no servidor (o harness imita o members).
-    fireEvent.click(janela.getByRole('button', { name: 'Criar um código' }))
-    await janela.findByRole('status', { name: 'Código do plano' })
-    await tiques(20)
-    expect(screen.queryByText(AVISO)).toBeNull()
-    // Tirar alguém também.
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
-    fireEvent.click(janela.getByRole('button', { name: 'Tirar mesmo' }))
-    await janela.findByText('1 de 5 lugares')
-    fireEvent.click(janela.getByRole('button', { name: 'Fechar' }))
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
-    await tiques(20)
-    expect(screen.queryByText(AVISO)).toBeNull()
-    expect(screen.getByRole('button', { name: 'Equipe, 1 na equipe' })).toBeTruthy()
-    // A sincronização puxou o detalhe SEM recarregar a etapa: o rascunho continua no campo.
-    expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z')).toHaveLength(1)
-    expect(
-      (screen.getByRole('textbox', { name: 'Mensagem para o Zappy' }) as HTMLTextAreaElement).value,
-    ).toBe('meu gato pula muito alto')
-    // Anti-vácuo: o compasso segue vivo, e uma mexida DE FORA ainda avisa.
-    expect(pollCalls(calls)).toBeGreaterThan(1)
-  })
-
-  test('"Atualizar" com coisa sem guardar pergunta antes; "Continuar aqui" mantém tudo, "Atualizar" recarrega', async () => {
-    const { adapter, touch, calls } = harness({
-      role: 'owner',
-      members: [BIA],
-      stage: stageZComIdeia,
-    })
-    await openPlan(adapter, 20)
-    // O rascunho da conversa conta como sujo.
-    const chat = screen.getByRole('textbox', { name: 'Mensagem para o Zappy' })
-    fireEvent.change(chat, { target: { value: 'ainda pensando' } })
-    touch()
-    await screen.findByText(AVISO)
-    const stagesAntes = calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z').length
-    const atualizar = screen.getByRole('button', { name: 'Atualizar' })
-    fireEvent.click(atualizar)
-    const pergunta = await screen.findByRole('dialog', { name: 'Atualizar o plano?' })
-    expect(within(pergunta).getByText('Você tem coisa sem guardar. Atualizar mesmo?')).toBeTruthy()
-    fireEvent.click(within(pergunta).getByRole('button', { name: 'Continuar aqui' }))
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
-    expect((chat as HTMLTextAreaElement).value).toBe('ainda pensando')
-    expect(screen.getByText(AVISO)).toBeTruthy()
-    expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z')).toHaveLength(
-      stagesAntes,
-    )
-    expect(document.activeElement).toBe(atualizar)
-    // Limpou o chat, mas abriu a Carta da Ideia para editar e mexeu: continua sujo.
-    fireEvent.change(chat, { target: { value: '' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
-    fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
-      target: { value: 'Runo 2' },
-    })
-    fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
-    const pergunta2 = await screen.findByRole('dialog', { name: 'Atualizar o plano?' })
-    fireEvent.click(within(pergunta2).getByRole('button', { name: 'Atualizar' }))
-    await waitFor(() => expect(screen.queryByText(AVISO)).toBeNull())
-    await waitFor(() =>
-      expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z')).toHaveLength(
-        stagesAntes + 1,
-      ),
-    )
-  })
-
-  test('"Atualizar" sem nada para guardar recarrega direto, sem perguntar', async () => {
-    const { adapter, touch, calls } = harness({
-      role: 'owner',
-      members: [BIA],
-      stage: stageZComIdeia,
-    })
-    await openPlan(adapter, 20)
-    // Abriu para editar mas não mexeu: não é sujo.
-    fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
-    touch()
-    await screen.findByText(AVISO)
-    const stagesAntes = calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z').length
-    fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
-    expect(screen.queryByRole('dialog')).toBeNull()
-    await waitFor(() => expect(screen.queryByText(AVISO)).toBeNull())
-    await waitFor(() =>
-      expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z')).toHaveLength(
-        stagesAntes + 1,
-      ),
-    )
-  })
-
-  test('o compasso não pergunta com a aba escondida', async () => {
-    const { adapter, calls, touch } = harness({ role: 'owner', members: [BIA] })
-    const original = Object.getOwnPropertyDescriptor(document, 'visibilityState')
-    Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
-    try {
+  test(
+    'com equipe, o compasso avisa "alguém mexeu no plano" e o "Atualizar" recarrega',
+    async () => {
+      const { adapter, touch, calls } = harness({ role: 'owner', members: [BIA] })
       await openPlan(adapter, 20)
+      expect(screen.queryByText(AVISO)).toBeNull()
+      // Sem mudança, o compasso pergunta e fica quieto.
+      await tiques(20)
+      expect(screen.queryByText(AVISO)).toBeNull()
+      touch()
+      const aviso = await screen.findByText(AVISO)
+      expect(aviso.closest('[role="status"]')).toBeTruthy()
+      const antes = calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z').length
+      fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+      await waitFor(() => expect(screen.queryByText(AVISO)).toBeNull())
+      await waitFor(() =>
+        expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z').length).toBe(
+          antes + 1,
+        ),
+      )
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'mexer na equipe (gerar código, tirar alguém) NÃO acusa a própria criança, e a etapa não remonta',
+    async () => {
+      const { adapter, calls } = harness({ role: 'owner', members: [BIA, JOAO_1] })
+      await openPlan(adapter, 20)
+      // O que ela está escrevendo na conversa tem que sobreviver à sincronização.
+      const campo = screen.getByRole('textbox', { name: 'Mensagem para o Zappy' })
+      fireEvent.change(campo, { target: { value: 'meu gato pula muito alto' } })
+      const { dialog } = await openTeam()
+      const janela = within(dialog)
+      await janela.findByText('2 de 5 lugares')
+      // Gerar o código grava o `updatedAt` no servidor (o harness imita o members).
+      fireEvent.click(janela.getByRole('button', { name: 'Criar um código' }))
+      await janela.findByRole('status', { name: 'Código do plano' })
+      await tiques(20)
+      expect(screen.queryByText(AVISO)).toBeNull()
+      // Tirar alguém também.
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar Bia da equipe' }))
+      fireEvent.click(janela.getByRole('button', { name: 'Tirar mesmo' }))
+      await janela.findByText('1 de 5 lugares')
+      fireEvent.click(janela.getByRole('button', { name: 'Fechar' }))
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      await tiques(20)
+      expect(screen.queryByText(AVISO)).toBeNull()
+      expect(screen.getByRole('button', { name: 'Equipe, 1 na equipe' })).toBeTruthy()
+      // A sincronização puxou o detalhe SEM recarregar a etapa: o rascunho continua no campo.
+      expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z')).toHaveLength(1)
+      expect(
+        (screen.getByRole('textbox', { name: 'Mensagem para o Zappy' }) as HTMLTextAreaElement)
+          .value,
+      ).toBe('meu gato pula muito alto')
+      // Anti-vácuo: o compasso segue vivo, e uma mexida DE FORA ainda avisa.
+      expect(pollCalls(calls)).toBeGreaterThan(1)
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    '"Atualizar" com coisa sem guardar pergunta antes; "Continuar aqui" mantém tudo, "Atualizar" recarrega',
+    async () => {
+      const { adapter, touch, calls } = harness({
+        role: 'owner',
+        members: [BIA],
+        stage: stageZComIdeia,
+      })
+      await openPlan(adapter, 20)
+      // O rascunho da conversa conta como sujo.
+      const chat = screen.getByRole('textbox', { name: 'Mensagem para o Zappy' })
+      fireEvent.change(chat, { target: { value: 'ainda pensando' } })
+      touch()
+      await screen.findByText(AVISO)
+      const stagesAntes = calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z').length
+      const atualizar = screen.getByRole('button', { name: 'Atualizar' })
+      fireEvent.click(atualizar)
+      const pergunta = await screen.findByRole('dialog', { name: 'Atualizar o plano?' })
+      expect(
+        within(pergunta).getByText('Você tem coisa sem guardar. Atualizar mesmo?'),
+      ).toBeTruthy()
+      fireEvent.click(within(pergunta).getByRole('button', { name: 'Continuar aqui' }))
+      await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+      expect((chat as HTMLTextAreaElement).value).toBe('ainda pensando')
+      expect(screen.getByText(AVISO)).toBeTruthy()
+      expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z')).toHaveLength(
+        stagesAntes,
+      )
+      expect(document.activeElement).toBe(atualizar)
+      // Limpou o chat, mas abriu a Carta da Ideia para editar e mexeu: continua sujo.
+      fireEvent.change(chat, { target: { value: '' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
+      fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
+        target: { value: 'Runo 2' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+      const pergunta2 = await screen.findByRole('dialog', { name: 'Atualizar o plano?' })
+      fireEvent.click(within(pergunta2).getByRole('button', { name: 'Atualizar' }))
+      await waitFor(() => expect(screen.queryByText(AVISO)).toBeNull())
+      await waitFor(() =>
+        expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z')).toHaveLength(
+          stagesAntes + 1,
+        ),
+      )
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    '"Atualizar" sem nada para guardar recarrega direto, sem perguntar',
+    async () => {
+      const { adapter, touch, calls } = harness({
+        role: 'owner',
+        members: [BIA],
+        stage: stageZComIdeia,
+      })
+      await openPlan(adapter, 20)
+      // Abriu para editar mas não mexeu: não é sujo.
+      fireEvent.click(screen.getByRole('button', { name: 'Editar' }))
+      touch()
+      await screen.findByText(AVISO)
+      const stagesAntes = calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z').length
+      fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+      expect(screen.queryByRole('dialog')).toBeNull()
+      await waitFor(() => expect(screen.queryByText(AVISO)).toBeNull())
+      await waitFor(() =>
+        expect(calls.filter((call) => call === 'GET /cycles/cycle-1/stages/z')).toHaveLength(
+          stagesAntes + 1,
+        ),
+      )
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'o compasso não pergunta com a aba escondida',
+    async () => {
+      const { adapter, calls, touch } = harness({ role: 'owner', members: [BIA] })
+      const original = Object.getOwnPropertyDescriptor(document, 'visibilityState')
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true })
+      try {
+        await openPlan(adapter, 20)
+        const antes = pollCalls(calls)
+        await tiques(20)
+        expect(pollCalls(calls)).toBe(antes)
+        expect(screen.queryByText(AVISO)).toBeNull()
+      } finally {
+        if (original) Object.defineProperty(document, 'visibilityState', original)
+        else Reflect.deleteProperty(document, 'visibilityState')
+      }
+      // Anti-vácuo: de volta à vista, o compasso pergunta e avisa.
+      touch()
+      await screen.findByText(AVISO)
+    },
+    LENTO_NO_CI,
+  )
+
+  test(
+    'o compasso não pergunta com uma ação em voo (o `busy`)',
+    async () => {
+      const { adapter, calls, release } = harness({
+        role: 'owner',
+        members: [BIA],
+        stage: stageZComIdeia,
+        defer: ['POST /cycles/cycle-1/artifacts/idea/validate'],
+      })
+      await openPlan(adapter, 20)
+      fireEvent.click(screen.getByRole('button', { name: 'Está do meu jeito ✓' }))
+      await waitFor(() => expect(calls).toContain('POST /cycles/cycle-1/artifacts/idea/validate'))
       const antes = pollCalls(calls)
       await tiques(20)
       expect(pollCalls(calls)).toBe(antes)
+      // A ação termina em `refresh` (que traz o `updatedAt` novo): nada de aviso, compasso de volta.
+      await act(async () => {
+        release('POST /cycles/cycle-1/artifacts/idea/validate')
+      })
+      await waitFor(() => expect(pollCalls(calls)).toBeGreaterThan(antes))
+      await tiques(20)
       expect(screen.queryByText(AVISO)).toBeNull()
-    } finally {
-      if (original) Object.defineProperty(document, 'visibilityState', original)
-      else Reflect.deleteProperty(document, 'visibilityState')
-    }
-    // Anti-vácuo: de volta à vista, o compasso pergunta e avisa.
-    touch()
-    await screen.findByText(AVISO)
-  })
+    },
+    LENTO_NO_CI,
+  )
 
-  test('o compasso não pergunta com uma ação em voo (o `busy`)', async () => {
-    const { adapter, calls, release } = harness({
-      role: 'owner',
-      members: [BIA],
-      stage: stageZComIdeia,
-      defer: ['POST /cycles/cycle-1/artifacts/idea/validate'],
-    })
-    await openPlan(adapter, 20)
-    fireEvent.click(screen.getByRole('button', { name: 'Está do meu jeito ✓' }))
-    await waitFor(() => expect(calls).toContain('POST /cycles/cycle-1/artifacts/idea/validate'))
-    const antes = pollCalls(calls)
-    await tiques(20)
-    expect(pollCalls(calls)).toBe(antes)
-    // A ação termina em `refresh` (que traz o `updatedAt` novo): nada de aviso, compasso de volta.
-    await act(async () => {
-      release('POST /cycles/cycle-1/artifacts/idea/validate')
-    })
-    await waitFor(() => expect(pollCalls(calls)).toBeGreaterThan(antes))
-    await tiques(20)
-    expect(screen.queryByText(AVISO)).toBeNull()
-  })
-
-  test('sem equipe, o compasso nem liga', async () => {
-    const { adapter, calls } = harness({ role: 'owner' })
-    await openPlan(adapter, 20)
-    const antes = calls.length
-    await tiques(20)
-    expect(calls.length).toBe(antes)
-  })
+  test(
+    'sem equipe, o compasso nem liga',
+    async () => {
+      const { adapter, calls } = harness({ role: 'owner' })
+      await openPlan(adapter, 20)
+      const antes = calls.length
+      await tiques(20)
+      expect(calls.length).toBe(antes)
+    },
+    LENTO_NO_CI,
+  )
 })

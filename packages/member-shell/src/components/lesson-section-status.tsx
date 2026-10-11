@@ -14,6 +14,7 @@ import {
   ListChecks,
   Lock,
   Palette,
+  RefreshCw,
   Sparkles,
   Target,
   Wrench,
@@ -56,6 +57,8 @@ const ICONE: Record<SectionPendingKind, typeof Check> = {
   LESSON_COMING_SOON: Hammer,
   'platform-action': Sparkles,
   'project-check': Target,
+  // "Envio em dia": mudou depois de enviar, falta mandar de novo.
+  'submission-outdated': RefreshCw,
   authoring: Wrench,
   locked: Lock,
   lesson: Flag,

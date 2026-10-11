@@ -38,6 +38,8 @@ export interface LessonCopy {
     /** A faixa do rodapé com a seção pronta; `prontaUltima` na última (ao lado de "Concluir"). */
     pronta: string
     prontaUltima: string
+    /** Avançar foi recusado porque a parte ainda tem algo a fazer (o envio mudou, por exemplo). */
+    confiraAntes: string
   }
   /**
    * O texto de um item da faixa "o que falta para seguir". O members manda as frases da voz
@@ -116,6 +118,26 @@ export interface LessonCopy {
     continueDesenhando: string
     vaiVer: string
     vaiVerDeNovo: string
+  }
+  /**
+   * O rascunho do Estúdio e do Pinta da fase guardado na conta (10/10/2026): a pílula do bloco, o
+   * aviso de que o projeto mudou depois do envio e a troca pela "outra versão" (a que ficou
+   * guardada neste aparelho quando dois computadores mexeram ao mesmo tempo).
+   */
+  rascunho: {
+    guardando: string
+    guardado: string
+    offline: string
+    erro: string
+    mudouProjeto: string
+    mudouDesenho: string
+    outraVersao: string
+    outraVersaoTitulo: string
+    outraVersaoExplica: string
+    trazer: string
+    outraVersaoFalhou: string
+    /** A conta já tinha um trabalho que este aparelho não conhecia: ele abriu por cima. */
+    trouxeDaConta: string
   }
   /** Entrega pela galeria do Pinta ou do Estúdio completo. */
   galeria: {
@@ -212,6 +234,7 @@ export const ADULT_LESSON_COPY: LessonCopy = {
     preparando: 'Esta seção ainda está sendo preparada',
     pronta: 'Tudo pronto nesta seção. Pode seguir!',
     prontaUltima: 'Tudo pronto nesta seção!',
+    confiraAntes: 'Antes de seguir, confira o que falta nesta seção.',
   },
   itemPendente: (item) => item.text,
   erroDoServidor: (erro, padrao) => fraseDoServidor(erro) ?? padrao,
@@ -271,6 +294,23 @@ export const ADULT_LESSON_COPY: LessonCopy = {
     continueDesenhando: 'Continue desenhando. A entrega fica no fechamento.',
     vaiVer: 'O professor vai ver o seu desenho do jeito que ele está agora.',
     vaiVerDeNovo: 'O professor vai ver esta versão no lugar da anterior.',
+  },
+  rascunho: {
+    guardando: 'Salvando na sua conta…',
+    guardado: 'Salvo na sua conta',
+    offline: 'Sem internet. Salvo neste aparelho',
+    erro: 'Não foi possível salvar na conta agora',
+    mudouProjeto:
+      'Você alterou o projeto depois de enviar. Envie de novo para o professor ver a versão nova.',
+    mudouDesenho:
+      'Você alterou o desenho depois de enviar. Envie de novo para o professor ver a versão nova.',
+    outraVersao: 'Outra versão',
+    outraVersaoTitulo: 'Trazer a outra versão?',
+    outraVersaoExplica:
+      'Este navegador guardou a outra versão, a que não abriu agora. Trazer troca as duas de lugar: a de agora fica guardada aqui, e você pode voltar para ela do mesmo jeito.',
+    trazer: 'Trazer',
+    outraVersaoFalhou: 'Não foi possível trazer a outra versão agora. Tente novamente.',
+    trouxeDaConta: 'Abrimos a versão salva na sua conta. A deste navegador ficou em Outra versão.',
   },
   galeria: {
     instrucaoPinta: 'Escolha os desenhos que você fez para esta missão e envie ao professor.',

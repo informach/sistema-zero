@@ -42,9 +42,88 @@ describe('TokenIssuer (HS256)', () => {
     expect(claims?.signupSource).toBe('web')
   })
 
+  test('token de ALUNO: só o mínimo, e a equipe conserva o papel', async () => {
+    const kidsIssuer = createJoseTokenIssuer({
+      signing: hs256Signing(),
+      issuer: TEST_ISSUER,
+      audience: TEST_AUDIENCE,
+      accessTtlSeconds: 900,
+      validateKidsSession: async () => true,
+    })
+    const student = {
+      kind: 'student' as const,
+      sessionId: crypto.randomUUID(),
+      deviceId: crypto.randomUUID(),
+      grantId: crypto.randomUUID(),
+    }
+    for (const [role, expected] of [
+      ['customer', 'customer'],
+      ['staff', 'staff'],
+      ['admin', 'admin'],
+      ['superadmin', 'superadmin'],
+    ] as const) {
+      const user = UserAggregate.register({
+        id: crypto.randomUUID(),
+        email: Email.create('responsavel@example.com'),
+        passwordHash: 'irrelevante',
+        firstName: 'Responsável',
+        lastName: 'Teste',
+        phone: '+5511988887777',
+        signupSource: 'funnel',
+        role,
+      })
+      const profileId = crypto.randomUUID()
+      const { token } = await kidsIssuer.issueAccessToken(user, {
+        kids: student,
+        profile: { profileId, accountId: user.id, name: 'Ana', pub: false },
+      })
+      const raw = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString())
+      expect(raw.role).toBe(expected)
+      for (const field of ['email', 'firstName', 'lastName', 'phone', 'signupSource'])
+        expect(raw[field]).toBeUndefined()
+      const claims = await kidsIssuer.verifyAccessToken(token)
+      expect(claims?.sub).toBe(profileId)
+      expect(claims?.email).toBe('')
+      expect(claims?.pfl?.name).toBe('Ana')
+    }
+    // Sem contexto de aluno, faltar e-mail continua invalidando o token.
+    const adult = await new SignJWT({ role: 'customer', status: 'active', typ: 'access' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setSubject(crypto.randomUUID())
+      .setIssuer(TEST_ISSUER)
+      .setAudience(TEST_AUDIENCE)
+      .setExpirationTime('5m')
+      .sign(new TextEncoder().encode(TEST_HS256_SECRET))
+    expect(await kidsIssuer.verifyAccessToken(adult)).toBeNull()
+  })
+
   test('token adulterado → null', async () => {
     const { token } = await issuer.issueAccessToken(makeUser())
     expect(await issuer.verifyAccessToken(`${token}x`)).toBeNull()
+  })
+  test('falha do banco ao conferir sessão Kids não se transforma em token inválido', async () => {
+    const databaseFailure = new Error('database temporarily unavailable')
+    const issuer = createJoseTokenIssuer({
+      signing: hs256Signing(),
+      issuer: TEST_ISSUER,
+      audience: TEST_AUDIENCE,
+      accessTtlSeconds: 900,
+      validateKidsSession: async () => {
+        throw databaseFailure
+      },
+    })
+    const { token } = await issuer.issueAccessToken(makeUser(), {
+      kids: {
+        kind: 'parent',
+        sessionId: crypto.randomUUID(),
+        authenticatedAt: Math.floor(Date.now() / 1000),
+      },
+    })
+    const failure = await issuer.verifyAccessToken(token).then(
+      () => null,
+      (error: unknown) => error,
+    )
+    expect(failure === databaseFailure).toBe(true)
   })
 
   test('lixo → null', async () => {

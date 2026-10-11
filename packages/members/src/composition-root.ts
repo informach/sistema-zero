@@ -28,6 +28,7 @@ import {
   ListCreationsService,
   ReserveCreationUploadService,
 } from './application/creations/creations.service'
+import { LessonDraftAccessService } from './application/creations/lesson-draft-access.service'
 import { AwardGamificationService } from './application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from './application/gamification/buy-streak-freeze.service'
 import { ChallengeAdminService } from './application/gamification/challenge-admin.service'
@@ -432,6 +433,9 @@ export async function createApplication(env: Env): Promise<Application> {
   const roomRepo = new DrizzleRoomRepository(db)
   const preferencesRepository = new DrizzleProfilePreferencesRepository(db)
   const preferences = new ProfilePreferencesService(preferencesRepository, clock)
+  // "Guardado na sua conta" (índice das criações do Estúdio Completo/Pinta; blob no R2 via BFF).
+  // Nasce aqui porque o "envio em dia" das seções lê os rascunhos da fase.
+  const creationsRepo = new DrizzleCreationsRepository(db)
   const sectionProgression = new SectionProgressionService(
     learningRepository,
     progress,
@@ -440,6 +444,7 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
     new PlatformActionService(avatarRepo, roomRepo, preferencesRepository),
     certificates,
+    creationsRepo,
   )
   const learning = new LearningService(
     learningRepository,
@@ -648,10 +653,13 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const removePensaProjectMember = new RemovePensaProjectMemberService(pensaRepo, clock)
 
-  // "Guardado na sua conta" (índice das criações do Estúdio Completo/Pinta; blob no R2 via BFF)
-  const creationsRepo = new DrizzleCreationsRepository(db)
   const listCreations = new ListCreationsService(creationsRepo)
-  const reserveCreationUpload = new ReserveCreationUploadService(creationsRepo, accessCheck, clock)
+  const reserveCreationUpload = new ReserveCreationUploadService(
+    creationsRepo,
+    accessCheck,
+    clock,
+    new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression),
+  )
   const commitCreationUpload = new CommitCreationUploadService(creationsRepo, clock)
   const getCreationDownload = new GetCreationDownloadService(creationsRepo)
   const deleteCreation = new DeleteCreationService(creationsRepo, clock)

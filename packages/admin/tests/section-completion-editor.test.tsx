@@ -74,3 +74,42 @@ test('author selects completion evidence and configures a structural objective t
     container.remove()
   }
 })
+
+test('"Exigir envio em dia" só aparece onde vale, e desmarcar apaga a chave', async () => {
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  let value: SectionCompletion = { version: 1, blockIds: [] }
+  let allow = true
+  const caixa = () =>
+    [...container.querySelectorAll('label')]
+      .find((label) => label.textContent?.includes('Exigir envio em dia'))
+      ?.querySelector<HTMLInputElement>('input[type="checkbox"]') ?? null
+  const render = () =>
+    root.render(
+      <SectionCompletionEditor
+        value={value}
+        candidates={[]}
+        hasStudio={false}
+        allowSubmissionUpToDate={allow}
+        onChange={(next) => {
+          value = next
+          render()
+        }}
+      />,
+    )
+  try {
+    await act(async () => render())
+    await act(async () => caixa()!.click())
+    expect(value.submissionUpToDate).toBe(true)
+    // Fora de uma parte válida a caixa continua visível enquanto marcada, para dar para desmarcar.
+    allow = false
+    await act(async () => render())
+    await act(async () => caixa()!.click())
+    expect('submissionUpToDate' in value).toBe(false)
+    expect(caixa()).toBeNull()
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})

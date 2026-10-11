@@ -653,6 +653,25 @@ export function membersRoutes(deps: MembersRoutesDeps) {
         }),
         { query: AvatarsBatchQuery },
       )
+      // A lista vem do reconhecimento do navegador no Auth. Apenas o BFF
+      // autenticado por HMAC pode pedir as miniaturas, nunca um browser anônimo.
+      .post(
+        '/internal/device-avatars',
+        async ({ headers, body }) => {
+          assertMemberShellConsumer(headers['x-consumer-id'])
+          const avatars = await deps.getAvatarsByProfiles.execute(body.profileIds, 'kids')
+          return {
+            photos: Object.fromEntries(
+              Object.entries(avatars).map(([id, view]) => [id, view.photoUrl]),
+            ),
+          }
+        },
+        {
+          body: t.Object({
+            profileIds: t.Array(t.String({ format: 'uuid' }), { minItems: 1, maxItems: 50 }),
+          }),
+        },
+      )
       // ── Quarto virtual (decore-do-seu-jeito) — recurso do PRÓPRIO perfil ────
       .get(
         '/room',
@@ -910,6 +929,9 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
             resolveAccountId(headers),
             resolveStudentName(headers) || null,
+            'studio',
+            undefined,
+            body.fingerprint ?? null,
           )
         },
         { body: StudioSubmissionBody, params: StudioSubmissionParams },
@@ -948,6 +970,8 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             resolveAccountId(headers),
             resolveStudentName(headers) || null,
             'pinta',
+            undefined,
+            body.fingerprint ?? null,
           )
         },
         { body: PintaSubmissionBody, params: StudioSubmissionParams },

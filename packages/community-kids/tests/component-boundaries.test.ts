@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ORCHESTRATOR_LIMITS = {
-  'app/perfis/perfis-client.tsx': 600,
+  'app/pais/parents-client.tsx': 600,
   'components/kids/kids-space-view-client.tsx': 625,
   'components/kids/room/room-builder.tsx': 510,
 } as const

@@ -7,6 +7,7 @@ import type {
   VideoWatchCoverage,
 } from '@sistemazero/core/learning'
 import { createContext, type ReactNode, useContext } from 'react'
+import type { LessonDraftCloud } from '../lib/lesson-draft-cloud'
 import type { DialogueSpeech } from './dialogue-block'
 
 /** O que um player de vídeo da aula sabe fazer a pedido de fora (o flutuante e o aviso). */
@@ -81,6 +82,11 @@ export interface LessonPlayerContextValue {
   refreshAfterQuiz?: () => void
   /** Re-renderiza a página após o envio do projeto do Estúdio (destrava o gate). */
   refreshAfterStudio?: () => void
+  /**
+   * O rascunho do Estúdio e do Pinta da fase guardado na conta (10/10/2026). Só o app que sabe
+   * falar com a nuvem o passa (hoje o Kids); sem ele os blocos ficam só com o rascunho local.
+   */
+  lessonDrafts?: LessonDraftCloud | null
 }
 
 const LessonPlayerContext = createContext<LessonPlayerContextValue | null>(null)

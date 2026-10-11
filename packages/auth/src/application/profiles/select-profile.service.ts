@@ -7,6 +7,7 @@ import type { ImpersonationSessionValidator } from '../impersonation/impersonati
 import { type ProfileView, toProfileView } from '../mappers/profile-view'
 import type { AuthTokenService, AuthTokens, IssueContext } from '../tokens/auth-token.service'
 import { impersonationTransitionDeadline } from './impersonation-transition'
+import { assertNotKidsSession } from './kids-legacy-guard'
 
 export interface SelectProfileCommand {
   /** Conta do responsável (resolvida da sessão atual — conta OU perfil). */
@@ -24,6 +25,8 @@ export interface SelectProfileCommand {
   impersonatorUserId?: string | null
   /** Refresh vigente que ancora o deadline absoluto da família de suporte. */
   refreshToken?: string | null
+  /** Contexto `kids` do token (header do Gateway). Presente → recusa (fluxo antigo). */
+  kidsContext?: string | null
 }
 
 /**
@@ -44,6 +47,7 @@ export class SelectProfileService {
   ) {}
 
   async execute(cmd: SelectProfileCommand): Promise<{ profile: ProfileView; tokens: AuthTokens }> {
+    await assertNotKidsSession(this.refreshTokens, cmd.kidsContext, cmd.refreshToken)
     const profile = await this.profiles.findById(cmd.profileId)
     // Ownership: perfil de outra conta / arquivado → 404 (não vaza a existência).
     if (!profile?.belongsTo(cmd.accountUserId) || profile.isArchived) {

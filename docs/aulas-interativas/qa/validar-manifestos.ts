@@ -10,7 +10,10 @@ import {
   SECTION_INTENTS,
 } from '../../../packages/core/src/learning'
 import { SCENE_IDS } from '../../../packages/core/src/learning/scene'
-import { isSectionCompletion } from '../../../packages/core/src/learning/section-progression'
+import {
+  isSectionCompletion,
+  submissionUpToDateWorkspace,
+} from '../../../packages/core/src/learning/section-progression'
 import { CURSOS_DIRETRIZES_ATUAIS, problemasPedagogicos } from './diretrizes-pedagogicas'
 import { MANIFESTOS_NOVO_MODELO } from './novo-modelo'
 
@@ -149,6 +152,22 @@ function diagnosticar(m: Record<string, unknown>): string[] {
     if (s.workspaceKey && !bk.includes(String(s.workspaceKey)))
       p.push(
         `seção "${String(s.key)}": workspaceKey "${String(s.workspaceKey)}" não existe em blocks`,
+      )
+  // Envio em dia (10/10/2026): a régua do core, a mesma que recusaria publicar no Admin.
+  const secoesDoCore = sections.map((s) => ({
+    id: String(s.key),
+    intent: s.intent,
+    blockIds: Array.isArray(s.blockKeys) ? (s.blockKeys as string[]) : [],
+    workspaceBlockId: s.workspaceKey ? String(s.workspaceKey) : null,
+  })) as Parameters<typeof submissionUpToDateWorkspace>[0]
+  const blocosDoCore = blocks.map((b) => ({ id: String(b.key), content: b.content }))
+  for (const s of sections)
+    if (
+      (s.completion as { submissionUpToDate?: unknown } | undefined)?.submissionUpToDate &&
+      !submissionUpToDateWorkspace(secoesDoCore, blocosDoCore, String(s.key))
+    )
+      p.push(
+        `seção "${String(s.key)}": envio em dia sem um Estúdio ou Pinta entregue numa seção de entrega anterior`,
       )
   const retire = m.retireBlockKeys
   if (retire !== undefined) {

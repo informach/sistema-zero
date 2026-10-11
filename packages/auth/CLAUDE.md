@@ -1,5 +1,38 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Acesso infantil por aparelho — correções do review (10/10/2026)
+
+- **Sessão adulta do Kids** (`kids.parent`, login com `platform: 'kids'` por senha ou OTP): família de
+  refresh com prazo ABSOLUTO de 12 h (`PARENT_SESSION_MAX_AGE_MS`, `newParentKidsSession`); o refresh
+  não desliza. Outros produtos seguem `REFRESH_TOKEN_TTL_DAYS`.
+- **Login recente (≤ 15 min)** nas ações de aparelho E em arquivar perfil, mudar `birthDate` e ligar/
+  desligar `publicProfileEnabled` (só quando o valor MUDA). Mesmo erro `PARENT_REAUTH_REQUIRED` (403).
+  As rotas de perfis leem o contexto pelos headers do Gateway `x-auth-kids-context` /
+  `x-auth-kids-auth-time` (`KIDS_IDENTITY_HEADERS` do core, `resolveGatewayKidsContext`); sem eles
+  (outros produtos) não há exigência; hora ilegível vale como login antigo.
+- **Token do ALUNO mínimo:** sem `email`/`firstName`/`lastName`/`phone`/`signupSource` (o nome da
+  criança é `pfl.name`). O papel da EQUIPE (superadmin/admin/staff, `isPrivilegedUserRole`) é
+  conservado; qualquer outro vira `customer`. `toClaims` aceita o aluno sem esses campos (chegam `''`).
+- **`GET /auth/me` em sessão de perfil** (`pfl`: aluno ou suporte num perfil) devolve `{ profile }`
+  (`ProfileView` do PRÓPRIO perfil, `GetOwnProfileService`), nunca `{ user }` da conta.
+- **Reconhecimento do navegador** (`/auth/kids/device`) só lista a família com ao menos UMA autorização
+  VIVA naquele navegador; sem ela, `{ profiles: [] }` (a tela pede código).
+- **Navegador de outra família:** sem autorização viva da família anterior, o código (ou o "Liberar
+  este computador") RELIGA o navegador na mesma transação (revoga sessão e autorizações antigas); com
+  autorização viva → `DEVICE_OTHER_FAMILY` (409), sem consumir o código e sem revelar a outra família.
+- **Limite do resgate:** só FALHAS contam (10 por IP em 10 min, `attemptsExhausted` lê, `takeAttempt`
+  conta); sucesso e repetição idempotente não. Depende de `TRUST_PROXY`/`TRUSTED_PROXY_HOPS` corretos.
+- `saveGrant` conserva `id`/`createdAt` ao reautorizar; `revoke`/`revokeOnDevice` derrubam na hora a
+  família da sessão aberta com aquela autorização (lock do aparelho antes da autorização).
+- **Logout `allSessions`** com refresh de ALUNO revoga só a família dele.
+- **`/auth/kids/forget`** exige Bearer de responsável recente da família dona do navegador.
+- **Seleção/saída antigas de perfil** recusam contexto Kids (`KIDS_CONTEXT_FORBIDDEN`, 403) pelo header
+  do Gateway ou pela família do refresh enviado.
+- **Purga:** `purgeExpiredRecords` (application/maintenance) isola a purga do acesso por aparelho
+  (falha dela não pula os tokens); lotes repetidos até esvaziar com teto por ciclo; autorizações
+  encerradas/vencidas saem após 90 dias (`STUDY_GRANT_RETENTION_MS`).
+
+
 ## Diretório interno para recados Kids — 11/09/2026
 
 `GET /auth/internal/teacher-recipients` exige o token interno e pagina perfis ativos com responsável

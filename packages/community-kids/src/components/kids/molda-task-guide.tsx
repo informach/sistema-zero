@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import type { MoldaAsset } from '@sistemazero/molda/assets'
 import { ChevronDown } from 'lucide-react'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'

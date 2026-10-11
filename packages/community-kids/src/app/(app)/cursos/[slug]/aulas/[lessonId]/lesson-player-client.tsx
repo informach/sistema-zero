@@ -10,6 +10,7 @@ import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
+import { upToDateWorkspaceIds } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Check, CheckCircle2, Lock, X } from 'lucide-react'
 import Link from 'next/link'
@@ -29,6 +30,7 @@ import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { conclusaoRecusada } from '@/lib/lesson-copy'
+import { lessonDraftCloudFor } from '@/lib/lesson-draft-cloud'
 import type { PosicaoNaAula } from '@/lib/lesson-progress'
 import type {
   CourseDetailView,
@@ -55,6 +57,8 @@ interface Props {
   ratingViewer: RatingViewer
   /** Página de vendas do curso (Compartilhar) — `null` oculta o botão. */
   shareUrl: string | null
+  /** O rascunho do Estúdio/Pinta da fase guardado na conta (10/10/2026). */
+  lessonDraftsEnabled?: boolean
 }
 
 export function LessonPlayer({
@@ -65,9 +69,19 @@ export function LessonPlayer({
   viewerId,
   ratingViewer,
   shareUrl,
+  lessonDraftsEnabled = false,
 }: Props) {
   const router = useRouter()
   const learning = useLessonLearning(lesson, viewerId)
+  // Uma nuvem por perfil e por aba (ver `lessonDraftCloudFor`): sobrevive à troca de fase e ao
+  // StrictMode. No servidor não há nuvem (e o bloco não desenha nada sem ela).
+  const lessonDrafts = useMemo(
+    () =>
+      lessonDraftsEnabled && viewerId && typeof window !== 'undefined'
+        ? lessonDraftCloudFor(viewerId)
+        : null,
+    [lessonDraftsEnabled, viewerId],
+  )
 
   // A aula termina em festa, e a festa é o Zappy animado. O runtime do Rive são
   // ~676 KB: baixá-los no clique de "Concluir" atrasaria justo o quadro que a
@@ -152,10 +166,19 @@ export function LessonPlayer({
     if (completedRef.current) return
     setCompleting(true)
     try {
-      const res = await apiSend<LessonCompleteResult>(
-        `/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`,
-        'POST',
-      )
+      // Concluir fecha as partes com "envio em dia" da parte de agora até o fim: a edição delas
+      // precisa chegar à conta antes do pedido. O resto sobe em tentativa.
+      const sendCompletion = () =>
+        apiSend<LessonCompleteResult>(
+          `/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`,
+          'POST',
+        )
+      const sections = lesson.sections ?? []
+      const res = lessonDrafts
+        ? await lessonDrafts.withSavedDrafts(lesson.id, sendCompletion, {
+            confirm: upToDateWorkspaceIds(sections, secao?.index ?? 0, sections.length),
+          })
+        : await sendCompletion()
       completedRef.current = true
       setCelebration({
         progress: course.progress,
@@ -172,7 +195,16 @@ export function LessonPlayer({
     } finally {
       setCompleting(false)
     }
-  }, [lesson.id, course.progress, course.careerSlot, course.milestones?.showcased, router])
+  }, [
+    lesson.id,
+    lesson.sections,
+    secao?.index,
+    course.progress,
+    course.careerSlot,
+    course.milestones?.showcased,
+    router,
+    lessonDrafts,
+  ])
 
   const playerContext = useMemo<LessonPlayerContextValue>(
     () => ({
@@ -187,6 +219,7 @@ export function LessonPlayer({
       refreshAfterLearning: () => router.refresh(),
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
+      lessonDrafts,
       renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
       // O Zappy do aviso "Primeiro, assista ao vídeo" (curso com a opção ligada). Mudo: é um
       // estado que fica na tela, não um acontecimento.
@@ -215,6 +248,7 @@ export function LessonPlayer({
       viewerWatermark,
       viewerId,
       router,
+      lessonDrafts,
     ],
   )
 

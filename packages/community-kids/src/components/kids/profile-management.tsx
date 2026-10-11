@@ -2,6 +2,7 @@
 
 import { saoPauloDayKey } from '@sistemazero/core/time'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
@@ -291,14 +292,14 @@ export function ParentPasswordChange({ onCancel }: { onCancel: () => void }) {
       description="Por segurança, você será desconectado de todos os dispositivos."
       className="max-w-sm rounded-2xl"
       footer={
-        <>
+        <div className="flex flex-wrap justify-end gap-2 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-4">
           <Button type="button" variant="secondary" onClick={onCancel} disabled={saving}>
             Cancelar
           </Button>
           <Button type="submit" form={formId} disabled={saving || !currentPassword || !newPassword}>
             {saving ? <Spinner className="size-4" /> : 'Alterar'}
           </Button>
-        </>
+        </div>
       }
     >
       <form id={formId} className="flex flex-col gap-4" onSubmit={onSubmit}>

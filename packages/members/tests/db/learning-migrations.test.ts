@@ -212,15 +212,11 @@ describe.skipIf(!url)(
         answers: { q: ['a'] },
         createdAt: now,
       })
-      await db.insert(studioSubmissions).values({
-        id: randomUUID(),
-        ...owner,
-        blockId: studioId,
-        lessonId,
-        courseId,
-        project,
-        submittedAt: now,
-      })
+      // SQL cru pelo mesmo motivo dos cursos: o modelo atual lista colunas posteriores à 0077
+      // (`content_fingerprint`, 0101) e o insert do Drizzle as nomeia mesmo com `default`.
+      await sql`insert into members.studio_submissions (id,user_id,account_id,block_id,lesson_id,course_id,project,submitted_at)
+        values (${randomUUID()},${owner.userId},${owner.accountId},${studioId},${lessonId},${courseId},
+                ${JSON.stringify(project)}::jsonb,${now.toISOString()})`
       await db
         .insert(lessonCompletions)
         .values({ id: randomUUID(), userId: owner.userId, courseId, lessonId, completedAt: now })

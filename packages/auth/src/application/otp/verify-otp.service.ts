@@ -1,6 +1,7 @@
 import { InvalidOtpError } from '../../domain/otp/otp.errors'
 import type { OtpCodeRepository } from '../../domain/ports/otp-code-repository.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
+import { newParentKidsSession } from '../../domain/study-access/policy'
 import { PasswordNotSetError, UserNotActiveError } from '../../domain/user/user.errors'
 import { toUserView, type UserView } from '../mappers/user-view'
 import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
@@ -12,6 +13,7 @@ export interface VerifyOtpOptions {
 }
 
 export interface VerifyOtpCommand {
+  platform?: 'main' | 'kids'
   email: string
   code: string
   userAgent?: string | null
@@ -50,15 +52,15 @@ export class VerifyOtpService {
     // Código correto, mas conta inativa → não consome (não pode logar mesmo).
     if (!user.isActive()) throw new UserNotActiveError('Conta inativa')
 
-    // Código correto, mas a conta NUNCA definiu a senha (convite/compra pendente):
-    // barra o login por código — senão a pessoa entra numa sessão que a área dos
-    // pais (valida a senha real) nunca deixa passar. Não consome o código (o login
-    // não pode acontecer mesmo); a saída é o link de 1º acesso / "esqueci a senha".
-    if (!user.isPasswordSet()) throw new PasswordNotSetError()
+    // No Kids, o OTP autentica diretamente o responsável, inclusive antes de
+    // definir uma senha. Os outros produtos conservam a política de primeiro acesso.
+    if (!user.isPasswordSet() && command.platform !== 'kids') throw new PasswordNotSetError()
 
     const consumed = await this.otpCodes.consume(record.id, now)
     if (!consumed) throw new InvalidOtpError()
     const tokens = await this.tokens.issueForUser(user, {
+      // Kids: sessão ADULTA com prazo absoluto de 12 h (sem deslizar no refresh).
+      ...(command.platform === 'kids' ? newParentKidsSession() : {}),
       userAgent: command.userAgent,
       ip: command.ip,
     })

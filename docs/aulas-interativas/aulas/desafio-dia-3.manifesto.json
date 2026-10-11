@@ -113,14 +113,14 @@
     },
     {
       "key": "video-d3-posicionar-chave",
-      "plannedVideo": "Título: Escolha onde fica a chave\n\nRetomar a experiência de x/y e mostrar a chave no jogo. Em Ao iniciar, no Criar sprite chave, trocar só x/y, mantendo nome, imagem, largura e altura. Oferecer pontos do Mapa: perto da trilha 211/53, na parte de baixo 160/250 e perto da ponte 280/160. Testar se a chave está inteira e visível, alcançável, separada do personagem e da porta, sem esconder sob árvores ou objetos; testar sem chave, coleta, volta ao farol e reinício. Se o lugar não funciona, escolher um ponto sugerido. As escolhas não viram critério. Esperar Salvo e terminar em Próxima parte. Participações de Debinha, na ordem de corte: F3P7-D01, depois de \"ou perto da ponte, com x 280 e y 160.\", Debinha diz \"Eu tenho que escolher um desses três lugares?\"; a professora retoma \"Você pode escolher um deles ou experimentar outro.\". F3P7-R01, depois de \"Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar.\", Debinha diz \"Mudei o caminho, mas a missão continua a mesma!\"; a professora retoma \"Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Quando terminar, espere aparecer Salvo e clique em Próxima parte.\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Concluir o gesto antes de Debinha entrar e manter o resultado à vista; marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Debinha entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
+      "plannedVideo": "Título: Escolha onde fica a chave\n\nRetomar a experiência de x/y e mostrar a chave no jogo. Em Ao iniciar, no Criar sprite chave, trocar só x/y, mantendo nome, imagem, largura e altura. Oferecer pontos do Mapa: perto da trilha 211/53, na parte de baixo 160/250 e perto da ponte 280/160. Testar se a chave está inteira e visível, alcançável, separada do personagem e da porta, sem esconder sob árvores ou objetos; testar sem chave, coleta, volta ao farol e reinício. Se o lugar não funciona, escolher um ponto sugerido. As escolhas não viram critério; o critério da parte é o envio em dia: esperar Salvo, clicar em Enviar de novo, confirmar em Reenviar e, quando o envio terminar, Próxima parte (sem mudança desde o envio, a parte fecha sem reenvio). Participações de Debinha, na ordem de corte: F3P7-D01, depois de \"ou perto da ponte, com x 280 e y 160.\", Debinha diz \"Eu tenho que escolher um desses três lugares?\"; a professora retoma \"Você pode escolher um deles ou experimentar outro.\". F3P7-R01, depois de \"Agora teste o novo caminho. Clique em Atualizar e vá ao farol sem passar pela chave. Ele deve avisar que falta a chave. Afaste-se, busque a chave no lugar escolhido e volte ao farol na mesma partida. A luz deve acender, e o barco deve chegar.\", Debinha diz \"Mudei o caminho, mas a missão continua a mesma!\"; a professora retoma \"Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Você mudou o jogo depois de enviar. Envie de novo, para a equipe ver a versão nova: espere aparecer Salvo, clique em Enviar de novo e confirme em Reenviar. Quando o envio terminar, clique em Próxima parte.\". As entradas -R vieram da revisão de ritmo de 10/10/2026: mostram uma consequência, fazem uma pergunta ou reagem ao teste, sem tirar passos da professora. Concluir o gesto antes de Debinha entrar e manter o resultado à vista; marcar entrada e saída sem cobrir controles, e a resposta e o próximo gesto vêm depois da saída do avatar.\n\nRoteiro falado: desafio-dia-3.roteiro.md. Produção em 10/10/2026: roteiro com vozes identificadas, ainda sem confirmação de gravação ou edição desta versão. A professora conduz; Debinha entra, fala e sai nos pontos do roteiro. Zappy só fala na página, fora do vídeo; memes e interface mostram o mascote sem voz. Conferir a duração com as participações e os gestos, sem acelerar. Ver AVATARES-NOS-VIDEOS.md. Gravar na plataforma atual; sem Pinta ou Estúdio completo. Falar como numa conversa contínua com a criança: frases ligadas, o porquê de cada resultado e um chamado para a tela (Olha aqui, Olha só, Repare, Tá vendo?) nos momentos que importam."
     },
     {
       "key": "ponte-d3-posicionar-chave",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Depois clique em Próxima parte."
+        "text": "Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Mudou o jogo depois de enviar? Clique em Enviar de novo e confirme em Reenviar. Depois clique em Próxima parte."
       }
     },
     {
@@ -2378,14 +2378,15 @@
       "key": "posicionar-chave",
       "title": "Escolha onde fica a chave",
       "intent": "closing",
-      "objective": "Escolher uma posição visível e alcançável para a chave e testar o percurso completo.",
+      "objective": "Escolher uma posição visível e alcançável para a chave, testar o percurso completo e reenviar o que mudou.",
       "blockKeys": ["video-d3-posicionar-chave", "ponte-d3-posicionar-chave"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-d3-posicionar-chave"]
+        "blockIds": ["video-d3-posicionar-chave"],
+        "submissionUpToDate": true
       }
     },
     {

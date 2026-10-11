@@ -29,6 +29,12 @@ foram desenhados do mesmo tamanho, "por isso" (e não "então": a criança está
 nessa parte) o desenho novo cabe no lugar do antigo. Na publicação, **Compartilhar** aparece como
 "uma setinha para cima", a ponte pede ajuda a um adulto se precisar e a ajuda escrita fala em "a
 área de ajuda", sem "nossa". Seções, blocos e critérios não mudaram.
+**Envio em dia, 10/10/2026:** **Deixe o jogo com a sua cara** passa a exigir o envio em dia
+(`submissionUpToDate`). O rascunho da fase agora fica guardado na conta, e o envio virou só a
+entrega à equipe; sem este critério, a equipe recebia o jogo da parte 3, sem as escolhas da
+criança. Quem mudou algo depois do envio clica em **Enviar de novo** e confirma em **Reenviar**
+antes de **Próxima parte**; sem mudança, a parte fecha sem reenvio. Vídeo, ponte, roteiro e Mapa
+da Aventura dizem o passo.
 
 ## Vozes e produção
 
@@ -54,7 +60,7 @@ publicação, sua presença é somente visual: não incluir voz do mascote na gr
 | Volte ao seu jardim | 25 a 35 s | ver o que falta no contador e avançar | vídeo |
 | Um número que acompanha a busca | 75 a 95 s | testar primeiro achado, segundo achado, espaço vazio e recomeço | vídeo e experiência |
 | Cada personagem vale um achado | 3 a 4 min | encaixar a soma, testar, verificar a etapa e enviar | vídeo, aprovação na verificação e envio |
-| Deixe o jogo com a sua cara | 3 a 4 min | trocar bichos e esconderijos pelo nome da imagem nos blocos Criar sprite, escrever a mensagem do final e encontrar todo mundo de novo | vídeo; as mudanças não viram critério |
+| Deixe o jogo com a sua cara | 3 a 4 min | trocar bichos e esconderijos pelo nome da imagem nos blocos Criar sprite, escrever a mensagem do final e encontrar todo mundo de novo | vídeo e envio em dia; as escolhas não viram critério |
 | Publique seu jogo | 60 a 80 s | manter o resumo, gerar capa, publicar, comemorar, copiar o link de jogar para a família e concluir a aula | vídeo; publicação orientada, sem bloqueio técnico |
 
 ## Orientação por seção
@@ -141,20 +147,22 @@ esconderijo fica pequeno e deixa o bicho de trás à vista. A fala diz: "Antes d
 no jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a
 imagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do
 mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo." Testar encontrando todo
-mundo de novo; se a frase passar da tela, deixar mais curta. Terminar em **Próxima parte**.
+mundo de novo; se a frase passar da tela, deixar mais curta. Quem mudou algo depois do envio
+reenvia (**Enviar de novo**, confirmado em **Reenviar**) e termina em **Próxima parte**.
 
 O projeto traz sete bichos (coelho, raposa, coruja, gato, sapo, tartaruga, esquilo) e seis
 esconderijos (arbusto, pedras, flores, toco, cogumelo, folhas), cada grupo com uma caixa única
 (72 × 87 e 161 × 144). Os sprites se chamam **bicho1** a **bicho3** e **esconderijo1** a
 **esconderijo3**, para o nome não contradizer a imagem escolhida. A troca é escolha da criança e
-não vira critério: a seção conclui pelo vídeo.
+não vira critério: a seção conclui pelo vídeo e pelo envio em dia (10/10/2026), para a equipe
+receber o jogo personalizado.
 
 Na página 5 do Mapa da Aventura, a galeria mostra todos esses bichos e esconderijos, separados
 por tipo, com as imagens do jogo e os nomes exatos da lista. A criança pode consultar as opções
 antes de trocar, seguindo os passos de personalização e o teste na mesma página. A publicação
 fica na página 6; a revisão e o certificado, na 7.
 
-**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo e clique em Próxima parte.”
+**Zappy na página (não gravar):** “A surpresa chegou! Escolha os bichinhos e prepare os esconderijos da sua brincadeira: troque a imagem clicando no nome dela, no fim de cada bloco Criar sprite. Se quiser, escreva também a sua mensagem do final. Depois encontre todo mundo de novo. Se mudou alguma coisa, clique em Enviar de novo e confirme em Reenviar. Depois clique em Próxima parte.”
 
 ### Publique seu jogo
 

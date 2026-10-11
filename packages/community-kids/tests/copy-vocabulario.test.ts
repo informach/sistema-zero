@@ -120,6 +120,11 @@ const NAO_E_FONTE = /\.test\.tsx?$|\.d\.ts$|[\\/]__tests__[\\/]/
  * varredura: a criança também as lê. O que é dos pais ali dentro é exceção com motivo.
  */
 const AREA_DOS_PAIS = [
+  'community-kids/src/app/pais/',
+  'community-kids/src/components/kids/study-device-manager.tsx',
+  'community-kids/src/components/kids/study-access-dialogs.tsx',
+  'community-kids/src/components/kids/study-access-result.tsx',
+  'community-kids/src/components/kids/student-area-button.tsx',
   'community-kids/src/app/perfis/ambassador-card.tsx',
   'community-kids/src/app/perfis/parent-dashboard.tsx',
   'community-kids/src/app/perfis/purchases-view.tsx',
@@ -670,6 +675,10 @@ describe('o que falta para seguir, na voz da aventura', () => {
     },
     'project-check': {
       amostra: 'Confira o objetivo desta parte no seu projeto',
+      de: 'members/src/application/learning/section-progression.service.ts',
+    },
+    'submission-outdated': {
+      amostra: 'Você mudou o projeto depois de enviar. Envie de novo',
       de: 'members/src/application/learning/section-progression.service.ts',
     },
     lesson: {

@@ -93,6 +93,7 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
       'checked_at timestamptz',
       'passed_at timestamptz',
       'message varchar(1000)',
+      'content_fingerprint varchar(70)',
     ]) {
       await conn.sql.unsafe(
         `alter table members.studio_submissions add column if not exists ${col}`,

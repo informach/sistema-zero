@@ -152,6 +152,15 @@ export class DrizzleCourseRepository implements CourseRepository {
     return row ? toLesson(row) : null
   }
 
+  async findBlockLessonId(blockId: string): Promise<string | null> {
+    const [row] = await this.db
+      .select({ lessonId: lessonBlocks.lessonId })
+      .from(lessonBlocks)
+      .where(eq(lessonBlocks.id, blockId))
+      .limit(1)
+    return row?.lessonId ?? null
+  }
+
   async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
     if (slugs.length === 0) return []
     const rows = await this.db

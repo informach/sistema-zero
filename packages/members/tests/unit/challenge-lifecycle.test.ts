@@ -129,13 +129,14 @@ describe('SendChallengeLifecycleService', () => {
     expect(await lifecycle.runCycle()).toEqual({ sent: 0, skipped: 1, failed: 0 })
   })
 
-  test('48h com conta ativa, mas sem início, envia a entrada do Dia 1', async () => {
+  test('48h com conta ativa, mas sem início, leva o responsável à Área dos pais', async () => {
     const { repo } = fakeRepo([candidate()])
     const messaging = fakeMessaging()
     await service(repo, fakeAuth([identity(true)]), messaging.gateway).runCycle()
 
     expect(messaging.sent[0]?.templateKey).toBe('challenge-not-started')
-    expect(messaging.sent[0]?.variables?.link).toBe('https://kids.sistemazero.com.br/perfis')
+    // A criança entra pelo computador autorizado; o e-mail é do responsável.
+    expect(messaging.sent[0]?.variables?.link).toBe('https://kids.sistemazero.com.br/pais')
   })
 
   test('Dia 1 e conclusão têm prioridade sobre lembretes de inatividade', async () => {

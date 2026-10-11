@@ -5,8 +5,13 @@
  * dois ao mesmo tempo; nenhum manifesto carrega chave, então o layout pode mudar sem migrar
  * dados (só com deploy dos dois lados).
  */
-/** Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026). */
-export type CreationStorageTool = 'studio' | 'pinta' | 'molda'
+/**
+ * Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026). `lesson-studio` e
+ * `lesson-pinta` (10/10/2026) são os rascunhos do Estúdio e do Pinta DENTRO da fase, um item por
+ * bloco (`itemId` = id do bloco): ferramentas à parte para não aparecerem em "Meus jogos", na
+ * galeria de entrega nem no portão de produto.
+ */
+export type CreationStorageTool = 'studio' | 'pinta' | 'molda' | 'lesson-studio' | 'lesson-pinta'
 
 /**
  * O blob principal (o item inteiro, ou o MANIFESTO quando há partes): imutável por revisão —

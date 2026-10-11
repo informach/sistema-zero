@@ -562,6 +562,12 @@ export const studioSubmissions = members.table(
      */
     previousProject: jsonb('previous_project').$type<unknown>(),
     previousSubmittedAt: timestamp('previous_submitted_at', { withTimezone: true }),
+    /**
+     * Impressão digital do conteúdo ENVIADO (10/10/2026), a mesma régua do rascunho guardado na
+     * conta (`creations.content_fingerprint`). `null` = envio antigo, galeria ou restaurado pelo
+     * professor: o "envio em dia" deixa passar.
+     */
+    contentFingerprint: varchar('content_fingerprint', { length: 70 }),
     // ── Auto-correção (fase 2; null quando o bloco não tem atividade) ──────────
     /** Nota 0–100 da última entrega gradeada. */
     score: integer('score'),
@@ -1662,7 +1668,15 @@ export const helpTutorials = members.table(
 // e em `last_reserved_revision`.
 // ⚠️ Espelho de `CREATION_TOOLS` (domínio): valor novo SEMPRE no fim + migration própria com
 // `ADD VALUE IF NOT EXISTS` (`0065_pinta_block`, `0072_molda_creation_tool`).
-export const creationToolEnum = members.enum('creation_tool', ['studio', 'pinta', 'molda'])
+// `lesson-studio`/`lesson-pinta` (10/10/2026, `0100`): o rascunho do Estúdio e do Pinta DENTRO
+// da fase, um item por bloco.
+export const creationToolEnum = members.enum('creation_tool', [
+  'studio',
+  'pinta',
+  'molda',
+  'lesson-studio',
+  'lesson-pinta',
+])
 
 /** Shape de uma parte no JSONB (espelho de `CreationPartRef` do domínio). */
 export interface CreationPartRefRow {
@@ -1719,6 +1733,13 @@ export const creations = members.table(
     parts: jsonb('parts').$type<CreationPartRefRow[]>().notNull().default(sql`'[]'::jsonb`),
     /** As partes da reserva em voo (todas as que a revisão reservada referencia). */
     pendingParts: jsonb('pending_parts').$type<CreationPartRefRow[]>(),
+    /**
+     * Impressão digital do CONTEÚDO da revisão corrente (`v1:<sha256>`, calculada no navegador
+     * pela régua do core): é o que o "envio em dia" compara com a do envio. Texto opaco aqui;
+     * `null` = cliente antigo ou sem `crypto.subtle` (o critério deixa passar).
+     */
+    contentFingerprint: varchar('content_fingerprint', { length: 70 }),
+    pendingContentFingerprint: varchar('pending_content_fingerprint', { length: 70 }),
     deletedAt: timestamp('deleted_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     /** Última sincronia bem-sucedida (commit) ou remoção. */

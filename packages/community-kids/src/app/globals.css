@@ -1881,6 +1881,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     [data-kind="STUDIO_GATE_NOT_SUBMITTED"],
     [data-kind="STUDIO_GATE_NOT_PASSED"],
     [data-kind="PINTA_GATE_NOT_SUBMITTED"],
+    [data-kind="submission-outdated"],
     [data-kind="project-check"]
   )
   .sz-lesson-status-icone {

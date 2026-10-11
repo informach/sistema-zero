@@ -675,6 +675,8 @@ export const SectionCompletionSchema = t.Object({
     ),
   ),
   platformAction: t.Optional(t.Union(PLATFORM_ACTIONS.map((action) => t.Literal(action)))),
+  /** "Envio em dia" (10/10/2026): o último envio precisa ser igual ao projeto de agora. */
+  submissionUpToDate: t.Optional(t.Literal(true)),
   projectChecks: t.Optional(
     t.Array(
       t.Object({

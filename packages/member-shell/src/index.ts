@@ -11,6 +11,7 @@ import { createPensaRoutes } from './routes/pensa'
 import { createPensaAiRoutes } from './routes/pensa-ai'
 import { createStudioRoutes } from './routes/studio'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
+import { createStudyAccessRoutes } from './routes/study-access'
 import {
   createAuthClient,
   createHubClient,
@@ -22,6 +23,7 @@ import {
 import { createGatewayModule } from './server/gateway'
 import { createMediaModule } from './server/media'
 import { createSessionModule } from './server/session'
+import { createStudyAccessClient } from './server/study-access'
 
 export interface ShellConfig {
   /**
@@ -55,8 +57,9 @@ export function createShell(cfg: ShellConfig) {
   const prod = process.env.NODE_ENV === 'production'
   const cookies = sessionCookieNames(cfg.cookieBase, prod)
   const paletteCookie = paletteCookieName(cfg.cookieBase, prod)
-  const session = createSessionModule(cookies, paletteCookie)
+  const session = createSessionModule(cookies, paletteCookie, cfg.audience)
   const gateway = createGatewayModule(session)
+  const study = createStudyAccessClient(cfg.cookieBase, gateway)
   const auth = createAuthClient(gateway)
   const members = createMembersClient(gateway, { audience: cfg.audience })
   const payments = createPaymentsClient(gateway)
@@ -64,6 +67,7 @@ export function createShell(cfg: ShellConfig) {
   const hub = createHubClient(gateway, { audience: cfg.audience })
   const media = createMediaModule({ session, gateway })
   const routes = {
+    ...createStudyAccessRoutes({ session, gateway, study }),
     ...createShellRoutes({
       session,
       gateway,
@@ -95,6 +99,7 @@ export function createShell(cfg: ShellConfig) {
     paletteCookie,
     session,
     gateway,
+    study,
     auth,
     members,
     payments,

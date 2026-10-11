@@ -242,8 +242,8 @@ como prova do Farol. Detalhes, testes e pendências operacionais em
 No pós-pagamento desse funil, `welcome-email.ts` lê o snapshot congelado da cobrança. Quando a
 política é `fixed`, usa `challenge-access-approved` (e-mail + WhatsApp) e informa a data/hora exata
 de término em São Paulo; comprador novo recebe o link de definir senha, e comprador recorrente o
-link direto para os cursos. Snapshot legado/inválido cai nos templates genéricos `welcome`/
-`new-access`, sem inventar uma validade.
+link da entrada dos responsáveis (`/login/responsavel`, desde 10/10/2026). Snapshot legado/inválido
+cai nos templates genéricos `kids-welcome`/`kids-new-access`, sem inventar uma validade.
 ⚠️ **Pré-checkout no KIDS deixa explícito que os dados são do RESPONSÁVEL** (28/06): o
 `PreCheckoutModal` deriva `isKids = funnel.startsWith('kids/')` (a `funnel` prop é a chave
 `audience/produto`) e, no kids, troca o subtítulo, adiciona um callout ("Estes dados são do
@@ -1041,3 +1041,7 @@ config-hash → re-otimização automática).
 O painel privado usa no-store, no-referrer e canonical público sem token. O link do WhatsApp é sempre o presente público. A confirmação de resgate informa vencimento em Brasília e aceitação do e-mail, com acesso/recuperação de senha. Não afirmar entrega confirmada a partir de HTTP 202 do messaging.
 
 O referrals e o funil precisam ser liberados de forma coordenada, após a migration do serviço e o seed dos templates de campanha. Pendências e validação: `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
+
+## Acesso infantil por aparelho (10/10/2026)
+
+No funil `kids/*`, o pós-compra usa `kids-welcome` (comprador novo, link de definir senha) e `kids-new-access` (recorrente, link `<kids>/login/responsavel`); o adulto continua em `welcome`/`new-access` com `/cursos`. A orientação do Desafio (`challenge-access-approved`) manda clicar em **Adicionar criança** (a conta nasce sem perfil) e abrir **Acesso nos aparelhos**. Se o Messaging responder 404 `TEMPLATE_NOT_FOUND` para a chave Kids, `sendOne` reenvia com a chave antiga (`LEGACY_TEMPLATE_KEYS`), as mesmas variáveis e a mesma Idempotency-Key: o comprador nunca fica sem o link de senha, mesmo que o Funil suba antes do seed. O dunning Kids leva a `/pais` (Área dos pais, botão Compras). `tests/unit/message-templates-contract.test.ts` confere as chaves usadas contra `packages/messaging/scripts/seed-templates.ts`, nos dois canais.

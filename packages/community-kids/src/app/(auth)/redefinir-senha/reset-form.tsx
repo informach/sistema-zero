@@ -1,5 +1,7 @@
 'use client'
 
+import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { Field } from '@sistemazero/ui/label'
@@ -77,7 +79,7 @@ export function ResetForm({ token }: { token: string }) {
       })
       if (res.ok) {
         toast.success('Senha definida! Entre com sua nova senha.')
-        router.replace('/login')
+        router.replace('/login/responsavel')
         return
       }
       const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
@@ -93,7 +95,9 @@ export function ResetForm({ token }: { token: string }) {
     <Card className={AUTH_CARD}>
       <CardHeader>
         <CardTitle className={AUTH_TITLE}>Definir senha</CardTitle>
-        <CardDescription>Crie a senha de acesso à sua conta.</CardDescription>
+        <CardDescription>
+          Crie a senha da área dos pais. Depois você prepara o acesso da criança.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">

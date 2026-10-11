@@ -1,5 +1,21 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Acesso infantil — correções do review (10/10/2026)
+
+- `kidsMayAccess` roda ANTES da introspecção no Auth (pedido proibido não custa ida ao Auth) e
+  compara o caminho canônico (`normalizePolicyPath` do core: junta `//`, decodifica, NEGA `..`, barra
+  codificada e controle). O papel não entra: aluno da equipe (admin) segue sem admin/interno/financeiro/
+  pais.
+- Aluno resolve sem `email`/nome (token mínimo); os headers `x-auth-user-email`/`-name` somem em vez
+  de irem vazios. Headers de identidade novos: `x-auth-kids-context` (`parent`|`student`) e
+  `x-auth-kids-auth-time` (só responsável) — stripados da entrada como os demais.
+- `auth-kids-session-validate`: HMAC opcional `allowedConsumers: ['member-shell']` + passthrough, teto
+  por principal (30 000/min). Assinada, sai do limite anônimo global por IP (escolas/CGNAT); sem
+  assinatura (dev) segue anônima.
+- `members-internal-device-avatars`: teto POR NAVEGADOR (`by: 'json-field'`, `field: 'rateLimitKey'`,
+  120/min), chave enviada pelo BFF no corpo assinado.
+
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, jose, Zod, Bun,
 > ioredis/RedisClient, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e

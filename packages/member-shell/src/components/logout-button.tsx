@@ -3,6 +3,7 @@
 import { Button } from '@sistemazero/ui/button'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { useState } from 'react'
+import { sessionFetch as fetch } from '../lib/session-fetch'
 
 export function LogoutButton({ variant = 'outline' }: { variant?: 'outline' | 'ghost' }) {
   const [busy, setBusy] = useState(false)

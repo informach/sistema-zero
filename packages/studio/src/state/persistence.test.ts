@@ -109,6 +109,15 @@ describe('setStorageNamespace — isolamento por perfil', () => {
   // Volta ao store padrão p/ não vazar o namespace p/ os outros testes do arquivo.
   afterEach(() => setStorageNamespace(''))
 
+  it('a substituição com escopo da aula ignora o namespace global do Estúdio Completo', async () => {
+    resetFakeIdb()
+    setStorageNamespace('perfil-outro-editor')
+    await replaceLocalProject(createEmptyProject('lesson-backup', 'Outra versão'), {
+      namespace: '',
+    })
+    expect(lastFakeIdbWrite()?.db).toBe('sistema-zero-studio')
+  })
+
   it('namespace → DB próprio por perfil; vazio → DB histórico compartilhado', async () => {
     setStorageNamespace('perfil-A')
     idb.createStore.mockClear()

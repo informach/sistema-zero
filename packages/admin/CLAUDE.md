@@ -17,6 +17,15 @@
 > que o autor pode incluir explicitamente quando a hipótese combate uma concepção comum ou prepara
 > um resultado contraintuitivo. A pergunta trata do conceito, nunca do botão ou controle.
 
+## "Exigir envio em dia" na conclusão da parte (10/10/2026)
+
+`section-completion-editor.tsx` mostra a caixa **Exigir envio em dia** (`allowSubmissionUpToDate`)
+quando a parte trabalha num Estúdio ou Pinta incorporado; o resumo da parte diz "Envio em dia"
+(`lib/lesson-authoring.ts`). A regra (de qual bloco, em que parte) é do core
+(`submissionUpToDateWorkspace`, ver o CLAUDE.md de lá), e a publicação recusa o resto. Usar em UMA
+parte por projeto, a última que muda o jogo antes de publicar (ESPEC-MANIFESTO §6): hoje Cadê aula
+2 `personalizar` e Desafio Dia 3 `posicionar-chave`.
+
 ## Atividades interativas e cenas no editor
 
 ⭐⭐ **A atividade interativa tem QUATRO tipos, escolhidos em cartões**: **Experimentação**,
