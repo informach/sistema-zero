@@ -63,8 +63,9 @@ export const aulasDino = JSON.parse(
 const CURSO = 'corre-dino'
 // Fórmulas fixas do vocabulário da aventura (Diretrizes, seção 6): verificação, envio e saída.
 const checkExit =
-  'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
-const send = 'Depois, clique em Enviar meu projeto e confirme em Enviar.'
+  'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
+const send =
+  'Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo Título e traz o resumo do manifesto (showcase).
 const publish =
   'Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Se precisar, peça ajuda a um adulto para mandar. Depois de copiar o link, clique em Fechar.'
@@ -93,7 +94,7 @@ export function falasSecao(section: SecaoDino): string[] {
   if (ehExperiencia(section)) speech.push(SUA_VEZ)
   if (section.checks?.length) {
     speech.push(
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando o envio terminar, clique em Concluir fase.'}` : 'Depois, clique em Próxima parte.'}`,
+      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando aparecer Projeto enviado!, clique em Concluir fase.'}` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
     )
   }
   return speech
@@ -248,7 +249,7 @@ function roteiro(lesson: AulaDino, index: number) {
         roteiroComAvatar(
           s,
           speech,
-          `${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado${s.final ? ' (Enviar meu projeto, Enviar e Concluir fase)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
+          `${telaSecao(s)} ${s.checks?.length ? `Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado${s.final ? ' (Enviar meu projeto, Enviar, Projeto enviado! e Concluir fase)' : ' (Próxima parte)'}.` : ''}${s.publish ? ' Na publicação opcional, mostrar Compartilhar com o resumo já preenchido, Gerar capa, Publicar e a comemoração Seu jogo está no Mural!, com o botão Copiar link de jogar.' : ''}`.trimEnd(),
           index,
         ),
         '',

@@ -2099,7 +2099,7 @@
     {
       "key": "criar-nave",
       "title": "Crie a nave nos bastidores",
-      "intent": "delivery",
+      "intent": "application",
       "objective": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
       "blockKeys": ["video-criar-nave", "fala-criar-nave"],
       "workspaceKey": "projeto",

@@ -4,7 +4,7 @@
 
 **Edição:** o avatar entra, fala e sai antes da resposta e do próximo gesto da professora. Não cobrir controles, blocos, mostradores ou resultados nem sobrepor vozes. Esta versão está preparada no roteiro; gravação, edição e publicação ainda não foram confirmadas. As durações foram revistas em 10/10/2026 com as novas falas: cada alvo cobre a fala estimada a 137 palavras por minuto, contando a criança, e, nas montagens, os gestos sem fala; conferir a montagem final sem acelerar. [Entradas e direção dos avatares](../AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
-Oito seções: experiência com a porta, resposta sem chave, resposta com chave, escolha das imagens (com o par do farol), avisos, experiência de posição, posição da chave e publicação. Manter o projeto enviado no Dia 2 e o mesmo Estúdio em todas as montagens e personalizações. A experiência de posição é separada e não modifica o projeto. A verificação intermediária não pede envio; a seção decisao recebe a entrega única do dia. Ajustar as durações no ensaio, sem acelerar encaixes, percursos ou a espera do barco. Não atribuir à pessoa a arte ou a animação preparada.
+Oito seções: experiência com a porta, resposta sem chave, resposta com chave, escolha das imagens (com o par do farol), avisos, experiência de posição, posição da chave e publicação. Manter o projeto enviado no Dia 2 e o mesmo Estúdio em todas as montagens e personalizações. A experiência de posição é separada e não modifica o projeto. A verificação intermediária não pede envio; o envio único do dia fica no fim de Escolha onde fica a chave, depois das imagens, dos avisos e da posição. O salvamento automático mantém o mesmo projeto entre as partes. Ajustar as durações no ensaio, sem acelerar encaixes, percursos ou a espera do barco. Não atribuir à pessoa a arte ou a animação preparada.
 
 Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se ligam umas às outras ("por isso", "mas", "ou seja", "agora que"), cada resultado vem junto do porquê e a fala chama a atenção para o que aparece na tela ("Olha aqui", "Olha só", "Repare", "Tá vendo?"). Neste curso, "então" não serve de palavra de ligação: é o nome de um espaço do bloco Se. O que é opcional é oferecido como escolha, sem dizer o que a pessoa não precisa fazer, e o que já vem pronto só entra na fala quando ajuda a ação (Diretrizes, seção 6, revisão de 06/10/2026).
 
@@ -132,23 +132,23 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Quando acontecer está o encontro entre personagem e farol, dentro dele está o Se com temChave, e dentro de senão está o aviso de que falta a chave. Depois de corrigir, teste de novo."
 
-**Na tela:** clicar em **Verificar esta parte** e mostrar o resultado real da verificação intermediária. Esperar **Salvo** e apontar **Próxima parte**. O envio não faz parte desta seção.
+**Na tela:** clicar em **Verificar esta parte** e mostrar o resultado real da verificação intermediária. Apontar **Próxima parte**. O envio não faz parte desta seção.
 
 **Professora:**
 
 > "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
+> Quando aparecer Objetivo cumprido!, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta parte antes de seguir.
 
-**Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O envio do dia acontece na seção seguinte; o reenvio do que mudar depois fica em **Escolha onde fica a chave**.
+**Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O único envio do dia acontece no fim de **Escolha onde fica a chave**.
 
 ## Seção 3. Acenda o farol com a chave
 
 ### Vídeo `video-d3-decisao` · Acenda o farol com a chave
 
-**Duração alvo:** 4 a 5 minutos, incluindo encaixes, os três testes e o envio. Não acelerar os percursos nem a espera do barco.
+**Duração alvo:** 4 a 5 minutos, incluindo encaixes, os três testes e a verificação. Não acelerar os percursos nem a espera do barco.
 
 **Na tela:** manter o mesmo Estúdio e o mesmo **Se**. Começar pela retomada, antes de qualquer bloco: clicar em **Atualizar**, pegar a chave e ir ao farol. No "Tá vendo?", mostrar que a luz não acende. Manter esse estado para a reação da Debinha; ainda não montar a resposta.
 
@@ -222,7 +222,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "E se eu quiser jogar de novo?"
 
-**Na tela:** Debinha sai. Clicar em Atualizar, mostrar a chave de volta e testar novamente sem ela. Manter a conferência e o envio depois dos testes.
+**Na tela:** Debinha sai. Clicar em Atualizar, mostrar a chave de volta e testar novamente sem ela. Manter a conferência e a verificação depois dos testes.
 
 **Professora:**
 
@@ -236,19 +236,17 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Depois de corrigir, repita os testes."
 
-**Na tela:** clicar em **Verificar esta parte**, mostrar eventuais pendências reais e corrigir. Depois de **Objetivo cumprido!**, esperar **Salvo**, clicar em **Enviar meu projeto**, confirmar em **Enviar** e aguardar. Apontar **Próxima parte**. Manter o mesmo projeto para publicar.
+**Na tela:** clicar em **Verificar esta parte**, mostrar eventuais pendências reais e corrigir. Depois de **Objetivo cumprido!**, apontar **Próxima parte**. O projeto é salvo automaticamente e continua nas próximas partes; o envio fica no fim de **Escolha onde fica a chave**.
 
 **Professora:**
 
 > "Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
 >
-> Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar.
->
-> Quando o envio terminar, clique em Próxima parte."
+> Seu jogo é salvo automaticamente enquanto você monta. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta parte e envie o seu projeto.
+**Ponte do Zappy na página (não gravar):** Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
-**Conferência de produção:** a verificação é cumulativa e confere as regras dos dias anteriores. A seção exige o vídeo, a aprovação e o envio confirmado. A verificação não exige copiar literalmente as frases dos avisos.
+**Conferência de produção:** a verificação é cumulativa e confere as regras dos dias anteriores. A seção exige o vídeo e a aprovação dos quatorze critérios, sem envio. A verificação não exige copiar literalmente as frases dos avisos.
 
 ## Seção 4. Deixe o jogo com a sua cara
 
@@ -270,7 +268,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Quero fazer uma aventura de pirata!"
 
-**Na tela:** Debinha sai. Voltar ao Estúdio, no projeto enviado. Deixar à vista **Ao iniciar** e **Criar sprite personagem**; no campo **com imagem**, abrir a lista em **aventureiro** e escolher **pirata**. Apontar o nome do sprite, que continua personagem, e os campos de posição e tamanho, sem editá-los. Escolher **barco-pirata** em **Criar sprite barco** e **chave-de-estrela** em **Criar sprite chave**. Aguardar a atualização a cada escolha. Não listar as opções antigas de compatibilidade como parte do catálogo novo.
+**Na tela:** Debinha sai. Voltar ao Estúdio, no mesmo projeto que acabou de verificar. Deixar à vista **Ao iniciar** e **Criar sprite personagem**; no campo **com imagem**, abrir a lista em **aventureiro** e escolher **pirata**. Apontar o nome do sprite, que continua personagem, e os campos de posição e tamanho, sem editá-los. Escolher **barco-pirata** em **Criar sprite barco** e **chave-de-estrela** em **Criar sprite chave**. Aguardar a atualização a cada escolha. Não listar as opções antigas de compatibilidade como parte do catálogo novo.
 
 **Professora:**
 
@@ -318,13 +316,13 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Agora a aventura tem a sua cara, e é com essa cara que o seu jogo vai para o Mural."
 
-**Na tela:** apontar, uma vez só e depois do teste, cada imagem no bloco do mesmo tipo e os dois blocos do farol. Clicar em **Verificar esta parte**; depois de **Objetivo cumprido!**, esperar **Salvo** e apontar **Próxima parte**.
+**Na tela:** apontar, uma vez só e depois do teste, cada imagem no bloco do mesmo tipo e os dois blocos do farol. Clicar em **Verificar esta parte** e, depois de **Objetivo cumprido!**, apontar **Próxima parte**.
 
 **Professora:**
 
 > "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: cada imagem está no bloco do mesmo tipo, personagem com personagem, barco com barco, chave com chave e cenário com cenário, e o farol tem o mesmo modelo nos dois blocos, apagado em Ao iniciar e aceso dentro de então.
 >
-> Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, espere aparecer Salvo e clique em Próxima parte."
+> Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** A surpresa chegou! Que combinação você vai criar? Escolha seu personagem, barco, chave, farol e cenário. Teste a combinação, clique em Verificar esta parte e depois em Próxima parte.
 
@@ -346,17 +344,17 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Os outros três ficam em Quando acontecer. No encontro com a chave, o aviso conta que a chave foi encontrada. No encontro com o farol, o aviso de senão diz que falta a chave, e o de então comemora a luz acesa e o barco. Clique em cada texto e escreva do seu jeito, mas deixe os nomes das variáveis como estão."
 
-**Na tela:** clicar em **Atualizar**, ler o aviso inicial, ir ao farol sem a chave, buscar a chave e voltar na mesma partida, lendo cada aviso. Depois do teste, esperar **Salvo** e apontar **Próxima parte**.
+**Na tela:** clicar em **Atualizar**, ler o aviso inicial, ir ao farol sem a chave, buscar a chave e voltar na mesma partida, lendo cada aviso. Depois do teste, apontar **Próxima parte**.
 
 **Professora:**
 
 > "Agora teste! Clique em Atualizar e leia o aviso do começo. Vá ao farol sem a chave e leia o aviso de senão. Depois busque a chave, leia o aviso da coleta e volte ao farol para ver a comemoração.
 >
-> Se uma frase não apareceu ou passou da tela, volte ao bloco daquele aviso e deixe a frase mais curta. Quando terminar, espere aparecer Salvo e clique em Próxima parte."
+> Se uma frase não apareceu ou passou da tela, volte ao bloco daquele aviso e deixe a frase mais curta. Quando terminar, clique em Próxima parte."
 
 **Ponte do Zappy na página (não gravar):** Agora escreva os avisos do seu jeito! Mude o texto dos quatro avisos, teste o jogo e clique em Próxima parte.
 
-**Conferência de produção:** uma ideia só, os avisos (decisão da dona, 06/10/2026: a troca do farol passou para a seção anterior e esta ficou curta, para a publicação chegar mais cedo). A chave da seção continua `farol-mensagens`, para preservar os identificadores no Admin. Nenhuma frase específica vira critério. A seção conclui pelo vídeo e mantém o projeto já enviado.
+**Conferência de produção:** uma ideia só, os avisos (decisão da dona, 06/10/2026: a troca do farol passou para a seção anterior e esta ficou curta, para a publicação chegar mais cedo). A chave da seção continua `farol-mensagens`, para preservar os identificadores no Admin. Nenhuma frase específica vira critério. A seção conclui pelo vídeo e mantém o mesmo projeto, salvo automaticamente.
 
 ## Seção 6. Como escolher um lugar para a chave
 
@@ -414,7 +412,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Eu tenho que escolher um desses três lugares?"
 
-**Na tela:** Debinha sai. Responder antes de alterar x e y. Demonstrar x 160/y 250 como exemplo da parte de baixo, mantendo nome, largura, altura e imagem. Depois conferir alcance, visibilidade, percurso e reinício e aguardar Salvo como no roteiro.
+**Na tela:** Debinha sai. Responder antes de alterar x e y. Demonstrar x 160/y 250 como exemplo da parte de baixo, mantendo nome, largura, altura e imagem. Depois conferir alcance, visibilidade, percurso e reinício e demonstrar o primeiro envio da fase, como no roteiro.
 
 **Professora:**
 
@@ -430,15 +428,15 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > "Mudei o caminho, mas a missão continua a mesma!"
 
-**Na tela:** Debinha sai. Reiniciar para conferir se a chave volta ao lugar escolhido. Depois esperar **Salvo**, clicar em **Enviar de novo**, confirmar em **Reenviar** e, quando o envio terminar, apontar **Próxima parte**.
+**Na tela:** Debinha sai. Reiniciar para conferir se a chave volta ao lugar escolhido. Depois clicar em **Enviar meu projeto**, confirmar em **Enviar** e aguardar **Projeto enviado!** antes de apontar **Próxima parte**. Gravar numa sessão sem envio anterior nesta fase.
 
 **Professora:**
 
-> "Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Você mudou o jogo depois de enviar. Envie de novo, para a equipe ver a versão nova: espere aparecer Salvo, clique em Enviar de novo e confirme em Reenviar. Quando o envio terminar, clique em Próxima parte."
+> "Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Agora o jogo está do seu jeito! Para a equipe ver como ele ficou, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
 
-**Ponte do Zappy na página (não gravar):** Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Mudou o jogo depois de enviar? Clique em Enviar de novo e confirme em Reenviar. Depois clique em Próxima parte.
+**Ponte do Zappy na página (não gravar):** Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave e teste o caminho até ela e até o farol. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
-**Conferência de produção:** as sugestões vêm de FAROL_POSICOES_CHAVE. Conferir os três lugares nos quatro cenários antes de gravar. A posição não vira critério numérico; a pessoa testa legibilidade, alcance e percurso. Não alterar dimensões para compensar a posição. A seção conclui pelo vídeo e pelo envio em dia (`submissionUpToDate`, 10/10/2026): quem mudou o projeto depois do envio da seção 3 (imagens, avisos ou a chave) só segue depois de **Enviar de novo**, confirmado em **Reenviar**; sem mudança, a parte fecha sem reenvio. É o que garante que a equipe recebe o jogo que vai ao Mural. A fala não usa "então" como ligação (regra do curso).
+**Conferência de produção:** as sugestões vêm de FAROL_POSICOES_CHAVE. Conferir os três lugares nos quatro cenários antes de gravar. A posição não vira critério numérico; a pessoa testa legibilidade, alcance e percurso. Não alterar dimensões para compensar a posição. Desde 11/10/2026, esta é a única seção de entrega do dia: exige vídeo, envio do projeto e envio em dia (`submissionUpToDate`). Mesmo quem manteve as escolhas envia o jogo. Se houver edição depois de enviar, atualizar em **Enviar de novo** e **Reenviar** antes de avançar. O envio já existente de quem fez a versão anterior é preservado; se o jogo continua igual, não é preciso reenviar. É o que garante que a equipe recebe o jogo que vai ao Mural. A fala não usa "então" como ligação (regra do curso).
 
 ## Seção 8. Publique seu jogo
 

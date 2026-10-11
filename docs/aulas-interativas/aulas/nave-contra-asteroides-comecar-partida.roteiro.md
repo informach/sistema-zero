@@ -55,7 +55,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 6 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: abrir o jogo e, no "Tá vendo?", mostrar as pedras caindo desde o começo. A pergunta x > 0 do Se é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos antes de encaixar a pergunta nova; conferir antes da gravação onde fica a lixeira. O bloco de estado inicial entra depois de criar os ramos, para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. No "Olha aqui", apontar os dois + da linha de baixo do Se e clicar no que fica antes de senão se. Não colocar o relógio de 40 quadros dentro do quadro principal. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada: abrir o jogo e, no "Tá vendo?", mostrar as pedras caindo desde o começo. A pergunta x > 0 do Se é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos antes de encaixar a pergunta nova; conferir antes da gravação onde fica a lixeira. O bloco de estado inicial entra depois de criar os ramos, para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. No "Olha aqui", apontar os dois + da linha de baixo do Se e clicar no que fica antes de senão se. Não colocar o relógio de 40 quadros dentro do quadro principal. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Parar com a sequência inteira solta fora de A cada quadro do jogo.
 
@@ -151,7 +151,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo está o Se com o estado do jogo é jogando, e dentro do então dele está a sequência inteira, de Limpar a tela até o desenho das vidas. No senão se, com o estado do jogo é inicio, está Mostrar tela. E, no fim de Ao iniciar, está Mudar o estado do jogo para inicio. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -162,7 +162,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar tocando na barra de espaço com a abertura na tela e, no "Percebeu?", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar tocando na barra de espaço com a abertura na tela e, no "Percebeu?", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -222,7 +222,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Para isso, a gente precisa olhar os blocos. Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas. Por isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está o Se jogando, com o criador de asteroides no então. E, dentro do evento da barra de espaço, está outro Se jogando, com Criar tiro e Tocar efeito no então.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -233,7 +233,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar tocando em Enter com a abertura na tela e, no "Tá vendo?", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar tocando em Enter com a abertura na tela e, no "Tá vendo?", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -293,7 +293,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: em Quando acontecer, abaixo do evento da barra de espaço, está Quando apertar a tecla Enter. Dentro dele, o Se pergunta se o estado do jogo é inicio e, no então, está Mudar o estado do jogo para jogando. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Quando o envio terminar, clique em Concluir fase.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir fase.”
 
 
 **Zappy na página (não gravar):** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir fase.

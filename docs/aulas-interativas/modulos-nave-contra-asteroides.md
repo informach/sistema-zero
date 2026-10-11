@@ -150,3 +150,7 @@ python docs/aulas-interativas/recursos/nave-contra-asteroides/gerar-materiais.py
 ```
 
 O teste existente `packages/studio/src/blockly/__tests__/naveEditorial.test.ts` é executado de dentro de `packages/studio`, com seu preload. Cobre os cinco marcos originais, disparos, colisões, pontos, derrota, vitória real em 26 pontos e reinício limpo.
+
+## Salvamento e envio · 11/10/2026
+
+Cada fase já tem uma única entrega no fim. Os encerramentos agora avançam após Objetivo cumprido!, sem pedir Salvo antes de avançar entre as partes. A primeira montagem explica o salvamento automático. O envio final usa Enviar meu projeto → Enviar → Projeto enviado!; publicar continua opcional. Roteiros, propostas, manifestos e Mapa da Aventura foram alinhados. A revisão altera os encerramentos dos vídeos de montagem; preservar os passos e as participações dos avatares. [Auditoria e orientações de edição](qa/revisao-envio-unico-2026-10-11.md). Os arquivos locais não substituem mídia ou conteúdo já publicado.

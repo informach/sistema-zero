@@ -120,3 +120,7 @@ python -X utf8 docs/aulas-interativas/recursos/meu-jeito/gerar-materiais.py
 ```
 
 De `packages/studio`, executar `bun test src/blockly/__tests__/meuJeitoEditorial.test.ts`. De `packages/members`, executar `bun test tests/integration/meu-jeito-import.test.ts`. O primeiro compila e executa a referência; o segundo atravessa a importação HTTP em ambiente de teste, sem escrever no admin real.
+
+## Salvamento e envio · 11/10/2026
+
+As oito aulas já terminam com uma entrega pela galeria da ferramenta correspondente. Nenhuma parte intermediária pede envio. Como a criação ocorre em outra aba, conservar a confirmação de salvamento antes de voltar à fase: Guardado na sua conta no Pinta e Salvo no Estúdio completo. Não aplicar aqui os rótulos do Estúdio incorporado. [Auditoria e orientações de edição](qa/revisao-envio-unico-2026-10-11.md). Os arquivos locais não substituem mídia ou conteúdo já publicado.

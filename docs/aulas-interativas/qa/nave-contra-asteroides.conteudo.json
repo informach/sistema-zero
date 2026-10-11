@@ -138,7 +138,8 @@
           "Repare nos dois números do bloco: a largura mede a tela de um lado ao outro, e a altura, de cima até embaixo. Eles já vêm em 800 e 480, o tamanho certo para o seu jogo: é só manter.",
           "O fundo também já vem escuro, no quadradinho de cor do bloco. Se quiser, escolha outra cor escura.",
           "Agora olhe a prévia: a tela do jogo aparece lisa, porque ainda não tem nada desenhado nela.",
-          "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. Depois de corrigir, teste de novo."
+          "Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. Depois de corrigir, teste de novo.",
+          "O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta fase."
         ],
         "checks": [
           {
@@ -334,7 +335,7 @@
         ],
         "final": false,
         "videoKey": "video-criar-nave",
-        "kind": "delivery",
+        "kind": "application",
         "avatar": [
           {
             "after": "Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe.",
@@ -5161,7 +5162,7 @@
         "key": "entrega",
         "title": "Teste o jogo completo e compartilhe",
         "bridge": "Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar esta parte e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir fase.",
-        "screen": "Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, Salvo, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala.",
+        "screen": "Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala.",
         "speech": [
           "Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. Repare: não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. Confira também nos blocos se os dois estão lá.",
           "Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.",

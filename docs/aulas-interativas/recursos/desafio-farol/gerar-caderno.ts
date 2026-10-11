@@ -195,7 +195,7 @@ function renderItem(item: Item): string {
       : `<div class="text-section"><h3>${item.title}</h3><p>${item.text}</p></div>`
   }
   if (item.kind === 'delivery')
-    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta parte</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo cumprido!</strong>, espere aparecer <strong>Salvo</strong>. Clique em <strong>Enviar meu projeto</strong> e confirme em <strong>Enviar</strong>. Quando o envio terminar, clique em <strong>${item.finish}</strong>.</p></div>`
+    return `<div class="check"><span class="pill pill--test">Confira antes de enviar</span><p>Funcionou? Clique em <strong>Verificar esta parte</strong>. Se faltar alguma coisa, corrija os blocos e clique novamente.</p><p>Quando aparecer <strong>Objetivo cumprido!</strong>, clique em <strong>Enviar meu projeto</strong> e confirme em <strong>Enviar</strong>. Quando aparecer <strong>Projeto enviado!</strong>, clique em <strong>${item.finish}</strong>.</p></div>`
   if (item.kind === 'box')
     return `<div class="soft-box box-${item.tone ?? 'note'}"><h3>${item.title}</h3><p>${item.text}</p></div>`
   return '' // Os diagramas antigos em texto foram substituídos por encaixes desenhados.

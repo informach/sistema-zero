@@ -57,8 +57,9 @@ const CURSO = 'nave-contra-asteroides'
 // Vocabulário da aventura (Diretrizes, seção 6, 06/10/2026): as falas citam os botões da fase
 // pelo nome exato. Por dentro, a equipe continua dizendo aula, seção e caderno.
 const checkExit =
-  'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
-const send = 'Depois, clique em Enviar meu projeto e confirme em Enviar.'
+  'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
+const send =
+  'Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo de título e já traz o resumo do curso. A comemoração
 // do Mural oferece Copiar link de jogar antes de Fechar (ajuste do responsável em 06/10/2026).
 // O opcional vira convite, e as frases conversam em vez de virar lista (revisão de 06/10/2026).
@@ -76,7 +77,7 @@ export function falasSecao(section: SecaoNave, meio: MeioDaFala = 'video'): stri
   if (section.checks?.length) {
     speech.push(
       // Depois da publicação, o fecho diz "Por último": a fala já termina em "Depois de copiar o link".
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando o envio terminar, clique em Concluir fase.'}` : 'Depois, clique em Próxima parte.'}`,
+      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir fase.` : 'Quando aparecer Projeto enviado!, clique em Concluir fase.'}` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
     )
   }
   return meio === 'video' ? speech : speech.map(semChamados)
@@ -246,7 +247,7 @@ function roteiro(lesson: AulaNave, index: number) {
         roteiroComAvatar(
           s,
           speech,
-          `${s.screen} ${s.checks?.length ? 'Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
+          `${s.screen} ${s.checks?.length ? 'Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.' : ''}`.trimEnd(),
           index,
         ),
         '',

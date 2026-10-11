@@ -202,20 +202,24 @@ test('falas para a criança: sem o nome interno da seção e com a publicação 
 
 test('falas para a criança: botões da fase pelo nome novo e o Mapa como convite (06/10/2026)', () => {
   const verificacao =
-    'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo.'
+    'Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.'
   for (const aula of aulasNave)
     for (const s of aula.sections) {
       if (!s.checks?.length) continue
       const id = `${aula.slug}/${s.key}`
       const fim = falasSecao(s).at(-1) ?? ''
       expect(fim, id).toStartWith(verificacao)
-      if (!s.final) expect(fim, id).toEndWith('Depois, clique em Próxima parte.')
+      expect(fim, id).not.toContain('espere aparecer Salvo')
+      if (!s.final)
+        expect(fim, id).toEndWith('Quando aparecer Objetivo cumprido!, clique em Próxima parte.')
       else {
-        expect(fim, id).toContain('Depois, clique em Enviar meu projeto e confirme em Enviar.')
+        expect(fim, id).toContain(
+          'Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.',
+        )
         expect(fim, id).toEndWith(
           s.publish
             ? 'Por último, clique em Concluir fase.'
-            : 'Quando o envio terminar, clique em Concluir fase.',
+            : 'Quando aparecer Projeto enviado!, clique em Concluir fase.',
         )
       }
     }

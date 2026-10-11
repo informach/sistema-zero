@@ -11,9 +11,10 @@ function evaluate(day: DiaDoFarol, ir: SZIRV2, sectionKey?: string) {
   const manifest = JSON.parse(
     readFileSync(resolve(import.meta.dir, `../aulas/desafio-${day}.manifesto.json`), 'utf8'),
   ) as LearningManifest
-  const section = sectionKey
-    ? manifest.sections.find((item) => item.key === sectionKey)
-    : manifest.sections.find((item) => item.intent === 'delivery')
+  // A checagem completa do Dia 3 permanece em decisao, antes da personalização e do envio.
+  const key =
+    sectionKey ?? (day === 'dia-3' ? 'decisao' : day === 'dia-2' ? 'programar-chave' : 'borda')
+  const section = manifest.sections.find((item) => item.key === key)
   if (!section?.completion?.projectChecks?.length) throw new Error('Critérios ausentes')
   return evaluateStudioSectionProject(section.completion.projectChecks, {
     ...montarProjetoFarol('concluido'),
@@ -63,7 +64,7 @@ describe('Farol: conservar o que já foi construído e verificar o encaixe real'
     expect(evaluate('dia-3', ir).every((item) => item.passed)).toBe(false)
   })
 
-  test('a etapa sem chave aceita então vazio, mas a entrega exige a resposta com chave', () => {
+  test('a etapa sem chave aceita então vazio, mas a montagem seguinte exige a resposta com chave', () => {
     const ir = finalIR()
     const event = ir.behavior.events.find(
       (item) => item.type === 'g2d:onOverlap' && item.bVar === 'farol',

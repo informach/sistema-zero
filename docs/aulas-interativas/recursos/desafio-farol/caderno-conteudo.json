@@ -79,7 +79,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Espere o jogo atualizar e segure uma seta da tela. No computador, pode clicar no jogo e usar o teclado. O personagem deve andar. Se no seu jogo não aconteceu isso, confira se ficou assim: <b>Ativar controles clássicos</b> no fim de Ao iniciar e o bloco de movimento dentro de A cada quadro do jogo, com o sprite <b>personagem</b>. Depois clique em <b>Verificar esta parte</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>."
+        "text": "Teste com as setas da tela ou clique no jogo e use as setas do teclado. O personagem deve andar. Se algo não funcionou no seu jogo, confira se ficou assim: <b>Ativar controles clássicos</b> no fim de Ao iniciar e o bloco de movimento dentro de A cada quadro do jogo, com o sprite <b>personagem</b>. Clique em <b>Verificar esta parte</b>. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -132,7 +132,7 @@
       },
       {
         "kind": "text",
-        "text": "Teste cima, baixo, esquerda e direita até os limites. O personagem deve continuar inteiro na tela. Se no seu jogo não aconteceu isso, confira se ficou como no desenho: o limite logo abaixo do movimento, porque o jogo primeiro move e depois confere a borda."
+        "text": "Teste cima, baixo, esquerda e direita até os limites. O personagem deve continuar inteiro na tela. Se algo não funcionou no seu jogo, confira se ficou como no desenho: o limite logo abaixo do movimento, porque o jogo primeiro move e depois confere a borda."
       },
       {
         "kind": "delivery",
@@ -193,7 +193,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Leve o personagem até a chave: ela deve sumir. Clique em <b>Atualizar</b>, logo acima do jogo: a chave volta ao chão. Se no seu jogo não aconteceu isso, confira se ficou como no desenho: <b>Destruir o sprite chave</b> dentro do encontro entre personagem e chave. Depois clique em <b>Verificar esta parte</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>."
+        "text": "Leve o personagem até a chave: ela deve sumir. Clique em <b>Atualizar</b>, logo acima do jogo: a chave volta ao chão. Se algo não funcionou no seu jogo, confira se ficou como no desenho: <b>Destruir o sprite chave</b> dentro do encontro entre personagem e chave. Depois clique em <b>Verificar esta parte</b>. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -220,7 +220,7 @@
       {
         "kind": "box",
         "title": "Verifique esta parte",
-        "text": "Você ainda não vê temChave no jogo: a porta do farol vai usá-la no Dia 3. Clique em <b>Verificar esta parte</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>.",
+        "text": "Você ainda não vê temChave no jogo: a porta do farol vai usá-la no Dia 3. Clique em <b>Verificar esta parte</b>. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.",
         "tone": "test"
       }
     ]
@@ -247,7 +247,7 @@
       {
         "kind": "step",
         "title": "Teste a coleta",
-        "text": "Pegue a chave: ela deve sumir, e a mensagem deve mudar. Passe pelo mesmo lugar outra vez. Clique em <b>Atualizar</b> para recomeçar: a chave deve voltar. Se no seu jogo não aconteceu isso, confira se ficou assim: dentro do encontro com a chave estão <b>Destruir o sprite chave</b>, <b>Alterar temChave para verdadeiro</b> e <b>Alterar aviso</b> com a sua mensagem."
+        "text": "Pegue a chave: ela deve sumir, e a mensagem deve mudar. Passe pelo mesmo lugar outra vez. Clique em <b>Atualizar</b> para recomeçar: a chave deve voltar. Se algo não funcionou no seu jogo, confira se ficou assim: dentro do encontro com a chave estão <b>Destruir o sprite chave</b>, <b>Alterar temChave para verdadeiro</b> e <b>Alterar aviso</b> com a sua mensagem."
       },
       {
         "kind": "delivery",
@@ -308,12 +308,12 @@
       {
         "kind": "step",
         "title": "Teste antes de continuar",
-        "text": "Clique em <b>Atualizar</b> e vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave. Se no seu jogo não aconteceu isso, confira se ficou assim: o encontro entre personagem e farol, o Se com <b>temChave</b> dentro dele e o aviso dentro de <b>senão</b>."
+        "text": "Clique em <b>Atualizar</b> e vá ao farol sem passar pela chave. A luz deve continuar apagada e o aviso deve dizer que falta a chave. Se algo não funcionou no seu jogo, confira se ficou assim: o encontro entre personagem e farol, o Se com <b>temChave</b> dentro dele e o aviso dentro de <b>senão</b>."
       },
       {
         "kind": "box",
         "title": "Verifique esta parte",
-        "text": "Clique em <b>Verificar esta parte</b>. Corrija as pendências e verifique de novo. Quando aparecer <b>Objetivo cumprido!</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>. O envio fica para depois de completar a resposta com chave.",
+        "text": "Clique em <b>Verificar esta parte</b>. Corrija as pendências e verifique de novo. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>. Seu jogo é salvo automaticamente. O envio fica no fim de <b>Escolha onde fica a chave</b>.",
         "tone": "test"
       }
     ]
@@ -352,7 +352,7 @@
   },
   {
     "id": "p8",
-    "kicker": "Dia 3 · Teste e envio",
+    "kicker": "Dia 3 · Teste e verificação",
     "title": "Teste o jogo inteiro",
     "subtitle": "A condição está montada. Confira se cada situação recebe a resposta certa.",
     "items": [
@@ -377,11 +377,13 @@
       {
         "kind": "step",
         "title": "Se algum teste saiu diferente",
-        "text": "Se no seu jogo não aconteceu isso, confira se ficou assim: dentro de <b>então</b> estão <b>ganhou verdadeiro</b>, a imagem <b>farol-listrado-aceso</b> e o aviso de chegada, e dentro de <b>senão</b> está o aviso de que falta a chave. Confira também se <b>temChave</b> começa em falso, em Ao iniciar, e se muda para verdadeiro no encontro com a chave.<br/>Corrija e repita os testes."
+        "text": "Se algo não funcionou no seu jogo, confira se ficou assim: dentro de <b>então</b> estão <b>ganhou verdadeiro</b>, a imagem <b>farol-listrado-aceso</b> e o aviso de chegada, e dentro de <b>senão</b> está o aviso de que falta a chave. Confira também se <b>temChave</b> começa em falso, em Ao iniciar, e se muda para verdadeiro no encontro com a chave.<br/>Corrija e repita os testes."
       },
       {
-        "kind": "delivery",
-        "finish": "Próxima parte"
+        "kind": "box",
+        "tone": "test",
+        "title": "Verificar e continuar",
+        "text": "Funcionou? Clique em <b>Verificar esta parte</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Seu jogo é salvo automaticamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -420,7 +422,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Clique em <b>Atualizar</b> e vá ao farol sem a chave: ele fica apagado. Busque a chave e volte: o mesmo modelo acende e o barco chega. Se não aconteceu, confira cada imagem no bloco do mesmo tipo e o par do farol. Clique em <b>Verificar esta parte</b>, espere <b>Salvo</b> e clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Atualizar</b> e vá ao farol sem a chave: ele fica apagado. Busque a chave e volte: o mesmo modelo acende e o barco chega. Se não aconteceu, confira cada imagem no bloco do mesmo tipo e o par do farol. Clique em <b>Verificar esta parte</b>. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -514,7 +516,7 @@
       {
         "kind": "step",
         "title": "Teste os avisos",
-        "text": "Clique em <b>Atualizar</b> e leia o aviso do começo. Vá ao farol sem a chave, busque a chave e volte, lendo cada aviso. Se uma frase não apareceu ou passou da tela, deixe mais curta. Espere <b>Salvo</b> e clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Atualizar</b> e leia o aviso do começo. Vá ao farol sem a chave, busque a chave e volte, lendo cada aviso. Se uma frase não apareceu ou passou da tela, deixe mais curta. Clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -573,7 +575,7 @@
       {
         "kind": "step",
         "title": "3. Teste o novo caminho",
-        "text": "Clique em <b>Atualizar</b> e visite o farol sem passar pela chave: ele deve avisar que falta a chave. Afaste-se, busque a chave e volte na mesma partida. Confira a luz e espere o barco. Atualize outra vez: a chave deve voltar ao lugar escolhido. Espere <b>Salvo</b>, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>. Quando o envio terminar, clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Atualizar</b> e visite o farol sem passar pela chave: ele deve avisar que falta a chave. Afaste-se, busque a chave e volte na mesma partida. Confira a luz e espere o barco. Atualize outra vez: a chave deve voltar ao lugar escolhido. Para a equipe ver como seu jogo ficou, clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -607,7 +609,7 @@
       {
         "kind": "box",
         "title": "Se Compartilhar não estiver disponível",
-        "text": "Confira se terminou o envio do seu projeto na parte Acenda o farol com a chave. Se continuar sem conseguir, clique em <b>Preciso de ajuda</b> e conte o que aparece. Se mesmo assim não der, peça a um adulto para conferir se a sua conta pode publicar no Mural.",
+        "text": "Confira se terminou o envio do seu projeto na parte Escolha onde fica a chave. Se continuar sem conseguir, clique em <b>Preciso de ajuda</b> e conte o que aparece. Se mesmo assim não der, peça a um adulto para conferir se a sua conta pode publicar no Mural.",
         "tone": "note"
       }
     ]
@@ -638,7 +640,7 @@
       {
         "kind": "step",
         "title": "Para guardar e para enviar",
-        "text": "<b>Salvo</b> indica que a mudança ficou guardada.<br/><b>Verificar esta parte</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, com a confirmação em <b>Enviar</b>, manda o seu projeto para a equipe. Mudou o jogo depois? <b>Enviar de novo</b>, com a confirmação em <b>Reenviar</b>, manda a versão nova.<br/>São passos diferentes. Você pode consultar o Mapa da Aventura e o Como Fazer sempre que precisar."
+        "text": "O Estúdio salva automaticamente enquanto você monta. <b>Guardado na sua conta</b> confirma que a cópia já está na sua conta.<br/><b>Verificar esta parte</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, confirmado em <b>Enviar</b>, manda o jogo para a equipe no fim da fase. Depois aparece <b>Projeto enviado!</b> Se mudar algo após enviar, <b>Enviar de novo</b> e <b>Reenviar</b> atualizam a mesma entrega."
       }
     ]
   }

@@ -319,11 +319,14 @@ Nesse caso, o bloco do Estúdio continua pertencendo só à seção prática em 
 exige o próprio vídeo, não a ação opcional. Isso não dispensa a evidência da prática na seção
 anterior.
 
-**Envio em dia (`submissionUpToDate: true`, 10/10/2026).** Numa seção que muda o projeto DEPOIS da
-entrega (personalizar, trocar avisos, escolher o lugar da chave), a autora pode exigir que o último
-envio seja igual ao projeto de agora: a parte só fecha quando a criança reenviou o que mudou ("Enviar
-de novo"; no Estúdio a confirmação é "Reenviar", no Pinta é "Enviar"). Se nada mudou desde o envio, a
-parte fecha sem reenvio. Regras:
+**Envio em dia (`submissionUpToDate: true`, 10/10/2026; aplicação ao Cadê revista em 11/10).** Na
+própria entrega ou numa seção posterior que muda o projeto, a autora pode exigir que o último envio
+seja igual ao projeto de agora. Na Aula 2 do Cadê, a parte 3 verifica sem enviar e a parte 4 reúne
+personalização e o único envio: **Enviar meu projeto**, confirmado em **Enviar**. Se a criança editar
+depois desse envio, atualiza em **Enviar de novo** (no Estúdio, **Reenviar**; no Pinta, **Enviar**).
+Sem mudança depois de enviar, não há reenvio. No Dia 3 do Farol, desde 11/10/2026, o primeiro
+envio também fica no fim das escolhas, em `posicionar-chave`, com a mesma regra. `decisao` verifica
+sem enviar; `personalizar` aplica as trocas, `farol-mensagens` fecha os avisos livres e `posicao` é exploração. Regras:
 
 - vale numa seção com `workspaceKey` de um Estúdio ou Pinta incorporado (não a galeria nem um
   `purpose: 'experiment'`), cujo bloco pertence à seção de entrega final (a que passa por
@@ -335,8 +338,9 @@ parte fecha sem reenvio. Regras:
   e as imagens da biblioteca do curso não contam como mudança; trocar o que aparece no jogo conta.
   Renomear o projeto conta depois da próxima edição de bloco (o nome vai no `<title>` do
   `index.html` gerado);
-- a fala da seção diz o passo: no Estúdio, "clique em Enviar de novo e confirme em Reenviar"; no
-  Pinta, "clique em Enviar de novo e confirme em Enviar".
+- a fala da seção diz o passo real: no primeiro envio do Estúdio, "clique em Enviar meu projeto e
+  confirme em Enviar"; ao atualizar um envio, "clique em Enviar de novo e confirme em Reenviar"; no
+  Pinta, a confirmação do reenvio é **Enviar**.
 
 
 Regras de `usesBlock`: `blockType` é o tipo real do bloco do Estúdio, `area` aceita `structure`,

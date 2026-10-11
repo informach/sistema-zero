@@ -18,7 +18,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 6 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -108,7 +108,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “As telas da vitória e da derrota ainda não existem, por isso o jogo ainda não mostra esses finais. Desta vez, quem confere o que você montou é a verificação, e as telas vêm na próxima parte.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -119,7 +119,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -181,7 +181,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 >
 > Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de jogando, a pergunta das vidas muda o estado para fim, e o Se grande tem os ramos jogando, inicio, vitoria e fim, nessa ordem. Os ramos vitoria e fim mostram as telas Você ganhou! e Você perdeu, com a dica Aperte Enter para voltar ao início. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -229,7 +229,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Começar pela retomada: perder, tocar em Enter e, no "Tá vendo?", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Começar pela retomada: perder, tocar em Enter e, no "Tá vendo?", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -287,7 +287,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 > “Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos. Em inicio, o Enter muda o estado para jogando. Em fim e em vitoria, o Enter reinicia o jogo. E Dar ao sprite nave 3 de vida continua em Ao iniciar. Depois de corrigir, teste de novo.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Próxima parte.”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.”
 
 
 **Zappy na página (não gravar):** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar esta parte. Depois, clique em Próxima parte.
@@ -304,7 +304,7 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 
 **Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
-**Direção geral do clipe:** Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, Salvo, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido!, aguardar Salvo e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
+**Direção geral do clipe:** Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado. Executar cada gesto junto da fala correspondente; as notas abaixo delimitam as entradas do avatar.
 
 **Na tela:** Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação.
 
@@ -330,7 +330,7 @@ Sem vídeo ou ferramenta nesta seção. O quiz vem imediatamente depois do Zappy
 >
 > Olha só o que você programou: os controles, os tiros, os acertos, os pontos, as vidas e as telas! É com essas regras que a sua nave enfrenta os asteroides do começo ao fim da partida.
 >
-> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, espere aparecer Salvo. Depois, clique em Enviar meu projeto e confirme em Enviar. Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista!”
+> Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Que conquista!”
 
 **ID de edição:** `video-ciclo-completo-avatar-02`.
 

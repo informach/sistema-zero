@@ -164,8 +164,25 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
       expect(blockCheckpoint(experience.content)).toBeUndefined()
     }
     const practice = m.sections.find((section) => section.key === 'contar-achados')
-    expect(practice?.blockKeys).toEqual(['video-a2-contagem', 'ponte-a2-contagem', 'projeto'])
-    expect(practice?.completion?.blockIds).toEqual(['video-a2-contagem', 'projeto'])
+    expect(practice?.blockKeys).toEqual(['video-a2-contagem', 'ponte-a2-contagem'])
+    expect(practice?.completion?.blockIds).toEqual(['video-a2-contagem'])
+    expect(practice?.intent).toBe('application')
+    expect(practice?.workspaceKey).toBe('projeto')
+    expect(practice?.completion?.projectChecks?.map((check) => check.id)).toEqual([
+      'revelar-ao-toque',
+      'somar-achado',
+    ])
+    const delivery = m.sections.find((section) => section.key === 'personalizar')
+    expect(delivery?.intent).toBe('delivery')
+    expect(delivery?.blockKeys).toEqual([
+      'video-a2-personalizar',
+      'ponte-a2-personalizar',
+      'projeto',
+    ])
+    expect(delivery?.completion?.blockIds).toEqual(['video-a2-personalizar', 'projeto'])
+    expect(
+      m.sections.filter((s) => s.completion?.blockIds.includes('projeto')).map((s) => s.key),
+    ).toEqual(['personalizar'])
     expect(m.blocks.some((block) => block.key === 'caderno')).toBe(false)
     // Envio em dia (10/10/2026): só a última parte que muda o jogo antes de publicar. O validador
     // só confere o critério que existe; perder a marca no gerador passaria calado sem isto.
@@ -195,7 +212,7 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     const practice = manifesto('aula-2').sections.find(
       (section) => section.key === 'contar-achados',
     )
-    expect(practice?.completion?.blockIds).toEqual(['video-a2-contagem', 'projeto'])
+    expect(practice?.completion?.blockIds).toEqual(['video-a2-contagem'])
     const closing = manifesto('aula-2').sections.find((section) => section.key === 'conclusao')
     expect(practice?.workspaceKey).toBe('projeto')
     expect(closing?.workspaceKey).toBe('projeto')
