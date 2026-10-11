@@ -13,6 +13,7 @@ import {
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
+import { useLessonRefresh } from '@sistemazero/member-shell/lib/use-lesson-refresh'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { EdgePanelHandle } from '@sistemazero/ui/edge-panel-handle'
@@ -55,6 +56,8 @@ export function LessonPlayer({
   shareUrl,
 }: Props) {
   const router = useRouter()
+  // Junta os pedidos e espera a atividade ampliada fechar (ver `use-lesson-refresh`).
+  const refreshLesson = useLessonRefresh(() => router.refresh())
   const learning = useLessonLearning(lesson, viewerId)
   const requirements = lessonCompletionRequirements({
     ...lesson,
@@ -113,9 +116,9 @@ export function LessonPlayer({
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
-      refreshAfterLearning: () => router.refresh(),
-      refreshAfterQuiz: () => router.refresh(),
-      refreshAfterStudio: () => router.refresh(),
+      refreshAfterLearning: refreshLesson,
+      refreshAfterQuiz: refreshLesson,
+      refreshAfterStudio: refreshLesson,
     }),
     [
       lesson.id,
@@ -125,7 +128,7 @@ export function LessonPlayer({
       course.slug,
       viewerWatermark,
       viewerId,
-      router,
+      refreshLesson,
     ],
   )
 

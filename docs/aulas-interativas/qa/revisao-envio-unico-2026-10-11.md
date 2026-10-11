@@ -40,7 +40,7 @@ Novo encerramento de **video-d3-decisao**, depois de “Se faltar alguma coisa, 
 
 Nova retomada depois de **F3P7-R01**, mantendo a fala da Debinha:
 
-> Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Agora o jogo está do seu jeito! Para a equipe ver como ele ficou, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+> Clique em Atualizar mais uma vez: a chave deve voltar ao lugar que você escolheu. Agora o jogo está do seu jeito! Clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
 O manifesto mantém os dez critérios de sem-chave, os quatorze de decisao e o critério acender em personalizar. O bloco projeto apenas muda de seção proprietária para posicionar-chave; nenhum projeto, ID, experimento ou mídia é substituído. As falas e os IDs dos avatares foram preservados; só a retomada final da professora em F3P7-R01 mudou, junto da âncora no gerador.
 

@@ -297,6 +297,8 @@ export function SceneActivityView({
   const fila = useRef<string[]>([])
   const saving = useRef(false)
   const attemptId = useRef(crypto.randomUUID())
+  // A atualização da página que libera a próxima parte, uma vez por montagem (ver o envio).
+  const atualizouAoPassar = useRef(false)
   /**
    * ⚠️⚠️ O que a última tentativa já levou.
    *
@@ -871,7 +873,13 @@ export function SceneActivityView({
         // mesma tentativa para sempre: um id novo só DEPOIS da resposta.
         if (!response.attempt.result.passed) attemptId.current = crypto.randomUUID()
         player.onLearningProgress?.(response.progress)
-        player.refreshAfterLearning?.()
+        // A página só precisa ser atualizada quando a tentativa PASSA (11/10/2026): é isso que fecha
+        // a parte e libera a próxima. O progresso de agora já veio na resposta (acima), e cada
+        // atualização a mais refazia a aula inteira no servidor a cada descoberta.
+        if (response.attempt.result.passed && !atualizouAoPassar.current) {
+          atualizouAoPassar.current = true
+          player.refreshAfterLearning?.()
+        }
       }
       // ⚠️ Com `.catch()`: sem IndexedDB (aba privada) a cópia local derrubava o resto do bloco.
       if (cacheKey) await writeSceneDraft(cacheKey, controller.draft()).catch(() => {})

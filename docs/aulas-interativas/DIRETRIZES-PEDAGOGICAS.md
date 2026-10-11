@@ -199,6 +199,8 @@ A conversa não tira a precisão da montagem: o destino continua vindo antes da 
 
 Encerrar na ação real: Próxima parte, envio e confirmação, ou Concluir fase. Na seção do certificado, orientar Pegar meu certificado; quem já emitiu encontra Baixar certificado (PDF). Não antecipar a próxima tarefa depois da saída, atribuir autoria exagerada ou inserir venda na celebração infantil. Continuidade comercial é dirigida ao responsável fora dessa tarefa.
 
+**Envio obrigatório é o próximo passo da atividade.** A fala orienta diretamente: “Agora, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.” Não justificar como uma oportunidade de mostrar o jogo à equipe, nem condicionar ao desejo de mostrar: isso faz uma ação necessária parecer opcional. Usar os rótulos e a saída reais de cada seção. Recado, escolhas de personalização e publicação continuam opcionais onde já eram. Decisão do responsável em 11/10/2026, válida para os cinco cursos.
+
 **A criança lê aventura, não escola.** A plataforma é um lugar de criar jogos, e não uma extensão da escola. Por dentro (Admin, código, documentos da equipe) e com os responsáveis, continuam curso, aula, seção, caderno e professor. Tudo o que a criança vê ou ouve (narração, ponte do Zappy, títulos de seção, quiz, Mapa da Aventura, Como Fazer e as telas da plataforma) usa o vocabulário da aventura:
 
 | Por dentro | Para a criança | Exemplos |

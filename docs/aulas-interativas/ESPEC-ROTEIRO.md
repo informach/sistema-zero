@@ -35,6 +35,8 @@ Encurtar a fala não permite omitir passos. Na montagem, conduzir a criança at�
 8. Só depois do teste, e uma vez só, a conferência como caminho da correção, com gatilho genérico: "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: … Depois de corrigir, teste de novo." Não acrescentar um caso de erro que repete um item da lista; um aviso a mais só entra quando diz o que a lista não cobre. Sem teste visível (uma variável sem mostrador), "Confira se ficou assim:" vem logo depois da montagem, porque é a única conferência.
 9. Dizer como terminar, incluindo confirmação de envio quando necessária.
 
+Quando o envio é obrigatório, apresentar diretamente o próximo passo: “Agora, clique em Enviar meu projeto e confirme em Enviar.” Não justificar o envio como uma escolha de mostrar o jogo à equipe. Depois, nomear a confirmação e a saída reais da seção. Ver Diretrizes, seção 6.
+
 A ordem dos passos 2 a 5 não é opcional. Com o bloco preso no mouse, a criança não consegue mover o espaço dos blocos para procurar o destino.
 
 Exemplo: "Encontre Quando clicar ou tocar e deixe à vista o bloco de visibilidade que está

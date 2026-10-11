@@ -10,15 +10,7 @@ import { sanitizeProjectForHost } from '@sistemazero/studio/project-validation'
 import { Button } from '@sistemazero/ui/button'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Expand, Minimize2, RotateCcw } from 'lucide-react'
-import {
-  type CSSProperties,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { inertOutside } from '../lib/inert-outside'
 import { useReportActivityExpanded } from '../lib/lesson-activity-expansion'
 import { useLessonCopy } from './lesson-copy-context'
@@ -76,13 +68,16 @@ export function ProjectPlayActivityView({
   })
   const current = useRef({ answers, onChange })
   current.current = { answers, onChange }
-  const project = useMemo(() => {
+  // Preso na montagem (11/10/2026): o projeto chega com identidade NOVA a cada `router.refresh()`
+  // da aula, e com `useMemo` o player recebia outro objeto e remontava o iframe, reiniciando o jogo
+  // no meio da partida. Conteúdo novo de verdade muda a revisão do bloco, que está na `key` do pai.
+  const [project] = useState(() => {
     try {
       return sanitizeProjectForHost(activity.project)
     } catch {
       return null
     }
-  }, [activity.project])
+  })
   const sendPointer = useCallback(
     (target: ProjectPlayActivity['targets'][number]) => {
       iframe.current?.contentWindow?.postMessage(

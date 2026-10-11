@@ -44,7 +44,10 @@ const aprovado: LearningResult = {
   verifiedBy: 'client',
 }
 
-function montar(onAttempt: LessonPreviewContextValue['onAttempt']) {
+function montar(
+  onAttempt: LessonPreviewContextValue['onAttempt'],
+  conteudo: InteractiveBlock = content,
+) {
   const ensaio: LessonPreviewContextValue = {
     // O jogo já concluído: a tentativa automática começa sozinha.
     answers: { jogo: { participated: true } },
@@ -60,8 +63,8 @@ function montar(onAttempt: LessonPreviewContextValue['onAttempt']) {
   return render(
     <LessonPreviewProvider value={ensaio}>
       <InteractiveLessonBlock
-        block={{ id: 'jogo', kind: 'interactive', sortOrder: 0, content }}
-        previewContent={content}
+        block={{ id: 'jogo', kind: 'interactive', sortOrder: 0, content: conteudo }}
+        previewContent={conteudo}
       />
     </LessonPreviewProvider>,
   )
@@ -126,5 +129,38 @@ describe('guardar o jogo pronto', () => {
     const link = screen.getByRole('button', { name: 'Tentar guardar de novo' })
     expect(link.closest('p')?.getAttribute('role')).toBe('status')
     expect(link.closest('p')?.className).toContain('min-h-5')
+  })
+})
+
+describe('o jogo pronto e a atualização da aula (11/10/2026)', () => {
+  test('o conteúdo chegando clonado (como depois de um refresh) não reinicia o jogo', async () => {
+    const tela = montar(async () => aprovado)
+    await act(async () => {})
+    const antes = document.querySelector('.sz-project-play-card iframe')
+    expect(antes).not.toBeNull()
+    const ensaio = (conteudo: InteractiveBlock) => (
+      <LessonPreviewProvider
+        value={{
+          answers: { jogo: { participated: true } },
+          hintsUsed: {},
+          results: {},
+          workspaces: {},
+          onWorkspaceChange: () => {},
+          onProjectCheck: async () => '',
+          onChange: () => {},
+          onAttempt: async () => aprovado,
+          onQuiz: async () => {},
+        }}
+      >
+        <InteractiveLessonBlock
+          block={{ id: 'jogo', kind: 'interactive', sortOrder: 0, content: conteudo }}
+          previewContent={conteudo}
+        />
+      </LessonPreviewProvider>
+    )
+    tela.rerender(ensaio(structuredClone(content)))
+    await act(async () => {})
+    // O mesmo nó: com o projeto recalculado a cada render, o player montava outro iframe.
+    expect(document.querySelector('.sz-project-play-card iframe')).toBe(antes)
   })
 })

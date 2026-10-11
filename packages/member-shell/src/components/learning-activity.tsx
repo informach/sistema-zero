@@ -100,6 +100,8 @@ function Activity({
   callback.current = player?.onLearningProgress
   const requestId = useRef<string | null>(null)
   const checking = useRef(false)
+  // A atualização da página que libera a próxima parte, uma vez por montagem (ver o envio).
+  const atualizouAoPassar = useRef(false)
   const _automaticAttemptStarted = useRef(false)
 
   useEffect(() => {
@@ -249,7 +251,12 @@ function Activity({
       setResult(data.attempt.result)
       callback.current?.(data.progress)
       setStatus('Guardado.')
-      player?.refreshAfterLearning?.()
+      // Só quando passa pela primeira vez (11/10/2026): é o que fecha a parte. O progresso já veio
+      // na resposta, e uma atualização a cada tentativa refazia a aula no servidor.
+      if (data.attempt.result.passed && !atualizouAoPassar.current) {
+        atualizouAoPassar.current = true
+        player?.refreshAfterLearning?.()
+      }
       if (key && current.current.answers === submitted.answers)
         try {
           localStorage.removeItem(key)
