@@ -72,8 +72,11 @@ console.log(
 
 const criticalFiles = [
   'app/(app)/recados/[threadId]/recado-thread-client.tsx',
-  'app/perfis/parent-dashboard.tsx',
-  'app/perfis/purchases-view.tsx',
+  'app/pais/_components/ai-credits-card.tsx',
+  'app/pais/_components/purchase-history.tsx',
+  'app/pais/_components/child-progress.tsx',
+  'app/pais/crianca/[id]/child-client.tsx',
+  'app/pais/parents-client.tsx',
   'components/kids/kids-space-view-client.tsx',
   'components/kids/kids-space-content.tsx',
   'components/kids/console-controls.tsx',
