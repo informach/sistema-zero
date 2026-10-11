@@ -397,3 +397,19 @@ Estes prints mostram uma parte da tela em que o rótulo antigo só aparece se o 
 - 3 prints novos da galeria, que ainda não existem no lote (seção "Prints novos").
 - Os outros 94 mostram só telas das ferramentas (Estúdio completo, Pinta, Pensa, Molda, avatar e
   Mural) e não têm rótulo antigo.
+
+## Atualização de 11/10/2026 (área dos pais com páginas próprias)
+
+- Os seis tutoriais de acesso ganharam 25 prints novos, tirados no staging com a Leninha e a Débora:
+  `plataforma-entrar-com-codigo`, `plataforma-nao-consigo-entrar`,
+  `plataforma-preparar-acesso-da-crianca`, `plataforma-renovar-ou-encerrar-acesso`,
+  `plataforma-trocar-de-perfil` e `plataforma-voltar-ao-meu-perfil`.
+- ⚠️ A grade "Quem vai criar hoje?" mudou de desenho no mesmo dia (logo, título no meio, ações em
+  pílula). Refazer depois do deploy: `plataforma-trocar-de-perfil/escolher`,
+  `plataforma-voltar-ao-meu-perfil/perfil`, `plataforma-entrar-com-codigo/voltar` e
+  `plataforma-nao-consigo-entrar/encerrado`.
+- Faltam prints que dependem de um acesso VENCIDO (o prazo mínimo é "Somente hoje"):
+  `plataforma-nao-consigo-entrar/prazo` e `plataforma-voltar-ao-meu-perfil/vencido`. Os passos
+  `plataforma-nao-consigo-entrar/tentativas` e `/navegador` seguem só com texto.
+- Os 28 prints dos tutoriais do Pinta são do editor de PIXEL e continuam certos depois da mudança
+  da espessura do vetor (10/10/2026).

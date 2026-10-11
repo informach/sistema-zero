@@ -82,6 +82,9 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'Um personagem preparado permite começar pelas regras do jogo.',
   },
+  // ⚠️ `tela-pinta-vetor`, `tela-pinta` e `tela-animacao` mostram a caixa do editor de vetor de
+  // ANTES de 10/10/2026 (os seis botões de espessura no alto; hoje a espessura mora em
+  // Aparência). Refazer com o roteiro `pinta` no perfil do Lipe, que tem esses desenhos.
   'pinta-vetor': {
     frames: [
       tela(
@@ -442,17 +445,17 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     frames: [
       tela(
         'pais-painel',
-        'Área dos responsáveis',
-        'Área dos responsáveis com o progresso de cada criança: pontos, medalhas, entregas, cursos e o posto na Jornada do Criador.',
-        948,
-        592,
+        'Acompanhamento',
+        'Acompanhamento na Área dos pais: a escolha da criança, o que ela fez nesta semana, o jogo publicado no Mural e os números no total, como pontos, medalhas, cursos e entregas.',
+        1152,
+        640,
       ),
       tela(
         'pais-conversa',
         'Para conversar sobre uma criação',
-        'Área dos responsáveis com o resumo da semana por e-mail, perguntas para conversar sobre uma criação e o atendimento.',
-        704,
-        440,
+        'Perguntas para conversar sobre uma criação e o interruptor Receber o resumo da semana por e-mail, no Acompanhamento da Área dos pais.',
+        392,
+        346,
       ),
     ],
     caption: 'Você localiza uma criação para conhecer e conversar com seu filho.',
@@ -462,9 +465,9 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       tela(
         'pais-perfil',
         'Editar perfil',
-        'Editar perfil na Área dos pais, com a opção Perfil público na comunidade kids desmarcada.',
-        480,
-        536,
+        'Editar o perfil de uma criança na Área dos pais, com o nome, a data de nascimento (embaçada aqui) e a opção Perfil público na comunidade kids.',
+        542,
+        470,
       ),
     ],
     caption: 'O responsável administra a visibilidade do perfil para os colegas.',
@@ -475,16 +478,16 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       tela(
         'pais-atendimento',
         'Atendimento',
-        'Atendimento na Área dos pais, com o botão Abrir chamado.',
-        960,
-        600,
+        'Atendimento, na Ajuda da Área dos pais, com os botões Atualizar e Abrir chamado.',
+        835,
+        355,
       ),
       tela(
         'pais-chamado',
         'Abrir chamado',
         'Formulário Abrir chamado, com assunto, categoria e o campo para contar o que aconteceu.',
-        960,
-        600,
+        634,
+        418,
       ),
     ],
     caption: 'O atendimento da família reúne dúvidas sobre conta e assinatura.',
@@ -494,24 +497,25 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       tela(
         'pais-indicacao',
         'Seja um embaixador',
-        'Cartão Seja um embaixador do Sistema Zero na Área dos pais, com as condições do programa de indicações.',
-        704,
-        268,
+        'Cartão Seja um embaixador do Sistema Zero, na Conta da Área dos pais, com as condições do programa de indicações.',
+        1136,
+        266,
       ),
     ],
     caption: 'O convite segue as condições apresentadas no programa de indicações.',
   },
-  // As três abaixo vêm de capturas da própria dona na conta dela (02/10/2026), recortadas e com
-  // o sobrenome da criança e os dígitos do cartão embaçados. O @2x é ampliado: não há captura
-  // em escala 2 dessas telas.
+  // As telas da Área dos pais são capturas do staging de 11/10/2026 (páginas próprias), menos
+  // "Minhas compras": ela vem de uma captura da própria dona na conta dela (02/10/2026), com os
+  // dígitos do cartão embaçados, porque o staging não tem assinatura ativa para mostrar. O @2x
+  // dela é ampliado: não há captura em escala 2.
   creditos: {
     frames: [
       tela(
         'pais-creditos',
         'Ajuda da IA neste mês',
-        'Quadro Ajuda da IA neste mês na Área dos pais: 0 de 500 no mês, renovação em 1º de novembro, 0 de 50 no dia e o aviso de que as crianças da família dividem o mesmo total.',
-        720,
-        193,
+        'Quadro Ajuda da IA neste mês, na Conta da Área dos pais: 0 de 500 no mês, renovação em 1º de novembro, 0 de 50 no dia e o aviso de que as crianças da família dividem o mesmo total.',
+        384,
+        239,
       ),
     ],
     caption: 'O saldo de ajuda da IA do mês é um só para a família e aparece na Área dos pais.',
@@ -533,14 +537,14 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     frames: [
       tela(
         'pais-perfis',
-        'Gerenciar perfis',
-        'Gerenciar perfis na Área dos pais, com o perfil de uma criança, o botão Adicionar e a indicação 1 de 2 perfis do seu plano.',
-        640,
-        400,
+        'Família',
+        'Suas crianças, na Família da Área dos pais: o cartão de cada criança com o acesso Liberado, os números da jornada, o que fez na semana e os botões Acesso nos aparelhos e Ver progresso.',
+        1144,
+        550,
       ),
     ],
     caption:
-      'Cada criança tem o próprio perfil. A Área dos pais mostra quantos perfis cabem no plano.',
+      'Cada criança tem o próprio cartão na Área dos pais, com o acesso nos aparelhos e o progresso.'
   },
 }
 
