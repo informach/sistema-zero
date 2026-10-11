@@ -42,7 +42,7 @@ export function StudentAreaButton({
       }
     >
       <GraduationCap className="size-4" aria-hidden="true" />
-      {busy ? 'Abrindo a área do aluno…' : 'Ir para a área do aluno'}
+      {busy ? 'Abrindo a área da criança…' : 'Ir para a área da criança'}
     </button>
   )
 }

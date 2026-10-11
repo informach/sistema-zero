@@ -187,8 +187,8 @@ const divider = `<hr class="dvd" style="border:0;border-top:1px solid ${BORDER};
 
 /** Preparação do computador, em texto puro (WhatsApp) e em HTML (e-mail). */
 const DEVICE_SETUP = {
-  text: 'Depois de entrar como responsável, clique em Adicionar criança (ou escolha o perfil, se ele já existir) e abra Acesso nos aparelhos. Clique em Autorizar aparelho e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer Quem vai entrar?, ele clica em Eu sou aluno e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
-  html: 'Depois de entrar como responsável, clique em <strong>Adicionar criança</strong> (ou escolha o perfil, se ele já existir) e abra <strong>Acesso nos aparelhos</strong>. Clique em <strong>Autorizar aparelho</strong> e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, ele clica em <strong>Eu sou aluno</strong> e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
+  text: 'Depois de entrar como responsável, clique em Adicionar criança (ou escolha o perfil, se ele já existir) e abra Acesso nos aparelhos. Clique em Autorizar aparelho e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer Quem vai entrar?, ele clica em Eu sou criador(a) e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
+  html: 'Depois de entrar como responsável, clique em <strong>Adicionar criança</strong> (ou escolha o perfil, se ele já existir) e abra <strong>Acesso nos aparelhos</strong>. Clique em <strong>Autorizar aparelho</strong> e prepare o computador em que seu filho vai usar a plataforma, pelo prazo que você escolher. Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, ele clica em <strong>Eu sou criador(a)</strong> e entra no próprio perfil, sem a sua senha e sem o código do seu e-mail.',
 }
 
 /** Conta que já existia: a autorização feita antes continua valendo. */
@@ -286,7 +286,7 @@ const seeds = [
           'Para isso, você prepara o computador dele uma vez. Entre como responsável e, na <strong>Área dos pais</strong>, clique em <strong>Acesso nos aparelhos</strong> no cartão da criança. Depois clique em <strong>Autorizar aparelho</strong> e escolha o prazo. Se estiver no celular, escolha <strong>Em outro aparelho</strong> e passe o código para a criança digitar no computador dela.',
         ),
         p(
-          'Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, a criança clica em <strong>Eu sou aluno</strong> e escolhe o próprio perfil. Irmãos no mesmo computador recebem cada um a sua autorização, no cartão de cada criança.',
+          'Nesse computador, se aparecer <strong>Quem vai entrar?</strong>, a criança clica em <strong>Eu sou criador(a)</strong> e escolhe o próprio perfil. Irmãos no mesmo computador recebem cada um a sua autorização, no cartão de cada criança.',
         ),
         p('Os perfis, as criações e o progresso continuam guardados. Ninguém precisa recomeçar.'),
         ctaButton('Abrir a área dos pais', '{{link}}'),
@@ -310,7 +310,7 @@ const seeds = [
       'Olá, {{nome}}! Mudamos a forma de entrar na plataforma. Agora seu filho entra pelo próprio perfil, sem usar a sua senha nem o código que chega ao seu e-mail.',
       'Você prepara o computador dele uma vez: entre como responsável pelo link abaixo, clique em Acesso nos aparelhos no cartão da criança e depois em Autorizar aparelho. Se estiver no celular, escolha Em outro aparelho e passe o código para a criança digitar no computador dela.',
       '{{link}}',
-      'Nesse computador, se aparecer Quem vai entrar?, a criança clica em Eu sou aluno e escolhe o próprio perfil. Os perfis, as criações e o progresso continuam guardados.',
+      'Nesse computador, se aparecer Quem vai entrar?, a criança clica em Eu sou criador(a) e escolhe o próprio perfil. Os perfis, as criações e o progresso continuam guardados.',
     ].join('\n\n'),
   },
   {

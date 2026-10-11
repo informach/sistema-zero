@@ -240,7 +240,7 @@ describe('painel de aparelhos na área dos pais', () => {
     expect(
       await screen.findByText(/Este navegador está liberado para André até 10 de out\. de 2099/),
     ).toBeTruthy()
-    expect(screen.getByRole('button', { name: /Ir para a área do aluno/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Ir para a área da criança/ })).toBeTruthy()
     expect(submitted).toEqual({
       profileId,
       label: 'Notebook da sala',
@@ -419,7 +419,7 @@ describe('painel de aparelhos na área dos pais', () => {
     expect(screen.getByText(/No aparelho autorizado/)).toBeTruthy()
   })
 
-  test('o "Ir para a área do aluno" da confirmação faz a troca segura', async () => {
+  test('o "Ir para a área da criança" da confirmação faz a troca segura', async () => {
     const replace = spyOn(window.location, 'replace').mockImplementation(() => {})
     const paths: string[] = []
     const current = grant({ isCurrentDevice: true })
@@ -438,7 +438,7 @@ describe('painel de aparelhos na área dos pais', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Autorizar aparelho' }))
       fireEvent.click(screen.getByRole('radio', { name: /^Neste aparelho/ }))
       fireEvent.click(screen.getByRole('button', { name: 'Autorizar este aparelho' }))
-      fireEvent.click(await screen.findByRole('button', { name: /Ir para a área do aluno/ }))
+      fireEvent.click(await screen.findByRole('button', { name: /Ir para a área da criança/ }))
       await waitFor(() => expect(replace).toHaveBeenCalledWith('/perfis'))
       expect(paths).toContain('/api/study/leave')
     } finally {

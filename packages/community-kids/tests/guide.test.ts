@@ -56,7 +56,7 @@ describe('guia dos pais acompanha a autorização do aparelho', () => {
       'Em outro aparelho',
       'Autorizar este aparelho',
       'Gerar código',
-      'Ir para a área do aluno',
+      'Ir para a área da criança',
     ])
       expect(copy).toContain(`"${label}"`)
     expect(copy).not.toContain('Libere este navegador')
@@ -77,7 +77,7 @@ describe('guia dos pais acompanha a autorização do aparelho', () => {
       .map((step) => step.text)
       .join(' ')
     expect(copy).toContain('opcional')
-    expect(copy).toContain('Eu sou aluno')
+    expect(copy).toContain('Eu sou criador(a)')
     expect(copy).not.toMatch(/[—–“”]/)
   })
 })

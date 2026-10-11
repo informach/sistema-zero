@@ -23,7 +23,7 @@ describe('acesso infantil por aparelho nos templates (10/10/2026)', () => {
       'Acesso nos aparelhos',
       'Autorizar aparelho',
       'Quem vai entrar?',
-      'Eu sou aluno',
+      'Eu sou criador(a)',
     ]) {
       expect(constants.split(label).length - 1).toBeGreaterThanOrEqual(2) // texto e HTML
     }
@@ -43,7 +43,7 @@ describe('acesso infantil por aparelho nos templates (10/10/2026)', () => {
       'Acesso nos aparelhos',
       'Autorizar aparelho',
       'Em outro aparelho',
-      'Eu sou aluno',
+      'Eu sou criador(a)',
       'continuam guardados',
       'Abrir a área dos pais',
       'pelo link abaixo',

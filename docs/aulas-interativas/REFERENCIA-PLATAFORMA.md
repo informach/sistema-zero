@@ -23,21 +23,22 @@ e-mail nem a senha dos pais. Cada autorização vale para **um perfil num navega
 mesmo computador têm uma autorização cada, e escolher um irmão nunca abre o perfil dele sem a
 autorização dele. Os perfis, as criações e o progresso de antes continuam guardados.
 
-⚠️ **"Aluno" só existe dentro do rótulo exato** (**Eu sou aluno** e **Ir para a área do aluno**).
-Na fala da fase e no Como Fazer, quem entra é "você" ou "a criança", como em todo o vocabulário da
-aventura. Nunca peça a senha do responsável na fala.
+⚠️ **"Aluno" não aparece nem nos rótulos da entrada** (desde 10/10/2026, antes da produção: a
+criança clica em **Eu sou criador(a)** e o responsável em **Ir para a área da criança**). Na fala da
+fase e no Como Fazer, quem entra é "você" ou "a criança", como em todo o vocabulário da aventura.
+Nunca peça a senha do responsável na fala.
 
 Rótulos marcados com † foram decididos em 10/10/2026 e estão sendo aplicados nas telas por outra
 sessão; confira o código antes de gravar uma fala com eles.
 
 | Onde | Rótulos exatos |
 | --- | --- |
-| Escolha de entrada (`/login`; a raiz sem sessão também mostra esta escolha †) | Título **Quem vai entrar?**; cartões **Eu sou aluno** (subtítulo "Entre para continuar suas aventuras." †) e **Eu sou responsável**; link **Preciso de ajuda para entrar** |
+| Escolha de entrada (`/login`; a raiz sem sessão também mostra esta escolha †) | Título **Quem vai entrar?**; cartões **Eu sou criador(a)** (subtítulo "Entre para continuar suas aventuras." †) e **Eu sou responsável**; link **Preciso de ajuda para entrar** |
 | Entrada da criança, perfis (`/login/aluno`) | Título **Quem vai criar hoje?**; no cartão, **Entrar** ou **Pedir código**, o selo **Último perfil usado** e os avisos **O prazo deste acesso terminou.** e **Acesso encerrado neste aparelho.**; botão **Tenho um código**; links **Voltar** e **Preciso de ajuda** |
 | Entrada da criança, código | Títulos **Vamos começar?** ou **Vamos entrar, [nome]?**; campo **Código de acesso** † (era "Código do responsável"); botão **Entrar para criar**; **Voltar aos perfis**. A criança não tem mais "Remover estes perfis do aparelho" †: só a Área dos pais esquece o aparelho |
 | Avisos da entrada | **Foram muitas tentativas. Aguarde 10 minutos e tente novamente.**; **Esse código não liberou o acesso. Confira as letras ou peça um novo código ao responsável.**; **Não conseguimos preparar este navegador. Permita os cookies e tente novamente.**; **Este navegador já está sendo usado por outra família. Use outro navegador.** † |
 | Entrada do responsável (`/login/responsavel`) | Título **Área dos pais**; **Enviar código**, campo **Código enviado ao seu e-mail** † (os 6 dígitos do e-mail; não é o código da criança), **Entrar**, **Reenviar código**; **Entrar com senha** ou **Entrar com código por e-mail**; **Esqueci minha senha**; **Voltar à escolha de entrada** |
-| Área dos pais (`/pais`) | **Ir para a área do aluno**, **Compras**, **Trocar senha**, **Como preparar o acesso**; **Seus filhos**, **Adicionar criança**; no cartão da criança, **Acesso nos aparelhos** e **Editar perfil**; **Voltar aos filhos**. `/perfis` com a sessão do responsável leva a `/pais` † |
+| Área dos pais (`/pais`) | **Ir para a área da criança**, **Compras**, **Trocar senha**, **Como preparar o acesso**; **Seus filhos**, **Adicionar criança**; no cartão da criança, **Acesso nos aparelhos** e **Editar perfil**; **Voltar aos filhos**. `/perfis` com a sessão do responsável leva a `/pais` † |
 | Acesso nos aparelhos | **Autorizar aparelho**; **Neste aparelho** ou **Em outro aparelho**; **Nome do aparelho**; **Por quanto tempo?** com **Somente hoje**, **7 dias**, **30 dias** e **90 dias**; **Autorizar este aparelho** ou **Gerar código** (depois, **Gerar outro código**); **Copiar**; **Conferir se a criança já entrou**; situação **Liberado**, **Venceu** ou **Encerrado**; **Renovar prazo** (**Confirmar novo prazo**), **Mudar nome** e **Encerrar acesso** |
 | Menu do avatar da criança | **Trocar de perfil** (só crianças), **Meu perfil**, **Área dos pais** (encerra a sessão da criança e abre a entrada do responsável), **Sair**, que confirma em **Sair deste aparelho** |
 

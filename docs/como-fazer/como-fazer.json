@@ -1457,7 +1457,7 @@
           {
             "id": "escolher",
             "title": "Escolha seu nome",
-            "body": "Se aparecer **Quem vai entrar?**, clique em **Eu sou aluno**. Na tela **Quem vai criar hoje?**, confira o nome e o avatar e clique no seu perfil."
+            "body": "Se aparecer **Quem vai entrar?**, clique em **Eu sou criador(a)**. Na tela **Quem vai criar hoje?**, confira o nome e o avatar e clique no seu perfil."
           },
           {
             "id": "trocar",
@@ -2311,7 +2311,7 @@
           {
             "id": "aluno",
             "title": "Abra a entrada da criança",
-            "body": "Abra a comunidade no computador. Se aparecer **Quem vai entrar?**, clique em **Eu sou aluno**. Você não precisa de e-mail nem da senha do responsável."
+            "body": "Abra a comunidade no computador. Se aparecer **Quem vai entrar?**, clique em **Eu sou criador(a)**. Você não precisa de e-mail nem da senha do responsável."
           },
           {
             "id": "codigo",
@@ -2357,7 +2357,7 @@
           {
             "id": "abrir",
             "title": "Abra a comunidade",
-            "body": "Use o mesmo computador e o mesmo navegador em que você entrou antes. Se aparecer **Quem vai entrar?**, clique em **Eu sou aluno**."
+            "body": "Use o mesmo computador e o mesmo navegador em que você entrou antes. Se aparecer **Quem vai entrar?**, clique em **Eu sou criador(a)**."
           },
           {
             "id": "perfil",
@@ -2488,12 +2488,12 @@
           {
             "id": "neste",
             "title": "Neste aparelho: passe o computador",
-            "body": "Clique em **Autorizar este aparelho**. Depois, no alto da Área dos pais, clique em **Ir para a área do aluno**. A sua entrada de responsável termina e a criança escolhe o próprio perfil."
+            "body": "Clique em **Autorizar este aparelho**. Depois, no alto da Área dos pais, clique em **Ir para a área da criança**. A sua entrada de responsável termina e a criança escolhe o próprio perfil."
           },
           {
             "id": "outro",
             "title": "Em outro aparelho: passe o código",
-            "body": "Clique em **Gerar código** e depois em **Copiar**. No computador da criança, se aparecer **Quem vai entrar?**, ela clica em **Eu sou aluno** e digita o código em **Código de acesso**. O código vale por 10 minutos e libera um navegador só. O acesso vale pelo prazo que você escolheu, contado a partir do momento em que ela usa o código."
+            "body": "Clique em **Gerar código** e depois em **Copiar**. No computador da criança, se aparecer **Quem vai entrar?**, ela clica em **Eu sou criador(a)** e digita o código em **Código de acesso**. O código vale por 10 minutos e libera um navegador só. O acesso vale pelo prazo que você escolheu, contado a partir do momento em que ela usa o código."
           },
           {
             "id": "conferir",

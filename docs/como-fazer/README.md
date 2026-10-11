@@ -10,13 +10,13 @@ mudaram `plataforma-trocar-de-perfil` (sem os dois prints antigos) e `plataforma
 (o pedido de entrada no meio do caminho). **Nada disso foi publicado.** A situação de publicação
 descrita abaixo é histórica.
 
-- Os rótulos são os da tela nova: **Quem vai entrar?**, **Eu sou aluno**, **Código de acesso**,
+- Os rótulos são os da tela nova: **Quem vai entrar?**, **Eu sou criador(a)**, **Código de acesso**,
   **Entrar para criar**, **Tenho um código**, **Pedir código**, **Autorizar aparelho**,
   **Neste aparelho**, **Em outro aparelho**, **Gerar código**, **Copiar**, **Renovar prazo**,
   **Encerrar acesso** e os avisos exatos da entrada. A lista inteira, com as fontes, está na
   [referência da plataforma](../aulas-interativas/REFERENCIA-PLATAFORMA.md), seção "A entrada".
 - "Aluno" continua fora do texto da criança. O validador só aceita a palavra dentro de dois
-  rótulos em negrito: **Eu sou aluno** e **Ir para a área do aluno** (este, no guia do responsável).
+  rótulos em negrito: **Eu sou criador(a)** e **Ir para a área da criança** (este, no guia do responsável).
 - Os dois guias do responsável moram na mesma biblioteca da criança. Hoje `/como-fazer` só abre
   com a sessão da criança, então quem está na Área dos pais encontra o passo a passo na ajuda
   pública `/ajuda/entrar`; os guias servem à criança que lê junto com o responsável e ao Zappy.

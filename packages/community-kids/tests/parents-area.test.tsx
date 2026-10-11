@@ -203,7 +203,7 @@ describe('área dos pais', () => {
     const nav = screen.getByRole('navigation', { name: 'Ações do responsável' })
     expect(nav.className).toContain('[&_button]:min-h-11')
     expect(
-      within(nav).getByRole('button', { name: /Ir para a área do aluno/ }).className,
+      within(nav).getByRole('button', { name: /Ir para a área da criança/ }).className,
     ).toContain('min-h-11')
   })
 })

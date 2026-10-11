@@ -98,14 +98,14 @@ export function makeSendWelcome(deps: WelcomeEmailDeps): (lead: Lead) => Promise
         action = 'Criar senha da área dos pais'
         // A conta nova nasce SEM perfil: primeiro "Adicionar criança", depois o aparelho.
         guidance =
-          'Crie sua senha e entre como responsável. Na Área dos pais, clique em Adicionar criança (ou escolha o perfil, se ele já existir) e abra Acesso nos aparelhos para autorizar o computador da criança. Nesse computador, se aparecer Quem vai entrar?, ela clica em Eu sou aluno e entra no próprio perfil.'
+          'Crie sua senha e entre como responsável. Na Área dos pais, clique em Adicionar criança (ou escolha o perfil, se ele já existir) e abra Acesso nos aparelhos para autorizar o computador da criança. Nesse computador, se aparecer Quem vai entrar?, ela clica em Eu sou criador(a) e entra no próprio perfil.'
       } else {
         templateKey = isKids ? 'kids-new-access' : 'new-access'
         link = `${baseUrl}${isKids ? '/login/responsavel' : '/cursos'}`
         keyPrefix = 'new-access'
         action = 'Abrir a área dos pais'
         guidance =
-          'Entre como responsável com o código enviado ao seu e-mail ou com sua senha. Na Área dos pais, escolha o perfil da criança (ou clique em Adicionar criança) e confira Acesso nos aparelhos. No computador autorizado, se aparecer Quem vai entrar?, ela clica em Eu sou aluno e começa o Desafio.'
+          'Entre como responsável com o código enviado ao seu e-mail ou com sua senha. Na Área dos pais, escolha o perfil da criança (ou clique em Adicionar criança) e confira Acesso nos aparelhos. No computador autorizado, se aparecer Quem vai entrar?, ela clica em Eu sou criador(a) e começa o Desafio.'
       }
 
       const variables: Record<string, string> = { nome: firstName, link }

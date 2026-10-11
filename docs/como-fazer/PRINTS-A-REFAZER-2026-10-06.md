@@ -44,7 +44,7 @@ capturar:
 1. No Chrome de captura, entre como responsável (código do e-mail ou senha) e, na Área dos pais,
    abra **Acesso nos aparelhos** no cartão do perfil de teste (Lipe ou Leninha) →
    **Autorizar aparelho** → **Neste aparelho** → **Autorizar este aparelho** →
-   **Ir para a área do aluno**. Cada perfil de teste precisa da própria autorização.
+   **Ir para a área da criança**. Cada perfil de teste precisa da própria autorização.
 2. Para as telas do código, gere o código num navegador e digite em outro, ainda não autorizado:
    o código vale 10 minutos e é consumido ao entrar.
 3. As telas do responsável pedem uma sessão de responsável recente; mudar acessos pode pedir a
@@ -60,7 +60,7 @@ capturar:
 | `plataforma-trocar-de-perfil` · `escolher` | **Quem vai criar hoje?** com dois perfis, um com **Entrar** e outro com **Pedir código** | Navegador autorizado só para um dos perfis, sem sessão aberta (`/login/aluno`) |
 | `plataforma-trocar-de-perfil` · `selecionar` | Menu do avatar aberto com **Trocar de perfil**, **Meu perfil**, **Área dos pais** e **Sair** | Sessão de criança |
 | `plataforma-trocar-de-perfil` · `trocar` | Conferir: nome e avatar no menu da esquerda (provavelmente não muda) | Sessão de criança |
-| `plataforma-entrar-com-codigo` · `aluno` | **Quem vai entrar?** com **Eu sou aluno** destacado. Mesma captura de `plataforma-voltar-ao-meu-perfil` · `abrir` | Navegador sem sessão, na raiz |
+| `plataforma-entrar-com-codigo` · `aluno` | **Quem vai entrar?** com **Eu sou criador(a)** destacado. Mesma captura de `plataforma-voltar-ao-meu-perfil` · `abrir` | Navegador sem sessão, na raiz |
 | `plataforma-entrar-com-codigo` · `codigo` | Campo **Código de acesso** preenchido (embaçado) e **Entrar para criar** | Navegador não autorizado + código gerado na Área dos pais |
 | `plataforma-entrar-com-codigo` · `conferir` | Área da criança com o nome e o avatar dela no menu | Sessão de criança recém-aberta pelo código |
 | `plataforma-voltar-ao-meu-perfil` · `perfil` | Grade com o selo **Último perfil usado** | Navegador autorizado, sem sessão aberta |
@@ -74,7 +74,7 @@ capturar:
 | `plataforma-preparar-acesso-da-crianca` · `crianca` | **Seus filhos** com **Acesso nos aparelhos** destacado no cartão e **Adicionar criança** visível | Responsável |
 | `plataforma-preparar-acesso-da-crianca` · `autorizar` | Formulário com **Neste aparelho** e **Em outro aparelho** | Responsável |
 | `plataforma-preparar-acesso-da-crianca` · `prazo` | **Nome do aparelho** com "Computador de casa" e **Por quanto tempo?** em **90 dias** | Responsável |
-| `plataforma-preparar-acesso-da-crianca` · `neste` | Aparelho **Liberado** na lista e **Ir para a área do aluno** no alto | Responsável, depois de **Autorizar este aparelho** |
+| `plataforma-preparar-acesso-da-crianca` · `neste` | Aparelho **Liberado** na lista e **Ir para a área da criança** no alto | Responsável, depois de **Autorizar este aparelho** |
 | `plataforma-preparar-acesso-da-crianca` · `outro` | Cartão do código com **Copiar** e a validade de 10 minutos (código embaçado) | Responsável, depois de **Gerar código** |
 | `plataforma-preparar-acesso-da-crianca` · `conferir` | **Conferir se a criança já entrou** e o aparelho **Liberado** | Responsável, depois de a criança usar o código |
 | `plataforma-renovar-ou-encerrar-acesso` · `abrir` | Lista com aparelhos **Liberado**, **Venceu** e **Encerrado** | Responsável, perfil com três autorizações |

@@ -236,11 +236,11 @@ export function ParentsClient({
           </header>
           {studentDestination ? (
             <section role="status" className="kids-carta p-5">
-              <h2 className="sz-display text-xl">Esse link abre na área do aluno</h2>
+              <h2 className="sz-display text-xl">Esse link abre na área da criança</h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 A aula do link é da criança, não do responsável. Confira se o acesso dela está
-                preparado neste computador e clique em Ir para a área do aluno: a criança escolhe o
-                perfil e a aula abre em seguida.
+                preparado neste computador e clique em Ir para a área da criança: a criança escolhe
+                o perfil e a aula abre em seguida.
               </p>
             </section>
           ) : null}

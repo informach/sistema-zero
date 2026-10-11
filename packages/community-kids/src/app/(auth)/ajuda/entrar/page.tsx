@@ -16,8 +16,8 @@ export default function EntryHelpPage() {
       <section>
         <h2 className="sz-display text-xl">Como entro para criar?</h2>
         <p className="mt-2 text-sm">
-          Clique em <strong>Eu sou aluno</strong>. Se o seu nome aparecer, clique nele. Na primeira
-          vez neste navegador, digite o código que seu responsável preparou para você.
+          Clique em <strong>Eu sou criador(a)</strong>. Se o seu nome aparecer, clique nele. Na
+          primeira vez neste navegador, digite o código que seu responsável preparou para você.
         </p>
         <p className="mt-2 text-sm">
           Terminou por hoje? É só fechar a página. Se clicar em <strong>Sair</strong> e depois em{' '}
@@ -46,7 +46,7 @@ export default function EntryHelpPage() {
           </li>
           <li>
             Neste aparelho: clique em <strong>Autorizar este aparelho</strong>. Quando a criança for
-            usar o computador, clique em <strong>Ir para a área do aluno</strong>. Isso fecha seu
+            usar o computador, clique em <strong>Ir para a área da criança</strong>. Isso fecha seu
             acesso de responsável.
           </li>
           <li>

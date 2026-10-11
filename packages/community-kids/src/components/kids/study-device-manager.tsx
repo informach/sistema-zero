@@ -456,8 +456,8 @@ export function StudyDeviceManager({
       {liveCount > 0 ? (
         <p className="flex items-start gap-2 text-sm">
           <ShieldCheck className="size-5 shrink-0 text-primary" aria-hidden="true" />
-          Acesso preparado. No aparelho autorizado, {name} escolhe Eu sou aluno e clica no próprio
-          perfil para continuar até o prazo terminar.
+          Acesso preparado. No aparelho autorizado, {name} escolhe Eu sou criador(a) e clica no
+          próprio perfil para continuar até o prazo terminar.
         </p>
       ) : null}
       <p className="text-xs text-muted-foreground">

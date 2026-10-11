@@ -1,4 +1,4 @@
-import { GraduationCap, ShieldCheck } from 'lucide-react'
+import { ShieldCheck, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { AUTH_CARD } from '@/components/kids/auth-card'
@@ -35,9 +35,9 @@ export default async function LoginPage({
           href={links.student}
           className="kid-pop flex items-center gap-4 rounded-2xl border-2 border-primary bg-primary/10 p-5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
         >
-          <GraduationCap className="size-8 shrink-0 text-primary" aria-hidden="true" />
+          <Sparkles className="size-8 shrink-0 text-primary" aria-hidden="true" />
           <span>
-            <strong className="sz-display block text-2xl">Eu sou aluno</strong>
+            <strong className="sz-display block text-2xl">Eu sou criador(a)</strong>
             <span className="text-sm">Entre para continuar suas aventuras.</span>
           </span>
         </Link>

@@ -62,7 +62,7 @@ export function AccessCodeResult({
         <>
           <p className="mt-2 text-sm">
             No computador da criança, abra a plataforma neste endereço, clique em{' '}
-            <strong>Eu sou aluno</strong> e digite este código.
+            <strong>Eu sou criador(a)</strong> e digite este código.
           </p>
           {address ? (
             <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -134,8 +134,8 @@ export function CurrentDeviceReady({
         Este navegador está liberado para {name} até {formatAccessEnd(grant.expiresAt)}.
       </p>
       <p className="mt-2 text-sm">
-        Quando a criança for usar o computador, clique em Ir para a área do aluno. Isso fecha o seu
-        acesso de responsável neste navegador.
+        Quando a criança for usar o computador, clique em Ir para a área da criança. Isso fecha o
+        seu acesso de responsável neste navegador.
       </p>
       <div className="mt-3">
         <StudentAreaButton destination={studentDestination} />

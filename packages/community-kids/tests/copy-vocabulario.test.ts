@@ -191,24 +191,6 @@ interface Excecao {
  */
 const EXCECOES: Excecao[] = [
   {
-    arquivo: 'community-kids/src/lib/guide.ts',
-    trechos: [
-      'No aparelho autorizado, a criança entra em "Eu sou aluno" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área do aluno".',
-    ],
-    motivo: 'passo do tutorial exclusivo dos responsáveis, com os nomes dos botões aprovados',
-  },
-  {
-    arquivo: 'community-kids/src/app/(auth)/login/page.tsx',
-    trechos: ['Eu sou aluno'],
-    motivo:
-      'separação de entrada pedida expressamente pelo usuário; a aventura mantém seu vocabulário',
-  },
-  {
-    arquivo: 'community-kids/src/app/(auth)/ajuda/entrar/page.tsx',
-    trechos: ['Eu sou aluno', 'Ir para a área do aluno'],
-    motivo: 'ajuda de acesso cita só os nomes exatos dos botões aprovados pelo usuário',
-  },
-  {
     arquivo: 'member-shell/src/components/lesson-video-gate.tsx',
     trechos: ['A atividade abre depois que você assistir ao vídeo uma vez.', 'Atividade liberada.'],
     motivo:

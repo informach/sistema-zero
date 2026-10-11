@@ -1,6 +1,6 @@
 # Proposta: a criança entra pelo aparelho autorizado
 
-Análise de 10/10/2026. Proposta aprovada para implementação. A publicação depende da entrega conjunta de Auth, Gateway, Members, Kids e das orientações de acesso.
+Análise de 10/10/2026. Proposta aprovada para implementação. Ainda no mesmo dia, antes da produção, a entrada da criança passou de "Eu sou aluno" para **Eu sou criador(a)** e o botão dos pais para **Ir para a área da criança** (a área da criança não fala a língua da escola). A publicação depende da entrega conjunta de Auth, Gateway, Members, Kids e das orientações de acesso.
 
 A prioridade considerada é o uso no mesmo computador. Outros aparelhos são possíveis, mas ocasionais. O objetivo é tirar a dependência diária dos pais sem compartilhar a senha do responsável e sem exigir e-mail da criança.
 
@@ -16,7 +16,7 @@ O código serve para **conectar**, não para ser digitado em toda aula. Um códi
 2. Autorizar aquele perfil naquele computador. Se os irmãos compartilham o aparelho, criar uma autorização separada para cada um.
 3. Dar um nome ao acesso, como **Computador de casa**, e escolher o prazo.
 4. Selecionar **Este computador** ou **Outro computador**, inclusive pelo celular do responsável. No primeiro caso, confirmar em **Liberar este computador**; no segundo, usar **Gerar código**.
-5. A criança escolhe **Eu sou aluno**, digita o código uma vez e acessa o perfil autorizado.
+5. A criança escolhe **Eu sou criador(a)**, digita o código uma vez e acessa o perfil autorizado.
 6. Nas próximas visitas, vê **Continuar como André**. Na troca de perfil, a tela **Quem vai criar hoje?** permite escolher outra criança da família. Uma autorização válida abre o perfil; uma autorização ausente ou vencida leva ao código daquele perfil.
 
 Não é preciso criar outra conta, outro e-mail ou outra senha. O acesso utiliza os perfis existentes e preserva a atribuição do progresso já registrado na plataforma.
@@ -44,7 +44,7 @@ Tecnicamente, a conexão pertence ao **navegador**, não ao equipamento físico.
 A tela inicial pergunta **Como você quer entrar?** e oferece:
 
 - **Eu sou responsável** — “Acesse sua conta para cuidar dos perfis e acompanhar as crianças.” Permite entrar com senha ou código enviado ao e-mail e leva diretamente à área dos pais. Dentro do Kids, essa sessão dá acesso à área adulta, sem abrir uma sessão de aluno ao clicar no perfil que está sendo gerenciado. Se o responsável chegou por um link de compra, recuperação de senha ou ativação da conta, o fluxo preserva um destino válido para esse público.
-- **Eu sou aluno** — “Entre no seu perfil para continuar suas aventuras.” Em navegador novo, mostra **Digite o código que seu responsável preparou** e **Entrar**. Em navegador já autorizado, oferece continuar no perfil. Na seleção de outra criança, uma autorização válida permite entrar; se ela estiver ausente ou vencida, pede o código correspondente.
+- **Eu sou criador(a)** — “Entre no seu perfil para continuar suas aventuras.” Em navegador novo, mostra **Digite o código que seu responsável preparou** e **Entrar**. Em navegador já autorizado, oferece continuar no perfil. Na seleção de outra criança, uma autorização válida permite entrar; se ela estiver ausente ou vencida, pede o código correspondente.
 
 Se o aluno abrir diretamente uma fase e já tiver acesso válido, não deve ser obrigado a passar pela escolha de público novamente. Se precisar entrar, o destino da fase é preservado e conferido contra redirecionamentos externos.
 
@@ -62,7 +62,7 @@ O menu da criança passa a ter ações distintas:
 - **Área dos pais:** é um atalho para o login do responsável. Não reutiliza uma autorização adulta que ficou aberta antes de entregar o computador à criança.
 - **Sair:** pede confirmação para encerrar a sessão e a autorização daquele perfil naquele navegador. Explica: “Para entrar de novo neste perfil, você vai precisar de outro código.” Não afeta os irmãos nem aparelhos diferentes. Fechar a página ao terminar uma aula mantém a autorização, dentro do prazo escolhido. O “Sair” da área dos pais encerra a sessão adulta; as autorizações infantis continuam sob o controle de “Acesso nos aparelhos”.
 
-Na área dos pais, **Ir para a área do aluno** inicia a escolha da criança. A sessão de responsável termina quando a troca é concluída. O sistema valida a autorização do perfil naquele navegador antes de emitir a sessão infantil. Se ainda não existir, o responsável pode prepará-la na própria área dos pais; a simples escolha de um perfil não cria uma autorização implícita.
+Na área dos pais, **Ir para a área da criança** inicia a escolha da criança. A sessão de responsável termina quando a troca é concluída. O sistema valida a autorização do perfil naquele navegador antes de emitir a sessão infantil. Se ainda não existir, o responsável pode prepará-la na própria área dos pais; a simples escolha de um perfil não cria uma autorização implícita.
 
 | Situação | Resultado esperado |
 | --- | --- |
@@ -72,7 +72,7 @@ Na área dos pais, **Ir para a área do aluno** inicia a escolha da criança. A 
 | André escolhe Débora, com autorização válida para ela nesse navegador | Entra no perfil da Débora usando o prazo e as permissões dela |
 | André escolhe Débora, sem autorização válida para ela | Pede o código da Débora; não usa a autorização do André |
 | Aluno escolhe “Área dos pais” | Abre o login do responsável |
-| Responsável escolhe “Ir para a área do aluno” | Confere a autorização da criança, encerra o contexto adulto e abre o infantil |
+| Responsável escolhe “Ir para a área da criança” | Confere a autorização da criança, encerra o contexto adulto e abre o infantil |
 | Aluno abre diretamente o endereço da área dos pais | Exige login do responsável; a API também recusa o acesso infantil |
 | Responsável abre diretamente uma fase no Kids | Orienta a mudança para aluno; a sessão adulta não começa a estudar em nome da criança |
 
@@ -104,7 +104,7 @@ Dois cartões com a mesma importância, área inteira clicável, ícone e texto:
 
 | Escolha | Explicação |
 | --- | --- |
-| **Eu sou aluno** | Entre para continuar suas aventuras. |
+| **Eu sou criador(a)** | Entre para continuar suas aventuras. |
 | **Eu sou responsável** | Cuide dos perfis e do acesso das crianças. |
 
 Um link discreto **Preciso de ajuda para entrar** fica disponível sem login. A escolha de público não deve ter um botão adicional “Avançar”: clicar no cartão já abre a entrada correspondente. Nas telas seguintes, **Voltar** permite corrigir uma escolha feita por engano.
@@ -117,7 +117,7 @@ Título: **Entrada dos responsáveis**. Orientação: **Entre para cuidar dos pe
 
 Reutilizar os campos e os métodos existentes, com opções claras **Senha** e **Código por e-mail**. No modo senha, mostrar e-mail, senha, **Esqueci minha senha** e **Entrar**. No outro modo, mostrar e-mail e **Enviar código**; em seguida, campo do código recebido e **Entrar**. Os formulários usam rótulos visíveis, permitem colar e funcionam com gerenciadores de senha.
 
-O sucesso abre diretamente **Área dos pais**. O cabeçalho mantém esse nome visível, com a identificação do responsável. Clicar no cartão de uma criança abre seu gerenciamento; não inicia uma aula. A navegação adulta reúne perfis, acessos e as funções adultas já existentes, com **Ir para a área do aluno** como ação separada.
+O sucesso abre diretamente **Área dos pais**. O cabeçalho mantém esse nome visível, com a identificação do responsável. Clicar no cartão de uma criança abre seu gerenciamento; não inicia uma aula. A navegação adulta reúne perfis, acessos e as funções adultas já existentes, com **Ir para a área da criança** como ação separada.
 
 ### 3. Entrada do aluno: primeira vez e retorno
 
@@ -166,9 +166,9 @@ Dentro do perfil escolhido, **Novo acesso** abre uma página curta. No celular, 
 
 Os itens acima são a ordem do formulário, não três telas obrigatórias. A opção de aparelho determina os campos e a ação final. O perfil já escolhido não precisa ser selecionado novamente.
 
-Para outro computador, o resultado mostra o avatar, o código legível, **Copiar código**, validade do código e a instrução **No computador da criança, abra a plataforma, escolha Eu sou aluno e digite este código.** Exibir o endereço correto do ambiente como link para copiar. Explicar perto da validade: **Depois de usar o código, o acesso dura pelo prazo que você escolheu.** O tempo de 10 minutos pertence ao código, não ao tempo de estudo.
+Para outro computador, o resultado mostra o avatar, o código legível, **Copiar código**, validade do código e a instrução **No computador da criança, abra a plataforma, escolha Eu sou criador(a) e digite este código.** Exibir o endereço correto do ambiente como link para copiar. Explicar perto da validade: **Depois de usar o código, o acesso dura pelo prazo que você escolheu.** O tempo de 10 minutos pertence ao código, não ao tempo de estudo.
 
-Para o computador atual, a confirmação diz **Este navegador está liberado para André até [data].** A ação **Ir para a área do aluno** conclui a troca segura de sessão. A liberação, por si só, mantém o responsável em sua própria área até ele escolher essa ação.
+Para o computador atual, a confirmação diz **Este navegador está liberado para André até [data].** A ação **Ir para a área da criança** conclui a troca segura de sessão. A liberação, por si só, mantém o responsável em sua própria área até ele escolher essa ação.
 
 **Renovar acesso** apresenta o perfil, o aparelho, o prazo atual e a nova data. **Encerrar acesso** pede confirmação com o efeito exato: **André vai precisar de outro código para entrar neste navegador. Os trabalhos salvos na conta continuam guardados.** A ação se aplica somente ao vínculo exibido.
 
@@ -313,7 +313,7 @@ A ajuda infantil usa textos curtos e os nomes reais dos botões. Os procedimento
 
 Os conteúdos mínimos são:
 
-1. **Como entrar com meu código** — escolher “Eu sou aluno”, informar o código e reconhecer o próprio perfil.
+1. **Como entrar com meu código** — escolher “Eu sou criador(a)”, informar o código e reconhecer o próprio perfil.
 2. **Como voltar às minhas aventuras** — abrir no navegador autorizado e continuar no próprio perfil.
 3. **Como escolher ou trocar meu perfil** — atualizar o tutorial existente `plataforma-trocar-de-perfil`, mostrando a seleção entre crianças e a solicitação de código quando o perfil escolhido não tiver autorização válida.
 4. **Não consegui entrar** — orientar sobre código vencido ou já utilizado, acesso encerrado e navegador diferente. Essa ajuda precisa ser acessível antes do login.

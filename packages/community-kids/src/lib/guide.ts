@@ -192,7 +192,7 @@ export function parentWelcomeSteps({
       id: 'parent-3',
       emoji: '3️⃣',
       title: '3. A criança entra',
-      text: 'No aparelho autorizado, a criança entra em "Eu sou aluno" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área do aluno".',
+      text: 'No aparelho autorizado, a criança entra em "Eu sou criador(a)" e escolhe o próprio perfil. Se vocês usam este computador, clique antes em "Ir para a área da criança".',
     },
   ]
 }

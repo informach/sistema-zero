@@ -9,7 +9,7 @@ test('login oferece as duas entradas e o formulário do responsável valida sem 
   await page.goto('/login')
 
   await expect(page.getByRole('heading', { name: 'Quem vai entrar?' })).toBeVisible()
-  await expect(page.getByRole('link', { name: /Eu sou aluno/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: /Eu sou criador(a)/ })).toBeVisible()
   await page.getByRole('link', { name: /Eu sou responsável/ }).click()
 
   await expect(page).toHaveURL(/\/login\/responsavel/)
