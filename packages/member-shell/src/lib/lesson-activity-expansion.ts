@@ -31,6 +31,13 @@ function assinar(ouvinte: () => void) {
 const algumaAmpliada = () => ampliadas.size > 0
 const nenhumaNoServidor = () => false
 
+/**
+ * Para quem precisa saber FORA do React (o agendador de atualização da aula, `use-lesson-refresh`):
+ * a pergunta e a assinatura das mudanças.
+ */
+export const anyActivityExpandedNow = algumaAmpliada
+export const subscribeActivityExpanded = assinar
+
 /** Cada peça que amplia chama com o PRÓPRIO estado. Desmontar ampliada conta como fechar. */
 export function useReportActivityExpanded(expanded: boolean) {
   const chave = useRef<symbol | null>(null)

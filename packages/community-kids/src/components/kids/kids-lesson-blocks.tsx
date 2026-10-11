@@ -3,6 +3,7 @@
 import { CertificateBlockView } from '@sistemazero/member-shell/components/certificate-block'
 import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
+import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
 import { LessonVideo } from '@sistemazero/member-shell/components/lesson-video'
 import { MaterialsBlockView } from '@sistemazero/member-shell/components/materials-block'
 import { PintaBlockView } from '@sistemazero/member-shell/components/pinta/pinta-block'
@@ -250,14 +251,17 @@ function StudioBlockKids({
   fillHeight?: boolean
 }) {
   const router = useRouter()
+  const player = useLessonPlayer()
   const [shared, setShared] = useState<StudioShareResult | null>(null)
   // Ao fechar a celebração do Mural, REVALIDA os dados do servidor: publicar pode ter
   // feito o aluno SUBIR DE NÍVEL (marco course_showcased já gravado no members), e o
   // refresh re-busca a gamificação do layout → o LevelUpWatcher acende a festa do rank
   // logo em seguida (sequência: "no Mural!" → "subiu de nível!").
+  // Pelo agendador do player quando há um (junta pedidos e espera a atividade ampliada fechar).
   function closeShare() {
     setShared(null)
-    router.refresh()
+    if (player?.refreshAfterStudio) player.refreshAfterStudio()
+    else router.refresh()
   }
   return (
     <div className={cn('kids-unit-verde flex flex-col gap-3', fillHeight && 'min-h-0 flex-1')}>

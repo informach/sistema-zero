@@ -11,6 +11,7 @@ import {
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { upToDateWorkspaceIds } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
+import { useLessonRefresh } from '@sistemazero/member-shell/lib/use-lesson-refresh'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Check, CheckCircle2, Lock, X } from 'lucide-react'
 import Link from 'next/link'
@@ -72,6 +73,8 @@ export function LessonPlayer({
   lessonDraftsEnabled = false,
 }: Props) {
   const router = useRouter()
+  // Junta os pedidos e espera a atividade ampliada fechar (ver `use-lesson-refresh`).
+  const refreshLesson = useLessonRefresh(() => router.refresh())
   const learning = useLessonLearning(lesson, viewerId)
   // Uma nuvem por perfil e por aba (ver `lessonDraftCloudFor`): sobrevive à troca de fase e ao
   // StrictMode. No servidor não há nuvem (e o bloco não desenha nada sem ela).
@@ -189,7 +192,9 @@ export function LessonPlayer({
           course.milestones?.showcased === false,
         gamification: res?.gamification ?? null,
       })
-      router.refresh()
+      // A atualização da página espera a celebração fechar (11/10/2026): ela já mostra o retrato
+      // da resposta, e com um build novo no servidor o refresh viraria recarregamento e levaria a
+      // celebração embora. "Próxima fase" navega e traz os dados novos de qualquer jeito.
     } catch (error) {
       toast.error(conclusaoRecusada(error))
     } finally {
@@ -202,7 +207,6 @@ export function LessonPlayer({
     course.progress,
     course.careerSlot,
     course.milestones?.showcased,
-    router,
     lessonDrafts,
   ])
 
@@ -216,9 +220,9 @@ export function LessonPlayer({
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
-      refreshAfterLearning: () => router.refresh(),
-      refreshAfterQuiz: () => router.refresh(),
-      refreshAfterStudio: () => router.refresh(),
+      refreshAfterLearning: refreshLesson,
+      refreshAfterQuiz: refreshLesson,
+      refreshAfterStudio: refreshLesson,
       lessonDrafts,
       renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
       // O Zappy do aviso "Primeiro, assista ao vídeo" (curso com a opção ligada). Mudo: é um
@@ -247,7 +251,7 @@ export function LessonPlayer({
       course.slug,
       viewerWatermark,
       viewerId,
-      router,
+      refreshLesson,
       lessonDrafts,
     ],
   )
@@ -467,7 +471,10 @@ export function LessonPlayer({
           // Próxima na ORDEM (ignora a trava): concluir esta aula já liberou a próxima.
           nextHref={nextLessonHref}
           courseHref={courseHref}
-          onClose={() => setCelebration(null)}
+          onClose={() => {
+            setCelebration(null)
+            refreshLesson()
+          }}
         />
       ) : null}
     </LessonPlayerProvider>

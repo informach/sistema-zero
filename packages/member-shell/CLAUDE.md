@@ -1,5 +1,33 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## A atualização da aula não derruba a atividade (11/10/2026)
+
+Relato dela (staging, Cadê aula 2 parte 3): com o Estúdio AMPLIADO, "Verificar esta parte"
+recarregou a página inteira e o editor voltou ao modo reduzido; numa segunda vez, "recarregou os
+bloquinhos". Duas causas, quatro regras:
+
+- **No Next 16 o `router.refresh()` vira `location.replace`** quando o build do servidor mudou
+  desde que a aba abriu (todo deploy; o app não fixa `deploymentId`), quando a resposta não é
+  Flight (401/403/5xx, redirect) ou quando a árvore diverge duas vezes. A página nova nasce sem
+  nada ampliado.
+- **O agendador `lib/use-lesson-refresh.ts` (`useLessonRefresh`)**: os dois players passam
+  `refreshAfterLearning/Quiz/Studio` por ele. Ele JUNTA os pedidos do mesmo gesto (um refresh só)
+  e ESPERA a atividade ampliada fechar (`anyActivityExpandedNow`/`subscribeActivityExpanded` do
+  `lesson-activity-expansion`), quando dispara o pendente. Ampliada, a atividade cobre o rodapé
+  com "Próxima parte", então nada se perde esperando. ⚠️ Nunca ligue `router.refresh()` cru no
+  contexto do player (`community-kids/tests/lesson-refresh.test.tsx` lê as duas fontes).
+- **A semente do Estúdio da fase roda uma vez por rascunho**: o efeito lê `content.initialProject`,
+  `content.chain` e `studioState.submitted` por `sementeRef`. Nas dependências, o conteúdo chegava
+  com identidade nova a cada refresh RSC, o efeito re-semeava e o `StudioCore` desmontava o Shell
+  (blocos, código, prévia, desfazer). Conteúdo novo de verdade muda `blockRevision`, que remonta
+  pela `key`. Pelo mesmo motivo o jogo pronto (`project-play-activity`) prende o projeto com
+  `useState` (o `useMemo` remontava o iframe e reiniciava a partida). ⚠️ O refresh NÃO remonta o
+  bloco: as keys do player são estáveis.
+- **Só atualiza quando muda algo que a página precisa**: o "Verificar esta parte" só quando passou
+  (como o "Verificar minha ação"); a tentativa da experiência e a do jogo pronto/pergunta só na
+  PRIMEIRA vez que passam (o progresso já vem na resposta). No Kids, o refresh do "Concluir fase"
+  espera a celebração fechar.
+
 ## Rascunho da fase guardado na conta (10/10/2026)
 
 O Estúdio e o Pinta da FASE passam a guardar o rascunho na conta sozinhos (selo "Guardado na sua

@@ -78,12 +78,14 @@ function writeSharedFlag(projectId: string): void {
   }
 }
 
-// "Expandir" (overlay de tela cheia) é estado de VISTA efêmero, mas precisa SOBREVIVER ao
-// router.refresh() que o "Enviar para o professor" dispara: o refresh re-monta o bloco (o
-// servidor re-renderiza a aula com submitted:true) e um useState comum voltaria a false — a
-// criança caía da tela cheia ao enviar. Guardamos por projeto num Map de MÓDULO (sobrevive ao
-// refresh e à re-montagem no mesmo load; um F5 real limpa = volta ao normal). Só "Reduzir" ou
-// Esc tiram da tela cheia — nunca o envio.
+// "Expandir" (overlay de tela cheia) é estado de VISTA efêmero, mas precisa SOBREVIVER a uma
+// remontagem do bloco na mesma página (ex.: a revisão do bloco mudou): um useState comum voltaria a
+// false e a criança cairia da tela cheia. Guardamos por projeto num Map de MÓDULO (um F5 real limpa
+// = volta ao normal). ⚠️ Correção de 11/10/2026: o `router.refresh()` NÃO remonta o bloco (as keys
+// do player são estáveis); o que voltava do zero era o Shell do editor, re-semeado pelo efeito de
+// semente (ver `sementeRef`). E com um build novo no servidor o refresh vira recarregamento da
+// página, que zera o Map: por isso o player ADIA as atualizações enquanto há atividade ampliada
+// (`useLessonRefresh`). Só "Reduzir" ou Esc tiram da tela cheia, nunca o envio.
 const expandedByProject = new Map<string, boolean>()
 
 interface Props {
@@ -180,6 +182,21 @@ export function StudioBlockView({
           fingerprint: studioState.contentFingerprint ?? null,
         }
       : null
+  // O que a semente lê do bloco, num ref (11/10/2026). O conteúdo chega com identidade NOVA a cada
+  // `router.refresh()` da aula, mesmo sem mudar nada: nas dependências do efeito abaixo, toda
+  // atualização (Verificar, vídeo a 90%, quiz, envio) re-semeava o editor, e o `StudioCore`
+  // desmontava o Shell inteiro (blocos, código e prévia voltavam do zero; o relato foi "recarregou
+  // os bloquinhos"). Conteúdo novo DE VERDADE muda a revisão do bloco, e o player remonta pela `key`.
+  const sementeRef = useRef({
+    initialProject: content.initialProject,
+    chain: content.chain,
+    submitted: studioState?.submitted ?? false,
+  })
+  sementeRef.current = {
+    initialProject: content.initialProject,
+    chain: content.chain,
+    submitted: studioState?.submitted ?? false,
+  }
   const [seed, setSeed] = useState<Project | null>(null)
   const [seedLoadFailure, setSeedLoadFailure] = useState<{
     projectId: string
@@ -396,15 +413,14 @@ export function StudioBlockView({
           console.warn('[rascunho-da-fase] não deu para trazer a versão da conta', error)
         }
       }
+      const semente = sementeRef.current
       const project = await resolveStudioLessonSeed({
         local: () => mod.createLocalPersistenceAdapter().load(projectId),
         submitted:
-          lessonId && studioState?.submitted
-            ? () => readSavedProject('studio-submission')
-            : undefined,
+          lessonId && semente.submitted ? () => readSavedProject('studio-submission') : undefined,
         carryover:
-          content.chain && lessonId ? () => readSavedProject('studio-carryover') : undefined,
-        initial: { ...(content.initialProject as Project), id: projectId },
+          semente.chain && lessonId ? () => readSavedProject('studio-carryover') : undefined,
+        initial: { ...(semente.initialProject as Project), id: projectId },
       })
       if (active) setSeed(project)
     })().catch(() => {
@@ -415,18 +431,7 @@ export function StudioBlockView({
     return () => {
       active = false
     }
-  }, [
-    projectId,
-    content.initialProject,
-    content.chain,
-    lessonId,
-    blockId,
-    studioState?.submitted,
-    seedLoadAttempt,
-    channel,
-    backupId,
-    aoConflitar,
-  ])
+  }, [projectId, lessonId, blockId, seedLoadAttempt, channel, backupId, aoConflitar])
 
   // "Expandir" é uma SOBREPOSIÇÃO em tela cheia por CSS (não a Fullscreen API nativa): a
   // API restringe a pintura à subárvore do elemento, então menus/diálogos PORTALADOS no
@@ -445,8 +450,9 @@ export function StudioBlockView({
     return () => window.removeEventListener('keydown', onKey)
   }, [expanded])
 
-  // Espelha o estado atual no Map de módulo → sobrevive ao router.refresh()/re-montagem do
-  // envio (o initializer acima o restaura). Fonte única p/ toggle, Esc e "Reduzir".
+  // Espelha o estado atual no Map de módulo: sobrevive a uma remontagem do bloco dentro da mesma
+  // página (o initializer acima o restaura). Um recarregamento da página zera o Map. Fonte única
+  // p/ toggle, Esc e "Reduzir".
   useEffect(() => {
     expandedByProject.set(projectId, expanded)
   }, [projectId, expanded])

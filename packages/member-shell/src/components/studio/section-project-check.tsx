@@ -45,7 +45,10 @@ function CheckStage({ handleRef }: { handleRef: RefObject<StudioHandle | null> }
       )
       setFeedback(result.passed ? verificacao.cumprido : verificacao.faltou)
       setResults(result.results)
-      player.refreshAfterLearning?.()
+      // Só quando passou (11/10/2026), como o "Verificar minha ação": a resposta "ainda não" não
+      // muda nada na aula, e cada atualização da página custava o modo ampliado (com build novo no
+      // servidor ela vira recarregamento) e refazia a página inteira no servidor.
+      if (result.passed) player.refreshAfterLearning?.()
     } catch (error) {
       const padrao = 'Não foi possível verificar. Seu projeto continua aqui; tente novamente.'
       // ⚠️ O erro da API é um objeto simples (`ApiError`), não um `Error`: com `instanceof

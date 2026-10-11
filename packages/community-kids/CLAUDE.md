@@ -85,6 +85,15 @@ de número, menu ⋯ acessível) em `app/pais/_components/parent-ui.tsx`.
 - Conferência visual sem login: `tmp/pais/` (fora do git) monta as telas com dados de mentira
   (`bun tmp/pais/serve.ts`, porta 5310; `bash tmp/pais/foto.sh <tela> <largura> <altura>`).
 
+## A atualização da aula espera a atividade ampliada (11/10/2026)
+
+O `lesson-player-client` liga `refreshAfterLearning/Quiz/Studio` ao `useLessonRefresh` do
+member-shell (junta pedidos e espera a atividade ampliada fechar; ver o CLAUDE.md de lá), e o
+refresh do "Concluir fase" roda quando a celebração FECHA (ela já mostra o retrato da resposta, e
+um build novo no servidor transformaria o refresh em recarregamento). O fechamento da
+`MuralCelebration` (`kids-lesson-blocks.tsx`) passa pelo mesmo agendador. Testes:
+`tests/lesson-refresh.test.tsx` e o jogo pronto em `tests/project-play-save.test.tsx`.
+
 ## Rascunho da fase guardado na conta (10/10/2026)
 
 A implementação do contrato `LessonDraftCloud` do member-shell (ver o CLAUDE.md de lá) mora em
