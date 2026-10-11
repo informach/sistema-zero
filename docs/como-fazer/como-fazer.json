@@ -2332,7 +2332,9 @@
           {
             "id": "pegar",
             "title": "Pegue seu certificado",
-            "body": "Na fase **Seu certificado**, abra a parte **Comemore sua criação**, assista ao vídeo e clique em **Pegar meu certificado**. Espere o PDF baixar antes de sair."
+            "body": "Na fase **Seu certificado**, abra a parte **Comemore sua criação**, assista ao vídeo e clique em **Pegar meu certificado**. Espere o PDF baixar antes de sair.",
+            "imageUrl": "https://cdn.sistemazero.com.br/kids/como-fazer/plataforma-pegar-certificado/pegar-435987dad76a0691.webp",
+            "imageAlt": "Parte Comemore sua criação da fase do certificado, com a fala do Zappy e o cartão Certificado de Criador; o botão Pegar meu certificado está destacado."
           },
           {
             "id": "guardar",

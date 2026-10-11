@@ -417,3 +417,7 @@ Estes prints mostram uma parte da tela em que o rótulo antigo só aparece se o 
   Aparência e selecionar), com 5 prints do "asteroide" da Leninha já na interface nova.
 - As três telas do Pinta nas páginas de venda (`tela-pinta`, `tela-pinta-vetor`, `tela-animacao`)
   ficam com os desenhos do Lipe, mesmo com a caixa do vetor antiga (decisão da dona).
+- `plataforma-pegar-certificado/pegar` ganhou print em 11/10/2026: a captura da dona na conta da
+  Leninha no staging (certificado apagado no banco do staging para voltar ao estado de antes da
+  emissão; cópia do registro em `.cache/certificado-leninha-staging-backup-2026-10-11.json`),
+  recortada e com o destaque padrão. O passo `guardar` segue só com texto.
