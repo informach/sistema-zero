@@ -3,6 +3,7 @@ import { createAsset } from '@sistemazero/pinta/assets'
 import { createEditorStore } from '../../pinta/src/state/editorStore'
 import {
   createLessonDraftCoordinator,
+  LESSON_DRAFT_OUTDATED,
   type LessonDraftChannel,
   type LessonDraftEditor,
   LessonDraftSaveError,
@@ -285,4 +286,26 @@ test('as partes que cada ação fecha: avançar até o destino, voltar nada, con
   expect(upToDateWorkspaceIds(sections, 4, 1)).toEqual([])
   expect(upToDateWorkspaceIds(sections, 3, sections.length)).toEqual(['desenho'])
   expect(upToDateWorkspaceIds(sections, 0, sections.length)).toEqual(['projeto', 'desenho'])
+})
+
+test('página desatualizada: o erro diz para atualizar, e repetir não é oferecido', async () => {
+  const outdated = channel(async () => {
+    throw Object.assign(new Error('versão mais nova'), { code: LESSON_DRAFT_OUTDATED })
+  })
+  const cloud = createLessonDraftCoordinator({ studio: outdated, pinta: outdated })
+  cloud.registerEditor(
+    'lesson',
+    'studio',
+    'block',
+    editor(async () => {}),
+  )
+  const erro = await cloud
+    .withSavedDrafts('lesson', async () => {}, { confirm: ['block'] })
+    .catch((e: unknown) => e)
+  expect(erro).toBeInstanceOf(LessonDraftSaveError)
+  const salvo = erro as LessonDraftSaveError
+  expect(salvo.code).toBe('PAGE_OUTDATED')
+  expect(salvo.outdated).toBe(true)
+  expect(salvo.viewerChanged).toBe(false)
+  expect(salvo.message).toContain('Atualizar')
 })

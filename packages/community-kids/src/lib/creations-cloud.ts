@@ -57,6 +57,17 @@ export interface CloudSyncState {
   lastError: string | null
 }
 
+/**
+ * O estado de UM item (o selo de um bloco da fase): o que a fila sabe dele, sem misturar com os
+ * outros itens da mesma ferramenta. `code` = o código da última falha (`CREATION_CLIENT_OUTDATED`:
+ * esta página é mais antiga que o conteúdo; só uma página nova resolve).
+ */
+export interface CloudItemState {
+  status: CloudSyncStatus
+  lastError: string | null
+  code: string | null
+}
+
 export interface CreationMeta {
   /** Versão do formato nativo; ausente = 1 para clientes legados. */
   formatVersion?: number
@@ -196,6 +207,10 @@ export interface CreationsCloud {
   confirm(itemId: string, options?: { timeoutMs?: number }): Promise<void>
   getState(): CloudSyncState
   subscribe(listener: (state: CloudSyncState) => void): () => void
+  /** O estado de UM item: `idle` antes de ele entrar na fila nesta página. */
+  getItemState(itemId: string): CloudItemState
+  /** Avisa quando o estado de algum item PODE ter mudado (releia com `getItemState`). */
+  subscribeItems(listener: () => void): () => void
   /**
    * Desliga listeners de janela e impede passos NOVOS. O passo em voo termina (a rede
    * já foi gasta); `{ abort: true }` corta até ele (testes / troca brusca de perfil).
@@ -487,12 +502,19 @@ export function createCreationsCloud(options: {
   const conflicts = new Set<{ itemId: string; done: Promise<void> }>()
   /** A última falha de cada item, até ele voltar à fila: o `confirm` rejeita com ela. */
   const failedItems = new Map<string, { message: string; code?: string }>()
+  /** Os itens que entraram na fila nesta página (antes disso o selo do item não diz nada). */
+  const seen = new Set<string>()
+  const itemListeners = new Set<() => void>()
+  const notifyItems = (): void => {
+    for (const listener of itemListeners) listener()
+  }
   /** Acorda quem espera um item (`confirm`) a cada passo da fila, sem esperar a fila inteira. */
   let progress = deferred()
   const signalProgress = (): void => {
     const current = progress
     progress = deferred()
     current.resolve()
+    notifyItems()
   }
   const listeners = new Set<(state: CloudSyncState) => void>()
   let state: CloudSyncState = {
@@ -965,12 +987,17 @@ export function createCreationsCloud(options: {
             .then(() => {
               if (!disposed && pending.size === 0 && !running) setState({ status: 'saved' })
             })
-            .catch(() => {
+            .catch((cause: unknown) => {
+              // A versão da outra máquina é de um editor mais novo que o desta página: tentar de
+              // novo aqui daria sempre o mesmo erro. O recado pede a página nova.
+              const outdated =
+                (cause as { code?: string } | null)?.code === 'CREATION_CLIENT_OUTDATED'
+              const message = outdated ? CLOUD_MESSAGES.clientOutdated : CLOUD_MESSAGES.staleFailed
               failedItems.set(itemId, {
-                message: CLOUD_MESSAGES.staleFailed,
-                code: 'CREATION_STALE_BASE',
+                message,
+                code: outdated ? 'CREATION_CLIENT_OUTDATED' : 'CREATION_STALE_BASE',
               })
-              if (!disposed) setState({ status: 'error', lastError: CLOUD_MESSAGES.staleFailed })
+              if (!disposed) setState({ status: 'error', lastError: message })
             })
             .finally(() => {
               conflicts.delete(conflict)
@@ -1107,8 +1134,10 @@ export function createCreationsCloud(options: {
     onStale?: StaleListener,
   ): void {
     failedItems.delete(itemId)
+    seen.add(itemId)
     pending.set(itemId, { kind: 'upload', produce, onUploaded, onStale, failures: 0 })
     schedule(idleMs)
+    notifyItems()
   }
 
   function enqueueRemove(
@@ -1118,9 +1147,26 @@ export function createCreationsCloud(options: {
     onStale?: StaleListener,
   ): void {
     failedItems.delete(itemId)
+    seen.add(itemId)
     pending.set(itemId, { kind: 'remove', baseRevision, onRemoved, onStale, failures: 0 })
     // Apagar não espera o debounce: a criança pode fechar a aba logo depois.
     schedule(0)
+    notifyItems()
+  }
+
+  function getItemState(itemId: string): CloudItemState {
+    if (!supported)
+      return { status: 'unsupported', lastError: CLOUD_MESSAGES.unsupported, code: null }
+    const failure = failedItems.get(itemId)
+    if (failure) return { status: 'error', lastError: failure.message, code: failure.code ?? null }
+    const busy = pending.has(itemId) || [...conflicts].some((entry) => entry.itemId === itemId)
+    if (busy)
+      return {
+        status: state.status === 'offline' ? 'offline' : 'saving',
+        lastError: null,
+        code: null,
+      }
+    return { status: seen.has(itemId) ? 'saved' : 'idle', lastError: null, code: null }
   }
 
   /** Roda já o que só esperava o debounce (sem acordar a espera de uma nova tentativa). */
@@ -1221,6 +1267,13 @@ export function createCreationsCloud(options: {
       listeners.add(listener)
       return () => {
         listeners.delete(listener)
+      }
+    },
+    getItemState,
+    subscribeItems(listener) {
+      itemListeners.add(listener)
+      return () => {
+        itemListeners.delete(listener)
       }
     },
     dispose(opts) {

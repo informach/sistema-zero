@@ -11,7 +11,11 @@
  */
 import { studioContentFingerprint } from '@sistemazero/core/creations'
 import type { Project } from '@sistemazero/studio'
-import type { LessonDraftChannel, LessonDraftRemote } from '../../lib/lesson-draft-cloud'
+import {
+  type LessonDraftChannel,
+  LessonDraftOutdatedError,
+  type LessonDraftRemote,
+} from '../../lib/lesson-draft-cloud'
 import { decideLessonDraftSeed } from '../../lib/lesson-draft-seed'
 
 type StudioModule = typeof import('@sistemazero/studio')
@@ -53,7 +57,26 @@ async function gravar(studio: StudioDraftDeps['studio'], raw: unknown, id: strin
   return conferido.project as Project
 }
 
-/** Guarda a cópia da conta como a "outra versão" deste navegador. */
+/** A recusa diz que o documento é mais NOVO que esta página (só a página atualizada o lê). */
+function paginaAntiga(cause: unknown): boolean {
+  const erro = cause as { name?: string; code?: string; path?: string } | null
+  if (erro?.name !== 'ProjectDocumentError') return false
+  return (
+    erro.code === 'future-format' ||
+    (erro.code === 'invalid-document' && erro.path === '$.blocksState')
+  )
+}
+
+/**
+ * Guarda a cópia da conta como a "outra versão" deste navegador.
+ *
+ * O servidor só aceita uma revisão do Estúdio depois de conferi-la com o Estúdio do deploy de agora
+ * (`validateStudioCreationSnapshot` no commit). Se ESTA página recusa o documento por ser NOVO
+ * demais para ela (`ProjectDocumentError` de formato futuro, ou blocos que ela não conhece), é a
+ * página que está com o Estúdio antigo: `LessonDraftOutdatedError`, e a fila para de tentar até a
+ * página ser atualizada. ⚠️ Outra recusa (ids repetidos, limite de blocos) não melhora com a página
+ * nova e segue como falha comum (full review de 11/10/2026).
+ */
 export async function keepRemoteAsOther(
   deps: StudioDraftDeps,
   remote: LessonDraftRemote,
@@ -62,7 +85,12 @@ export async function keepRemoteAsOther(
     .loadProjectSnapshotForCloud(deps.projectId, AULA)
     .catch(() => null)
   const raw = await remote.load((local?.assets as unknown[] | undefined) ?? [])
-  await gravar(deps.studio, raw, deps.backupId)
+  try {
+    await gravar(deps.studio, raw, deps.backupId)
+  } catch (cause) {
+    if (paginaAntiga(cause)) throw new LessonDraftOutdatedError(cause)
+    throw cause
+  }
 }
 
 /**

@@ -107,6 +107,8 @@ function fakeCloud(remote: Map<string, { summary: CloudCreationSummary; json: st
     },
     getState: () => ({ status: 'idle', pending: 0, lastSavedAt: null, lastError: null }),
     subscribe: () => () => {},
+    getItemState: () => ({ status: 'idle', lastError: null, code: null }),
+    subscribeItems: () => () => {},
     dispose: () => {},
   }
   return { cloud, uploads, removed, lists }

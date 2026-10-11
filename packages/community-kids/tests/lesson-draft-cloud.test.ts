@@ -4,6 +4,7 @@
  * impressão e a base, o commit, o tíquete com o relógio do servidor e a recusa por base vencida.
  */
 import { describe, expect, test } from 'bun:test'
+import { LessonDraftOutdatedError } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
 import { type FetchLike, gunzipToText, gzipText } from '../src/lib/creations-cloud'
 import { createMemorySyncedMarks } from '../src/lib/creations-sync'
 import { createLessonDraftCloud } from '../src/lib/lesson-draft-cloud'
@@ -253,7 +254,7 @@ describe('o canal do rascunho da fase', () => {
       formatVersion: 1,
     })
     expect(nuvem.pinta.mark(BLOCO)).toEqual({ revision: 1, updatedAt: 1_000 })
-    expect(nuvem.pinta.getState().status).toBe('saved')
+    expect(nuvem.pinta.getState(BLOCO).status).toBe('saved')
     // Nada mudou desde a última subida: zero HTTP.
     nuvem.pinta.enqueue(BLOCO, async () => ({
       document: desenho('a'),
@@ -420,4 +421,77 @@ describe('o conflito na subida (full review, 10/10/2026)', () => {
     // O descarte espera até 5 s pelo bloco que nunca sobe.
     await cloud.dispose()
   }, 15_000)
+})
+
+describe('o selo do bloco e a página desatualizada (11/10/2026)', () => {
+  const OUTRO = '33333333-3333-4333-8333-333333333333'
+  const produzir = (marca: string) => async () => ({
+    document: desenho(marca),
+    name: marca,
+    kind: 'pixel-background',
+    updatedAt: 2_000,
+    fingerprint: `v1:${marca.repeat(64)}`,
+  })
+
+  test('o erro de um bloco não pinta o selo do vizinho', async () => {
+    const s = servidor()
+    const cloud = createLessonDraftCloud({
+      viewerId: VIEWER,
+      fetch: async (input, init) =>
+        // A conta recusa o primeiro bloco (sem acesso); o vizinho sobe normal.
+        String(input).includes(`/${BLOCO}/upload`)
+          ? json(403, { error: { code: 'ACCESS_DENIED', message: 'não' } })
+          : s.fetchImpl(input, init),
+      marks: { pinta: createMemorySyncedMarks() },
+    })
+    let avisos = 0
+    const desligar = cloud.pinta.subscribe(() => {
+      avisos += 1
+    })
+    const NUNCA = '44444444-4444-4444-8444-444444444444'
+    expect(cloud.pinta.getState(NUNCA).status).toBe('idle')
+    cloud.pinta.enqueue(BLOCO, produzir('a'))
+    cloud.pinta.enqueue(OUTRO, produzir('b'))
+    expect(cloud.pinta.getState(OUTRO).status).toBe('saving')
+    await cloud.flushAll(5_000)
+    expect(cloud.pinta.getState(BLOCO).status).toBe('error')
+    expect(cloud.pinta.getState(OUTRO)).toEqual({ status: 'saved', message: null })
+    expect(cloud.pinta.getState(NUNCA).status).toBe('idle')
+    expect(avisos).toBeGreaterThan(0)
+    desligar()
+    await cloud.dispose()
+  })
+
+  test('versão da conta mais nova que a página: o selo pede atualizar e a fila para de tentar', async () => {
+    const s = servidor()
+    // Este aparelho conhecia a revisão 1; outro computador, já com a página nova, subiu a 2.
+    await s.outroAparelho('lesson-pinta', desenho('x'), `v1:${'x'.repeat(64)}`)
+    const marks = createMemorySyncedMarks()
+    marks.set(BLOCO, 500, 1)
+    await s.outroAparelho('lesson-pinta', desenho('n'), `v1:${'n'.repeat(64)}`)
+    const cloud = createLessonDraftCloud({
+      viewerId: VIEWER,
+      fetch: s.fetchImpl,
+      marks: { pinta: marks },
+    })
+    let conflitos = 0
+    const onConflict = async () => {
+      conflitos += 1
+      throw new LessonDraftOutdatedError()
+    }
+    cloud.pinta.enqueue(BLOCO, produzir('a'), onConflict)
+    const erro = await cloud.pinta.confirm(BLOCO, 3_000).catch((e: unknown) => e)
+    expect((erro as { code?: string }).code).toBe('CREATION_CLIENT_OUTDATED')
+    const estado = cloud.pinta.getState(BLOCO)
+    expect(estado.status).toBe('error')
+    expect(estado.outdated).toBe(true)
+    // Cada salvamento novo não baixa a versão da conta só para falhar do mesmo jeito.
+    const reservas = s.reservas.length
+    cloud.pinta.enqueue(BLOCO, produzir('b'), onConflict)
+    await cloud.flushAll(2_000)
+    expect(s.reservas.length).toBe(reservas)
+    expect(conflitos).toBe(1)
+    expect(cloud.pinta.getState(BLOCO).outdated).toBe(true)
+    await cloud.dispose()
+  })
 })

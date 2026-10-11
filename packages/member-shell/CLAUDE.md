@@ -10,7 +10,10 @@ contexto: a comunidade adulta não liga nada disso.
 
 - **Contrato** em `lib/lesson-draft-cloud.ts` (`LessonDraftChannel`: `supported`, `mark`/`setMark`,
   `peek` (o bilhete, sem baixar o blob), `enqueue(blockId, produce, onConflict?)`, `flush`,
-  `confirm(blockId, timeoutMs?)`, `getState`/`subscribe`). `LessonDraftCloud` reúne os canais,
+  `confirm(blockId, timeoutMs?)`, `getState(blockId)`/`subscribe(listener)`). ⭐ Desde 11/10/2026 o
+  estado é do BLOCO (`getState(blockId)`; `subscribe` só avisa que algo pode ter mudado e
+  `useLessonDraftState(channel, blockId)` relê): antes a pílula mostrava a fila da ferramenta
+  inteira, e o erro de um bloco pintava o selo do vizinho. `LessonDraftCloud` reúne os canais,
   `flushAll` e o coordenador `registerEditor`/`withSavedDrafts`/`isSaving`/`subscribeSaving`. O kids implementa; o
   player recebe por `LessonPlayerContextValue.lessonDrafts?`. Desligado por `LESSON_DRAFTS_ENABLED`
   (padrão ligado, `lib/env.ts`) e em sessão de suporte somente leitura.
@@ -63,8 +66,19 @@ contexto: a comunidade adulta não liga nada disso.
   (`trazendoRef`): um autosave no meio gravaria o trabalho antigo por cima da versão da conta e
   depois o subiria. Trocas de lugar desfazem a primeira escrita se a segunda falha; o Pinta grava
   antes de apagar.
-- Regressões: `lesson-draft-coordinator.test.ts`, `lesson-draft-persistence.test.ts`; no Kids,
-  `lesson-draft-cloud.test.ts` e `lesson-sections.test.tsx`.
+- ⭐ **Versão da conta feita por um Estúdio mais novo (11/10/2026):** o servidor só promove uma
+  revisão do Estúdio depois de conferi-la com o Estúdio do deploy de agora, então, se ESTA página
+  recusa o documento no conflito (`ProjectDocumentError`: formato futuro, bloco que ela não
+  conhece), é a página que está antiga. `keepRemoteAsOther` lança `LessonDraftOutdatedError`
+  (`code` = `LESSON_DRAFT_OUTDATED` = `CREATION_CLIENT_OUTDATED`, o mesmo do servidor para cliente
+  antigo); o Kids para de subir aquele bloco, o estado vem com `outdated: true` e a pílula troca o
+  recado por `rascunho.paginaDesatualizada` com o botão `rascunho.atualizarPagina`
+  (`LessonDraftStatus` com `onReload`: o bloco salva o que está na tela e recarrega). Na parte com
+  "envio em dia" o `LessonDraftSaveError` sai com `code: 'PAGE_OUTDATED'`/`outdated` e sem o
+  "Tentar de novo" (repetir dá o mesmo erro). Antes o selo dizia "vou tentar de novo" e cada
+  salvamento baixava a versão da conta para falhar igual. Falha de disco segue sendo falha comum.
+- Regressões: `lesson-draft-coordinator.test.ts`, `lesson-draft-persistence.test.ts`,
+  `lesson-draft-status.test.tsx`; no Kids, `lesson-draft-cloud.test.ts` e `lesson-sections.test.tsx`.
 - **BFF** (`routes/creations.ts`): tipos `lesson-studio`/`lesson-pinta` (`itemId` uuid), `fingerprint`
   na reserva, a validação de projeto do Estúdio também para `lesson-studio` e `serverNow` no
   download; `routes/index.ts` repassa a impressão do envio (`readFingerprint`). ⚠️ A `Tool` da rota
@@ -332,7 +346,7 @@ compartilhado de `/api/helpdesk/portal/tickets` (lista, criação, detalhe e men
 na borda com Zod, faz a chamada somente pelo gateway e bloqueia mutações em impersonação
 somente-leitura. Na criação ele injeta `portal` = `audience` do app (`adult`|`kids`, config
 COMPILADA — o cliente não escolhe; o Zod `.strict()` recusa `portal` no corpo): é o que decide
-o link do aviso de resposta por e-mail (`/ajuda` vs `/responsavel/ajuda`). A UI reutilizável
+o link do aviso de resposta por e-mail (`/ajuda` vs `/pais/ajuda/atendimento`; o `/responsavel/ajuda` antigo redireciona). A UI reutilizável
 `components/customer-helpdesk-portal.tsx` fala apenas com esse BFF e renderiza texto das
 mensagens como texto, nunca HTML; a resposta da equipe chega NO portal e não há polling, então o
 detalhe tem "Atualizar" (recarrega a conversa sem apagar o rascunho). O aviso por e-mail é eventual:

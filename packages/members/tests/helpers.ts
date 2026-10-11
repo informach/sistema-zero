@@ -573,7 +573,9 @@ export function buildApp(
         creations,
         new AccessCheckService(entitlements, clock),
         clock,
-        new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression),
+        new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression, () =>
+          clock().getTime(),
+        ),
       ),
       commitUpload: new CommitCreationUploadService(creations, clock),
       getDownload: new GetCreationDownloadService(creations),
