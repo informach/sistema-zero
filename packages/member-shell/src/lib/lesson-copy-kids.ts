@@ -63,6 +63,10 @@ export const PALAVRAS_DA_ESCOLA =
  * então o código conhecido escolhe a frase daqui.
  */
 const ERRO_DO_SERVIDOR: Record<string, string> = {
+  // O rascunho de uma parte com "envio em dia" não chegou à conta (`LessonDraftSaveError`).
+  LESSON_DRAFT_NOT_SAVED:
+    'Não consegui guardar suas últimas mudanças na conta. Tente de novo, ou clique em Enviar de novo para a equipe receber a versão nova.',
+  VIEWER_CHANGED: 'O perfil mudou. Abra a fase de novo.',
   // As recusas de concluir a fase.
   SECTION_GATE_INCOMPLETE: 'Termine todas as partes desta fase para concluir.',
   LEARNING_GATE_INCOMPLETE: 'Termine as experiências desta fase para concluir.',
@@ -205,6 +209,7 @@ export const KIDS_LESSON_COPY: LessonCopy = {
       'Este computador guardou a outra versão, a que não abriu agora. Trazer troca as duas de lugar: a de agora fica guardada aqui, e você pode voltar para ela do mesmo jeito.',
     trazer: 'Trazer',
     outraVersaoFalhou: 'Não consegui trazer a outra versão agora. Tente de novo.',
+    trouxeDaConta: 'Abri a versão guardada na sua conta. A deste computador ficou em Outra versão.',
   },
   galeria: {
     instrucaoPinta: 'Escolha os desenhos que você fez nesta fase e envie.',

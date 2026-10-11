@@ -886,6 +886,25 @@ describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
   const BLOCO = '22222222-2222-4222-8222-222222222222'
   const daFase = (tool: string) => ({ params: Promise.resolve({ tool, itemId: BLOCO }) })
 
+  test('rascunho exige UUID antes de chamar o members ou o armazenamento', async () => {
+    for (const tool of ['lesson-studio', 'lesson-pinta']) {
+      const { routes, calls } = buildRoutes()
+      const context = { params: Promise.resolve({ tool, itemId: 'not-a-uuid' }) }
+      const res = await routes.creationsUploadUrl.POST(
+        post({
+          name: 'Meu jogo',
+          kind: 'classic',
+          itemUpdatedAt: '2026-10-10T12:00:00Z',
+          bytes: 100,
+          formatVersion: 2,
+        }),
+        context,
+      )
+      expect(res.status).toBe(400)
+      expect(calls.reserveCreationUpload?.length ?? 0).toBe(0)
+    }
+  })
+
   test('reserva do `lesson-studio` repassa a impressão digital ao members', async () => {
     const { routes, calls } = buildRoutes({
       members: {

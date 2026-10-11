@@ -61,6 +61,9 @@ type ToolName = z.infer<typeof Tool>
 const isStudioFormat = (tool: ToolName) => tool === 'studio' || tool === 'lesson-studio'
 /** Charset seguro: vira segmento da chave no R2 (nunca `/`, `:`, `..`). */
 const ItemId = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/)
+const LessonBlockId = z
+  .string()
+  .regex(/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i)
 const UploadBody = z.strictObject({
   formatVersion: z.number().int().min(1).max(65_535).optional(),
   // Corte por CARACTERE (não por UTF-16): um emoji na borda não vira meio par substituto.
@@ -263,6 +266,11 @@ export function createCreationsRoutes(deps: {
     const tool = Tool.safeParse(raw.tool)
     const itemId = ItemId.safeParse(raw.itemId)
     if (!tool.success || !itemId.success) return null
+    if (
+      (tool.data === 'lesson-studio' || tool.data === 'lesson-pinta') &&
+      !LessonBlockId.safeParse(itemId.data).success
+    )
+      return null
     return { tool: tool.data, itemId: itemId.data }
   }
 

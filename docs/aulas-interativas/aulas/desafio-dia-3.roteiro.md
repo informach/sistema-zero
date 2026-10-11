@@ -142,7 +142,7 @@ Toda fala é uma conversa contínua com quem está fazendo a aula: as frases se 
 
 **Ponte do Zappy na página (não gravar):** Agora ensine o farol a avisar quando falta a chave! Monte o aviso, vá ao farol sem pegar a chave e clique em Verificar esta parte antes de seguir.
 
-**Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O envio único do dia acontece na seção seguinte.
+**Conferência de produção:** a seção exige o vídeo e a aprovação da verificação intermediária, sem envio. O envio do dia acontece na seção seguinte; o reenvio do que mudar depois fica em **Escolha onde fica a chave**.
 
 ## Seção 3. Acenda o farol com a chave
 

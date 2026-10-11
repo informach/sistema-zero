@@ -136,6 +136,8 @@ export interface LessonCopy {
     outraVersaoExplica: string
     trazer: string
     outraVersaoFalhou: string
+    /** A conta já tinha um trabalho que este aparelho não conhecia: ele abriu por cima. */
+    trouxeDaConta: string
   }
   /** Entrega pela galeria do Pinta ou do Estúdio completo. */
   galeria: {
@@ -308,6 +310,7 @@ export const ADULT_LESSON_COPY: LessonCopy = {
       'Este navegador guardou a outra versão, a que não abriu agora. Trazer troca as duas de lugar: a de agora fica guardada aqui, e você pode voltar para ela do mesmo jeito.',
     trazer: 'Trazer',
     outraVersaoFalhou: 'Não foi possível trazer a outra versão agora. Tente novamente.',
+    trouxeDaConta: 'Abrimos a versão salva na sua conta. A deste navegador ficou em Outra versão.',
   },
   galeria: {
     instrucaoPinta: 'Escolha os desenhos que você fez para esta missão e envie ao professor.',

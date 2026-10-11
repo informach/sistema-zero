@@ -31,19 +31,24 @@ import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
+import type { LessonDraftConflictOutcome, LessonDraftRemote } from '../../lib/lesson-draft-cloud'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
 import { resolveStudioLessonSeed } from '../../lib/studio-lesson-seed'
 import { lessonStudioBackupProjectId, lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonCopy } from '../lesson-copy-context'
-import { LessonDraftStatus, useLessonDraftState } from '../lesson-draft-status'
+import {
+  LessonDraftStatus,
+  useLessonDraftEditor,
+  useLessonDraftState,
+} from '../lesson-draft-status'
 import { useLessonPlayer } from '../lesson-player-context'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import {
   diskFingerprint,
-  keepRemoteAsOther,
   prepareStudioLessonDraft,
+  resolveStudioConflict,
   type StudioDraftDeps,
   studioDraftProducer,
   swapOtherVersion,
@@ -151,12 +156,20 @@ export function StudioBlockView({
   const [otherOpen, setOtherOpen] = useState(false)
   const [swapping, setSwapping] = useState(false)
   const [otherNote, setOtherNote] = useState<string | null>(null)
+  // A conta tinha um trabalho que este aparelho não conhecia e ele abriu por cima (primeiro contato).
+  const [contaNote, setContaNote] = useState<string | null>(null)
+  // Enquanto a versão da conta sobe para cima, o editor fica parado e nada sobe: um salvamento
+  // automático no meio gravaria o trabalho antigo por cima dela (e depois subiria por cima da conta).
+  const [trazendoDaConta, setTrazendoDaConta] = useState(false)
+  const trazendoRef = useRef(false)
   // "Mudou depois do envio": a impressão do que foi enviado × a do projeto de agora.
   const [sentFingerprint, setSentFingerprint] = useState<string | null>(
     studioState?.contentFingerprint ?? null,
   )
   const [currentFingerprint, setCurrentFingerprint] = useState<string | null>(null)
-  const preparedFor = useRef<string | null>(null)
+  // A preparação (qual versão abre) roda UMA vez por rascunho, e quem chega depois ESPERA a mesma:
+  // um `router.refresh()` no meio dela reexecuta o efeito, e pular a espera abriria o disco antigo.
+  const preparing = useRef<{ projectId: string; promise: Promise<{ other: boolean }> } | null>(null)
   // O último envio (hora e impressão) entra na decisão de qual versão abrir. Num ref: a decisão
   // roda uma vez por rascunho, e um reenvio não deve recarregar o editor.
   const envioRef = useRef<{ at: number; fingerprint: string | null } | null>(null)
@@ -256,19 +269,64 @@ export function StudioBlockView({
       studioMod && channel ? { studio: studioMod, channel, blockId, projectId, backupId } : null,
     [studioMod, channel, blockId, projectId, backupId],
   )
+  // Reabre o editor com o que está no disco (depois de trocar as versões de lugar).
+  const reabrirDoDisco = useCallback(async () => {
+    if (!studioMod) return
+    const project = await resolveStudioLessonSeed({
+      local: () => studioMod.createLocalPersistenceAdapter().load(projectId),
+      initial: { ...(content.initialProject as Project), id: projectId },
+    })
+    setSeed(project)
+    setStudioVersion((version) => version + 1)
+  }, [studioMod, projectId, content.initialProject])
+  // O conflito na subida (`resolveStudioConflict`). Num ref porque a fila guarda o callback e ele
+  // precisa do editor de agora. No primeiro contato a versão da conta passa para cima: guarda o
+  // que está na tela antes e reabre o editor com ela.
+  const conflitoRef = useRef<
+    (
+      deps: StudioDraftDeps,
+      remote: LessonDraftRemote,
+      firstContact: boolean,
+    ) => Promise<LessonDraftConflictOutcome | undefined>
+  >(async () => undefined)
+  conflitoRef.current = async (deps, remote, firstContact) => {
+    if (firstContact) {
+      trazendoRef.current = true
+      setTrazendoDaConta(true)
+    }
+    try {
+      if (firstContact) await handleRef.current?.save().catch(() => {})
+      const desfecho = await resolveStudioConflict(deps, remote, firstContact)
+      if (desfecho.kept) setHasOther(true)
+      if (desfecho.opened) {
+        await reabrirDoDisco()
+        setContaNote(rascunho.trouxeDaConta)
+      }
+      return desfecho.adoptedAt === null
+        ? undefined
+        : { adopted: { updatedAt: desfecho.adoptedAt } }
+    } finally {
+      trazendoRef.current = false
+      setTrazendoDaConta(false)
+    }
+  }
+  // Estável: só lê o ref, então a fila pode guardar o callback sem prendê-lo a um render velho.
+  const aoConflitar = useCallback(
+    (deps: StudioDraftDeps) =>
+      (remote: LessonDraftRemote, { firstContact }: { firstContact: boolean }) =>
+        conflitoRef.current(deps, remote, firstContact),
+    [],
+  )
   // Sobe o rascunho para a conta (o produtor relê o disco na hora da subida). Num ref porque o
   // adaptador de persistência abaixo é criado UMA vez por editor.
   const subirRascunho = useCallback(() => {
-    if (!draftDeps) return
+    if (!draftDeps || trazendoRef.current) return
     draftDeps.channel.enqueue(
       blockId,
       studioDraftProducer(draftDeps, setCurrentFingerprint),
-      async (remote) => {
-        await keepRemoteAsOther(draftDeps, remote)
-        setHasOther(true)
-      },
+      aoConflitar(draftDeps),
     )
-  }, [draftDeps, blockId])
+  }, [draftDeps, blockId, aoConflitar])
   const subirRef = useRef(subirRascunho)
   subirRef.current = subirRascunho
   // O salvamento LOCAL de sempre, e depois a subida. ⚠️ Espalha o adaptador local inteiro:
@@ -309,26 +367,30 @@ export function StudioBlockView({
       }
       // A versão da CONTA entra antes de o editor montar (uma vez por rascunho): depois disto a
       // ordem de sempre, com o local primeiro, já abre a versão mais nova.
-      if (channel && preparedFor.current !== projectId) {
-        preparedFor.current = projectId
-        const deps = { studio: mod, channel, blockId, projectId, backupId }
+      if (channel) {
+        if (preparing.current?.projectId !== projectId) {
+          const deps = { studio: mod, channel, blockId, projectId, backupId }
+          preparing.current = {
+            projectId,
+            promise: prepareStudioLessonDraft({
+              ...deps,
+              submission: envioRef.current,
+              readSubmission: () => readSavedProject('studio-submission'),
+            }).then((preparo) => {
+              if (preparo.upload)
+                channel.enqueue(
+                  blockId,
+                  studioDraftProducer(deps, setCurrentFingerprint),
+                  aoConflitar(deps),
+                )
+              return preparo
+            }),
+          }
+        }
         try {
-          const preparo = await prepareStudioLessonDraft({
-            ...deps,
-            submission: envioRef.current,
-            readSubmission: () => readSavedProject('studio-submission'),
-          })
+          const preparo = await preparing.current.promise
           if (!active) return
           setHasOther(preparo.other)
-          if (preparo.upload)
-            channel.enqueue(
-              blockId,
-              studioDraftProducer(deps, setCurrentFingerprint),
-              async (remote) => {
-                await keepRemoteAsOther(deps, remote)
-                setHasOther(true)
-              },
-            )
           setCurrentFingerprint(await diskFingerprint(mod, projectId))
         } catch (error) {
           console.warn('[rascunho-da-fase] não deu para trazer a versão da conta', error)
@@ -363,6 +425,7 @@ export function StudioBlockView({
     seedLoadAttempt,
     channel,
     backupId,
+    aoConflitar,
   ])
 
   // "Expandir" é uma SOBREPOSIÇÃO em tela cheia por CSS (não a Fullscreen API nativa): a
@@ -400,16 +463,26 @@ export function StudioBlockView({
   useReportActivityExpanded(expanded)
 
   const submit = useCallback(async () => {
-    const project = handleRef.current?.getProject()
-    if (!project) return
+    const handle = handleRef.current
+    if (!handle) return
     setSubmitting(true)
     setError(null)
     try {
       // "Envio em dia": a impressão do que vai é a do DISCO, a mesma régua do rascunho guardado
-      // na conta. Salva antes (o autosave é debounced) e manda o rascunho subir junto.
-      await handleRef.current?.save().catch(() => {})
-      const fingerprint = studioMod ? await diskFingerprint(studioMod, projectId) : null
-      if (channel) await channel.flush(4000).catch(() => {})
+      // na conta. Salva antes (o autosave é debounced). Se o disco falhar, o envio vai assim
+      // mesmo com o que está na tela, sem impressão (o critério deixa passar).
+      const saved = await handle.save().then(
+        () => true,
+        () => false,
+      )
+      const project = handle.getProject()
+      if (!project) return
+      const fingerprint = saved && studioMod ? await diskFingerprint(studioMod, projectId) : null
+      // O rascunho sobe junto, em tentativa: a entrega à equipe nunca depende da nuvem dele.
+      if (channel) {
+        subirRef.current()
+        await channel.flush(4000).catch(() => {})
+      }
       // Resultado da auto-correção rodada no editor (correção híbrida): o servidor
       // RECALCULA a estrutura e registra estes p/ comportamento/teste/código.
       const run = handleRef.current?.getActivityResult() ?? null
@@ -492,8 +565,13 @@ export function StudioBlockView({
       // Drena qualquer autosave antigo antes da substituição. A gravação de reposição
       // apaga também partições de blocos/capa que o projeto inicial não possui.
       await handle.save()
-      const initial: Project = { ...(content.initialProject as Project), id: projectId }
-      await replaceLocalProject(initial)
+      // Data de agora: o recomeço é a versão mais nova, também diante de outro computador.
+      const initial: Project = {
+        ...(content.initialProject as Project),
+        id: projectId,
+        updatedAt: Date.now(),
+      }
+      await replaceLocalProject(initial, { namespace: '' })
       // Uma nova instância também encerra qualquer leitura tardia dos blocos do
       // rascunho antigo, que usa o mesmo id local do projeto inicial.
       setSeed(initial)
@@ -522,12 +600,8 @@ export function StudioBlockView({
         setOtherOpen(false)
         return
       }
-      const project = await resolveStudioLessonSeed({
-        local: () => studioMod.createLocalPersistenceAdapter().load(projectId),
-        initial: { ...(content.initialProject as Project), id: projectId },
-      })
-      setSeed(project)
-      setStudioVersion((version) => version + 1)
+      await reabrirDoDisco()
+      setContaNote(null)
       setOtherOpen(false)
       subirRef.current()
     } catch {
@@ -535,7 +609,7 @@ export function StudioBlockView({
     } finally {
       setSwapping(false)
     }
-  }, [draftDeps, studioMod, projectId, content.initialProject, rascunho.outraVersaoFalhou])
+  }, [draftDeps, studioMod, reabrirDoDisco, rascunho.outraVersaoFalhou])
 
   // O Studio LATCHA o adapter uma vez (memoizado por lessonId/blockId), mas `onShared` pode
   // mudar por render — lê via ref pra manter o adapter estável e ainda chamar o handler ATUAL.
@@ -607,12 +681,36 @@ export function StudioBlockView({
   }, [enableShare, lessonId, blockId, projectId, presetTitle, presetDescription, presetCoverUrl])
 
   const ready = StudioLesson !== null && seed?.id === projectId && !seedLoadFailed
+  const savingDrafts = useLessonDraftEditor(
+    channel ? player?.lessonDrafts : undefined,
+    lessonId,
+    'studio',
+    blockId,
+    {
+      // Editor fora do ar (carregando ou com falha): não há edição na tela para guardar.
+      save: async () => {
+        if (!ready || !handleRef.current) return
+        await handleRef.current.save()
+        subirRef.current()
+      },
+      // Sem envio, o servidor pede o envio; envio sem impressão passa. Senão, o disco decide, e
+      // só se ele acabou de ser salvo (com o salvar falhando, a tela pode estar à frente dele).
+      matchesSubmission: async ({ saved }) => {
+        if (!submitted || !sentFingerprint) return true
+        if (!saved || !studioMod) return false
+        return (await diskFingerprint(studioMod, projectId)) === sentFingerprint
+      },
+    },
+  )
   const mudouDepoisDoEnvio = Boolean(
     submitted && sentFingerprint && currentFingerprint && sentFingerprint !== currentFingerprint,
   )
 
   return (
     <div
+      // Só o avanço da fase para a edição (a comunidade adulta nunca chega aqui).
+      inert={savingDrafts || trazendoDaConta || undefined}
+      aria-busy={savingDrafts || trazendoDaConta || undefined}
       className={cn(
         'flex flex-col gap-3 rounded-lg border border-border bg-card p-4',
         // Expandido: vira overlay em tela cheia por CSS (cobre a página; navbar = z-40).
@@ -784,6 +882,7 @@ export function StudioBlockView({
           {mudouDepoisDoEnvio ? (
             <p className="sz-lesson-draft-outdated text-sm font-medium">{rascunho.mudouProjeto}</p>
           ) : null}
+          {contaNote ? <p className="text-sm text-muted-foreground">{contaNote}</p> : null}
           {/* O professor carimbou "já conferi". Não é nota: é ele dizendo que viu. */}
           {reviewed ? (
             <p className="flex items-center gap-2 text-sm text-success">

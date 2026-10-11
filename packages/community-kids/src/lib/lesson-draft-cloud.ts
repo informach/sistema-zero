@@ -10,13 +10,18 @@
  * Conflito na subida (outro computador subiu antes, 409 `CREATION_STALE_BASE`): a versão da conta
  * vira a "outra versão" deste navegador (o bloco guarda), a revisão dela passa a ser a base e a
  * versão daqui sobe por cima. É a regra da dona: abre a mais nova, a outra fica guardada.
+ * Exceções que o bloco decide: conteúdo igual só adota a revisão, e no PRIMEIRO contato (este
+ * aparelho nunca teve marca do bloco: abriu sem conseguir perguntar à conta) a versão da conta
+ * passa para cima, porque a daqui pode ser só o modelo inicial.
  */
-import type {
-  LessonDraftChannel,
-  LessonDraftCloud,
-  LessonDraftRemote,
-  LessonDraftState,
-  LessonDraftUpload,
+import {
+  createLessonDraftCoordinator,
+  type LessonDraftChannel,
+  type LessonDraftCloud,
+  type LessonDraftConflictOutcome,
+  type LessonDraftRemote,
+  type LessonDraftState,
+  type LessonDraftUpload,
 } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
 import {
   type CloudPeek,
@@ -71,7 +76,10 @@ function canal(
   function enfileirar(
     id: string,
     produce: () => Promise<LessonDraftUpload | null>,
-    onConflict?: (remote: LessonDraftRemote) => Promise<void>,
+    onConflict?: (
+      remote: LessonDraftRemote,
+      context: { firstContact: boolean },
+    ) => Promise<LessonDraftConflictOutcome | undefined>,
   ): void {
     cloud.enqueueUpload(
       id,
@@ -99,9 +107,17 @@ function canal(
       ({ updatedAt, revision }) => marcar(id, updatedAt, revision),
       async ({ currentRevision }) => {
         // Outro computador subiu antes: a versão de lá vira a "outra", e a daqui sobe por cima.
+        const firstContact = marks.revision(id) === undefined
         const espiada = await espiar(id)
-        if (espiada && onConflict) await onConflict(remoto(espiada))
-        marcar(id, marks.get(id) ?? 0, espiada?.summary.revision ?? currentRevision ?? 0)
+        const revisao = espiada?.summary.revision ?? currentRevision ?? 0
+        const desfecho =
+          espiada && onConflict ? await onConflict(remoto(espiada), { firstContact }) : undefined
+        if (desfecho?.adopted) {
+          // O disco já tem o conteúdo da conta: só passa a conhecer a revisão, sem subir de novo.
+          marcar(id, desfecho.adopted.updatedAt, revisao)
+          return
+        }
+        marcar(id, marks.get(id) ?? 0, revisao)
         enfileirar(id, produce, onConflict)
       },
     )
@@ -123,6 +139,7 @@ function canal(
     },
     enqueue: enfileirar,
     flush: (timeoutMs) => cloud.flush(timeoutMs === undefined ? undefined : { timeoutMs }),
+    confirm: (blockId, timeoutMs) => cloud.confirm(blockId, { timeoutMs }),
     getState: () => estado(cloud.getState()),
     subscribe: (listener) => cloud.subscribe((state) => listener(estado(state))),
   }
@@ -156,6 +173,7 @@ export function createLessonDraftCloud(options: {
   return {
     studio,
     pinta,
+    ...createLessonDraftCoordinator({ studio, pinta }),
     async flushAll(timeoutMs) {
       await Promise.all([studio.flush(timeoutMs), pinta.flush(timeoutMs)])
     },
@@ -170,7 +188,8 @@ export function createLessonDraftCloud(options: {
 /**
  * Uma nuvem por PERFIL e por aba, guardada fora do React: a fase pode trocar (nova página do
  * player) e o StrictMode monta duas vezes, mas a fila, as marcas e o que está pendente são os
- * mesmos. Trocar de perfil é outra chave.
+ * mesmos. Trocar de perfil é outra chave, e a fila do perfil anterior é descartada (ela só
+ * receberia `VIEWER_MISMATCH` e continuaria ouvindo `pagehide`/`online` à toa).
  */
 const NUVENS = Symbol.for('sz.kids.lesson-drafts')
 
@@ -178,6 +197,11 @@ export function lessonDraftCloudFor(viewerId: string): KidsLessonDraftCloud {
   const store = globalThis as unknown as Record<symbol, Map<string, KidsLessonDraftCloud>>
   store[NUVENS] ??= new Map()
   const nuvens = store[NUVENS]
+  for (const [outro, antiga] of nuvens) {
+    if (outro === viewerId) continue
+    nuvens.delete(outro)
+    void antiga.dispose()
+  }
   let nuvem = nuvens.get(viewerId)
   if (!nuvem) {
     nuvem = createLessonDraftCloud({ viewerId })

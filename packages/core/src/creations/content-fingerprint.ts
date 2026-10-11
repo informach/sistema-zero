@@ -8,7 +8,9 @@
  *
  * O que entra é o que muda o JOGO ou o DESENHO, nunca o que muda só a vitrine: nome, datas, capa,
  * modo do editor e a posição dos blocos na tela ficam de fora (arrastar um bloco não pede um
- * reenvio). As imagens da BIBLIOTECA do curso também ficam de fora: o player acrescenta à força
+ * reenvio). ⚠️ O NOME volta pelos arquivos: o `index.html` gerado leva `<title>` com o nome do
+ * projeto, e o editor de blocos regera os arquivos na próxima edição. Renomear e mexer num bloco
+ * muda a impressão (reenviar resolve; tirar o título da conta exigiria o `v2`). As imagens da BIBLIOTECA do curso também ficam de fora: o player acrescenta à força
  * as que o projeto inicial ganhou depois (`completeLibraryAssets`), e contá-las marcaria como
  * desatualizado quem não mexeu em nada. Trocar qual imagem aparece muda o `script.js`, e isso conta.
  */

@@ -314,6 +314,10 @@ describe('Desafio do Primeiro Jogo — A Chave do Farol', () => {
       expect(choice.workspaceKey).toBe('projeto')
       expect(choice.completion?.projectChecks).toBeUndefined()
     }
+    // Envio em dia (10/10/2026): a última parte que muda o jogo antes de "Publique".
+    expect(m.sections.filter((s) => s.completion?.submissionUpToDate).map((s) => s.key)).toEqual([
+      'posicionar-chave',
+    ])
     const position = m.blocks.find((block) => block.key === 'experiencia-posicao')?.content
     if (position?.kind !== 'interactive' || position.activity.type !== 'experimentation') {
       throw new Error('Experiência de posição ausente')

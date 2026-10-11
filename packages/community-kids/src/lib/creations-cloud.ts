@@ -189,6 +189,11 @@ export interface CreationsCloud {
    * MB, nem numa espera de backoff sem internet): a fila CONTINUA depois; só a promessa volta.
    */
   flush(options?: { timeoutMs?: number }): Promise<void>
+  /**
+   * Espera ESTE item chegar à conta, inclusive o conflito resolvido e a nova subida. Falha ou
+   * prazo vencido rejeitam (com o `code` do servidor quando houver), sem cancelar a fila.
+   */
+  confirm(itemId: string, options?: { timeoutMs?: number }): Promise<void>
   getState(): CloudSyncState
   subscribe(listener: (state: CloudSyncState) => void): () => void
   /**
@@ -479,6 +484,16 @@ export function createCreationsCloud(options: {
         failures: number
       }
   const pending = new Map<string, Job>()
+  const conflicts = new Set<{ itemId: string; done: Promise<void> }>()
+  /** A última falha de cada item, até ele voltar à fila: o `confirm` rejeita com ela. */
+  const failedItems = new Map<string, { message: string; code?: string }>()
+  /** Acorda quem espera um item (`confirm`) a cada passo da fila, sem esperar a fila inteira. */
+  let progress = deferred()
+  const signalProgress = (): void => {
+    const current = progress
+    progress = deferred()
+    current.resolve()
+  }
   const listeners = new Set<(state: CloudSyncState) => void>()
   let state: CloudSyncState = {
     status: supported ? 'idle' : 'unsupported',
@@ -872,6 +887,15 @@ export function createCreationsCloud(options: {
     const next = pending.entries().next()
     if (next.done) return 'empty'
     const [itemId, job] = next.value
+    // Quem vai tentar de novo passa para o fim: um item preso (429, rede, 5xx) não segura os
+    // outros, e o `confirm` de outro bloco não vence o prazo esperando por ele.
+    const retry = (): 'retry' => {
+      if (pending.get(itemId) === job && pending.size > 1) {
+        pending.delete(itemId)
+        pending.set(itemId, job)
+      }
+      return 'retry'
+    }
     // Só um acordar que chegue DURANTE este passo conta (um `flush` antigo não vale).
     wakeRequested = false
     try {
@@ -934,22 +958,36 @@ export function createCreationsCloud(options: {
           setState({ status: 'saving', lastError: null })
           const onStale = job.onStale
           const currentRevision = err.details?.currentRevision
-          void Promise.resolve()
+          const conflict = { itemId, done: Promise.resolve() }
+          conflicts.add(conflict)
+          conflict.done = Promise.resolve()
             .then(() => onStale({ itemId, currentRevision }))
             .then(() => {
               if (!disposed && pending.size === 0 && !running) setState({ status: 'saved' })
             })
             .catch(() => {
+              failedItems.set(itemId, {
+                message: CLOUD_MESSAGES.staleFailed,
+                code: 'CREATION_STALE_BASE',
+              })
               if (!disposed) setState({ status: 'error', lastError: CLOUD_MESSAGES.staleFailed })
             })
+            .finally(() => {
+              conflicts.delete(conflict)
+              signalProgress()
+            })
         } else {
+          failedItems.set(itemId, {
+            message: CLOUD_MESSAGES.staleFailed,
+            code: 'CREATION_STALE_BASE',
+          })
           setState({ status: 'error', lastError: CLOUD_MESSAGES.staleFailed })
         }
         return 'done'
       }
       if (isNetworkError(error)) {
         setState({ status: 'offline', lastError: null })
-        return 'retry'
+        return retry()
       }
       // 429 da borda (rate limit): TEMPORÁRIO — espera o `retry-after` (ou um padrão) e tenta
       // de novo; derrubar o item aqui era perder desenhos na primeira sincronia de uma galeria
@@ -959,7 +997,7 @@ export function createCreationsCloud(options: {
         if (job.failures <= MAX_SERVER_RETRIES) {
           retryAfterMs = Math.min(err.retryAfterMs ?? DEFAULT_RETRY_AFTER_MS, MAX_RETRY_AFTER_MS)
           setState({ status: 'saving', lastError: null })
-          return 'retry'
+          return retry()
         }
       }
       // Revisão vencida no commit (409): outro navegador reservou depois — reservar de novo
@@ -980,12 +1018,18 @@ export function createCreationsCloud(options: {
         job.failures += 1
         if (job.failures < MAX_SERVER_RETRIES) {
           setState({ status: 'saving', lastError: null })
-          return 'retry'
+          return retry()
         }
       }
       // 4xx de verdade (quota, sem posse, sessão de outro perfil), erro inesperado, ou 5xx
       // repetido: não fica em loop; o item sai da fila e o próximo autosave tenta de novo.
-      if (pending.get(itemId) === job) pending.delete(itemId)
+      if (pending.get(itemId) === job) {
+        pending.delete(itemId)
+        failedItems.set(itemId, {
+          message: messageForError(error),
+          ...(err?.code ? { code: err.code } : {}),
+        })
+      }
       setState({ status: 'error', lastError: messageForError(error) })
       return 'done'
     }
@@ -994,6 +1038,7 @@ export function createCreationsCloud(options: {
   async function run(): Promise<void> {
     while (!disposed && pending.size > 0) {
       const outcome = await step()
+      signalProgress()
       if (outcome === 'empty') break
       if (outcome === 'retry') {
         // 429: a espera é a que a borda pediu (não entra no backoff de rede, que um acordar
@@ -1061,6 +1106,7 @@ export function createCreationsCloud(options: {
     onUploaded?: UploadedListener,
     onStale?: StaleListener,
   ): void {
+    failedItems.delete(itemId)
     pending.set(itemId, { kind: 'upload', produce, onUploaded, onStale, failures: 0 })
     schedule(idleMs)
   }
@@ -1071,9 +1117,19 @@ export function createCreationsCloud(options: {
     onRemoved?: RemovedListener,
     onStale?: StaleListener,
   ): void {
+    failedItems.delete(itemId)
     pending.set(itemId, { kind: 'remove', baseRevision, onRemoved, onStale, failures: 0 })
     // Apagar não espera o debounce: a criança pode fechar a aba logo depois.
     schedule(0)
+  }
+
+  /** Roda já o que só esperava o debounce (sem acordar a espera de uma nova tentativa). */
+  function skipDebounce(): void {
+    if (!timer) return
+    clearTimeout(timer)
+    timer = null
+    dueAt = Number.POSITIVE_INFINITY
+    kick()
   }
 
   async function flush(options?: { timeoutMs?: number }): Promise<void> {
@@ -1093,6 +1149,41 @@ export function createCreationsCloud(options: {
     }
     // Teto: sair do editor não fica preso na fila (que segue sozinha).
     await Promise.race([running, new Promise<void>((resolve) => setTimeout(resolve, timeoutMs))])
+  }
+
+  async function confirm(itemId: string, options?: { timeoutMs?: number }): Promise<void> {
+    if (!supported || disposed) throw new Error('Sincronização indisponível')
+    let deadlineReached = false
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const timeout = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        deadlineReached = true
+        reject(new Error('A versão ainda não foi guardada na conta'))
+      }, options?.timeoutMs ?? 15_000)
+    })
+    // Pula o debounce UMA vez; as novas tentativas seguem o compasso da fila (acordar a cada
+    // volta do laço viraria uma rajada de pedidos sem internet).
+    void flush()
+    try {
+      while (!deadlineReached) {
+        if (disposed) throw new Error('Sincronização encerrada')
+        const failure = failedItems.get(itemId)
+        if (failure)
+          throw Object.assign(
+            new Error(failure.message),
+            failure.code ? { code: failure.code } : {},
+          )
+        const resolving = [...conflicts].filter((entry) => entry.itemId === itemId)
+        if (!pending.has(itemId) && resolving.length === 0) return
+        // O conflito resolvido enfileira a versão daqui de novo, com debounce: ela sobe já.
+        skipDebounce()
+        // Reavalia a cada passo da fila (o item pode ter saído enquanto outro item ainda espera)
+        // e quando o conflito termina (ele pode enfileirar outra revisão).
+        await Promise.race([progress.promise, ...resolving.map((entry) => entry.done), timeout])
+      }
+    } finally {
+      clearTimeout(timer)
+    }
   }
 
   // Sem esperar o debounce ao sair da página / trocar de aba; e a volta da rede acorda a fila.
@@ -1124,6 +1215,7 @@ export function createCreationsCloud(options: {
     enqueueUpload,
     enqueueRemove,
     flush,
+    confirm,
     getState: () => state,
     subscribe(listener) {
       listeners.add(listener)

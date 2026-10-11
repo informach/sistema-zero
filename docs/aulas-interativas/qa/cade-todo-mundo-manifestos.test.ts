@@ -167,6 +167,11 @@ describe('curso gratuito Cadê Todo Mundo?', () => {
     expect(practice?.blockKeys).toEqual(['video-a2-contagem', 'ponte-a2-contagem', 'projeto'])
     expect(practice?.completion?.blockIds).toEqual(['video-a2-contagem', 'projeto'])
     expect(m.blocks.some((block) => block.key === 'caderno')).toBe(false)
+    // Envio em dia (10/10/2026): só a última parte que muda o jogo antes de publicar. O validador
+    // só confere o critério que existe; perder a marca no gerador passaria calado sem isto.
+    expect(m.sections.filter((s) => s.completion?.submissionUpToDate).map((s) => s.key)).toEqual([
+      'personalizar',
+    ])
     expect(m.retireBlockKeys).toContain('caderno')
   })
 

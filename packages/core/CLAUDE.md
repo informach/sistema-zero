@@ -28,8 +28,9 @@ entrega à equipe. Duas peças do core sustentam isso:
   função) e o servidor só a guarda como texto opaco. Estúdio: os três arquivos, `extraFiles`, a
   árvore (Pro), os ids das extensões ordenados, o `kind` e os assets PRÓPRIOS (os de
   `source: 'library'` ficam fora: o `completeLibraryAssets` acrescenta imagens novas do curso e
-  marcaria todo mundo como mudado). Pinta: o `pintaAssetToWire` sem id, nome e datas. Mover bloco e
-  renomear o projeto NÃO mudam a impressão. ⚠️ Mudou o que entra na conta? Suba o `v1`: impressões
+  marcaria todo mundo como mudado). Pinta: o `pintaAssetToWire` sem id, nome e datas. Mover bloco
+  NÃO muda a impressão. ⚠️ Renomear o projeto muda depois da próxima edição de bloco: o `index.html`
+  regerado leva `<title>` com o nome (benigno, reenviar resolve). ⚠️ Mudou o que entra na conta? Suba o `v1`: impressões
   de versões diferentes nunca são iguais, e a régua abaixo deixa passar quando falta um lado.
 - **`CreationStorageTool`** ganhou `lesson-studio` e `lesson-pinta` (o rascunho por BLOCO de aula).
 - **`SectionCompletion.submissionUpToDate?: true`** (`learning/section-progression.ts`): a parte só

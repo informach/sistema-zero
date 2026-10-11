@@ -1710,22 +1710,23 @@ export const ChallengeThemePatchBody = t.Object({
  * `studio` | `pinta` | `molda` | `lesson-studio` | `lesson-pinta` (o enum `creation_tool`; espelho
  * de `CREATION_TOOLS`). Os dois últimos são os rascunhos da fase (um item por bloco).
  */
-export const CREATION_TOOL = t.Union([
-  t.Literal('studio'),
-  t.Literal('pinta'),
-  t.Literal('molda'),
-  t.Literal('lesson-studio'),
-  t.Literal('lesson-pinta'),
-])
+/** As ferramentas de produto (a galeria livre): o `itemId` é o id do editor. */
+const PRODUCT_CREATION_TOOL = t.Union([t.Literal('studio'), t.Literal('pinta'), t.Literal('molda')])
+/** Os rascunhos da fase: o `itemId` é o uuid do bloco. */
+const LESSON_CREATION_TOOL = t.Union([t.Literal('lesson-studio'), t.Literal('lesson-pinta')])
+export const CREATION_TOOL = t.Union([PRODUCT_CREATION_TOOL, LESSON_CREATION_TOOL])
 export const CreationToolParams = t.Object({ tool: CREATION_TOOL })
 /**
  * `itemId` = id do projeto/desenho no editor (ulid do Estúdio, uuid do Pinta,
  * `pensa-<uuid sem hífen>`): charset seguro para virar chave no R2. Nunca `:`.
  */
-export const CreationItemParams = t.Object({
-  tool: CREATION_TOOL,
-  itemId: t.String({ minLength: 1, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$' }),
-})
+export const CreationItemParams = t.Union([
+  t.Object({
+    tool: PRODUCT_CREATION_TOOL,
+    itemId: t.String({ minLength: 1, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$' }),
+  }),
+  t.Object({ tool: LESSON_CREATION_TOOL, itemId: UUID }),
+])
 /**
  * Corpo da reserva de upload — só metadados; o blob vai direto ao R2. O BFF já corta
  * nome/kind nos tetos e descarta a miniatura grande; os `maxLength` aqui são a rede de

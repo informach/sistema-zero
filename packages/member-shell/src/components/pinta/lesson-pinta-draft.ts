@@ -26,11 +26,11 @@ export async function readLessonDrawing(store: PintaPersistence): Promise<PintaA
   return [...assets].sort((a, b) => b.updatedAt - a.updatedAt)[0] ?? null
 }
 
-/** O banco passa a ter só este desenho. */
+/** O banco passa a ter só este desenho (grava antes de apagar: uma falha nunca o deixa vazio). */
 async function substituir(store: PintaPersistence, asset: PintaAsset): Promise<void> {
+  await store.persistAsset(asset)
   for (const antigo of await store.listAllAssets().catch(() => []))
     if (antigo.id !== asset.id) await store.deleteAsset(antigo.id)
-  await store.persistAsset(asset)
 }
 
 function desenho(raw: unknown): PintaAsset {
@@ -82,6 +82,8 @@ export async function preparePintaLessonDraft(
   let upload = false
   switch (decisao.open) {
     case 'local': {
+      // Só reconheça a base remota depois de preservar a cópia que será substituída.
+      if (remote && decisao.backupCloud) await keepRemoteDrawingAsOther(deps, remote)
       if (remote && decisao.adoptRevision !== null) {
         const anterior = channel.mark(blockId)
         channel.setMark(blockId, {
@@ -89,7 +91,6 @@ export async function preparePintaLessonDraft(
           updatedAt: decisao.upload ? (anterior?.updatedAt ?? 0) : (local?.updatedAt ?? 0),
         })
       }
-      if (remote && decisao.backupCloud) await keepRemoteDrawingAsOther(deps, remote)
       upload = decisao.upload && conheceConta
       break
     }
@@ -126,8 +127,9 @@ export function pintaDraftProducer(
   onFingerprint?: (fingerprint: string | null) => void,
 ) {
   return async () => {
-    const asset = await readLessonDrawing(deps.store)
-    if (!asset) return null
+    const assets = await deps.store.listAllAssets()
+    const asset = [...assets].sort((a, b) => b.updatedAt - a.updatedAt)[0]
+    if (!asset) throw new Error('Não foi possível ler o desenho salvo')
     const document = pintaAssetToWire(asset)
     const fingerprint = await pintaContentFingerprint(document)
     onFingerprint?.(fingerprint)
@@ -165,6 +167,38 @@ export async function swapOtherDrawing(deps: PintaDraftDeps): Promise<unknown | 
   ])
   if (!outra) return null
   await substituir(deps.store, outra)
-  if (atual) await substituir(deps.backup, atual)
+  if (atual) {
+    try {
+      await substituir(deps.backup, atual)
+    } catch (error) {
+      // Sem isto as duas posições ficariam com o mesmo desenho e o de agora sumiria.
+      await substituir(deps.store, atual).catch(() => {})
+      throw error
+    }
+  }
   return pintaAssetToWire(outra)
+}
+
+/**
+ * Conflito na subida, com a regra do Estúdio (`resolveStudioConflict`): conteúdo igual só adota a
+ * revisão; senão a da conta fica como a "outra" e, no PRIMEIRO contato deste aparelho com a conta,
+ * ela passa para cima. `opened` = o desenho (formato de transporte) que o editor deve reabrir.
+ */
+export async function resolvePintaConflict(
+  deps: PintaDraftDeps,
+  remote: LessonDraftRemote,
+  firstContact: boolean,
+): Promise<{ kept: boolean; opened: unknown | null; adoptedAt: number | null }> {
+  const local = await readLessonDrawing(deps.store)
+  if (
+    local &&
+    remote.fingerprint &&
+    remote.fingerprint === (await pintaContentFingerprint(pintaAssetToWire(local)))
+  )
+    return { kept: false, opened: null, adoptedAt: local.updatedAt }
+  await keepRemoteDrawingAsOther(deps, remote)
+  if (!firstContact) return { kept: true, opened: null, adoptedAt: null }
+  const opened = await swapOtherDrawing(deps)
+  const aberto = opened ? await readLessonDrawing(deps.store) : null
+  return { kept: true, opened, adoptedAt: aberto?.updatedAt ?? null }
 }

@@ -7,6 +7,7 @@ import {
 } from '../../domain/creations/creation'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
+import { ValidationError } from '../../domain/shared/errors'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
@@ -44,6 +45,8 @@ export class LessonDraftAccessService {
     tool: LessonCreationTool
     blockId: string
   }): Promise<void> {
+    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(input.blockId))
+      throw new ValidationError('Identificador de bloco inválido')
     const cacheKey = `${input.accountId}:${input.userId}:${input.tool}:${input.blockId}`
     const now = this.clock()
     if ((this.allowedUntil.get(cacheKey) ?? 0) > now) return

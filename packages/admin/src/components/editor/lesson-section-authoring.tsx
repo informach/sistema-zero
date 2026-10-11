@@ -26,6 +26,7 @@ import {
   SECTION_INTENT_LABELS,
   SECTION_INTENTS,
   sectionCompletionIssues,
+  submissionUpToDateWorkspace,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -491,8 +492,11 @@ export function LessonSectionAuthoring({
                   hasStudio={tools.some(
                     (b) => b.id === editing.workspaceBlockId && b.kind === 'studio',
                   )}
-                  // `tools` já são os Estúdios e Pintas incorporados (sem a galeria).
-                  allowSubmissionUpToDate={tools.some((b) => b.id === editing.workspaceBlockId)}
+                  // A mesma régua do core: o espaço é um Estúdio/Pinta entregue numa parte de
+                  // entrega final que vem antes (ou é esta). Fora disso a publicação recusaria.
+                  allowSubmissionUpToDate={
+                    submissionUpToDateWorkspace(doc.sections, doc.blocks, editing.id) !== null
+                  }
                   workspace={tools.find((b) => b.id === editing.workspaceBlockId)?.content}
                   allowBlocks={tools.flatMap((b) =>
                     b.id === editing.workspaceBlockId && b.content.kind === 'studio'
@@ -637,7 +641,8 @@ export function LessonSectionAuthoring({
                     const noCompletion =
                       !section.completion?.blockIds.length &&
                       !section.completion?.projectChecks?.length &&
-                      !section.completion?.platformAction
+                      !section.completion?.platformAction &&
+                      !section.completion?.submissionUpToDate
                     const workspace = blocks.get(section.workspaceBlockId ?? '')
                     return (
                       <SortableSection

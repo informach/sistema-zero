@@ -1,9 +1,45 @@
 'use client'
 
 import { Cloud, CloudOff, CloudUpload, TriangleAlert } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import type { LessonDraftChannel, LessonDraftState } from '../lib/lesson-draft-cloud'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import type {
+  LessonDraftChannel,
+  LessonDraftCloud,
+  LessonDraftEditor,
+  LessonDraftState,
+} from '../lib/lesson-draft-cloud'
 import { useLessonCopy } from './lesson-copy-context'
+
+const subscribeNothing = () => () => {}
+const notSaving = () => false
+
+/**
+ * Registra o editor no coordenador da fase (salvar o que está na tela e dizer se bate com o
+ * envio) e devolve `true` enquanto um avanço ou a conclusão está salvando: a edição fica parada.
+ */
+export function useLessonDraftEditor(
+  cloud: LessonDraftCloud | null | undefined,
+  lessonId: string,
+  tool: 'studio' | 'pinta',
+  blockId: string,
+  editor: LessonDraftEditor,
+): boolean {
+  const editorRef = useRef(editor)
+  editorRef.current = editor
+  useEffect(
+    () =>
+      cloud?.registerEditor(lessonId, tool, blockId, {
+        save: () => editorRef.current.save(),
+        matchesSubmission: (context) => editorRef.current.matchesSubmission(context),
+      }),
+    [cloud, lessonId, tool, blockId],
+  )
+  return useSyncExternalStore(
+    cloud?.subscribeSaving ?? subscribeNothing,
+    () => cloud?.isSaving(lessonId) ?? false,
+    notSaving,
+  )
+}
 
 /**
  * A pílula do rascunho guardado na conta, no cabeçalho do bloco do Estúdio e do Pinta da fase

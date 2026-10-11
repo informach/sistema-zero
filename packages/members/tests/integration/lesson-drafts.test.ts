@@ -156,6 +156,22 @@ function setup(opts: { personalizar?: LessonSection['completion'] } = {}) {
 }
 
 describe('o rascunho da fase guardado na conta', () => {
+  test('id de bloco inválido é 400 sem consultar o repositório', async () => {
+    const ctx = setup()
+    ctx.courses.findBlockLessonId = async () => {
+      throw new Error('invalid ID reached database')
+    }
+    for (const tool of ['lesson-studio', 'lesson-pinta']) {
+      const response = await ctx.request(`/creations/${tool}/not-a-uuid/upload`, 'POST', {
+        formatVersion: STUDIO_PROJECT_FORMAT_VERSION,
+        name: 'x',
+        kind: 'classic',
+        bytes: 100,
+        itemUpdatedAt: '2026-10-10T12:00:00Z',
+      })
+      expect(response.status).toBe(400)
+    }
+  })
   test('reserva pela FASE, sem a posse do Estúdio, e a impressão sobe no commit', async () => {
     const ctx = setup()
     const commit = await ctx.guardarRascunho(impressao('a'))

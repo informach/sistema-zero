@@ -10,7 +10,8 @@ contexto: a comunidade adulta não liga nada disso.
 
 - **Contrato** em `lib/lesson-draft-cloud.ts` (`LessonDraftChannel`: `supported`, `mark`/`setMark`,
   `peek` (o bilhete, sem baixar o blob), `enqueue(blockId, produce, onConflict?)`, `flush`,
-  `getState`/`subscribe`; `LessonDraftCloud {studio, pinta, flushAll}`). O kids implementa; o
+  `confirm(blockId, timeoutMs?)`, `getState`/`subscribe`). `LessonDraftCloud` reúne os canais,
+  `flushAll` e o coordenador `registerEditor`/`withSavedDrafts`/`isSaving`/`subscribeSaving`. O kids implementa; o
   player recebe por `LessonPlayerContextValue.lessonDrafts?`. Desligado por `LESSON_DRAFTS_ENABLED`
   (padrão ligado, `lib/env.ts`) e em sessão de suporte somente leitura.
 - **Qual versão abre** é `lib/lesson-draft-seed.ts` (`decideLessonDraftSeed`, pura, testada em
@@ -22,20 +23,48 @@ contexto: a comunidade adulta não liga nada disso.
   montar e só depois a ordem de sempre abre o que ficou no disco.
 - **Estúdio** (`components/studio/lesson-studio-draft.ts` + `studio-block.tsx`): a "outra" é o
   projeto `lessonStudioBackupProjectId` (`…-outra`), gravado por `validateCloudProjectSnapshot` +
-  `replaceLocalProject` (o `restoreProjectFromCloud` recusa projeto aberto). A persistência do
+  `replaceLocalProject(project, {namespace: ''})` (o `restoreProjectFromCloud` recusa projeto aberto). A persistência do
   editor é EMBRULHADA (salva e enfileira); o produtor relê o IndexedDB na hora
   (`loadProjectSnapshotForCloud`) com `id` = o do BLOCO (o BFF confere). Enviar = salvar →
-  `flush(4000)` → impressão do disco → POST com `fingerprint`. Recomeçar enfileira.
+  impressão do disco → enfileirar + `flush(4000)` em tentativa → POST com `fingerprint`. ⚠️ A
+  ENTREGA À EQUIPE NUNCA DEPENDE DA NUVEM DO RASCUNHO: falha de salvar no disco manda o projeto da
+  tela sem impressão (o critério deixa passar); o Pinta faz o mesmo com o desenho da tela. O editor
+  fica inerte SÓ durante o avanço (`useLessonDraftEditor`), nunca no envio. Recomeçar grava o projeto
+  inicial com `updatedAt` de agora e enfileira. A preparação (qual versão abre) roda uma vez por
+  rascunho e quem chega depois ESPERA a mesma promessa (`preparing`): um `router.refresh()` no meio
+  dela abriria o disco antigo.
 - **Pinta** (`components/pinta/lesson-pinta-draft.ts` + `pinta-block.tsx`): o banco do bloco É o
   rascunho; a "outra" é um segundo banco, `aula-<bloco>-<perfil>-outra`. Trocar de versão remonta
   o `<PintaLesson>` por `key`.
 - **"Outra versão"**: botão no cabeçalho do bloco, só quando existe uma guardada, com diálogo de
   confirmação; troca as duas de lugar. **Selo** `components/lesson-draft-status.tsx`. **Aviso**
   `rascunho.mudouProjeto`/`mudouDesenho` quando o projeto mudou depois do envio.
-- **`lesson-sections.tsx`**: `await lessonDrafts.flushAll(4000)` antes de navegar (o members só
-  ASSENTA a parte marcada na navegação); `SECTION_LOCKED` recarrega o progresso e mostra
+- **`lesson-sections.tsx`** e conclusão do Kids: `withSavedDrafts(lessonId, action, {confirm})`
+  salva os editores montados e só então faz o POST. ⚠️ Só os blocos de `confirm` (as partes com
+  "envio em dia" que a ação fecha: `upToDateWorkspaceIds(sections, atual, destino)`; voltar = nenhum)
+  EXIGEM a confirmação da conta; os outros salvam e sobem em tentativa (4 s) e nunca seguram a
+  criança (cota cheia, editor carregando, R2 fora). Falha num bloco exigido ainda passa se
+  `matchesSubmission()` (nada enviado, envio sem impressão, ou disco/desenho igual ao envio): reenviar
+  sempre destrava. `VIEWER_MISMATCH` vira `code: 'VIEWER_CHANGED'` sem nova tentativa. Salvar e
+  confirmar têm prazo (15 s cada); duas ações na mesma fase entram em fila. Editor fora do ar
+  (carregando, falhou) não salva nada. `flushAll` é só melhor esforço na saída. `SECTION_LOCKED` recarrega o progresso e mostra
   `copy.secoes.confiraAntes`. O Kids diz `submission-outdated` com "Você mudou o projeto depois de
   enviar. Clique em Enviar de novo" (`itemPendente`; ícone `RefreshCw` na faixa).
+- **Preservar versões**: quando a versão local vence, baixar e gravar a outra ANTES de adotar
+  a revisão remota. Falha mantém a marca anterior; a próxima subida precisará resolver o conflito.
+- ⚠️⚠️ **Conflito na subida (`resolveStudioConflict`/`resolvePintaConflict`)**: conteúdo IGUAL só
+  adota a revisão (não gasta a única "outra versão"); diferente guarda a da conta como a "outra" e a
+  daqui sobe por cima; mas no **PRIMEIRO CONTATO** (`firstContact`: este aparelho nunca teve marca
+  do bloco, ou seja abriu sem conseguir perguntar à conta) a da conta passa para CIMA, a daqui vira
+  a "outra" e o editor reabre (`rascunho.trouxeDaConta`). Sem isso, num computador novo com a
+  consulta falhando uma vez, o MODELO INICIAL subia por cima do trabalho guardado na conta, e o
+  computador de origem passava a abrir o modelo. O bloco devolve `{adopted: {updatedAt}}` e a fila
+  marca a revisão sem subir de novo. Durante essa troca o bloco fica `inert` e não enfileira nada
+  (`trazendoRef`): um autosave no meio gravaria o trabalho antigo por cima da versão da conta e
+  depois o subiria. Trocas de lugar desfazem a primeira escrita se a segunda falha; o Pinta grava
+  antes de apagar.
+- Regressões: `lesson-draft-coordinator.test.ts`, `lesson-draft-persistence.test.ts`; no Kids,
+  `lesson-draft-cloud.test.ts` e `lesson-sections.test.tsx`.
 - **BFF** (`routes/creations.ts`): tipos `lesson-studio`/`lesson-pinta` (`itemId` uuid), `fingerprint`
   na reserva, a validação de projeto do Estúdio também para `lesson-studio` e `serverNow` no
   download; `routes/index.ts` repassa a impressão do envio (`readFingerprint`). ⚠️ A `Tool` da rota

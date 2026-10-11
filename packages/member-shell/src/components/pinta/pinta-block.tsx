@@ -32,19 +32,24 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
+import type { LessonDraftConflictOutcome, LessonDraftRemote } from '../../lib/lesson-draft-cloud'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
 import { resolvePintaSeed } from '../../lib/pinta-seed'
 import { preparePintaSubmission } from '../../lib/pinta-submission'
 import type { PintaBlock, PintaStateView, PintaSubmissionResultView } from '../../lib/types'
 import { useLessonCopy } from '../lesson-copy-context'
-import { LessonDraftStatus, useLessonDraftState } from '../lesson-draft-status'
+import {
+  LessonDraftStatus,
+  useLessonDraftEditor,
+  useLessonDraftState,
+} from '../lesson-draft-status'
 import { useLessonPlayer } from '../lesson-player-context'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import {
-  keepRemoteDrawingAsOther,
   type PintaDraftDeps,
   pintaDraftProducer,
   preparePintaLessonDraft,
+  resolvePintaConflict,
   swapOtherDrawing,
   withDraftUpload,
 } from './lesson-pinta-draft'
@@ -111,25 +116,66 @@ export function PintaBlockView({
   const [otherOpen, setOtherOpen] = useState(false)
   const [swapping, setSwapping] = useState(false)
   const [otherNote, setOtherNote] = useState<string | null>(null)
+  // A conta tinha um desenho que este aparelho não conhecia e ele abriu por cima (primeiro contato).
+  const [contaNote, setContaNote] = useState<string | null>(null)
+  // Enquanto o desenho da conta sobe para cima, o editor fica parado e nada sobe (ver o Estúdio).
+  const [trazendoDaConta, setTrazendoDaConta] = useState(false)
+  const trazendoRef = useRef(false)
   const [sentFingerprint, setSentFingerprint] = useState<string | null>(
     pintaState?.contentFingerprint ?? null,
   )
   const [currentFingerprint, setCurrentFingerprint] = useState<string | null>(null)
 
   const handleRef = useRef<PintaHandle | null>(null)
+  // O conflito na subida (`resolvePintaConflict`). Num ref porque a fila guarda o callback e ele
+  // precisa do editor de agora. No primeiro contato a versão da conta passa para cima: guarda o
+  // que está na tela antes e remonta o editor com ela.
+  const conflitoRef = useRef<
+    (
+      deps: PintaDraftDeps,
+      remote: LessonDraftRemote,
+      firstContact: boolean,
+    ) => Promise<LessonDraftConflictOutcome | undefined>
+  >(async () => undefined)
+  conflitoRef.current = async (deps, remote, firstContact) => {
+    if (firstContact) {
+      trazendoRef.current = true
+      setTrazendoDaConta(true)
+    }
+    try {
+      if (firstContact) await handleRef.current?.save().catch(() => false)
+      const desfecho = await resolvePintaConflict(deps, remote, firstContact)
+      if (desfecho.kept) setHasOther(true)
+      if (desfecho.opened) {
+        setInitialAsset(desfecho.opened)
+        setPintaVersion((version) => version + 1)
+        setContaNote(rascunho.trouxeDaConta)
+      }
+      return desfecho.adoptedAt === null
+        ? undefined
+        : { adopted: { updatedAt: desfecho.adoptedAt } }
+    } finally {
+      trazendoRef.current = false
+      setTrazendoDaConta(false)
+    }
+  }
+  // Estável: só lê o ref, então a fila pode guardar o callback sem prendê-lo a um render velho.
+  const aoConflitar = useCallback(
+    (deps: PintaDraftDeps) =>
+      (remote: LessonDraftRemote, { firstContact }: { firstContact: boolean }) =>
+        conflitoRef.current(deps, remote, firstContact),
+    [],
+  )
   // A subida do rascunho, num ref: o banco embrulhado é criado uma vez, na carga.
   const subirRef = useRef<() => void>(() => {})
   const subirRascunho = useCallback(() => {
-    if (!draftDeps) return
+    if (!draftDeps || trazendoRef.current) return
     draftDeps.channel.enqueue(
       blockId,
       pintaDraftProducer(draftDeps, setCurrentFingerprint),
-      async (remote) => {
-        await keepRemoteDrawingAsOther(draftDeps, remote)
-        setHasOther(true)
-      },
+      aoConflitar(draftDeps),
     )
-  }, [draftDeps, blockId])
+  }, [draftDeps, blockId, aoConflitar])
   subirRef.current = subirRascunho
 
   // As demais dependências (desenho inicial, estado da entrega, aula, perfil) são a SEMENTE:
@@ -197,10 +243,7 @@ export function PintaBlockView({
             channel?.enqueue(
               blockId,
               pintaDraftProducer(deps, setCurrentFingerprint),
-              async (remote) => {
-                await keepRemoteDrawingAsOther(deps, remote)
-                setHasOther(true)
-              },
+              aoConflitar(deps),
             )
           if (daConta) setCurrentFingerprint(await pintaContentFingerprint(daConta))
         } catch (error) {
@@ -256,22 +299,25 @@ export function PintaBlockView({
     try {
       // ⚠️ SALVA antes de ler: o autosave é debounced, e enviar o desenho de 1s atrás mandaria
       // ao professor uma versão sem os últimos traços.
-      const prepared = await preparePintaSubmission(handle, (asset) =>
-        pintaAssetToWire(asset as Parameters<typeof pintaAssetToWire>[0]),
-      )
-      if (!prepared.ok) {
-        setError('Não consegui salvar os últimos traços. Tente de novo antes de enviar.')
-        return
-      }
+      const toWire = (asset: unknown) =>
+        pintaAssetToWire(asset as Parameters<typeof pintaAssetToWire>[0])
+      const prepared = await preparePintaSubmission(handle, toWire)
+      // Sem conseguir guardar neste aparelho, a entrega vai assim mesmo com o desenho da tela (que
+      // tem os últimos traços), sem impressão: o "envio em dia" deixa passar e reenviar destrava.
+      const asset = prepared.ok ? prepared.asset : toWire(handle.getAsset())
       // "Envio em dia": a impressão do desenho enviado, a mesma régua do rascunho da conta.
-      const fingerprint = await pintaContentFingerprint(prepared.asset)
-      if (channel) await channel.flush(4000).catch(() => {})
+      const fingerprint = prepared.ok ? await pintaContentFingerprint(asset) : null
+      // O rascunho sobe junto, em tentativa: a entrega à equipe nunca depende da nuvem dele.
+      if (channel) {
+        subirRef.current()
+        await channel.flush(4000).catch(() => {})
+      }
       const note = message.trim()
       const res = await apiSend<PintaSubmissionResultView>(
         `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/pinta-submission`,
         'POST',
         {
-          asset: prepared.asset,
+          asset,
           ...(note ? { message: note } : {}),
           ...(fingerprint ? { fingerprint } : {}),
         },
@@ -310,6 +356,7 @@ export function PintaBlockView({
       }
       setInitialAsset(aberto)
       setPintaVersion((version) => version + 1)
+      setContaNote(null)
       setOtherOpen(false)
       subirRef.current()
     } catch {
@@ -348,9 +395,35 @@ export function PintaBlockView({
 
   const PintaLesson = mod?.PintaLesson as PintaComponent | undefined
   const ready = Boolean(PintaLesson && persistence && initialAsset)
+  const savingDrafts = useLessonDraftEditor(
+    channel ? player?.lessonDrafts : undefined,
+    lessonId,
+    'pinta',
+    blockId,
+    {
+      // Editor fora do ar (carregando ou com falha): não há edição na tela para guardar.
+      save: async () => {
+        if (!ready || !handleRef.current) return
+        if (!(await handleRef.current.save())) throw new Error('Não foi possível salvar o desenho')
+        subirRef.current()
+      },
+      // Sem envio, o servidor pede o envio; envio sem impressão passa. Senão, o desenho da tela
+      // decide (a mesma régua do envio; vale mesmo com o salvar falhando).
+      matchesSubmission: async () => {
+        if (!submitted || !sentFingerprint) return true
+        const handle = handleRef.current
+        if (!handle) return false
+        const wire = pintaAssetToWire(handle.getAsset() as Parameters<typeof pintaAssetToWire>[0])
+        return (await pintaContentFingerprint(wire)) === sentFingerprint
+      },
+    },
+  )
 
   return (
     <div
+      // Só o avanço da fase para a edição (a comunidade adulta nunca chega aqui).
+      inert={savingDrafts || trazendoDaConta || undefined}
+      aria-busy={savingDrafts || trazendoDaConta || undefined}
       className={cn(
         'flex flex-col gap-3',
         expanded && 'fixed inset-0 z-50 gap-2 bg-background p-3',
@@ -448,6 +521,7 @@ export function PintaBlockView({
           {mudouDepoisDoEnvio ? (
             <p className="sz-lesson-draft-outdated text-sm font-medium">{rascunho.mudouDesenho}</p>
           ) : null}
+          {contaNote ? <p className="text-sm text-muted-foreground">{contaNote}</p> : null}
           {reviewed ? (
             <p className="flex items-center gap-2 text-sm text-success">
               <CheckCheck className="size-4" />

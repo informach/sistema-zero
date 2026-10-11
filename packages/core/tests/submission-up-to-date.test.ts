@@ -54,6 +54,8 @@ describe('impressão digital do conteúdo', () => {
     )
   })
 
+  // ⚠️ O nome fica fora do PROJETO, mas o `index.html` regerado pelo editor de blocos leva o
+  // `<title>` com ele: na vida real, renomear e mexer num bloco muda a impressão.
   test('o Estúdio ignora nome, datas, posição dos blocos, versão da extensão e a biblioteca do curso', async () => {
     const base = await studioContentFingerprint(projeto)
     expect(isContentFingerprint(base)).toBe(true)

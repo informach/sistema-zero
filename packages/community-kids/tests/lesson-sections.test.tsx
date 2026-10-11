@@ -9,6 +9,7 @@ import {
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
+import { useLessonDraftEditor } from '@sistemazero/member-shell/components/lesson-draft-status'
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
@@ -18,6 +19,11 @@ import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
+import {
+  createLessonDraftCoordinator,
+  type LessonDraftChannel,
+  type LessonDraftCloud,
+} from '@sistemazero/member-shell/lib/lesson-draft-cloud'
 import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
@@ -95,6 +101,141 @@ afterEach(() => {
 })
 
 describe('aula por seções', () => {
+  test.each([
+    false,
+    true,
+  ])('parte com envio em dia: o avanço espera o editor e a conta; falha impede o pedido: %s', async (fail) => {
+    const local = Promise.withResolvers<void>()
+    const remote = Promise.withResolvers<void>()
+    let confirming = false
+    const channel: LessonDraftChannel = {
+      supported: true,
+      mark: () => null,
+      setMark: () => {},
+      peek: async () => null,
+      enqueue: () => {},
+      flush: async () => {},
+      confirm: async () => {
+        confirming = true
+        await remote.promise
+      },
+      getState: () => ({ status: 'idle', message: null }),
+      subscribe: () => () => {},
+    }
+    const cloud: LessonDraftCloud = {
+      studio: channel,
+      pinta: channel,
+      flushAll: async () => {},
+      ...createLessonDraftCoordinator({ studio: channel, pinta: channel }),
+    }
+    function Editor() {
+      const busy = useLessonDraftEditor(cloud, lesson.id, 'studio', 'project', {
+        save: () => local.promise,
+        // Mudou depois de enviar: sem a conta, só reenviar destrava.
+        matchesSubmission: async () => false,
+      })
+      return (
+        <div data-testid="editor" inert={busy || undefined}>
+          <input aria-label="Projeto" />
+        </div>
+      )
+    }
+    const navigated: string[] = []
+    globalThis.fetch = Object.assign(
+      async (_url: unknown, init?: RequestInit) => {
+        if (init?.body) navigated.push(JSON.parse(String(init.body)).sectionId)
+        return Response.json({ ok: true })
+      },
+      { preconnect: () => {} },
+    )
+    const marcada: LessonDetailView = {
+      ...lesson,
+      sections: lesson.sections?.map((section) =>
+        section.id === 'first'
+          ? { ...section, completion: { version: 1, blockIds: [], submissionUpToDate: true } }
+          : section,
+      ),
+    }
+    render(
+      <LessonPlayerProvider value={{ ...player, lessonDrafts: cloud }}>
+        <LessonSections lesson={marcada} renderBlocks={() => <Editor />} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    expect(navigated).not.toContain('second')
+    expect(confirming).toBe(false)
+    expect(screen.getByTestId('editor').hasAttribute('inert')).toBe(true)
+    await act(async () => {
+      local.resolve()
+    })
+    expect(confirming).toBe(true)
+    expect(navigated).not.toContain('second')
+    await act(async () => {
+      if (fail) remote.reject(new Error('timeout'))
+      else remote.resolve()
+    })
+    if (fail) {
+      expect(navigated).not.toContain('second')
+      expect(
+        screen.getByText(
+          'Não consegui guardar suas últimas mudanças na conta. Tente de novo, ou clique em Enviar de novo para a equipe receber a versão nova.',
+        ),
+      ).toBeDefined()
+    } else {
+      expect(navigated).toContain('second')
+    }
+    expect(screen.getByTestId('editor').hasAttribute('inert')).toBe(false)
+  })
+
+  test('parte sem envio em dia: a nuvem do rascunho com falha não prende o avanço', async () => {
+    let confirming = false
+    const channel: LessonDraftChannel = {
+      supported: true,
+      mark: () => null,
+      setMark: () => {},
+      peek: async () => null,
+      enqueue: () => {},
+      flush: async () => {},
+      confirm: async () => {
+        confirming = true
+        throw new Error('cota cheia')
+      },
+      getState: () => ({ status: 'error', message: null }),
+      subscribe: () => () => {},
+    }
+    const cloud: LessonDraftCloud = {
+      studio: channel,
+      pinta: channel,
+      flushAll: async () => {},
+      ...createLessonDraftCoordinator({ studio: channel, pinta: channel }),
+    }
+    function Editor() {
+      useLessonDraftEditor(cloud, lesson.id, 'studio', 'project', {
+        save: async () => {
+          throw new Error('o Estúdio ainda está carregando')
+        },
+        matchesSubmission: async () => false,
+      })
+      return <input aria-label="Projeto" />
+    }
+    const navigated: string[] = []
+    globalThis.fetch = Object.assign(
+      async (_url: unknown, init?: RequestInit) => {
+        if (init?.body) navigated.push(JSON.parse(String(init.body)).sectionId)
+        return Response.json({ ok: true })
+      },
+      { preconnect: () => {} },
+    )
+    render(
+      <LessonPlayerProvider value={{ ...player, lessonDrafts: cloud }}>
+        <LessonSections lesson={lesson} renderBlocks={() => <Editor />} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    await waitFor(() => expect(navigated).toContain('second'))
+    expect(confirming).toBe(false)
+  })
+
   test('modo imersivo preserva o título acessível e troca avanço por conclusão na última seção', () => {
     const { container } = render(
       <LessonPlayerProvider value={player}>

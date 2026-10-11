@@ -10,6 +10,7 @@ import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
+import { upToDateWorkspaceIds } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Check, CheckCircle2, Lock, X } from 'lucide-react'
 import Link from 'next/link'
@@ -165,13 +166,19 @@ export function LessonPlayer({
     if (completedRef.current) return
     setCompleting(true)
     try {
-      // O rascunho sobe antes: a conclusão grava as partes com "envio em dia" e precisa ver a
-      // última alteração (com teto; sem internet, compara com o que já estava na conta).
-      await lessonDrafts?.flushAll(4000).catch(() => {})
-      const res = await apiSend<LessonCompleteResult>(
-        `/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`,
-        'POST',
-      )
+      // Concluir fecha as partes com "envio em dia" da parte de agora até o fim: a edição delas
+      // precisa chegar à conta antes do pedido. O resto sobe em tentativa.
+      const sendCompletion = () =>
+        apiSend<LessonCompleteResult>(
+          `/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`,
+          'POST',
+        )
+      const sections = lesson.sections ?? []
+      const res = lessonDrafts
+        ? await lessonDrafts.withSavedDrafts(lesson.id, sendCompletion, {
+            confirm: upToDateWorkspaceIds(sections, secao?.index ?? 0, sections.length),
+          })
+        : await sendCompletion()
       completedRef.current = true
       setCelebration({
         progress: course.progress,
@@ -190,6 +197,8 @@ export function LessonPlayer({
     }
   }, [
     lesson.id,
+    lesson.sections,
+    secao?.index,
     course.progress,
     course.careerSlot,
     course.milestones?.showcased,

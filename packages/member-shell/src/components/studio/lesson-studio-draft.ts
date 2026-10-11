@@ -22,7 +22,6 @@ export interface StudioDraftDeps {
   studio: Pick<
     StudioModule,
     | 'loadProjectSnapshotForCloud'
-    | 'restoreProjectFromCloud'
     | 'validateCloudProjectSnapshot'
     | 'replaceLocalProject'
     | 'loadProjectSummaryForCloud'
@@ -50,7 +49,7 @@ async function gravar(studio: StudioDraftDeps['studio'], raw: unknown, id: strin
     { ...(raw as Record<string, unknown>), id },
     { expectedId: id },
   )
-  await studio.replaceLocalProject(conferido.project as Project)
+  await studio.replaceLocalProject(conferido.project, AULA)
   return conferido.project as Project
 }
 
@@ -104,6 +103,8 @@ export async function prepareStudioLessonDraft(
   let upload = false
   switch (decisao.open) {
     case 'local': {
+      // A marca autoriza sobrescrever a conta: a outra versão precisa existir antes dela.
+      if (remote && decisao.backupCloud) await gravar(studio, await remote.load(assets), backupId)
       if (remote && decisao.adoptRevision !== null) {
         // A conta tem uma revisão que este aparelho ainda não conhecia: passa a ser a base da
         // próxima subida (senão ela seria recusada por base vencida).
@@ -113,7 +114,6 @@ export async function prepareStudioLessonDraft(
           updatedAt: decisao.upload ? (anterior?.updatedAt ?? 0) : (local?.updatedAt ?? 0),
         })
       }
-      if (remote && decisao.backupCloud) await gravar(studio, await remote.load(assets), backupId)
       upload = decisao.upload && conheceConta
       break
     }
@@ -146,7 +146,7 @@ export function studioDraftProducer(
 ) {
   return async () => {
     const project = await deps.studio.loadProjectSnapshotForCloud(deps.projectId, AULA)
-    if (!project) return null
+    if (!project) throw new Error('Não foi possível ler o projeto salvo')
     const fingerprint = await studioContentFingerprint(project)
     onFingerprint?.(fingerprint)
     return {
@@ -170,6 +170,36 @@ export async function swapOtherVersion(deps: StudioDraftDeps): Promise<Project |
   ])
   if (!outra) return null
   const aberta = await gravar(studio, outra, projectId)
-  if (atual) await gravar(studio, atual, backupId)
+  if (atual) {
+    try {
+      await gravar(studio, atual, backupId)
+    } catch (error) {
+      // Sem isto as duas posições ficariam com a mesma versão e a de agora sumiria.
+      await gravar(studio, atual, projectId).catch(() => {})
+      throw error
+    }
+  }
   return aberta
+}
+
+/**
+ * Conflito na subida (outro aparelho subiu antes). Conteúdo igual: só a revisão é nova. Senão a
+ * versão da conta fica guardada como a "outra"; e, no PRIMEIRO contato deste aparelho com a conta
+ * (ele abriu sem conseguir perguntar, então o que está aqui pode ser só o modelo inicial), a da
+ * conta passa para cima e a daqui vira a "outra". Nada se perde nos dois caminhos.
+ *
+ * `opened` = o projeto que o editor deve reabrir (só no primeiro contato).
+ */
+export async function resolveStudioConflict(
+  deps: StudioDraftDeps,
+  remote: LessonDraftRemote,
+  firstContact: boolean,
+): Promise<{ kept: boolean; opened: Project | null; adoptedAt: number | null }> {
+  const local = await deps.studio.loadProjectSnapshotForCloud(deps.projectId, AULA)
+  if (local && remote.fingerprint && remote.fingerprint === (await studioContentFingerprint(local)))
+    return { kept: false, opened: null, adoptedAt: local.updatedAt }
+  await keepRemoteAsOther(deps, remote)
+  if (!firstContact) return { kept: true, opened: null, adoptedAt: null }
+  const opened = await swapOtherVersion(deps)
+  return { kept: true, opened, adoptedAt: opened?.updatedAt ?? null }
 }

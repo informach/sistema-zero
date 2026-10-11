@@ -127,6 +127,106 @@ const desenho = (letra: string) => ({
 })
 
 describe('o canal do rascunho da fase', () => {
+  test('confirmar aguarda a cópia do conflito e o commit da nova versão', async () => {
+    const s = servidor()
+    const marks = createMemorySyncedMarks()
+    await s.outroAparelho('lesson-pinta', desenho('a'), `v1:${'a'.repeat(64)}`)
+    marks.set(BLOCO, 500, 1)
+    await s.outroAparelho('lesson-pinta', desenho('b'), `v1:${'b'.repeat(64)}`)
+    const cloud = createLessonDraftCloud({
+      viewerId: VIEWER,
+      fetch: s.fetchImpl,
+      marks: { pinta: marks },
+    })
+    const backup = Promise.withResolvers<void>()
+    const started = Promise.withResolvers<void>()
+    cloud.pinta.enqueue(
+      BLOCO,
+      async () => ({
+        document: desenho('c'),
+        name: 'novo',
+        kind: 'pixel-background',
+        updatedAt: 2000,
+        fingerprint: `v1:${'c'.repeat(64)}`,
+      }),
+      async () => {
+        started.resolve()
+        await backup.promise
+        return undefined
+      },
+    )
+    let confirmed = false
+    const confirmation = cloud.pinta.confirm(BLOCO, 1000).then(() => {
+      confirmed = true
+    })
+    await started.promise
+    await cloud.flushAll(20)
+    expect(confirmed).toBe(false)
+    backup.resolve()
+    await confirmation
+    expect(cloud.pinta.mark(BLOCO)).toEqual({ revision: 3, updatedAt: 2000 })
+    await cloud.dispose()
+  })
+
+  test('timeout não confirma nem cancela a subida; uma nova tentativa espera o commit', async () => {
+    const s = servidor()
+    const put = Promise.withResolvers<void>()
+    const cloud = createLessonDraftCloud({
+      viewerId: VIEWER,
+      fetch: async (input, init) => {
+        if (String(input).startsWith('https://r2.test/') && init?.method === 'PUT')
+          await put.promise
+        return s.fetchImpl(input, init)
+      },
+      marks: { pinta: createMemorySyncedMarks() },
+    })
+    cloud.pinta.enqueue(BLOCO, async () => ({
+      document: desenho('a'),
+      name: 'novo',
+      kind: 'pixel-background',
+      updatedAt: 2000,
+      fingerprint: `v1:${'a'.repeat(64)}`,
+    }))
+    const result = await cloud.pinta.confirm(BLOCO, 20).then(
+      () => 'confirmed',
+      () => 'pending',
+    )
+    expect(result).toBe('pending')
+    expect(cloud.pinta.mark(BLOCO)).toBeNull()
+    put.resolve()
+    await cloud.pinta.confirm(BLOCO, 1000)
+    expect(cloud.pinta.mark(BLOCO)?.revision).toBe(1)
+    await cloud.dispose()
+  })
+
+  test('erro de um item não é escondido pelo sucesso de outro', async () => {
+    const s = servidor()
+    const cloud = createLessonDraftCloud({
+      viewerId: VIEWER,
+      fetch: async (input, init) =>
+        String(input).includes(`/${BLOCO}/upload`)
+          ? json(403, { error: { code: 'ACCESS_DENIED' } })
+          : s.fetchImpl(input, init),
+      marks: { pinta: createMemorySyncedMarks() },
+    })
+    const producer = async () => ({
+      document: desenho('a'),
+      name: 'novo',
+      kind: 'pixel-background',
+      updatedAt: 2000,
+      fingerprint: `v1:${'a'.repeat(64)}`,
+    })
+    cloud.pinta.enqueue(BLOCO, producer)
+    cloud.pinta.enqueue('33333333-3333-4333-8333-333333333333', producer)
+    await cloud.flushAll(1000)
+    expect(
+      await cloud.pinta.confirm(BLOCO, 1000).then(
+        () => true,
+        () => false,
+      ),
+    ).toBe(false)
+    await cloud.dispose()
+  })
   test('sobe com a impressão e a base, e a marca avança só no commit', async () => {
     const s = servidor()
     const marks = createMemorySyncedMarks()
@@ -209,6 +309,7 @@ describe('o canal do rascunho da fase', () => {
       }),
       async (remoto) => {
         guardadas.push(await remoto.load())
+        return undefined
       },
     )
     await nuvem.flushAll(5000)
@@ -224,4 +325,99 @@ describe('o canal do rascunho da fase', () => {
     const baixado = s.blobs.get(`lesson-pinta/${BLOCO}/3`)
     expect(baixado && JSON.parse(await gunzipToText(baixado))).toEqual(desenho('daqui'))
   })
+})
+
+describe('o conflito na subida (full review, 10/10/2026)', () => {
+  test('primeiro contato: o bloco sabe, e adotando a versão da conta nada sobe por cima', async () => {
+    const s = servidor()
+    await s.outroAparelho('lesson-pinta', desenho('trabalho'), `v1:${'a'.repeat(64)}`)
+    // Este computador abriu sem conseguir perguntar à conta: nenhuma marca do bloco.
+    const marks = createMemorySyncedMarks()
+    const cloud = createLessonDraftCloud({
+      viewerId: VIEWER,
+      fetch: s.fetchImpl,
+      marks: { pinta: marks },
+    })
+    const contextos: Array<{ firstContact: boolean }> = []
+    cloud.pinta.enqueue(
+      BLOCO,
+      async () => ({
+        document: desenho('modelo'),
+        name: 'modelo',
+        kind: 'pixel-background',
+        updatedAt: 2_000,
+        fingerprint: `v1:${'m'.repeat(64)}`,
+      }),
+      async (_remote, contexto) => {
+        contextos.push(contexto)
+        return { adopted: { updatedAt: 1_500 } }
+      },
+    )
+    await cloud.pinta.confirm(BLOCO, 2_000)
+    expect(contextos).toEqual([{ firstContact: true }])
+    // A conta continua com o trabalho (revisão 1); este aparelho passa a conhecê-la.
+    expect(s.itens.get(`lesson-pinta/${BLOCO}`)?.revision).toBe(1)
+    expect(s.reservas.length).toBe(1)
+    expect(cloud.pinta.mark(BLOCO)).toEqual({ revision: 1, updatedAt: 1_500 })
+    await cloud.dispose()
+  })
+
+  test('conflito comum (este aparelho já conhecia a conta): a daqui sobe por cima', async () => {
+    const s = servidor()
+    await s.outroAparelho('lesson-pinta', desenho('a'), `v1:${'a'.repeat(64)}`)
+    const marks = createMemorySyncedMarks()
+    marks.set(BLOCO, 500, 1)
+    await s.outroAparelho('lesson-pinta', desenho('b'), `v1:${'b'.repeat(64)}`)
+    const cloud = createLessonDraftCloud({
+      viewerId: VIEWER,
+      fetch: s.fetchImpl,
+      marks: { pinta: marks },
+    })
+    const contextos: Array<{ firstContact: boolean }> = []
+    cloud.pinta.enqueue(
+      BLOCO,
+      async () => ({
+        document: desenho('c'),
+        name: 'c',
+        kind: 'pixel-background',
+        updatedAt: 2_000,
+        fingerprint: `v1:${'c'.repeat(64)}`,
+      }),
+      async (_remote, contexto) => {
+        contextos.push(contexto)
+        return undefined
+      },
+    )
+    await cloud.pinta.confirm(BLOCO, 2_000)
+    expect(contextos).toEqual([{ firstContact: false }])
+    expect(s.itens.get(`lesson-pinta/${BLOCO}`)?.revision).toBe(3)
+    await cloud.dispose()
+  })
+
+  test('um bloco que a rede não deixa subir não segura o outro na fila', async () => {
+    const s = servidor()
+    const OUTRO = '33333333-3333-4333-8333-333333333333'
+    const cloud = createLessonDraftCloud({
+      viewerId: VIEWER,
+      fetch: async (input, init) => {
+        // O primeiro bloco cai sempre na rede; o segundo sobe normal.
+        if (String(input).includes(`/${BLOCO}/`)) throw new TypeError('Failed to fetch')
+        return s.fetchImpl(input, init)
+      },
+      marks: { pinta: createMemorySyncedMarks() },
+    })
+    const produzir = (marca: string) => async () => ({
+      document: desenho(marca),
+      name: marca,
+      kind: 'pixel-background',
+      updatedAt: 2_000,
+      fingerprint: `v1:${marca.repeat(64)}`,
+    })
+    cloud.pinta.enqueue(BLOCO, produzir('a'))
+    cloud.pinta.enqueue(OUTRO, produzir('b'))
+    await cloud.pinta.confirm(OUTRO, 3_000)
+    expect(s.itens.get(`lesson-pinta/${OUTRO}`)?.revision).toBe(1)
+    // O descarte espera até 5 s pelo bloco que nunca sobe.
+    await cloud.dispose()
+  }, 15_000)
 })

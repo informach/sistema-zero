@@ -23,6 +23,14 @@ DENTRO da fase sobe sozinho para a conta; o envio virou só a entrega à equipe.
   para o portão de produto. `LESSON_CREATION_TOOLS`/`isLessonCreationTool`; `isStudioFormatTool`
   faz as regras de formato do Estúdio valerem também para `lesson-studio`. ⚠️ Contam na cota de
   1 GB por perfil (risco aceito).
+- **Identificador do rascunho**: `CreationItemParams` exige UUID para os dois tipos de aula;
+  `LessonDraftAccessService` também valida antes de consultar o repositório. As ferramentas livres
+  mantêm os identificadores genéricos. Identificador inválido retorna 400, nunca erro SQL 500.
+  As listas vêm de `PRODUCT_CREATION_TOOL` e `LESSON_CREATION_TOOL` (o `CREATION_TOOL` é a união).
+- ⚠️ **Reverter o members para antes da 0101 com o Kids no ar**: o código antigo não grava nem zera
+  `content_fingerprint` (reenvio, `restorePrevious`, promoção no commit). Depois da janela, rode
+  `update members.studio_submissions set content_fingerprint = null where submitted_at >= <início>`
+  e o mesmo nas `creations` dos tipos de aula; impressão nula deixa o critério passar.
 - **Quem pode reservar** é `LessonDraftAccessService` (`application/creations/`), a régua da FASE e
   não a da posse: aula publicada sem "Em breve", curso liberado à conta, aula destravada, bloco
   numa parte já aberta, do tipo da ferramenta e fora da galeria. Cache de 60 s por

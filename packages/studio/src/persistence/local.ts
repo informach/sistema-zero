@@ -3,8 +3,14 @@ export { createLocalPersistenceAdapter } from '../state/projectStore'
 
 import type { Project } from '../core/project'
 import { persistProject } from '../state/persistence'
+import { getProjectStorageScope } from '../state/projectStorageRuntime'
 
 /** Substitui todas as partições de um projeto local, inclusive blocos/capa ausentes no novo modelo. */
-export function replaceLocalProject(project: Project): Promise<void> {
-  return persistProject(project, { replace: true })
+export function replaceLocalProject(
+  project: Project,
+  options?: { namespace?: string },
+): Promise<void> {
+  const scope =
+    options?.namespace === undefined ? undefined : getProjectStorageScope(options.namespace)
+  return persistProject(project, { replace: true }, scope)
 }

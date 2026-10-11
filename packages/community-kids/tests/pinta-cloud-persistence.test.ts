@@ -102,6 +102,9 @@ function fakeCloud(remote: Map<string, { summary: CloudCreationSummary; json: st
       removed.push({ itemId, baseRevision, onRemoved, onStale })
     },
     flush: async () => {},
+    confirm: async () => {
+      throw new Error('A galeria livre não confirma avanços de aula')
+    },
     getState: () => ({ status: 'idle', pending: 0, lastSavedAt: null, lastError: null }),
     subscribe: () => () => {},
     dispose: () => {},

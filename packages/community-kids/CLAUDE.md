@@ -23,11 +23,21 @@ Base vencida na subida (outro aparelho subiu antes) → o `onConflict` guarda a 
 
 - `lib/creations-cloud.ts` ganhou `peek` (o bilhete sem baixar o blob), `fingerprint` na reserva,
   `contentFingerprint` e `serverNow`; `canonicalJson`/`sha256Hex` vêm do core (reexportados). ⚠️
-  Fila falsa de teste precisa de `peek` (molda/pinta/studio cloud tests).
+  Fila falsa de teste precisa de `peek` e `confirm` (molda/pinta/studio cloud tests).
 - `lib/studio-cloud.ts`: `resolveStudioCloudDocument(baixado, assetsLocais | () => Promise)`
   (a função adia a leitura dos assets locais).
-- `lesson-player-client.tsx` cria a nuvem por perfil e dá `flushAll` antes de concluir a fase; a
-  página da aula (`page.tsx`) liga só com `LESSON_DRAFTS_ENABLED`, sessão com id e fora do suporte
+- `lesson-player-client.tsx` cria a nuvem por perfil e usa `withSavedDrafts` antes de concluir,
+  com `confirm` = os blocos das partes com "envio em dia" da parte de agora até o fim
+  (`upToDateWorkspaceIds`). Só esses EXIGEM a conta; os outros sobem em tentativa (4 s) e nunca
+  seguram a criança. `confirm(itemId)` espera AQUELE item (acorda a cada passo da fila, não a fila
+  inteira), acompanha o backup/reenvio de conflitos, pula o debounce sem acordar o backoff e rejeita
+  timeout ou falha terminal com o `code` do servidor; `flush`/`flushAll` seguem melhor esforço.
+  `lessonDraftCloudFor` descarta a fila do perfil anterior ao trocar de perfil na aba. O conflito
+  na subida passa `{firstContact}` ao bloco (marca ausente) e respeita o `adopted` dele (marca a
+  revisão da conta e não sobe de novo). Na fila (`creations-cloud.ts`, vale para as criações livres
+  também) quem vai tentar de novo (rede, 429, 5xx) passa para o FIM: um item preso não segura os
+  outros nem vence o `confirm` de outro bloco. A página da aula (`page.tsx`) liga só
+  com `LESSON_DRAFTS_ENABLED`, sessão com id e fora do suporte
   somente leitura.
 - Testes: `tests/lesson-draft-cloud.test.ts`, `molda-conformance.test.ts` (os CINCO tipos e a
   migration 0100), `copy-vocabulario.test.ts`.
