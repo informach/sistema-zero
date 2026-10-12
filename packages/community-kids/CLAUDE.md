@@ -2583,8 +2583,13 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   E os dois só medem com TODAS as peças mostradas na cena (`visibleParts`/`allPartsSettled`, marcadas
   pelo `AssetPart` e pelo error boundary da peça): com a medida certa, ficar em pé com só a cabeça
   carregada afundava o corpo no pódio (a medida errada acertava os pés por coincidência). A captura
-  espera dois quadros antes de conferir: a troca recém-feita só entra na conta no quadro seguinte.
-  Testes em `tests/avatar-photo-measure.test.ts`; o ensaio visual com a cena real fica em
+  espera dois quadros antes de conferir (dentro do limite de 2,5 s: com a aba em segundo plano o
+  navegador para os quadros), porque a troca recém-feita só entra na conta no quadro seguinte. O
+  enquadramento é **`framePhoto`** (`avatar3d/photo-framing.ts`): a região (o corpo inteiro, ou no
+  retrato a cabeça com o começo dos ombros, os 45% de cima) ocupa 80% do quadrado, com a distância
+  medida do PLANO DA FRENTE. O retrato antigo usava distância fixa a partir do centro e, com a
+  medida certa, cortava o topo de um cabelo alto no celular. Testes em
+  `tests/avatar-photo-measure.test.ts` (projetam a região no quadrado recortado); o ensaio visual com a cena real fica em
   `tmp/avatar-foto/` (fora do git). Foto já salva com o corte só muda quando a criança salva de novo.
   A grade mostra **MINIATURAS = PNG estático**
   (`thumb-canvas.tsx` `<AvatarThumb>`): **(1)** primeiro o **PNG PRÉ-GERADO e commitado** em

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import { measureCharacter } from '../src/components/kids/avatar3d/measure'
+import { framePhoto, PORTRAIT_SHARE } from '../src/components/kids/avatar3d/photo-framing'
 import { allPartsSettled, visibleParts } from '../src/components/kids/avatar3d/visible-parts'
 import { DEFAULT_AVATAR_SLOTS } from '../src/lib/avatar3d-catalog'
 
@@ -68,6 +69,56 @@ describe('measureCharacter: a caixa do personagem pela pose de agora', () => {
     perto(box.min.y, 5)
     perto(box.max.y, 6)
   })
+})
+
+describe('framePhoto: a região fotografada cabe no quadrado recortado', () => {
+  // Um personagem como o do ensaio: 2,2 de altura, com a frente 0,45 à frente do centro.
+  const corpo = new THREE.Box3(
+    new THREE.Vector3(-0.55, 0, -0.48),
+    new THREE.Vector3(0.6, 2.2, 0.45),
+  )
+  const telas = [
+    { width: 1200, height: 520 }, // computador: largo
+    { width: 390, height: 430 }, // celular: quase quadrado
+    { width: 390, height: 700 }, // celular: alto
+    { width: 800, height: 800 },
+  ]
+
+  /** Os cantos da região em coordenadas do quadrado recortado (-1..1 = a borda da foto). */
+  function noQuadrado(box: THREE.Box3, tela: { width: number; height: number }, portrait: boolean) {
+    const cam = new THREE.PerspectiveCamera()
+    framePhoto(cam, box, tela, portrait)
+    const fundo = portrait ? box.max.y - (box.max.y - box.min.y) * PORTRAIT_SHARE : box.min.y
+    const lado = Math.min(tela.width, tela.height)
+    const pontos: { x: number; y: number }[] = []
+    for (const x of [box.min.x, box.max.x])
+      for (const y of [fundo, box.max.y])
+        for (const z of [box.min.z, box.max.z]) {
+          const p = new THREE.Vector3(x, y, z).project(cam)
+          // NDC do canvas inteiro → fração do quadrado central.
+          pontos.push({ x: (p.x * tela.width) / lado, y: (p.y * tela.height) / lado })
+        }
+    return pontos
+  }
+
+  for (const tela of telas) {
+    test(`corpo inteiro numa tela ${tela.width}x${tela.height}: cabeça e pés com folga`, () => {
+      const pts = noQuadrado(corpo, tela, false)
+      for (const p of pts) {
+        expect(Math.abs(p.y)).toBeLessThan(0.95)
+        expect(Math.abs(p.x)).toBeLessThan(1)
+      }
+      // E ocupa a foto: o personagem não fica um pontinho.
+      expect(Math.max(...pts.map((p) => p.y)) - Math.min(...pts.map((p) => p.y))).toBeGreaterThan(
+        1.3,
+      )
+    })
+
+    test(`retrato numa tela ${tela.width}x${tela.height}: o topo da cabeça com folga`, () => {
+      const pts = noQuadrado(corpo, tela, true)
+      for (const p of pts) expect(Math.abs(p.y)).toBeLessThan(0.95)
+    })
+  }
 })
 
 describe('as peças que o personagem mostra', () => {
