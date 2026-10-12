@@ -7,21 +7,17 @@ import {
   type ReactNode,
   type RefObject,
   Suspense,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
 } from 'react'
 import * as THREE from 'three'
-import {
-  AVATAR_CATEGORIES,
-  AVATAR_HIDE_GROUPS,
-  AVATAR_REMOVABLE_NONE,
-  type AvatarCategory,
-  type AvatarSlot,
-  baseGlbUrl,
-} from '@/lib/avatar3d-catalog'
+import { type AvatarSlot, baseGlbUrl } from '@/lib/avatar3d-catalog'
 import { useReducedMotion } from '../room/use-reduced-motion'
 import { AssetPart } from './asset-part'
+import { measureCharacter } from './measure'
+import { allPartsSettled, visibleParts } from './visible-parts'
 
 type Slots = Partial<Record<string, AvatarSlot>>
 
@@ -35,12 +31,17 @@ type Slots = Partial<Record<string, AvatarSlot>>
  * tentativa pode dar certo).
  */
 class PieceErrorBoundary extends Component<
-  { resetKey: string; children: ReactNode },
+  { resetKey: string; onSettled: () => void; children: ReactNode },
   { failed: boolean; key: string }
 > {
   state = { failed: false, key: this.props.resetKey }
   static getDerivedStateFromError() {
     return { failed: true }
+  }
+  // A peça que falhou não vai aparecer: conta como resolvida, senão o personagem nunca ficaria
+  // em pé nem tiraria a foto esperando por ela.
+  componentDidCatch() {
+    this.props.onSettled()
   }
   static getDerivedStateFromProps(
     props: { resetKey: string },
@@ -82,6 +83,7 @@ export function AvatarRig({
   loading = false,
   charRef,
   onStood,
+  completeRef,
 }: {
   slots: Slots
   pose?: string
@@ -91,6 +93,8 @@ export function AvatarRig({
   charRef: RefObject<THREE.Group | null>
   /** Disparado UMA vez quando o personagem fica em pé (pés no pódio) — a câmera enquadra então. */
   onStood?: () => void
+  /** `true` enquanto todas as peças mostradas estão na cena (a foto só mede o corpo inteiro). */
+  completeRef?: RefObject<boolean>
 }) {
   const animRoot = useRef<THREE.Group>(null)
   const springRef = useRef<THREE.Group>(null)
@@ -124,21 +128,24 @@ export function AvatarRig({
     }
   }, [actions, pose])
 
-  // Oclusão: categoria escondida por outra equipada com peça REAL (≠ nenhum) — ex.: chapéu→cabelo.
-  const hidden = useMemo(() => {
-    const set = new Set<string>()
-    for (const cat of Object.keys(AVATAR_HIDE_GROUPS) as AvatarCategory[]) {
-      const noneId = AVATAR_REMOVABLE_NONE[cat]
-      const asset = slots[cat]?.asset
-      if (asset && asset !== noneId) for (const h of AVATAR_HIDE_GROUPS[cat] ?? []) set.add(h)
-    }
-    return set
-  }, [slots])
+  // As peças mostradas (sem as "nenhum" e sem as escondidas por outra, ex.: chapéu→cabelo).
+  const parts = useMemo(() => visibleParts(slots), [slots])
+  const partsRef = useRef(parts)
+  partsRef.current = parts
+  // Categoria → peça que JÁ está na cena (ou que falhou e some). ⚠️ Medir o corpo antes de todas
+  // chegarem media só um pedaço: com só a cabeça carregada, o "ficar em pé" afundava o corpo no
+  // pódio (medido no ensaio de 12/10/2026). Cada peça carrega no seu tempo.
+  const settled = useRef(new Map<string, string>())
+  const markSettled = useCallback((cat: string, asset: string) => {
+    settled.current.set(cat, asset)
+  }, [])
 
   // Animação de "cabine" (encolhe/gira/flutua ao carregar) + auto-stand (pés no pódio).
   const tmpBox = useMemo(() => new THREE.Box3(), [])
   const tmpVec = useMemo(() => new THREE.Vector3(), [])
   useFrame((_, dt) => {
+    const complete = allPartsSettled(partsRef.current, settled.current)
+    if (completeRef) completeRef.current = complete
     const k = Math.min(1, dt * 6)
     const spring = springRef.current
     if (spring) {
@@ -167,8 +174,10 @@ export function AvatarRig({
       }
     }
     // Auto-stand UMA só vez (e nunca mais — pés não se movem ao trocar peça/cor): exige a cena
-    // assentada (não `loading`) e a spring em escala cheia, pra medir o corpo INTEIRO.
+    // assentada (não `loading`), todas as peças na cena e a spring em escala cheia, pra medir o
+    // corpo INTEIRO.
     if (
+      complete &&
       !loading &&
       !stood.current &&
       charRef.current &&
@@ -176,8 +185,9 @@ export function AvatarRig({
       (spring?.scale.x ?? 1) > 0.98
     ) {
       charRef.current.position.set(0, 0, 0)
-      charRef.current.updateWorldMatrix(true, true)
-      tmpBox.setFromObject(rigRef.current)
+      // Pela pose de agora, vértice a vértice (ver `measureCharacter`): a caixa guardada pelo
+      // three para as malhas com esqueleto não é confiável.
+      measureCharacter(rigRef.current, tmpBox)
       if (!tmpBox.isEmpty()) {
         const center = tmpBox.getCenter(tmpVec)
         charRef.current.position.x -= center.x
@@ -197,25 +207,25 @@ export function AvatarRig({
           <group ref={rigRef}>
             {rootBone ? <primitive object={rootBone} /> : null}
             {skeleton
-              ? AVATAR_CATEGORIES.map((cat) => {
-                  const slot = slots[cat]
-                  const noneId = AVATAR_REMOVABLE_NONE[cat]
-                  if (!slot?.asset || slot.asset === noneId || hidden.has(cat)) return null
+              ? parts.map(([cat, asset]) => (
                   // 1 Suspense POR peça (não apaga as outras = fim do flicker) + 1 error boundary
                   // POR peça (um GLB com falha some sozinho, não derruba o configurador).
-                  return (
-                    <PieceErrorBoundary key={cat} resetKey={slot.asset}>
-                      <Suspense fallback={null}>
-                        <AssetPart
-                          asset={slot.asset}
-                          color={slot.color}
-                          skin={skin}
-                          skeleton={skeleton}
-                        />
-                      </Suspense>
-                    </PieceErrorBoundary>
-                  )
-                })
+                  <PieceErrorBoundary
+                    key={cat}
+                    resetKey={asset}
+                    onSettled={() => markSettled(cat, asset)}
+                  >
+                    <Suspense fallback={null}>
+                      <AssetPart
+                        asset={asset}
+                        color={slots[cat]?.color}
+                        skin={skin}
+                        skeleton={skeleton}
+                        onSettled={() => markSettled(cat, asset)}
+                      />
+                    </Suspense>
+                  </PieceErrorBoundary>
+                ))
               : null}
           </group>
         </group>
