@@ -145,6 +145,9 @@ export function ChildGuide({
   }
 
   const reopen = <GuideReopenButton buttonRef={reopenRef} onClick={reopenGuide} />
+  // O balão fica entre o cabeçalho e o herói e precisa do mesmo respiro do cabeçalho: sem
+  // ele, o cartão do balão encostava no herói (relato dela, 12/10/2026).
+  const balloonSpacing = 'mb-6 md:mb-7'
 
   return (
     <ChildGuideStartContext.Provider value={step === 'start' ? 'child-start-guide' : undefined}>
@@ -158,6 +161,7 @@ export function ChildGuide({
         <GuideBalloon
           arrow="none"
           align="start"
+          className={balloonSpacing}
           descriptionId="child-avatar-guide"
           actions={
             <>
@@ -200,6 +204,7 @@ export function ChildGuide({
           // O "Começar" mora na ESQUERDA do card-herói, não no meio da página: o balão
           // encosta na mesma borda e a seta desce sobre o botão.
           align="start"
+          className={balloonSpacing}
           descriptionId="child-start-guide"
           dismissButtonRef={startDismissRef}
           onDismiss={() => {

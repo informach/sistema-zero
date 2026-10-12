@@ -29,3 +29,30 @@ describe('associação semântica do guia com o Começar', () => {
     expect(document.getElementById('child-start-guide')).toBeNull()
   })
 })
+
+describe('o balão da home não encosta no herói', () => {
+  // Relato dela (12/10/2026): o convite do avatar colava no cartão do Desafio logo abaixo.
+  for (const [passo, hasAvatar, id] of [
+    ['avatar', false, 'child-avatar-guide'],
+    ['start', true, 'child-start-guide'],
+  ] as const) {
+    it(`o balão "${passo}" tem a margem de baixo do cabeçalho`, async () => {
+      const profileKey = `spacing-${passo}`
+      writeGuideFlag(childGuideWelcomeSeenKey(profileKey))
+      render(
+        <ChildGuide
+          profileKey={profileKey}
+          childName="Lia"
+          hasAvatar={hasAvatar}
+          hasCourseActivity={false}
+          startAvailable
+        >
+          <ContinueHeroLink href="/cursos/jogo" started={false} />
+        </ChildGuide>,
+      )
+      await waitFor(() => expect(document.getElementById(id)).not.toBeNull())
+      const balao = document.getElementById(id)?.closest('[role="status"]')
+      expect(balao?.className.split(' ')).toEqual(expect.arrayContaining(['mb-6', 'md:mb-7']))
+    })
+  }
+})
