@@ -2574,7 +2574,24 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   (`position.set`+`lookAt` explícitos, igual nos dois p/ ser confiável) p/ caber no quadrado central:
   "Salvar" força RETRATO de rosto (imagem do avatar sempre boa); "Tirar foto" usa o CORPO INTEIRO de FRENTE,
   afastado o bastante p/ cabeça+pés caberem no quadrado (distância por altura×proporção da tela). ⚠️ tentar
-  "respeitar a órbita" via `getWorldDirection`/`quaternion.copy` saiu **vazio/sem cabeça** — NÃO refazer. A grade mostra **MINIATURAS = PNG estático**
+  "respeitar a órbita" via `getWorldDirection`/`quaternion.copy` saiu **vazio/sem cabeça** — NÃO refazer.
+  ⚠️⚠️ **A caixa do personagem é medida pela POSE DE AGORA (12/10/2026).** A foto saía com a cabeça
+  cortada (relato dela; no ensaio, um zoom nas pernas): `Box3.setFromObject(obj)` sem `precise` usa a
+  caixa que o three GUARDA em cada `SkinnedMesh` na primeira medida e nunca recalcula (medido: 0,62 de
+  altura num personagem de 2,2). A captura e o "ficar em pé" passam por **`measureCharacter`**
+  (`avatar3d/measure.ts`: `precise` + `updateMatrixWorld`, que é quem atualiza a `bindMatrixInverse`).
+  E os dois só medem com TODAS as peças mostradas na cena (`visibleParts`/`allPartsSettled`, marcadas
+  pelo `AssetPart` e pelo error boundary da peça): com a medida certa, ficar em pé com só a cabeça
+  carregada afundava o corpo no pódio (a medida errada acertava os pés por coincidência). A captura
+  espera dois quadros antes de conferir (dentro do limite de 2,5 s: com a aba em segundo plano o
+  navegador para os quadros), porque a troca recém-feita só entra na conta no quadro seguinte. O
+  enquadramento é **`framePhoto`** (`avatar3d/photo-framing.ts`): a região (o corpo inteiro, ou no
+  retrato a cabeça com o começo dos ombros, os 45% de cima) ocupa 80% do quadrado, com a distância
+  medida do PLANO DA FRENTE. O retrato antigo usava distância fixa a partir do centro e, com a
+  medida certa, cortava o topo de um cabelo alto no celular. Testes em
+  `tests/avatar-photo-measure.test.ts` (projetam a região no quadrado recortado); o ensaio visual com a cena real fica em
+  `tmp/avatar-foto/` (fora do git). Foto já salva com o corte só muda quando a criança salva de novo.
+  A grade mostra **MINIATURAS = PNG estático**
   (`thumb-canvas.tsx` `<AvatarThumb>`): **(1)** primeiro o **PNG PRÉ-GERADO e commitado** em
   `public/avatar3d/thumbs/<id>.png` → `<img>`, **ZERO WebGL** (igual ao WawaSensei). Gera com
   **`bun run gen:avatar-thumbs`** (`scripts/gen-avatar-thumbs.ts`: sobe `Bun.serve` com uma página geradora

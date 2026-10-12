@@ -9,6 +9,8 @@ import { recoverWebGLContext } from '@/lib/webgl-recovery'
 import { useReducedMotion } from '../room/use-reduced-motion'
 import { AvatarRig } from './avatar-rig'
 import { CameraManager, type CamMode } from './camera-manager'
+import { measureCharacter } from './measure'
+import { framePhoto } from './photo-framing'
 
 type Slots = Partial<Record<string, AvatarSlot>>
 /** `portrait`: força um retrato de rosto (de frente), independente do enquadramento na tela. */
@@ -52,10 +54,13 @@ function SnapshotBridge({
   onReady,
   canCapture,
   charRef,
+  completeRef,
 }: {
   onReady: (capture: CaptureFn) => void
   canCapture: boolean
   charRef: RefObject<THREE.Group | null>
+  /** Todas as peças mostradas estão na cena (o rig atualiza a cada quadro). */
+  completeRef: RefObject<boolean>
 }) {
   const gl = useThree((s) => s.gl)
   const scene = useThree((s) => s.scene)
@@ -67,12 +72,32 @@ function SnapshotBridge({
   // independente do enquadramento de corpo inteiro / da órbita que estiver na tela.
   const portraitCam = useRef(new THREE.PerspectiveCamera(45, 1, 0.01, 100))
   const tmpBox = useRef(new THREE.Box3())
-  const tmpVec = useRef(new THREE.Vector3())
   useEffect(() => {
     const capture: CaptureFn = async (opts) => {
       // Espera a cena assentar (cabine/enquadramento) até ~2.5s — capturar no meio sai borrado.
       const start = performance.now()
-      while (!canCaptureRef.current) {
+      // Dois quadros antes de conferir: uma peça trocada agora só entra na conta do rig no
+      // próximo quadro, e até lá o `completeRef` ainda fala da roupa anterior (no ensaio, a foto
+      // tirada junto com a troca saiu sem a cabeça nova, que ainda carregava). Dentro do mesmo
+      // limite: com a aba em segundo plano o navegador para os quadros, e a espera não pode
+      // ficar pendurada.
+      const nextFrame = () =>
+        new Promise<boolean>((resolve) => {
+          const left = 2500 - (performance.now() - start)
+          if (left <= 0) return resolve(false)
+          let timer: ReturnType<typeof setTimeout> | undefined
+          const id = requestAnimationFrame(() => {
+            clearTimeout(timer)
+            resolve(true)
+          })
+          timer = setTimeout(() => {
+            cancelAnimationFrame(id)
+            resolve(false)
+          }, left)
+        })
+      for (let i = 0; i < 2; i++) if (!(await nextFrame())) return null
+      // E com todas as peças na cena: uma peça trocada ainda carregando ficaria fora da medida.
+      while (!canCaptureRef.current || !completeRef.current) {
         if (performance.now() - start > 2500) return null
         await new Promise((r) => setTimeout(r, 60))
       }
@@ -84,37 +109,14 @@ function SnapshotBridge({
       //    a pose; a foto sai sempre de frente, com cabeça+pés). AMBOS via position.set + lookAt
       //    explícitos — confiável (a tentativa de "respeitar a órbita" via quaternion saía vazia).
       if (charRef.current) {
-        charRef.current.updateWorldMatrix(true, true)
-        tmpBox.current.setFromObject(charRef.current)
+        // A caixa da pose de AGORA, vértice a vértice (ver `measureCharacter`): a caixa guardada
+        // pelo three cobria só as pernas e a foto saía com a cabeça cortada.
+        measureCharacter(charRef.current, tmpBox.current)
         if (!tmpBox.current.isEmpty()) {
-          const b = tmpBox.current
-          const c = b.getCenter(tmpVec.current)
-          const h = Math.max(0.001, b.max.y - b.min.y)
-          const cw = gl.domElement.width
-          const ch = Math.max(1, gl.domElement.height)
-          const pc = portraitCam.current
-          pc.fov = 45
-          pc.aspect = cw / ch
-          if (opts?.portrait) {
-            // Rosto, de frente (close no topo da cabeça).
-            pc.position.set(c.x, b.max.y - h * 0.12, c.z + h * 0.9)
-            pc.lookAt(c.x, b.max.y - h * 0.15, c.z)
-          } else {
-            // Corpo inteiro, de FRENTE. A altura `h` deve ocupar ~80% do QUADRADO central do
-            // recorte (cabeça E pés). ⚠️ O personagem TEM PROFUNDIDADE (nariz/cabelo/aba do
-            // chapéu e poses inclinadas ficam À FRENTE do centro): a cabeça, sendo o ponto
-            // mais PRÓXIMO da câmera, é magnificada pela perspectiva e vazava o topo do quadro
-            // com a margem de 10%. Por isso enquadramos a altura no PLANO FRONTAL do personagem
-            // (`b.max.z`, o mais perto da câmera), não no centro — aí a cabeça ganha os 10% de
-            // folga DE VERDADE e nunca é cortada (os pés, mais ao fundo, sobra ainda mais).
-            const square = Math.min(cw, ch)
-            const fitDist = (h * ch) / (2 * Math.tan((45 * Math.PI) / 360) * 0.8 * square)
-            pc.position.set(c.x, c.y, b.max.z + fitDist)
-            pc.lookAt(c.x, c.y, c.z)
-          }
-          pc.updateMatrixWorld()
-          pc.updateProjectionMatrix()
-          cam = pc
+          // Retrato (cabeça e começo dos ombros) ou corpo inteiro, de frente, cabendo no quadrado
+          // central do recorte com folga (ver `framePhoto`).
+          framePhoto(portraitCam.current, tmpBox.current, gl.domElement, opts?.portrait === true)
+          cam = portraitCam.current
         }
       }
       gl.render(scene, cam)
@@ -131,7 +133,7 @@ function SnapshotBridge({
       return new Promise((resolve) => out.toBlob((b) => resolve(b), 'image/png'))
     }
     onReady(capture)
-  }, [gl, scene, camera, onReady, charRef])
+  }, [gl, scene, camera, onReady, charRef, completeRef])
   return null
 }
 
@@ -201,6 +203,7 @@ function SceneContents({
   onReady: (c: CaptureFn) => void
 }) {
   const charRef = useRef<THREE.Group>(null)
+  const completeRef = useRef(false)
   const [ready, setReady] = useState(false)
   const loading = useCabineLoading()
   const canCapture = ready && !loading
@@ -229,6 +232,7 @@ function SceneContents({
           pose={pose}
           loading={loading}
           charRef={charRef}
+          completeRef={completeRef}
           onStood={() => setReady(true)}
         />
       </Suspense>
@@ -242,7 +246,12 @@ function SceneContents({
       <TeleporterBeam loading={loading} />
 
       <CameraManager mode={mode} ready={ready} />
-      <SnapshotBridge onReady={onReady} canCapture={canCapture} charRef={charRef} />
+      <SnapshotBridge
+        onReady={onReady}
+        canCapture={canCapture}
+        charRef={charRef}
+        completeRef={completeRef}
+      />
     </>
   )
 }
