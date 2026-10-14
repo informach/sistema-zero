@@ -37,7 +37,7 @@ export function liveVimeoRecording(input: {
     url.password !== '' ||
     url.hash !== '' ||
     url.pathname !== `/video/${videoId}` ||
-    params.some((key) => key !== 'h') ||
+    // At most ONE parameter, and it is the privacy hash `h` (a missing `h` fails the pattern).
     params.length > 1 ||
     (params.length === 1 && !/^[\da-f]{1,40}$/i.test(url.searchParams.get('h') ?? ''))
   )

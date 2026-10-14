@@ -14,6 +14,7 @@ import { purgeLiveAccount } from '../../src/infrastructure/persistence/drizzle/l
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
 import { accountDeletionFences } from '../../src/infrastructure/persistence/drizzle/schema'
 import { InMemoryLiveCourses } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_test')
@@ -44,7 +45,7 @@ describe.skipIf(!databaseUrl)('Oficinas no PostgreSQL real', () => {
   })
 
   // The live course itself is read through the port; its SQL adapter has its own test file.
-  const courses = new InMemoryLiveCourses()
+  const courses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
   async function setup(capacity = 1, courseStatus: 'draft' | 'published' = 'published') {
     const repository = new DrizzleLiveRepository(connection.db)
     const service = new LiveService(

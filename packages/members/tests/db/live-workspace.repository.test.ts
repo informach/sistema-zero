@@ -11,10 +11,8 @@ import { DrizzleLiveRepository } from '../../src/infrastructure/persistence/driz
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
 import { accountDeletionFences } from '../../src/infrastructure/persistence/drizzle/schema'
 import { InMemoryLiveCourses } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
-
-/** The live course is read through the port; its SQL adapter has its own test. */
-const liveCourses = new InMemoryLiveCourses()
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_workspace_test')
 if (!databaseUrl)
@@ -22,6 +20,8 @@ if (!databaseUrl)
 
 describe.skipIf(!databaseUrl)('Autoria da oficina no PostgreSQL real', () => {
   let connection: DbConnection
+  /** The live course is read through the port; its SQL adapter has its own test. */
+  const liveCourses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
   beforeAll(() => {
     connection = createDbConnection(databaseUrl as string)
   })

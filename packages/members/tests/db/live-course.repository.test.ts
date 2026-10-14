@@ -2,7 +2,6 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 import { eq } from 'drizzle-orm'
-import { getTableConfig, type PgTable } from 'drizzle-orm/pg-core'
 import { LiveService } from '../../src/application/live/live.service'
 import { LiveWorkspaceService } from '../../src/application/live/live-workspace.service'
 import type { LiveActor } from '../../src/domain/ports/live-repository.port'
@@ -15,42 +14,15 @@ import { DrizzleLiveRepository } from '../../src/infrastructure/persistence/driz
 import { DrizzleLiveCourseRepository } from '../../src/infrastructure/persistence/drizzle/live-course.repository'
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
 import {
-  courses,
-  lessons,
   liveRecordingJobs,
   liveWorkspaces,
-  modules,
 } from '../../src/infrastructure/persistence/drizzle/schema'
+import { ensureCourseTables } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_course_test')
 if (!databaseUrl)
   console.warn('[tests/db] Postgres indisponível: cursos ao vivo não verificados em banco real.')
-
-/**
- * The shared test database keeps whatever another file created first: every column the
- * adapter reads is added here (enums as text), the real migrations are not replayed.
- */
-async function ensureTable(connection: DbConnection, table: PgTable) {
-  const { name, columns } = getTableConfig(table)
-  const [found] = await connection.sql`select to_regclass(${`members.${name}`}) as name`
-  if (!found?.name)
-    await connection.sql.unsafe(`create table if not exists members.${name} (id uuid primary key)`)
-  const existing = new Set(
-    (
-      await connection.sql`
-        select column_name from information_schema.columns
-        where table_schema = 'members' and table_name = ${name}`
-    ).map((row) => row.column_name as string),
-  )
-  for (const column of columns) {
-    if (existing.has(column.name)) continue
-    const type = column.columnType === 'PgEnumColumn' ? 'text' : column.getSQLType()
-    await connection.sql.unsafe(
-      `alter table members.${name} add column if not exists "${column.name}" ${type}`,
-    )
-  }
-}
 
 const studioSeed = (name: string) => createBlankProjectSnapshot(randomUUID(), name)
 
@@ -59,10 +31,7 @@ describe.skipIf(!databaseUrl)('cursos ao vivo no PostgreSQL real', () => {
   const created = { courses: [] as string[], lessons: [] as string[] }
   beforeAll(async () => {
     connection = createDbConnection(databaseUrl as string)
-    await connection.sql.begin(async (sql) => {
-      await sql`select pg_advisory_xact_lock(1432014, 110)`
-    })
-    for (const table of [courses, modules, lessons]) await ensureTable(connection, table)
+    await ensureCourseTables(connection)
   })
   afterAll(async () => {
     if (connection) {
@@ -366,6 +335,68 @@ describe.skipIf(!databaseUrl)('cursos ao vivo no PostgreSQL real', () => {
       await single.close()
     }
   }, 30_000)
+
+  test('criar turma trava o curso e confere a modalidade de novo sob a trava', async () => {
+    const live = await course({ modality: 'live', title: 'Oficina corrida' })
+    const port = new DrizzleLiveCourseRepository(connection.db)
+    const teacher: LiveActor = {
+      id: randomUUID(),
+      accountId: randomUUID(),
+      name: 'Ana',
+      staff: true,
+    }
+    // The course turns "recorded" between the read and the cohort insert (the course side
+    // changes the modality under the same row lock when there is no cohort yet).
+    const racing = {
+      ...port,
+      lessonSections: port.lessonSections.bind(port),
+      studioBlock: port.studioBlock.bind(port),
+      listLiveCourses: port.listLiveCourses.bind(port),
+      findCourse: async (id: string) => {
+        const found = await port.findCourse(id)
+        await connection.sql`update members.courses set metadata = ${JSON.stringify({ modality: 'recorded' })}::jsonb where id = ${id}`
+        const [column] = await connection.sql`
+          select 1 from information_schema.columns
+          where table_schema = 'members' and table_name = 'courses' and column_name = 'modality'`
+        if (column)
+          await connection.sql.unsafe(
+            "update members.courses set modality = 'recorded' where id = $1",
+            [id],
+          )
+        return found
+      },
+    }
+    const service = new LiveService(
+      new DrizzleLiveRepository(connection.db),
+      () => new Date('2026-11-07T17:00:00Z'),
+      { assertOwnership: async () => ({ name: 'Bia' }) },
+      { mediaReady: true, courses: racing },
+    )
+    const error = await service
+      .createCohort(teacher, live.id, {
+        title: 'Turma',
+        timeZone: 'America/Sao_Paulo',
+        capacity: 2,
+        accessDays: 30,
+        teacherIds: [teacher.id],
+        schedule: [0, 1, 2].map((week) => ({
+          startsAt: new Date(
+            Date.parse('2026-11-07T17:00:00Z') + week * 7 * 86_400_000,
+          ).toISOString(),
+          endsAt: new Date(
+            Date.parse('2026-11-07T18:00:00Z') + week * 7 * 86_400_000,
+          ).toISOString(),
+        })),
+      })
+      .then(
+        () => null,
+        (cause: Error) => cause,
+      )
+    expect(error?.message).toContain('não é mais ao vivo')
+    const [left] =
+      await connection.sql`select count(*)::int as n from members.live_cohorts where course_id = ${live.id}`
+    expect(left?.n).toBe(0)
+  })
 
   test('a criança numa turma NOVA do mesmo curso leva o projeto (nunca durante uma ajuda)', async () => {
     const live = await course({ modality: 'live', title: 'Oficina C' })

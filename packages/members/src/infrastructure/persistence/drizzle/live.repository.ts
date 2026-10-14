@@ -5,7 +5,11 @@ import type {
   LiveSession,
 } from '@sistemazero/core/live'
 import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
-import { LiveAccessError, LiveNotFoundError } from '../../../domain/live/live.errors'
+import {
+  LiveAccessError,
+  LiveConflictError,
+  LiveNotFoundError,
+} from '../../../domain/live/live.errors'
 import { type LivePresenceRow, overlayPresence } from '../../../domain/live/presence'
 import type {
   LiveAccessGrant,
@@ -16,8 +20,10 @@ import type {
   LiveRoomRef,
 } from '../../../domain/ports/live-repository.port'
 import type { Database } from './db'
+import { courseModality } from './live-course.repository'
 import {
   accountDeletionFences,
+  courses,
   liveAccessGrants,
   liveAudit,
   liveCohorts,
@@ -187,8 +193,23 @@ export class DrizzleLiveRepository implements LiveRepository {
     )[0]
     return row?.positionSeconds ?? 0
   }
+  /**
+   * The course row is locked in the same transaction and its modality re-checked: changing a
+   * course's modality checks "no cohort" under that same lock, so the two never cross.
+   */
   async createCohort(aggregate: LiveCohortAggregate) {
     await this.db.transaction(async (tx) => {
+      const courseId = aggregate.cohort.courseId
+      if (courseId) {
+        const [course] = await tx
+          .select()
+          .from(courses)
+          .where(eq(courses.id, courseId))
+          .for('update')
+        if (!course) throw new LiveNotFoundError()
+        if (courseModality(course) !== 'live')
+          throw new LiveConflictError('Este curso não é mais ao vivo. Atualize a página.')
+      }
       await tx.insert(liveCohorts).values({
         id: aggregate.cohort.id,
         programId: aggregate.cohort.programId || null,

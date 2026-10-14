@@ -8,6 +8,7 @@ import { DrizzleLiveRepository } from '../../src/infrastructure/persistence/driz
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
 import { liveRecordingJobs } from '../../src/infrastructure/persistence/drizzle/schema'
 import { liveFixture } from '../fakes/live-fixture'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 const url = await prepareTestDatabase('sistemazero_live_corrections_test')
@@ -26,7 +27,9 @@ describe.skipIf(!db)('interrupted assistance recovery on PostgreSQL', () => {
     'active',
     'returning',
   ] as const)('teacher ends abandoned %s help, fences old writes and resumes recording', async (state) => {
-    const f = await liveFixture(new DrizzleLiveRepository(db!.db))
+    const f = await liveFixture(new DrizzleLiveRepository(db!.db), {}, (course) =>
+      persistLiveCourse(db!, course),
+    )
     await f.start()
     const commands: { desiredState: string }[] = []
     const server = Bun.serve({

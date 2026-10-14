@@ -179,6 +179,14 @@ function fixture(leaseWaitMs = 5_000) {
   }
 }
 const receiver = { actor: bia, occurrenceId, deviceId: `device-${bia.id}` }
+/** The poll itself starts the room sweep in the background; nobody else triggers it here. */
+async function retiredSoon(f: ReturnType<typeof fixture>, owner: LiveMediaActor) {
+  for (let attempt = 0; attempt < 50; attempt++) {
+    if (['retired', 'closed'].includes(f.state(owner).status)) return
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+  throw new Error(`a varredura não aposentou ${owner.id}`)
+}
 
 describe('mídia da sala: uma autorização por consulta e reconcile serializado', () => {
   test('a lista de publicações autoriza a sala UMA vez e leva o primeiro nome de quem publica', async () => {
@@ -200,8 +208,7 @@ describe('mídia da sala: uma autorização por consulta e reconcile serializado
     f.policy.set('caio', { ok: false, error: new LiveAccessError() })
     const after = await f.provider.publications(receiver)
     expect(after.map((item) => item.actorId)).toEqual(['teacher', 'teacher'])
-    await f.provider.reconcile(occurrenceId)
-    expect(['retired', 'closed']).toContain(f.state(caio).status)
+    await retiredSoon(f, caio)
     expect(f.state(teacher).status).toBe('active')
   })
 
@@ -212,8 +219,7 @@ describe('mídia da sala: uma autorização por consulta e reconcile serializado
     f.seed(connection(teacher, [resource(teacher, '0', 'microphone')]), expired)
     const listed = await f.provider.publications(receiver)
     expect(listed.map((item) => item.actorId)).toEqual(['teacher'])
-    await f.provider.reconcile(occurrenceId)
-    expect(['retired', 'closed']).toContain(f.state(caio).status)
+    await retiredSoon(f, caio)
     expect(f.state(teacher).status).toBe('active')
   })
 

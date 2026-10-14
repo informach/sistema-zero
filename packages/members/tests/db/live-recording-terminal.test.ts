@@ -14,10 +14,8 @@ import {
   liveRecordingJobs,
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { InMemoryLiveCourses } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
-
-/** The live course is read through the port; its SQL adapter has its own test. */
-const liveCourses = new InMemoryLiveCourses()
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_test')
 if (!databaseUrl)
@@ -59,6 +57,8 @@ function recorder(handlers: {
 
 describe.skipIf(!databaseUrl)('Gravação com estados finais no PostgreSQL', () => {
   let connection: DbConnection
+  /** The live course is read through the port; its SQL adapter has its own test. */
+  const liveCourses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
   beforeAll(() => {
     connection = createDbConnection(databaseUrl!)
   })

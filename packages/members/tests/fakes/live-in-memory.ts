@@ -243,6 +243,11 @@ export interface FakeLiveLesson {
 
 /** Live courses for the tests: published lessons, their parts and Studio blocks. */
 export class InMemoryLiveCourses implements LiveCoursePort {
+  /**
+   * `persist`: tests on a real database write each course row on its first read (a cohort locks
+   * that row when it is created).
+   */
+  constructor(private readonly persist?: (course: LiveCourseRecord) => Promise<void>) {}
   readonly courses = new Map<string, LiveCourseRecord>()
   readonly sections = new Map<string, LiveLessonSections>()
   readonly blocks = new Map<string, LiveStudioBlockRecord>()
@@ -307,7 +312,9 @@ export class InMemoryLiveCourses implements LiveCoursePort {
   }
 
   async findCourse(courseId: string) {
-    return structuredClone(this.courses.get(courseId) ?? null)
+    const course = this.courses.get(courseId)
+    if (course && this.persist) await this.persist(course)
+    return structuredClone(course ?? null)
   }
   async listLiveCourses(filter: { ids?: string[]; audience?: 'adult' | 'kids' }) {
     return structuredClone(

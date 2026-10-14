@@ -11,10 +11,13 @@ import { DrizzleLiveRepository } from '../../src/infrastructure/persistence/driz
 import { DrizzleLiveWorkspaceRepository } from '../../src/infrastructure/persistence/drizzle/live-workspace.repository'
 import { liveRecordingJobs } from '../../src/infrastructure/persistence/drizzle/schema'
 import { InMemoryLiveCourses, InMemoryLiveRepository } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 /** The live course is read through the port; its SQL adapter has its own test. */
-const liveCourses = new InMemoryLiveCourses()
+const liveCourses = new InMemoryLiveCourses((course) =>
+  connection ? persistLiveCourse(connection, course) : Promise.resolve(),
+)
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_corrections_test')
 const connection = databaseUrl ? createDbConnection(databaseUrl) : null

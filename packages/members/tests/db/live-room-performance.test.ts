@@ -8,6 +8,7 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleLiveRepository } from '../../src/infrastructure/persistence/drizzle/live.repository'
 import { InMemoryLiveCourses } from '../fakes/live-in-memory'
+import { persistLiveCourse } from './live-course-rows'
 import { prepareTestDatabase } from './test-database'
 
 const databaseUrl = await prepareTestDatabase('sistemazero_live_test')
@@ -29,7 +30,7 @@ const ms = (value: number) => Math.round(value * 10) / 10
 
 describe.skipIf(!databaseUrl)('desempenho da sala com 9 participantes (PostgreSQL real)', () => {
   let connection: DbConnection
-  const courses = new InMemoryLiveCourses()
+  const courses = new InMemoryLiveCourses((course) => persistLiveCourse(connection, course))
   const results: Record<string, unknown>[] = []
   beforeAll(() => {
     connection = createDbConnection(databaseUrl as string)
