@@ -629,6 +629,20 @@ in-memory das portas em `tests/fakes/in-memory.ts`; montagem via `tests/helpers.
    local. Fix: passar `date.toISOString()` (texto ISO vs `timestamptz` é comparado direto). Regra
    geral: em `db.execute`/`sql` cru, coaja `Date`→ISO na escrita e string→`Date` na leitura.
 
+## Oficinas ao vivo — 14/10/2026
+
+O mesmo endpoint de publicação standalone aceita uma
+origem `liveWorkspace`, cuja prova é revalidada no Members (conta, perfil, revisão salva e
+playId). Essa origem dispensa a posse do Estúdio durante o grant, mas não concede conclusão
+de curso, marco de publicação standalone ou entrada no desafio do mês. A publicação continua
+na parede curada, com a mesma moderação e limpeza de objetos.
+
+O Members também resolve `live/mural-access` por **conta e perfil**. Essa concessão só amplia
+o espaço Kids `mural-dos-criadores` configurado com sua chave de comunidade; canais continuam
+fazendo AND com o espaço. Não guardar essa concessão no micro-cache de acesso da conta:
+outro filho da mesma família não herda a oficina, e revogação/expiração devem valer na próxima
+requisição. Clube, cursos e demais produtos permanecem sob suas próprias regras.
+
 ## Entrega recuperável da publicação — 07/09/2026
 
 Migrations `0011_creator_showcase_delivery` e `0012_showcase_delivery_owner`: a transação

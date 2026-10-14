@@ -29,5 +29,10 @@ export function isFocusOnlyPath(pathname: string | null | undefined): boolean {
  * perguntando só pelo `isEmbeddedAppPath`, que é outra coisa.
  */
 export function isFocusRoutePath(pathname: string | null | undefined): boolean {
-  return isLessonPath(pathname) || isEmbeddedAppPath(pathname) || isFocusOnlyPath(pathname)
+  return (
+    isLessonPath(pathname) ||
+    isEmbeddedAppPath(pathname) ||
+    isFocusOnlyPath(pathname) ||
+    /^\/(?:oficinas\/aulas|criar\/oficinas)\/[^/]+\/?$/.test(pathname ?? '')
+  )
 }

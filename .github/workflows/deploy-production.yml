@@ -33,6 +33,7 @@ jobs:
       EXPECTED_SHA: ${{ github.event.inputs.expected_sha }}
       HELPDESK_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_SERVICE_ID }}
       HELPDESK_APP_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_APP_SERVICE_ID }}
+      LIVE_RECORDER_SERVICE_ID: ${{ vars.RAILWAY_LIVE_RECORDER_SERVICE_ID }}
     steps:
       - name: Deployar produção com o sha da main
         run: |
@@ -65,6 +66,7 @@ jobs:
           )
           [ -n "${HELPDESK_SERVICE_ID:-}" ] && SVC_ID[helpdesk]="$HELPDESK_SERVICE_ID"
           [ -n "${HELPDESK_APP_SERVICE_ID:-}" ] && SVC_ID[helpdesk-app]="$HELPDESK_APP_SERVICE_ID"
+          [ -n "${LIVE_RECORDER_SERVICE_ID:-}" ] && SVC_ID[live-recorder]="$LIVE_RECORDER_SERVICE_ID"
 
           # environmentId de production resolvido POR NOME (sem hardcode).
           Q=$(jq -nc --arg pid "$PROJECT_ID" '{query:"query($pid:String!){environments(projectId:$pid){edges{node{id name}}}}",variables:{pid:$pid}}')

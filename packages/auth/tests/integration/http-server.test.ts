@@ -1539,6 +1539,39 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     })
   })
 
+  test('vínculo de oficina exige token, perfil ativo e a família correta', async () => {
+    const { app, users, profilesRepo } = buildApp()
+    const accountId = seedUser(users, { email: 'live-owner@example.com', firstName: 'Ana' })
+    const otherId = seedUser(users, { email: 'live-other@example.com' })
+    const blockedId = seedUser(users, { email: 'live-blocked@example.com', status: 'blocked' })
+    const profileId = seedProfile(profilesRepo, { accountUserId: accountId, name: 'Alice' })
+    const archivedId = seedProfile(profilesRepo, { accountUserId: accountId, status: 'archived' })
+    const path = '/auth/internal/profiles/ownership'
+    const headers = { 'x-internal-token': INTERNAL_TOKEN }
+    expect((await app.handle(post(path, { accountId, profileId }))).status).toBe(401)
+    expect(await (await app.handle(post(path, { accountId, profileId }, headers))).json()).toEqual({
+      valid: true,
+      name: 'Alice',
+    })
+    expect(
+      await (await app.handle(post(path, { accountId: otherId, profileId }, headers))).json(),
+    ).toEqual({ valid: false })
+    expect(
+      await (await app.handle(post(path, { accountId, profileId: archivedId }, headers))).json(),
+    ).toEqual({ valid: false })
+    expect(
+      await (
+        await app.handle(post(path, { accountId: blockedId, profileId: null }, headers))
+      ).json(),
+    ).toEqual({ valid: false })
+    expect(
+      await (await app.handle(post(path, { accountId, profileId: null }, headers))).json(),
+    ).toEqual({ valid: true, name: 'Ana' })
+    expect(
+      (await app.handle(post(path, { accountId: 'invalid', profileId }, headers))).status,
+    ).toBe(400)
+  })
+
   test('diretório interno de recados exige token e exclui contas inativas, órfãos e perfis arquivados', async () => {
     const { app, users, profilesRepo } = buildApp()
     const accountId = seedUser(users, {

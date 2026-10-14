@@ -715,6 +715,41 @@
       "when": 1791666505573,
       "tag": "0101_content_fingerprints",
       "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1791981583946,
+      "tag": "0102_live_workshops",
+      "breakpoints": true
+    },
+    {
+      "idx": 103,
+      "version": "7",
+      "when": 1791981757445,
+      "tag": "0103_live_recording_jobs",
+      "breakpoints": true
+    },
+    {
+      "idx": 104,
+      "version": "7",
+      "when": 1791982295214,
+      "tag": "0104_live_replay_positions",
+      "breakpoints": true
+    },
+    {
+      "idx": 105,
+      "version": "7",
+      "when": 1791983052607,
+      "tag": "0105_live_materials_recording_commands",
+      "breakpoints": true
+    },
+    {
+      "idx": 106,
+      "version": "7",
+      "when": 1791984332314,
+      "tag": "0106_live_learning",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,7 @@
 import { eq, inArray, or, sql } from 'drizzle-orm'
 import type { UserDataPurgeRepository } from '../../../domain/ports/user-data-purge-repository.port'
 import type { Database } from './db'
+import { purgeLiveAccount } from './live-purge'
 import {
   accountDeletionFences,
   aiUsageDaily,
@@ -74,6 +75,7 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${accountId}`}, 0))`,
       )
+      await purgeLiveAccount(tx, accountId, userIds)
       await tx
         .delete(teacherBroadcastRecipients)
         .where(

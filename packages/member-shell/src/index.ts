@@ -7,6 +7,7 @@ import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
 import { createCreationsRoutes } from './routes/creations'
 import { createHelpdeskRoutes } from './routes/helpdesk'
 import { createHubRoutes } from './routes/hub'
+import { createLiveRoutes } from './routes/live'
 import { createPensaRoutes } from './routes/pensa'
 import { createPensaAiRoutes } from './routes/pensa-ai'
 import { createStudioRoutes } from './routes/studio'
@@ -67,6 +68,7 @@ export function createShell(cfg: ShellConfig) {
   const hub = createHubClient(gateway, { audience: cfg.audience })
   const media = createMediaModule({ session, gateway })
   const routes = {
+    ...createLiveRoutes({ session, gateway }),
     ...createStudyAccessRoutes({ session, gateway, study }),
     ...createShellRoutes({
       session,

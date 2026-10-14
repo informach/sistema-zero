@@ -79,6 +79,17 @@ jobs:
       - name: Lint (biome ci)
         run: bun run ci
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Preparar testes de mídia das oficinas
+        working-directory: packages/live-recorder
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          bunx playwright install --with-deps chromium
+
       # O molda voltou a rodar aqui (10/09/2026). Ele passou um dia num job Windows porque o Bun
       # 1.3.11 segfaultava neste runner dentro de `SceneWorkshop.test.tsx`: `terminate()` num
       # Worker cujo módulo ainda transpilava no pool de threads (oven-sh/bun#33936, corrigido no
@@ -307,6 +318,7 @@ jobs:
       STAGING_ENV_ID: f634cff6-aafb-4804-8b69-172fad4e946e
       HELPDESK_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_SERVICE_ID }}
       HELPDESK_APP_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_APP_SERVICE_ID }}
+      LIVE_RECORDER_SERVICE_ID: ${{ vars.RAILWAY_LIVE_RECORDER_SERVICE_ID }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -367,6 +379,7 @@ jobs:
           # repositório permitem ativar o deploy sem editar este workflow.
           [ -n "${HELPDESK_SERVICE_ID:-}" ] && SVC_ID[helpdesk]="$HELPDESK_SERVICE_ID"
           [ -n "${HELPDESK_APP_SERVICE_ID:-}" ] && SVC_ID[helpdesk-app]="$HELPDESK_APP_SERVICE_ID"
+          [ -n "${LIVE_RECORDER_SERVICE_ID:-}" ] && SVC_ID[live-recorder]="$LIVE_RECORDER_SERVICE_ID"
 
           declare -A WANT=()
           add() { WANT[$1]=1; }
@@ -421,6 +434,9 @@ jobs:
                   packages/catalog/*) add catalog ;;
                   packages/payments/*) add payments ;;
                   packages/members/*) add members ;;
+                  packages/live-recorder/*)
+                    [ -n "${SVC_ID[live-recorder]:-}" ] || { echo '::error::Configure RAILWAY_LIVE_RECORDER_SERVICE_ID'; exit 1; }
+                    add live-recorder ;;
                   packages/messaging/*) add messaging ;;
                   packages/funnel/*) add funnel ;;
                   packages/admin/*) add admin ;;

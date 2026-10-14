@@ -68,6 +68,9 @@ export interface PersistenceService {
   hydrateAfterLoad(project: Project): void
   /** Salvar explícito (botão Salvar / handle.save()): cancela o debounce e persiste já. */
   save(): Promise<void>
+  /** Cancel pending autosaves while an external writer owns the project. */
+  suspend(): void
+  resume(): void
   /** Tem onde persistir? false = persistence 'none' (host salva via onChange/onSave). */
   readonly hasAdapter: boolean
 }
@@ -282,17 +285,26 @@ export function createPersistenceService(
     pending.clear()
   }
 
+  let suspended = false
   const service: PersistenceService = {
     handlers: {},
     attach,
     hydrateAfterLoad,
     save,
+    suspend: () => {
+      suspended = true
+      clearAllTimers()
+    },
+    resume: () => {
+      suspended = false
+    },
     get hasAdapter() {
       return adapter !== null
     },
   }
 
   function emitChange(project: Project, reason: ChangeContext['reason']): void {
+    if (suspended) return
     try {
       service.handlers.onChange?.(project, { reason })
     } catch (err) {
@@ -388,12 +400,14 @@ export function createPersistenceService(
   }
 
   function persistAndMark(project: Project): Promise<void> {
+    if (suspended) return Promise.resolve()
     // Já excluído antes de começar: não persiste de volta o que foi apagado.
     // (checa fora da cadeia para nem enfileirar a task do projeto apagado.)
     if (isFenced(serviceScopeIdentity, project.id)) return Promise.resolve()
     // Encadeia no mutex por id: dois autosaves do mesmo projeto confirmam EM
     // ORDEM (o 2º só envia ao adapter depois do 1º resolver).
     return runSerialized(project.id, async () => {
+      if (suspended) return
       // Re-checa DENTRO da cadeia: o delete pode ter chegado enquanto este save
       // esperava o anterior na fila.
       if (isFenced(serviceScopeIdentity, project.id)) return
@@ -421,7 +435,19 @@ export function createPersistenceService(
     })
   }
 
+  function stageLocally(project: Project): void {
+    if (adapter?.stage && !isFenced(serviceScopeIdentity, project.id)) {
+      void adapter.stage(snapshotForSave(project)).catch((err) => {
+        const message = formatPersistenceError(err)
+        if (store.getState().project === project) store.getState().markSaveFailed(message)
+        emitError(message)
+      })
+    }
+  }
+
   function schedule(project: Project): void {
+    if (suspended) return
+    stageLocally(project)
     // NÃO se limpa a cerca aqui: create/import/duplicate sempre usam um ULID
     // NOVO, então o agendamento de uma edição NUNCA precisa reabrir a cerca de um
     // id legitimamente. Limpar incondicionalmente aqui (no caminho do autosave de
@@ -451,6 +477,7 @@ export function createPersistenceService(
   }
 
   function flushPending(): void {
+    if (suspended) return
     // O editor pode ainda estar dentro do debounce próprio (ex.: Blockly, 120ms),
     // sem nenhuma mutação visível na store. Materializá-lo DEVE vir antes até do
     // dedupe: a escrita síncrona re-arma `flushed` por meio de `schedule`.
@@ -470,6 +497,7 @@ export function createPersistenceService(
     }
     clearAllTimers()
     for (const project of snapshots) {
+      stageLocally(project)
       // reason 'flush': fechamento (pagehide/beforeunload/unmount/save). O fetch
       // do adapter remoto será abortado pela navegação, então o host precisa
       // trocar para navigator.sendBeacon / fetch keepalive ao ver este reason.
@@ -528,11 +556,13 @@ export function createPersistenceService(
   }
 
   async function save(): Promise<void> {
+    if (suspended) throw new Error('Este projeto está em observação.')
     // Salvar é um limite de snapshot tanto quanto pagehide/unmount. A store só é
     // lida depois que os editores materializam os buffers que ainda seguram.
     coordination.flushPendingEditorEdits?.()
     const project = store.getState().project
     if (!project) return
+    stageLocally(project)
     // Nem um save explícito limpa a cerca: ele pode ter sido disparado por uma
     // referência obsoleta enquanto o delete ainda disputa com um save em voo.
     // IDs novos são ULIDs; um reaproveitamento excepcional só volta a ser

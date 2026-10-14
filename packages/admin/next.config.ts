@@ -115,6 +115,27 @@ const nextConfig: NextConfig = {
     return [
       { source: '/:path*', headers: securityHeaders },
       {
+        source: '/admin/professor/ao-vivo/:id',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()',
+          },
+        ],
+      },
+      ...['/admin/professor/ao-vivo/:id', '/ao-vivo/demonstracao/:id'].map((source) => ({
+        source,
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: csp.replace(
+              "frame-src 'self' blob:",
+              "frame-src 'self' blob: https://*.r2.cloudflarestorage.com",
+            ),
+          },
+        ],
+      })),
+      {
         // ⚠️ O WASM do Rive tem 1,8 MB e nome estável (não hashado). Sem esta
         // linha o Next serve `public/` sem cache útil e quem autora rebaixa tudo a
         // cada abertura do diálogo de módulo. Mesmo TTL do community-kids e pelo

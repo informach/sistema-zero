@@ -68,6 +68,39 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
   if (opts.internalToken) headers['x-internal-token'] = opts.internalToken
 
   return {
+    async getLiveMuralAccess(userId, accountId) {
+      const response = await doFetch(`${base}/members/internal/live/mural-access`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ userId, accountId }),
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+      if (!response.ok) return false
+      const body: unknown = await response.json()
+      return Boolean(body && typeof body === 'object' && 'allowed' in body && body.allowed === true)
+    },
+    async getLiveShowcaseEligibility(args) {
+      const response = await doFetch(`${base}/members/internal/live/showcase-eligibility`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(args),
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+      if (response.status === 403 || response.status === 404 || response.status === 409)
+        return { eligible: false, title: '' }
+      if (!response.ok) throw new Error(`members live eligibility respondeu ${response.status}`)
+      const body: unknown = await response.json()
+      if (
+        !body ||
+        typeof body !== 'object' ||
+        !('eligible' in body) ||
+        body.eligible !== true ||
+        !('title' in body) ||
+        typeof body.title !== 'string'
+      )
+        return { eligible: false, title: '' }
+      return { eligible: true, title: body.title }
+    },
     async checkAccess(
       userId: string,
       courseRefs: string[],

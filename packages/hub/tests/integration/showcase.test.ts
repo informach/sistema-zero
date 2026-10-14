@@ -562,6 +562,36 @@ describe('vitrine (Mural dos Criadores)', () => {
     clientIdempotencyKey: randomUUID(),
     ...over,
   })
+
+  test('oficina publica com prova do snapshot, deduplica e não concede marco de curso ou desafio', async () => {
+    const accountId = randomUUID(),
+      learnerId = randomUUID()
+    const headers = { ...child(learnerId), 'x-auth-account-id': accountId }
+    ctx.members.liveEligibility = { eligible: true, title: 'Projeto da oficina' }
+    const body = standaloneBody({
+      liveWorkspace: { id: randomUUID(), revision: 3, publicationToken: 'proof' },
+      challengeKey: 'm:2026-10',
+    })
+    const publish = () =>
+      ctx.app.handle(
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', { headers, body }),
+      )
+    const first = await publish()
+    expect(first.status).toBe(200)
+    const created = (await first.json()) as {
+      thread: { id: string; challengeKey: string | null }
+      deduped: boolean
+    }
+    const retry = await publish()
+    expect(retry.status).toBe(200)
+    expect(await retry.json()).toMatchObject({ thread: { id: created.thread.id }, deduped: true })
+    expect(created.thread.challengeKey).toBeNull()
+    expect(ctx.members.showcaseNotifications).toHaveLength(0)
+    expect(ctx.members.challengeNotifications).toHaveLength(0)
+    expect(ctx.members.standaloneShowcases).toHaveLength(0)
+    ctx.members.liveEligibility = { eligible: false, title: '' }
+    expect((await publish()).status).toBe(403)
+  })
   /** Concede o produto do Estúdio à conta (a elegibilidade do standalone é a posse). */
   const ownsStudio = (accountId: string) =>
     ctx.members.communitiesByUser.set(accountId, new Set(['estudio-completo']))

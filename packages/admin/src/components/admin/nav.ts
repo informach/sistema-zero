@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  CalendarDays,
   CreditCard,
   Gift,
   GraduationCap,
@@ -65,6 +66,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       // 1º item do grupo = destino do `homeForRole` (a Home do professor É a home do painel).
       { label: 'Início', href: '/admin/professor', icon: Home },
+      { label: 'Ao vivo', href: '/admin/professor/ao-vivo', icon: CalendarDays },
       {
         label: 'Entregas',
         href: '/admin/professor/entregas',
@@ -111,6 +113,7 @@ export const NAV_GROUPS: NavGroup[] = [
     id: 'config',
     label: 'Configuração',
     items: [
+      { label: 'Oficinas ao vivo', href: '/admin/oficinas', icon: CalendarDays },
       { label: 'Cursos', href: '/admin/membros/cursos', icon: BookOpen },
       // A biblioteca de ajuda do Kids ("Como fazer", 26/09/2026): conteúdo GLOBAL, sem o
       // seletor de plataforma (só existe no kids), no lugar da autoria.

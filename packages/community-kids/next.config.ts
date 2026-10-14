@@ -162,6 +162,15 @@ const nextConfig: NextConfig = {
     return [
       // Comuns a tudo (sem CSP; COOP/CORP/etc.).
       { source: '/:path*', headers: securityHeaders },
+      {
+        source: '/oficinas/aulas/:id',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()',
+          },
+        ],
+      },
       // CSP ESTRITA em tudo, EXCETO a rota isolada do modo Código. O lookahead é
       // ancorado em `estudio/pro/` (com barra): uma rota IRMÃ futura de prefixo
       // parecido (ex.: `/estudio/professor`) recebe a CSP estrita normalmente, em
@@ -169,6 +178,30 @@ const nextConfig: NextConfig = {
       {
         source: '/((?!estudio/pro/).*)',
         headers: [{ key: 'Content-Security-Policy', value: strictCsp }],
+      },
+      {
+        source: '/oficinas/aulas/:id',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: strictCsp.replace(
+              "frame-src 'self' blob:",
+              "frame-src 'self' blob: https://*.r2.cloudflarestorage.com",
+            ),
+          },
+        ],
+      },
+      {
+        source: '/criar/oficinas/:workspaceId',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: strictCsp.replace(
+              "frame-src 'self' blob:",
+              "frame-src 'self' blob: https://*.r2.cloudflarestorage.com",
+            ),
+          },
+        ],
       },
       // Rota isolada do modo Código (PRO/WebContainer): CSP relaxada (WASM) + COEP
       // credentialless — escopados AQUI para não vazar p/ as páginas com vídeo.

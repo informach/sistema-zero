@@ -141,6 +141,18 @@ const EnvSchema = z
     // + GATEWAY_URL + MEMBERS_HMAC_SECRET) — sem eles é no-op silencioso (dev).
     // AUTH (S2S direto): e-mail/nome do responsável + nomes das crianças.
     AUTH_BASE_URL: z.string().url().optional(),
+    // Explicit operational rehearsal gate; credentials alone never enable a classroom.
+    LIVE_MEDIA_READY: z
+      .preprocess((value) => value === true || value === 'true' || value === '1', z.boolean())
+      .default(false),
+    LIVE_SFU_APP_ID: z.string().optional(),
+    LIVE_SFU_APP_SECRET: z.string().optional(),
+    LIVE_TURN_KEY_ID: z.string().optional(),
+    LIVE_TURN_API_TOKEN: z.string().optional(),
+    LIVE_SUPERVISOR_URL: z.string().url().optional(),
+    LIVE_SUPERVISOR_TOKEN: z.string().min(32).optional(),
+    LIVE_RECORDER_URL: z.string().url().optional(),
+    LIVE_RECORDER_TOKEN: z.string().min(32).optional(),
     AUTH_INTERNAL_TOKEN: z
       .string()
       .min(16, 'AUTH_INTERNAL_TOKEN deve ter ao menos 16 caracteres')

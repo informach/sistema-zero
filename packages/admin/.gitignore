@@ -27,3 +27,5 @@ next-env.d.ts
 # DERIVADO do node_modules pelo `scripts/sync-rive-wasm.ts`, que roda no `dev` e
 # no `build`. Commitar 1,8 MB a cada bump do pacote engordaria o histórico à toa.
 /public/rive/
+# Derivado dos assets locais versionados do member-shell no dev/build.
+/public/live-camera/

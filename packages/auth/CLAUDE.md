@@ -1,5 +1,11 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Vínculo de perfil para oficinas (14/10/2026)
+
+`POST /auth/internal/profiles/ownership` é S2S protegido por token interno. Recebe `accountId`
+e `profileId` (UUID ou null), valida conta ativa e perfil ativo pertencente à conta, devolve
+somente `{ valid, name? }` sem cache. Null verifica a conta para uma vaga ainda sem perfil.
+
 ## Acesso infantil por aparelho — correções do review (10/10/2026)
 
 - **Sessão adulta do Kids** (`kids.parent`, login com `platform: 'kids'` por senha ou OTP): família de

@@ -35,6 +35,63 @@ const {
 const AUTOSAVE_TEST_DELAY_MS = 10
 const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 5)
 
+it('a durable stage is written before debounce while remote acknowledgement keeps the editor dirty', async () => {
+  setAutosaveDelayForTests(10)
+  const store = createProjectStore()
+  const staged: string[] = []
+  let release = () => {}
+  const ack = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const service = createPersistenceService(store, {
+    load: async () => null,
+    stage: async (project) => {
+      staged.push(project.name)
+    },
+    save: () => ack,
+  })
+  const detach = service.attach()
+  try {
+    store.getState().setProject(createEmptyProject(crypto.randomUUID(), 'Rascunho durável'))
+    expect(staged).toEqual(['Rascunho durável'])
+    await Bun.sleep(50)
+    expect(store.getState().isDirty).toBe(true)
+    release()
+    await Bun.sleep(10)
+    expect(store.getState().isDirty).toBe(false)
+  } finally {
+    release()
+    detach()
+    setAutosaveDelayForTests(null)
+  }
+})
+
+it('unmount stages a dirty snapshot synchronously even if it predates the subscription', async () => {
+  const store = createProjectStore()
+  store.getState().setProject(createEmptyProject(crypto.randomUUID(), 'Último rascunho'))
+  const staged: string[] = []
+  let release = () => {}
+  const ack = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const service = createPersistenceService(store, {
+    load: async () => null,
+    stage: async (project) => {
+      staged.push(project.name)
+    },
+    save: () => ack,
+  })
+  const detach = service.attach()
+  try {
+    detach()
+    expect(staged).toEqual(['Último rascunho'])
+    expect(store.getState().isDirty).toBe(true)
+  } finally {
+    release()
+    await Bun.sleep(0)
+  }
+})
+
 /**
  * Adapter de teste com `save` GATEADO: cada chamada fica pendurada até o teste
  * liberá-la por ordem de chegada, e registra a ordem em que cada projeto foi

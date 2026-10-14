@@ -6,6 +6,7 @@
   "private": true,
   "module": "src/index.ts",
   "exports": {
+    "./live": "./src/live/index.ts",
     ".": "./src/index.ts",
     "./ai-credits": "./src/ai-credits/index.ts",
     "./journey": "./src/journey/index.ts",

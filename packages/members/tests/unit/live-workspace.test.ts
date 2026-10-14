@@ -1,0 +1,429 @@
+import { describe, expect, test } from 'bun:test'
+import { createBlankProjectSnapshot as createEmptyProject } from '@sistemazero/studio/blank-project'
+import type { LiveContext } from '../../src/application/live/live.service'
+import { LiveWorkspaceService } from '../../src/application/live/live-workspace.service'
+import type { LiveActor } from '../../src/domain/ports/live-repository.port'
+import type {
+  LiveWorkspaceRecord,
+  LiveWorkspaceRepository,
+  LiveWorkspaceRevision,
+} from '../../src/domain/ports/live-workspace-repository.port'
+
+const ids = {
+  session: '00000000-0000-4000-8000-000000000001',
+  child: '00000000-0000-4000-8000-000000000002',
+  teacher: '00000000-0000-4000-8000-000000000003',
+  account: '00000000-0000-4000-8000-000000000004',
+  device: '00000000-0000-4000-8000-000000000005',
+  teacherDevice: '00000000-0000-4000-8000-000000000006',
+}
+function setup(
+  continuation = false,
+  recording?: { confirmPaused(occurrenceId: string): Promise<void> },
+) {
+  let now = new Date('2026-11-07T17:30:00Z')
+  const child: LiveActor = { id: ids.child, accountId: ids.account, name: 'Alice', staff: false }
+  const teacher: LiveActor = {
+    id: ids.teacher,
+    accountId: ids.teacher,
+    name: 'Professora',
+    staff: true,
+  }
+  const records = new Map<string, LiveWorkspaceRecord>()
+  const revisions = new Map<string, LiveWorkspaceRevision>()
+  const context = {
+    session: {
+      id: ids.session,
+      order: 0,
+      cohortId: 'cohort',
+      plan: { title: 'Cadê, Todo Mundo?', starterProjectId: null },
+    },
+    occurrence: {
+      id: ids.session,
+      state: 'live',
+      startsAt: '2026-11-07T17:00:00Z',
+      hardEndsAt: '2026-11-07T19:00:00Z',
+      teachers: { [ids.teacher]: now.toISOString() },
+      recording: { state: 'not_started' },
+      participants: [{ learnerId: ids.child, deviceId: ids.device, admission: 'admitted' }],
+    },
+    aggregate: {
+      enrollments: [
+        { id: 'enrollment', learnerId: ids.child, accountId: ids.account, status: 'active' },
+      ],
+      grants: [
+        {
+          enrollmentId: 'enrollment',
+          sessionId: ids.session,
+          startsAt: '2026-11-07T17:00:00Z',
+          endsAt: '2026-12-07T17:00:00Z',
+          revokedAt: null,
+        },
+      ],
+    },
+  } as unknown as LiveContext
+  context.aggregate.occurrences = [context.occurrence]
+  context.aggregate.sessions = [context.session]
+  const repository: LiveWorkspaceRepository = {
+    find: async (id) => structuredClone(records.get(id) ?? null),
+    listOwned: async (accountId, learnerId) =>
+      [...records.values()]
+        .filter((record) => record.accountId === accountId && record.learnerId === learnerId)
+        .map((record) => structuredClone(record)),
+    ensure: async (record) => {
+      const previous = [...records.values()].find(
+        (r) => r.sessionId === record.sessionId && r.learnerId === record.learnerId,
+      )
+      if (previous) return structuredClone(previous)
+      records.set(record.id, structuredClone(record))
+      return record
+    },
+    transaction: async (id, mutate) => {
+      const record = records.get(id)
+      if (!record) throw new Error('Missing workspace')
+      const workspace = structuredClone(record)
+      const added: LiveWorkspaceRevision[] = []
+      const result = await mutate({
+        workspace,
+        findMutation: async (mutation) => revisions.get(mutation) ?? null,
+        appendRevision: async (revision) => {
+          added.push(revision)
+        },
+        teacherHasActiveWorkspace: async () => false,
+      })
+      records.set(id, workspace)
+      for (const revision of added) revisions.set(revision.mutationId, revision)
+      return result
+    },
+    createTemplate: async () => {},
+    findTemplate: async () => null,
+    listTemplates: async () => [],
+  }
+  const service = new LiveWorkspaceService(
+    repository,
+    {
+      requireContext: async (actor, sessionId) => ({
+        ...context,
+        session:
+          context.aggregate.sessions.find((item) => item.id === sessionId) ?? context.session,
+        role: actor.id === ids.teacher ? 'teacher' : 'learner',
+        grant: context.aggregate.grants.find((item) => item.sessionId === sessionId)!,
+      }),
+    },
+    () => now,
+    recording,
+    { canContinue: async () => continuation },
+  )
+  return {
+    service,
+    child,
+    teacher,
+    records,
+    revisions,
+    context,
+    advance: (ms: number) => {
+      now = new Date(now.getTime() + ms)
+      context.occurrence.teachers[ids.teacher] = now.toISOString()
+    },
+  }
+}
+
+describe('live project writer ownership', () => {
+  test('declining a pending request preserves the child writer and pending commit epoch', async () => {
+    const { service, child, teacher } = setup()
+    const opened = await service.open(child, ids.session, ids.child)
+    const claimed = await service.claim(child, opened.id, ids.device, false)
+    await service.requestAssistance(teacher, opened.id)
+    const declined = await service.revoke(child, opened.id, ids.device)
+    expect(declined.assistance).toBeNull()
+    expect(declined.writerEpoch).toBe(claimed.writerEpoch)
+    expect(declined.writerDeviceId).toBe(ids.device)
+    const saved = await service.commit(child, opened.id, {
+      deviceId: ids.device,
+      expectedRevision: 0,
+      writerEpoch: claimed.writerEpoch,
+      mutationId: crypto.randomUUID(),
+      project: { ...claimed.project, name: 'Minha edição recente' },
+    })
+    expect(saved.project.name).toBe('Minha edição recente')
+  })
+  test('the requesting teacher can cancel only the matching pending request', async () => {
+    const { service, child, teacher } = setup()
+    const opened = await service.open(child, ids.session, ids.child)
+    const claimed = await service.claim(child, opened.id, ids.device, false)
+    const requested = await service.requestAssistance(teacher, opened.id)
+    await expect(
+      service.cancelAssistance(teacher, opened.id, crypto.randomUUID()),
+    ).rejects.toThrow()
+    const cancelled = await service.cancelAssistance(teacher, opened.id, requested.assistance!.id)
+    expect(cancelled.assistance).toBeNull()
+    expect(cancelled.writerEpoch).toBe(claimed.writerEpoch)
+    const next = await service.requestAssistance(teacher, opened.id)
+    await expect(
+      service.cancelAssistance(teacher, opened.id, requested.assistance!.id),
+    ).rejects.toThrow()
+    expect((await service.get(teacher, opened.id)).assistance?.id).toBe(next.assistance!.id)
+  })
+  test('unanswered requests expire without changing child authorship', async () => {
+    const { service, child, teacher, advance } = setup()
+    const opened = await service.open(child, ids.session, ids.child)
+    const claimed = await service.claim(child, opened.id, ids.device, false)
+    await service.requestAssistance(teacher, opened.id)
+    advance(60_001)
+    const expired = await service.get(child, opened.id)
+    expect(expired.assistance).toBeNull()
+    expect(expired.writerEpoch).toBe(claimed.writerEpoch)
+  })
+  test('reopening on the same device fences pending commits from the earlier editor instance', async () => {
+    const { service, child } = setup()
+    const workspace = await service.open(child, ids.session, ids.child)
+    const first = await service.claim(child, workspace.id, ids.device, false)
+    const reopened = await service.claim(child, workspace.id, ids.device, false)
+    expect(reopened.writerEpoch).toBeGreaterThan(first.writerEpoch)
+    await expect(
+      service.commit(child, workspace.id, {
+        deviceId: ids.device,
+        expectedRevision: 0,
+        writerEpoch: first.writerEpoch,
+        mutationId: crypto.randomUUID(),
+        project: first.project,
+      }),
+    ).rejects.toThrow('autoria mudou')
+  })
+  test('after hard end an abandoned live state does not lock the replay project to its old device', async () => {
+    const { service, child, advance, context } = setup()
+    const workspace = await service.open(child, ids.session, ids.child)
+    await service.claim(child, workspace.id, ids.device, false)
+    advance(2 * 60 * 60 * 1000)
+    expect(context.occurrence.state).toBe('live')
+    const claimed = await service.claim(child, workspace.id, ids.teacherDevice, false)
+    expect(claimed.writerDeviceId).toBe(ids.teacherDevice)
+  })
+  test('poll omits unchanged project assets but keeps authorization on every request', async () => {
+    const { service, child } = setup()
+    const workspace = await service.open(child, ids.session, ids.child)
+    const unchanged = await service.poll(child, workspace.id, 0)
+    expect(unchanged.project).toBeUndefined()
+    const claimed = await service.claim(child, workspace.id, ids.device, false)
+    await service.commit(child, workspace.id, {
+      deviceId: ids.device,
+      expectedRevision: 0,
+      writerEpoch: claimed.writerEpoch,
+      mutationId: crypto.randomUUID(),
+      project: claimed.project,
+    })
+    expect((await service.poll(child, workspace.id, 0)).project?.id).toBe(workspace.id)
+    await expect(
+      service.poll({ ...child, accountId: ids.teacher }, workspace.id, 1),
+    ).rejects.toThrow()
+  })
+  test('subscription continues the same expired workspace without reopening a lesson or another family', async () => {
+    const { service, child, advance } = setup(true)
+    const workspace = await service.open(child, ids.session, ids.child)
+    advance(31 * 24 * 60 * 60 * 1000)
+    expect((await service.get(child, workspace.id)).id).toBe(workspace.id)
+    expect((await service.listOwned(child)).workspaces[0]?.canEdit).toBe(true)
+    const claimed = await service.claim(child, workspace.id, ids.device, false)
+    expect(
+      (
+        await service.commit(child, workspace.id, {
+          deviceId: ids.device,
+          expectedRevision: 0,
+          writerEpoch: claimed.writerEpoch,
+          mutationId: crypto.randomUUID(),
+          project: claimed.project,
+        })
+      ).revision,
+    ).toBe(1)
+    await expect(service.open(child, ids.session, ids.child)).rejects.toThrow()
+    await expect(service.get({ ...child, accountId: ids.teacher }, workspace.id)).rejects.toThrow()
+    expect((await service.listOwned({ ...child, accountId: ids.teacher })).workspaces).toEqual([])
+  })
+  test('without a subscription expiry denies saved content and publication, keeping only its library card', async () => {
+    const { service, child, advance } = setup()
+    const workspace = await service.open(child, ids.session, ids.child)
+    advance(31 * 24 * 60 * 60 * 1000)
+    await expect(service.get(child, workspace.id)).rejects.toThrow()
+    await expect(service.showcaseSnapshot(child, workspace.id, 1)).rejects.toThrow()
+    expect((await service.listOwned(child)).workspaces[0]?.canEdit).toBe(false)
+  })
+  test('subscription does not bypass the active room device or publish another revision', async () => {
+    const { service, child, teacher } = setup(true)
+    const workspace = await service.open(child, ids.session, ids.child)
+    await expect(service.claim(child, workspace.id, ids.teacherDevice, true)).rejects.toThrow(
+      'outro aparelho',
+    )
+    const claimed = await service.claim(child, workspace.id, ids.device, false)
+    await service.commit(child, workspace.id, {
+      deviceId: ids.device,
+      expectedRevision: 0,
+      writerEpoch: claimed.writerEpoch,
+      mutationId: crypto.randomUUID(),
+      project: claimed.project,
+    })
+    expect((await service.showcaseSnapshot(child, workspace.id, 1)).project.id).toBe(workspace.id)
+    await expect(service.showcaseSnapshot(child, workspace.id, 2)).rejects.toThrow(
+      'Guarde o projeto',
+    )
+    await expect(service.showcaseSnapshot(teacher, workspace.id, 1)).rejects.toThrow()
+    await expect(
+      service.showcaseSnapshot({ ...child, accountId: ids.teacher }, workspace.id, 1),
+    ).rejects.toThrow()
+  })
+  test('child consent commits a durable checkpoint and fences old autosave', async () => {
+    const { service, child, teacher, revisions } = setup()
+    let workspace = await service.open(child, ids.session, ids.child)
+    workspace = await service.claim(child, workspace.id, ids.device, false)
+    const oldEpoch = workspace.writerEpoch
+    workspace = await service.requestAssistance(teacher, workspace.id)
+    expect(workspace.writerId).toBe(ids.child)
+    workspace = await service.acceptAssistance(child, workspace.id, workspace.assistance!.id, {
+      deviceId: ids.device,
+      writerEpoch: oldEpoch,
+      expectedRevision: 0,
+      mutationId: crypto.randomUUID(),
+      project: workspace.project,
+    })
+    expect(revisions.size).toBe(1)
+    expect(workspace.writerId).toBe(ids.teacher)
+    await expect(
+      service.commit(child, workspace.id, {
+        deviceId: ids.device,
+        writerEpoch: oldEpoch,
+        expectedRevision: 1,
+        mutationId: crypto.randomUUID(),
+        project: workspace.project,
+      }),
+    ).rejects.toThrow('autoria mudou')
+    workspace = await service.attachTeacher(teacher, workspace.id, ids.teacherDevice)
+    workspace = await service.returnAuthorship(teacher, workspace.id, {
+      deviceId: ids.teacherDevice,
+      writerEpoch: workspace.writerEpoch,
+      expectedRevision: workspace.revision,
+      mutationId: crypto.randomUUID(),
+      project: workspace.project,
+    })
+    expect(workspace.assistance?.status).toBe('returning')
+    await expect(service.acknowledgeReturn(child, workspace.id, 0, ids.device)).rejects.toThrow(
+      'revisão final',
+    )
+    workspace = await service.acknowledgeReturn(child, workspace.id, workspace.revision, ids.device)
+    expect(workspace.writerId).toBe(ids.child)
+    expect(workspace.assistance).toBeNull()
+  })
+  test('failed recording does not authorize a handoff', async () => {
+    const { service, child, teacher, context } = setup()
+    let workspace = await service.open(child, ids.session, ids.child)
+    workspace = await service.claim(child, workspace.id, ids.device, false)
+    workspace = await service.requestAssistance(teacher, workspace.id)
+    context.occurrence.recording.state = 'failed'
+    await expect(
+      service.acceptAssistance(child, workspace.id, workspace.assistance!.id, {
+        deviceId: ids.device,
+        writerEpoch: workspace.writerEpoch,
+        expectedRevision: 0,
+        mutationId: crypto.randomUUID(),
+        project: workspace.project,
+      }),
+    ).rejects.toThrow('pausa da gravação')
+    expect((await service.get(child, workspace.id)).writerId).toBe(ids.child)
+  })
+  test('finalized recording requires receiver confirmation before a later assistance', async () => {
+    let confirmed = false
+    let checks = 0
+    const { service, child, teacher, context } = setup(false, {
+      async confirmPaused(occurrenceId) {
+        expect(occurrenceId).toBe(ids.session)
+        checks++
+        if (!confirmed) throw new Error('Receiver unavailable')
+      },
+    })
+    let workspace = await service.open(child, ids.session, ids.child)
+    workspace = await service.claim(child, workspace.id, ids.device, false)
+    workspace = await service.requestAssistance(teacher, workspace.id)
+    context.occurrence.recording.state = 'review'
+    const input = {
+      deviceId: ids.device,
+      writerEpoch: workspace.writerEpoch,
+      expectedRevision: 0,
+      mutationId: crypto.randomUUID(),
+      project: workspace.project,
+    }
+    await expect(
+      service.acceptAssistance(child, workspace.id, workspace.assistance!.id, input),
+    ).rejects.toThrow('Receiver unavailable')
+    expect((await service.get(child, workspace.id)).writerId).toBe(ids.child)
+    confirmed = true
+    const active = await service.acceptAssistance(
+      child,
+      workspace.id,
+      workspace.assistance!.id,
+      input,
+    )
+    expect(active.writerId).toBe(ids.teacher)
+    expect(active.assistance?.checkpointRevision).toBe(1)
+    expect(context.occurrence.recording.state).toBe('review')
+    expect(checks).toBe(2)
+  })
+  test('expired leases, cross-family access and stale revisions cannot write', async () => {
+    const { service, child, advance } = setup()
+    let workspace = await service.open(child, ids.session, ids.child)
+    await expect(service.get({ ...child, accountId: ids.teacher }, workspace.id)).rejects.toThrow()
+    workspace = await service.claim(child, workspace.id, ids.device, false)
+    const input = {
+      deviceId: ids.device,
+      writerEpoch: workspace.writerEpoch,
+      expectedRevision: 0,
+      mutationId: crypto.randomUUID(),
+      project: workspace.project,
+    }
+    const saved = await service.commit(child, workspace.id, input)
+    expect((await service.commit(child, workspace.id, input)).revision).toBe(saved.revision)
+    await expect(
+      service.commit(child, workspace.id, { ...input, mutationId: crypto.randomUUID() }),
+    ).rejects.toThrow('revisão mais recente')
+    advance(30_001)
+    await expect(
+      service.renew(child, workspace.id, ids.device, workspace.writerEpoch),
+    ).rejects.toThrow('autoria mudou')
+  })
+  test('self-contained starter projects stay isolated per learner', async () => {
+    const { service, child } = setup()
+    const workspace = await service.open(child, ids.session, ids.child)
+    expect(workspace.project.id).toBe(workspace.id)
+    expect(workspace.project.formatVersion).toEqual(
+      createEmptyProject(workspace.id, 'Example').formatVersion,
+    )
+    expect((await service.open(child, ids.session, ids.child)).id).toBe(workspace.id)
+  })
+})
+
+test('linked lessons share one canonical project but preserve independent access windows', async () => {
+  const { service, child, context, advance } = setup()
+  const opened = await service.open(child, ids.session, child.id)
+  const second = {
+    ...context.session,
+    id: crypto.randomUUID(),
+    order: 1,
+    plan: { ...context.session.plan, continueProjectFrom: 0 },
+  }
+  context.aggregate.sessions.push(second)
+  context.aggregate.grants.push({
+    ...context.aggregate.grants[0]!,
+    sessionId: second.id,
+    startsAt: '2026-12-08T17:00:00Z',
+    endsAt: '2027-01-07T17:00:00Z',
+  })
+  await expect(service.open(child, second.id, child.id)).rejects.toThrow()
+  await expect(service.forSession(second.id).get(child, opened.id)).rejects.toThrow()
+  advance(31 * 86400_000)
+  const continued = await service.open(child, second.id, child.id)
+  expect(continued.id).toBe(opened.id)
+  expect(continued.contextSessionId).toBe(second.id)
+  expect((await service.get(child, opened.id)).id).toBe(opened.id)
+  await expect(service.forSession(ids.session).get(child, opened.id)).rejects.toThrow()
+  await expect(service.forSession(crypto.randomUUID()).get(child, opened.id)).rejects.toThrow()
+  await expect(
+    service.open({ ...child, accountId: crypto.randomUUID() }, second.id, child.id),
+  ).rejects.toThrow()
+})

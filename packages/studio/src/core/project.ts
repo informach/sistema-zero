@@ -1,6 +1,6 @@
 import type { SZIRInput } from '#ir'
+import { createBlankProjectSnapshot } from './blankProject'
 import type { IDEMode } from './modes'
-import { CURRENT_PROJECT_FORMAT_VERSION } from './projectDocument'
 import type { ProjectKind, ProjectTree, ProProjectMeta } from './proProject'
 
 export interface ProjectFiles {
@@ -736,71 +736,5 @@ export function isReservedProjectFileName(fileName: string): boolean {
 }
 
 export function createEmptyProject(id: string, name: string): Project {
-  const now = Date.now()
-  return {
-    formatVersion: CURRENT_PROJECT_FORMAT_VERSION,
-    projectTools: [],
-    id,
-    name,
-    createdAt: now,
-    updatedAt: now,
-    mode: 'blocks',
-    files: {
-      'index.html': defaultHTML(name),
-      'style.css': defaultCSS(),
-      'script.js': defaultJS(),
-    },
-    extraFiles: [],
-    assets: [],
-    ir: {
-      version: 2,
-      html: [],
-      css: [],
-      behavior: { start: [], events: [], loops: [] },
-      extensions: [],
-    },
-    // Projeto novo nasce em branco, sem Estrutura, Aparência, Ao iniciar,
-    // Quando acontecer ou Enquanto estiver rodando. A criança arrasta as "🗂️ Áreas do projeto"
-    // da paleta quando quiser começar. ⚠️ blocksState VAZIO (não `null`): a
-    // migração `normalizeBlocksStateToFrames` só embrulha em frames quando há
-    // blocos SOLTOS — com a lista vazia ela não re-adiciona os frames.
-    blocksState: {
-      blocks: {
-        languageVersion: 0,
-        blocks: [],
-      },
-    },
-    installedExtensions: [],
-  }
-}
-
-function defaultHTML(name: string): string {
-  return `<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <meta charset="UTF-8" />
-    <title>${escapeHtml(name)}</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <script src="script.js"></script>
-  </body>
-</html>
-`
-}
-
-function defaultCSS(): string {
-  return ''
-}
-
-function defaultJS(): string {
-  return ''
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return createBlankProjectSnapshot(id, name)
 }

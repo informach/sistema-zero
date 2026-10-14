@@ -38,6 +38,8 @@ import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioExecution } from '../../studio/observation'
+import { validateIsolatedPreviewUrl } from './playerOriginAdapter'
 import {
   estimatePreviewInputChars,
   PREVIEW_RENDER_INPUT_LIMIT_CHARS,
@@ -81,6 +83,8 @@ export function chosenCoverPausesSnapshots(
 }
 
 export function PreviewIframe(): JSX.Element {
+  const execution = useStudioExecution()
+  const fullProject = useProjectStore((s) => s.project)
   const {
     projectId,
     html,
@@ -245,6 +249,7 @@ export function PreviewIframe(): JSX.Element {
   }
 
   const handleTogglePreviewRunning = () => {
+    if (execution.editingAccess === 'observer') return
     if (previewRunning) {
       setPreviewRunning(false)
       return
@@ -258,6 +263,7 @@ export function PreviewIframe(): JSX.Element {
   }
 
   const handleRefresh = () => {
+    if (execution.editingAccess === 'observer') return
     // Atualizar implica executar: se estava parado, religa o Play.
     // Descarrega a última escrita ao mirror antes de o doc ser reconstruído.
     processStorageNow()
@@ -425,11 +431,19 @@ export function PreviewIframe(): JSX.Element {
 
   useEffect(() => {
     if (!projectId || !previewRunning || previewPaused) return
+    if (!execution.autoRun || execution.editingAccess === 'observer') return
     if (autoStartedProjectId.current === projectId) return
     if (loadedSrcDoc !== PAUSED_PREVIEW_DOC) return
     autoStartedProjectId.current = projectId
     setRenderNonce((n) => n + 1)
-  }, [projectId, previewRunning, previewPaused, loadedSrcDoc])
+  }, [
+    projectId,
+    previewRunning,
+    previewPaused,
+    loadedSrcDoc,
+    execution.autoRun,
+    execution.editingAccess,
+  ])
 
   useEffect(() => {
     if (renderLargePreviewForInput && renderLargePreviewForInput !== previewBudgetInput) {
@@ -474,6 +488,7 @@ export function PreviewIframe(): JSX.Element {
   }, [projectId, previewRunning, previewPaused, hasChosenCover])
 
   const doc = useMemo(() => {
+    if (execution.editingAccess === 'observer') return PAUSED_PREVIEW_DOC
     // Parar (Play desligado): esvazia o iframe → mata setInterval/timers em execução.
     if (!previewRunning) return PAUSED_PREVIEW_DOC
     if (previewPaused) return PAUSED_PREVIEW_DOC
@@ -537,7 +552,80 @@ export function PreviewIframe(): JSX.Element {
     models3dManifest,
     previewSecurity,
     renderNonce,
+    execution.editingAccess,
   ])
+
+  const [remoteDocument, setRemoteDocument] = useState<{
+    document: string
+    url: string | null
+    error: string | null
+  } | null>(null)
+  const originAdapter = execution.originAdapter
+  const projectForOrigin = useRef(fullProject)
+  projectForOrigin.current = fullProject
+  useEffect(() => {
+    if (!originAdapter || doc === PAUSED_PREVIEW_DOC || !projectForOrigin.current) return
+    const project = projectForOrigin.current
+    const controller = new AbortController()
+    let active = true
+    let publishedUrl: string | null = null
+    const release = (url: string) => {
+      void Promise.resolve(originAdapter.releasePreviewUrl?.(url)).catch(() => {})
+    }
+    const publishTimer = setTimeout(() => {
+      void originAdapter
+        .createPreviewUrl({
+          project,
+          document: doc,
+          signal: controller.signal,
+        })
+        .then(
+          (url) => {
+            publishedUrl = url
+            if (!active) {
+              release(url)
+              return
+            }
+            try {
+              const validated = validateIsolatedPreviewUrl(url, window.location.origin)
+              setRemoteDocument({ document: doc, url: validated, error: null })
+            } catch (error) {
+              release(url)
+              publishedUrl = null
+              setRemoteDocument({
+                document: doc,
+                url: null,
+                error:
+                  error instanceof Error ? error.message : 'Não foi possível abrir o jogo isolado.',
+              })
+            }
+          },
+          (error: unknown) => {
+            if (active)
+              setRemoteDocument({
+                document: doc,
+                url: null,
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : 'Não foi possível abrir o jogo isolado. Tente reproduzir novamente.',
+              })
+          },
+        )
+    }, 250)
+    return () => {
+      active = false
+      clearTimeout(publishTimer)
+      controller.abort()
+      if (publishedUrl) release(publishedUrl)
+    }
+  }, [doc, originAdapter])
+  const isolatedUrl = remoteDocument?.document === doc ? remoteDocument.url : null
+  const requiresRemoteDocument = Boolean(originAdapter) || execution.requireIsolatedPreview
+  const effectiveDoc = requiresRemoteDocument ? PAUSED_PREVIEW_DOC : doc
+  useEffect(() => {
+    iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: execution.muted }, '*')
+  }, [execution.muted])
 
   const docIsLive = doc !== PAUSED_PREVIEW_DOC
 
@@ -648,6 +736,7 @@ export function PreviewIframe(): JSX.Element {
     <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg">
       <div className="flex items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1">
         <Button
+          data-live-target={previewRunning ? 'studio-stop' : 'studio-run'}
           size="sm"
           variant={previewRunning ? 'ghost' : 'primary'}
           onClick={handleTogglePreviewRunning}
@@ -688,11 +777,16 @@ export function PreviewIframe(): JSX.Element {
       <iframe
         ref={iframeRef}
         title="Pré-visualização"
-        srcDoc={doc}
+        src={isolatedUrl ?? undefined}
+        srcDoc={isolatedUrl ? undefined : effectiveDoc}
         onLoad={() => {
           setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)
           lastHeartbeatRef.current = Date.now()
           setPreviewStalled(false)
+          iframeRef.current?.contentWindow?.postMessage(
+            { type: 'sz:audio', muted: execution.muted },
+            '*',
+          )
           // Foca o jogo após um Play/Atualizar explícito, para que as setas do
           // teclado cheguem ao iframe sem o aluno precisar clicar no canvas. Só
           // após ação explícita (a flag não é setada em reload por edição).
@@ -710,6 +804,15 @@ export function PreviewIframe(): JSX.Element {
         allow="fullscreen"
         className="h-full w-full flex-1 bg-white"
       />
+      {doc !== PAUSED_PREVIEW_DOC && requiresRemoteDocument && !isolatedUrl && (
+        <p role="status" className="absolute inset-x-0 bottom-0 bg-sz-panel p-3 text-sm text-sz-fg">
+          {!originAdapter
+            ? 'O ambiente de execução desta sala ainda não está configurado.'
+            : remoteDocument?.document === doc && remoteDocument.error
+              ? remoteDocument.error
+              : 'Preparando o jogo no ambiente isolado…'}
+        </p>
+      )}
       {previewRunning && extensionRuntimesLoading && (
         <div
           role="status"

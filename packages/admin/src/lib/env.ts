@@ -8,6 +8,7 @@ import { z } from 'zod'
 const EnvSchema = z
   .object({
     GATEWAY_URL: z.string().url().default('http://localhost:3000'),
+    MEMBER_SHELL_HMAC_SECRET: z.string().min(24).optional(),
     // Verificação do access JWT — HS256 (segredo compartilhado; dev/local) e/ou
     // RS256 via JWKS (PRODUÇÃO: o auth emite RS256 e não há segredo HS256 lá —
     // aponte p/ o gateway: <GATEWAY_URL>/auth/.well-known/jwks.json).

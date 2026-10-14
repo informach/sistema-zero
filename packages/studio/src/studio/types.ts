@@ -1,5 +1,6 @@
 import type { CSSProperties, Ref } from 'react'
 import type { AnyBlockLevel, IDEMode, Locale, Project } from '#core'
+import type { StudioPlayerOriginAdapter } from '../components/preview/playerOriginAdapter'
 import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { ActivityRunResult, LessonActivity } from './activity'
@@ -75,6 +76,13 @@ export interface StudioHandle {
   save(): Promise<void>
   /** Substitui o projeto inteiro (ex.: host recarregou do servidor). Remonta os editores. */
   replaceProject(project: Project): void
+  /** Freeze mutations and execution, flush editor buffers and return a complete snapshot.
+   * The host must commit it durably before granting a different writer. */
+  prepareHandoff(): Promise<Project>
+  /** Apply a confirmed remote revision without autosave or automatic execution. */
+  applyObservedRevision(project: Project, revision: number): Promise<void>
+  /** Resume only after the host has confirmed this exact revision and writer epoch. */
+  resumeAuthorship(revision: number): void
   setMode(mode: IDEMode): void
   isDirty(): boolean
   /**
@@ -98,6 +106,15 @@ export interface StudioCommonProps {
    * use `handle.replaceProject()` ou troque a referência da prop.
    */
   initialProject: Project
+  editingAccess?: 'author' | 'observer'
+  onRevisionApplied?: (revision: number) => void
+  /** Defaults to true for existing editors. Observers never auto-run. */
+  autoRun?: boolean
+  /** Required in a live room: a failed origin adapter never falls back to srcdoc. */
+  previewOriginAdapter?: StudioPlayerOriginAdapter
+  requireIsolatedPreview?: boolean
+  /** Project audio only; independent of the classroom microphone. */
+  projectMuted?: boolean
   /**
    * Onde persistir: 'local' (IndexedDB embutido, default), 'none' (o host
    * salva via onChange/onSave) ou um adapter custom. ESTÁTICO por instância:

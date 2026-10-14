@@ -52,7 +52,7 @@ export const STUDY_DURATIONS: { value: StudyDuration; label: string }[] = [
 // Origem fictícia só para RESOLVER o destino; nunca sai daqui.
 const DESTINATION_BASE = 'https://destino.sistemazero.invalid'
 const STUDY_DESTINATION =
-  /^\/(?:cursos|como-fazer|criar|clube-dos-criadores|estudio|pensa|pinta|molda)(?:\/|$)/
+  /^\/(?:cursos|oficinas|como-fazer|criar|clube-dos-criadores|estudio|pensa|pinta|molda)(?:\/|$)/
 
 /**
  * Destino depois de entrar como aluno: só páginas de estudo, nunca URL externa, API ou a

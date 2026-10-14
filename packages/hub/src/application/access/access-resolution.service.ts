@@ -66,6 +66,21 @@ export class AccessResolutionService {
     private readonly members: MembersGateway,
     private readonly cache: MicroCache<CourseAccess>,
   ) {}
+  private async liveMural(actor: Actor): Promise<boolean> {
+    try {
+      return await this.members.getLiveMuralAccess(actor.userId, actor.accountId)
+    } catch {
+      return false
+    }
+  }
+  private isMural(space: Space) {
+    return (
+      space.slug === MURAL_SLUG &&
+      space.audience === 'kids' &&
+      space.accessConfig.visibility === 'community_gated' &&
+      Boolean(space.accessConfig.communities?.includes(MURAL_FULL_ACCESS))
+    )
+  }
 
   private collectAccessRefs(
     items: Array<Pick<AccessConfig, 'visibility' | 'courses' | 'communities'>>,
@@ -119,10 +134,15 @@ export class AccessResolutionService {
     const access = needsAccess
       ? await this.resolveCourseAccessFailClosed(actor.accountId, courseRefs, communityRefs)
       : NO_COURSE_ACCESS
+    const liveMural = spaces.some((space) => this.isMural(space)) && (await this.liveMural(actor))
     return spaces.map((space) => ({
       space,
-      accessible: this.evaluate(this.readConfig(space), actor, space.audience, access),
-      canInteract: this.evaluate(space.accessConfig, actor, space.audience, access),
+      accessible:
+        (this.isMural(space) && liveMural) ||
+        this.evaluate(this.readConfig(space), actor, space.audience, access),
+      canInteract:
+        (this.isMural(space) && liveMural) ||
+        this.evaluate(space.accessConfig, actor, space.audience, access),
     }))
   }
 
@@ -134,11 +154,13 @@ export class AccessResolutionService {
 
   async canAccessSpace(actor: Actor, space: Space): Promise<boolean> {
     if (actor.privileged) return true
+    if (this.isMural(space) && (await this.liveMural(actor))) return true
     return this.evaluateWithFetch(this.readConfig(space), actor, space.audience)
   }
 
   async canInteractSpace(actor: Actor, space: Space): Promise<boolean> {
     if (actor.privileged) return true
+    if (this.isMural(space) && (await this.liveMural(actor))) return true
     return this.evaluateWithFetch(space.accessConfig, actor, space.audience)
   }
 
@@ -148,6 +170,8 @@ export class AccessResolutionService {
    */
   async decideSpaceAccess(actor: Actor, space: Space): Promise<SpaceAccessDecision> {
     if (actor.privileged) return { accessible: true, unavailable: false, canInteract: true }
+    if (this.isMural(space) && (await this.liveMural(actor)))
+      return { accessible: true, unavailable: false, canInteract: true }
     const readConfig = this.readConfig(space)
     if (readConfig.visibility === 'course_gated' || readConfig.visibility === 'community_gated') {
       try {

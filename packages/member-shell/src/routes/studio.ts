@@ -326,18 +326,47 @@ export function createStudioRoutes(deps: {
       const rawChallenge = String(form.get('challengeKey') ?? '')
       const challengeKey = /^m:\d{4}-\d{2}$/.test(rawChallenge) ? rawChallenge : null
 
+      const liveWorkspaceId = String(form.get('liveWorkspaceId') ?? '')
+      const liveRevision = Number(form.get('liveRevision') ?? 0)
+      let liveSnapshot: {
+        project: Record<string, unknown>
+        playId: string
+        publicationToken: string
+      } | null = null
+      if (liveWorkspaceId) {
+        if (
+          !UUID_RE.test(liveWorkspaceId) ||
+          !Number.isSafeInteger(liveRevision) ||
+          liveRevision < 1
+        )
+          return invalid()
+        const response = await members.getLiveShowcasePayload(
+          liveWorkspaceId,
+          liveRevision,
+          clientIdempotencyKey,
+        )
+        if (response.status !== 200 || !response.body?.eligible)
+          return NextResponse.json(response.body ?? { error: { code: 'SHOWCASE_NOT_ELIGIBLE' } }, {
+            status: response.status === 200 ? 409 : response.status,
+          })
+        liveSnapshot = response.body
+      }
+
       const projectPart = form.get('project')
-      if (!(projectPart instanceof File) || projectPart.size === 0) return invalid()
-      if (projectPart.size > PROJECT_MAX_BYTES) {
+      if (!liveSnapshot && (!(projectPart instanceof File) || projectPart.size === 0))
+        return invalid()
+      if (!liveSnapshot && projectPart instanceof File && projectPart.size > PROJECT_MAX_BYTES) {
         return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
       }
       let projectBytes: Buffer
       // Metadado do projeto p/ o selo de nível do remix (cosmético; gate real no clique).
       let studioMeta: { pro: boolean; extensions: string[] } | null = null
       try {
-        const rawProject = JSON.parse(
-          Buffer.from(await projectPart.arrayBuffer()).toString('utf-8'),
-        )
+        const rawProject =
+          liveSnapshot?.project ??
+          (projectPart instanceof File
+            ? JSON.parse(Buffer.from(await projectPart.arrayBuffer()).toString('utf-8'))
+            : null)
         const project = sanitizeProjectForHost(rawProject)
         if (!project) return invalid()
         studioMeta = {
@@ -375,7 +404,7 @@ export function createStudioRoutes(deps: {
       }
 
       // Projeto jogável → R2 PRIVADO (servido só via /api/studio/play/:id).
-      const playId = randomUUID()
+      const playId = liveSnapshot?.playId ?? randomUUID()
       try {
         await r2PutObjectPrivate({
           key: PLAY_KEY(playId),
@@ -388,22 +417,47 @@ export function createStudioRoutes(deps: {
 
       // Cria o post no Mural (o hub re-valida a POSSE do produto + autor do header).
       const r = await hub.createShowcaseThreadStudioStandalone({
+        ...(liveSnapshot
+          ? {
+              liveWorkspace: {
+                id: liveWorkspaceId,
+                revision: liveRevision,
+                publicationToken: liveSnapshot.publicationToken,
+              },
+            }
+          : {}),
         spaceSlug: MURAL_SPACE_SLUG,
         title,
         description,
         coverImageUrl,
         playId,
         clientIdempotencyKey,
-        challengeKey,
+        challengeKey: liveSnapshot ? null : challengeKey,
         studioMeta,
       })
       if (r.status !== 200 || !r.body) {
+        // A timeout or even a rejected retry cannot prove Hub did not commit a
+        // previous attempt. Keep the stable private object for reconciliation.
         return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
           status: r.status,
         })
       }
       const threadId = r.body.thread.id
       const resolvedPlayId = r.body.thread.playId ?? playId
+      if (liveSnapshot && resolvedPlayId !== playId) {
+        // Older attempts used random IDs. Hub identifies the canonical object
+        // for this same author/workspace/revision/key: restore it before success.
+        try {
+          await r2PutObjectPrivate({
+            key: PLAY_KEY(resolvedPlayId),
+            body: projectBytes,
+            contentType: 'application/json',
+          })
+        } catch (error) {
+          return mediaErrorResponse(error)
+        }
+        await r2DeleteObjectPrivate(PLAY_KEY(playId)).catch(() => {})
+      }
       return NextResponse.json(
         {
           muralUrl: `/${MURAL_SPACE_SLUG}?thread=${encodeURIComponent(threadId)}`,

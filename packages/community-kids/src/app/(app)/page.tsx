@@ -14,6 +14,7 @@ import { FocusRefresh } from '@/components/kids/focus-refresh'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
+import { LiveWorkshopShortcut } from '@/components/kids/live-workshop-shortcut'
 import { KidsMascotAnimated } from '@/components/kids/mascot-rive'
 import { MissionsPanel } from '@/components/kids/missions-panel'
 import { nextLevelHintWithin } from '@/lib/journey-horizon'
@@ -159,6 +160,7 @@ export default async function HomePage() {
           </>
         )}
 
+        <LiveWorkshopShortcut />
         {/* Gamificação fora → os cards mostram placeholder gentil (não somem em silêncio). */}
         {!startAvailable && courses.length > 0 ? (
           <section className="kids-carta mt-6 p-6 md:p-7">

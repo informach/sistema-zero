@@ -3,11 +3,12 @@
  * daqui. `/responsavel` e `/responsavel/ajuda` continuam existindo só como redirecionamento,
  * porque e-mails antigos (o aviso de resposta do atendimento) apontam para eles.
  */
-export type ParentSectionId = 'familia' | 'acompanhamento' | 'conta' | 'ajuda'
+export type ParentSectionId = 'familia' | 'acompanhamento' | 'oficinas' | 'conta' | 'ajuda'
 
 export const PARENT_SECTIONS: readonly { id: ParentSectionId; label: string; href: string }[] = [
   { id: 'familia', label: 'Família', href: '/pais' },
   { id: 'acompanhamento', label: 'Acompanhamento', href: '/pais/acompanhamento' },
+  { id: 'oficinas', label: 'Oficinas', href: '/pais/oficinas' },
   { id: 'conta', label: 'Conta', href: '/pais/conta' },
   { id: 'ajuda', label: 'Ajuda', href: '/pais/ajuda' },
 ]

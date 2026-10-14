@@ -6,7 +6,16 @@ import {
 } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
+import type { LiveLearningService } from '../../application/live/live-learning.service'
+import type { LiveMaterialsService } from '../../application/live/live-materials.service'
+import type { LivePublicationService } from '../../application/live/live-publication.service'
+import type { LiveWorkspaceService } from '../../application/live/live-workspace.service'
+import type { LiveBenefitsPort } from '../../domain/ports/live-benefits.port'
 import type { Env } from '../../infrastructure/config/env'
+import type { CloudflareSfuMediaProvider } from '../../infrastructure/live/cloudflare-sfu.provider'
+import { liveMediaRoutes } from '../../infrastructure/live/live-media.routes'
+import { liveRecordingRoutes } from '../../infrastructure/live/live-recording.routes'
+import type { OwnRecordingProvider } from '../../infrastructure/live/own-recording.provider'
 import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody, setRawBody } from './raw-body'
 import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
@@ -17,11 +26,24 @@ import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type HelpRoutesDeps, helpRoutes } from './routes/help.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
 import { type LearningRoutesDeps, learningRoutes } from './routes/learning.routes'
+import { type LiveRoutesDeps, liveRoutes } from './routes/live.routes'
+import { liveLearningRoutes } from './routes/live-learning.routes'
+import { liveMaterialsRoutes } from './routes/live-materials.routes'
+import { livePublicationRoutes } from './routes/live-publication.routes'
+import { liveWorkspaceRoutes } from './routes/live-workspaces.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
+  liveLearning?: LiveLearningService
+  liveMaterials?: LiveMaterialsService
+  livePublication?: LivePublicationService
+  liveBenefits?: LiveBenefitsPort
+  liveWorkspace?: LiveWorkspaceService
+  liveMedia?: CloudflareSfuMediaProvider
+  liveRecording?: OwnRecordingProvider
+  live?: LiveRoutesDeps
   learning: LearningRoutesDeps
   env: Env
   logger: Logger
@@ -71,6 +93,10 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
     /^\/members\/admin\/lessons\/[^/]+\/draft$/.test(pathname) ||
     /^\/members\/admin\/lessons\/[^/]+\/import-(preview|learning)$/.test(pathname) ||
+    /^\/members\/admin\/live\/programs(?:\/[^/]+)?$/.test(pathname) ||
+    /^\/members\/(?:admin\/)?live\/(?:workspaces\/[^/]+\/(?:commits|accept|return)|templates)$/.test(
+      pathname,
+    ) ||
     // "Como fazer": rascunho com passos em markdown e o import em lote passam de 64 KB.
     /^\/members\/admin\/help\/tutorials(?:\/[^/]+|\/import)?$/.test(pathname)
   ) {
@@ -173,4 +199,53 @@ export function createServer(deps: HttpDeps) {
     .use(contentRoutes(deps.content))
     .use(internalRoutes(deps.internal))
     .use(helpRoutes(deps.help))
+    .use(deps.live ? liveRoutes(deps.live) : new Elysia())
+    .use(
+      deps.liveLearning
+        ? liveLearningRoutes({
+            learning: deps.liveLearning,
+            internalToken: deps.env.INTERNAL_API_TOKEN,
+          })
+        : new Elysia(),
+    )
+    .use(
+      deps.liveWorkspace
+        ? liveWorkspaceRoutes({
+            workspace: deps.liveWorkspace,
+            internalToken: deps.env.INTERNAL_API_TOKEN,
+            requireAdminEnabled: deps.env.REQUIRE_ADMIN,
+          })
+        : new Elysia(),
+    )
+    .use(
+      deps.livePublication
+        ? livePublicationRoutes({
+            publication: deps.livePublication,
+            benefits: deps.liveBenefits,
+            internalToken: deps.env.INTERNAL_API_TOKEN,
+          })
+        : new Elysia(),
+    )
+    .use(
+      deps.liveMaterials
+        ? liveMaterialsRoutes({
+            materials: deps.liveMaterials,
+            internalToken: deps.env.INTERNAL_API_TOKEN,
+          })
+        : new Elysia(),
+    )
+    .use(
+      deps.liveMedia
+        ? liveMediaRoutes({ media: deps.liveMedia, internalToken: deps.env.INTERNAL_API_TOKEN })
+        : new Elysia(),
+    )
+    .use(
+      deps.liveRecording && deps.env.LIVE_RECORDER_TOKEN
+        ? liveRecordingRoutes({
+            recording: deps.liveRecording,
+            token: deps.env.LIVE_RECORDER_TOKEN,
+            internalToken: deps.env.INTERNAL_API_TOKEN,
+          })
+        : new Elysia(),
+    )
 }

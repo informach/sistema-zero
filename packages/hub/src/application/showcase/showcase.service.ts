@@ -88,6 +88,7 @@ export interface CreateShowcaseFromStudioCommand {
 }
 
 export interface CreateStandaloneShowcaseCommand {
+  liveWorkspace?: { id: string; revision: number; publicationToken: string }
   spaceSlug: string
   /** Título escrito pela criança (= nome do projeto). NÃO há título autoritativo (sem aula). */
   title: string
@@ -469,13 +470,24 @@ export class ShowcaseService {
     // Elegibilidade = posse do produto do Estúdio (acesso pela CONTA). Fail-closed:
     // um erro transitório no members NÃO libera a publicação (o gateway re-entrega).
     // Com tag de DESAFIO, a MESMA chamada também resolve a posse do Clube (1 ida).
-    const wantsChallenge = Boolean(cmd.challengeKey)
+    const wantsChallenge = !cmd.liveWorkspace && Boolean(cmd.challengeKey)
     const refs = wantsChallenge
       ? [STUDIO_STANDALONE_ACCESS_REF, CHALLENGE_CLUB_REF]
       : [STUDIO_STANDALONE_ACCESS_REF]
     let owns = false
     let ownsClub = false
-    if (actor.privileged) {
+    if (cmd.liveWorkspace) {
+      // A workshop grants only this saved project. It does not unlock the Studio product.
+      const eligibility = await this.members.getLiveShowcaseEligibility({
+        userId: actor.userId,
+        accountId: actor.accountId,
+        workspaceId: cmd.liveWorkspace.id,
+        revision: cmd.liveWorkspace.revision,
+        playId: cmd.playId,
+        publicationToken: cmd.liveWorkspace.publicationToken,
+      })
+      owns = eligibility.eligible
+    } else if (actor.privileged) {
       // Equipe (chave-mestra virtual): passe livre p/ TESTAR a publicação (e o desafio)
       // sem comprar o produto — espelha o bypass da rota `/members/access` e da
       // elegibilidade por aula. O papel vem do gateway; aluno comum nunca é privileged.
@@ -495,7 +507,7 @@ export class ShowcaseService {
       }
     }
     if (!owns) throw new PostingNotAllowedError('Sem acesso ao Estúdio para publicar')
-    await this.assertNotVisitorOnly(actor)
+    if (!cmd.liveWorkspace) await this.assertNotVisitorOnly(actor)
 
     // Tag do desafio: formato + mês CORRENTE (SP, recomputado aqui — o corpo não
     // dita o mês) + posse do Clube. Reprovada → post SEM a tag (drop SILENCIOSO:
@@ -529,7 +541,9 @@ export class ShowcaseService {
     // Sem curso/cadeia: a idempotência é só `autor:standalone:clientKey` (duplo-clique
     // dedup-a; republicar com clientKey novo = post NOVO, snapshot imutável).
     const idempotencyKey = createHash('sha256')
-      .update(`${actor.userId}:studio-standalone:${cmd.clientIdempotencyKey}`)
+      .update(
+        `${actor.userId}:${cmd.liveWorkspace ? `live:${cmd.liveWorkspace.id}:${cmd.liveWorkspace.revision}` : 'studio-standalone'}:${cmd.clientIdempotencyKey}`,
+      )
       .digest('hex')
 
     const id = this.newId()
@@ -564,7 +578,7 @@ export class ShowcaseService {
     // (missões gated por estudio-completo) + XP diário de publicar (streak/liga de quem
     // só cria). FIRE-AND-FORGET best-effort (espelha o notifyShowcasePublished); notifica
     // mesmo no `deduped` (recupera falha anterior; o members é idempotente por playId/dia).
-    if (thread.playId) {
+    if (thread.playId && !cmd.liveWorkspace) {
       void this.members.notifyStandaloneShowcase({
         userId: actor.userId,
         accountId: actor.accountId,

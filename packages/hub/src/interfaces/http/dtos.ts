@@ -207,6 +207,13 @@ export const ShowcaseThreadStudioBody = t.Object({
  * do header confiável; `clientIdempotencyKey` dedup-a duplo-clique (republicar = post novo).
  */
 export const ShowcaseThreadStudioStandaloneBody = t.Object({
+  liveWorkspace: t.Optional(
+    t.Object({
+      id: UUID,
+      revision: t.Number({ minimum: 1, multipleOf: 1 }),
+      publicationToken: t.String({ minLength: 1, maxLength: 4096 }),
+    }),
+  ),
   spaceSlug: SLUG,
   title: t.String({ minLength: 1, maxLength: 200 }),
   description: t.String({ minLength: 1, maxLength: 280 }),

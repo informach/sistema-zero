@@ -131,6 +131,15 @@ export interface MuralModerationMessageArgs {
 }
 
 export interface MembersGateway {
+  getLiveMuralAccess(userId: string, accountId: string): Promise<boolean>
+  getLiveShowcaseEligibility(args: {
+    userId: string
+    accountId: string
+    workspaceId: string
+    revision: number
+    playId: string
+    publicationToken: string
+  }): Promise<{ eligible: boolean; title: string }>
   checkAccess(
     userId: string,
     courseRefs: string[],

@@ -2,6 +2,7 @@ import type { CreativeToolId } from '@sistemazero/core/journey'
 import {
   Blocks,
   Box,
+  CalendarDays,
   CircleHelp,
   CircleUserRound,
   Compass,
@@ -47,6 +48,7 @@ export interface NavItem {
   inner?: string[]
   /** O texto da setinha que volta para esta seção, em 2ª pessoa. */
   backLabel: string
+  desktopOnly?: boolean
 }
 
 /** Stable destinations across desktop and mobile, regardless of earned tools. */
@@ -57,6 +59,13 @@ export const NAV_ITEMS: NavItem[] = [
   // livre), e sem o chapéu de formatura, que lembrava a escola. A página continua sendo o mapa da
   // Jornada do Criador, e é assim que a trilha já chamava a volta.
   { href: '/cursos', label: 'Explorar', icon: Compass, backLabel: 'Voltar ao mapa' },
+  {
+    href: '/oficinas',
+    label: 'Oficinas',
+    icon: CalendarDays,
+    backLabel: 'Voltar às oficinas',
+    desktopOnly: true,
+  },
   {
     href: '/criar',
     label: 'Criar',
@@ -98,7 +107,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
 ]
 
-export const MOBILE_NAV_ITEMS = NAV_ITEMS
+export const MOBILE_NAV_ITEMS = NAV_ITEMS.filter((item) => !item.desktopOnly)
 
 /**
  * O "Como fazer" (a biblioteca de ajuda, 26/09/2026) fica FORA de `NAV_ITEMS` de propósito:
