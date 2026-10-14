@@ -219,6 +219,15 @@ export interface LiveRecordingChapter {
   sectionId: string
   seconds: number
 }
+/**
+ * Onde está o MP4 revisado de um encontro (`GET …/occurrences/:id/recording/source`). O members
+ * não guarda credencial de armazenamento: o Admin assina a URL temporária com as dele.
+ */
+export interface LiveRecordingSourceView {
+  storageKey: string
+  /** Bucket LÓGICO: `private` é o bucket privado de mídia da plataforma (o mesmo dos materiais). */
+  bucket: 'private'
+}
 export interface LiveLessonAccessView {
   startsAt: string
   endsAt: string
