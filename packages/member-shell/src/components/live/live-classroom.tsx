@@ -6,7 +6,7 @@ import { ArrowLeft, Download, Hand, LifeBuoy, MessageCircle, Send } from 'lucide
 import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { classroomState, mergeLiveRoomPlan } from '../../lib/live/classroom-state'
-import { LiveRequestError, liveDate, liveDeviceId, liveRequest } from '../../lib/live/client'
+import { LiveRequestError, liveDate, liveRequest, resolveLiveDeviceId } from '../../lib/live/client'
 import { LiveGuidancePointer } from './live-guidance'
 import { LiveLearningActivities } from './live-learning-activities'
 import { LiveMediaPanel } from './live-media-panel'
@@ -66,7 +66,7 @@ export function LiveClassroom({
     setStale(false)
   }, [])
   useEffect(() => {
-    setDeviceId(liveDeviceId())
+    void resolveLiveDeviceId().then(setDeviceId)
   }, [])
   // biome-ignore lint/correctness/useExhaustiveDependencies: Moderation commands restart polling immediately with a fresh snapshot.
   useEffect(() => {

@@ -16,9 +16,11 @@ import { Button } from '@sistemazero/ui'
 import { Save, Volume2, VolumeX } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { liveRequest } from '../../lib/live/client'
 import { cursorAnchor } from '../../lib/live/cursor'
 import { createLivePreviewAdapter } from '../../lib/live/preview'
+import { isTransientLiveFailure, sameLiveProject } from '../../lib/live/workspace-compare'
 import { type LiveDraft, LiveDraftJournal, liveDraftScope } from '../../lib/live/workspace-drafts'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
 import { LiveAssistanceCursor } from './live-assistance-cursor'
@@ -34,6 +36,7 @@ const StudioEditor = dynamic(
     ),
   },
 )
+const SAVE_RETRY_MS = [2_000, 4_000, 8_000, 15_000]
 type WorkspaceContext = Pick<LiveRoomView, 'actorId' | 'role'> & {
   session: { id: string }
   library?: boolean
@@ -222,6 +225,13 @@ function WorkspaceEditor({
   const [drafts, setDrafts] = useState<LiveDraft[]>([])
   const [journal, setJournal] = useState<LiveDraftJournal | null>(null)
   const staged = useRef<{ draft: LiveDraft; saved: Promise<void> } | null>(null)
+  // Queda curta de rede: a criança segue criando, o projeto fica neste aparelho e tentamos de novo.
+  const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const retryAttempt = useRef(0)
+  // Recuperação causada por conexão (e não por troca de autoria) tenta se resolver sozinha.
+  const autoRecover = useRef(false)
+  const lastAutoRecover = useRef(0)
+  const recoverRef = useRef<(() => Promise<void>) | null>(null)
   useEffect(() => {
     onSaveStateChange?.(
       recovery || error
@@ -273,7 +283,7 @@ function WorkspaceEditor({
         }
         const remaining: LiveDraft[] = []
         for (const draft of pending) {
-          if (JSON.stringify(draft.project) === JSON.stringify(latest.current.project))
+          if (sameLiveProject(draft.project, latest.current.project))
             await value.confirm(draft, latest.current.revision)
           else remaining.push(draft)
         }
@@ -333,7 +343,7 @@ function WorkspaceEditor({
             form.set('description', input.description)
             form.set('clientIdempotencyKey', publication.current.id)
             if (input.coverDataUrl)
-              form.set('cover', await (await fetch(input.coverDataUrl)).blob(), 'capa.png')
+              form.set('cover', dataUrlBase64ToBlob(input.coverDataUrl), 'capa.png')
             const response = await fetch('/api/studio/publish-standalone', {
               method: 'POST',
               body: form,
@@ -353,6 +363,7 @@ function WorkspaceEditor({
     mounted.current = true
     return () => {
       mounted.current = false
+      if (retryTimer.current) clearTimeout(retryTimer.current)
     }
   }, [])
   const remember = useCallback((next: LiveWorkspaceView) => {
@@ -392,8 +403,8 @@ function WorkspaceEditor({
           local &&
           previous.writerId === room.actorId &&
           previous.writerDeviceId === deviceId &&
-          JSON.stringify(local) !== JSON.stringify(previous.project) &&
-          JSON.stringify(local) !== JSON.stringify(next.project)
+          !sameLiveProject(local, previous.project) &&
+          !sameLiveProject(local, next.project)
         ) {
           if (!journal) throw new Error('Aguarde a preparação do rascunho.')
           const retained = journal.stage(local, previous.revision, previous.writerEpoch)
@@ -449,6 +460,11 @@ function WorkspaceEditor({
         )
           return
         await apply(next)
+        if (mounted.current && !writingBlocked.current) setError(null)
+        if (autoRecover.current && Date.now() - lastAutoRecover.current > 5_000) {
+          lastAutoRecover.current = Date.now()
+          void recoverRef.current?.()
+        }
         if (!teacher && next.assistance?.status === 'returning') {
           const returned = await workspaceRequest<LiveWorkspaceView>(`${base}/acknowledge`, {
             revision: next.revision,
@@ -468,6 +484,7 @@ function WorkspaceEditor({
       clearTimeout(timer)
     }
   }, [ready, base, adminBase, deviceId, teacher, room.actorId, apply, fail, workspaceRequest])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scheduleRetry só lê e grava refs; nas dependências o efeito reiniciaria a cada render.
   useEffect(() => {
     if (!editing) return
     let stopped = false
@@ -482,10 +499,30 @@ function WorkspaceEditor({
           !stopped &&
           next.revision >= latest.current.revision &&
           next.writerEpoch === latest.current.writerEpoch
-        )
+        ) {
           remember(next)
+          // A rede voltou: o que ficou só neste aparelho sobe agora.
+          if (staged.current && !retryTimer.current) {
+            retryAttempt.current = 0
+            scheduleRetry()
+          }
+        }
       } catch (cause) {
+        const lease = latest.current.leaseExpiresAt
+        if (
+          !stopped &&
+          isTransientLiveFailure(cause) &&
+          lease &&
+          Date.parse(lease) - Date.now() > 3_000
+        ) {
+          // Ainda dá tempo: tenta renovar de novo logo, sem tirar a edição da criança.
+          if (mounted.current) setStatus('Sem internet agora: guardado neste aparelho')
+          clearTimeout(timer)
+          timer = setTimeout(() => void renew(), 3_000)
+          return
+        }
         if (!stopped) {
+          autoRecover.current = isTransientLiveFailure(cause)
           writingBlocked.current = true
           recoveryRevision.current = latest.current.revision
           setEditing(false)
@@ -503,9 +540,8 @@ function WorkspaceEditor({
           }
           fail(cause)
         }
-      } finally {
-        if (!stopped) timer = setTimeout(() => void renew(), 10_000)
       }
+      if (!stopped) timer = setTimeout(() => void renew(), 10_000)
     }
     timer = setTimeout(() => void renew(), 10_000)
     return () => {
@@ -517,10 +553,9 @@ function WorkspaceEditor({
     const authority = latest.current
     // A later save may already be staged while an earlier remote save is in flight.
     const retained = staged.current ?? stageSnapshot(project)
-    const receipt =
-      JSON.stringify(retained.draft.project) === JSON.stringify(project)
-        ? retained.draft
-        : { ...retained.draft, token: crypto.randomUUID(), project }
+    const receipt = sameLiveProject(retained.draft.project, project)
+      ? retained.draft
+      : { ...retained.draft, token: crypto.randomUUID(), project }
     const operation = queue.current.then(async () => {
       await retained.saved
       if (writingBlocked.current)
@@ -532,7 +567,7 @@ function WorkspaceEditor({
         current.writerEpoch !== authority.writerEpoch
       )
         throw new Error('A autoria mudou. Seu rascunho está preservado neste aparelho.')
-      if (current.revision > 0 && JSON.stringify(current.project) === JSON.stringify(project)) {
+      if (current.revision > 0 && sameLiveProject(current.project, project)) {
         await journal?.confirm(receipt, current.revision)
         if (staged.current?.draft.token === receipt.token) staged.current = null
         if (mounted.current)
@@ -554,9 +589,18 @@ function WorkspaceEditor({
         if (staged.current?.draft.token === receipt.token) staged.current = null
         else if (staged.current?.draft.writerEpoch === receipt.writerEpoch)
           staged.current.draft.revision = saved.revision
+        retryAttempt.current = 0
         if (mounted.current)
           setStatus(staged.current ? 'Guardando o projeto…' : 'Projeto guardado na sua conta')
       } catch (cause) {
+        const lease = latest.current.leaseExpiresAt
+        if (isTransientLiveFailure(cause) && lease && Date.parse(lease) > Date.now()) {
+          // O rascunho já está no aparelho (journal). Não trava a edição: tenta de novo depois.
+          if (mounted.current) setStatus('Sem internet agora: guardado neste aparelho')
+          scheduleRetry()
+          return
+        }
+        autoRecover.current = isTransientLiveFailure(cause)
         writingBlocked.current = true
         recoveryRevision.current = current.revision
         setEditing(false)
@@ -575,6 +619,17 @@ function WorkspaceEditor({
     })
     queue.current = operation.catch(() => {})
     return operation
+  }
+  function scheduleRetry() {
+    if (retryTimer.current) return
+    const wait = SAVE_RETRY_MS[Math.min(retryAttempt.current, SAVE_RETRY_MS.length - 1)]!
+    retryAttempt.current += 1
+    retryTimer.current = setTimeout(() => {
+      retryTimer.current = null
+      const pending = staged.current?.draft.project as Project | undefined
+      if (!pending || writingBlocked.current || !mounted.current) return
+      void saveImplementation.current(pending).catch(() => {})
+    }, wait)
   }
   function stageSnapshot(project: Project) {
     if (!journal) throw new Error('Aguarde a preparação do rascunho.')
@@ -650,14 +705,15 @@ function WorkspaceEditor({
       setBusy(false)
     }
   }
+  recoverRef.current = recoverConnection
   async function recoverConnection() {
-    if (!recovery || teacher) return
+    if (!recovery || teacher || busy) return
     setBusy(true)
     setError(null)
     try {
       await queue.current
       const current = await workspaceRequest<LiveWorkspaceView>(base)
-      const alreadySaved = JSON.stringify(current.project) === JSON.stringify(recovery)
+      const alreadySaved = sameLiveProject(current.project, recovery)
       if (!alreadySaved && current.revision !== recoveryRevision.current)
         throw new Error(
           'Há uma revisão mais recente na conta. Baixe seu rascunho para preservar as duas versões.',
@@ -688,8 +744,15 @@ function WorkspaceEditor({
       recoveryDraft.current = null
       setDrafts(remaining)
       recoveryRevision.current = null
+      autoRecover.current = false
       setStatus('Projeto guardado na sua conta')
     } catch (cause) {
+      // Revisão mais nova na conta: aí a escolha é da criança, não tentamos sozinhos de novo.
+      if (
+        !isTransientLiveFailure(cause) ||
+        (cause instanceof Error && /revisão|mudou/.test(cause.message))
+      )
+        autoRecover.current = false
       fail(cause)
     } finally {
       setBusy(false)
