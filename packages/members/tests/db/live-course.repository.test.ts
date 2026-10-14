@@ -273,14 +273,23 @@ describe.skipIf(!databaseUrl)('cursos ao vivo no PostgreSQL real', () => {
             select course_id, program_id from members.live_cohorts where id = ${cohort.id}`
           expect(stored).toEqual({ course_id: live.id, program_id: null })
           await service.createCohort(teacher, adult.id, { ...input, schedule: schedule(3) })
-          const kids = await service.catalog({ ...teacher, admin: true }, 'admin', {
-            audience: 'kids',
-            limit: 50,
-          })
-          expect(kids.courses?.map((item) => item.id)).toContain(live.id)
-          expect(kids.courses?.map((item) => item.id)).not.toContain(adult.id)
-          expect(kids.cohorts.some((item) => item.courseId === adult.id)).toBe(false)
-          expect(kids.cohorts.some((item) => item.id === cohort.id)).toBe(true)
+          // The shared test database keeps cohorts of earlier runs: walk every page.
+          const pages = []
+          let cursor: string | undefined
+          do {
+            const page = await service.catalog({ ...teacher, admin: true }, 'admin', {
+              audience: 'kids',
+              limit: 50,
+              cursor,
+            })
+            pages.push(page)
+            cursor = page.nextCursor ?? undefined
+          } while (cursor)
+          const listed = pages.flatMap((page) => page.cohorts)
+          expect(pages[0]!.courses?.map((item) => item.id)).toContain(live.id)
+          expect(pages[0]!.courses?.map((item) => item.id)).not.toContain(adult.id)
+          expect(listed.some((item) => item.courseId === adult.id)).toBe(false)
+          expect(listed.some((item) => item.id === cohort.id)).toBe(true)
           await service.updateCohort({ ...teacher, admin: true }, cohort.id, { status: 'open' })
           await service.enroll(teacher, cohort.id, {
             accountId: child.accountId,
