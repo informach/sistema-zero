@@ -3,6 +3,7 @@ import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { S3Client } from '@aws-sdk/client-s3'
 import { type RecordingManifest, recordingCommand } from './contracts'
+import { recordingBrowserFactory } from './recording-browser'
 import { RecordingJob } from './recording-job'
 import { RecordingSegmentStore } from './segment-store'
 
@@ -32,6 +33,7 @@ const storage = new S3Client({
   responseChecksumValidation: 'WHEN_REQUIRED',
 })
 const bucket = required('R2_BUCKET')
+const openBrowser = recordingBrowserFactory()
 const active = new Map<string, RecordingJob>()
 const maxJobs = Number(process.env.LIVE_RECORDER_MAX_JOBS ?? 1)
 if (!Number.isInteger(maxJobs) || maxJobs < 1 || maxJobs > 4)
@@ -173,6 +175,7 @@ async function handleRequest(request: Request): Promise<Response> {
         supervisorUrl: required('LIVE_SUPERVISOR_URL'),
         supervisorToken: required('LIVE_SUPERVISOR_TOKEN'),
         iceServers,
+        openBrowser,
         async onState(state) {
           const captureStopped = active.get(command.jobId)?.status().captureStopped === true
           database

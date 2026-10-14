@@ -1,7 +1,11 @@
-import type { Browser, Page } from 'playwright'
-import { chromium } from 'playwright'
+import type { Page } from 'playwright'
 import type { RecordingCommand, RecordingManifest } from './contracts'
 import { installReceiverPage } from './receiver-page'
+import {
+  type OpenRecordingBrowser,
+  type RecordingBrowser,
+  recordingBrowserFactory,
+} from './recording-browser'
 import type { RecordingSegmentStore } from './segment-store'
 
 export interface RecorderInfrastructure {
@@ -9,12 +13,14 @@ export interface RecorderInfrastructure {
   sfuAppSecret: string
   supervisorUrl: string
   supervisorToken: string
+  openBrowser?: OpenRecordingBrowser
   iceServers(hardEndsAt: string): Promise<RTCIceServer[]>
   onState(manifest: RecordingManifest): Promise<void>
 }
 
 export class RecordingJob {
-  private browser: Browser | null = null
+  private browser: RecordingBrowser | null = null
+  private pausing: Promise<void> | null = null
   private page: Page | null = null
   private sessionId: string | null = null
   private connectionId = crypto.randomUUID()
@@ -71,6 +77,8 @@ export class RecordingJob {
       this.lastCommandId = command.commandId
       this.leaseEndsAt = Math.min(Date.parse(command.leaseEndsAt), Date.parse(command.hardEndsAt))
       this.desired = command.desiredState
+      if (this.browser && command.desiredState === 'recording')
+        await this.browser.renew(this.leaseEndsAt)
       if (this.manifest.state === 'review') {
         if (command.desiredState === 'recording')
           throw new Error('A finalized recording cannot resume')
@@ -124,17 +132,19 @@ export class RecordingJob {
     await this.store.prepare()
     await this.persist()
     try {
+      this.browser = await (this.infrastructure.openBrowser ?? recordingBrowserFactory())(
+        this.leaseEndsAt,
+        Date.parse(command.hardEndsAt),
+      )
+      this.captureStopped = false
       await this.supervise(command.hardEndsAt, false)
       const session = await this.sfu('/sessions/new', 'POST')
       if (!session.sessionId) throw new Error('Recorder SFU allocation missing')
       this.sessionId = session.sessionId
       await this.supervise(command.hardEndsAt, false)
-      this.browser = await chromium.launch({
-        headless: true,
-        chromiumSandbox: true,
-        args: ['--autoplay-policy=no-user-gesture-required'],
+      const context = await this.browser.browser.newContext({
+        viewport: { width: 1280, height: 720 },
       })
-      const context = await this.browser.newContext({ viewport: { width: 1280, height: 720 } })
       // No arbitrary websites, app authentication, or child project execution in this context.
       await context.route('**/*', (route) => route.abort())
       this.page = await context.newPage()
@@ -151,14 +161,21 @@ export class RecordingJob {
           'A captura foi interrompida; os segmentos confirmados foram preservados.'
         this.manifest.gaps.push({ at: new Date().toISOString(), reason: 'failure' })
         this.desired = 'paused'
+        if (this.timer) clearInterval(this.timer)
+        this.timer = null
         // Immediate browser close proves capture stopped, without waiting for the command queue.
         const browser = this.browser
-        this.browser = null
-        this.page = null
-        await browser?.close()
-        this.captureStopped = true
-        this.manifest.state = 'failed'
-        await this.persist()
+        try {
+          await browser?.close()
+          this.browser = null
+          this.page = null
+          this.captureStopped = true
+        } finally {
+          // A failed remote close must still publish the recording failure, while
+          // retaining the browser handle and captureStopped:false for a retry.
+          this.manifest.state = 'failed'
+          await this.persist()
+        }
       })
       await this.page.setContent(
         '<!doctype html><html lang="pt-BR"><title>Sistema Zero · Gravador</title><body style="margin:0"></body></html>',
@@ -202,12 +219,14 @@ export class RecordingJob {
       this.captureStopped = false
       await this.page.evaluate(() => window.szRecorder.start())
       this.timer = setInterval(() => {
-        if (Date.now() >= this.leaseEndsAt) {
+        if (Date.now() >= this.leaseEndsAt || !this.browser?.browser.isConnected()) {
           this.desired = 'paused'
           void this.pause('failure').catch(() => undefined)
         } else if (!this.heartbeatPending) {
           this.heartbeatPending = true
-          void this.supervise(command.hardEndsAt, false)
+          void this.browser
+            .renew(this.leaseEndsAt)
+            .then(() => this.supervise(command.hardEndsAt, false))
             .catch(() => this.pause('failure'))
             .finally(() => {
               this.heartbeatPending = false
@@ -224,14 +243,22 @@ export class RecordingJob {
   }
 
   private async pause(reason: 'pause' | 'source-change' | 'failure'): Promise<void> {
+    if (this.pausing) return this.pausing
+    this.pausing = this.pauseOnce(reason)
+    try {
+      await this.pausing
+    } finally {
+      this.pausing = null
+    }
+  }
+
+  private async pauseOnce(reason: 'pause' | 'source-change' | 'failure'): Promise<void> {
     if (this.captureStopped && !this.browser && this.manifest.state === 'paused') return
     if (this.timer) clearInterval(this.timer)
     this.timer = null
     let failure: unknown
     const page = this.page,
       browser = this.browser
-    this.page = null
-    this.browser = null
     let timeout: ReturnType<typeof setTimeout> | undefined
     try {
       if (page)
@@ -246,7 +273,18 @@ export class RecordingJob {
     } finally {
       clearTimeout(timeout)
     }
-    await browser?.close()
+    // Retain ownership on a failed close; a later pause must retry and must not ACK captureStopped.
+    try {
+      await browser?.close()
+    } catch (error) {
+      this.captureStopped = false
+      this.manifest.state = 'failed'
+      this.manifest.error = 'O encerramento da captura ainda não foi confirmado.'
+      await this.persist()
+      throw error
+    }
+    this.page = null
+    this.browser = null
     this.captureStopped = true
     if (this.sessionId && this.mids.length) {
       const closed = await this.sfu(

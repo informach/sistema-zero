@@ -251,6 +251,9 @@ const common: Record<string, string[]> = {
     'TRUST_PROXY',
   ],
   'live-recorder': [
+    'LIVE_BROWSER_MODE',
+    'LIVE_BROWSER_RAILWAY_TOKEN',
+    'LIVE_BROWSER_CHECKPOINT',
     'CF_SFU_APP_ID',
     'CF_SFU_APP_SECRET',
     'CF_TURN_KEY_ID',

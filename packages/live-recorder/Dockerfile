@@ -3,7 +3,7 @@ WORKDIR /build
 COPY packages/live-recorder/package.json ./package.json
 RUN bun install --production
 
-FROM mcr.microsoft.com/playwright:v1.60.0-noble
+FROM mcr.microsoft.com/playwright:v1.62.1-noble
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg ca-certificates gosu tini && rm -rf /var/lib/apt/lists/*
 COPY --from=dependencies /usr/local/bin/bun /usr/local/bin/bun
