@@ -5,6 +5,7 @@ export default async function WorkshopsAdminPage() {
   return (
     <LiveAdmin
       teacherId={user?.id ?? ''}
+      teacherName={user?.firstName?.trim().split(/\s+/)[0] || user?.email?.split('@')[0] || ''}
       canWrite={user?.role === 'superadmin' || user?.role === 'admin'}
     />
   )

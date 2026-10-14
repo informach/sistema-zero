@@ -3,12 +3,16 @@ import { isInteractiveBlock, isLearningManifest } from '@sistemazero/core/learni
 import type { LiveLearningStep } from '@sistemazero/core/live'
 import { Button, Input, Textarea } from '@sistemazero/ui'
 import dynamic from 'next/dynamic'
-import { useState } from 'react'
+import { useEffect, useId, useState } from 'react'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { EMPTY_LEARNING } from '@/components/editor/learning-builder'
 
 const LearningBuilder = dynamic(() =>
   import('@/components/editor/learning-builder').then((module) => module.LearningBuilder),
 )
+/** O teto do members para a orientação de cada etapa (acima disso o roteiro inteiro é recusado). */
+export const STEP_INSTRUCTIONS_MAX = 10_000
+
 const freshStep = (): LiveLearningStep => ({
   id: crypto.randomUUID(),
   title: '',
@@ -27,6 +31,17 @@ export function LiveStepsEditor({
 }) {
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  // Etapa nova nasce ABERTA e com o foco no nome: antes ela entrava fechada no fim da lista.
+  const [opened, setOpened] = useState<ReadonlySet<string>>(() => new Set())
+  const [focusStep, setFocusStep] = useState<string | null>(null)
+  const { confirm, confirmDialog } = useConfirm()
+  const idPrefix = useId()
+  const titleId = (stepId: string) => `${idPrefix}-step-${stepId}`
+  useEffect(() => {
+    if (!focusStep) return
+    document.getElementById(`${idPrefix}-step-${focusStep}`)?.focus()
+    setFocusStep(null)
+  }, [focusStep, idPrefix])
   const patch = (id: string, update: Partial<LiveLearningStep>) =>
     onChange(value.map((step) => (step.id === id ? { ...step, ...update } : step)))
   async function importManifest(file: File) {
@@ -98,7 +113,11 @@ export function LiveStepsEditor({
         </p>
       ) : null}
       {value.map((step, index) => (
-        <details key={step.id} className="rounded-lg border p-3">
+        <details
+          key={step.id}
+          className="rounded-lg border p-3"
+          open={opened.has(step.id) || undefined}
+        >
           <summary className="cursor-pointer font-medium">
             {index + 1}. {step.title || 'Nova etapa'}
           </summary>
@@ -106,6 +125,7 @@ export function LiveStepsEditor({
             <label className="grid gap-2 text-sm font-medium">
               Nome da etapa
               <Input
+                id={titleId(step.id)}
                 value={step.title}
                 maxLength={160}
                 required
@@ -117,10 +137,14 @@ export function LiveStepsEditor({
               Orientação
               <Textarea
                 value={step.instructions}
-                maxLength={20000}
+                maxLength={STEP_INSTRUCTIONS_MAX}
                 disabled={disabled}
                 onChange={(event) => patch(step.id, { instructions: event.target.value })}
               />
+              <span className="text-xs font-normal text-muted-foreground">
+                {step.instructions.length.toLocaleString('pt-BR')} de{' '}
+                {STEP_INSTRUCTIONS_MAX.toLocaleString('pt-BR')} caracteres
+              </span>
             </label>
             {step.blocks.map((block) => (
               <details key={block.id} className="rounded-lg border p-3">
@@ -143,7 +167,16 @@ export function LiveStepsEditor({
                     type="button"
                     variant="outline"
                     onClick={() =>
-                      patch(step.id, { blocks: step.blocks.filter((item) => item.id !== block.id) })
+                      confirm({
+                        title: 'Remover esta atividade?',
+                        message: `"${block.content.title || 'Atividade sem nome'}" sai da etapa ${index + 1}. A mudança só vale depois que você salvar o roteiro.`,
+                        confirmText: 'Remover atividade',
+                        confirmVariant: 'destructive',
+                        onConfirm: () =>
+                          patch(step.id, {
+                            blocks: step.blocks.filter((item) => item.id !== block.id),
+                          }),
+                      })
                     }
                   >
                     Remover atividade
@@ -191,7 +224,15 @@ export function LiveStepsEditor({
                 type="button"
                 variant="outline"
                 disabled={disabled}
-                onClick={() => onChange(value.filter((item) => item.id !== step.id))}
+                onClick={() =>
+                  confirm({
+                    title: 'Remover esta etapa?',
+                    message: `A etapa ${index + 1}${step.title ? ` (${step.title})` : ''} sai do roteiro com ${step.blocks.length} atividade(s). A mudança só vale depois que você salvar o roteiro.`,
+                    confirmText: 'Remover etapa',
+                    confirmVariant: 'destructive',
+                    onConfirm: () => onChange(value.filter((item) => item.id !== step.id)),
+                  })
+                }
               >
                 Remover etapa
               </Button>
@@ -204,7 +245,12 @@ export function LiveStepsEditor({
           type="button"
           variant="outline"
           disabled={disabled || value.length >= 24}
-          onClick={() => onChange([...value, freshStep()])}
+          onClick={() => {
+            const step = freshStep()
+            onChange([...value, step])
+            setOpened((previous) => new Set(previous).add(step.id))
+            setFocusStep(step.id)
+          }}
         >
           Adicionar etapa
         </Button>
@@ -223,6 +269,7 @@ export function LiveStepsEditor({
           />
         </label>
       </div>
+      {confirmDialog}
     </div>
   )
 }
