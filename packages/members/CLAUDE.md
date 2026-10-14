@@ -1,5 +1,69 @@
 # CLAUDE.md — @sistemazero/members
 
+## Cursos ao vivo: a oficina vira turma de um curso (14/10/2026, migration `0110`)
+
+Desenho: `docs/plans/2026-10-14-cursos-ao-vivo-design.md`. O roteiro (`LiveProgram`, etapas,
+materiais do roteiro, modelos, demonstração, `LiveLearningService`, `/programs*`, `/templates`)
+SAIU do serviço; os tipos ficam no core até a limpeza final e as tabelas (`live_programs`,
+`live_project_templates`, `live_learning_*`, `live_materials`) ficam sem uso.
+
+- **Turma de curso**: `POST /members/admin/live/courses/:courseId/cohorts` (admin; curso ao vivo,
+  não arquivado, uma data por aula PUBLICADA na ordem do curso, até 24). A turma guarda `courseId`
+  e o resumo `course` no documento; cada sessão guarda `lessonId` (o `plan` vira só o título de
+  reserva; `programId: ''`). Criar trava a linha do curso (`for update`) e confere a modalidade de
+  novo: a troca de modalidade da frente curso confere "sem turma" sob a mesma trava.
+- **Modalidade**: lida num ponto só, `courseModality(row)` em `live-course.repository.ts` (coluna
+  `modality` quando existe, senão `metadata.modality`). O filtro de cursos ao vivo é em JS enquanto
+  a coluna pode faltar. A porta é `LiveCoursePort` (curso, aulas publicadas, partes, bloco Estúdio).
+- **Turma antiga do roteiro**: a 0110 a arquiva; `contextFor` e as listagens a ignoram (404).
+- **Catálogo**: Admin com `?audience=` (plataforma do curso, lida do resumo na turma) e TODOS os
+  cursos ao vivo dela (inclusive sem turma e sem aula); criança e pais com os cursos das turmas
+  visíveis. Descoberta (turma `open` sem vaga) só de curso ao vivo PUBLICADO
+  (`discoverableCourseIds`, filtrado no SQL antes da paginação). Títulos e resumo do curso vêm
+  frescos da porta.
+- **Sala**: `lesson: { courseId, courseSlug, lessonId }` no lugar de `plan`/`planRevision` (null
+  com o acesso fechado). A aula abre pelas rotas de aula de sempre (acesso: frente curso).
+- **Partes conduzidas**: `start` abre a PRIMEIRA parte da aula publicada (`lesson_structures`; sem
+  estrutura, a parte única com o id da aula) e marca; `open-section` (professora, só `live`, parte
+  da aula publicada) abre e torna atual; reabrir só muda a atual, sem marca nova. As partes são
+  lidas ANTES da trava da turma (frescas no comando; o batimento usa cache de 30 s).
+- **Relato**: o batimento aceita `sectionId` e `completedSectionIds` (até 60, sem repetir, só partes
+  da aula publicada); `stepId` só `null`.
+- **Gravação**: ao publicar, `recording.chapters` sai das `marks` sobre a linha do tempo dos
+  trechos (`domain/live/recording-chapters.ts`: marca na pausa cai no começo do trecho seguinte;
+  depois do último trecho fica de fora). A linha do tempo vem do gravador (`timeline()`: o
+  manifesto guardado nele, senão `live_recording_jobs.segments`, gravado a cada confirmação). Sem
+  linha do tempo, publica sem capítulos. `GET …/occurrences/:id/recording/source` →
+  `{ storageKey, bucket, title }` (equipe da turma; `LIVE_RECORDING_BUCKET` = o `R2_BUCKET` do
+  gravador; sem ele, 503) e `PUT …/recording/vimeo` (embed estrito do player, só o `h=`; trocar um
+  vídeo em processamento ou pronto por OUTRO id é 409; não muda a versão da gravação). A criança só
+  vê `vimeo`/`chapters` de gravação publicada, no prazo.
+- **Projeto por bloco**: `GET /members/live/workspaces?sessionId&blockId[&learnerId]` abre ou cria
+  o projeto do bloco Estúdio da aula PUBLICADA (`project_key` = curso + `chain`, ou curso + bloco;
+  único por criança). Semente = `initialProject`; `studio` (curadoria) vem na resposta. O acesso é
+  julgado nas sessões das aulas em `lesson_ids` (a aula entra quando o projeto abre nela). Aula
+  fechada: projeto existente só para ver (`readOnly`), nenhum projeto novo. Turma NOVA do mesmo curso
+  leva o projeto junto (nunca durante uma ajuda). Sem `blockId`, a rota lista a biblioteca.
+- **Recompensas**: `LiveServiceOptions.liveRewards` (`LiveRewardsPort`) é chamado depois do commit
+  para cada criança que passa a estar recebida num encontro `live` (start com quem já estava
+  recebido, ou receber depois); falha vai para `onRewardsError`, nunca derruba o comando. A ligação
+  no composition-root é da integração.
+- **Desempenho (medido)**: a sala, o batimento, a mídia e o gravador leem SÓ o encontro
+  (`findRoom`: uma consulta com a sessão, as ocorrências dela, as vagas, os grants dela e a
+  presença); as escritas da sala travam a turma mas carregam e gravam só o encontro
+  (`roomTransaction`). Presença é linha pequena (`live_presence`) sobreposta em toda leitura
+  (`overlayPresence`: professoras ainda atribuídas, `seenAt`, `activity.reportedAt`); o batimento
+  sem novidade grava só ela (e nada se a última tem menos de 4 s) e a ocorrência só é regravada
+  quando o relato muda. O gravador atualiza a sala DEPOIS do commit da trava do trabalho; a consulta
+  de publicações só lê e dispara a varredura. Medido em `tests/db/live-room-performance.test.ts`
+  (9 participantes): sala p50 ~27 ms → ~5 ms e, com 24 encontros, ~385 ms → ~5 ms; batimento p50
+  ~90 ms → ~5 ms e ~680 ms → ~5 ms. ⚠️ Não volte a usar `findBySession`/`transaction` (turma
+  inteira) em caminho de sala: o custo cresce com os encontros e com as conversas antigas.
+- ⚠️ `tests/db`: o porto de cursos em memória grava a linha do curso no primeiro uso
+  (`tests/db/live-course-rows.ts`, colunas aditivas sem padrão). Com o cliente do `createDbConnection`
+  o JSON vai como `${JSON.stringify(x)}::jsonb` (o drizzle deixa o serializador transparente);
+  num cliente `postgres` cru isso vira string escalar.
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas
