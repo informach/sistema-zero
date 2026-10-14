@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { Elysia, t } from 'elysia'
 import {
   assertInternalCaller,
+  assertNoLiveSupportWrite,
   isPrivilegedActor,
   resolveAccountId,
   resolveStudentName,
@@ -61,6 +62,7 @@ export function liveRecordingRoutes(deps: {
     .onTransform(({ headers }) =>
       assertInternalCaller(headers['x-internal-token'], deps.internalToken),
     )
+    .onBeforeHandle(({ headers, request }) => assertNoLiveSupportWrite(headers, request.method))
     .post(
       '/:action',
       async ({ params, headers }) => {

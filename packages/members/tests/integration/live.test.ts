@@ -339,3 +339,72 @@ describe('HTTP do contrato de 14/10', () => {
     expect(await cancelled.json()).toMatchObject({ occurrence: { state: 'cancelled' } })
   })
 })
+
+test('S4: sessão de suporte lê a sala, mas não age nela em nenhuma rota de escrita', async () => {
+  const { send, live } = app()
+  const created = await live.createProgram(actor, program)
+  const { cohort, sessions } = await live.createCohort(actor, created.id, {
+    title: 'Turma',
+    timeZone: 'America/Sao_Paulo',
+    accessDays: 30,
+    capacity: 8,
+    teacherIds: [adminId],
+    schedule: [{ startsAt: '2026-11-07T17:00:00Z', endsAt: '2026-11-07T18:00:00Z' }],
+  })
+  await live.updateCohort({ ...actor, admin: true }, cohort.id, { status: 'open' })
+  const childId = randomUUID(),
+    parentId = randomUUID()
+  const enrollment = await live.enroll(actor, cohort.id, {
+    learnerId: childId,
+    accountId: parentId,
+    learnerName: 'Criança',
+  })
+  const child = {
+    'x-internal-token': admin['x-internal-token'],
+    'x-auth-user-id': childId,
+    'x-auth-account-id': parentId,
+  }
+  const impersonated = { ...child, 'x-auth-impersonator-id': randomUUID() }
+  const base = `/members/live/sessions/${sessions[0]!.id}`
+  expect((await send(base, impersonated)).status).toBe(200)
+  const join = { deviceId: randomUUID(), takeover: false }
+  expect((await send(`${base}/join`, impersonated, join)).status).toBe(403)
+  expect(
+    (await send(`${base}/requests`, impersonated, { ...join, kind: 'hand', raised: true })).status,
+  ).toBe(403)
+  expect(
+    (
+      await send(
+        `/members/parents/live/enrollments/${enrollment.id}/assign`,
+        {
+          ...impersonated,
+          'x-auth-user-id': parentId,
+        },
+        { learnerId: childId },
+      )
+    ).status,
+  ).toBe(403)
+  expect(
+    (
+      await send(
+        `/members/admin/live/cohorts/${cohort.id}`,
+        { ...admin, 'x-auth-impersonator-id': randomUUID() },
+        { status: 'closed' },
+        'PATCH',
+      )
+    ).status,
+  ).toBe(403)
+  expect(
+    (
+      await send(`${base}/blocks/${randomUUID()}/learning-progress`, impersonated, {
+        revision: randomUUID(),
+        answers: {},
+        hintsUsed: 0,
+        positionSeconds: null,
+      })
+    ).status,
+  ).toBe(403)
+  // Without the support marker the same child joins the open reception normally.
+  await live.control(actor, sessions[0]!.id, undefined, { kind: 'open-lobby' })
+  expect((await send(`${base}/join`, child, join)).status).toBe(200)
+})

@@ -5,6 +5,7 @@ import type { LiveService } from '../../../application/live/live.service'
 import type { LiveActor } from '../../../domain/ports/live-repository.port'
 import {
   assertInternalCaller,
+  assertNoLiveSupportWrite,
   isPrivilegedActor,
   requireAdmin,
   resolveAccountId,
@@ -170,8 +171,16 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     assertInternalCaller(headers['x-internal-token'], deps.internalToken)
     set.headers['cache-control'] = 'private, no-store'
   }
+  const support = ({
+    headers,
+    request,
+  }: {
+    headers: Record<string, string | undefined>
+    request: Request
+  }) => assertNoLiveSupportWrite(headers, request.method)
   const student = new Elysia({ prefix: '/members/live' })
     .onTransform(guard)
+    .onBeforeHandle(support)
     .get(
       '/sessions/:id/replay-progress',
       ({ headers, params, query }) =>
@@ -292,6 +301,7 @@ export function liveRoutes(deps: LiveRoutesDeps) {
 
   const parents = new Elysia({ prefix: '/members/parents/live' })
     .onTransform(guard)
+    .onBeforeHandle(support)
     .get(
       '/enrollments',
       ({ headers, query }) => deps.live.catalog(resolveLiveActor(headers), 'parents', query),
@@ -308,6 +318,7 @@ export function liveRoutes(deps: LiveRoutesDeps) {
     .onTransform(guard)
     .onBeforeHandle(({ headers, request }) => {
       requireAdmin(headers, deps.requireAdminEnabled)
+      assertNoLiveSupportWrite(headers, request.method)
       if (
         request.method !== 'GET' &&
         !/^\/members\/admin\/live\/sessions\/[\da-f-]+\/(recording\/publish|occurrences)$/.test(

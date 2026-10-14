@@ -50,6 +50,19 @@ export function isPrivilegedActor(headers: Record<string, string | undefined>): 
 }
 
 /**
+ * Sessão de suporte/impersonação (`x-auth-impersonator-id`, injetado SÓ pelo gateway) nunca age
+ * numa oficina ao vivo: o atendente entraria na sala com o nome da criança, poderia ligar a
+ * própria câmera para a turma e tomar o lugar do aparelho dela. Leitura continua livre.
+ */
+export function assertNoLiveSupportWrite(
+  headers: Record<string, string | undefined>,
+  method: string,
+): void {
+  if (method !== 'GET' && headers['x-auth-impersonator-id']?.trim())
+    throw new ForbiddenError('A sessão de suporte não pode agir na oficina ao vivo.')
+}
+
+/**
  * As mutações exclusivas do BFF exigem o consumer HMAC `member-shell`. O gateway
  * remove o valor cru e re-injeta este header depois de validar a assinatura.
  */

@@ -3,6 +3,7 @@ import { Elysia, t } from 'elysia'
 import type { LiveWorkspaceService } from '../../../application/live/live-workspace.service'
 import {
   assertInternalCaller,
+  assertNoLiveSupportWrite,
   isPrivilegedActor,
   requireAdmin,
   resolveAccountId,
@@ -48,8 +49,16 @@ export function liveWorkspaceRoutes(deps: {
       throw new ValidationError('Encontro inválido.')
     return deps.workspace.forSession(id ?? undefined)
   }
+  const support = ({
+    headers,
+    request,
+  }: {
+    headers: Record<string, string | undefined>
+    request: Request
+  }) => assertNoLiveSupportWrite(headers, request.method)
   const student = new Elysia({ prefix: '/members/live' })
     .onBeforeHandle(guard)
+    .onBeforeHandle(support)
     .get(
       '/sessions/:id/demonstration',
       ({ request, headers, params }) => workspace(request).demonstration(actor(headers), params.id),
@@ -127,6 +136,7 @@ export function liveWorkspaceRoutes(deps: {
   const admin = new Elysia({ prefix: '/members/admin/live' })
     .onBeforeHandle(guard)
     .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
+    .onBeforeHandle(support)
     .get('/templates', ({ request, headers }) => workspace(request).listTemplates(actor(headers)))
     .post(
       '/templates',
