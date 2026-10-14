@@ -463,6 +463,11 @@ describe.skipIf(!url)('Cursos ao vivo — PostgreSQL', () => {
       }
       const liveBlock = await blockOf(live)
       const recordedBlock = await blockOf(recorded)
+      // A sincronização do Admin descobre a modalidade pela autoridade da fonte.
+      expect((await zappy.sourceAuthorityForRef(`block:${liveBlock}`))?.modality).toBe('live')
+      expect((await zappy.sourceAuthorityForRef(`block:${recordedBlock}`))?.modality).toBe(
+        'recorded',
+      )
       const hits = await zappy.search(
         [live.lessonIds[0], recorded.lessonIds[0]],
         'colisao foguete',

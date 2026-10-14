@@ -13,12 +13,17 @@ mais, para vender mais", então fica fora de tudo o que é da Jornada.
   acrescenta `live_encounter` e `live_course_complete` ao `xp_source_type`. Provada num banco
   descartável simulando produção na 0108: o `db:migrate` aplicou SÓ a 0109.
 - **Autoria**: `modality` no POST/PATCH (declarado no `CourseBody`: o `normalize` do Elysia
-  descarta o resto), `CourseView.modality`, `?modality=` na listagem do Admin e o clone preserva.
-  Ausente no PATCH preserva. Curso ao vivo recusa posição (`careerSlot`) e papel na Jornada
-  (`positioned`/`extra`); guarda `journeyRole: 'reward'` com posição vazia (o CHECK da Jornada
-  exige papel). Trocar a modalidade só sem turma (`CourseModalityLockedError`, 409), conferido no
-  `updateCourse` sob a trava do curso, contando `live_cohorts` pelo `document->>'courseId'`. ⚠️ A
-  frente das oficinas, ao criar turma, deveria travar a mesma linha do curso para fechar a corrida.
+  descarta o resto), `CourseView.modality` e `?modality=` na listagem do Admin. Ausente no PATCH
+  preserva; o Admin manda o valor em TODO PATCH, e o MESMO valor nunca é troca. Curso ao vivo
+  recusa posição (`careerSlot`) e papel ENVIADO na Jornada (`positioned`/`extra`); o papel antigo
+  GUARDADO é limpo para `reward` (o neutro que o CHECK da Jornada exige com posição vazia). Trocar
+  a modalidade só sem turma (`CourseModalityLockedError`, 409), conferido no `updateCourse` sob a
+  trava do curso, contando `live_cohorts` pelo `document->>'courseId'`. ⚠️ A frente das oficinas,
+  ao criar turma, deveria travar a mesma linha do curso para fechar a corrida.
+- **Clone**: o corpo aceita `modality` (ausente = a da origem). Vale para a OUTRA plataforma ou
+  para a OUTRA modalidade (a versão ao vivo do mesmo tema na mesma plataforma, slug
+  `<origem>-ao-vivo`); igual nos dois é só duplicar e segue recusado (`CLONE_SAME_AUDIENCE`, com
+  recado novo). Clone ao vivo não leva `studioUnlockBlocks`.
 - **Acesso** (`CheckAccessService.assertLive` + `LiveLessonAccessPort`, implementação
   `DrizzleLiveLessonAccessRepository`): matrícula e chave-mestra NÃO abrem curso ao vivo. Abre para
   a equipe (inclusive o curso em rascunho; a professora atribuída é equipe, o `LiveService` exige
@@ -33,8 +38,9 @@ mais, para vender mais", então fica fora de tudo o que é da Jornada.
 - **Onde o ao vivo NÃO entra**: `listPublishedCourses` (catálogo, "meus cursos" pela chave-mestra,
   painel dos pais), `findAccessibleCoursesBySlugs` ("meus cursos" por matrícula),
   `hasPublishedFoundationCourse`, `eligibleStudioGrants` e a revisão dos blocos
-  (`publishedCourseSourceInAudience`), e a base do Zappy inteira (busca, reindexação, relatório e
-  a faxina do reconcile). Marco da Jornada: o `award` DESCARTA `course_complete`/`course_showcased`
+  (`publishedCourseSourceInAudience`), e a base do Zappy inteira (busca, reindexação, relatório,
+  a faxina do reconcile e a SINCRONIZAÇÃO: o Admin sincroniza ao publicar qualquer aula, e a fonte
+  de curso ao vivo responde 200 `{ status: 'skipped' }` e apaga o que já estivesse indexado). Marco da Jornada: o `award` DESCARTA `course_complete`/`course_showcased`
   de curso ao vivo (régua única para a conclusão, o certificado e o webhook do Mural); a conclusão
   do curso ao vivo vira `live_course_complete`. As consultas da Jornada seguem pelo snapshot do
   ledger, de propósito: um curso que já foi gravado e virou ao vivo não tira posto de ninguém.

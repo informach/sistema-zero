@@ -1022,6 +1022,7 @@ describe.skipIf(!url)(
         expectedSourceVersion: 0,
         expectedSourceAudience: 'kids',
         audience: 'adult',
+        modality: 'recorded',
         slug: 'learning-qa-clone',
         title: 'Clone',
         dropStudioUnlockBlocks: true,

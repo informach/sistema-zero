@@ -72,6 +72,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       const [attachment] = await this.db
         .select({
           courseId: courses.id,
+          modality: courses.modality,
           lessonId: lessons.id,
           url: lessonAttachments.url,
           label: lessonAttachments.label,
@@ -89,6 +90,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         courseId: attachment.courseId,
         lessonId: attachment.lessonId,
         blockRevision: createHash('md5').update(attachment.url).digest('hex'),
+        modality: attachment.modality,
       }
     }
     if (kind !== 'block') return null
@@ -98,6 +100,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         courseId: courses.id,
         lessonId: lessons.id,
         blockRevision: lessonBlocks.contentRevision,
+        modality: courses.modality,
       })
       .from(lessonBlocks)
       .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))

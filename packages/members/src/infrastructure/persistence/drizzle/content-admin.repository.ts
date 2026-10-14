@@ -371,7 +371,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       if (!src) return null
       // As validações que dependem da origem pertencem à mesma transação que
       // materializa o fork; validar só no service deixava uma janela TOCTOU.
-      if (src.audience === overrides.audience) throw new CloneSameAudienceError()
+      if (src.audience === overrides.audience && src.modality === overrides.modality)
+        throw new CloneSameAudienceError()
       if (
         src.version !== overrides.expectedSourceVersion ||
         src.audience !== overrides.expectedSourceAudience
@@ -404,8 +405,8 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         // e a armadilha de um clone virar curso-base sem querer).
         careerSlot: null,
         journeyRole: 'reward' as const,
-        // O clone é o mesmo produto na outra plataforma: um curso ao vivo continua ao vivo.
-        modality: src.modality,
+        // A modalidade pedida (o service usa a da origem quando o pedido não diz).
+        modality: overrides.modality,
         metadata,
         createdAt: now,
         updatedAt: now,

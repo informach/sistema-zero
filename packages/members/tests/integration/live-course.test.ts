@@ -162,8 +162,13 @@ describe('Curso ao vivo — modalidade na autoria', () => {
     env.liveLessonAccess.assignTeacher(STAFF, created.id)
     const locked = await patch(env, created.id, { modality: 'recorded' })
     expect(locked.status).toBe(409)
-    expect((await readJson(locked)).error.code).toBe('COURSE_MODALITY_LOCKED')
+    const lockedBody = await readJson(locked)
+    expect(lockedBody.error.code).toBe('COURSE_MODALITY_LOCKED')
+    expect(lockedBody.error.message).toContain('já tem turma')
     expect(env.courses.courses.find((c) => c.id === created.id)?.modality).toBe('live')
+    // O Admin manda a modalidade em TODO PATCH: o mesmo valor, com turma, não é troca.
+    const same = await patch(env, created.id, { modality: 'live', title: 'Com turma' })
+    expect(same.status).toBe(200)
 
     // Curso que ocupa posição na Jornada não vira ao vivo sem antes sair da posição.
     const positioned = await readJson(
@@ -190,6 +195,23 @@ describe('Curso ao vivo — modalidade na autoria', () => {
     expect(cleared.status).toBe(200)
   })
 
+  test('curso que vira ao vivo sem papel na Jornada tem o papel antigo limpo, não recusado', async () => {
+    const env = buildApp({ now: NOW })
+    const extra = await readJson(
+      await create(env, { slug: 'aventura-extra', level: 'iniciante', journeyRole: 'extra' }),
+    )
+    expect(extra.journeyRole).toBe('extra')
+    // Como o Admin manda um curso ao vivo: posição vazia e SEM `journeyRole`.
+    const toLive = await patch(env, extra.id, {
+      slug: 'aventura-extra',
+      level: 'iniciante',
+      careerSlot: null,
+      modality: 'live',
+    })
+    expect(toLive.status).toBe(200)
+    expect(await readJson(toLive)).toMatchObject({ modality: 'live', journeyRole: 'reward' })
+  })
+
   test('a listagem do Admin filtra pela modalidade e o clone preserva a modalidade', async () => {
     const env = buildApp({ now: NOW })
     await create(env)
@@ -208,6 +230,24 @@ describe('Curso ao vivo — modalidade na autoria', () => {
     })
     expect(clone.status).toBe(201)
     expect(await readJson(clone)).toMatchObject({ audience: 'adult', modality: 'live' })
+  })
+
+  test('o clone aceita a modalidade: a versão ao vivo do mesmo tema na mesma plataforma', async () => {
+    const env = buildApp({ now: NOW })
+    const recorded = await readJson(await create(env, { slug: 'corre-dino' }))
+    const clone = (body: Record<string, unknown>) =>
+      request(env, `/members/admin/courses/${recorded.id}/clone`, { method: 'POST', body })
+    const live = await clone({ audience: 'kids', modality: 'live' })
+    expect(live.status).toBe(201)
+    expect(await readJson(live)).toMatchObject({
+      slug: 'corre-dino-ao-vivo',
+      audience: 'kids',
+      modality: 'live',
+      careerSlot: null,
+    })
+    // Mesma plataforma E mesma modalidade é só duplicar: recusado.
+    expect((await clone({ audience: 'kids', modality: 'recorded' })).status).toBe(409)
+    expect((await clone({ audience: 'kids' })).status).toBe(409)
   })
 })
 
@@ -373,6 +413,21 @@ describe('Curso ao vivo — onde ele NÃO entra', () => {
       await request(env, '/members/studio/unlocks?audience=kids', { headers: childHeaders }),
     )
     expect(JSON.stringify(unlocks)).not.toContain('jogo2d_pular')
+  })
+
+  test('curso ao vivo não se libera por matrícula manual (a vaga é na turma)', async () => {
+    const env = buildApp({ now: NOW })
+    const { slug } = seedLiveCourse(env)
+    const res = await request(env, '/members/admin/entitlements', {
+      method: 'POST',
+      headers: roleHeaders('admin'),
+      body: { mode: 'course', userId: ACCOUNT, courseRef: slug },
+    })
+    expect(res.status).toBe(400)
+    expect((await readJson(res)).error.message).toContain(
+      'Curso ao vivo não se libera por matrícula',
+    )
+    expect(await env.entitlements.listActiveByUser(ACCOUNT, NOW)).toEqual([])
   })
 
   test('o Mural de um curso ao vivo não grava o marco da Jornada (`course_showcased`)', async () => {
@@ -542,8 +597,13 @@ describe('Anotações da professora', () => {
     const live = seedLiveCourse(env)
     const lessonId = live.lessonIds[0] as string
     const draft = await readDraft(env.app, lessonId)
+    // Uma parte de verdade (objetivo e intenção próprios): a seção automática de uma aula antiga
+    // é refeita na hora de tocar (`playbackLessonStructure`) e esconderia um vazamento.
     const sections: LessonSection[] = draft.document.sections.map((section) => ({
       ...section,
+      title: 'Parte da colisão',
+      objective: 'Criar a primeira cena juntos.',
+      intent: 'presentation',
       teacherNotes: notes,
     }))
     const changed = await changeDraft(env.app, lessonId, { type: 'structure', sections })
@@ -564,6 +624,9 @@ describe('Anotações da professora', () => {
       const res = await request(env, lessonPath(slug, lessonId), { headers })
       expect(res.status).toBe(200)
       const text = await res.text()
+      // A parte publicada chegou (anti-vácuo: é ela que levaria o campo)...
+      expect(text).toContain('Parte da colisão')
+      // ...sem as anotações.
       expect(text).not.toContain('teacherNotes')
       expect(text).not.toContain('Mostre o bloco de colisão.')
     }

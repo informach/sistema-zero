@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import { journeySlotsForTier } from '@sistemazero/core/journey'
 import { isInteractiveBlock, isPdfAttachment } from '@sistemazero/core/learning'
@@ -122,21 +123,35 @@ export class CourseAdminService {
    */
   async clone(
     courseId: string,
-    input: { audience: CourseAudience; slug?: string; title?: string },
+    input: { audience: CourseAudience; slug?: string; title?: string; modality?: CourseModality },
   ): Promise<CourseView> {
     const source = await this.courses.findCourseById(courseId)
     if (!source) throw new ContentNotFoundError('Curso não encontrado')
-    if (source.audience === input.audience) throw new CloneSameAudienceError()
-    const slug =
-      input.slug?.trim() || `${source.slug}-${input.audience === 'kids' ? 'kids' : 'adulto'}`
+    // Ausente = a modalidade da origem. O clone vale para a OUTRA plataforma ou para a OUTRA
+    // modalidade (cursos ao vivo, 14/10/2026: o mesmo tema gravado e ao vivo são dois cursos, e
+    // o clone ajuda a começar um a partir do outro); igual nos dois é só duplicar.
+    const modality = input.modality ?? source.modality
+    if (source.audience === input.audience && source.modality === modality)
+      throw new CloneSameAudienceError()
+    const suffix =
+      source.audience !== input.audience
+        ? input.audience === 'kids'
+          ? 'kids'
+          : 'adulto'
+        : modality === 'live'
+          ? 'ao-vivo'
+          : 'gravado'
+    const slug = input.slug?.trim() || `${source.slug}-${suffix}`
     const cloned = await this.content.cloneCourseTree(source.id, {
       expectedSourceVersion: source.version,
       expectedSourceAudience: source.audience,
       slug,
       title: input.title?.trim() || source.title,
       audience: input.audience,
-      // `studioUnlockBlocks` é currículo do Estúdio KIDS — clone p/ adulto não carrega.
-      dropStudioUnlockBlocks: input.audience === 'adult',
+      modality,
+      // `studioUnlockBlocks` é currículo do Estúdio KIDS gravado: clone p/ adulto ou para curso ao
+      // vivo (que nunca libera bloco) não carrega.
+      dropStudioUnlockBlocks: input.audience === 'adult' || modality === 'live',
     })
     if (!cloned) throw new ContentNotFoundError('Curso não encontrado')
     return toCourseView(cloned)
@@ -201,6 +216,7 @@ export class CourseAdminService {
       version: _version,
       ...rest
     } = fields
+    const nextModality = modality ?? existing.modality
     const merged = {
       ...existing,
       ...rest,
@@ -210,16 +226,22 @@ export class CourseAdminService {
       level: level ?? existing.level,
       track: track ?? existing.track,
       careerSlot: careerSlot === undefined ? existing.careerSlot : careerSlot,
+      // Curso AO VIVO chega do Admin sem papel na Jornada: o papel antigo guardado (de quando o
+      // curso era gravado) é LIMPO para o neutro, nunca motivo de recusa. Só o papel ENVIADO
+      // explicitamente é conferido (`assertLiveOffJourney`).
       journeyRole:
         journeyRole ??
-        (careerSlot !== undefined && careerSlot !== existing.careerSlot
-          ? careerSlot === null
-            ? 'reward'
-            : 'positioned'
-          : existing.journeyRole),
+        (nextModality === 'live'
+          ? 'reward'
+          : careerSlot !== undefined && careerSlot !== existing.careerSlot
+            ? careerSlot === null
+              ? 'reward'
+              : 'positioned'
+            : existing.journeyRole),
       // `modality` AUSENTE preserva a atual (régua do audience). A troca só vale num curso sem
-      // turma: quem confere é o `updateCourse`, sob a trava do curso.
-      modality: modality ?? existing.modality,
+      // turma: quem confere é o `updateCourse`, sob a trava do curso (mandar o MESMO valor, como o
+      // Admin faz em todo PATCH, nunca é troca).
+      modality: nextModality,
       metadata: withCourseMetadata(existing.metadata, { salesPageUrl, studioUnlockBlocks }),
     }
     assertLiveOffJourney(merged)

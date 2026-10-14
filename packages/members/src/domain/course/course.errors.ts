@@ -78,7 +78,9 @@ export class DuplicateSlugError extends DomainError {
 /** O fluxo de clone é exclusivamente entre plataformas distintas. → 409. */
 export class CloneSameAudienceError extends DomainError {
   readonly code = 'CLONE_SAME_AUDIENCE'
-  constructor(message = 'O curso só pode ser clonado para a outra plataforma') {
+  constructor(
+    message = 'O clone precisa ir para a outra plataforma ou para a outra modalidade (gravado ou ao vivo)',
+  ) {
     super(message)
   }
 }

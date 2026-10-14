@@ -107,6 +107,7 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       slug: `video-antes-clone-${randomUUID()}`,
       title: 'Primeiros passos (adulto)',
       audience: 'adult',
+      modality: 'recorded',
       dropStudioUnlockBlocks: true,
     })
     if (!clone) throw new Error('O clone não nasceu')

@@ -462,6 +462,8 @@ export const CloneCourseBody = t.Object({
   audience: AUDIENCE,
   slug: t.Optional(SLUG),
   title: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  // Cursos ao vivo (14/10/2026): ausente = a modalidade da origem.
+  modality: t.Optional(t.Union(COURSE_MODALITIES.map((modality) => t.Literal(modality)))),
 })
 
 export const MemberDetailQuery = t.Object({

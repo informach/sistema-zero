@@ -680,7 +680,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<Course | null> {
     const src = this.courses.find((c) => c.id === sourceCourseId)
     if (!src) return null
-    if (src.audience === overrides.audience) throw new CloneSameAudienceError()
+    if (src.audience === overrides.audience && src.modality === overrides.modality)
+      throw new CloneSameAudienceError()
     if (
       src.version !== overrides.expectedSourceVersion ||
       src.audience !== overrides.expectedSourceAudience
@@ -699,6 +700,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       title: overrides.title,
       status: 'draft',
       audience: overrides.audience,
+      modality: overrides.modality,
       careerSlot: null,
       journeyRole: 'reward',
       metadata,
