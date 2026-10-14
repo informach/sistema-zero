@@ -77,9 +77,10 @@ test('focusing a screen negotiates full quality and returns the previous screen 
     simulcast: true,
   }))
   const peer = {
-    iceGatheringState: 'complete',
+    iceGatheringState: 'gathering',
     localDescription: { toJSON: () => ({ type: 'answer', sdp: 'answer' }) },
     addEventListener() {},
+    removeEventListener() {},
     close() {},
     async createAnswer() {
       return { type: 'answer', sdp: 'answer' }

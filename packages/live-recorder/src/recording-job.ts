@@ -263,7 +263,7 @@ export class RecordingJob {
     try {
       if (page)
         await Promise.race([
-          page.evaluate(() => window.szRecorder.close()),
+          page.evaluate(() => window.szRecorder.pause()),
           new Promise<never>((_, reject) => {
             timeout = setTimeout(() => reject(new Error('Recorder flush timeout')), 12_000)
           }),
@@ -272,6 +272,23 @@ export class RecordingJob {
       failure = error
     } finally {
       clearTimeout(timeout)
+    }
+    // Flush media, then retire SFU tracks while the peer is still connected. Closing
+    // the browser first makes the provider return 410 before it can acknowledge mids.
+    if (this.sessionId && this.mids.length) {
+      const closed = await this.sfu(
+        `/sessions/${encodeURIComponent(this.sessionId)}/tracks/close`,
+        'PUT',
+        { force: true, tracks: this.mids.map((mid) => ({ mid })) },
+      ).catch(() => null)
+      this.mids = this.mids.filter(
+        (mid) =>
+          !closed?.tracks?.some(
+            (track) =>
+              track.mid === mid && (!track.errorCode || track.errorCode === 'close_track_error'),
+          ),
+      )
+      if (this.mids.length) failure = new Error('Recorder resources not confirmed closed')
     }
     // Retain ownership on a failed close; a later pause must retry and must not ACK captureStopped.
     try {
@@ -286,19 +303,6 @@ export class RecordingJob {
     this.page = null
     this.browser = null
     this.captureStopped = true
-    if (this.sessionId && this.mids.length) {
-      const closed = await this.sfu(
-        `/sessions/${encodeURIComponent(this.sessionId)}/tracks/close`,
-        'PUT',
-        { force: true, tracks: this.mids.map((mid) => ({ mid })) },
-      ).catch(() => null)
-      if (
-        this.mids.some(
-          (mid) => !closed?.tracks?.some((track) => track.mid === mid && !track.errorCode),
-        )
-      )
-        failure = new Error('Recorder resources not confirmed closed')
-    }
     if (this.supervised)
       await this.supervise(
         new Date(Math.max(this.leaseEndsAt, Date.now() + 1000)).toISOString(),

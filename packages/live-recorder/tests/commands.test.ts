@@ -3,6 +3,62 @@ import type { RecordingCommand, RecordingManifest } from '../src/contracts'
 import { RecordingJob } from '../src/recording-job'
 import type { RecordingSegmentStore } from '../src/segment-store'
 
+test('pause retires SFU tracks before disconnecting the browser, including already-closed mids', async () => {
+  const manifest: RecordingManifest = {
+    version: 1,
+    eventSequence: 0,
+    jobId: crypto.randomUUID(),
+    occurrenceId: crypto.randomUUID(),
+    generation: 1,
+    state: 'recording',
+    segments: [],
+    gaps: [],
+    replayKey: null,
+    error: null,
+  }
+  let browserClosed = false
+  const job = new RecordingJob(
+    manifest,
+    {
+      manifestKey: 'manifest',
+      persistManifest: async () => {},
+    } as unknown as RecordingSegmentStore,
+    {
+      sfuAppId: 'app',
+      sfuAppSecret: 'test',
+      supervisorUrl: 'https://unused.invalid',
+      supervisorToken: 'test',
+      iceServers: async () => [],
+      onState: async () => {},
+    },
+  )
+  Object.assign(job, {
+    captureStopped: false,
+    sessionId: 'session',
+    mids: ['0', '1'],
+    browser: {
+      close: async () => {
+        browserClosed = true
+      },
+    },
+  })
+  const originalFetch = globalThis.fetch
+  globalThis.fetch = Object.assign(
+    async () =>
+      browserClosed
+        ? Response.json({ errorCode: 'session_error' }, { status: 410 })
+        : Response.json({ tracks: [{ mid: '0' }, { mid: '1', errorCode: 'close_track_error' }] }),
+    { preconnect: originalFetch.preconnect },
+  )
+  try {
+    await job.shutdown()
+    expect(job.status()).toMatchObject({ state: 'paused', captureStopped: true, error: null })
+    expect(browserClosed).toBe(true)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})
+
 test('a delayed recording renewal cannot undo an acknowledged pause', async () => {
   const manifest: RecordingManifest = {
     version: 1,

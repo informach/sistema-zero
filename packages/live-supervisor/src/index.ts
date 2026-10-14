@@ -10,6 +10,7 @@ export interface SupervisorRecord {
   closedMids: string[]
   cleanupPending: boolean
   lastErrorAt: number | null
+  sessionClosed?: boolean
 }
 
 interface DurableStorage {
@@ -158,6 +159,18 @@ export class LiveConnectionSupervisor {
       }
       try {
         const inspected = await this.call(record.sessionId, '', 'GET')
+        if (inspected.sessionClosed) {
+          // A known session returning 410/session_error cannot reconnect. Keep the
+          // resource history; this is evidence about the session, not item absence.
+          record.sessionClosed = true
+          record.cleanupPending = false
+          record.lastErrorAt = null
+          await this.ctx.storage.put('connection', record)
+          if (Date.now() < record.hardEndsAt + 60_000)
+            await this.ctx.storage.setAlarm(Date.now() + 15_000)
+          return
+        }
+        record.sessionClosed = false
         const discovered = (inspected.tracks ?? []).flatMap((item) => (item.mid ? [item.mid] : []))
         record.mids = [...new Set([...record.mids, ...discovered])]
         // Inspection is newer evidence: force-close may leave inactive entries, and a delayed
@@ -176,7 +189,8 @@ export class LiveConnectionSupervisor {
             tracks: unresolved.map((mid) => ({ mid })),
           })
           for (const track of closed.tracks ?? [])
-            if (track.mid && !track.errorCode) record.closedMids.push(track.mid)
+            if (track.mid && (!track.errorCode || track.errorCode === 'close_track_error'))
+              record.closedMids.push(track.mid)
         }
         record.cleanupPending = record.mids.some((mid) => !record.closedMids.includes(mid))
         record.lastErrorAt = record.cleanupPending ? Date.now() : null
@@ -196,7 +210,10 @@ export class LiveConnectionSupervisor {
     suffix: string,
     method: string,
     body?: unknown,
-  ): Promise<{ tracks?: { mid?: string; errorCode?: string; status?: string }[] }> {
+  ): Promise<{
+    tracks?: { mid?: string; errorCode?: string; status?: string }[]
+    sessionClosed?: boolean
+  }> {
     const response = await fetch(
       `https://rtc.live.cloudflare.com/v1/apps/${encodeURIComponent(this.env.SFU_APP_ID)}/sessions/${encodeURIComponent(sessionId)}${suffix}`,
       {
@@ -209,11 +226,13 @@ export class LiveConnectionSupervisor {
         signal: AbortSignal.timeout(8_000),
       },
     )
-    if (!response.ok) throw new Error('SFU cleanup not confirmed')
     const result = (await response.json()) as {
       tracks?: { mid?: string; errorCode?: string; status?: string }[]
       errorCode?: string
     }
+    if (method === 'GET' && response.status === 410 && result.errorCode === 'session_error')
+      return { sessionClosed: true }
+    if (!response.ok) throw new Error('SFU cleanup not confirmed')
     if (result.errorCode) throw new Error('SFU cleanup not confirmed')
     return result
   }

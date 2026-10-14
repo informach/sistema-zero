@@ -185,22 +185,8 @@ export function installReceiverPage(iceServers: RTCIceServer[]): void {
       for (const source of bindings) sources.set(source.mid, { kind: source.kind })
       await peer.setRemoteDescription(description)
       await peer.setLocalDescription(await peer.createAnswer())
-      if (peer.iceGatheringState !== 'complete')
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            peer.removeEventListener('icegatheringstatechange', check)
-            reject(new Error('ICE timeout'))
-          }, 8000)
-          function check() {
-            if (peer.iceGatheringState === 'complete') {
-              clearTimeout(timeout)
-              peer.removeEventListener('icegatheringstatechange', check)
-              resolve()
-            }
-          }
-          peer.addEventListener('icegatheringstatechange', check)
-          check()
-        })
+      // Cloudflare's answer exchange proceeds immediately; ICE keeps gathering in
+      // the browser. start() separately requires actual incoming media before capture.
       return peer.localDescription!.toJSON()
     },
     async start() {

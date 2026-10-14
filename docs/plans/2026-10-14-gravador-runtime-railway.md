@@ -29,8 +29,8 @@ Referências: [Railway Sandboxes](https://docs.railway.com/sandboxes), [Playwrig
 
 - [x] Implementar processo guardião e testes de expiração, renovação e parada confirmada.
 - [x] Implementar adaptação do navegador e integrar seu ciclo ao `RecordingJob`; testar falhas de encerramento.
-- [ ] Preparar base reproduzível e credenciais próprias em staging e produção, sem implantar a aplicação de produção.
-- [ ] Executar teste real desde o serviço Railway: criação privada, recepção, segmento, pausa e remoção da VM.
+- [x] Preparar base reproduzível e credenciais próprias em staging e produção, sem implantar a aplicação de produção.
+- [x] Executar teste real desde o serviço Railway: criação privada, recepção, segmento, pausa e remoção da VM.
 - [ ] Atualizar documentação, commit/push staging, CI e deploy de todos os serviços afetados pelo conjunto de commits.
 - [ ] Conferir migrações, healthchecks, isolamento dos ambientes e registrar o que continua dependente do ensaio humano.
 
@@ -39,5 +39,8 @@ Referências: [Railway Sandboxes](https://docs.railway.com/sandboxes), [Playwrig
 - Dez testes do gravador passaram, incluindo Chromium real, FFmpeg, expiração da autorização, perda de stdin e recusa de ACK quando a remoção falha.
 - Build da imagem atualizado passou; sondagem dentro dela confirmou UID 1001, volume gravável e Chromium 151.0.7922.34 com sandbox ativo.
 - Repetição numa VM privada criada do checkpoint: alocação em 2.976 ms, navegador pronto em 11.437 ms medidos desde a máquina local, nenhum domínio público, ACK de parada e destruição confirmada. Esses valores não são promessa de latência da oficina.
-- Bases preparadas nos dois ambientes. Tokens restritos pendentes porque a API recusou criá-los pela sessão CLI. Produção conserva os 20 deployments comparados à referência inicial.
-- O typecheck Linux reproduziu uma dependência Node ausente; a declaração direta corrigiu a instalação limpa. O commit `e998ae9c4` está no CI de staging. A adaptação da VM ainda não foi publicada.
+- Bases e tokens de projeto validados nos dois ambientes. O usuário criou os tokens, pois a API bloqueia sua criação por OAuth. As três variáveis do navegador foram conferidas após a escrita. Planos IaC dos dois ambientes retornaram zero alterações; produção conservou os 20 deployments comparados à referência inicial.
+- A sondagem no serviço staging usou código do gravador e Bun 1.4.3 em diretório temporário, como UID 1001, com credencial restrita e rede privada. Gerou dois segmentos e um MP4 H.264/AAC de 130.010 bytes, duração 12,14 s; pausa sem erro, captura encerrada e VMs removidas. Objetos sintéticos foram apagados. Isso ainda não testa a publicação pelo Members nem oito crianças.
+- O ensaio encontrou três falhas de integração: colisão de parâmetros no roteador do Members, handshake Playwright bloqueado no Bun 1.3.11 e espera indevida pela coleta completa de ICE. Foram reproduzidas antes dos consertos. O runtime do gravador foi fixado em 1.4.3; o CI testa a conexão real Bun → BrowserServer. A negociação segue o [exemplo oficial da Cloudflare](https://github.com/cloudflare/calls-examples/blob/main/echo/index.html), sem bloquear a resposta enquanto outros candidatos são coletados; o receptor exige mídia recebida antes de gravar.
+- Pausa agora descarrega os segmentos e fecha as trilhas SFU antes de destruir a conexão. O supervisor reconhece uma sessão encerrada pelo retorno específico GET 410/`session_error`, conserva o histórico e deixa de repetir limpeza indefinidamente após o prazo de inspeção. Outros erros continuam pendentes. [Semântica dos erros SFU](https://developers.cloudflare.com/realtime/sfu/observability/error-codes/).
+- CI e deploy do conjunto atualizado continuam pendentes. A execução anterior passou nos testes de mídia, mas falhou no limite de tempo de um teste do Pinta (542 ms para um teto de 500 ms); esse limite não foi relaxado.

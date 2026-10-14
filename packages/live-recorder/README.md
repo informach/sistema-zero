@@ -2,7 +2,7 @@
 
 Receptor técnico próprio: Chromium recebe somente microfone, câmera e demonstração autorizados da professora pelo Cloudflare Realtime SFU. Um canvas isolado compõe a demonstração com câmera sobreposta. MediaRecorder produz segmentos WebM; FFmpeg gera MP4 H.264/AAC e grava progressivamente no R2 privado. O replay passa por conferência e publicação no Members. Não usa Daily nem exige gravador instalado pela família.
 
-SFU, TURN, supervisor e R2 foram provisionados e verificados em staging e produção. O serviço comum Railway bloqueou os namespaces exigidos pelo Chromium; a execução foi adaptada para uma VM Railway Sandbox privada e temporária. Um ensaio nessa VM recebeu mídia sintética pelo SFU real e confirmou pausa e segmento. O caminho completo desde o serviço até a publicação do replay ainda depende dos tokens próprios de cada ambiente e do ensaio em staging. Manter `LIVE_MEDIA_READY=false` até essa validação.
+SFU, TURN, supervisor, R2, bases das VMs e tokens restritos foram configurados e verificados em staging e produção. O serviço comum Railway bloqueou os namespaces exigidos pelo Chromium; a execução usa uma VM Railway Sandbox privada e temporária. Uma sondagem no serviço staging, como UID 1001 com Bun 1.4.3 e o código do gravador, recebeu mídia sintética, confirmou pausa, destruiu as VMs e gerou no R2 um MP4 H.264/AAC de 130.010 bytes e 12,14 segundos. Os objetos sintéticos foram removidos. A publicação e o acesso ao replay pelo fluxo completo do Members ainda precisam da validação do deploy. Manter `LIVE_MEDIA_READY=false` até essa validação.
 
 ## Preparação
 
@@ -85,6 +85,6 @@ Conservar volume, SQLite, `manifest.json`, `owner.json` e os objetos `segments/*
 
 Uma criação SFU com resposta definitivamente perdida não pode ser encontrada por `correlationId`; não se repete a criação às cegas. O supervisor inspeciona e fecha recursos de sessões conhecidas e conserva pendências. Isso não garante revogação instantânea se Cloudflare e supervisor estiverem indisponíveis. O piloto depende de medir esses casos.
 
-A recuperação automática, o ensaio integrado completo do serviço Railway, a validação com oito dispositivos e o benchmark de custo continuam pendentes. As verificações reais de SFU/TURN/R2 e o ensaio isolado da VM não substituem esses testes. A reconexão do navegador é explícita e não religa câmera/microfone automaticamente. Os efeitos são segmentação aproximada, não garantia de ocultação de tudo que aparece ao fundo.
+A recuperação automática, o ensaio do fluxo completo pela interface, a validação com oito dispositivos e o benchmark de custo continuam pendentes. A sondagem técnica do processamento no Railway não substitui esses testes. A reconexão do navegador é explícita e não religa câmera/microfone automaticamente. Os efeitos são segmentação aproximada, não garantia de ocultação de tudo que aparece ao fundo.
 
 Referências: [API SFU](https://developers.cloudflare.com/realtime/sfu/api/), [negociação](https://developers.cloudflare.com/realtime/sfu/concepts/negotiation/), [TURN](https://developers.cloudflare.com/realtime/turn/generate-credentials/), [proposta e custos](../../docs/plans/2026-10-14-aulas-ao-vivo-infraestrutura-e-custos.md).

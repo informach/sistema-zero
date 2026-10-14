@@ -139,7 +139,6 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
     let description: RTCSessionDescriptionInit | undefined
     if (result.requiresAnswer) {
       await peer.setLocalDescription(await peer.createAnswer())
-      await gatherIce(peer)
       description = peer.localDescription?.toJSON()
       if (!description?.sdp) throw new Error('Não foi possível preparar a resposta da conexão.')
     }
@@ -267,7 +266,6 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
       })
       local.set(kind, transceiver)
       await peer.setLocalDescription(await peer.createOffer())
-      await gatherIce(peer)
       assertGeneration(attempt)
       const description = peer.localDescription?.toJSON()
       if (!description?.sdp || !transceiver.mid)
@@ -364,27 +362,4 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
       lastControlAt = at
     },
   }
-}
-
-/** Cloudflare uses a complete SDP; no unauthenticated trickle-ICE endpoint is exposed. */
-export async function gatherIce(peer: RTCPeerConnection, timeoutMs = 5_000): Promise<void> {
-  if (peer.iceGatheringState === 'complete') return
-  await new Promise<void>((resolve, reject) => {
-    const done = () => {
-      clearTimeout(timer)
-      peer.removeEventListener('icegatheringstatechange', change)
-    }
-    const change = () => {
-      if (peer.iceGatheringState === 'complete') {
-        done()
-        resolve()
-      }
-    }
-    const timer = setTimeout(() => {
-      done()
-      reject(new Error('A rede não conseguiu preparar a conexão de vídeo.'))
-    }, timeoutMs)
-    peer.addEventListener('icegatheringstatechange', change)
-    change()
-  })
 }

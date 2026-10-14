@@ -116,3 +116,31 @@ test('inspection recloses a late active mid and recognizes an inactive track', a
     globalThis.fetch = original
   }
 })
+
+test('an expired session ends cleanup retries without treating other API errors as closure', async () => {
+  const original = globalThis.fetch
+  try {
+    for (const [status, code, pending] of [
+      [410, 'session_error', false],
+      [500, 'session_error', true],
+      [410, 'unauthorized', true],
+    ] as const) {
+      const f = fixture()
+      await f.send({
+        sessionId: 'known-session',
+        retired: true,
+        mids: ['0'],
+        hardEndsAt: Date.now() - 120_000,
+      })
+      globalThis.fetch = Object.assign(async () => Response.json({ errorCode: code }, { status }), {
+        preconnect: original.preconnect,
+      })
+      await f.supervisor.alarm()
+      const record = f.records.get('connection') as SupervisorRecord
+      expect(record.cleanupPending).toBe(pending)
+      if (!pending) expect(f.alarm()).toBeLessThanOrEqual(Date.now())
+    }
+  } finally {
+    globalThis.fetch = original
+  }
+})
