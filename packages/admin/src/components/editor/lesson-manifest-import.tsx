@@ -19,10 +19,26 @@ interface Preview {
   removedSections: Array<{ id: string; title: string }>
 }
 type ImportMode = 'preserve' | 'replace'
+
+/** Quantos blocos `plannedVideo` o texto do manifesto traz (0 quando ainda não é JSON). */
+export function plannedVideoCount(source: string): number {
+  try {
+    const value: unknown = JSON.parse(source)
+    const blocks = (value as { blocks?: unknown } | null)?.blocks
+    return Array.isArray(blocks)
+      ? blocks.filter((block) => block && typeof block === 'object' && 'plannedVideo' in block)
+          .length
+      : 0
+  } catch {
+    return 0
+  }
+}
+
 export function LessonManifestImport({
   lessonId,
   lessonSlug,
   courseSlug,
+  live = false,
   disabled,
   onImported,
   beforeImport,
@@ -30,6 +46,11 @@ export function LessonManifestImport({
   lessonId: string
   lessonSlug: string
   courseSlug: string
+  /**
+   * Aula de curso AO VIVO. O servidor recusa `plannedVideo` (o vídeo é a transmissão) e o recado
+   * dele aparece no alerta; aqui só avisamos antes, quando o arquivo traz vídeo planejado.
+   */
+  live?: boolean
   disabled: boolean
   onImported: () => Promise<void>
   beforeImport: () => Promise<void>
@@ -112,6 +133,7 @@ export function LessonManifestImport({
   }
   const leaving =
     preview?.blocks.filter((b) => b.action === 'retire' || b.action === 'remove') ?? []
+  const liveVideos = live ? plannedVideoCount(source) : 0
   return (
     <details className="rounded-2xl border border-border bg-card p-5">
       <summary className="cursor-pointer font-semibold">Importar roteiro com seções</summary>
@@ -191,6 +213,14 @@ export function LessonManifestImport({
           onChange={(e) => change(e.target.value)}
           className="font-mono text-xs"
         />
+        {liveVideos > 0 && (
+          <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+            Esta aula é de um curso ao vivo e o arquivo traz{' '}
+            {liveVideos === 1 ? 'um vídeo planejado' : `${liveVideos} vídeos planejados`}. Na aula
+            ao vivo o vídeo é a transmissão do encontro, por isso o servidor recusa vídeo planejado.
+            Tire esses blocos do arquivo antes de importar.
+          </p>
+        )}
         <div className="flex flex-wrap gap-3">
           <Button
             variant="outline"

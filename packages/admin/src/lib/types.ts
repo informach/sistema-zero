@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
 import type {
   QuizQuestionSpeech,
@@ -334,6 +335,17 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
 }
 
 /**
+ * Modalidade do curso (14/10/2026): gravado (trilha, Jornada, catálogo) ou ao vivo (só em
+ * Oficinas: cada aula publicada é um encontro de uma turma). Contrato em
+ * `@sistemazero/core/course/modality`; aqui ficam só os rótulos do painel.
+ */
+export type { CourseModality }
+export const COURSE_MODALITY_LABELS: Record<CourseModality, string> = {
+  recorded: 'Gravado',
+  live: 'Ao vivo',
+}
+
+/**
  * Dificuldade do curso. As 3 primeiras alimentam o nível do ALUNO (degraus da
  * jornada). `lenda` é uma categoria À PARTE, FORA da jornada: cursos bônus "de
  * formatura" que aparecem só na trilha da Lenda (kids) — NÃO é degrau, por isso NÃO
@@ -403,6 +415,11 @@ export interface CourseView {
   status: string
   /** Plataforma do curso (`adult` | `kids`) — a chave-mestra cobre só `adult`. */
   audience: CourseAudience
+  /**
+   * Gravado ou ao vivo. Opcional para tolerar members antigo: ausente = gravado
+   * (`courseModalityOf` do core).
+   */
+  modality?: CourseModality
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
   level: CourseLevel
   /** Eixo 2D/3D (par com `level` = degrau). Opcional p/ tolerar members antigo. */

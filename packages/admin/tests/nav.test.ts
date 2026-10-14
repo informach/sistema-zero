@@ -99,6 +99,8 @@ describe('nav — grupos e helpers de seção', () => {
     expect(pathIsPlatformScoped('/admin/membros/cursos/c-1')).toBe(false)
     expect(pathIsPlatformScoped('/admin/membros/cursos/c-1/aulas/a-1')).toBe(false)
     expect(pathIsPlatformScoped('/admin/membros/analises')).toBe(true)
+    // As turmas dos cursos ao vivo seguem a plataforma do curso (14/10/2026).
+    expect(pathIsPlatformScoped('/admin/oficinas')).toBe(true)
     // Globais (a legenda do switcher avisa).
     expect(pathIsPlatformScoped('/admin')).toBe(false)
     expect(pathIsPlatformScoped('/admin/usuarios')).toBe(false)
