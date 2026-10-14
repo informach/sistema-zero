@@ -18,14 +18,19 @@ ferramentas de desenho.
   tela). O transporte não troca trilha no meio e não foi mexido: trocar entre tela e quadro, e
   ligar a aba depois de começar pelo quadro, só muda a imagem do compositor. Tamanho = o da aba
   (teto 1920x1080, par), 1600x900 para quem começa pelo quadro.
-- ⚠️⚠️ **O relógio do compositor mora num Worker** (`screen-annotation-clock.worker.ts`). A
+- ⚠️⚠️ **O relógio do compositor mora num Worker** (`lib/live/background-clock.ts` +
+  `background-clock.worker.ts`, `startBackgroundClock`). A
   professora opera a aba de demonstração e a da sala fica em segundo plano, onde o Chrome segura o
   `setInterval` da página em 1 por segundo e para o `requestAnimationFrame`. Medido no Chrome do
   sistema com a aba escondida: relógio na página = 1 quadro por segundo para a turma; Worker = 15
   (o compositor de verdade, 25 s escondido). Sem Worker, cai no `setInterval`.
-  ⚠️ O mesmo defeito existe hoje no FUNDO DA CÂMERA (`media-camera-effects.ts`, `setInterval` de
-  100 ms na página): a câmera da professora com efeito congela para a turma enquanto ela está na
-  aba de demonstração. Não foi mexido neste lote.
+  ⚠️ O FUNDO DA CÂMERA (`media-camera-effects.ts`) usa o MESMO relógio desde 14/10/2026: com o
+  `setInterval` da página, a câmera da professora com efeito caía para 1 quadro por segundo na aba
+  escondida e, minutos depois (o Chrome segura em 1 por minuto), o vigia de 4 s a desligava.
+  Regra: imagem que vai para a turma nunca anda no relógio da página.
+- **15 quadros por segundo na tela e na demonstração** (`liveVideoEncodings` no
+  `media-transport.ts`, teto 1,5 Mbps; câmera 20 a 600 kbps): eram 10, e a seta e a caneta
+  chegavam aos saltos na tela da criança. O teste amarra ao `ANNOTATION_FPS`.
 - **Modelo puro** (`lib/live/annotation.ts`): formas VETORIAIS (caneta, marca-texto, seta,
   retângulo, círculo, texto), uma camada por superfície (tela e quadro guardam desenhos
   separados), desfazer por versões (forma nova, uma passada inteira de borracha e "limpar tudo"

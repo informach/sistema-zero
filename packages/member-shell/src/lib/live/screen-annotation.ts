@@ -30,6 +30,7 @@ import {
   strokeWidthFor,
   undoLayer,
 } from './annotation'
+import { startBackgroundClock } from './background-clock'
 
 /**
  * O compositor do desenho sobre a tela (14/10/2026).
@@ -40,7 +41,7 @@ import {
  * que a turma vê e na gravação (feita das trilhas publicadas), e trocar entre tela e quadro não
  * mexe na transmissão (o transporte não troca trilha no meio).
  *
- * ⚠️ O relógio mora num Worker (`screen-annotation-clock.worker.ts`): com a aba da sala em
+ * ⚠️ O relógio mora num Worker (`background-clock.worker.ts`): com a aba da sala em
  * segundo plano, um `setInterval` daqui cai para 1 quadro por segundo.
  */
 
@@ -117,41 +118,8 @@ export function compositorSize(settings?: { width?: number; height?: number }): 
   return { width: even(width), height: even(height) }
 }
 
-/**
- * O relógio de verdade: um Worker que bate `fps` vezes por segundo, mesmo com a aba escondida.
- * Sem Worker (ou se ele não carregar), cai no `setInterval`, que só vale com a aba à vista.
- */
-export function startAnnotationClock(fps: number, tick: () => void): () => void {
-  let interval: ReturnType<typeof setInterval> | undefined
-  let worker: Worker | undefined
-  const fallback = () => {
-    interval ??= setInterval(tick, 1000 / fps)
-  }
-  if (typeof Worker === 'function') {
-    try {
-      worker = new Worker(new URL('./screen-annotation-clock.worker.ts', import.meta.url), {
-        type: 'module',
-        name: 'sz-screen-annotation-clock',
-      })
-      worker.addEventListener('message', () => tick())
-      worker.addEventListener('error', () => {
-        worker?.terminate()
-        worker = undefined
-        fallback()
-      })
-      worker.postMessage({ fps })
-    } catch {
-      worker = undefined
-      fallback()
-    }
-  } else fallback()
-  return () => {
-    worker?.terminate()
-    worker = undefined
-    clearInterval(interval)
-    interval = undefined
-  }
-}
+/** O relógio em Worker da sala (ver `background-clock.ts`). */
+export const startAnnotationClock = startBackgroundClock
 
 const browserEnvironment: ScreenAnnotationEnvironment = {
   createCanvas: () => document.createElement('canvas'),

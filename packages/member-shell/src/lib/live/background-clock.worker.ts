@@ -1,5 +1,6 @@
 /**
- * O relógio do compositor do desenho (`screen-annotation.ts`).
+ * O relógio das imagens da sala que precisam andar com a aba em segundo plano: o compositor do
+ * desenho (`screen-annotation.ts`) e o efeito de fundo da câmera (`media-camera-effects.ts`).
  *
  * ⚠️ Mora num Worker DE PROPÓSITO. A professora opera a aba de demonstração e a aba da sala fica em
  * segundo plano: ali o Chrome segura o `setInterval` da página em 1 disparo por segundo e o
