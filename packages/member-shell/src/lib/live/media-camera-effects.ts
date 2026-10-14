@@ -1,5 +1,7 @@
 'use client'
 
+import { startBackgroundClock } from './background-clock'
+
 export type LiveCameraEffect = 'blur' | 'space' | 'workshop'
 export const LIVE_CAMERA_EFFECTS = [
   { value: 'none', label: 'Sem efeito' },
@@ -55,7 +57,7 @@ export async function createLiveCameraEffect(options: {
     busy = false,
     initialized = false
   let lastFrameAt = Date.now()
-  let interval: ReturnType<typeof setInterval> | undefined
+  let stopClock: (() => void) | undefined
   let readyResolve!: () => void, readyReject!: (error: Error) => void
   const ready = new Promise<void>((resolve, reject) => {
     readyResolve = resolve
@@ -64,7 +66,7 @@ export async function createLiveCameraEffect(options: {
   const close = () => {
     if (stopped) return
     stopped = true
-    clearInterval(interval)
+    stopClock?.()
     worker.terminate()
     for (const track of [...options.input.getTracks(), ...stream.getTracks()]) track.stop()
     video.pause()
@@ -115,7 +117,10 @@ export async function createLiveCameraEffect(options: {
       effect: options.effect,
       assetBase: new URL('/api/live/camera-assets/', window.location.origin).href,
     })
-    interval = setInterval(() => {
+    // Relógio em Worker: com a aba da sala em segundo plano (a professora mostrando outra aba),
+    // o `setInterval` da página cairia para 1 quadro por segundo e, minutos depois, para 1 por
+    // minuto, e a câmera com fundo travaria ou seria desligada pelo vigia abaixo.
+    stopClock = startBackgroundClock(10, () => {
       if (stopped) return
       if (Date.now() - lastFrameAt > (initialized ? 4000 : 20_000)) {
         fail('O computador não conseguiu manter o efeito. A câmera foi desligada.')
@@ -132,7 +137,7 @@ export async function createLiveCameraEffect(options: {
           worker.postMessage({ type: 'frame', bitmap, timestamp: performance.now() }, [bitmap])
         })
         .catch(() => fail('Não foi possível processar a imagem da câmera.'))
-    }, 100)
+    })
     await ready
     return { stream, close }
   } catch (error) {

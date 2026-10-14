@@ -29,6 +29,22 @@ export interface LiveMediaTransportOptions {
   disconnectGraceMs?: number
 }
 
+/**
+ * As camadas de vídeo publicadas (simulcast): a cheia (`f`) e a miniatura (`q`).
+ *
+ * ⚠️ A tela e a demonstração da professora andam a 15 quadros por segundo, o mesmo ritmo do
+ * compositor do desenho (`ANNOTATION_FPS`): a 10, a seta e a caneta chegavam aos saltos na tela da
+ * criança, e ela repara. O teto de bits sobe junto (1,5 Mbps), senão o codificador ganha quadros
+ * perdendo nitidez justamente no texto pequeno do Estúdio.
+ */
+export function liveVideoEncodings(kind: LiveMediaKind): RTCRtpEncodingParameters[] {
+  const camera = kind === 'camera'
+  return [
+    { rid: 'f', maxBitrate: camera ? 600_000 : 1_500_000, maxFramerate: camera ? 20 : 15 },
+    { rid: 'q', scaleResolutionDownBy: 4, maxBitrate: 100_000, maxFramerate: 5 },
+  ]
+}
+
 /** One queue owns SDP, API requests, answer application and the backend acknowledgement. */
 export class LiveMediaOperationQueue {
   private tail: Promise<unknown> = Promise.resolve()
@@ -275,14 +291,7 @@ export function createLiveMediaTransport(options: LiveMediaTransportOptions) {
         direction: 'sendonly',
         ...(track.kind === 'video'
           ? {
-              sendEncodings: [
-                {
-                  rid: 'f',
-                  maxBitrate: kind === 'camera' ? 600_000 : 1_200_000,
-                  maxFramerate: kind === 'camera' ? 20 : 10,
-                },
-                { rid: 'q', scaleResolutionDownBy: 4, maxBitrate: 100_000, maxFramerate: 5 },
-              ],
+              sendEncodings: liveVideoEncodings(kind),
             }
           : {}),
       })

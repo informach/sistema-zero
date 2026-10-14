@@ -8,7 +8,7 @@ import {
   type LiveRoomView,
 } from '@sistemazero/core/live'
 import { Button, Dialog } from '@sistemazero/ui'
-import { MonitorUp } from 'lucide-react'
+import { MonitorUp, Presentation } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { friendlyDeviceError } from '../../lib/live/device-errors'
 import {
@@ -23,7 +23,10 @@ import {
   registerLiveCaptureHandle,
 } from '../../lib/live/media-devices'
 import { createLiveMediaTransport } from '../../lib/live/media-transport'
+import { createScreenAnnotation, type ScreenAnnotation } from '../../lib/live/screen-annotation'
 import { sessionFetch } from '../../lib/session-fetch'
+import { LiveAnnotationStage } from './live-annotation-stage'
+import { LiveAnnotationControls } from './live-annotation-toolbar'
 
 function stopTracks(stream?: MediaStream) {
   for (const track of stream?.getTracks() ?? []) track.stop()
@@ -150,7 +153,24 @@ export function useLiveMedia({
   localRef.current = local
   const [busy, setBusy] = useState(false)
   const [cameraEffect, setCameraEffectState] = useState<'none' | LiveCameraEffect>('none')
-  const cameraProcessor = useRef<{ close(): void } | null>(null)
+  /**
+   * Quem processa a imagem antes de ela sair: o fundo da câmera e o compositor do desenho da
+   * demonstração (`screen-annotation.ts`). Cada um é dono da captura dele e é solto junto.
+   */
+  const processors = useRef<{ camera?: { close(): void }; demo?: ScreenAnnotation }>({})
+  const [annotation, setAnnotation] = useState<ScreenAnnotation | null>(null)
+  const release = useCallback((kind: LiveMediaKind) => {
+    if (kind !== 'camera' && kind !== 'demo') return
+    const processor = processors.current[kind]
+    delete processors.current[kind]
+    processor?.close()
+    if (kind === 'demo' && processor)
+      setAnnotation((current) => (current === processor ? null : current))
+  }, [])
+  const releaseAll = useCallback(() => {
+    release('camera')
+    release('demo')
+  }, [release])
   const [handle] = useState(() => crypto.randomUUID())
   const generation = useRef(0)
   const muteEpoch = useRef<number | null>(null)
@@ -187,17 +207,17 @@ export function useLiveMedia({
     },
     [room.actorId],
   )
-  const stop = useCallback((kind: LiveMediaKind) => {
-    if (kind === 'camera') {
-      cameraProcessor.current?.close()
-      cameraProcessor.current = null
-    }
-    if (!localRef.current[kind]) return
-    stopTracks(localRef.current[kind])
-    delete localRef.current[kind]
-    setLocal({ ...localRef.current })
-    void transport.current?.stopPublishing(kind).catch(() => undefined)
-  }, [])
+  const stop = useCallback(
+    (kind: LiveMediaKind) => {
+      release(kind)
+      if (!localRef.current[kind]) return
+      stopTracks(localRef.current[kind])
+      delete localRef.current[kind]
+      setLocal({ ...localRef.current })
+      void transport.current?.stopPublishing(kind).catch(() => undefined)
+    },
+    [release],
+  )
   useEffect(() => registerLiveCaptureHandle(handle), [handle])
   useEffect(() => {
     if (!occurrenceId || !deviceId) return
@@ -222,8 +242,7 @@ export function useLiveMedia({
           setSessionReady(false)
           setFocused(null)
           generation.current += 1
-          cameraProcessor.current?.close()
-          cameraProcessor.current = null
+          releaseAll()
           for (const stream of Object.values(localRef.current)) stopTracks(stream)
           localRef.current = {}
           setLocal({})
@@ -238,14 +257,13 @@ export function useLiveMedia({
     transport.current = current
     return () => {
       generation.current += 1
-      cameraProcessor.current?.close()
-      cameraProcessor.current = null
+      releaseAll()
       for (const stream of Object.values(localRef.current)) stopTracks(stream)
       localRef.current = {}
       void current.close().catch(() => undefined)
       if (transport.current === current) transport.current = null
     }
-  }, [occurrenceId, deviceId, onError, autoConnect])
+  }, [occurrenceId, deviceId, onError, autoConnect, releaseAll])
   useEffect(() => {
     if (!stale && room.serverTime) transport.current?.observeControlHeartbeat()
   }, [room.serverTime, stale])
@@ -331,18 +349,46 @@ export function useLiveMedia({
     if (!available) setReconnecting(false)
   }, [available])
 
+  /** A aba de demonstração da professora (a página `/ao-vivo/demonstracao/:id`). */
+  const captureDemoTab = useCallback(
+    () =>
+      captureLiveTab({
+        handle: `sz-live-demo:${roomRef.current.session.id}`,
+        onInvalidated: () => stop('demo'),
+      }),
+    [stop],
+  )
+  /** O compositor do desenho: a trilha publicada como `demo` é a dele, com ou sem desenho. */
+  const startAnnotation = useCallback(
+    (screen: MediaStream | null) => {
+      const compositor = createScreenAnnotation({ screen, onScreenEnded: () => stop('demo') })
+      release('demo')
+      processors.current.demo = compositor
+      setAnnotation(compositor)
+      return compositor
+    },
+    [release, stop],
+  )
+
   /** Abre o aparelho só para a própria pessoa (a câmera já sai com o fundo escolhido). */
   const capture = useCallback(
     async (kind: 'microphone' | 'camera' | 'screen' | 'demo') => {
+      if (kind === 'demo') {
+        const screen = await captureDemoTab()
+        try {
+          return startAnnotation(screen).stream
+        } catch {
+          // Sem compositor (navegador sem canvas capturável), a tela vai como sempre foi, sem
+          // as ferramentas de desenho: a demonstração não pode depender delas.
+          return screen
+        }
+      }
       let stream =
         kind === 'microphone'
           ? await captureLiveMicrophone()
           : kind === 'camera'
             ? await captureLiveCamera()
-            : await captureLiveTab({
-                handle: kind === 'demo' ? `sz-live-demo:${roomRef.current.session.id}` : handle,
-                onInvalidated: () => stop(kind),
-              })
+            : await captureLiveTab({ handle, onInvalidated: () => stop(kind) })
       if (kind === 'camera' && cameraEffect !== 'none') {
         const effect = await createLiveCameraEffect({
           input: stream,
@@ -352,13 +398,13 @@ export function useLiveMedia({
             onError(friendlyDeviceError(error, 'camera'))
           },
         })
-        cameraProcessor.current?.close()
-        cameraProcessor.current = effect
+        release('camera')
+        processors.current.camera = effect
         stream = effect.stream
       }
       return stream
     },
-    [cameraEffect, handle, onError, stop],
+    [cameraEffect, captureDemoTab, handle, onError, release, startAnnotation, stop],
   )
 
   /** Envia à sala um aparelho já aberto (por `capture`). */
@@ -367,6 +413,7 @@ export function useLiveMedia({
       const attempt = generation.current
       try {
         if (generation.current !== attempt || !transport.current) {
+          release(kind)
           stopTracks(stream)
           return
         }
@@ -398,15 +445,12 @@ export function useLiveMedia({
         setLocal(localRef.current)
         track.addEventListener('ended', () => stop(kind), { once: true })
       } catch (cause) {
-        if (kind === 'camera') {
-          cameraProcessor.current?.close()
-          cameraProcessor.current = null
-        }
+        release(kind)
         stopTracks(stream)
         throw cause
       }
     },
-    [deviceId, stop],
+    [deviceId, release, stop],
   )
 
   const toggle = useCallback(
@@ -421,19 +465,66 @@ export function useLiveMedia({
       try {
         stream = await capture(kind)
         if (generation.current !== attempt) {
+          release(kind)
           stopTracks(stream)
           return
         }
         await publish(kind, stream)
       } catch (cause) {
+        release(kind)
         stopTracks(stream)
         onError(friendlyDeviceError(cause, kind))
       } finally {
         setBusy(false)
       }
     },
-    [capture, publish, stop, onError],
+    [capture, publish, release, stop, onError],
   )
+
+  /** O quadro branco sem tela: a professora explica desenhando, sem abrir a demonstração. */
+  const startBoard = useCallback(async () => {
+    if (localRef.current.demo) return
+    const attempt = generation.current
+    setBusy(true)
+    let stream: MediaStream | undefined
+    try {
+      stream = startAnnotation(null).stream
+      if (generation.current !== attempt) {
+        release('demo')
+        return
+      }
+      await publish('demo', stream)
+    } catch (cause) {
+      release('demo')
+      stopTracks(stream)
+      onError(friendlyDeviceError(cause, 'demo'))
+    } finally {
+      setBusy(false)
+    }
+  }, [onError, publish, release, startAnnotation])
+
+  /**
+   * Põe a aba de demonstração no compositor que já está no ar (quem começou pelo quadro): a
+   * transmissão continua a mesma, só a imagem muda.
+   */
+  const shareDemoScreen = useCallback(async () => {
+    const compositor = processors.current.demo
+    if (!compositor) return
+    setBusy(true)
+    try {
+      const screen = await captureDemoTab()
+      if (processors.current.demo !== compositor) {
+        stopTracks(screen)
+        return
+      }
+      compositor.attachScreen(screen)
+      compositor.setSurface('screen')
+    } catch (cause) {
+      onError(friendlyDeviceError(cause, 'demo'))
+    } finally {
+      setBusy(false)
+    }
+  }, [captureDemoTab, onError])
   const label = useCallback(
     (publication: LiveMediaPublication) =>
       publication.role === 'teacher'
@@ -483,6 +574,10 @@ export function useLiveMedia({
     focus,
     focused,
     label,
+    /** O desenho sobre a demonstração (só da professora, enquanto ela transmite). */
+    annotation,
+    startBoard,
+    shareDemoScreen,
   }
 }
 export type LiveMedia = ReturnType<typeof useLiveMedia>
@@ -519,7 +614,15 @@ export function LiveMediaPanel({
     focus,
     focused,
     label,
+    annotation,
+    startBoard,
+    shareDemoScreen,
   } = media
+  const [drawing, setDrawing] = useState(false)
+  // A demonstração parou (inclusive pelo "Parar de compartilhar" do navegador): sai do desenho.
+  useEffect(() => {
+    if (!annotation) setDrawing(false)
+  }, [annotation])
   return (
     <section
       className="space-y-4 rounded-2xl border bg-card p-4"
@@ -590,7 +693,36 @@ export function LiveMediaPanel({
               {local.demo ? 'Parar demonstração' : 'Transmitir aba de demonstração'}
             </Button>
           ) : null}
+          {teacher && !local.demo ? (
+            <Button
+              className="min-h-11"
+              variant="outline"
+              disabled={busy || !available}
+              onClick={() => void startBoard()}
+            >
+              <Presentation className="size-4" />
+              Abrir quadro branco
+            </Button>
+          ) : null}
         </div>
+      ) : null}
+      {teacher && annotation && local.demo ? (
+        <LiveAnnotationControls
+          annotation={annotation}
+          busy={busy}
+          className={compactOnMobile ? 'hidden lg:block' : ''}
+          onDraw={() => setDrawing(true)}
+          onShareScreen={() => void shareDemoScreen()}
+        />
+      ) : null}
+      {teacher && annotation ? (
+        <LiveAnnotationStage
+          annotation={annotation}
+          open={drawing}
+          busy={busy}
+          onClose={() => setDrawing(false)}
+          onShareScreen={() => void shareDemoScreen()}
+        />
       ) : null}
       {teacher ? (
         <p className={`${compactOnMobile ? 'hidden lg:block' : ''} text-sm text-muted-foreground`}>
@@ -603,7 +735,7 @@ export function LiveMediaPanel({
             Abrir demonstração em outra aba
           </a>
           . Depois, escolha essa aba em “Transmitir aba de demonstração”. A tela da turma fica fora
-          da transmissão.
+          da transmissão. Para explicar desenhando, use o quadro branco.
         </p>
       ) : null}
       {Object.values(remote)

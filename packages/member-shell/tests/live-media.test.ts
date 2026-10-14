@@ -1,6 +1,10 @@
 import { expect, test } from 'bun:test'
 import { isApprovedLiveCapture } from '../src/lib/live/media-devices'
-import { createLiveMediaTransport, LiveMediaOperationQueue } from '../src/lib/live/media-transport'
+import {
+  createLiveMediaTransport,
+  LiveMediaOperationQueue,
+  liveVideoEncodings,
+} from '../src/lib/live/media-transport'
 
 test('negotiation work is serialized across overlapping event handlers', async () => {
   const queue = new LiveMediaOperationQueue()
@@ -227,4 +231,24 @@ test('failed ends the connection at once, without waiting for the grace', async 
   } finally {
     await transport.close()
   }
+})
+
+test('a tela da professora sai a 15 quadros por segundo (o ritmo do desenho), a câmera a 20', async () => {
+  const { ANNOTATION_FPS } = await import('../src/lib/live/screen-annotation')
+  for (const kind of ['screen', 'demo'] as const) {
+    const [full] = liveVideoEncodings(kind)
+    expect(full?.maxFramerate).toBe(ANNOTATION_FPS)
+    expect(full?.maxBitrate).toBeGreaterThanOrEqual(1_500_000)
+  }
+  expect(liveVideoEncodings('camera')[0]?.maxFramerate).toBe(20)
+})
+
+test('o fundo da câmera anda no relógio em Worker, nunca no relógio da página', async () => {
+  // Com a aba da sala em segundo plano, o setInterval da página cai a 1 por segundo (e a 1 por
+  // minuto depois de alguns minutos): a câmera com efeito travava e o vigia de 4 s a desligava.
+  const source = await Bun.file(
+    new URL('../src/lib/live/media-camera-effects.ts', import.meta.url),
+  ).text()
+  expect(source).toContain('startBackgroundClock(')
+  expect(source).not.toMatch(/\bsetInterval\(/)
 })
